@@ -1,0 +1,46 @@
+# Microsoft Developer Studio Project File - Database Project
+Begin DataProject = "QutSensorsDB"
+   MSDTVersion = "80"
+   DefDBRef = "fit10013030\sqlexpress.QutSensors.dbo"
+   Begin Folder = "Change Scripts"
+   End
+   Begin Folder = "Create Scripts"
+      Script = "01_Sensors.sql"
+      Script = "02_AudioReadings.sql"
+      Script = "02_PhotoReadings.sql"
+      Script = "03_GetAudioReading.sql"
+      Script = "03_GetAudioReadingData.sql"
+      Script = "03_GetAudioReadings.sql"
+      Script = "03_GetAudioSpectrogramData.sql"
+      Script = "03_GetAudioSpectrumData.sql"
+      Script = "03_GetPhotoReading.sql"
+      Script = "03_GetPhotoReadingData.sql"
+      Script = "03_GetPhotoReadings.sql"
+      Script = "03_GetSensor.sql"
+      Script = "03_GetSensorByName.sql"
+      Script = "03_GetSensors.sql"
+      Script = "03_UpdateAudioReading.sql"
+      Script = "03_UpdateAudioReadingData.sql"
+      Script = "03_UpdateAudioSpectrogramData.sql"
+      Script = "03_UpdateAudioSpectrumData.sql"
+      Script = "03_UpdatePhotoReading.sql"
+      Script = "03_UpdatePhotoReadingData.sql"
+      Script = "03_UpdateSensor.sql"
+      Script = "04_GetAudioReadingsWithoutSpectrograms.sql"
+      Script = "04_GetAudioReadingsWithoutSpectrums.sql"
+   End
+   Begin DBRefFolder = "Database References"
+      Begin DBRefNode = "fit10013030\sqlexpress.QutSensors.dbo"
+         ConnectStr = "Data Source=(local)\SQLEXPRESS;Initial Catalog=QutSensors;Integrated Security=True"
+         Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
+         Colorizer = 6
+      End
+      Begin DBRefNode = "fitblgp07.QutSensors.dbo"
+         ConnectStr = "Data Source=FITBLGP07.fit.qut.edu.au;Initial Catalog=QutSensors;Integrated Security=True"
+         Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
+         Colorizer = 6
+      End
+   End
+   Begin Folder = "Queries"
+   End
+End
