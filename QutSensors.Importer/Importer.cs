@@ -5,11 +5,12 @@ using System.Diagnostics;
 using System.ComponentModel;
 using System.ServiceProcess;
 using System.Collections.Generic;
-using System.Timers;
 using System.IO;
 using QutSensors;
+using System.Threading;
+using System.Configuration;
 
-namespace DataImporter
+namespace QutSensors.Importer
 {
 	public partial class Importer : ServiceBase
 	{
@@ -27,25 +28,34 @@ namespace DataImporter
 			OnStart(null);
 		}
 
+		public void DebugStop()
+		{
+			OnStop();
+		}
+
 		#region Service Overrides
 		protected override void OnStart(string[] args)
 		{
-			timer = new Timer(TimerInterval);
-			timer.Elapsed += new ElapsedEventHandler(timer_Elapsed);
-			timer.Start();
+			timer = new Timer(new TimerCallback(timer_Tick), null, 5000, TimerInterval);
 		}
 
 		protected override void OnStop()
 		{
 			if (timer != null)
 			{
-				timer.Stop();
+				timer.Change(Timeout.Infinite, Timeout.Infinite);
+				timer.Dispose();
 				timer = null;
 			}
 		}
 		#endregion
 
-		void timer_Elapsed(object sender, ElapsedEventArgs e)
+		bool Stopping
+		{
+			get { return timer == null; }
+		}
+
+		void timer_Tick(object state)
 		{
 			SynchroniseData();
 		}
@@ -57,8 +67,11 @@ namespace DataImporter
 			{
 				try
 				{
-					foreach (string sensorFolder in Directory.GetDirectories(@"D:\stargate\home\stuart"))
+					Console.WriteLine("Synchronising data...");
+					foreach (string sensorFolder in Directory.GetDirectories(ConfigurationManager.AppSettings["DataPath"]))
 					{
+						if (Stopping) // Indicates we're supposed to stop
+							return;
 						SynchoniseSensor(sensorFolder);
 					}
 				}
@@ -77,11 +90,19 @@ namespace DataImporter
 			string photoFolder = Path.Combine(sensorFolder, "picture");
 			if (Directory.Exists(photoFolder))
 				foreach (string file in Directory.GetFiles(photoFolder, "*.jpg"))
+				{
+					if (Stopping) // Indicates we're supposed to stop
+						return;
 					SynchoniseJpeg(sensor, file);
+				}
 			string audioFolder = Path.Combine(sensorFolder, "sound");
 			if (Directory.Exists(audioFolder))
 				foreach (string file in Directory.GetFiles(audioFolder, "*.wav"))
+				{
+					if (Stopping) // Indicates we're supposed to stop
+						return;
 					SynchoniseWav(sensor, file);
+				}
 		}
 
 		private Sensor GetSensor(string sensorName)
