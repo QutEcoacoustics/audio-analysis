@@ -1,4 +1,4 @@
-namespace DataImporter
+namespace QutSensors.Importer
 {
 	partial class Importer
 	{
@@ -28,8 +28,11 @@ namespace DataImporter
 		/// </summary>
 		private void InitializeComponent()
 		{
-			components = new System.ComponentModel.Container();
-			this.ServiceName = "Service1";
+			// 
+			// Importer
+			// 
+			this.ServiceName = "SensorsImporter";
+
 		}
 
 		#endregion
