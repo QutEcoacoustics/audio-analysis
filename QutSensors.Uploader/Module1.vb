@@ -3,6 +3,8 @@ Imports QutSensors
 Imports System.IO
 Imports System.Data.SqlClient
 Module Module1
+
+    'Move this part into the app.config
     Const connString As String = "Data Source=localhost;Initial Catalog=Qutsensors;Integrated Security=True;Pooling=False;"
     Const mainDirectory As String = "D:\stargate\home\stuart"
     Dim _sensor As Sensor
@@ -36,37 +38,37 @@ Module Module1
     End Sub
 
     Private Sub SyncSensor(ByVal sPath As String)
-		Dim sName As String = Path.GetFileName(sPath)
-		_sensor = Sensor.GetSensor(sName)
-		'conn.Open()
-		'cmd.CommandText = "SELECT SensorID from Sensors where Name='" & sname & "'"
-		'reader = cmd.ExecuteReader
-		If _sensor Is Nothing Then
-			_sensor = New Sensor(sName)
-			_sensor.Save()
-			'Dim sGuid As Guid
-			'sGuid = Guid.NewGuid
-			'cmd.CommandText = "INSERT INTO Sensors Values(@SID, @Name, @Friendlyname, @Description)"
-			'Dim sid As New SqlParameter("@SID", SqlDbType.UniqueIdentifier)
-			'Dim name As New SqlParameter("@Name", SqlDbType.VarChar)
-			'Dim Friendlyname As New SqlParameter("@FriendlyName", SqlDbType.VarChar)
-			'Dim Description As New SqlParameter("@Description", SqlDbType.VarChar)
-			'sid.Value = sGuid
-			'name.Value = sname
-			'Friendlyname.Value = ""
-			'Description.Value = ""
-			'cmd.Parameters.Add(sid)
-			'cmd.Parameters.Add(name)
-			'cmd.Parameters.Add(Friendlyname)
-			'cmd.Parameters.Add(Description)
-			'reader.Close()
-			'cmd.ExecuteNonQuery()
-			'_sensor.ID = sGuid
+        Dim sName As String = Path.GetFileName(sPath)
+        _sensor = Sensor.GetSensor(sName)
+        'conn.Open()
+        'cmd.CommandText = "SELECT SensorID from Sensors where Name='" & sname & "'"
+        'reader = cmd.ExecuteReader
+        If _sensor Is Nothing Then
+            _sensor = New Sensor(sName)
+            _sensor.Save()
+            'Dim sGuid As Guid
+            'sGuid = Guid.NewGuid
+            'cmd.CommandText = "INSERT INTO Sensors Values(@SID, @Name, @Friendlyname, @Description)"
+            'Dim sid As New SqlParameter("@SID", SqlDbType.UniqueIdentifier)
+            'Dim name As New SqlParameter("@Name", SqlDbType.VarChar)
+            'Dim Friendlyname As New SqlParameter("@FriendlyName", SqlDbType.VarChar)
+            'Dim Description As New SqlParameter("@Description", SqlDbType.VarChar)
+            'sid.Value = sGuid
+            'name.Value = sname
+            'Friendlyname.Value = ""
+            'Description.Value = ""
+            'cmd.Parameters.Add(sid)
+            'cmd.Parameters.Add(name)
+            'cmd.Parameters.Add(Friendlyname)
+            'cmd.Parameters.Add(Description)
+            'reader.Close()
+            'cmd.ExecuteNonQuery()
+            '_sensor.ID = sGuid
 
-			'Check sensor on the server
-			Dim sensorExist As Boolean
-			sensorExist = serv.FindSensor(sname)
-		End If
+            'Check sensor on the server
+            Dim sensorExist As Boolean
+            sensorExist = serv.FindSensor(sname)
+        End If
 
         Console.WriteLine(_sensor.ID.Value)
         conn.Close()
