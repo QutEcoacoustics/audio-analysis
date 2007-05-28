@@ -142,14 +142,18 @@ namespace QutSensors.Importer
 				}
 				finally
 				{
-					if (File.Exists(wavPath))
-						File.Delete(wavPath);
-					if (File.Exists(freqSpectrumPath))
-						File.Delete(freqSpectrumPath);
-					if (File.Exists(spectrogramPath))
-						File.Delete(spectrogramPath);
-					if (File.Exists(dataPath))
-						File.Delete(dataPath);
+					try
+					{
+						if (File.Exists(wavPath))
+							File.Delete(wavPath);
+						if (File.Exists(freqSpectrumPath))
+							File.Delete(freqSpectrumPath);
+						if (File.Exists(spectrogramPath))
+							File.Delete(spectrogramPath);
+						if (File.Exists(dataPath))
+							File.Delete(dataPath);
+					}
+					catch { }
 				}
 			}
 		}
