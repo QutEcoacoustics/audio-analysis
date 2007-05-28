@@ -136,7 +136,8 @@ Public Function addSensor(ByVal SID As Guid, ByVal sName As String) As String
     End Function
 
     <WebMethod()> _
-        Public Function FindSensor(ByVal sName As String) As DataTable
+        Public Function FindSensor(ByVal sName As String) As DataSet
+        Dim ds As New DataSet
         Dim dt As New DataTable("Sensors")
         Dim dcID As New DataColumn("SensorID")
         Dim dcName As New DataColumn("Name")
@@ -154,9 +155,10 @@ Public Function addSensor(ByVal SID As Guid, ByVal sName As String) As String
             dr("sensorID") = reader.GetValue(0)
             dr("Name") = reader.GetString(1)
             dt.Rows.Add(dr)
-            Return dt
+            ds.Tables.Add(dt)
+            Return ds
             conn.Close()
-        Else            
+        Else
             conn.Close()
             Return Nothing
         End If
