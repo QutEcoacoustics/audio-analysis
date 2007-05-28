@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://tempuri.org/" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://tempuri.org/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://tempuri.org/">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="addPhotoReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="pGuid" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="pDate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="addPhotoReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="addPhotoReadingResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindPhotoReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="pGuid" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="pDate" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindPhotoReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="FindPhotoReadingResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindAudioReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="pGuid" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="pDate" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindAudioReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="FindAudioReadingResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="addAudioReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="aGuid" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="adate" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="addAudioReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="addAudioReadingResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPhotoreading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="pDate" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getPhotoreadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="getPhotoreadingResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getAudioreading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorName" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="pDate" type="s:dateTime" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getAudioreadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="getAudioreadingResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="getConnectionString">
+        <s:complexType />
+      </s:element>
+      <s:element name="getConnectionStringResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="getConnectionStringResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="testAddAudio">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="aGuid" type="s1:guid" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="testAddAudioResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="testAddAudioResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="addSensor">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="SID" type="s1:guid" />
+            <s:element minOccurs="0" maxOccurs="1" name="sName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="addSensorResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="addSensorResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindSensor">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sName" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindSensorResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="FindSensorResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:element ref="s:schema" />
+                  <s:any />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="ListAllPhotos">
+        <s:complexType />
+      </s:element>
+      <s:element name="ListAllPhotosResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="ListAllPhotosResult">
+              <s:complexType>
+                <s:sequence>
+                  <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+                  <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+                </s:sequence>
+              </s:complexType>
+            </s:element>
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="DataTable" nillable="true">
+        <s:complexType>
+          <s:sequence>
+            <s:any minOccurs="0" maxOccurs="unbounded" namespace="http://www.w3.org/2001/XMLSchema" processContents="lax" />
+            <s:any minOccurs="1" namespace="urn:schemas-microsoft-com:xml-diffgram-v1" processContents="lax" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="string" nillable="true" type="s:string" />
+      <s:element name="DataSet" nillable="true">
+        <s:complexType>
+          <s:sequence>
+            <s:element ref="s:schema" />
+            <s:any />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="addPhotoReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:addPhotoReading" />
+  </wsdl:message>
+  <wsdl:message name="addPhotoReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:addPhotoReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="FindPhotoReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:FindPhotoReading" />
+  </wsdl:message>
+  <wsdl:message name="FindPhotoReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:FindPhotoReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="FindAudioReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:FindAudioReading" />
+  </wsdl:message>
+  <wsdl:message name="FindAudioReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:FindAudioReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="addAudioReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:addAudioReading" />
+  </wsdl:message>
+  <wsdl:message name="addAudioReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:addAudioReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingSoapIn">
+    <wsdl:part name="parameters" element="tns:getPhotoreading" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingSoapOut">
+    <wsdl:part name="parameters" element="tns:getPhotoreadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingSoapIn">
+    <wsdl:part name="parameters" element="tns:getAudioreading" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingSoapOut">
+    <wsdl:part name="parameters" element="tns:getAudioreadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="getConnectionStringSoapIn">
+    <wsdl:part name="parameters" element="tns:getConnectionString" />
+  </wsdl:message>
+  <wsdl:message name="getConnectionStringSoapOut">
+    <wsdl:part name="parameters" element="tns:getConnectionStringResponse" />
+  </wsdl:message>
+  <wsdl:message name="testAddAudioSoapIn">
+    <wsdl:part name="parameters" element="tns:testAddAudio" />
+  </wsdl:message>
+  <wsdl:message name="testAddAudioSoapOut">
+    <wsdl:part name="parameters" element="tns:testAddAudioResponse" />
+  </wsdl:message>
+  <wsdl:message name="addSensorSoapIn">
+    <wsdl:part name="parameters" element="tns:addSensor" />
+  </wsdl:message>
+  <wsdl:message name="addSensorSoapOut">
+    <wsdl:part name="parameters" element="tns:addSensorResponse" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorSoapIn">
+    <wsdl:part name="parameters" element="tns:FindSensor" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorSoapOut">
+    <wsdl:part name="parameters" element="tns:FindSensorResponse" />
+  </wsdl:message>
+  <wsdl:message name="ListAllPhotosSoapIn">
+    <wsdl:part name="parameters" element="tns:ListAllPhotos" />
+  </wsdl:message>
+  <wsdl:message name="ListAllPhotosSoapOut">
+    <wsdl:part name="parameters" element="tns:ListAllPhotosResponse" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingHttpGetIn">
+    <wsdl:part name="sensorName" type="s:string" />
+    <wsdl:part name="pDate" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingHttpGetOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingHttpGetIn">
+    <wsdl:part name="sensorName" type="s:string" />
+    <wsdl:part name="pDate" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingHttpGetOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:message name="getConnectionStringHttpGetIn" />
+  <wsdl:message name="getConnectionStringHttpGetOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorHttpGetIn">
+    <wsdl:part name="sName" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorHttpGetOut">
+    <wsdl:part name="Body" element="tns:DataSet" />
+  </wsdl:message>
+  <wsdl:message name="ListAllPhotosHttpGetIn" />
+  <wsdl:message name="ListAllPhotosHttpGetOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingHttpPostIn">
+    <wsdl:part name="sensorName" type="s:string" />
+    <wsdl:part name="pDate" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="getPhotoreadingHttpPostOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingHttpPostIn">
+    <wsdl:part name="sensorName" type="s:string" />
+    <wsdl:part name="pDate" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="getAudioreadingHttpPostOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:message name="getConnectionStringHttpPostIn" />
+  <wsdl:message name="getConnectionStringHttpPostOut">
+    <wsdl:part name="Body" element="tns:string" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorHttpPostIn">
+    <wsdl:part name="sName" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorHttpPostOut">
+    <wsdl:part name="Body" element="tns:DataSet" />
+  </wsdl:message>
+  <wsdl:message name="ListAllPhotosHttpPostIn" />
+  <wsdl:message name="ListAllPhotosHttpPostOut">
+    <wsdl:part name="Body" element="tns:DataTable" />
+  </wsdl:message>
+  <wsdl:portType name="ServiceSoap">
+    <wsdl:operation name="addPhotoReading">
+      <wsdl:input message="tns:addPhotoReadingSoapIn" />
+      <wsdl:output message="tns:addPhotoReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindPhotoReading">
+      <wsdl:input message="tns:FindPhotoReadingSoapIn" />
+      <wsdl:output message="tns:FindPhotoReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindAudioReading">
+      <wsdl:input message="tns:FindAudioReadingSoapIn" />
+      <wsdl:output message="tns:FindAudioReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="addAudioReading">
+      <wsdl:input message="tns:addAudioReadingSoapIn" />
+      <wsdl:output message="tns:addAudioReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getPhotoreading">
+      <wsdl:input message="tns:getPhotoreadingSoapIn" />
+      <wsdl:output message="tns:getPhotoreadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <wsdl:input message="tns:getAudioreadingSoapIn" />
+      <wsdl:output message="tns:getAudioreadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <wsdl:input message="tns:getConnectionStringSoapIn" />
+      <wsdl:output message="tns:getConnectionStringSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="testAddAudio">
+      <wsdl:input message="tns:testAddAudioSoapIn" />
+      <wsdl:output message="tns:testAddAudioSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="addSensor">
+      <wsdl:input message="tns:addSensorSoapIn" />
+      <wsdl:output message="tns:addSensorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <wsdl:input message="tns:FindSensorSoapIn" />
+      <wsdl:output message="tns:FindSensorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <wsdl:input message="tns:ListAllPhotosSoapIn" />
+      <wsdl:output message="tns:ListAllPhotosSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ServiceHttpGet">
+    <wsdl:operation name="getPhotoreading">
+      <wsdl:input message="tns:getPhotoreadingHttpGetIn" />
+      <wsdl:output message="tns:getPhotoreadingHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <wsdl:input message="tns:getAudioreadingHttpGetIn" />
+      <wsdl:output message="tns:getAudioreadingHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <wsdl:input message="tns:getConnectionStringHttpGetIn" />
+      <wsdl:output message="tns:getConnectionStringHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <wsdl:input message="tns:FindSensorHttpGetIn" />
+      <wsdl:output message="tns:FindSensorHttpGetOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <wsdl:input message="tns:ListAllPhotosHttpGetIn" />
+      <wsdl:output message="tns:ListAllPhotosHttpGetOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:portType name="ServiceHttpPost">
+    <wsdl:operation name="getPhotoreading">
+      <wsdl:input message="tns:getPhotoreadingHttpPostIn" />
+      <wsdl:output message="tns:getPhotoreadingHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <wsdl:input message="tns:getAudioreadingHttpPostIn" />
+      <wsdl:output message="tns:getAudioreadingHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <wsdl:input message="tns:getConnectionStringHttpPostIn" />
+      <wsdl:output message="tns:getConnectionStringHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <wsdl:input message="tns:FindSensorHttpPostIn" />
+      <wsdl:output message="tns:FindSensorHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <wsdl:input message="tns:ListAllPhotosHttpPostIn" />
+      <wsdl:output message="tns:ListAllPhotosHttpPostOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="addPhotoReading">
+      <soap:operation soapAction="http://tempuri.org/addPhotoReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindPhotoReading">
+      <soap:operation soapAction="http://tempuri.org/FindPhotoReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindAudioReading">
+      <soap:operation soapAction="http://tempuri.org/FindAudioReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAudioReading">
+      <soap:operation soapAction="http://tempuri.org/addAudioReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPhotoreading">
+      <soap:operation soapAction="http://tempuri.org/getPhotoreading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <soap:operation soapAction="http://tempuri.org/getAudioreading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <soap:operation soapAction="http://tempuri.org/getConnectionString" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="testAddAudio">
+      <soap:operation soapAction="http://tempuri.org/testAddAudio" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addSensor">
+      <soap:operation soapAction="http://tempuri.org/addSensor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <soap:operation soapAction="http://tempuri.org/FindSensor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <soap:operation soapAction="http://tempuri.org/ListAllPhotos" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="addPhotoReading">
+      <soap12:operation soapAction="http://tempuri.org/addPhotoReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindPhotoReading">
+      <soap12:operation soapAction="http://tempuri.org/FindPhotoReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindAudioReading">
+      <soap12:operation soapAction="http://tempuri.org/FindAudioReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addAudioReading">
+      <soap12:operation soapAction="http://tempuri.org/addAudioReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getPhotoreading">
+      <soap12:operation soapAction="http://tempuri.org/getPhotoreading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <soap12:operation soapAction="http://tempuri.org/getAudioreading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <soap12:operation soapAction="http://tempuri.org/getConnectionString" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="testAddAudio">
+      <soap12:operation soapAction="http://tempuri.org/testAddAudio" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="addSensor">
+      <soap12:operation soapAction="http://tempuri.org/addSensor" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <soap12:operation soapAction="http://tempuri.org/FindSensor" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <soap12:operation soapAction="http://tempuri.org/ListAllPhotos" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceHttpGet" type="tns:ServiceHttpGet">
+    <http:binding verb="GET" />
+    <wsdl:operation name="getPhotoreading">
+      <http:operation location="/getPhotoreading" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <http:operation location="/getAudioreading" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <http:operation location="/getConnectionString" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <http:operation location="/FindSensor" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <http:operation location="/ListAllPhotos" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceHttpPost" type="tns:ServiceHttpPost">
+    <http:binding verb="POST" />
+    <wsdl:operation name="getPhotoreading">
+      <http:operation location="/getPhotoreading" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getAudioreading">
+      <http:operation location="/getAudioreading" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="getConnectionString">
+      <http:operation location="/getConnectionString" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <http:operation location="/FindSensor" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="ListAllPhotos">
+      <http:operation location="/ListAllPhotos" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output>
+        <mime:mimeXml part="Body" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Service">
+    <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
+      <soap:address location="http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
+      <soap12:address location="http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceHttpGet" binding="tns:ServiceHttpGet">
+      <http:address location="http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceHttpPost" binding="tns:ServiceHttpPost">
+      <http:address location="http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
