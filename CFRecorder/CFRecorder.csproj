@@ -46,8 +46,14 @@
   <ItemGroup>
     <Reference Include="Microsoft.WindowsCE.Forms" />
     <Reference Include="mscorlib" />
-    <Reference Include="OpenNETCF, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
-    <Reference Include="OpenNETCF.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="OpenNETCF, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\OpenNETCF.dll</HintPath>
+    </Reference>
+    <Reference Include="OpenNETCF.Net, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\OpenNETCF.Net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
