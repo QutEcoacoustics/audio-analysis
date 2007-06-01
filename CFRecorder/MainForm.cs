@@ -10,6 +10,7 @@ using OpenNETCF.Net.Ftp;
 using System.Net.Sockets;
 using System.Net;
 using OpenNETCF.Net;
+using CFRecorder.QutSensors.Services;
 
 namespace CFRecorder
 {
@@ -19,17 +20,13 @@ namespace CFRecorder
 		{
 			InitializeComponent();
 
-			txtSensorName.Text = Settings.Current.SensorID;
+			txtSensorName.Text = Settings.Current.SensorName;
 			txtFolder.Text = Settings.Current.SensorDataPath;
+			txtServer.Text = Settings.Current.Server;
 		}
 
 		#region Event Handlers
 		private void timer_Tick(object sender, EventArgs e)
-		{
-			TakeReading(Path.Combine(txtFolder.Text, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", txtSensorName.Text, DateTime.Now)));
-		}
-
-		private void cmdRecordNow_Click(object sender, EventArgs e)
 		{
 			TakeReading(Path.Combine(txtFolder.Text, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", txtSensorName.Text, DateTime.Now)));
 		}
@@ -46,7 +43,22 @@ namespace CFRecorder
 
 		private void txtSensorName_TextChanged(object sender, EventArgs e)
 		{
-			Settings.Current.SensorID = txtSensorName.Text;
+			Settings.Current.SensorName = txtSensorName.Text;
+		}
+
+		private void mnuExit_Click(object sender, EventArgs e)
+		{
+			Application.Exit();
+		}
+
+		private void mnuRecordNow_Click(object sender, EventArgs e)
+		{
+			TakeReading(Path.Combine(txtFolder.Text, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", txtSensorName.Text, DateTime.Now)));
+		}
+
+		private void txtServer_TextChanged(object sender, EventArgs e)
+		{
+			Settings.Current.Server = txtServer.Text;
 		}
 		#endregion
 
@@ -54,10 +66,9 @@ namespace CFRecorder
 		private void TakeReading(string path)
 		{
 			currentRecording = path;
-			Record(path, 30);
+			Record(path, 10);
 		}
 
-		FileStream stream;
 		private void Record(string fileName, short duration)
 		{
 			txtLog.Text = string.Format("{0:HH:mm:ss} - Starting recording - {1}\r\n{2}", DateTime.Now, fileName, txtLog.Text);
@@ -71,13 +82,39 @@ namespace CFRecorder
 		void recording_DoneRecording(object sender, EventArgs e)
 		{
 			if (InvokeRequired)
-				Invoke(new EventHandler(recording_DoneRecording));
+				Invoke(new EventHandler(recording_DoneRecording), sender, e);
 			else
 			{
 				txtLog.Text = string.Format("{0:HH:mm:ss} - Recording complete\r\n{1}", DateTime.Now, txtLog.Text);
 				txtLog.Update();
+				Recording recording = (Recording)sender;
+				Upload2(recording);
+			}
+		}
 
-				Upload(currentRecording, Path.GetFileName(currentRecording));
+		void Upload2(Recording recording)
+		{
+			try
+			{
+				txtLog.Text = string.Format("Commencing upload...\r\n") + txtLog.Text;
+				txtLog.Update();
+
+				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);
+
+				FileInfo file = new FileInfo(recording.Target);
+				byte[] buffer = new byte[file.Length];
+				using (FileStream input = File.OpenRead(recording.Target))
+					input.Read(buffer, 0, (int)file.Length);
+
+				service.AddAudioReading(Settings.Current.SensorID, recording.StartTime, buffer);
+			}
+			catch (Exception e)
+			{
+				txtLog.Text = string.Format("Upload failed - storing for later upload.\r\n{0}\r\n", e) + txtLog.Text;
+				txtLog.Update();
+				// Upload failed...
+				// TODO: we should retry this again sometime when the network comes back.
 			}
 		}
 
@@ -95,7 +132,6 @@ namespace CFRecorder
 
 			try
 			{
-			
 				WebRequest request = WebRequest.Create(string.Format("http://www.mquter.qut.edu.au/sensor/demo/Upload.aspx?Path=" + UrlEncode(targetFileName)));
 				//WebRequest request = WebRequest.Create(string.Format("http://131.181.111.186:2477/WebFrontend/Upload.aspx?Path=" + UrlEncode(targetFileName)));
 				request.Method = "POST";
@@ -186,7 +222,7 @@ namespace CFRecorder
 				eapParams.EapFlags = EAPFlags.Disabled;
 				eapParams.EapType = EAPType.PEAP;
 				eapParams.Enable8021x = false;
-				adapter.SetWirelessSettingsAddEx(SSID, true, (byte[])null, 1, AuthenticationMode.Ndis802_11AuthModeOpen, WEPStatus.Ndis802_11WEPEnabled, eapParams);
+				adapter.SetWirelessSettingsAddEx(SSID, true, (byte[])null, 1, AuthenticationMode.Ndis802_11AuthModeOpen, WEPStatus.Ndis802_11EncryptionDisabled, eapParams);
 				//adapter.SetWirelessSettingsEx(SSID, true, (byte[])null, AuthenticationMode.Ndis802_11AuthModeOpen);
 				adapter.RebindAdapter();
 			}
@@ -205,9 +241,20 @@ namespace CFRecorder
 			lblWireless.Text = "Wireless: Not connected";
 		}
 
-		private void mnuExit_Click(object sender, EventArgs e)
+		private void mnuWSTest_Click(object sender, EventArgs e)
 		{
-			Application.Exit();
+			try
+			{
+				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);
+
+				Sensor sensor = service.FindSensor("QUT01");
+			}
+			catch (WebException ex)
+			{
+				HttpWebResponse response = (HttpWebResponse)ex.Response;
+				txtLog.Text = string.Format("Error: {0}\r\n{1}", response.StatusDescription, txtLog.Text);
+			}
 		}
 	}
 }

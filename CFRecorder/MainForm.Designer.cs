@@ -30,20 +30,34 @@ namespace CFRecorder
 		private void InitializeComponent()
 		{
 			this.mnuMain = new System.Windows.Forms.MainMenu();
+			this.mnuExit = new System.Windows.Forms.MenuItem();
+			this.mnuRecordNow = new System.Windows.Forms.MenuItem();
 			this.timer = new System.Windows.Forms.Timer();
-			this.cmdRecordNow = new System.Windows.Forms.Button();
 			this.txtLog = new System.Windows.Forms.TextBox();
 			this.txtSensorName = new System.Windows.Forms.TextBox();
 			this.txtFolder = new System.Windows.Forms.TextBox();
 			this.cmdSelectFolder = new System.Windows.Forms.Button();
 			this.lblWireless = new System.Windows.Forms.Label();
 			this.wirelessTimer = new System.Windows.Forms.Timer();
-			this.mnuExit = new System.Windows.Forms.MenuItem();
+			this.txtServer = new System.Windows.Forms.TextBox();
+			this.mnuWSTest = new System.Windows.Forms.MenuItem();
 			this.SuspendLayout();
 			// 
 			// mnuMain
 			// 
 			this.mnuMain.MenuItems.Add(this.mnuExit);
+			this.mnuMain.MenuItems.Add(this.mnuRecordNow);
+			this.mnuMain.MenuItems.Add(this.mnuWSTest);
+			// 
+			// mnuExit
+			// 
+			this.mnuExit.Text = "Exit";
+			this.mnuExit.Click += new System.EventHandler(this.mnuExit_Click);
+			// 
+			// mnuRecordNow
+			// 
+			this.mnuRecordNow.Text = "Record Now";
+			this.mnuRecordNow.Click += new System.EventHandler(this.mnuRecordNow_Click);
 			// 
 			// timer
 			// 
@@ -51,28 +65,24 @@ namespace CFRecorder
 			this.timer.Interval = 1800000;
 			this.timer.Tick += new System.EventHandler(this.timer_Tick);
 			// 
-			// cmdRecordNow
-			// 
-			this.cmdRecordNow.Location = new System.Drawing.Point(3, 119);
-			this.cmdRecordNow.Name = "cmdRecordNow";
-			this.cmdRecordNow.Size = new System.Drawing.Size(83, 20);
-			this.cmdRecordNow.TabIndex = 0;
-			this.cmdRecordNow.Text = "Record Now";
-			this.cmdRecordNow.Click += new System.EventHandler(this.cmdRecordNow_Click);
-			// 
 			// txtLog
 			// 
-			this.txtLog.Location = new System.Drawing.Point(3, 173);
+			this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtLog.Location = new System.Drawing.Point(3, 108);
 			this.txtLog.Multiline = true;
 			this.txtLog.Name = "txtLog";
-			this.txtLog.Size = new System.Drawing.Size(237, 92);
+			this.txtLog.Size = new System.Drawing.Size(237, 157);
 			this.txtLog.TabIndex = 2;
 			// 
 			// txtSensorName
 			// 
-			this.txtSensorName.Location = new System.Drawing.Point(92, 119);
+			this.txtSensorName.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtSensorName.Location = new System.Drawing.Point(3, 27);
 			this.txtSensorName.Name = "txtSensorName";
-			this.txtSensorName.Size = new System.Drawing.Size(145, 21);
+			this.txtSensorName.Size = new System.Drawing.Size(234, 21);
 			this.txtSensorName.TabIndex = 3;
 			this.txtSensorName.Text = "QUT00";
 			this.txtSensorName.TextChanged += new System.EventHandler(this.txtSensorName_TextChanged);
@@ -81,7 +91,7 @@ namespace CFRecorder
 			// 
 			this.txtFolder.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtFolder.Location = new System.Drawing.Point(3, 146);
+			this.txtFolder.Location = new System.Drawing.Point(3, 81);
 			this.txtFolder.Name = "txtFolder";
 			this.txtFolder.Size = new System.Drawing.Size(209, 21);
 			this.txtFolder.TabIndex = 4;
@@ -89,7 +99,8 @@ namespace CFRecorder
 			// 
 			// cmdSelectFolder
 			// 
-			this.cmdSelectFolder.Location = new System.Drawing.Point(218, 147);
+			this.cmdSelectFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdSelectFolder.Location = new System.Drawing.Point(218, 82);
 			this.cmdSelectFolder.Name = "cmdSelectFolder";
 			this.cmdSelectFolder.Size = new System.Drawing.Size(19, 20);
 			this.cmdSelectFolder.TabIndex = 5;
@@ -98,6 +109,8 @@ namespace CFRecorder
 			// 
 			// lblWireless
 			// 
+			this.lblWireless.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
 			this.lblWireless.Location = new System.Drawing.Point(4, 4);
 			this.lblWireless.Name = "lblWireless";
 			this.lblWireless.Size = new System.Drawing.Size(236, 20);
@@ -106,13 +119,23 @@ namespace CFRecorder
 			// wirelessTimer
 			// 
 			this.wirelessTimer.Enabled = true;
-			this.wirelessTimer.Interval = 10000;
+			this.wirelessTimer.Interval = 20000;
 			this.wirelessTimer.Tick += new System.EventHandler(this.wirelessTimer_Tick);
 			// 
-			// mnuExit
+			// txtServer
 			// 
-			this.mnuExit.Text = "Exit";
-			this.mnuExit.Click += new System.EventHandler(this.mnuExit_Click);
+			this.txtServer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtServer.Location = new System.Drawing.Point(3, 54);
+			this.txtServer.Name = "txtServer";
+			this.txtServer.Size = new System.Drawing.Size(234, 21);
+			this.txtServer.TabIndex = 6;
+			this.txtServer.TextChanged += new System.EventHandler(this.txtServer_TextChanged);
+			// 
+			// mnuWSTest
+			// 
+			this.mnuWSTest.Text = "WS Test";
+			this.mnuWSTest.Click += new System.EventHandler(this.mnuWSTest_Click);
 			// 
 			// MainForm
 			// 
@@ -120,12 +143,12 @@ namespace CFRecorder
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
 			this.AutoScroll = true;
 			this.ClientSize = new System.Drawing.Size(240, 268);
+			this.Controls.Add(this.txtServer);
 			this.Controls.Add(this.lblWireless);
 			this.Controls.Add(this.cmdSelectFolder);
 			this.Controls.Add(this.txtFolder);
 			this.Controls.Add(this.txtSensorName);
 			this.Controls.Add(this.txtLog);
-			this.Controls.Add(this.cmdRecordNow);
 			this.Menu = this.mnuMain;
 			this.Name = "MainForm";
 			this.Text = "QUT Sensor Recorder";
@@ -136,7 +159,6 @@ namespace CFRecorder
 		#endregion
 
 		private System.Windows.Forms.Timer timer;
-		private System.Windows.Forms.Button cmdRecordNow;
 		private System.Windows.Forms.TextBox txtLog;
 		private System.Windows.Forms.TextBox txtSensorName;
 		private System.Windows.Forms.TextBox txtFolder;
@@ -144,6 +166,9 @@ namespace CFRecorder
 		private System.Windows.Forms.Label lblWireless;
 		private System.Windows.Forms.Timer wirelessTimer;
 		private System.Windows.Forms.MenuItem mnuExit;
+		private System.Windows.Forms.MenuItem mnuRecordNow;
+		private System.Windows.Forms.TextBox txtServer;
+		private System.Windows.Forms.MenuItem mnuWSTest;
 	}
 }
 

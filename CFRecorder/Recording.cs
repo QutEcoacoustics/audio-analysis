@@ -9,7 +9,6 @@ namespace CFRecorder
 	public class Recording
 	{
 		Timer timer;
-		Stream stream;
 		WaveIn waveIn;
 
 		public Recording(string target)
@@ -23,6 +22,12 @@ namespace CFRecorder
 		{
 			get { return target; }
 			set { target = value; }
+		}
+
+		private DateTime startTime;
+		public DateTime StartTime
+		{
+			get { return startTime; }
 		}
 		#endregion
 
@@ -40,7 +45,7 @@ namespace CFRecorder
 			waveIn = new WaveIn();
 			waveIn.Preload(duration * 1000, 2 * 1024 * 1024);
 			waveIn.Start();
-
+			startTime = DateTime.Now;
 			timer = new Timer(new TimerCallback(timer_Tick), null, duration * 1000, Timeout.Infinite);
 		}
 
