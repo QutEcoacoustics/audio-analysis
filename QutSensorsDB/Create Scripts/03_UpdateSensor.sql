@@ -9,7 +9,10 @@ CREATE Procedure UpdateSensor(@sensorID uniqueidentifier, @name nvarchar(16), @f
 
 --RETURNS: Scalar(Guid)
 
-IF @sensorID IS NULL
+DECLARE @idLookup uniqueidentifier
+SELECT @idLookup = SensorID FROM Sensors WHERE SensorID = @sensorID
+
+IF @sensorID IS NULL OR @idLookup IS NULL
 BEGIN
 	SET @sensorID = NEWID()
 	
