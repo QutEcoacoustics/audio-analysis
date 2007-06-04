@@ -32,6 +32,7 @@ namespace CFRecorder
 			this.mnuMain = new System.Windows.Forms.MainMenu();
 			this.mnuExit = new System.Windows.Forms.MenuItem();
 			this.mnuRecordNow = new System.Windows.Forms.MenuItem();
+			this.mnuWSTest = new System.Windows.Forms.MenuItem();
 			this.timer = new System.Windows.Forms.Timer();
 			this.txtLog = new System.Windows.Forms.TextBox();
 			this.txtSensorName = new System.Windows.Forms.TextBox();
@@ -40,7 +41,6 @@ namespace CFRecorder
 			this.lblWireless = new System.Windows.Forms.Label();
 			this.wirelessTimer = new System.Windows.Forms.Timer();
 			this.txtServer = new System.Windows.Forms.TextBox();
-			this.mnuWSTest = new System.Windows.Forms.MenuItem();
 			this.SuspendLayout();
 			// 
 			// mnuMain
@@ -59,6 +59,11 @@ namespace CFRecorder
 			this.mnuRecordNow.Text = "Record Now";
 			this.mnuRecordNow.Click += new System.EventHandler(this.mnuRecordNow_Click);
 			// 
+			// mnuWSTest
+			// 
+			this.mnuWSTest.Text = "WS Test";
+			this.mnuWSTest.Click += new System.EventHandler(this.mnuWSTest_Click);
+			// 
 			// timer
 			// 
 			this.timer.Enabled = true;
@@ -73,6 +78,7 @@ namespace CFRecorder
 			this.txtLog.Location = new System.Drawing.Point(3, 108);
 			this.txtLog.Multiline = true;
 			this.txtLog.Name = "txtLog";
+			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
 			this.txtLog.Size = new System.Drawing.Size(237, 157);
 			this.txtLog.TabIndex = 2;
 			// 
@@ -131,11 +137,6 @@ namespace CFRecorder
 			this.txtServer.Size = new System.Drawing.Size(234, 21);
 			this.txtServer.TabIndex = 6;
 			this.txtServer.TextChanged += new System.EventHandler(this.txtServer_TextChanged);
-			// 
-			// mnuWSTest
-			// 
-			this.mnuWSTest.Text = "WS Test";
-			this.mnuWSTest.Click += new System.EventHandler(this.mnuWSTest_Click);
 			// 
 			// MainForm
 			// 

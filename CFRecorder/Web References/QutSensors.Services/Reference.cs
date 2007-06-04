@@ -33,17 +33,17 @@ namespace CFRecorder.QutSensors.Services {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddPhotoReading", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void AddPhotoReading(System.Guid sensorID, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
+        public void AddPhotoReading(string sensorGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
             this.Invoke("AddPhotoReading", new object[] {
-                        sensorID,
+                        sensorGuid,
                         time,
                         buffer});
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginAddPhotoReading(System.Guid sensorID, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginAddPhotoReading(string sensorGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("AddPhotoReading", new object[] {
-                        sensorID,
+                        sensorGuid,
                         time,
                         buffer}, callback, asyncState);
         }
@@ -55,17 +55,17 @@ namespace CFRecorder.QutSensors.Services {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddAudioReading", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void AddAudioReading(System.Guid sensorID, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
+        public void AddAudioReading(string sensorGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
             this.Invoke("AddAudioReading", new object[] {
-                        sensorID,
+                        sensorGuid,
                         time,
                         buffer});
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginAddAudioReading(System.Guid sensorID, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginAddAudioReading(string sensorGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("AddAudioReading", new object[] {
-                        sensorID,
+                        sensorGuid,
                         time,
                         buffer}, callback, asyncState);
         }

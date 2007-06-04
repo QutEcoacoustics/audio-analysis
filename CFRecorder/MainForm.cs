@@ -107,7 +107,10 @@ namespace CFRecorder
 				using (FileStream input = File.OpenRead(recording.Target))
 					input.Read(buffer, 0, (int)file.Length);
 
-				service.AddAudioReading(Settings.Current.SensorID, recording.StartTime, buffer);
+				service.AddAudioReading(Settings.Current.SensorID.ToString(), recording.StartTime, buffer);
+
+				txtLog.Text = string.Format("Upload complete.\r\n") + txtLog.Text;
+				txtLog.Update();
 			}
 			catch (Exception e)
 			{
@@ -214,8 +217,8 @@ namespace CFRecorder
 
 			foreach (Adapter adapter in adapters)
 			{
-				txtLog.Text = string.Format("Attempting wireless on {0} ({1})\r\n", adapter.AssociatedAccessPoint, adapter.SignalStrengthInDecibels) + txtLog.Text;
-				txtLog.Update();
+				/*txtLog.Text = string.Format("Attempting wireless on {0} ({1})\r\n", adapter.AssociatedAccessPoint, adapter.SignalStrengthInDecibels) + txtLog.Text;
+				txtLog.Update();*/
 
 				// Trys to connect every wireless adapter to the network... Probably not the best option, but sufficient
 				EAPParameters eapParams = new EAPParameters();
