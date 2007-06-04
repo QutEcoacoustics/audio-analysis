@@ -14,7 +14,7 @@ SELECT @idLookup = SensorID FROM Sensors WHERE SensorID = @sensorID
 
 IF @sensorID IS NULL OR @idLookup IS NULL
 BEGIN
-	SET @sensorID = NEWID()
+	IF @sensorID IS NULL SET @sensorID = NEWID()
 	
 	INSERT INTO Sensors(SensorID, [Name], FriendlyName, Description)
 	SELECT @sensorID, @name, @friendlyName, @description
@@ -33,6 +33,5 @@ GO
 /*
 GRANT EXEC ON Stored_Procedure_Name TO PUBLIC
 
-GO
 */
 

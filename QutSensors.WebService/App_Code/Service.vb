@@ -12,8 +12,20 @@ Imports QutSensors
 Public Class Service
 	Inherits System.Web.Services.WebService
 
+	Private Sub EnsureSensorExists(ByVal sensorID As Guid)
+		Dim mySensor As Sensor
+		mySensor = Sensor.GetSensor(sensorID)
+		If mySensor Is Nothing Then
+			mySensor = New Sensor(sensorID)
+			mySensor.Save()
+		End If
+	End Sub
+
 	<WebMethod()> _
-	Public Sub AddPhotoReading(ByVal sensorID As Guid, ByVal time As Date, ByVal buffer As Byte())
+	Public Sub AddPhotoReading(ByVal sensorGuid As String, ByVal time As Date, ByVal buffer As Byte())
+		Dim sensorID As New Guid(sensorGuid)
+		EnsureSensorExists(sensorID)
+
 		Dim reading As New QutSensors.PhotoReading(sensorID)
 		reading.Time = time
 		reading.Save()
@@ -21,7 +33,10 @@ Public Class Service
 	End Sub
 
 	<WebMethod()> _
-	Public Sub AddAudioReading(ByVal sensorID As Guid, ByVal time As Date, ByVal buffer As Byte())
+	Public Sub AddAudioReading(ByVal sensorGuid As String, ByVal time As Date, ByVal buffer As Byte())
+		Dim sensorID As New Guid(sensorGuid)
+		EnsureSensorExists(sensorID)
+
 		Dim reading As New QutSensors.AudioReading(sensorID)
 		reading.Time = time
 		reading.Save()
