@@ -4,6 +4,23 @@ Imports System.ServiceProcess
 Partial Class DatabaseSync
     Inherits ServiceBase
 
+	' The main entry point for the process
+    <MTAThread()> _
+    <System.Diagnostics.DebuggerNonUserCode()> _
+    Shared Sub Main()
+        Dim ServicesToRun() As System.ServiceProcess.ServiceBase
+
+        ' More than one NT Service may run within the same process. To add
+        ' another service to this process, change the following line to
+        ' create a second service object. For example,
+        '
+        '   ServicesToRun = New System.ServiceProcess.ServiceBase () {New Service1, New MySecondUserService}
+        '
+        ServicesToRun = New System.ServiceProcess.ServiceBase() {New DatabaseSync}
+
+        System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+    End Sub
+
     'UserService overrides dispose to clean up the component list.
     <System.Diagnostics.DebuggerNonUserCode()> _
     Protected Overrides Sub Dispose(ByVal disposing As Boolean)
