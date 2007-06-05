@@ -22,22 +22,34 @@ Public Class Service
 	End Sub
 
 	<WebMethod()> _
-	Public Sub AddPhotoReading(ByVal sensorGuid As String, ByVal time As Date, ByVal buffer As Byte())
+	Public Sub AddPhotoReading(ByVal sensorGuid As String, ByVal readingGuid As String, ByVal time As Date, ByVal buffer As Byte())
 		Dim sensorID As New Guid(sensorGuid)
 		EnsureSensorExists(sensorID)
 
-		Dim reading As New QutSensors.PhotoReading(sensorID)
+		Dim reading As PhotoReading
+		If readingGuid Is Nothing Then
+			reading = New PhotoReading(sensorID)
+		Else
+			reading = New PhotoReading(sensorID, New Guid(readingGuid))
+		End If
+
 		reading.Time = time
 		reading.Save()
 		reading.UpdateData(buffer)
 	End Sub
 
 	<WebMethod()> _
-	Public Sub AddAudioReading(ByVal sensorGuid As String, ByVal time As Date, ByVal buffer As Byte())
+	Public Sub AddAudioReading(ByVal sensorGuid As String, ByVal readingGuid As String, ByVal time As Date, ByVal buffer As Byte())
 		Dim sensorID As New Guid(sensorGuid)
 		EnsureSensorExists(sensorID)
 
-		Dim reading As New QutSensors.AudioReading(sensorID)
+		Dim reading As AudioReading
+		If readingGuid Is Nothing Then
+			reading = New AudioReading(sensorID)
+		Else
+			reading = New AudioReading(sensorID, New Guid(readingGuid))
+		End If
+
 		reading.Time = time
 		reading.Save()
 		reading.UpdateData(buffer)

@@ -3,6 +3,7 @@ Begin DataProject = "QutSensorsDB"
    MSDTVersion = "80"
    DefDBRef = "fit10013030\sqlexpress.QutSensors.dbo"
    Begin Folder = "Change Scripts"
+      Script = "UploadedBitForReadings.sql"
    End
    Begin Folder = "Create Scripts"
       Script = "01_Sensors.sql"

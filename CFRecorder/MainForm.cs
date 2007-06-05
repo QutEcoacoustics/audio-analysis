@@ -107,7 +107,7 @@ namespace CFRecorder
 				using (FileStream input = File.OpenRead(recording.Target))
 					input.Read(buffer, 0, (int)file.Length);
 
-				service.AddAudioReading(Settings.Current.SensorID.ToString(), recording.StartTime, buffer);
+				service.AddAudioReading(Settings.Current.SensorID.ToString(), null, recording.StartTime, buffer);
 
 				txtLog.Text = string.Format("Upload complete.\r\n") + txtLog.Text;
 				txtLog.Update();
