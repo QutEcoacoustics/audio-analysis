@@ -7,7 +7,7 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{965B663B-76E3-45D9-A062-1A4401EE4CA5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <StartupObject>DatabaseSync</StartupObject>
+    <StartupObject>QUTSamfordUploader.DatabaseSync</StartupObject>
     <RootNamespace>QUTSamfordUploader</RootNamespace>
     <AssemblyName>QUTSamfordUploader</AssemblyName>
     <MyType>Console</MyType>
