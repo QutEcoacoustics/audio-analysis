@@ -6,8 +6,8 @@
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{965B663B-76E3-45D9-A062-1A4401EE4CA5}</ProjectGuid>
-    <OutputType>Exe</OutputType>
-    <StartupObject>QUTSamfordUploader.Module1</StartupObject>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>DatabaseSync</StartupObject>
     <RootNamespace>QUTSamfordUploader</RootNamespace>
     <AssemblyName>QUTSamfordUploader</AssemblyName>
     <MyType>Console</MyType>
@@ -32,9 +32,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.EnterpriseServices" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -47,7 +49,12 @@
     <Import Include="System.Diagnostics" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Module1.vb" />
+    <Compile Include="DatabaseSync.Designer.vb">
+      <DependentUpon>DatabaseSync.vb</DependentUpon>
+    </Compile>
+    <Compile Include="DatabaseSync.vb">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="My Project\AssemblyInfo.vb" />
     <Compile Include="My Project\Application.Designer.vb">
       <AutoGen>True</AutoGen>
@@ -63,18 +70,32 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Web References\localhost\Reference.vb">
+    <Compile Include="ProjectInstaller.Designer.vb">
+      <DependentUpon>ProjectInstaller.vb</DependentUpon>
+    </Compile>
+    <Compile Include="ProjectInstaller.vb">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Web References\QutSensors.Services\Reference.vb">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="DatabaseSync.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>DatabaseSync.vb</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="My Project\Resources.resx">
       <Generator>VbMyResourcesResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.vb</LastGenOutput>
       <CustomToolNamespace>My.Resources</CustomToolNamespace>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ProjectInstaller.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>ProjectInstaller.vb</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -92,10 +113,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx">
+    <WebReferenceUrl Include="http://localhost:4761/QutSensors.WebService/Service.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
-      <RelPath>Web References\localhost\</RelPath>
-      <UpdateFromURL>http://www.mquter.qut.edu.au/qutsensor/ws/service.asmx</UpdateFromURL>
+      <RelPath>Web References\QutSensors.Services\</RelPath>
+      <UpdateFromURL>http://localhost:4761/QutSensors.WebService/Service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -106,18 +127,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Web References\localhost\getAudioreadingResponseGetAudioreadingResult.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\localhost\getPhotoreadingResponseGetPhotoreadingResult.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\localhost\Reference.map">
+    <None Include="Web References\QutSensors.Services\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
     </None>
-    <None Include="Web References\localhost\service.disco" />
-    <None Include="Web References\localhost\service.wsdl" />
+    <None Include="Web References\QutSensors.Services\Sensor1.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\QutSensors.Services\service.disco" />
+    <None Include="Web References\QutSensors.Services\service.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
