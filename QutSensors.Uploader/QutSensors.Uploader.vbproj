@@ -7,9 +7,9 @@
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{965B663B-76E3-45D9-A062-1A4401EE4CA5}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <StartupObject>QUTSamfordUploader.DatabaseSync</StartupObject>
-    <RootNamespace>QUTSamfordUploader</RootNamespace>
-    <AssemblyName>QUTSamfordUploader</AssemblyName>
+    <StartupObject>QutSensors.Uploader.DatabaseSync</StartupObject>
+    <RootNamespace>QutSensors.Uploader</RootNamespace>
+    <AssemblyName>QutSensors.Uploader</AssemblyName>
     <MyType>Console</MyType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -18,7 +18,7 @@
     <DefineDebug>true</DefineDebug>
     <DefineTrace>true</DefineTrace>
     <OutputPath>bin\Debug\</OutputPath>
-    <DocumentationFile>QUTSamfordUploader.xml</DocumentationFile>
+    <DocumentationFile>QutSensors.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
@@ -27,7 +27,7 @@
     <DefineTrace>true</DefineTrace>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DocumentationFile>QUTSamfordUploader.xml</DocumentationFile>
+    <DocumentationFile>QutSensors.xml</DocumentationFile>
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
@@ -131,7 +131,7 @@
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.vb</LastGenOutput>
     </None>
-    <None Include="Web References\QutSensors.Services\Sensor1.datasource">
+    <None Include="Web References\QutSensors.Services\Sensor.datasource">
       <DependentUpon>Reference.map</DependentUpon>
     </None>
     <None Include="Web References\QutSensors.Services\service.disco" />

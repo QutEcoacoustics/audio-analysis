@@ -63,6 +63,15 @@ Namespace My
                 Return CType(Me("QUTSamfordUploader_localhost_Service"),String)
             End Get
         End Property
+        
+        <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
+         Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
+         Global.System.Configuration.DefaultSettingValueAttribute("5000")>  _
+        Public ReadOnly Property SyncRate() As Integer
+            Get
+                Return CType(Me("SyncRate"),Integer)
+            End Get
+        End Property
     End Class
 End Namespace
 
@@ -74,9 +83,9 @@ Namespace My
     Friend Module MySettingsProperty
         
         <Global.System.ComponentModel.Design.HelpKeywordAttribute("My.Settings")>  _
-        Friend ReadOnly Property Settings() As Global.QUTSamfordUploader.My.MySettings
+        Friend ReadOnly Property Settings() As Global.QutSensors.Uploader.My.MySettings
             Get
-                Return Global.QUTSamfordUploader.My.MySettings.Default
+                Return Global.QutSensors.Uploader.My.MySettings.Default
             End Get
         End Property
     End Module
