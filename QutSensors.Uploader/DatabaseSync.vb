@@ -9,14 +9,14 @@ Public Class DatabaseSync
 	<MTAThread()> _
 	<System.Diagnostics.DebuggerNonUserCode()> _
 	Shared Sub Main(ByVal args() As String)
-		If args.Length > 0 And args(0).ToLower() = "debug" Then
-			DebugRun()
-		Else
-			Dim ServicesToRun() As System.ServiceProcess.ServiceBase
-			ServicesToRun = New System.ServiceProcess.ServiceBase() {New DatabaseSync}
+        If args.Length > 0 AndAlso args(0).ToLower() = "debug" Then
+            DebugRun()
+        Else
+            Dim ServicesToRun() As System.ServiceProcess.ServiceBase
+            ServicesToRun = New System.ServiceProcess.ServiceBase() {New DatabaseSync}
 
-			System.ServiceProcess.ServiceBase.Run(ServicesToRun)
-		End If
+            System.ServiceProcess.ServiceBase.Run(ServicesToRun)
+        End If
 	End Sub
 
 	Shared Sub DebugRun()
@@ -54,7 +54,7 @@ Public Class DatabaseSync
 	End Sub
 
 	Private Sub SyncSensors()
-		Dim service As New QutSensors.Services.Service
+        Dim service As New QutSensors.Services.Service
 
 		For Each _sensor As Sensor In Sensor.GetAllSensors()
 			Console.WriteLine("Synchronising sensor: {0} ({1})", _sensor.Name, _sensor.ID)
