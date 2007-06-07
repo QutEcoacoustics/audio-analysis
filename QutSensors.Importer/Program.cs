@@ -15,7 +15,7 @@ namespace QutSensors.Importer
 			if (args.Length > 0)
 			{
 				switch (args[0].ToLower())
-				{
+				{                        
 					case "debug":
 						Importer importer = new Importer();
 						importer.DebugStart();

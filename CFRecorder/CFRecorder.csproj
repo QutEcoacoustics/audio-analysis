@@ -17,6 +17,8 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
+    <StartupObject>
+    </StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -99,10 +101,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://localhost:4761/QutSensors.WebService/Service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx">
       <UrlBehavior>Static</UrlBehavior>
       <RelPath>Web References\QutSensors.Services\</RelPath>
-      <UpdateFromURL>http://localhost:4761/QutSensors.WebService/Service.asmx</UpdateFromURL>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -125,6 +127,12 @@
       <DependentUpon>Reference.map</DependentUpon>
     </None>
     <None Include="Web References\QutSensors.Services\Service.disco" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\QutSensors.PDA\QutSensors.PDA.vbproj">
+      <Project>{39AA47D8-B2AB-4C7B-95D3-01D41BC2F29D}</Project>
+      <Name>QutSensors.PDA</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
