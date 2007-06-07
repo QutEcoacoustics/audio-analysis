@@ -11,6 +11,7 @@ using System.Net.Sockets;
 using System.Net;
 using OpenNETCF.Net;
 using CFRecorder.QutSensors.Services;
+using QutSensors; 
 
 namespace CFRecorder
 {
@@ -259,5 +260,16 @@ namespace CFRecorder
 				txtLog.Text = string.Format("Error: {0}\r\n{1}", response.StatusDescription, txtLog.Text);
 			}
 		}
+
+        private void menuItem2_Click(object sender, EventArgs e)
+        {
+            PDA.PowerOffScreen();
+           
+        }
+
+        private void menuItem3_Click(object sender, EventArgs e)
+        {
+            PDA.SoftReset();
+        }
 	}
 }
