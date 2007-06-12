@@ -129,12 +129,6 @@
     </None>
     <None Include="Web References\QutSensors.Services\Service.disco" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\QutSensors.PDA\QutSensors.PDA.vbproj">
-      <Project>{39AA47D8-B2AB-4C7B-95D3-01D41BC2F29D}</Project>
-      <Name>QutSensors.PDA</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
   <ProjectExtensions>
