@@ -70,6 +70,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="PDA.cs" />
     <Compile Include="WAV\Memory.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -101,10 +102,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx">
+    <WebReferenceUrl Include="http://winknode10/QutSensors.Webservice/service.asmx">
       <UrlBehavior>Static</UrlBehavior>
       <RelPath>Web References\QutSensors.Services\</RelPath>
-      <UpdateFromURL>http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx</UpdateFromURL>
+      <UpdateFromURL>http://winknode10/QutSensors.Webservice/service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

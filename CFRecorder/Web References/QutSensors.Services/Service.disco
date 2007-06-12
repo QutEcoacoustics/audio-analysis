@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
-  <contractRef ref="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx?wsdl" docRef="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
-  <soap address="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx" xmlns:q1="http://mquter.qut.edu.au/sensors/" binding="q1:ServiceSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
-  <soap address="http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx" xmlns:q2="http://mquter.qut.edu.au/sensors/" binding="q2:ServiceSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <contractRef ref="http://winknode10/QutSensors.Webservice/service.asmx?wsdl" docRef="http://winknode10/QutSensors.Webservice/service.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://winknode10/QutSensors.Webservice/service.asmx" xmlns:q1="http://mquter.qut.edu.au/sensors/" binding="q1:ServiceSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://winknode10/QutSensors.Webservice/service.asmx" xmlns:q2="http://mquter.qut.edu.au/sensors/" binding="q2:ServiceSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
 </discovery>

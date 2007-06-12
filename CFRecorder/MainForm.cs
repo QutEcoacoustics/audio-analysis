@@ -263,8 +263,7 @@ namespace CFRecorder
 
         private void menuItem2_Click(object sender, EventArgs e)
         {
-            PDA.PowerOffScreen();
-           
+            PDA.PowerOffScreen();           
         }
 
         private void menuItem3_Click(object sender, EventArgs e)
