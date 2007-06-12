@@ -28,7 +28,7 @@ namespace CFRecorder.QutSensors.Services {
         
         /// <remarks/>
         public Service() {
-            this.Url = "http://www.mquter.qut.edu.au/Sensor/SensorInterface/Service.asmx";
+            this.Url = "http://winknode10/QutSensors.Webservice/service.asmx";
         }
         
         /// <remarks/>
