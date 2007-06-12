@@ -11,7 +11,7 @@ using System.Net.Sockets;
 using System.Net;
 using OpenNETCF.Net;
 using CFRecorder.QutSensors.Services;
-using QutSensors; 
+using CFRecorder.QutSensors; 
 
 namespace CFRecorder
 {
@@ -112,6 +112,13 @@ namespace CFRecorder
 
 				txtLog.Text = string.Format("Upload complete.\r\n") + txtLog.Text;
 				txtLog.Update();
+                
+                File.Delete(file.FullName); // To delete the audio recording once the file is uploaded.
+                
+                //TODO: Housekeeping starts here
+                //1. If connection to server fail, keep a list of file that needs to be uploaded
+                //2. Check for available diskspace.
+                
 			}
 			catch (Exception e)
 			{
@@ -250,8 +257,7 @@ namespace CFRecorder
 			try
 			{
 				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
-				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);
-
+				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);                
 				Sensor sensor = service.FindSensor("QUT01");
 			}
 			catch (WebException ex)
@@ -269,6 +275,11 @@ namespace CFRecorder
         private void menuItem3_Click(object sender, EventArgs e)
         {
             PDA.SoftReset();
+        }
+
+        private void menuItem4_Click(object sender, EventArgs e)
+        {
+            
         }
 	}
 }

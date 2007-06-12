@@ -33,6 +33,9 @@ namespace CFRecorder
             this.mnuExit = new System.Windows.Forms.MenuItem();
             this.mnuRecordNow = new System.Windows.Forms.MenuItem();
             this.mnuWSTest = new System.Windows.Forms.MenuItem();
+            this.menuItem1 = new System.Windows.Forms.MenuItem();
+            this.menuItem2 = new System.Windows.Forms.MenuItem();
+            this.menuItem3 = new System.Windows.Forms.MenuItem();
             this.timer = new System.Windows.Forms.Timer();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.txtSensorName = new System.Windows.Forms.TextBox();
@@ -41,9 +44,7 @@ namespace CFRecorder
             this.lblWireless = new System.Windows.Forms.Label();
             this.wirelessTimer = new System.Windows.Forms.Timer();
             this.txtServer = new System.Windows.Forms.TextBox();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
-            this.menuItem3 = new System.Windows.Forms.MenuItem();
+            this.menuItem4 = new System.Windows.Forms.MenuItem();
             this.SuspendLayout();
             // 
             // mnuMain
@@ -67,6 +68,23 @@ namespace CFRecorder
             // 
             this.mnuWSTest.Text = "WS Test";
             this.mnuWSTest.Click += new System.EventHandler(this.mnuWSTest_Click);
+            // 
+            // menuItem1
+            // 
+            this.menuItem1.MenuItems.Add(this.menuItem2);
+            this.menuItem1.MenuItems.Add(this.menuItem3);
+            this.menuItem1.MenuItems.Add(this.menuItem4);
+            this.menuItem1.Text = "PDA";
+            // 
+            // menuItem2
+            // 
+            this.menuItem2.Text = "Switch off Screen";
+            this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
+            // 
+            // menuItem3
+            // 
+            this.menuItem3.Text = "Restart";
+            this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
             // 
             // timer
             // 
@@ -142,21 +160,10 @@ namespace CFRecorder
             this.txtServer.TabIndex = 6;
             this.txtServer.TextChanged += new System.EventHandler(this.txtServer_TextChanged);
             // 
-            // menuItem1
+            // menuItem4
             // 
-            this.menuItem1.MenuItems.Add(this.menuItem2);
-            this.menuItem1.MenuItems.Add(this.menuItem3);
-            this.menuItem1.Text = "PDA";
-            // 
-            // menuItem2
-            // 
-            this.menuItem2.Text = "Switch off Screen";
-            this.menuItem2.Click += new System.EventHandler(this.menuItem2_Click);
-            // 
-            // menuItem3
-            // 
-            this.menuItem3.Text = "Restart";
-            this.menuItem3.Click += new System.EventHandler(this.menuItem3_Click);
+            this.menuItem4.Text = "Check Available Diskspace";
+            this.menuItem4.Click += new System.EventHandler(this.menuItem4_Click);
             // 
             // MainForm
             // 
@@ -193,6 +200,7 @@ namespace CFRecorder
         private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.MenuItem menuItem2;
         private System.Windows.Forms.MenuItem menuItem3;
+        private System.Windows.Forms.MenuItem menuItem4;
 	}
 }
 
