@@ -9,9 +9,12 @@ CREATE Procedure UpdatePhotoReading(@readingID uniqueidentifier, @sensorID uniqu
 
 --RETURNS: Scalar(Guid)
 
-IF @readingID IS NULL
+DECLARE @idLookup uniqueidentifier
+SELECT @idLookup = PhotoReadingID FROM PhotoReadings WHERE PhotoReadingID = @readingID
+
+IF @readingID IS NULL OR @idLookup IS NULL
 BEGIN
-	SET @readingID = NEWID()
+	IF @readingID IS NULL SET @readingID = NEWID()
 	
 	INSERT INTO PhotoReadings(PhotoReadingID, SensorID, [Time])
 	SELECT @readingID, @sensorID, @time
@@ -29,6 +32,5 @@ GO
 /*
 GRANT EXEC ON Stored_Procedure_Name TO PUBLIC
 
-GO
 */
 

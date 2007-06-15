@@ -97,16 +97,26 @@ Public Class Service
 	'	Return dt
 	'End Function
 
-	<WebMethod()> _
-	Public Sub AddSensor(ByVal sensorID As Guid, ByVal name As String)
-		Dim sensor As New Sensor(sensorID, name)
-		sensor.Save()
-	End Sub
+	'<WebMethod()> _
+	'Public Sub AddSensor(ByVal sensorID As Guid, ByVal name As String)
+	'	Dim sensor As New Sensor(sensorID, name)
+	'	sensor.Save()
+	'End Sub
 
 	<WebMethod()> _
-	Public Function FindSensor(ByVal name As String) As Sensor
-		Return Sensor.GetSensor(name)
+	Public Function FindSensor(ByVal sensorGUID As String) As Sensor
+		Return Sensor.GetSensor(New Guid(sensorGUID))
 	End Function
+
+	<WebMethod()> _
+	Public Sub UpdateSensor(ByVal sensorGUID As String, ByVal name As String, ByVal friendlyName As String, ByVal description As String)
+		Dim _sensor As Sensor
+		_sensor = Sensor.GetSensor(New Guid(sensorGUID))
+		_sensor.Name = name
+		_sensor.FriendlyName = friendlyName
+		_sensor.Description = Description
+		_sensor.Save()
+	End Sub
 
 	'<WebMethod()> _
 	'Public Function ListAllPhotos() As List(Of PhotoReading)

@@ -18,6 +18,5 @@ GO
 /*
 GRANT EXEC ON Stored_Procedure_Name TO PUBLIC
 
-GO
 */
 

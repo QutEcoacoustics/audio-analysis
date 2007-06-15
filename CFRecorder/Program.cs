@@ -10,9 +10,25 @@ namespace CFRecorder
         /// The main entry point for the application.
         /// </summary>
         [MTAThread]
-        static void Main()
+        static void Main(string[] args)
         {
-            Application.Run(new MainForm());
+			if (args.Length > 0 && args[0] == "AppRunAtTime")
+			{
+				try
+				{
+					MainForm.QueueNextReading();
+					MainForm.TakeReading();
+				}
+				catch (Exception e)
+				{
+					MainForm.Log("Error taking periodic reading: {0}", e);
+				}
+			}
+			else
+			{
+				MainForm.ClearQueuedReading();
+				Application.Run(new MainForm());
+			}
         }
     }
 }
