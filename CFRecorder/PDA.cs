@@ -1,12 +1,15 @@
+using System.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
+using OpenNETCF;
+using OpenNETCF.IO;
 
-namespace CFRecorder
+namespace PDA
 {
 
-    class PDA
+    public partial class Video
     {
         #region Declaration
         const int SETPOWERMANAGEMENT = 6147;
@@ -16,12 +19,7 @@ namespace CFRecorder
 
         [DllImport("coredll.dll")]
         static extern IntPtr GetDC(IntPtr hwnd);
-
-        [DllImport("Coredll.dll")]
-        private static extern int KernelIoControl(int dwIoControlCode, IntPtr lpInBuf, int nInBufSize, IntPtr lpOutBuf, int nOutBufSize, ref int lpBytesReturned);
-
-                
-
+              
         private enum VideoPowerState : int
         {
 
@@ -34,16 +32,7 @@ namespace CFRecorder
             VideoPowerOff,
         }
 
-        private const int FILE_DEVICE_HAL = 257;
-
-        private const int METHOD_BUFFERED = 0;
-
-        private const int FILE_ANY_ACCESS = 0;
-               
-        static int CTL_CODE(int DeviceType, int Func, int Method, int Access)
-        {
-            return (DeviceType << 16) | (Access << 14) | (Func << 2) | Method;
-        }    
+       
 #endregion
 
         public static void PowerOffScreen()
@@ -59,6 +48,23 @@ namespace CFRecorder
             byte[] vpm = {12, 0, 0, 0, 1, 0, 0, 0, (byte)VideoPowerState.VideoPowerOn, 0, 0, 0, 0};
             ExtEscapeSet(hdc, SETPOWERMANAGEMENT, 12, vpm, 0, IntPtr.Zero);
         }
+    }
+
+    public partial class Hardware
+    {
+        private const int FILE_DEVICE_HAL = 257;
+
+        private const int METHOD_BUFFERED = 0;
+
+        private const int FILE_ANY_ACCESS = 0;
+
+        static int CTL_CODE(int DeviceType, int Func, int Method, int Access)
+        {
+            return (DeviceType << 16) | (Access << 14) | (Func << 2) | Method;
+        }
+
+        [DllImport("Coredll.dll")]
+        private static extern int KernelIoControl(int dwIoControlCode, IntPtr lpInBuf, int nInBufSize, IntPtr lpOutBuf, int nOutBufSize, ref int lpBytesReturned);
 
         public static int SoftReset()
         {
@@ -67,9 +73,144 @@ namespace CFRecorder
             return KernelIoControl(IOCTL_HAL_REBOOT, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReturned);
         }
 
+        public class SYSTEM_POWER_STATUS_EX
+        {
+            public byte ACLineStatus;
+            public byte BatteryFlag;
+            public byte BatteryLifePercent;
+            public byte Reserved1;
+            public uint BatteryLifeTime;
+            public uint BatteryFullLifeTime;
+            public byte Reserved2;
+            public byte BackupBatteryFlag;
+            public byte BackupBatteryLifePercent;
+            public byte Reserved3;
+            public uint BackupBatteryLifeTime;
+            public uint BackupBatteryFullLifeTime;
+        }
+
+        [DllImport("Coredll")]
+        private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus,
+            bool fUpdate);
+
+        public static byte GetBatteryLeftPercentage()
+        {
+            SYSTEM_POWER_STATUS_EX powerStatus = new SYSTEM_POWER_STATUS_EX();
+            GetSystemPowerStatusEx(powerStatus, true);
+            return powerStatus.BatteryLifePercent;
+        }
+
+
+        public enum DevicePowerState : int
+        {
+
+            Unspecified = -1,
+
+            D0 = 0, // Full On: full power, full functionality
+            D1, // Low Power On: fully functional at low power/performance
+            D2, // Standby: partially powered with automatic wake
+            D3, // Sleep: partially powered with device initiated wake
+            D4, // Off: unpowered
+        }
+
+        [DllImport("coredll.dll", SetLastError = true)]
+        private static extern int SetDevicePower(
+        string pvDevice,
+        int dwDeviceFlags,
+        DevicePowerState DeviceState);
+
+        private const int POWER_NAME = 0x00000001;
+
+        public static void TurnOffBackLight()
+        {
+            SetDevicePower("BKL1:", POWER_NAME, DevicePowerState.D4);
+        }
+
+        private struct MEMORY_STATUS
+        {
+            public UInt32 dwLength;
+            public UInt32 dwMemoryLoad;
+            public UInt32 dwTotalPhys;
+            public int dwAvailPhys;
+            public UInt32 dwTotalPageFile;
+            public UInt32 dwAvailPageFile;
+            public UInt32 dwTotalVirtual;
+            public UInt32 dwAvailVirtual;
+        }
+
+        [DllImport("coredll.dll", SetLastError = true)]
+        private static extern void GlobalMemoryStatus(ref MEMORY_STATUS ms);
+
+        public static string GetAvailablePhysicalMemory()
+        {
+            MEMORY_STATUS ms = new MEMORY_STATUS();
+            try
+            {
+                GlobalMemoryStatus(ref ms);
+                double avail = (double)ms.dwAvailPhys / 1048.576;
+                string sAvail = string.Format("{0:###,##}", avail);
+                return sAvail;
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+                //return null;
+            }
+        }
+
+    }
+    
+    public partial class Utility
+    {
         public static void logError()
         {
             // TODO: Create a webservice in server to keep warning and error from the sensor.
+        }      
+
+        public static double BytesToMegabytes(double Bytes)
+        {
+            // This function is to convert remaining diskspace in bytes to megabytes
+
+            double dblAns;
+            dblAns = (Bytes / 1024) / 1024;
+            return dblAns;
+
+        }
+
+        public static void StartHouseKeeping()
+        {
+            //TODO: Check for remaining diskspace
+            OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");
+            if (BytesToMegabytes(DI.AvailableFreeSpace) < CFRecorder.Settings.Current.reservedDiskSpace)
+            {
+                   //TODO: Add a warning row here
+            }
+            throw new Exception("The method or operation is not implemented.");
+        }
+       
+        }
+
+    partial class uploadFailure : DataTable
+    {
+        public uploadFailure()
+        {
+            this.TableName = "uploadFailure";
+            DataColumn ID = new DataColumn();
+            ID.ColumnName = "ID";
+            ID.DataType = System.Type.GetType("System.Int32");
+            ID.AutoIncrement = true;
+            ID.AutoIncrementStep = 1;
+
+            DataColumn date = new DataColumn("Date", System.Type.GetType("System.DateTime"));
+            
+            DataColumn fileName = new DataColumn("Filename", System.Type.GetType("System.String"));
+
+            this.Columns.Add(ID);
+            this.Columns.Add(date);
+            this.Columns.Add(fileName);
         }
     }
+
+   
 }
+
