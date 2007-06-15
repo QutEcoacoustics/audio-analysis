@@ -69,6 +69,16 @@ namespace CFRecorder
 		}
 		#endregion
 
+        public double reservedDiskSpace
+        {
+            get { return 10.00; }
+        }
+
+        public string errorFile
+        {
+            get { return "error.xml"; }
+        }
+
 		private Guid GenerateID()
 		{
 			Guid retVal = Guid.NewGuid();

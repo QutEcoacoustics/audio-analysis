@@ -11,26 +11,51 @@ using System.Net.Sockets;
 using System.Net;
 using OpenNETCF.Net;
 using CFRecorder.QutSensors.Services;
-using CFRecorder.QutSensors; 
+using CFRecorder.QutSensors;
 
 namespace CFRecorder
 {
 	public partial class MainForm : Form
 	{
-		public MainForm()
-		{
-			InitializeComponent();
 
-			txtSensorName.Text = Settings.Current.SensorName;
-			txtFolder.Text = Settings.Current.SensorDataPath;
-			txtServer.Text = Settings.Current.Server;
+
+        PDA.uploadFailure uf = new PDA.uploadFailure();
+        
+        public MainForm()
+		{
+            //MessageBox.Show("Hello");
+            try
+            {
+                InitializeComponent();
+
+                txtSensorName.Text = Settings.Current.SensorName;
+                txtFolder.Text = Settings.Current.SensorDataPath;
+                txtServer.Text = Settings.Current.Server;
+            }
+            catch (Exception e)
+            {
+                MessageBox.Show(e.ToString());
+                throw;
+            }
+			
 		}
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+            if (File.Exists("error.xml"))
+            {
+                uf.ReadXml("error.xml");
+            }
+
+        }
 
 		#region Event Handlers
 		private void timer_Tick(object sender, EventArgs e)
 		{
 			TakeReading(Path.Combine(txtFolder.Text, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", txtSensorName.Text, DateTime.Now)));
 		}
+
+      
 
 		private void cmdSelectFolder_Click(object sender, EventArgs e)
 		{
@@ -92,9 +117,11 @@ namespace CFRecorder
 				Upload2(recording);
 			}
 		}
-
+        
 		void Upload2(Recording recording)
 		{
+            FileInfo file = new FileInfo(recording.Target);
+
 			try
 			{
 				txtLog.Text = string.Format("Commencing upload...\r\n") + txtLog.Text;
@@ -103,7 +130,6 @@ namespace CFRecorder
 				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
 				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);
 
-				FileInfo file = new FileInfo(recording.Target);
 				byte[] buffer = new byte[file.Length];
 				using (FileStream input = File.OpenRead(recording.Target))
 					input.Read(buffer, 0, (int)file.Length);
@@ -118,6 +144,8 @@ namespace CFRecorder
                 //TODO: Housekeeping starts here
                 //1. If connection to server fail, keep a list of file that needs to be uploaded
                 //2. Check for available diskspace.
+
+                PDA.Utility.StartHouseKeeping();
                 
 			}
 			catch (Exception e)
@@ -126,6 +154,14 @@ namespace CFRecorder
 				txtLog.Update();
 				// Upload failed...
 				// TODO: we should retry this again sometime when the network comes back.
+                
+                // TODO: Write to uploadfailed.xml                
+                DataRow dr;
+                dr = uf.NewRow();
+                dr[1] = DateTime.Now.ToLongDateString();
+                dr[2] = file.FullName;
+                uf.Rows.Add(dr);
+                uf.WriteXml("error.xml");
 			}
 		}
 
@@ -269,17 +305,34 @@ namespace CFRecorder
 
         private void menuItem2_Click(object sender, EventArgs e)
         {
-            PDA.PowerOffScreen();           
+            PDA.Video.PowerOffScreen();
         }
 
         private void menuItem3_Click(object sender, EventArgs e)
         {
-            PDA.SoftReset();
+            PDA.Hardware.SoftReset();
         }
 
         private void menuItem4_Click(object sender, EventArgs e)
         {
-            
+            OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");
+            MessageBox.Show(string.Format("{0:0.00} mb left", PDA.Utility.BytesToMegabytes(DI.AvailableFreeSpace)));            
         }
+
+        private void menuItem5_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(PDA.Hardware.GetBatteryLeftPercentage().ToString());
+        }
+
+        private void menuItem6_Click(object sender, EventArgs e)
+        {
+            PDA.Hardware.TurnOffBackLight();
+        }
+
+        private void menuItem7_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(PDA.Hardware.GetAvailablePhysicalMemory().ToString());
+        }
+        
 	}
 }
