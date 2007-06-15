@@ -43,10 +43,10 @@ namespace CFRecorder
 				throw new InvalidOperationException("Recording already started");
 
 			waveIn = new WaveIn();
-			waveIn.Preload(duration * 1000, 2 * 1024 * 1024);
+			waveIn.Preload(duration, 2 * 1024 * 1024);
 			waveIn.Start();
 			startTime = DateTime.Now;
-			timer = new Timer(new TimerCallback(timer_Tick), null, duration * 1000, Timeout.Infinite);
+			timer = new Timer(new TimerCallback(timer_Tick), null, duration, Timeout.Infinite);
 		}
 
 		void timer_Tick(object state)

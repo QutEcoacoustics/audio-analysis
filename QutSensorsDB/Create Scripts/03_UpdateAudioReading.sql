@@ -9,9 +9,12 @@ CREATE Procedure UpdateAudioReading(@readingID uniqueidentifier, @sensorID uniqu
 
 --RETURNS: Scalar(Guid)
 
-IF @readingID IS NULL
+DECLARE @idLookup uniqueidentifier
+SELECT @idLookup = AudioReadingID FROM AudioReadings WHERE AudioReadingID = @readingID
+
+IF @readingID IS NULL OR @idLookup IS NULL
 BEGIN
-	SET @readingID = NEWID()
+	IF @readingID IS NULL SET @readingID = NEWID()
 	
 	INSERT INTO AudioReadings(AudioReadingID, SensorID, [Time])
 	SELECT @readingID, @sensorID, @time

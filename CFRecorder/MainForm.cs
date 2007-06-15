@@ -12,6 +12,9 @@ using System.Net;
 using OpenNETCF.Net;
 using CFRecorder.QutSensors.Services;
 using CFRecorder.QutSensors;
+using System.Reflection;
+using System.Threading;
+//using QutSensors; 
 
 namespace CFRecorder
 {
@@ -88,11 +91,88 @@ namespace CFRecorder
 		}
 		#endregion
 
+		#region Statics
+		public static void Log(string format, params object[] args)
+		{
+			try
+			{
+				if (Settings.Current.EnableLogging)
+				{
+					using (StreamWriter writer = new StreamWriter("Log.txt", true))
+					{
+						writer.Write(DateTime.Now.ToString("g"));
+						writer.Write(": ");
+						writer.WriteLine(format, args);
+					}
+				}
+			}
+			catch { }
+		}
+
+		public static void QueueNextReading()
+		{
+			DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.Current.ReadingFrequency);
+			Log("Queueing next reading for {0}", nextRun);
+			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+		}
+
+		public static void ClearQueuedReading()
+		{
+			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, DateTime.MaxValue);
+		}
+
+		static ManualResetEvent staticRecordingComplete;
+		public static void TakeReading()
+		{
+			string path = Path.Combine(Settings.Current.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.Current.SensorName, DateTime.Now));
+			Log("Taking reading: {0}", path);
+			staticRecordingComplete = new ManualResetEvent(false);
+			Recording recording = new Recording(path);
+			recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
+			recording.RecordFor(Settings.Current.ReadingDuration);
+			staticRecordingComplete.WaitOne();
+		}
+
+		static void staticRecording_DoneRecording(object sender, EventArgs e)
+		{
+			Log("Reading complete");
+			Recording recording = (Recording)sender;
+			StaticUpload(recording);
+			staticRecordingComplete.Set();
+		}
+
+		// TODO: Remove duplication of upload code between static and instance versions
+		static void StaticUpload(Recording recording)
+		{
+			try
+			{
+				Log("Commencing upload");
+
+				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);
+
+				FileInfo file = new FileInfo(recording.Target);
+				byte[] buffer = new byte[file.Length];
+				using (FileStream input = File.OpenRead(recording.Target))
+					input.Read(buffer, 0, (int)file.Length);
+
+				service.AddAudioReading(Settings.Current.SensorID.ToString(), null, recording.StartTime, buffer);
+				Log("Upload complete");
+			}
+			catch (Exception e)
+			{
+				Log("Upload failed - storing for later upload.\r\n{0}", e);
+				// Upload failed...
+				// TODO: we should retry this again sometime when the network comes back.
+			}
+		}
+		#endregion
+
 		string currentRecording;
 		private void TakeReading(string path)
 		{
 			currentRecording = path;
-			Record(path, 10);
+			Record(path, 10000);
 		}
 
 		private void Record(string fileName, short duration)
@@ -248,33 +328,39 @@ namespace CFRecorder
 
 		private void wirelessTimer_Tick(object sender, EventArgs e)
 		{
-			List<Adapter> adapters = GetWirelessAdapters();
-			foreach (Adapter adapter in adapters)
+			try
 			{
-				// Check if already connected to an appropriate network
-				if (adapter.AssociatedAccessPoint == SSID)
+				List<Adapter> adapters = GetWirelessAdapters();
+				foreach (Adapter adapter in adapters)
 				{
-					UpdateWirelessLabel(adapters);
-					return;
+					// Check if already connected to an appropriate network
+					if (adapter.AssociatedAccessPoint == SSID)
+					{
+						UpdateWirelessLabel(adapters);
+						return;
+					}
 				}
-			}
 
-			foreach (Adapter adapter in adapters)
+				foreach (Adapter adapter in adapters)
+				{
+					/*txtLog.Text = string.Format("Attempting wireless on {0} ({1})\r\n", adapter.AssociatedAccessPoint, adapter.SignalStrengthInDecibels) + txtLog.Text;
+					txtLog.Update();*/
+
+					// Trys to connect every wireless adapter to the network... Probably not the best option, but sufficient
+					EAPParameters eapParams = new EAPParameters();
+					eapParams.EapFlags = EAPFlags.Disabled;
+					eapParams.EapType = EAPType.PEAP;
+					eapParams.Enable8021x = false;
+					adapter.SetWirelessSettingsAddEx(SSID, true, (byte[])null, 1, AuthenticationMode.Ndis802_11AuthModeOpen, WEPStatus.Ndis802_11EncryptionDisabled, eapParams);
+					//adapter.SetWirelessSettingsEx(SSID, true, (byte[])null, AuthenticationMode.Ndis802_11AuthModeOpen);
+					adapter.RebindAdapter();
+				}
+
+				UpdateWirelessLabel(adapters);
+			}
+			catch
 			{
-				/*txtLog.Text = string.Format("Attempting wireless on {0} ({1})\r\n", adapter.AssociatedAccessPoint, adapter.SignalStrengthInDecibels) + txtLog.Text;
-				txtLog.Update();*/
-
-				// Trys to connect every wireless adapter to the network... Probably not the best option, but sufficient
-				EAPParameters eapParams = new EAPParameters();
-				eapParams.EapFlags = EAPFlags.Disabled;
-				eapParams.EapType = EAPType.PEAP;
-				eapParams.Enable8021x = false;
-				adapter.SetWirelessSettingsAddEx(SSID, true, (byte[])null, 1, AuthenticationMode.Ndis802_11AuthModeOpen, WEPStatus.Ndis802_11EncryptionDisabled, eapParams);
-				//adapter.SetWirelessSettingsEx(SSID, true, (byte[])null, AuthenticationMode.Ndis802_11AuthModeOpen);
-				adapter.RebindAdapter();
 			}
-
-			UpdateWirelessLabel(adapters);
 		}
 
 		private void UpdateWirelessLabel(List<Adapter> adapters)
@@ -288,19 +374,10 @@ namespace CFRecorder
 			lblWireless.Text = "Wireless: Not connected";
 		}
 
-		private void mnuWSTest_Click(object sender, EventArgs e)
+		private void mnuSensorDetails_Click(object sender, EventArgs e)
 		{
-			try
-			{
-				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
-				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Current.Server);                
-				Sensor sensor = service.FindSensor("QUT01");
-			}
-			catch (WebException ex)
-			{
-				HttpWebResponse response = (HttpWebResponse)ex.Response;
-				txtLog.Text = string.Format("Error: {0}\r\n{1}", response.StatusDescription, txtLog.Text);
-			}
+			using (SensorDetails dia = new SensorDetails())
+				dia.ShowDialog();
 		}
 
         private void menuItem2_Click(object sender, EventArgs e)
@@ -313,6 +390,12 @@ namespace CFRecorder
             PDA.Hardware.SoftReset();
         }
 
+		private void mnuStartPeriodicRecording_Click(object sender, EventArgs e)
+		{
+			//PDA.PowerOffScreen();
+			QueueNextReading();
+			Application.Exit();
+		}
         private void menuItem4_Click(object sender, EventArgs e)
         {
             OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");
