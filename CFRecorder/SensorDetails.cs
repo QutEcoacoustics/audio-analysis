@@ -16,11 +16,11 @@ namespace CFRecorder
 		public SensorDetails()
 		{
 			InitializeComponent();
-			txtID.Text = Settings.Current.SensorName;
-			dtpDuration.Value = DateTime.Today.AddMilliseconds(Settings.Current.ReadingDuration);
-			dtpFrequency.Value = DateTime.Today.AddMilliseconds(Settings.Current.ReadingFrequency);
-			chkEnableLogging.Checked = Settings.Current.EnableLogging;
-			service.BeginFindSensor(Settings.Current.SensorID.ToString(), new AsyncCallback(service_FoundSensor), null);
+			txtID.Text = Settings.SensorName;
+			dtpDuration.Value = DateTime.Today.AddMilliseconds(Settings.ReadingDuration);
+			dtpFrequency.Value = DateTime.Today.AddMilliseconds(Settings.ReadingFrequency);
+			chkEnableLogging.Checked = Settings.EnableLogging;
+			service.BeginFindSensor(Settings.SensorID.ToString(), new AsyncCallback(service_FoundSensor), null);
 		}
 
 		void service_FoundSensor(IAsyncResult ar)
@@ -50,14 +50,14 @@ namespace CFRecorder
 		{
 			try
 			{
-				service.UpdateSensor(Settings.Current.SensorID.ToString(), txtID.Text, txtName.Text, txtDescription.Text);
+				service.UpdateSensor(Settings.SensorID.ToString(), txtID.Text, txtName.Text, txtDescription.Text);
 			}
 			catch (WebException) { }
 
-			Settings.Current.SensorName = txtID.Text;
-			Settings.Current.ReadingDuration = Convert.ToInt16(dtpDuration.Value.TimeOfDay.TotalMilliseconds);
-			Settings.Current.ReadingFrequency = Convert.ToInt32(dtpFrequency.Value.TimeOfDay.TotalMilliseconds);
-			Settings.Current.EnableLogging = chkEnableLogging.Checked;
+			Settings.SensorName = txtID.Text;
+			Settings.ReadingDuration = Convert.ToInt16(dtpDuration.Value.TimeOfDay.TotalMilliseconds);
+			Settings.ReadingFrequency = Convert.ToInt32(dtpFrequency.Value.TimeOfDay.TotalMilliseconds);
+			Settings.EnableLogging = chkEnableLogging.Checked;
 			DialogResult = DialogResult.OK;
 		}
 
