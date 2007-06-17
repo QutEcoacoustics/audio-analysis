@@ -181,7 +181,7 @@ namespace PDA
         {
             //TODO: Check for remaining diskspace
             OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");
-            if (BytesToMegabytes(DI.AvailableFreeSpace) < CFRecorder.Settings.Current.reservedDiskSpace)
+            if (BytesToMegabytes(DI.AvailableFreeSpace) < CFRecorder.Settings.reservedDiskSpace)
             {
                    //TODO: Add a warning row here
             }
