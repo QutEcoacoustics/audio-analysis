@@ -33,8 +33,15 @@ namespace CFRecorder
 
 		public void Stop()
 		{
-			waveIn.Stop();
-			waveIn.Save(target);
+			try
+			{
+				waveIn.Stop();
+				waveIn.Save(target);
+			}
+			catch (IOException e)
+			{
+				MainForm.Log("Recording stop failed - {0}", e);
+			}
 		}
 
 		public void RecordFor(short duration)
