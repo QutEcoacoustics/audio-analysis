@@ -53,7 +53,7 @@ namespace CFRecorder
 					input.Read(buffer, 0, (int)file.Length);
 
 				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
-				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Server);
+				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 				service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime, buffer);
 				MainForm.Log("Upload complete.");
 

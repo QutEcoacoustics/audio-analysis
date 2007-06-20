@@ -18,6 +18,7 @@ namespace CFRecorder
 				{
 					MainForm.QueueNextReading();
 					MainForm.TakeReading();
+					MainForm.WaitForReading();
 				}
 				catch (Exception e)
 				{

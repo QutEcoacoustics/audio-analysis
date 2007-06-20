@@ -25,29 +25,34 @@ namespace CFRecorder
 
 		void service_FoundSensor(IAsyncResult ar)
 		{
-			if (InvokeRequired)
-				BeginInvoke(new AsyncCallback(service_FoundSensor), ar);
-			else
+			if (!closed) // Handle case where form is closed before call completes
 			{
-				QutSensors.Services.Sensor sensor = null;
-				try
+				if (InvokeRequired)
+					BeginInvoke(new AsyncCallback(service_FoundSensor), ar);
+				else
 				{
-					sensor = service.EndFindSensor(ar);
-				}
-				catch (WebException) {}
+					QutSensors.Services.Sensor sensor = null;
+					try
+					{
+						sensor = service.EndFindSensor(ar);
+					}
+					catch (WebException) { }
 
-				if (sensor != null)
-				{
-					txtID.Text = sensor.Name;
-					txtName.Text = sensor.FriendlyName;
-					txtDescription.Text = sensor.Description;
+					if (sensor != null)
+					{
+						txtID.Text = sensor.Name;
+						txtName.Text = sensor.FriendlyName;
+						txtDescription.Text = sensor.Description;
+					}
+					txtID.Enabled = txtName.Enabled = txtDescription.Enabled = true;
 				}
-				txtID.Enabled = txtName.Enabled = txtDescription.Enabled = true;
 			}
 		}
 
+		bool closed;
 		private void mnuSave_Click(object sender, EventArgs e)
 		{
+			closed = true;
 			try
 			{
 				service.UpdateSensor(Settings.SensorID.ToString(), txtID.Text, txtName.Text, txtDescription.Text);
@@ -63,6 +68,7 @@ namespace CFRecorder
 
 		private void mnuCancel_Click(object sender, EventArgs e)
 		{
+			closed = true;
 			DialogResult = DialogResult.Cancel;
 		}
 	}

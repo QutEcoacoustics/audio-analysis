@@ -73,7 +73,10 @@ namespace CFRecorder
 			Recording recording = new Recording(path);
 			recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
 			recording.RecordFor(Settings.ReadingDuration);
+		}
 
+		public static void WaitForReading()
+		{
 			staticRecordingComplete.WaitOne();
 		}
 
