@@ -26,6 +26,12 @@ namespace CFRecorder
 		{
 			get { return startTime; }
 		}
+
+		private bool succeeded;
+		public bool Succeeded
+		{
+			get { return succeeded; }
+		}
 		#endregion
 
 		public string GetPath()
@@ -33,7 +39,7 @@ namespace CFRecorder
 			return Path.Combine(Settings.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.SensorName, startTime));
 		}
 
-		public void RecordFor(short duration)
+		public void RecordFor(int duration)
 		{
 			if (waveIn != null)
 				throw new InvalidOperationException("Recording already started");
@@ -51,17 +57,23 @@ namespace CFRecorder
 
 		public void Stop()
 		{
+			string path = GetPath();
 			try
 			{
 				waveIn.Stop();
-				string path = GetPath();
 				Wave.MMSYSERR result = waveIn.Save(path);
 				if (result != Wave.MMSYSERR.NOERROR)
 					MainForm.Log("Error saving recording - {0}", result);
+				succeeded = true;
 			}
 			catch (IOException e)
 			{
 				MainForm.Log("Recording stop failed - {0}", e);
+				try
+				{
+					File.Delete(path);
+				}
+				catch { }
 			}
 		}
 
