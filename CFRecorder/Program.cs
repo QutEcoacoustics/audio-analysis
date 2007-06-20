@@ -16,6 +16,7 @@ namespace CFRecorder
 			{
 				try
 				{
+					DataUploader.ProcessFailures();
 					MainForm.QueueNextReading();
 					MainForm.TakeReading();
 					MainForm.WaitForReading();

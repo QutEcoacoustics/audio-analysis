@@ -67,10 +67,9 @@ namespace CFRecorder
 		static ManualResetEvent staticRecordingComplete;
 		public static void TakeReading()
 		{
-			string path = Path.Combine(Settings.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.SensorName, DateTime.Now));
-			Log("Taking reading: {0}", path);
+			Log("Taking reading.");
 			staticRecordingComplete = new ManualResetEvent(false);
-			Recording recording = new Recording(path);
+			Recording recording = new Recording();
 			recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
 			recording.RecordFor(Settings.ReadingDuration);
 		}
@@ -85,6 +84,11 @@ namespace CFRecorder
 			Log("Reading complete");
 			Recording recording = (Recording)sender;
 			DataUploader.Upload(recording);
+			//TODO: Housekeeping starts here
+			//1. If connection to server fail, keep a list of file that needs to be uploaded
+			//2. Check for available diskspace.
+			PDA.Utility.StartHouseKeeping();
+
 			staticRecordingComplete.Set();
 		}
 		#endregion
@@ -201,7 +205,8 @@ namespace CFRecorder
 		private void mnuSensorDetails_Click(object sender, EventArgs e)
 		{
 			using (SensorDetails dia = new SensorDetails())
-				dia.ShowDialog();
+				if (dia.ShowDialog() == DialogResult.OK)
+					txtSensorName.Text = Settings.SensorName;
 		}
 
         private void menuItem2_Click(object sender, EventArgs e)
@@ -241,9 +246,9 @@ namespace CFRecorder
             MessageBox.Show(string.Format("{0:0.00} mb left",(PDA.Hardware.GetAvailablePhysicalMemory()/1024)),this.Text);
         }
 
-        private void menuItem8_Click(object sender, EventArgs e)
-        {
-            DataUploader.ProcessUploadFailureFile();           
-        }
+		private void mnuProcessFailures_Click(object sender, EventArgs e)
+		{
+			DataUploader.ProcessFailures();
+		}
 	}
 }
