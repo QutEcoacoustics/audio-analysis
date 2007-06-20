@@ -141,15 +141,14 @@ namespace PDA
         [DllImport("coredll.dll", SetLastError = true)]
         private static extern void GlobalMemoryStatus(ref MEMORY_STATUS ms);
 
-        public static string GetAvailablePhysicalMemory()
+        public static double GetAvailablePhysicalMemory()
         {
             MEMORY_STATUS ms = new MEMORY_STATUS();
             try
             {
                 GlobalMemoryStatus(ref ms);
                 double avail = (double)ms.dwAvailPhys / 1048.576;
-                string sAvail = string.Format("{0:###,##}", avail);
-                return sAvail;
+                return avail;
             }
             catch (Exception ex)
             {
