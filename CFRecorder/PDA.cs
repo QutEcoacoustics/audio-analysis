@@ -153,10 +153,8 @@ namespace PDA
             catch (Exception ex)
             {
                 throw ex;
-                //return null;
             }
         }
-
     }
     
     public partial class Utility
@@ -168,12 +166,9 @@ namespace PDA
 
         public static double BytesToMegabytes(double Bytes)
         {
-            // This function is to convert remaining diskspace in bytes to megabytes
-
             double dblAns;
             dblAns = (Bytes / 1024) / 1024;
             return dblAns;
-
         }
 
         public static void StartHouseKeeping()
@@ -184,29 +179,7 @@ namespace PDA
             {
                    //TODO: Add a warning row here
             }
-            throw new Exception("The method or operation is not implemented.");
+            //throw new Exception("The method or operation is not implemented.");
         }
-       
-        }
-
-    /*partial class uploadFailure : DataTable
-    {
-        public uploadFailure()
-        {
-            this.TableName = "uploadFailure";
-            DataColumn ID = new DataColumn();
-            ID.ColumnName = "ID";
-            ID.DataType = System.Type.GetType("System.Int32");
-            ID.AutoIncrement = true;
-            ID.AutoIncrementStep = 1;
-
-            DataColumn date = new DataColumn("Date", System.Type.GetType("System.DateTime"));
-            
-            DataColumn fileName = new DataColumn("Filename", System.Type.GetType("System.String"));
-
-            this.Columns.Add(ID);
-            this.Columns.Add(date);
-            this.Columns.Add(fileName);
-        }
-    }*/
+	}
 }

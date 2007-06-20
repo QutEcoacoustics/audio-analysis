@@ -22,6 +22,13 @@ namespace CFRecorder
 		#region Statics
 		static MainForm current;
 
+		public static void LogError(Exception e)
+		{
+			// This is here to allow errors to be logged even if EnableLogging is set off if we wish to later.
+			// Not all errors are sent here yet.
+			Log(e.ToString());
+		}
+
 		public static void Log(string format, params object[] args)
 		{
 			try
@@ -65,13 +72,22 @@ namespace CFRecorder
 		}
 
 		static ManualResetEvent staticRecordingComplete;
-		public static void TakeReading()
+		public static bool TakeReading()
 		{
-			Log("Taking reading.");
-			staticRecordingComplete = new ManualResetEvent(false);
-			Recording recording = new Recording();
-			recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
-			recording.RecordFor(Settings.ReadingDuration);
+			try
+			{
+				Log("Taking reading.");
+				staticRecordingComplete = new ManualResetEvent(false);
+				Recording recording = new Recording();
+				recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
+				recording.RecordFor(Settings.ReadingDuration);
+				return true;
+			}
+			catch (Exception e)
+			{
+				LogError(e);
+				return false;
+			}
 		}
 
 		public static void WaitForReading()
