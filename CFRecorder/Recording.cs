@@ -11,37 +11,26 @@ namespace CFRecorder
 		Timer timer;
 		WaveIn waveIn;
 
-		public Recording(string target)
+		public Recording()
 		{
-			this.target = target;
+		}
+
+		public Recording(DateTime startTime)
+		{
+			this.startTime = startTime;
 		}
 
 		#region Properties
-		private string target;
-		public string Target
-		{
-			get { return target; }
-			set { target = value; }
-		}
-
-		private DateTime startTime;
-		public DateTime StartTime
+		private DateTime? startTime;
+		public DateTime? StartTime
 		{
 			get { return startTime; }
 		}
 		#endregion
 
-		public void Stop()
+		public string GetPath()
 		{
-			try
-			{
-				waveIn.Stop();
-				waveIn.Save(target);
-			}
-			catch (IOException e)
-			{
-				MainForm.Log("Recording stop failed - {0}", e);
-			}
+			return Path.Combine(Settings.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.SensorName, startTime));
 		}
 
 		public void RecordFor(short duration)
@@ -54,6 +43,19 @@ namespace CFRecorder
 			waveIn.Start();
 			startTime = DateTime.Now;
 			timer = new Timer(new TimerCallback(timer_Tick), null, duration, Timeout.Infinite);
+		}
+
+		public void Stop()
+		{
+			try
+			{
+				waveIn.Stop();
+				waveIn.Save(GetPath());
+			}
+			catch (IOException e)
+			{
+				MainForm.Log("Recording stop failed - {0}", e);
+			}
 		}
 
 		void timer_Tick(object state)

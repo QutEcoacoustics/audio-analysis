@@ -17,6 +17,8 @@ namespace CFRecorder
 		{
 			InitializeComponent();
 			txtID.Text = Settings.SensorName;
+			txtName.Text = Settings.FriendlyName;
+			txtDescription.Text = Settings.Description;
 			dtpDuration.Value = DateTime.Today.AddMilliseconds(Settings.ReadingDuration);
 			dtpFrequency.Value = DateTime.Today.AddMilliseconds(Settings.ReadingFrequency);
 			chkEnableLogging.Checked = Settings.EnableLogging;
@@ -60,6 +62,8 @@ namespace CFRecorder
 			catch (WebException) { }
 
 			Settings.SensorName = txtID.Text;
+			Settings.FriendlyName = txtName.Text;
+			Settings.Description = txtDescription.Text;
 			Settings.ReadingDuration = Convert.ToInt16(dtpDuration.Value.TimeOfDay.TotalMilliseconds);
 			Settings.ReadingFrequency = Convert.ToInt32(dtpFrequency.Value.TimeOfDay.TotalMilliseconds);
 			Settings.EnableLogging = chkEnableLogging.Checked;

@@ -189,7 +189,7 @@ namespace PDA
        
         }
 
-    partial class uploadFailure : DataTable
+    /*partial class uploadFailure : DataTable
     {
         public uploadFailure()
         {
@@ -208,8 +208,5 @@ namespace PDA
             this.Columns.Add(date);
             this.Columns.Add(fileName);
         }
-    }
-
-   
+    }*/
 }
-

@@ -41,6 +41,18 @@ namespace CFRecorder
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorName", value); }
 		}
 
+		public static string FriendlyName
+		{
+			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "FriendlyName", null); }
+			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "FriendlyName", value); }
+		}
+
+		public static string Description
+		{
+			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Description", null); }
+			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Description", value); }
+		}
+
 		public static string SensorDataPath
 		{
 			get {return ((string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorDataPath", null) ?? "");}
