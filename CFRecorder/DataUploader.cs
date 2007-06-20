@@ -17,6 +17,30 @@ namespace CFRecorder
 				uf.ReadXml("error.xml");
 		}
 
+        public static bool UploadRecording(Recording recording)
+        {
+            FileInfo file = new FileInfo(recording.Target);
+			try
+			{
+				byte[] buffer = new byte[file.Length];
+				using (FileStream input = File.OpenRead(recording.Target))
+					input.Read(buffer, 0, (int)file.Length);
+
+				QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/QutSensors.WebService/Service.asmx", Settings.Server);
+				service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime, buffer);				
+
+				File.Delete(file.FullName); // To delete the audio recording once the file is uploaded.
+                return true;
+
+			}
+			catch 
+			{
+                return false;				
+			}
+		}
+        
+
 		public static void Upload(Recording recording)
 		{
 			MainForm.Log("Commencing upload...");
@@ -35,11 +59,15 @@ namespace CFRecorder
 
 				File.Delete(file.FullName); // To delete the audio recording once the file is uploaded.
 
+                //TODO: Process the upload failure file
+                ProcessUploadFailureFile();
+                
 				//TODO: Housekeeping starts here
 				//1. If connection to server fail, keep a list of file that needs to be uploaded
 				//2. Check for available diskspace.
 
 				PDA.Utility.StartHouseKeeping();
+
 
 			}
 			catch (Exception e)
@@ -59,5 +87,31 @@ namespace CFRecorder
 				uf.WriteXml("error.xml");
 			}
 		}
+
+        public static void ProcessUploadFailureFile()
+        {
+            PDA.uploadFailure failure = new PDA.uploadFailure();            
+            if (File.Exists("error.xml"))
+            {            
+                failure.ReadXml("error.xml");
+                foreach (System.Data.DataRow dr in failure.Rows)
+                {
+                    Recording r = new Recording(dr[1].ToString());
+                    if (UploadRecording(r) == true)
+                    {
+                        dr.Delete();
+                    }
+                }
+                failure.WriteXml("error.xml");
+            }
+            else
+            {
+                System.Windows.Forms.MessageBox.Show("No file has not been uploaded");
+            }
+
+
+        }
+
 	}
+
 }

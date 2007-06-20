@@ -73,6 +73,7 @@ namespace CFRecorder
 			Recording recording = new Recording(path);
 			recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
 			recording.RecordFor(Settings.ReadingDuration);
+
 			staticRecordingComplete.WaitOne();
 		}
 
@@ -234,7 +235,12 @@ namespace CFRecorder
 
         private void menuItem7_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(PDA.Hardware.GetAvailablePhysicalMemory().ToString());
+            MessageBox.Show(string.Format("{0:0.00} mb left",(PDA.Hardware.GetAvailablePhysicalMemory()/1024)),this.Text);
+        }
+
+        private void menuItem8_Click(object sender, EventArgs e)
+        {
+            DataUploader.ProcessUploadFailureFile();           
         }
 	}
 }
