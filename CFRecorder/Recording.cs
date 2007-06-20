@@ -39,8 +39,12 @@ namespace CFRecorder
 				throw new InvalidOperationException("Recording already started");
 
 			waveIn = new WaveIn();
-			waveIn.Preload(duration, 2 * 1024 * 1024);
-			waveIn.Start();
+			Wave.MMSYSERR result = waveIn.Preload(duration, 2 * 1024 * 1024);
+			if (result != Wave.MMSYSERR.NOERROR)
+				throw new Exception(string.Format("Error saving recording - {0}", result));
+			result = waveIn.Start();
+			if (result != Wave.MMSYSERR.NOERROR)
+				throw new Exception(string.Format("Error saving recording - {0}", result));
 			startTime = DateTime.Now;
 			timer = new Timer(new TimerCallback(timer_Tick), null, duration, Timeout.Infinite);
 		}
@@ -50,7 +54,10 @@ namespace CFRecorder
 			try
 			{
 				waveIn.Stop();
-				waveIn.Save(GetPath());
+				string path = GetPath();
+				Wave.MMSYSERR result = waveIn.Save(path);
+				if (result != Wave.MMSYSERR.NOERROR)
+					MainForm.Log("Error saving recording - {0}", result);
 			}
 			catch (IOException e)
 			{
