@@ -113,10 +113,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://winknode10/Qutsensors.Webservice/service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Sensor/SensorInterface/service.asmx">
       <UrlBehavior>Dynamic</UrlBehavior>
       <RelPath>Web References\QutSensors.Services\</RelPath>
-      <UpdateFromURL>http://winknode10/Qutsensors.Webservice/service.asmx</UpdateFromURL>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/Sensor/SensorInterface/service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

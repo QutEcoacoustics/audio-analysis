@@ -57,7 +57,7 @@ Namespace My
         <Global.System.Configuration.ApplicationScopedSettingAttribute(),  _
          Global.System.Diagnostics.DebuggerNonUserCodeAttribute(),  _
          Global.System.Configuration.SpecialSettingAttribute(Global.System.Configuration.SpecialSetting.WebServiceUrl),  _
-         Global.System.Configuration.DefaultSettingValueAttribute("http://winknode10/Qutsensors.Webservice/service.asmx")>  _
+         Global.System.Configuration.DefaultSettingValueAttribute("http://www.mquter.qut.edu.au/Sensor/SensorInterface/service.asmx")>  _
         Public ReadOnly Property QUTSamfordUploader_localhost_Service() As String
             Get
                 Return CType(Me("QUTSamfordUploader_localhost_Service"),String)

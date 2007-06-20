@@ -97,13 +97,18 @@ namespace CFRecorder
 
 		static void staticRecording_DoneRecording(object sender, EventArgs e)
 		{
-			Log("Reading complete");
 			Recording recording = (Recording)sender;
-			DataUploader.Upload(recording);
-			//TODO: Housekeeping starts here
-			//1. If connection to server fail, keep a list of file that needs to be uploaded
-			//2. Check for available diskspace.
-			PDA.Utility.StartHouseKeeping();
+			if (recording.Succeeded)
+			{
+				Log("Reading complete");
+				DataUploader.Upload(recording);
+				//TODO: Housekeeping starts here
+				//1. If connection to server fail, keep a list of file that needs to be uploaded
+				//2. Check for available diskspace.
+				PDA.Utility.StartHouseKeeping();
+			}
+			else
+				Log("Reading failed.");
 
 			staticRecordingComplete.Set();
 		}

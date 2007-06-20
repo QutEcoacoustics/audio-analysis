@@ -64,7 +64,7 @@ namespace CFRecorder
 			Settings.SensorName = txtID.Text;
 			Settings.FriendlyName = txtName.Text;
 			Settings.Description = txtDescription.Text;
-			Settings.ReadingDuration = Convert.ToInt16(dtpDuration.Value.TimeOfDay.TotalMilliseconds);
+			Settings.ReadingDuration = Convert.ToInt32(dtpDuration.Value.TimeOfDay.TotalMilliseconds);
 			Settings.ReadingFrequency = Convert.ToInt32(dtpFrequency.Value.TimeOfDay.TotalMilliseconds);
 			Settings.EnableLogging = chkEnableLogging.Checked;
 			DialogResult = DialogResult.OK;
