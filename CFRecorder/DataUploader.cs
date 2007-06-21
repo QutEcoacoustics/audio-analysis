@@ -8,14 +8,23 @@ using System.Text.RegularExpressions;
 namespace CFRecorder
 {
 	public static class DataUploader
-	{   
+	{
 		public static void Upload(Recording recording)
 		{
+			Upload(recording, false);
+		}
+
+		public static void Upload(Recording recording, bool silent)
+		{
 			if (recording.StartTime == null)
-				MainForm.Log("Unable to upload recording - start time not specified");
+			{
+				if (!silent)
+					MainForm.Log("Unable to upload recording - start time not specified");
+			}
 			else
 			{
-				MainForm.Log("Commencing upload...");
+				if (!silent)
+					MainForm.Log("Commencing upload...");
 
 				FileInfo file = new FileInfo(recording.GetPath());
 				try
@@ -27,13 +36,15 @@ namespace CFRecorder
 					QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
 					service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 					service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime.Value, buffer);
-					MainForm.Log("Upload complete.");
+					if (!silent)
+						MainForm.Log("Upload complete.");
 
 					File.Delete(file.FullName); // To delete the audio recording once the file is uploaded.
 				}
 				catch (Exception e)
 				{
-					MainForm.Log("Upload failed - storing for later upload.\r\n{0}", e);
+					if (!silent)
+						MainForm.Log("Upload failed - storing for later upload.\r\n{0}", e);
 				}
 			}
 		}
@@ -49,7 +60,7 @@ namespace CFRecorder
 				{
 					DateTime time = DateTime.ParseExact(m.Groups["date"].Value, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat);
 					Recording recording = new Recording(time);
-					Upload(recording);
+					Upload(recording, true);
 				}
 			}
         }
