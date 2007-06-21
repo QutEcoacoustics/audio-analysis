@@ -12,7 +12,11 @@ namespace CFRecorder
         [MTAThread]
         static void Main(string[] args)
         {
+#if NOUI
+			if (true)
+#else
 			if (args.Length > 0 && args[0] == "AppRunAtTime")
+#endif
 			{
 				try
 				{
@@ -31,6 +35,6 @@ namespace CFRecorder
 				MainForm.ClearQueuedReading();
 				Application.Run(new MainForm());
 			}
-        }
+		}
     }
 }
