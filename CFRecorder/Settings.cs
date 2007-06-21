@@ -55,7 +55,7 @@ namespace CFRecorder
 
 		public static string SensorDataPath
 		{
-			get {return ((string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorDataPath", null) ?? "");}
+			get {return ((string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorDataPath", null) ?? "\\");}
 			set {Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorDataPath", value);}
 		}
 
@@ -79,7 +79,7 @@ namespace CFRecorder
 
 		public static bool EnableLogging
 		{
-			get { return Convert.ToBoolean(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", false)); }
+			get { return Convert.ToBoolean(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", true)); }
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", value.ToString(), Microsoft.Win32.RegistryValueKind.String); }
 		}
 
