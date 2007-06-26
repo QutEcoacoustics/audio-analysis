@@ -1,19 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.IO;
-using OpenNETCF.Net.Ftp;
-using System.Net.Sockets;
-using System.Net;
-using OpenNETCF.Net;
-using CFRecorder.QutSensors.Services;
-using CFRecorder.QutSensors;
 using System.Reflection;
 using System.Threading;
+using System.Windows.Forms;
+using CFRecorder.QutSensors.Services;
+using OpenNETCF.Net;
 
 namespace CFRecorder
 {
@@ -48,7 +40,7 @@ namespace CFRecorder
 				else
 				{
 					if (current.InvokeRequired)
-						current.Invoke((EventHandler)delegate(object s, EventArgs a) { Log(format, args); });
+						current.Invoke((EventHandler)delegate { Log(format, args); });
 					else
 					{
 						current.txtLog.Text = DateTime.Now.ToString("HH:mm:ss") + ": " + string.Format(format, args) + "\r\n" + current.txtLog.Text;
@@ -79,7 +71,7 @@ namespace CFRecorder
 				Log("Taking reading.");
 				staticRecordingComplete = new ManualResetEvent(false);
 				Recording recording = new Recording();
-				recording.DoneRecording += new EventHandler(staticRecording_DoneRecording);
+				recording.DoneRecording += staticRecording_DoneRecording;
 				recording.RecordFor(Settings.ReadingDuration);
 				return true;
 			}
@@ -87,6 +79,20 @@ namespace CFRecorder
 			{
 				LogError(e);
 				return false;
+			}
+		}
+
+		public static void SendStatus()
+		{
+			try
+			{
+				Service service = new Service();
+				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
+				service.AddSensorStatus(Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage());
+			}
+			catch (Exception e)
+			{
+				LogError(e);
 			}
 		}
 
@@ -140,7 +146,7 @@ namespace CFRecorder
 
 		private void cmdSelectFolder_Click(object sender, EventArgs e)
 		{
-			using (System.Windows.Forms.SaveFileDialog dia = new SaveFileDialog())
+			using (SaveFileDialog dia = new SaveFileDialog())
 			{
 				dia.FileName = Path.Combine(txtFolder.Text, "Filename ignored...");
 				if (dia.ShowDialog() == DialogResult.OK)

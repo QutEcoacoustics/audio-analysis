@@ -122,6 +122,28 @@ namespace CFRecorder.QutSensors.Services {
         public void EndUpdateSensor(System.IAsyncResult asyncResult) {
             this.EndInvoke(asyncResult);
         }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddSensorStatus", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void AddSensorStatus(string sensorGUID, System.DateTime time, byte batteryLevel) {
+            this.Invoke("AddSensorStatus", new object[] {
+                        sensorGUID,
+                        time,
+                        batteryLevel});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginAddSensorStatus(string sensorGUID, System.DateTime time, byte batteryLevel, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("AddSensorStatus", new object[] {
+                        sensorGUID,
+                        time,
+                        batteryLevel}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndAddSensorStatus(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
+        }
     }
     
     /// <remarks/>
@@ -135,6 +157,10 @@ namespace CFRecorder.QutSensors.Services {
         private string friendlyNameField;
         
         private string descriptionField;
+        
+        private string longitudeField;
+        
+        private string latitudeField;
         
         /// <remarks/>
         public string Name {
@@ -163,6 +189,26 @@ namespace CFRecorder.QutSensors.Services {
             }
             set {
                 this.descriptionField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string Longitude {
+            get {
+                return this.longitudeField;
+            }
+            set {
+                this.longitudeField = value;
+            }
+        }
+        
+        /// <remarks/>
+        public string Latitude {
+            get {
+                return this.latitudeField;
+            }
+            set {
+                this.latitudeField = value;
             }
         }
     }

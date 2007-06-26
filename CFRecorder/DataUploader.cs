@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Data;
 using System.Text.RegularExpressions;
 
 namespace CFRecorder
@@ -33,7 +30,7 @@ namespace CFRecorder
 					using (FileStream input = file.OpenRead())
 						input.Read(buffer, 0, (int)file.Length);
 
-					QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
+					QutSensors.Services.Service service = new QutSensors.Services.Service();
 					service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 					service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime.Value, buffer);
 					if (!silent)

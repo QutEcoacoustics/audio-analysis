@@ -1,18 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
 using System.Net;
+using System.Windows.Forms;
 
 namespace CFRecorder
 {
 	public partial class SensorDetails : Form
 	{
-		QutSensors.Services.Service service = new CFRecorder.QutSensors.Services.Service();
-
 		public SensorDetails()
 		{
 			InitializeComponent();
@@ -22,13 +15,17 @@ namespace CFRecorder
 			dtpDuration.Value = DateTime.Today.AddMilliseconds(Settings.ReadingDuration);
 			dtpFrequency.Value = DateTime.Today.AddMilliseconds(Settings.ReadingFrequency);
 			chkEnableLogging.Checked = Settings.EnableLogging;
-			service.BeginFindSensor(Settings.SensorID.ToString(), new AsyncCallback(service_FoundSensor), null);
+
+			QutSensors.Services.Service service = new QutSensors.Services.Service();
+			service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
+			service.BeginFindSensor(Settings.SensorID.ToString(), service_FoundSensor, service);
 		}
 
 		void service_FoundSensor(IAsyncResult ar)
 		{
 			if (!closed) // Handle case where form is closed before call completes
 			{
+				QutSensors.Services.Service service = (QutSensors.Services.Service)ar.AsyncState;
 				if (InvokeRequired)
 					BeginInvoke(new AsyncCallback(service_FoundSensor), ar);
 				else
@@ -42,9 +39,12 @@ namespace CFRecorder
 
 					if (sensor != null)
 					{
-						txtID.Text = sensor.Name;
-						txtName.Text = sensor.FriendlyName;
-						txtDescription.Text = sensor.Description;
+						if (sensor.Name != null && sensor.Name != "")
+							txtID.Text = sensor.Name;
+						if (sensor.FriendlyName != null && sensor.FriendlyName != "" && sensor.FriendlyName != sensor.Name && sensor.FriendlyName != "Unnamed sensor")
+							txtName.Text = sensor.FriendlyName;
+						if (sensor.Description != null && sensor.Description != "")
+							txtDescription.Text = sensor.Description;
 					}
 					txtID.Enabled = txtName.Enabled = txtDescription.Enabled = true;
 				}
@@ -57,6 +57,8 @@ namespace CFRecorder
 			closed = true;
 			try
 			{
+				QutSensors.Services.Service service = new QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 				service.UpdateSensor(Settings.SensorID.ToString(), txtID.Text, txtName.Text, txtDescription.Text);
 			}
 			catch (WebException) { }
