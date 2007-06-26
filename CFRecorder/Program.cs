@@ -38,6 +38,7 @@ namespace CFRecorder
 					MainForm.QueueNextReading();
 					DataUploader.ProcessFailures();
 					MainForm.TakeReading();
+					MainForm.SendStatus();
 					MainForm.WaitForReading();
 				}
 				catch (Exception e)

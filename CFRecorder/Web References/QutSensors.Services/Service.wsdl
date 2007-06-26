@@ -47,6 +47,8 @@
           <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="FriendlyName" type="s:string" />
           <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Longitude" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Latitude" type="s:string" />
         </s:sequence>
       </s:complexType>
       <s:element name="UpdateSensor">
@@ -60,6 +62,18 @@
         </s:complexType>
       </s:element>
       <s:element name="UpdateSensorResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="AddSensorStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="batteryLevel" type="s:unsignedByte" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddSensorStatusResponse">
         <s:complexType />
       </s:element>
       <s:element name="Sensor" nillable="true" type="tns:Sensor" />
@@ -101,6 +115,12 @@
   <wsdl:message name="UpdateSensorSoapOut">
     <wsdl:part name="parameters" element="tns:UpdateSensorResponse" />
   </wsdl:message>
+  <wsdl:message name="AddSensorStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:AddSensorStatus" />
+  </wsdl:message>
+  <wsdl:message name="AddSensorStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:AddSensorStatusResponse" />
+  </wsdl:message>
   <wsdl:message name="AddPhotoReadingHttpGetIn">
     <wsdl:part name="sensorGuid" type="s:string" />
     <wsdl:part name="readingGuid" type="s:string" />
@@ -128,6 +148,12 @@
     <wsdl:part name="description" type="s:string" />
   </wsdl:message>
   <wsdl:message name="UpdateSensorHttpGetOut" />
+  <wsdl:message name="AddSensorStatusHttpGetIn">
+    <wsdl:part name="sensorGUID" type="s:string" />
+    <wsdl:part name="time" type="s:string" />
+    <wsdl:part name="batteryLevel" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="AddSensorStatusHttpGetOut" />
   <wsdl:message name="AddPhotoReadingHttpPostIn">
     <wsdl:part name="sensorGuid" type="s:string" />
     <wsdl:part name="readingGuid" type="s:string" />
@@ -155,6 +181,12 @@
     <wsdl:part name="description" type="s:string" />
   </wsdl:message>
   <wsdl:message name="UpdateSensorHttpPostOut" />
+  <wsdl:message name="AddSensorStatusHttpPostIn">
+    <wsdl:part name="sensorGUID" type="s:string" />
+    <wsdl:part name="time" type="s:string" />
+    <wsdl:part name="batteryLevel" type="s:string" />
+  </wsdl:message>
+  <wsdl:message name="AddSensorStatusHttpPostOut" />
   <wsdl:portType name="ServiceSoap">
     <wsdl:operation name="AddPhotoReading">
       <wsdl:input message="tns:AddPhotoReadingSoapIn" />
@@ -171,6 +203,10 @@
     <wsdl:operation name="UpdateSensor">
       <wsdl:input message="tns:UpdateSensorSoapIn" />
       <wsdl:output message="tns:UpdateSensorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <wsdl:input message="tns:AddSensorStatusSoapIn" />
+      <wsdl:output message="tns:AddSensorStatusSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:portType name="ServiceHttpGet">
@@ -190,6 +226,10 @@
       <wsdl:input message="tns:UpdateSensorHttpGetIn" />
       <wsdl:output message="tns:UpdateSensorHttpGetOut" />
     </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <wsdl:input message="tns:AddSensorStatusHttpGetIn" />
+      <wsdl:output message="tns:AddSensorStatusHttpGetOut" />
+    </wsdl:operation>
   </wsdl:portType>
   <wsdl:portType name="ServiceHttpPost">
     <wsdl:operation name="AddPhotoReading">
@@ -207,6 +247,10 @@
     <wsdl:operation name="UpdateSensor">
       <wsdl:input message="tns:UpdateSensorHttpPostIn" />
       <wsdl:output message="tns:UpdateSensorHttpPostOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <wsdl:input message="tns:AddSensorStatusHttpPostIn" />
+      <wsdl:output message="tns:AddSensorStatusHttpPostOut" />
     </wsdl:operation>
   </wsdl:portType>
   <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
@@ -240,6 +284,15 @@
     </wsdl:operation>
     <wsdl:operation name="UpdateSensor">
       <soap:operation soapAction="http://mquter.qut.edu.au/sensors/UpdateSensor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddSensorStatus" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -286,6 +339,15 @@
         <soap12:body use="literal" />
       </wsdl:output>
     </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddSensorStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="ServiceHttpGet" type="tns:ServiceHttpGet">
     <http:binding verb="GET" />
@@ -319,6 +381,13 @@
       </wsdl:input>
       <wsdl:output />
     </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <http:operation location="/AddSensorStatus" />
+      <wsdl:input>
+        <http:urlEncoded />
+      </wsdl:input>
+      <wsdl:output />
+    </wsdl:operation>
   </wsdl:binding>
   <wsdl:binding name="ServiceHttpPost" type="tns:ServiceHttpPost">
     <http:binding verb="POST" />
@@ -347,6 +416,13 @@
     </wsdl:operation>
     <wsdl:operation name="UpdateSensor">
       <http:operation location="/UpdateSensor" />
+      <wsdl:input>
+        <mime:content type="application/x-www-form-urlencoded" />
+      </wsdl:input>
+      <wsdl:output />
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <http:operation location="/AddSensorStatus" />
       <wsdl:input>
         <mime:content type="application/x-www-form-urlencoded" />
       </wsdl:input>
