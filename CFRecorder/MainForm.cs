@@ -247,9 +247,12 @@ namespace CFRecorder
         }
 
 		private void mnuStartPeriodicRecording_Click(object sender, EventArgs e)
-		{
-			PDA.Video.PowerOffScreen();
-			QueueNextReading();
+		{           
+            PDA.Video.PowerOffScreen();
+            DateTime nextRun = DateTime.Now.AddMilliseconds(60000);
+            Log("Queueing next reading for {0}", nextRun);
+            OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+			//QueueNextReading();
 			Application.Exit();
 		}
         private void menuItem4_Click(object sender, EventArgs e)
@@ -260,6 +263,7 @@ namespace CFRecorder
 
         private void menuItem5_Click(object sender, EventArgs e)
         {
+            MessageBox.Show(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength).ToString());
             MessageBox.Show(PDA.Hardware.GetBatteryLeftPercentage().ToString());
         }
 
@@ -277,5 +281,21 @@ namespace CFRecorder
 		{
 			DataUploader.ProcessFailures();
 		}
+
+        private void menuItem8_Click(object sender, EventArgs e)
+        {
+            AdapterCollection na;
+            Adapter adapter;
+            na = OpenNETCF.Net.Networking.GetAdapters();
+            adapter = na[0];
+            byte[] b = adapter.MacAddress;
+            int i;
+            string s = "";
+            for (i = 0; i <= b.Length - 1; i++)
+            {
+                s = s + string.Format("{0:x2}", b[i]) + ":";
+            }
+            MessageBox.Show(s);
+        }
 	}
 }
