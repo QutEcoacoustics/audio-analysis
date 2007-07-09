@@ -1,10 +1,5 @@
-using System.Collections.Generic;
-using System.ServiceProcess;
-using System.Text;
-using QutSensors;
 using System;
-using System.IO;
-using System.Diagnostics;
+using System.ServiceProcess;
 
 namespace QutSensors.Importer
 {

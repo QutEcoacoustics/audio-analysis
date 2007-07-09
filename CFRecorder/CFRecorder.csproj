@@ -70,6 +70,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="PDAUtils.cs" />
     <Compile Include="DataUploader.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>

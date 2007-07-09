@@ -1,10 +1,9 @@
 using System;
-using System.Text;
+using System.IO;
+using System.Threading;
+using System.Diagnostics;
 using System.ServiceProcess;
 using System.Collections.Generic;
-using System.Threading;
-using System.IO;
-using System.Diagnostics;
 
 namespace QutSensors.Importer
 {
@@ -32,7 +31,7 @@ namespace QutSensors.Importer
 		#region Service Overrides
 		protected override void OnStart(string[] args)
 		{
-			timer = new Timer(new TimerCallback(timer_Tick), null, 5000, TimerInterval);
+			timer = new Timer(timer_Tick, null, 5000, TimerInterval);
 		}
 
 		protected override void OnStop()
@@ -51,11 +50,11 @@ namespace QutSensors.Importer
 			get { return timer == null; }
 		}
 
-		object dataSyncObject = new object();
+		readonly object dataSyncObject = new object();
 		void timer_Tick(object state)
 		{
 			// Don't allow two concurrent generation threads
-			if (System.Threading.Monitor.TryEnter(dataSyncObject, 0))
+			if (Monitor.TryEnter(dataSyncObject, 0))
 			{
 				try
 				{
@@ -65,7 +64,7 @@ namespace QutSensors.Importer
 				}
 				finally
 				{
-					System.Threading.Monitor.Exit(dataSyncObject);
+					Monitor.Exit(dataSyncObject);
 				}
 			}
 		}
@@ -119,7 +118,7 @@ namespace QutSensors.Importer
 						reading.UpdateSpectrumData(buffer);
 					}
 
-					System.Threading.Thread.Sleep(20000); // Spectrogram takes time to be created!?!
+					Thread.Sleep(20000); // Spectrogram takes time to be created!?!
 				RetrySpectrogram:
 					using (FileStream stream = File.Open(spectrogramPath, FileMode.Open))
 					using (BinaryReader reader = new BinaryReader(stream))
@@ -131,7 +130,7 @@ namespace QutSensors.Importer
 					}
 					else
 					{
-						System.Threading.Thread.Sleep(5000);
+						Thread.Sleep(5000);
 						goto RetrySpectrogram;
 					}
 				}

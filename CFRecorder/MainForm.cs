@@ -274,7 +274,7 @@ namespace CFRecorder
 
         private void menuItem7_Click(object sender, EventArgs e)
         {
-            MessageBox.Show(string.Format("{0:0.00} mb left",(PDA.Hardware.GetAvailablePhysicalMemory()/1024)),this.Text);
+            MessageBox.Show(string.Format("{0:0.00} mb left", (PDA.Hardware.GetAvailablePhysicalMemory()/1024)), Text);
         }
 
 		private void mnuProcessFailures_Click(object sender, EventArgs e)
