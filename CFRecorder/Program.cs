@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
-using System.IO;
 
 namespace CFRecorder
 {
@@ -40,6 +38,7 @@ namespace CFRecorder
 					MainForm.TakeReading();
 					MainForm.SendStatus();
 					MainForm.WaitForReading();
+					PDAUtils.Reset(true, false);
 				}
 				catch (Exception e)
 				{
