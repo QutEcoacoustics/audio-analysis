@@ -67,11 +67,11 @@ Public Class Service
 		_sensor.Save()
 	End Sub
 
-	<WebMethod()> _
-	Public Sub AddSensorStatus(ByVal sensorGUID As String, ByVal time As DateTime, ByVal batteryLevel As Byte)
-		Dim sensorID As New Guid(sensorGUID)
-		Dim _sensor As Sensor = EnsureSensorExists(sensorID)
+    <WebMethod()> _
+    Public Sub AddSensorStatus(ByVal sensorGUID As String, ByVal time As DateTime, ByVal batteryLevel As Short)
+        Dim sensorID As New Guid(sensorGUID)
+        Dim _sensor As Sensor = EnsureSensorExists(sensorID)
 
-		_sensor.AddStatus(time, batteryLevel)
-	End Sub
+        _sensor.AddStatus(time, batteryLevel)
+    End Sub
 End Class

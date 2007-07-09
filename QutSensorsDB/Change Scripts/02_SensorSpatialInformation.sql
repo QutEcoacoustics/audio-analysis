@@ -2,6 +2,8 @@ ALTER TABLE Sensors ADD Longitude varchar(16)
 GO
 ALTER TABLE Sensors ADD Latitude varchar(16)
 GO
+ALTER TABLE Sensors ADD MacAddress varchar(17)
+GO
 
 ALTER PROCEDURE GetSensor(@sensorID uniqueidentifier) AS
 

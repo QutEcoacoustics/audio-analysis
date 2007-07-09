@@ -5,6 +5,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using OpenNETCF;
 using OpenNETCF.IO;
+using Microsoft.WindowsMobile;
 
 namespace PDA
 {
@@ -93,11 +94,13 @@ namespace PDA
         private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus,
             bool fUpdate);
 
-        public static byte GetBatteryLeftPercentage()
+        public static short GetBatteryLeftPercentage()
         {
-            SYSTEM_POWER_STATUS_EX powerStatus = new SYSTEM_POWER_STATUS_EX();
-            GetSystemPowerStatusEx(powerStatus, true);
-            return powerStatus.BatteryLifePercent;
+            //SYSTEM_POWER_STATUS_EX powerStatus = new SYSTEM_POWER_STATUS_EX();
+            //GetSystemPowerStatusEx(powerStatus, true);            
+            //return powerStatus.BatteryLifePercent;
+
+            return (short)Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength);
         }
 
 
