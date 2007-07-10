@@ -88,13 +88,27 @@ namespace CFRecorder
 			{
 				Service service = new Service();
 				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
-				service.AddSensorStatus(Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage());
+                service.AddSensorStatus(Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage(),
+                   Convert.ToDecimal(PDAUtils.GetFreeMemory()), Convert.ToDecimal(PDAUtils.GetMemoryUsage()));                
+                Log("Sensor status uploaded");
 			}
 			catch (Exception e)
-			{
+			{                
+                AddHealthLog("{0},{1},{2},{3},{4}",Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage(),
+                   Convert.ToDecimal(PDAUtils.GetFreeMemory()), Convert.ToDecimal(PDAUtils.GetMemoryUsage()));
 				LogError(e);
 			}
 		}
+
+        public static void AddHealthLog(string format, params object[] args)
+        {
+            using (StreamWriter writer = new StreamWriter("HealthLog.txt", true))
+            {                
+                writer.WriteLine(format, args);                
+            }
+        }
+
+
 
 		public static void WaitForReading()
 		{
@@ -166,7 +180,8 @@ namespace CFRecorder
 
 		private void mnuRecordNow_Click(object sender, EventArgs e)
 		{
-			TakeReading();
+			TakeReading();                       
+            SendStatus();
 		}
 
 		private void txtServer_TextChanged(object sender, EventArgs e)
@@ -247,13 +262,24 @@ namespace CFRecorder
         }
 
 		private void mnuStartPeriodicRecording_Click(object sender, EventArgs e)
-		{           
-            PDA.Video.PowerOffScreen();
-            DateTime nextRun = DateTime.Now.AddMilliseconds(60000);
+		{
+
+            // PDA.Video.PowerOffScreen();  //Don't turn off the screen temporarily to monitor the activity
+            DateTime nextRun = DateTime.Now.AddMilliseconds(60000); //Take an immediate reading 1.5 minute after
             Log("Queueing next reading for {0}", nextRun);
             OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+            //QueueNextReading();
+            MessageBox.Show(string.Format("The System will now restarting itself and go into auto-recorder mode at frequency of {0} ",
+                Settings.ReadingFrequency));
+            PDA.Hardware.SoftReset(); //Application.Exit(); Perform reset instead of exit the program
+
+            // ---- Original code goes here ---
+            //PDA.Video.PowerOffScreen();  //Don't turn off the screen temporarily to monitor the activity
+            //DateTime nextRun = DateTime.Now.AddMilliseconds(60000); //Take an immediate reading one minute after
+            //Log("Queueing next reading for {0}", nextRun);
+            //OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);            
 			//QueueNextReading();
-			Application.Exit();
+			//Application.Exit();
 		}
         private void menuItem4_Click(object sender, EventArgs e)
         {
@@ -264,6 +290,8 @@ namespace CFRecorder
         private void menuItem5_Click(object sender, EventArgs e)
         {
             MessageBox.Show(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength).ToString());
+            MessageBox.Show(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryState).ToString());
+            MessageBox.Show(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryBackupStrength).ToString());
             MessageBox.Show(PDA.Hardware.GetBatteryLeftPercentage().ToString());
         }
 
@@ -296,6 +324,23 @@ namespace CFRecorder
                 s = s + string.Format("{0:x2}", b[i]) + ":";
             }
             MessageBox.Show(s);
+        }
+
+        private void menuItem9_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(string.Format("Free memory: {0} \r\n Memory usage: {1}",
+                PDA.Utility.BytesToMegabytes(PDAUtils.GetFreeMemory()).ToString("####.##"), PDAUtils.GetMemoryUsage().ToString()));                       
+        }
+
+        private void menuItem10_Click(object sender, EventArgs e)
+        {
+            AddHealthLog("{0},{1},{2},{3},{4}", Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage(),
+                   Convert.ToDecimal(PDAUtils.GetFreeMemory()), Convert.ToDecimal(PDAUtils.GetMemoryUsage()));
+        }
+
+        private void menuItem11_Click(object sender, EventArgs e)
+        {
+            DataUploader.UploadHealthLog();
         }
 	}
 }

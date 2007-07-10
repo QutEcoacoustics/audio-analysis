@@ -4,6 +4,7 @@ Begin DataProject = "QutSensorsDB"
    DefDBRef = "fit10013030\sqlexpress.QutSensors.dbo"
    Begin Folder = "Change Scripts"
       Script = "02_SensorSpatialInformation.sql"
+      Script = "03_SensorStatus.sql"
       Script = "UploadedBitForReadings.sql"
    End
    Begin Folder = "Create Scripts"
@@ -36,11 +37,6 @@ Begin DataProject = "QutSensorsDB"
    Begin DBRefFolder = "Database References"
       Begin DBRefNode = "fit10013030\sqlexpress.QutSensors.dbo"
          ConnectStr = "Data Source=(local)\SQLEXPRESS;Initial Catalog=QutSensors;Integrated Security=True"
-         Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
-         Colorizer = 6
-      End
-      Begin DBRefNode = "fitblgp07.QutSensors.dbo"
-         ConnectStr = "Data Source=FITBLGP07.fit.qut.edu.au;Initial Catalog=QutSensors;Integrated Security=True"
          Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
          Colorizer = 6
       End
