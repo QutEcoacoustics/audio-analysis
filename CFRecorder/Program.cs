@@ -40,7 +40,7 @@ namespace CFRecorder
 					MainForm.SendStatus();
 					MainForm.WaitForReading();
 					//PDAUtils.Reset(true, false); Somehow not functioning on my iMate :(
-                    PDA.Hardware.SoftReset();
+                    PDA.Hardware.SoftReset(); //Will switch back to Richard's version once I found out why it's not working
 				}
 				catch (Exception e)
 				{
