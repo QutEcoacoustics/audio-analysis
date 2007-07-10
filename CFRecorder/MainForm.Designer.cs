@@ -39,6 +39,9 @@ namespace CFRecorder
             this.menuItem6 = new System.Windows.Forms.MenuItem();
             this.menuItem7 = new System.Windows.Forms.MenuItem();
             this.menuItem8 = new System.Windows.Forms.MenuItem();
+            this.menuItem9 = new System.Windows.Forms.MenuItem();
+            this.menuItem10 = new System.Windows.Forms.MenuItem();
+            this.menuItem11 = new System.Windows.Forms.MenuItem();
             this.mnuSensorDetails = new System.Windows.Forms.MenuItem();
             this.mnuExit = new System.Windows.Forms.MenuItem();
             this.mnuRecording = new System.Windows.Forms.MenuItem();
@@ -77,6 +80,9 @@ namespace CFRecorder
             this.menuItem1.MenuItems.Add(this.menuItem6);
             this.menuItem1.MenuItems.Add(this.menuItem7);
             this.menuItem1.MenuItems.Add(this.menuItem8);
+            this.menuItem1.MenuItems.Add(this.menuItem9);
+            this.menuItem1.MenuItems.Add(this.menuItem10);
+            this.menuItem1.MenuItems.Add(this.menuItem11);
             this.menuItem1.Text = "PDA";
             // 
             // menuItem2
@@ -113,6 +119,21 @@ namespace CFRecorder
             // 
             this.menuItem8.Text = "Get MAC Address";
             this.menuItem8.Click += new System.EventHandler(this.menuItem8_Click);
+            // 
+            // menuItem9
+            // 
+            this.menuItem9.Text = "Get Memory Info";
+            this.menuItem9.Click += new System.EventHandler(this.menuItem9_Click);
+            // 
+            // menuItem10
+            // 
+            this.menuItem10.Text = "Add str to TextFile";
+            this.menuItem10.Click += new System.EventHandler(this.menuItem10_Click);
+            // 
+            // menuItem11
+            // 
+            this.menuItem11.Text = "Test Parsing HealthLog";
+            this.menuItem11.Click += new System.EventHandler(this.menuItem11_Click);
             // 
             // mnuSensorDetails
             // 
@@ -265,6 +286,9 @@ namespace CFRecorder
         private System.Windows.Forms.MenuItem menuItem7;
         private System.Windows.Forms.MenuItem mnuProcessFailures;
         private System.Windows.Forms.MenuItem menuItem8;
+        private System.Windows.Forms.MenuItem menuItem9;
+        private System.Windows.Forms.MenuItem menuItem10;
+        private System.Windows.Forms.MenuItem menuItem11;
 	}
 }
 

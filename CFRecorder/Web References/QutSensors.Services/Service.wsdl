@@ -1,7 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://mquter.qut.edu.au/sensors/" xmlns:s1="http://mquter.qut.edu.au/sensors/AbstractTypes" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://mquter.qut.edu.au/sensors/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://mquter.qut.edu.au/sensors/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://mquter.qut.edu.au/sensors/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
   <wsdl:types>
     <s:schema elementFormDefault="qualified" targetNamespace="http://mquter.qut.edu.au/sensors/">
+      <s:element name="HelloWorld">
+        <s:complexType />
+      </s:element>
+      <s:element name="HelloWorldResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="HelloWorldResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="AddPhotoReading">
         <s:complexType>
           <s:sequence>
@@ -57,7 +67,7 @@
             <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="name" type="s:string" />
             <s:element minOccurs="0" maxOccurs="1" name="friendlyName" type="s:string" />
-            <s:element minOccurs="0" maxOccurs="1" name="description" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
           </s:sequence>
         </s:complexType>
       </s:element>
@@ -70,27 +80,26 @@
             <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
             <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
             <s:element minOccurs="1" maxOccurs="1" name="batteryLevel" type="s:short" />
+            <s:element minOccurs="1" maxOccurs="1" name="freeMemory" type="s:decimal" />
+            <s:element minOccurs="1" maxOccurs="1" name="memoryUsage" type="s:decimal" />
           </s:sequence>
         </s:complexType>
       </s:element>
       <s:element name="AddSensorStatusResponse">
-        <s:complexType />
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddSensorStatusResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
       </s:element>
-      <s:element name="Sensor" nillable="true" type="tns:Sensor" />
-    </s:schema>
-    <s:schema targetNamespace="http://mquter.qut.edu.au/sensors/AbstractTypes">
-      <s:import namespace="http://schemas.xmlsoap.org/soap/encoding/" />
-      <s:complexType name="StringArray">
-        <s:complexContent mixed="false">
-          <s:restriction base="soapenc:Array">
-            <s:sequence>
-              <s:element minOccurs="0" maxOccurs="unbounded" name="String" type="s:string" />
-            </s:sequence>
-          </s:restriction>
-        </s:complexContent>
-      </s:complexType>
     </s:schema>
   </wsdl:types>
+  <wsdl:message name="HelloWorldSoapIn">
+    <wsdl:part name="parameters" element="tns:HelloWorld" />
+  </wsdl:message>
+  <wsdl:message name="HelloWorldSoapOut">
+    <wsdl:part name="parameters" element="tns:HelloWorldResponse" />
+  </wsdl:message>
   <wsdl:message name="AddPhotoReadingSoapIn">
     <wsdl:part name="parameters" element="tns:AddPhotoReading" />
   </wsdl:message>
@@ -121,73 +130,11 @@
   <wsdl:message name="AddSensorStatusSoapOut">
     <wsdl:part name="parameters" element="tns:AddSensorStatusResponse" />
   </wsdl:message>
-  <wsdl:message name="AddPhotoReadingHttpGetIn">
-    <wsdl:part name="sensorGuid" type="s:string" />
-    <wsdl:part name="readingGuid" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="buffer" type="s1:StringArray" />
-  </wsdl:message>
-  <wsdl:message name="AddPhotoReadingHttpGetOut" />
-  <wsdl:message name="AddAudioReadingHttpGetIn">
-    <wsdl:part name="sensorGuid" type="s:string" />
-    <wsdl:part name="readingGuid" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="buffer" type="s1:StringArray" />
-  </wsdl:message>
-  <wsdl:message name="AddAudioReadingHttpGetOut" />
-  <wsdl:message name="FindSensorHttpGetIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="FindSensorHttpGetOut">
-    <wsdl:part name="Body" element="tns:Sensor" />
-  </wsdl:message>
-  <wsdl:message name="UpdateSensorHttpGetIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-    <wsdl:part name="name" type="s:string" />
-    <wsdl:part name="friendlyName" type="s:string" />
-    <wsdl:part name="description" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="UpdateSensorHttpGetOut" />
-  <wsdl:message name="AddSensorStatusHttpGetIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="batteryLevel" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="AddSensorStatusHttpGetOut" />
-  <wsdl:message name="AddPhotoReadingHttpPostIn">
-    <wsdl:part name="sensorGuid" type="s:string" />
-    <wsdl:part name="readingGuid" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="buffer" type="s1:StringArray" />
-  </wsdl:message>
-  <wsdl:message name="AddPhotoReadingHttpPostOut" />
-  <wsdl:message name="AddAudioReadingHttpPostIn">
-    <wsdl:part name="sensorGuid" type="s:string" />
-    <wsdl:part name="readingGuid" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="buffer" type="s1:StringArray" />
-  </wsdl:message>
-  <wsdl:message name="AddAudioReadingHttpPostOut" />
-  <wsdl:message name="FindSensorHttpPostIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="FindSensorHttpPostOut">
-    <wsdl:part name="Body" element="tns:Sensor" />
-  </wsdl:message>
-  <wsdl:message name="UpdateSensorHttpPostIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-    <wsdl:part name="name" type="s:string" />
-    <wsdl:part name="friendlyName" type="s:string" />
-    <wsdl:part name="description" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="UpdateSensorHttpPostOut" />
-  <wsdl:message name="AddSensorStatusHttpPostIn">
-    <wsdl:part name="sensorGUID" type="s:string" />
-    <wsdl:part name="time" type="s:string" />
-    <wsdl:part name="batteryLevel" type="s:string" />
-  </wsdl:message>
-  <wsdl:message name="AddSensorStatusHttpPostOut" />
   <wsdl:portType name="ServiceSoap">
+    <wsdl:operation name="HelloWorld">
+      <wsdl:input message="tns:HelloWorldSoapIn" />
+      <wsdl:output message="tns:HelloWorldSoapOut" />
+    </wsdl:operation>
     <wsdl:operation name="AddPhotoReading">
       <wsdl:input message="tns:AddPhotoReadingSoapIn" />
       <wsdl:output message="tns:AddPhotoReadingSoapOut" />
@@ -209,52 +156,17 @@
       <wsdl:output message="tns:AddSensorStatusSoapOut" />
     </wsdl:operation>
   </wsdl:portType>
-  <wsdl:portType name="ServiceHttpGet">
-    <wsdl:operation name="AddPhotoReading">
-      <wsdl:input message="tns:AddPhotoReadingHttpGetIn" />
-      <wsdl:output message="tns:AddPhotoReadingHttpGetOut" />
-    </wsdl:operation>
-    <wsdl:operation name="AddAudioReading">
-      <wsdl:input message="tns:AddAudioReadingHttpGetIn" />
-      <wsdl:output message="tns:AddAudioReadingHttpGetOut" />
-    </wsdl:operation>
-    <wsdl:operation name="FindSensor">
-      <wsdl:input message="tns:FindSensorHttpGetIn" />
-      <wsdl:output message="tns:FindSensorHttpGetOut" />
-    </wsdl:operation>
-    <wsdl:operation name="UpdateSensor">
-      <wsdl:input message="tns:UpdateSensorHttpGetIn" />
-      <wsdl:output message="tns:UpdateSensorHttpGetOut" />
-    </wsdl:operation>
-    <wsdl:operation name="AddSensorStatus">
-      <wsdl:input message="tns:AddSensorStatusHttpGetIn" />
-      <wsdl:output message="tns:AddSensorStatusHttpGetOut" />
-    </wsdl:operation>
-  </wsdl:portType>
-  <wsdl:portType name="ServiceHttpPost">
-    <wsdl:operation name="AddPhotoReading">
-      <wsdl:input message="tns:AddPhotoReadingHttpPostIn" />
-      <wsdl:output message="tns:AddPhotoReadingHttpPostOut" />
-    </wsdl:operation>
-    <wsdl:operation name="AddAudioReading">
-      <wsdl:input message="tns:AddAudioReadingHttpPostIn" />
-      <wsdl:output message="tns:AddAudioReadingHttpPostOut" />
-    </wsdl:operation>
-    <wsdl:operation name="FindSensor">
-      <wsdl:input message="tns:FindSensorHttpPostIn" />
-      <wsdl:output message="tns:FindSensorHttpPostOut" />
-    </wsdl:operation>
-    <wsdl:operation name="UpdateSensor">
-      <wsdl:input message="tns:UpdateSensorHttpPostIn" />
-      <wsdl:output message="tns:UpdateSensorHttpPostOut" />
-    </wsdl:operation>
-    <wsdl:operation name="AddSensorStatus">
-      <wsdl:input message="tns:AddSensorStatusHttpPostIn" />
-      <wsdl:output message="tns:AddSensorStatusHttpPostOut" />
-    </wsdl:operation>
-  </wsdl:portType>
   <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
     <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorld">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/HelloWorld" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="AddPhotoReading">
       <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
       <wsdl:input>
@@ -303,6 +215,15 @@
   </wsdl:binding>
   <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
     <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorld">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/HelloWorld" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
     <wsdl:operation name="AddPhotoReading">
       <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
       <wsdl:input>
@@ -349,98 +270,12 @@
       </wsdl:output>
     </wsdl:operation>
   </wsdl:binding>
-  <wsdl:binding name="ServiceHttpGet" type="tns:ServiceHttpGet">
-    <http:binding verb="GET" />
-    <wsdl:operation name="AddPhotoReading">
-      <http:operation location="/AddPhotoReading" />
-      <wsdl:input>
-        <http:urlEncoded />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="AddAudioReading">
-      <http:operation location="/AddAudioReading" />
-      <wsdl:input>
-        <http:urlEncoded />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="FindSensor">
-      <http:operation location="/FindSensor" />
-      <wsdl:input>
-        <http:urlEncoded />
-      </wsdl:input>
-      <wsdl:output>
-        <mime:mimeXml part="Body" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="UpdateSensor">
-      <http:operation location="/UpdateSensor" />
-      <wsdl:input>
-        <http:urlEncoded />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="AddSensorStatus">
-      <http:operation location="/AddSensorStatus" />
-      <wsdl:input>
-        <http:urlEncoded />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-  </wsdl:binding>
-  <wsdl:binding name="ServiceHttpPost" type="tns:ServiceHttpPost">
-    <http:binding verb="POST" />
-    <wsdl:operation name="AddPhotoReading">
-      <http:operation location="/AddPhotoReading" />
-      <wsdl:input>
-        <mime:content type="application/x-www-form-urlencoded" />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="AddAudioReading">
-      <http:operation location="/AddAudioReading" />
-      <wsdl:input>
-        <mime:content type="application/x-www-form-urlencoded" />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="FindSensor">
-      <http:operation location="/FindSensor" />
-      <wsdl:input>
-        <mime:content type="application/x-www-form-urlencoded" />
-      </wsdl:input>
-      <wsdl:output>
-        <mime:mimeXml part="Body" />
-      </wsdl:output>
-    </wsdl:operation>
-    <wsdl:operation name="UpdateSensor">
-      <http:operation location="/UpdateSensor" />
-      <wsdl:input>
-        <mime:content type="application/x-www-form-urlencoded" />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-    <wsdl:operation name="AddSensorStatus">
-      <http:operation location="/AddSensorStatus" />
-      <wsdl:input>
-        <mime:content type="application/x-www-form-urlencoded" />
-      </wsdl:input>
-      <wsdl:output />
-    </wsdl:operation>
-  </wsdl:binding>
   <wsdl:service name="Service">
     <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
-      <soap:address location="http://localhost:4761/QutSensors.WebService/Service.asmx" />
+      <soap:address location="http://www.mquter.qut.edu.au/Qutsensor/service.asmx" />
     </wsdl:port>
     <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
-      <soap12:address location="http://localhost:4761/QutSensors.WebService/Service.asmx" />
-    </wsdl:port>
-    <wsdl:port name="ServiceHttpGet" binding="tns:ServiceHttpGet">
-      <http:address location="http://localhost:4761/QutSensors.WebService/Service.asmx" />
-    </wsdl:port>
-    <wsdl:port name="ServiceHttpPost" binding="tns:ServiceHttpPost">
-      <http:address location="http://localhost:4761/QutSensors.WebService/Service.asmx" />
+      <soap12:address location="http://www.mquter.qut.edu.au/Qutsensor/service.asmx" />
     </wsdl:port>
   </wsdl:service>
 </wsdl:definitions>

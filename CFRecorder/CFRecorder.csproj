@@ -104,6 +104,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Recording.cs" />
     <Compile Include="Settings.cs" />
@@ -120,10 +121,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://localhost:4761/QutSensors.WebService/Service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Qutsensor/service.asmx">
       <UrlBehavior>Static</UrlBehavior>
       <RelPath>Web References\QutSensors.Services\</RelPath>
-      <UpdateFromURL>http://localhost:4761/QutSensors.WebService/Service.asmx</UpdateFromURL>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/Qutsensor/service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

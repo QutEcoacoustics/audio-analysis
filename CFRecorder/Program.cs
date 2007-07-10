@@ -11,6 +11,7 @@ namespace CFRecorder
         [MTAThread]
         static void Main(string[] args)
         {
+
 #if NoUI
 			try
 			{
@@ -32,13 +33,14 @@ namespace CFRecorder
 #endif
 			{
 				try
-				{
+				{                    
 					MainForm.QueueNextReading();
 					DataUploader.ProcessFailures();
 					MainForm.TakeReading();
 					MainForm.SendStatus();
 					MainForm.WaitForReading();
-					PDAUtils.Reset(true, false);
+					//PDAUtils.Reset(true, false); Somehow not functioning on my iMate :(
+                    PDA.Hardware.SoftReset();
 				}
 				catch (Exception e)
 				{

@@ -24,7 +24,7 @@ namespace CFRecorder
 			MemStat memStatus = new MemStat();
 			GlobalMemoryStatus(memStatus);
 
-			MessageBox.Show(String.Format("{0} bytes total \r\n{1} bytes free", memStatus.dwTotalPhys, memStatus.dwAvailPhys));
+			MessageBox.Show(string.Format("{0} bytes total \r\n{1} bytes free", memStatus.dwTotalPhys, memStatus.dwAvailPhys));
 		}
 
 		public static uint GetFreeMemory()

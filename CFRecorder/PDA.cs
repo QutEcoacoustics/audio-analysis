@@ -94,13 +94,13 @@ namespace PDA
         private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus,
             bool fUpdate);
 
-        public static short GetBatteryLeftPercentage()
+        public static byte GetBatteryLeftPercentage()
         {
             //SYSTEM_POWER_STATUS_EX powerStatus = new SYSTEM_POWER_STATUS_EX();
             //GetSystemPowerStatusEx(powerStatus, true);            
             //return powerStatus.BatteryLifePercent;
 
-            return (short)Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength);
+            return Convert.ToByte(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength));
         }
 
 

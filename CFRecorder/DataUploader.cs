@@ -60,6 +60,39 @@ namespace CFRecorder
 					Upload(recording, true);
 				}
 			}
+
+
+        }
+
+        public static void UploadHealthLog()
+        {
+            string sensorID;
+            DateTime time;
+            short batteryLevel;
+            decimal freeMemory;
+            decimal memoryUsage;
+            File.Move("HealthLog.txt", "HealthLog.bak"); //create a backup copy
+            StreamReader reader = new StreamReader("HealthLog.bak");
+            while (!reader.EndOfStream)
+            {                
+                string[] healthLog = reader.ReadLine().Split(new char[]{','});                                
+                sensorID = healthLog[0];
+                time = Convert.ToDateTime(healthLog[1]);
+                batteryLevel = Convert.ToInt16(healthLog[2]);
+                freeMemory = Convert.ToDecimal(healthLog[3]);
+                memoryUsage = Convert.ToDecimal(healthLog[4]);
+                
+                QutSensors.Services.Service service = new QutSensors.Services.Service();
+				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
+
+                if (!service.AddSensorStatus(sensorID, time, batteryLevel, freeMemory, memoryUsage))
+                {
+                    using (StreamWriter writer = new StreamWriter("HealthLog.txt", true))
+                    {
+                        writer.WriteLine("{0},{1},{2},{3},{4}", sensorID, time, batteryLevel, freeMemory, memoryUsage);
+                    }
+                }
+            }
         }
 	}
 }
