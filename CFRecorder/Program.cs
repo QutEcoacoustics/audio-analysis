@@ -33,8 +33,9 @@ namespace CFRecorder
 #endif
 			{
 				try
-				{                    
+				{
 					MainForm.QueueNextReading();
+					PDA.Video.PowerOffScreen();
 					DataUploader.ProcessFailures();
 					MainForm.TakeReading();
 					MainForm.SendStatus();
