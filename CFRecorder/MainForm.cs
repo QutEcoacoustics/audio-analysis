@@ -23,18 +23,34 @@ namespace CFRecorder
 
 		public static void Log(string format, params object[] args)
 		{
+            string currentLogFile = String.Format("Log{0}.txt",Settings.LogPosition);
 			try
-			{
-				if (current == null)
+			{                
+				if (current != null)
 				{
 					if (Settings.EnableLogging)
 					{
-						using (StreamWriter writer = new StreamWriter("Log.txt", true))
+						using (StreamWriter writer = new StreamWriter(currentLogFile, true))
 						{
 							writer.Write(DateTime.Now.ToString("g"));
 							writer.Write(": ");
 							writer.WriteLine(format, args);
 						}
+
+                        //HACK: Check file size here 
+                        FileInfo fi = new FileInfo(currentLogFile);
+                        if (fi.Length > 10000)  //If log file is bigger than 10k
+                        {                            
+                            int logPosition = Settings.LogPosition;
+                            logPosition++;
+                            if (logPosition > 5) // keep 5 rotating log file, so total of 50k
+                                logPosition = 1;
+                            Settings.LogPosition = logPosition;                            
+                            fi = new FileInfo(String.Format("Log{0}.txt", Settings.LogPosition));
+                            if (fi.Exists && fi.Length > 10000)
+                                fi.Delete();
+                        }
+                        //TODO: We will have to decide whether we want to upload the old log file or not.
 					}
 				}
 				else
@@ -51,12 +67,22 @@ namespace CFRecorder
 			catch { }
 		}
 
-		public static void QueueNextReading()
-		{
-			DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
-			Log("Queueing next reading for {0}", nextRun);
-			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
-		}
+        //public static void QueueNextReading()
+        //{
+        //    DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
+        //    Log("Queueing next reading for {0}", nextRun);
+        //    OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+        //}
+
+        public static DateTime QueueNextReading(params object[] list)
+        {
+            DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
+            if (list[0] is DateTime)
+                nextRun = (DateTime)list[0];
+            Log("Queueing next reading for {0}", nextRun);
+            OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+            return nextRun;
+        }
 
 		public static void ClearQueuedReading()
 		{
@@ -334,8 +360,11 @@ namespace CFRecorder
 
         private void menuItem10_Click(object sender, EventArgs e)
         {
-            AddHealthLog("{0},{1},{2},{3},{4}", Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage(),
-                   Convert.ToDecimal(PDAUtils.GetFreeMemory()), Convert.ToDecimal(PDAUtils.GetMemoryUsage()));
+            for (int i = 1; i <= 10000; i++)
+            {
+                Log(i.ToString());
+                Application.DoEvents();
+            }
         }
 
         private void menuItem11_Click(object sender, EventArgs e)

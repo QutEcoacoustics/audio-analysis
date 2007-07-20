@@ -89,15 +89,14 @@ namespace CFRecorder
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "WirelessSSID", value); }
 		}
 
-		public static double reservedDiskSpace
-		{
-			get { return 10.00; }
-		}
+        public static int LogPosition
+        {
+            get { return (int)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", 1); }
+            set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", value); }
+        }
 
-		public static string errorFile
-		{
-			get { return "error.xml"; }
-		}
+
+		
 		#endregion
 
 		private static Guid GenerateID()

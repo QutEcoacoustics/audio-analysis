@@ -127,7 +127,7 @@ namespace CFRecorder
             // 
             // menuItem10
             // 
-            this.menuItem10.Text = "Add str to TextFile";
+            this.menuItem10.Text = "Check LogFile Size";
             this.menuItem10.Click += new System.EventHandler(this.menuItem10_Click);
             // 
             // menuItem11

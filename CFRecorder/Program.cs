@@ -34,12 +34,19 @@ namespace CFRecorder
 			{
 				try
 				{
-					MainForm.QueueNextReading();
+                    DateTime nextRun;
+					nextRun = MainForm.QueueNextReading();
 					PDA.Video.PowerOffScreen();
 					DataUploader.ProcessFailures();
 					MainForm.TakeReading();
 					MainForm.SendStatus();
 					MainForm.WaitForReading();
+                    MainForm.Log("Next run will be {0}", nextRun);
+                    if (DateTime.Now.AddMinutes(1) >= nextRun)
+                    {
+                        nextRun = DateTime.Now.AddMinutes(1);
+                        MainForm.QueueNextReading(nextRun);
+                    }
 					//PDAUtils.Reset(true, false); Somehow not functioning on my iMate :(
                     PDA.Hardware.SoftReset(); //Will switch back to Richard's version once I found out why it's not working
 				}
