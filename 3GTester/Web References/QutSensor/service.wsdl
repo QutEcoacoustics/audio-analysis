@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://mquter.qut.edu.au/sensors/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://mquter.qut.edu.au/sensors/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://mquter.qut.edu.au/sensors/">
+      <s:element name="HelloWorld">
+        <s:complexType />
+      </s:element>
+      <s:element name="HelloWorldResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="HelloWorldResult" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGuid" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="readingGuid" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReadingResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="AddAudioReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGuid" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="readingGuid" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReadingResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="FindSensor">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="FindSensorResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="FindSensorResult" type="tns:Sensor" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="Sensor">
+        <s:sequence>
+          <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="FriendlyName" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Longitude" type="s:string" />
+          <s:element minOccurs="0" maxOccurs="1" name="Latitude" type="s:string" />
+        </s:sequence>
+      </s:complexType>
+      <s:element name="UpdateSensor">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="name" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="friendlyName" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UpdateSensorResponse">
+        <s:complexType />
+      </s:element>
+      <s:element name="AddSensorStatus">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorGUID" type="s:string" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="1" maxOccurs="1" name="batteryLevel" type="s:short" />
+            <s:element minOccurs="1" maxOccurs="1" name="freeMemory" type="s:decimal" />
+            <s:element minOccurs="1" maxOccurs="1" name="memoryUsage" type="s:decimal" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddSensorStatusResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddSensorStatusResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UploadFile">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="objFile" type="s:base64Binary" />
+            <s:element minOccurs="0" maxOccurs="1" name="strReturn" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="UploadFileResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="UploadFileResult" type="s:boolean" />
+            <s:element minOccurs="0" maxOccurs="1" name="strReturn" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="HelloWorldSoapIn">
+    <wsdl:part name="parameters" element="tns:HelloWorld" />
+  </wsdl:message>
+  <wsdl:message name="HelloWorldSoapOut">
+    <wsdl:part name="parameters" element="tns:HelloWorldResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:AddPhotoReading" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:AddPhotoReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:AddAudioReading" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorSoapIn">
+    <wsdl:part name="parameters" element="tns:FindSensor" />
+  </wsdl:message>
+  <wsdl:message name="FindSensorSoapOut">
+    <wsdl:part name="parameters" element="tns:FindSensorResponse" />
+  </wsdl:message>
+  <wsdl:message name="UpdateSensorSoapIn">
+    <wsdl:part name="parameters" element="tns:UpdateSensor" />
+  </wsdl:message>
+  <wsdl:message name="UpdateSensorSoapOut">
+    <wsdl:part name="parameters" element="tns:UpdateSensorResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddSensorStatusSoapIn">
+    <wsdl:part name="parameters" element="tns:AddSensorStatus" />
+  </wsdl:message>
+  <wsdl:message name="AddSensorStatusSoapOut">
+    <wsdl:part name="parameters" element="tns:AddSensorStatusResponse" />
+  </wsdl:message>
+  <wsdl:message name="UploadFileSoapIn">
+    <wsdl:part name="parameters" element="tns:UploadFile" />
+  </wsdl:message>
+  <wsdl:message name="UploadFileSoapOut">
+    <wsdl:part name="parameters" element="tns:UploadFileResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ServiceSoap">
+    <wsdl:operation name="HelloWorld">
+      <wsdl:input message="tns:HelloWorldSoapIn" />
+      <wsdl:output message="tns:HelloWorldSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <wsdl:input message="tns:AddPhotoReadingSoapIn" />
+      <wsdl:output message="tns:AddPhotoReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <wsdl:input message="tns:AddAudioReadingSoapIn" />
+      <wsdl:output message="tns:AddAudioReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <wsdl:input message="tns:FindSensorSoapIn" />
+      <wsdl:output message="tns:FindSensorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UpdateSensor">
+      <wsdl:input message="tns:UpdateSensorSoapIn" />
+      <wsdl:output message="tns:UpdateSensorSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <wsdl:input message="tns:AddSensorStatusSoapIn" />
+      <wsdl:output message="tns:AddSensorStatusSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="UploadFile">
+      <wsdl:documentation xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">File Upload Webservice</wsdl:documentation>
+      <wsdl:input message="tns:UploadFileSoapIn" />
+      <wsdl:output message="tns:UploadFileSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorld">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/HelloWorld" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/FindSensor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateSensor">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/UpdateSensor" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddSensorStatus" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UploadFile">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/UploadFile" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="HelloWorld">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/HelloWorld" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="FindSensor">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/FindSensor" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UpdateSensor">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/UpdateSensor" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddSensorStatus">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddSensorStatus" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="UploadFile">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/UploadFile" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Service">
+    <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
+      <soap:address location="http://www.mquter.qut.edu.au/qutsensor/service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
+      <soap12:address location="http://www.mquter.qut.edu.au/qutsensor/service.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
