@@ -177,7 +177,15 @@ namespace PDA
         public static void StartHouseKeeping()
         {
             //TODO: Check for remaining diskspace
+<<<<<<< .mine
+            OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");
+            //if (BytesToMegabytes(DI.AvailableFreeSpace) < CFRecorder.Settings.reservedDiskSpace)
+            //{
+                   //TODO: Add a warning row here
+            //}
+=======
             OpenNETCF.IO.DriveInfo DI = new OpenNETCF.IO.DriveInfo("\\");            
+>>>>>>> .r56
             //throw new Exception("The method or operation is not implemented.");
         }
 	}
