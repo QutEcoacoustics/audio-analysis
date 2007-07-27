@@ -26,7 +26,7 @@ namespace CFRecorder
             string currentLogFile = String.Format("Log{0}.txt",Settings.LogPosition);
 			try
 			{                
-				if (current != null)
+				if (current = null)
 				{
 					if (Settings.EnableLogging)
 					{
