@@ -67,22 +67,12 @@ namespace CFRecorder
 			catch { }
 		}
 
-        //public static void QueueNextReading()
-        //{
-        //    DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
-        //    Log("Queueing next reading for {0}", nextRun);
-        //    OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
-        //}
-
-        public static DateTime QueueNextReading(params object[] list)
-        {
-            DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
-            if (list[0] is DateTime)
-                nextRun = (DateTime)list[0];
-            Log("Queueing next reading for {0}", nextRun);
-            OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
-            return nextRun;
-        }
+		public static void QueueNextReading()
+		{
+			DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
+			Log("Queueing next reading for {0}", nextRun);
+			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+		}
 
 		public static void ClearQueuedReading()
 		{
@@ -360,11 +350,8 @@ namespace CFRecorder
 
         private void menuItem10_Click(object sender, EventArgs e)
         {
-            for (int i = 1; i <= 10000; i++)
-            {
-                Log(i.ToString());
-                Application.DoEvents();
-            }
+            AddHealthLog("{0},{1},{2},{3},{4}", Settings.SensorID.ToString(), DateTime.Now, PDA.Hardware.GetBatteryLeftPercentage(),
+                   Convert.ToDecimal(PDAUtils.GetFreeMemory()), Convert.ToDecimal(PDAUtils.GetMemoryUsage()));
         }
 
         private void menuItem11_Click(object sender, EventArgs e)
