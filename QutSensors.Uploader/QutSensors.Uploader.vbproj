@@ -31,6 +31,30 @@
     <NoWarn>42016,41999,42017,42018,42019,42032,42036,42020,42021,42022</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Castle.ActiveRecord, Version=0.0.1.3, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\Castle.ActiveRecord.dll</HintPath>
+    </Reference>
+    <Reference Include="Castle.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=407dd0808d44fbdc, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\Castle.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Iesi.Collections, Version=1.0.0.1, Culture=neutral, PublicKeyToken=154fdcb44c4484fc">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\Iesi.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="log4net, Version=1.2.9.0, Culture=neutral, PublicKeyToken=b32731d11ce58905">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="NHibernate, Version=1.0.2.0, Culture=neutral, PublicKeyToken=154fdcb44c4484fc">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\NHibernate.dll</HintPath>
+    </Reference>
+    <Reference Include="Nullables, Version=1.0.2.0, Culture=neutral, PublicKeyToken=154fdcb44c4484fc">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Extra Assemblies\ActiveRecord\Nullables.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Data" />

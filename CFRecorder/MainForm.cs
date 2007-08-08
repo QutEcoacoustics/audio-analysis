@@ -26,7 +26,7 @@ namespace CFRecorder
             string currentLogFile = String.Format("Log{0}.txt",Settings.LogPosition);
 			try
 			{                
-				if (current = null)
+				if (current == null)
 				{
 					if (Settings.EnableLogging)
 					{
@@ -67,9 +67,16 @@ namespace CFRecorder
 			catch { }
 		}
 
-		public static void QueueNextReading()
+		public static DateTime QueueNextReading()
 		{
 			DateTime nextRun = DateTime.Now.AddMilliseconds(Settings.ReadingFrequency);
+			Log("Queueing next reading for {0}", nextRun);
+			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
+			return nextRun;
+		}
+
+		public static void QueueNextReading(DateTime nextRun)
+		{
 			Log("Queueing next reading for {0}", nextRun);
 			OpenNETCF.WindowsCE.Notification.Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
 		}
@@ -287,6 +294,8 @@ namespace CFRecorder
             //QueueNextReading();
             MessageBox.Show(string.Format("The System will now restarting itself and go into auto-recorder mode at frequency of {0} ",
                 Settings.ReadingFrequency));
+			PDA.Video.PowerOffScreen();
+			// TODO: Move to Mark's reset code which sleeps for a bit first because that's recommended.
             PDA.Hardware.SoftReset(); //Application.Exit(); Perform reset instead of exit the program
 
             // ---- Original code goes here ---
