@@ -1,4 +1,4 @@
-Imports QutSensors
+Imports QutSensors.Data.ActiveRecords
 
 Public Class DatabaseSync
 	WithEvents timer As New System.Timers.Timer
@@ -55,24 +55,26 @@ Public Class DatabaseSync
 	Private Sub SyncSensors()
         Dim service As New QutSensors.Services.Service
 
-		For Each _sensor As Sensor In Sensor.GetAllSensors()
-			Console.WriteLine("Synchronising sensor: {0} ({1})", _sensor.Name, _sensor.ID)
-			For Each reading As AudioReading In _sensor.GetAudioReadingsNotUploaded()
+		For Each _sensor As Deployment In Deployment.FindAll()
+			Console.WriteLine("Synchronising sensor: {0} ({1})", _sensor.Name, _sensor.DeploymentID)
+			For Each reading As Data.ActiveRecords.AudioReading In _sensor.GetAudioReadingsNotUploaded()
 				Try
 					Console.Write("Synchronising audio reading @{0:g}...", reading.Time)
-					service.AddAudioReading(_sensor.ID.ToString(), reading.ID.ToString(), reading.Time, reading.GetData())
-					reading.MarkAsUploaded()
+					service.AddAudioReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data)
+					reading.Uploaded = True
+					reading.Save()
 					Console.WriteLine("Success")
 				Catch e As Exception
 					Console.WriteLine("Failed - {0}", e)
 				End Try
 			Next
 
-			For Each reading As PhotoReading In _sensor.GetPhotoReadingsNotUploaded()
+			For Each reading As Data.ActiveRecords.PhotoReading In _sensor.GetPhotoReadingsNotUploaded()
 				Try
 					Console.Write("Synchronising image reading @{0:g}...", reading.Time)
-					service.AddPhotoReading(_sensor.ID.ToString(), reading.ID.ToString(), reading.Time, reading.GetData())
-					reading.MarkAsUploaded()
+					service.AddPhotoReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data)
+					reading.Uploaded = True
+					reading.Save()
 					Console.WriteLine("Success")
 				Catch e As Exception
 					Console.WriteLine("Failed - {0}", e)
