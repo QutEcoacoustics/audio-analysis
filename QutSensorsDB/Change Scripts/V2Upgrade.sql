@@ -43,7 +43,7 @@ EXEC sp_rename
 GO
 
 EXEC sp_rename 
-    @objname = 'VideoReadings.SensorID', 
+    @objname = 'PhotoReadings.SensorID', 
     @newname = 'DeploymentID', 
     @objtype = 'COLUMN'
 GO

@@ -60,7 +60,7 @@ Public Class DatabaseSync
 			For Each reading As Data.ActiveRecords.AudioReading In _sensor.GetAudioReadingsNotUploaded()
 				Try
 					Console.Write("Synchronising audio reading @{0:g}...", reading.Time)
-					service.AddAudioReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data)
+					service.AddAudioReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data.Data)
 					reading.Uploaded = True
 					reading.Save()
 					Console.WriteLine("Success")
@@ -72,7 +72,7 @@ Public Class DatabaseSync
 			For Each reading As Data.ActiveRecords.PhotoReading In _sensor.GetPhotoReadingsNotUploaded()
 				Try
 					Console.Write("Synchronising image reading @{0:g}...", reading.Time)
-					service.AddPhotoReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data)
+					service.AddPhotoReading(_sensor.DeploymentID.ToString(), reading.ID.ToString(), reading.Time, reading.Data.Data)
 					reading.Uploaded = True
 					reading.Save()
 					Console.WriteLine("Success")
