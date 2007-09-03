@@ -1,82 +1,43 @@
-using System.Data;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
-using OpenNETCF;
-using OpenNETCF.IO;
-using Microsoft.WindowsMobile;
-
-namespace PDA
+namespace QUT
 {
-
-    public partial class Video
+    public static class PDA
     {
-        #region Declaration
-        const int SETPOWERMANAGEMENT = 6147;
 
-        [DllImport("coredll.dll", EntryPoint = "ExtEscape")]
-        static extern Int32 ExtEscapeSet(IntPtr hdc, Int32 nEscape, Int32 cbInput, byte[] plszInData, Int32 cbOutput, IntPtr lpszOutData);
-
-        [DllImport("coredll.dll")]
-        static extern IntPtr GetDC(IntPtr hwnd);
-              
-        private enum VideoPowerState : int
+        public enum PowerState
         {
-
-            VideoPowerOn = 1,
-
-            VideoPowerStandBy,
-
-            VideoPowerSuspend,
-
-            VideoPowerOff,
+            POWER_STATE_ON = 0x00010000,
+            POWER_STATE_OFF = 0x00020000,
+            POWER_STATE_CRITICAL = 0x00040000,
+            POWER_STATE_BOOT = 0x00080000,
+            POWER_STATE_IDLE = 0x00100000,
+            POWER_STATE_SUSPEND = 0x00200000,
+            POWER_STATE_UNATTENDED = 0x00400000,
+            POWER_STATE_RESET = 0x00800000,
+            POWER_STATE_USERIDLE = 0x01000000,
+            POWER_STATE_PASSWORD = 0x10000000
+        }
+        public enum PowerRequirement
+        {
+            POWER_NAME = 0x00000001,
+            POWER_FORCE = 0x00001000,
+            POWER_DUMPDW = 0x00002000
         }
 
-       
-#endregion
-
-        public static void PowerOffScreen()
+        public enum ACLineStatus : byte
         {
-            IntPtr hdc = GetDC(IntPtr.Zero);
-            byte[] vpm = { 12, 0, 0, 0, 1, 0, 0, 0, (byte)VideoPowerState.VideoPowerOff, 0, 0, 0, 0 };
-            ExtEscapeSet(hdc, SETPOWERMANAGEMENT, 12, vpm, 0, IntPtr.Zero);
+            Offline = 0,
+            Online = 1,
+            BackUp = 2,
+            Unknown = 255,
         }
-
-        public static void PowerOnScreen()
+ 
+        private struct SYSTEM_POWER_STATUS_EX2
         {
-            IntPtr hdc = GetDC(IntPtr.Zero);
-            byte[] vpm = {12, 0, 0, 0, 1, 0, 0, 0, (byte)VideoPowerState.VideoPowerOn, 0, 0, 0, 0};
-            ExtEscapeSet(hdc, SETPOWERMANAGEMENT, 12, vpm, 0, IntPtr.Zero);
-        }
-    }
-
-    public partial class Hardware
-    {
-        private const int FILE_DEVICE_HAL = 257;
-
-        private const int METHOD_BUFFERED = 0;
-
-        private const int FILE_ANY_ACCESS = 0;
-
-        static int CTL_CODE(int DeviceType, int Func, int Method, int Access)
-        {
-            return (DeviceType << 16) | (Access << 14) | (Func << 2) | Method;
-        }
-
-        [DllImport("Coredll.dll")]
-        private static extern int KernelIoControl(int dwIoControlCode, IntPtr lpInBuf, int nInBufSize, IntPtr lpOutBuf, int nOutBufSize, ref int lpBytesReturned);
-
-        public static int SoftReset()
-        {
-            int bytesReturned = 0;
-            int IOCTL_HAL_REBOOT = CTL_CODE(FILE_DEVICE_HAL, 15, METHOD_BUFFERED, FILE_ANY_ACCESS);
-            return KernelIoControl(IOCTL_HAL_REBOOT, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReturned);
-        }
-
-        public class SYSTEM_POWER_STATUS_EX
-        {
-            public byte ACLineStatus;
+            public ACLineStatus ACLineStatus;
             public byte BatteryFlag;
             public byte BatteryLifePercent;
             public byte Reserved1;
@@ -88,95 +49,46 @@ namespace PDA
             public byte Reserved3;
             public uint BackupBatteryLifeTime;
             public uint BackupBatteryFullLifeTime;
-        }
-
-        [DllImport("Coredll")]
-        private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus,
-            bool fUpdate);
-
-        public static byte GetBatteryLeftPercentage()
-        {
-            //SYSTEM_POWER_STATUS_EX powerStatus = new SYSTEM_POWER_STATUS_EX();
-            //GetSystemPowerStatusEx(powerStatus, true);            
-            //return powerStatus.BatteryLifePercent;
-
-            return Convert.ToByte(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength));
-        }
-
-
-        public enum DevicePowerState : int
-        {
-
-            Unspecified = -1,
-
-            D0 = 0, // Full On: full power, full functionality
-            D1, // Low Power On: fully functional at low power/performance
-            D2, // Standby: partially powered with automatic wake
-            D3, // Sleep: partially powered with device initiated wake
-            D4, // Off: unpowered
+            public uint BatteryVoltage;
+            public uint BatteryCurrent;
+            public uint BatteryAverageCurrent;
+            public uint BatteryAverageInterval;
+            public uint BatterymAHourConsumed;
+            public uint BatteryTemperature;
+            public uint BackupBatteryVoltage;
+            public byte BatteryChemistry;
         }
 
         [DllImport("coredll.dll", SetLastError = true)]
-        private static extern int SetDevicePower(
-        string pvDevice,
-        int dwDeviceFlags,
-        DevicePowerState DeviceState);
+        [return: MarshalAs(UnmanagedType.U4)]
+        private static extern int GetSystemPowerStatusEx2(ref SYSTEM_POWER_STATUS_EX2 pSystemPowerStatusEx2, [MarshalAs(UnmanagedType.U4), In] int dwLen, [MarshalAs(UnmanagedType.Bool), In] bool fUpdate);
 
-        private const int POWER_NAME = 0x00000001;
+        private const int FILE_DEVICE_HAL = 257;
+        private const int METHOD_BUFFERED = 0;
+        private const int FILE_ANY_ACCESS = 0;
+        static int CTL_CODE(int DeviceType, int Func, int Method, int Access)
+        {return (DeviceType << 16) | (Access << 14) | (Func << 2) | Method;}
 
-        public static void TurnOffBackLight()
-        {
-            SetDevicePower("BKL1:", POWER_NAME, DevicePowerState.D4);
-        }
-
-        private struct MEMORY_STATUS
-        {
-            public UInt32 dwLength;
-            public UInt32 dwMemoryLoad;
-            public UInt32 dwTotalPhys;
-            public int dwAvailPhys;
-            public UInt32 dwTotalPageFile;
-            public UInt32 dwAvailPageFile;
-            public UInt32 dwTotalVirtual;
-            public UInt32 dwAvailVirtual;
-        }
+        [DllImport("Coredll.dll")]
+        private static extern int KernelIoControl(int dwIoControlCode, IntPtr lpInBuf, int nInBufSize, IntPtr lpOutBuf, int nOutBufSize, ref int lpBytesReturned);
 
         [DllImport("coredll.dll", SetLastError = true)]
-        private static extern void GlobalMemoryStatus(ref MEMORY_STATUS ms);
+        public static extern int SetSystemPowerState(string psState, int StateFlags, int Options);
 
-        public static double GetAvailablePhysicalMemory()
+        public static double GetBatteryLevel()
         {
-            MEMORY_STATUS ms = new MEMORY_STATUS();
-            try
-            {
-                GlobalMemoryStatus(ref ms);
-                double avail = (double)ms.dwAvailPhys / 1048.576;
-                return avail;
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            SYSTEM_POWER_STATUS_EX2 status2 = new SYSTEM_POWER_STATUS_EX2();
+            GetSystemPowerStatusEx2(ref status2, (int)Marshal.SizeOf(status2), false);
+            return Convert.ToDouble(status2.BatteryLifePercent);
         }
+
+        public static int SoftReset()
+        {
+            int bytesReturned = 0;
+            int IOCTL_HAL_REBOOT = CTL_CODE(FILE_DEVICE_HAL, 15, METHOD_BUFFERED, FILE_ANY_ACCESS);
+            return KernelIoControl(IOCTL_HAL_REBOOT, IntPtr.Zero, 0, IntPtr.Zero, 0, ref bytesReturned);
+        }
+
+
     }
-    
-    public partial class Utility
-    {
-        public static void logError()
-        {
-            // TODO: Create a webservice in server to keep warning and error from the sensor.
-        }      
-
-        public static double BytesToMegabytes(double Bytes)
-        {
-            double dblAns;
-            dblAns = (Bytes / 1024) / 1024;
-            return dblAns;
-        }
-
-        public static void StartHouseKeeping()        
-        {
-            //throw new Exception("The method or operation is not implemented.");
-        }
-	}
 }

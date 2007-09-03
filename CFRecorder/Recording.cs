@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
 using System.Threading;
+using System.IO;
 
-namespace CFRecorder
+namespace QUT
 {
-	public class Recording
-	{
+    public class Recording
+    {
 		Timer timer;
 		WaveIn waveIn;
 
@@ -62,13 +62,13 @@ namespace CFRecorder
 			{
 				waveIn.Stop();
 				Wave.MMSYSERR result = waveIn.Save(path);
-				if (result != Wave.MMSYSERR.NOERROR)
-					MainForm.Log("Error saving recording - {0}", result);
+                if (result != Wave.MMSYSERR.NOERROR)
+                    System.Windows.Forms.MessageBox.Show(String.Format("Error saving recording - {0}", result));
 				succeeded = true;
 			}
 			catch (IOException e)
 			{
-				MainForm.Log("Recording stop failed - {0}", e);
+				//Log("Recording stop failed - {0}", e);
 				try
 				{
 					File.Delete(path);
@@ -96,5 +96,7 @@ namespace CFRecorder
 				DoneRecording(this, EventArgs.Empty);
 		}
 		#endregion
+
+
 	}
 }
