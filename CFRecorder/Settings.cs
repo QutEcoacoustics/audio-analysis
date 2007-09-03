@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CFRecorder
-{
 	public static class Settings
 	{
 		#region Properties
@@ -106,4 +104,3 @@ namespace CFRecorder
 			return retVal;
 		}
 	}
-}

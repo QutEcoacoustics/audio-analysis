@@ -4,28 +4,26 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}</ProjectGuid>
+    <ProjectGuid>{A1C2A26F-9FF7-44A6-8BDF-F716EDF71390}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CFRecorder</RootNamespace>
+    <RootNamespace>QUT</RootNamespace>
     <AssemblyName>CFRecorder</AssemblyName>
     <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <PlatformFamilyName>PocketPC</PlatformFamilyName>
     <PlatformID>4118C335-430C-497f-BE48-11C3316B135E</PlatformID>
     <OSVersion>5.01</OSVersion>
-    <DeployDirSuffix>CFRecorder</DeployDirSuffix>
+    <DeployDirSuffix>QUTSensor</DeployDirSuffix>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
-    <StartupObject>
-    </StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;PocketPC</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;$(PlatformFamilyName)</DefineConstants>
     <NoStdLib>true</NoStdLib>
     <NoConfig>true</NoConfig>
     <ErrorReport>prompt</ErrorReport>
@@ -47,58 +45,35 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.WindowsCE.Forms" />
-    <Reference Include="Microsoft.WindowsMobile, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Reference Include="Microsoft.WindowsMobile.Status, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="mscorlib" />
-    <Reference Include="OpenNETCF, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
+    <Reference Include="OpenNETCF, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="OpenNETCF.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="OpenNETCF.WindowsCE, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="OpenNETCF.WindowsMobile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="SmartDeviceProject2, Version=1.0.2796.26252, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Extra Assemblies\OpenNETCF.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenNETCF.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Extra Assemblies\OpenNETCF.Net.dll</HintPath>
-    </Reference>
-    <Reference Include="OpenNETCF.WindowsCE, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\Extra Assemblies\OpenNETCF.WindowsCE.dll</HintPath>
+      <HintPath>D:\QUTSensor\SmartDeviceProject2\SmartDeviceProject2\bin\Debug\SmartDeviceProject2.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web.Services" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Windows.Forms.DataGrid" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="PDAUtils.cs" />
-    <Compile Include="DataUploader.cs" />
-    <Compile Include="MainForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="MainForm.Designer.cs">
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </Compile>
+    <Compile Include="HealthInfo.cs" />
+    <Compile Include="Settings.cs" />
+    <Compile Include="Uploader.cs" />
+    <Compile Include="Wave\Memory.cs" />
     <Compile Include="PDA.cs" />
-    <Compile Include="SensorDetails.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="SensorDetails.Designer.cs">
-      <DependentUpon>SensorDetails.cs</DependentUpon>
-    </Compile>
-    <Compile Include="WAV\Memory.cs" />
+    <Compile Include="Recorder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="MainForm.resx">
-      <SubType>Designer</SubType>
-      <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="SensorDetails.resx">
-      <DependentUpon>SensorDetails.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <Compile Include="Properties\Resources.Designer.cs">
@@ -107,24 +82,28 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Recording.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="WAV\Wave.cs" />
-    <Compile Include="WAV\WaveIn.cs" />
-    <Compile Include="WAV\WaveOut.cs" />
-    <Compile Include="Web References\QutSensors.Services\Reference.cs">
+    <Compile Include="Sensor.cs" />
+    <Compile Include="Wave\Wave.cs" />
+    <Compile Include="Wave\WaveIn.cs" />
+    <Compile Include="Wave\WaveOut.cs" />
+    <Compile Include="Web References\wsQUTSensor\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
+    <None Include="Web References\wsQUTSensor\service.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Qutsensor/service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/qutsensor/service.asmx">
       <UrlBehavior>Static</UrlBehavior>
-      <RelPath>Web References\QutSensors.Services\</RelPath>
-      <UpdateFromURL>http://www.mquter.qut.edu.au/Qutsensor/service.asmx</UpdateFromURL>
+      <RelPath>Web References\wsQUTSensor\</RelPath>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/qutsensor/service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -136,17 +115,12 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Web References\QutSensors.Services\Service.wsdl" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Web References\QutSensors.Services\Reference.map">
+    <None Include="ClassDiagram2.cd" />
+    <None Include="Web References\wsQUTSensor\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Web References\QutSensors.Services\Sensor.datasource">
-      <DependentUpon>Reference.map</DependentUpon>
-    </None>
-    <None Include="Web References\QutSensors.Services\Service.disco" />
+    <None Include="Web References\wsQUTSensor\service.disco" />
   </ItemGroup>
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
