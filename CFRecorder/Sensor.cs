@@ -6,10 +6,9 @@ using OpenNETCF.WindowsCE.Notification;
 using System.Reflection;
 using System.IO;
 using System.Data;
-using QUT.wsQUTSensor;
 using System.Threading;
 
-namespace QUT
+namespace CFRecorder
 {
     public class Sensor
     {
@@ -21,7 +20,7 @@ namespace QUT
         #region Private Field
         string myFriendlyName;
         private string mySensorDataPath;
-        wsQUTSensor.WebService ws = new WebService();
+        CFRecorder.WebService.Service ws = new CFRecorder.WebService.Service();
         #endregion        
 
         #region Constructor
@@ -142,7 +141,7 @@ namespace QUT
             //Put the sensor into power idle mode
             // TODO: Before Mark's code arrived and we have found a better solution, we will keep restarting to ensure reliablity.
 
-            PDA.SoftReset();
+            PDA.Hardware.SoftReset();
         }
         #endregion
         

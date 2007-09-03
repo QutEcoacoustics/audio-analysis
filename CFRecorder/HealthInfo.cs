@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace QUT
+namespace CFRecorder
 {
     public class HealthInfo
     {
@@ -23,8 +23,8 @@ namespace QUT
         /// Collect information about sensor's health (for e.g. Battery, power state and etc)
         /// </summary>
         public void Collect()
-        {            
-            batteryLevel = PDA.GetBatteryLevel();            
+        {
+            batteryLevel = PDA.Hardware.GetBatteryLeftPercentage();
         }
     }
 }
