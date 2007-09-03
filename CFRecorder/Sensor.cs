@@ -7,6 +7,7 @@ using System.Reflection;
 using System.IO;
 using System.Data;
 using System.Threading;
+using QUT.Service;
 
 namespace CFRecorder
 {
@@ -20,7 +21,7 @@ namespace CFRecorder
         #region Private Field
         string myFriendlyName;
         private string mySensorDataPath;
-        CFRecorder.WebService.Service ws = new CFRecorder.WebService.Service();
+        QUT.Service.Service ws = new Service();        
         #endregion        
 
         #region Constructor

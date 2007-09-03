@@ -4,7 +4,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{A1C2A26F-9FF7-44A6-8BDF-F716EDF71390}</ProjectGuid>
+    <ProjectGuid>{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>QUT</RootNamespace>
@@ -45,15 +45,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.WindowsCE.Forms" />
+    <Reference Include="Microsoft.WindowsMobile, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
+    <Reference Include="Microsoft.WindowsMobile.Status, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
     <Reference Include="mscorlib" />
     <Reference Include="OpenNETCF, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="OpenNETCF.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="OpenNETCF.WindowsCE, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="OpenNETCF.WindowsMobile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
-    <Reference Include="SmartDeviceProject2, Version=1.0.2796.26252, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>D:\QUTSensor\SmartDeviceProject2\SmartDeviceProject2\bin\Debug\SmartDeviceProject2.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
@@ -86,24 +84,20 @@
     <Compile Include="Wave\Wave.cs" />
     <Compile Include="Wave\WaveIn.cs" />
     <Compile Include="Wave\WaveOut.cs" />
-    <Compile Include="Web References\wsQUTSensor\Reference.cs">
+    <Compile Include="Web References\Service\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.map</DependentUpon>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
-    <None Include="Web References\wsQUTSensor\service.wsdl" />
-  </ItemGroup>
-  <ItemGroup>
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/qutsensor/service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Qutsensor/service.asmx">
       <UrlBehavior>Static</UrlBehavior>
-      <RelPath>Web References\wsQUTSensor\</RelPath>
-      <UpdateFromURL>http://www.mquter.qut.edu.au/qutsensor/service.asmx</UpdateFromURL>
+      <RelPath>Web References\Service\</RelPath>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/Qutsensor/service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>
@@ -115,12 +109,17 @@
     </WebReferenceUrl>
   </ItemGroup>
   <ItemGroup>
-    <None Include="ClassDiagram2.cd" />
-    <None Include="Web References\wsQUTSensor\Reference.map">
+    <None Include="Web References\Service\service.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Web References\Service\Deployment1.datasource">
+      <DependentUpon>Reference.map</DependentUpon>
+    </None>
+    <None Include="Web References\Service\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <None Include="Web References\wsQUTSensor\service.disco" />
+    <None Include="Web References\Service\service.disco" />
   </ItemGroup>
   <Import Condition="'$(TargetFrameworkVersion)' == 'v1.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.v1.targets" />
   <Import Condition="'$(TargetFrameworkVersion)' == 'v2.0'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
