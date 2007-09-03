@@ -15,13 +15,13 @@ namespace CFRecorder
 		{
 			if (recording.StartTime == null)
 			{
-				if (!silent)
-					MainForm.Log("Unable to upload recording - start time not specified");
+                //if (!silent)
+                //    MainForm.Log("Unable to upload recording - start time not specified");
 			}
 			else
 			{
-				if (!silent)
-					MainForm.Log("Commencing upload...");
+                //if (!silent)
+                //    MainForm.Log("Commencing upload...");
 
 				FileInfo file = new FileInfo(recording.GetPath());
 				try
@@ -30,18 +30,19 @@ namespace CFRecorder
 					using (FileStream input = file.OpenRead())
 						input.Read(buffer, 0, (int)file.Length);
 
-					QutSensors.Services.Service service = new QutSensors.Services.Service();
+                    CFRecorder.WebService.Service service = new CFRecorder.WebService.Service();
 					service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 					service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime.Value, buffer);
-					if (!silent)
-						MainForm.Log("Upload complete.");
+                    if (!silent)
+                    {
+                        //MainForm.Log("Upload complete.");
+                    }
 
 					File.Delete(file.FullName); // To delete the audio recording once the file is uploaded.
 				}
 				catch (Exception e)
 				{
-					if (!silent)
-						MainForm.Log("Upload failed - storing for later upload.\r\n{0}", e);
+                    System.Windows.Forms.MessageBox.Show(e.ToString());
 				}
 			}
 		}
@@ -81,17 +82,17 @@ namespace CFRecorder
                 batteryLevel = Convert.ToInt16(healthLog[2]);
                 freeMemory = Convert.ToDecimal(healthLog[3]);
                 memoryUsage = Convert.ToDecimal(healthLog[4]);
-                
-                QutSensors.Services.Service service = new QutSensors.Services.Service();
+
+                CFRecorder.WebService.Service service = new CFRecorder.WebService.Service();
 				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);
 
-                if (!service.AddSensorStatus(sensorID, time, batteryLevel, freeMemory, memoryUsage))
-                {
-                    using (StreamWriter writer = new StreamWriter("HealthLog.txt", true))
-                    {
-                        writer.WriteLine("{0},{1},{2},{3},{4}", sensorID, time, batteryLevel, freeMemory, memoryUsage);
-                    }
-                }
+                //if (!service.AddSensorStatus(sensorID, time, batteryLevel, freeMemory, memoryUsage))
+                //{
+                //    using (StreamWriter writer = new StreamWriter("HealthLog.txt", true))
+                //    {
+                //        writer.WriteLine("{0},{1},{2},{3},{4}", sensorID, time, batteryLevel, freeMemory, memoryUsage);
+                //    }
+                //}
             }
         }
 	}

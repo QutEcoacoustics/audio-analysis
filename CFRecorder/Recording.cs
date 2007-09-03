@@ -4,7 +4,7 @@ using System.Text;
 using System.Threading;
 using System.IO;
 
-namespace QUT
+namespace CFRecorder
 {
     public class Recording
     {
