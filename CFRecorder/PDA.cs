@@ -7,6 +7,7 @@ using OpenNETCF;
 using OpenNETCF.IO;
 using Microsoft.WindowsMobile;
 
+
 namespace PDA
 {
 

@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using CFRecorder;
 
-namespace QUT
+namespace CFRecorder
 {
     public static class DataUploader
     {
@@ -31,7 +32,7 @@ namespace QUT
                     using (FileStream input = file.OpenRead())
                         input.Read(buffer, 0, (int)file.Length);
 
-                    wsQUTSensor.WebService service = new QUT.wsQUTSensor.WebService();
+                    QUT.Service.Service service = new QUT.Service.Service();
                     //service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);                    
                     service.AddAudioReading("2201ef1f-6bda-4889-a7d0-d4791f918144", null, recording.StartTime.Value, buffer);
                     //System.Windows.Forms.MessageBox.Show("Data upload done");
