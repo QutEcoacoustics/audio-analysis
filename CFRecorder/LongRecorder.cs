@@ -6,6 +6,16 @@ using System.Text;
 
 namespace CFRecorder
 {
+    //Usage Example:
+    //
+    //LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000);
+    //recordingInfo.PerformRecording();
+    //while (recordingInfo.Active)
+    //{
+    //    Thread.Sleep(20);
+    //    //DANCEBABY!!
+    //}
+
     /// <summary>
     /// Wrapper/Implementer Class for longer audio recordings
     /// </summary>
