@@ -71,7 +71,6 @@
     <Compile Include="LongRecorder.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Uploader.cs" />
-    <Compile Include="Wave\Memory.cs" />
     <Compile Include="PDA.cs" />
     <Compile Include="Recorder.cs" />
     <Compile Include="Program.cs" />
@@ -88,9 +87,10 @@
     </Compile>
     <Compile Include="Recording.cs" />
     <Compile Include="Sensor.cs" />
-    <Compile Include="Wave\Wave.cs" />
-    <Compile Include="Wave\WaveIn.cs" />
-    <Compile Include="Wave\WaveOut.cs" />
+    <Compile Include="WAV\Memory.cs" />
+    <Compile Include="WAV\Wave.cs" />
+    <Compile Include="WAV\WaveIn.cs" />
+    <Compile Include="WAV\WaveOut.cs" />
   </ItemGroup>
   <ItemGroup>
     <WebReferences Include="Web References\" />
