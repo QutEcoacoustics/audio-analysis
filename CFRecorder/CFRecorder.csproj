@@ -1,8 +1,8 @@
-﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.50727</ProductVersion>
+    <ProductVersion>9.0.20706</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -17,6 +17,12 @@
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>2.0</OldToolsVersion>
+    <NativePlatformName>Windows Mobile 5.0 Pocket PC SDK</NativePlatformName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -62,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="HealthInfo.cs" />
+    <Compile Include="LongRecorder.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Uploader.cs" />
     <Compile Include="Wave\Memory.cs" />
@@ -84,11 +91,6 @@
     <Compile Include="Wave\Wave.cs" />
     <Compile Include="Wave\WaveIn.cs" />
     <Compile Include="Wave\WaveOut.cs" />
-    <Compile Include="Web References\Service\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.map</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <WebReferences Include="Web References\" />
@@ -117,7 +119,6 @@
     </None>
     <None Include="Web References\Service\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
     <None Include="Web References\Service\service.disco" />
   </ItemGroup>
@@ -137,4 +138,5 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <Import Condition="'$(TargetFrameworkVersion)' == 'v3.5'" Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
 </Project>
