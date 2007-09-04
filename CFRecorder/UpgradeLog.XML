@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="CFRecorder08">
+</Property><Property Name="Solution File" Value="C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\CFRecorder08.sln">
+</Property><Property Name="Date" Value="Tuesday, 4 September 2007">
+</Property><Property Name="Time" Value="13:50:13 PM">
+</Property></Properties><Event ErrorLevel="0" Project="CFRecorder08" Source="CFRecorder08.csproj" Description="Project file successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\CFRecorder08.csproj">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="HealthInfo.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\HealthInfo.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Settings.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Settings.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Uploader.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Uploader.cs">
+</Event><Event ErrorLevel="2" Project="CFRecorder08" Source="Wave\Memory.cs" Description="Failed to backup file as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Wave\Memory.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="PDA.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\PDA.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Recorder.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Recorder.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Program.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Program.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Properties\AssemblyInfo.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Properties\AssemblyInfo.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Properties\Resources.Designer.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Properties\Resources.Designer.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Recording.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Recording.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Sensor.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Sensor.cs">
+</Event><Event ErrorLevel="2" Project="CFRecorder08" Source="Wave\Wave.cs" Description="Failed to backup file as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Wave\Wave.cs">
+</Event><Event ErrorLevel="2" Project="CFRecorder08" Source="Wave\WaveIn.cs" Description="Failed to backup file as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Wave\WaveIn.cs">
+</Event><Event ErrorLevel="2" Project="CFRecorder08" Source="Wave\WaveOut.cs" Description="Failed to backup file as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Wave\WaveOut.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Web References\Service\Reference.cs" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Web References\Service\Reference.cs">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Web References\Service\service.wsdl" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Web References\Service\service.wsdl">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Web References\Service\Deployment1.datasource" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Web References\Service\Deployment1.datasource">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Web References\Service\Reference.map" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Web References\Service\Reference.map">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Web References\Service\service.disco" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Web References\Service\service.disco">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Properties\Resources.resx" Description="File successfully backed up as C:\Documents and Settings\richarm4\Desktop\trunk\CFRecorder\Backup\Properties\Resources.resx">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="CFRecorder08.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="CFRecorder08" Source="CFRecorder08.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="Properties\Resources.resx" Description="">
+</Event><Event ErrorLevel="3" Project="CFRecorder08" Source="Properties\Resources.resx" Description="Converted">
+</Event><Event ErrorLevel="0" Project="CFRecorder08" Source="CFRecorder08.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>
