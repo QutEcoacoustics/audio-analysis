@@ -1,5 +1,7 @@
-// ASFWriter.cpp : Defines the entry point for the application.
-//
+//Audio.cpp
+//  Unmanaged class for DirectShow interop - primarily used for longer audio recordings
+//  
+
 
 #include "stdafx.h"
 #include "AudioPhoto.h"
@@ -26,7 +28,8 @@
 #define SETPOWERMANAGEMENT   6147
 #define GETPOWERMANAGEMENT   6148
 
-
+//Power state PowerOn fails to work when called from managed code, video off and standby work as
+//expected
 typedef enum _VIDEO_POWER_STATE {
 	VideoPowerOn = 1,
 	VideoPowerStandBy,
@@ -41,14 +44,6 @@ typedef struct _VIDEO_POWER_MANAGEMENT {
 	ULONG PowerState;
 } VIDEO_POWER_MANAGEMENT, *PVIDEO_POWER_MANAGEMENT;
 
-// Forward declarations of functions included in this code module:
-
-//BOOL			InitializeAudioRecording();
-
-
-//HDC hdc2, hdcTemp;
-
-
 // Declare pointers to DirectShow interfaces
 CComPtr<ICaptureGraphBuilder2>  pCaptureGraphBuilder;
 CComPtr<IBaseFilter>            pVideoCap, pAsfWriter,
@@ -61,8 +56,7 @@ CComPtr<IMediaEvent>            pMediaEvent;
 CComPtr<IMediaSeeking>          pMediaSeeking;
 CComPtr<IFileSinkFilter>        pFileSink;
 
-
-VIDEOINFOHEADER *pVih;
+//VIDEOINFOHEADER *pVih;
 
 LONGLONG dwEnd, dwStart =0;
 long    lEventCode, lParam1, lParam2;
@@ -101,6 +95,7 @@ extern BOOL InitializeAudioRecording()
 }
 
 extern BOOL BeginAudioRecording(LPWSTR str){
+	//Clean stuff up and make sure we can start anew
 	pMediaControl->Stop();
 	pGraph.Release();
 	pCaptureGraphBuilder.Release();
@@ -151,7 +146,6 @@ extern BOOL BeginAudioRecording(LPWSTR str){
 	//hr = pAsfWriter.CoCreateInstance( CLSID_ASFWriter );
 	//hr = pAsfWriter->QueryInterface( IID_IFileSinkFilter, (void**) &pFileSink );
 	//hr = pFileSink->SetFileName( L"\\Storage Card\\My Documents\\test0.asf", NULL );
-	
 	
 	//Setting string info this way should allow us to clean it up, but sending
 	//as a char* in c# is unsafe.  OHNOES!
