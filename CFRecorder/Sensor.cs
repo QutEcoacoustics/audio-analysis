@@ -66,25 +66,7 @@ namespace CFRecorder
         public void Start()
         {            
             Log("Auto queue @ {0}", DateTime.Now.AddMinutes(5));
-            QueueNext(5);
-
-            //Time table part.
-            /* DataSet timeTable = new DataSet();
-            timeTable = ws.GetTimeTable("207ec68d-dc5a-422f-8d62-98b074366ab2");
-            GUI.dataGrid1.DataSource = timeTable.Tables[0];            
-            string folderPath = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            string timeTableFile = Path.Combine(folderPath, "timetable.xml");
-            timeTable.WriteXml(timeTableFile);
-            MessageBox.Show(timeTableFile);
-            timeTable.Clear();
-            MessageBox.Show("Ready to load");
-            timeTable.ReadXml(timeTableFile); */
-            
-
-            //Process Health Information here.
-            //hi.Collect();   //Collect Health Information
-
-            //TakeAudioRecording();
+            QueueNext(5); //Automatically queue for the next 5 mintues, anything happen it will still start again.
 
             RecordAudio();
             WaitForReading();
