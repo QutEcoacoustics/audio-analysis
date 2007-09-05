@@ -8,7 +8,7 @@ namespace CFRecorder
 {
     //Usage Example:
     //
-    //LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000);
+    //LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
     //recordingInfo.PerformRecording();
     //while (recordingInfo.Active)
     //{
@@ -22,10 +22,14 @@ namespace CFRecorder
     class LongRecorder
     {
         //Milliseconds to record for
-        private int recordingTime;
+        private double recordingTime;
 
         //Location to save too '\\Storage Card\\.....'
         private string fileLocation;
+
+        private DateTime startTime;
+
+        private DateTime endTime;
 
         //Is this object currently recording aution
         public bool recording = false;
@@ -62,21 +66,45 @@ namespace CFRecorder
         /// </summary>
         /// <param name="name">File name to save to</param>
         /// <param name="time">Milliseconds to record for</param>
-        public LongRecorder(string name, int time)
+        public LongRecorder(string name, double time)
         {
             recordingTime = time;
             fileLocation = name;
-            InitializeAudioRecording();
+            InitializeAudioRecording();            
         }
 
         /// <summary>
         /// Property to return milliseconds the object will record for
         /// </summary>
-        public int RecordingTime
+        public double RecordingTime
         {
             get
             {
                 return recordingTime;
+            }
+        }
+
+        public DateTime StartTime
+        {
+            get
+            {
+                return startTime;
+            }
+        }
+
+        public DateTime EndTime
+        {
+            get
+            {
+                return endTime;
+            }
+        }
+
+        public double TimeRemaining
+        {
+            get
+            {
+                return (double)(endTime - startTime);
             }
         }
 
@@ -112,6 +140,8 @@ namespace CFRecorder
             {
                 recording = true;
                 ThreadPool.QueueUserWorkItem(new WaitCallback(DoRecording), this);
+                startTime = DateTime.Now();
+                endTime = (DateTime)((double)startTime + recordingTime);
                 return true;
             }
             return false;
