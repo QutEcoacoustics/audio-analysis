@@ -15,6 +15,7 @@ namespace CFRecorder
         {
             //Recorder recorder = new Recorder();
 
+            Settings.SensorDataPath = "\\Storage Card"; 
             Sensor s = new Sensor();
             s.Start();
 

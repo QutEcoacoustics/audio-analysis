@@ -36,7 +36,7 @@ namespace CFRecorder
         {
             get
             {
-                return "QUTAndy";
+                return Settings.FriendlyName;
             }
             set
             {
@@ -114,12 +114,13 @@ namespace CFRecorder
 
         private void Finalise()
         {
+            DataUploader.ProcessFailures();
             //Check next recording time
             
             //TODO:If time is too short (less than 5 minutes), don't put it sleep.
-            QueueNext(5);
+            QueueNext();
 
-            //TODO: Upload data to server.
+            //TODO: Upload unUploaded data to server.
 
             //Put the sensor into power idle mode
             // TODO: Before Mark's code arrived and we have found a better solution, we will keep restarting to ensure reliablity.
@@ -139,7 +140,16 @@ namespace CFRecorder
         {
             try
             {
-                QueueNext(30); 
+                QueueNext();
+                //LongRecorder r = new LongRecorder("andytest", 10000);
+                //r.FileLocation = "\\Storage Card";
+                //r.PerformRecording();
+                //while (r.Active)
+                //{
+                //    Thread.Sleep(20);
+                //}
+                //MessageBox.Show("Done");
+
                 Log("Taking reading {0} ", Settings.ReadingDuration);
                 staticRecordingComplete = new ManualResetEvent(false);
                 Recording recording = new Recording();

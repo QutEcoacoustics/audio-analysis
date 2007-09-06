@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.20706</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -91,6 +91,11 @@
     <Compile Include="WAV\Wave.cs" />
     <Compile Include="WAV\WaveIn.cs" />
     <Compile Include="WAV\WaveOut.cs" />
+    <Compile Include="Web References\Service\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.map</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <WebReferences Include="Web References\" />
@@ -119,6 +124,7 @@
     </None>
     <None Include="Web References\Service\Reference.map">
       <Generator>MSDiscoCodeGenerator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
     <None Include="Web References\Service\service.disco" />
   </ItemGroup>
