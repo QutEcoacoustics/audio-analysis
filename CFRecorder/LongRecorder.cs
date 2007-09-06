@@ -3,6 +3,7 @@
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 
 namespace CFRecorder
 {
@@ -15,6 +16,7 @@ namespace CFRecorder
     //    Thread.Sleep(20);
     //    //DANCEBABY!!
     //}
+
 
     /// <summary>
     /// Wrapper/Implementer Class for longer audio recordings
