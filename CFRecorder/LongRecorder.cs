@@ -24,7 +24,7 @@ namespace CFRecorder
     class LongRecorder
     {
         //Milliseconds to record for
-        private double recordingTime;
+        private int recordingTime;
 
         //Location to save too '\\Storage Card\\.....'
         private string fileLocation;
@@ -68,7 +68,7 @@ namespace CFRecorder
         /// </summary>
         /// <param name="name">File name to save to</param>
         /// <param name="time">Milliseconds to record for</param>
-        public LongRecorder(string name, double time)
+        public LongRecorder(string name, int time)
         {
             recordingTime = time;
             fileLocation = name;
@@ -78,7 +78,7 @@ namespace CFRecorder
         /// <summary>
         /// Property to return milliseconds the object will record for
         /// </summary>
-        public double RecordingTime
+        public int RecordingTime
         {
             get
             {
@@ -102,11 +102,11 @@ namespace CFRecorder
             }
         }
 
-        public double TimeRemaining
+        public int TicksRemaining
         {
             get
             {
-                return (double)(endTime - startTime);
+                return (int)(endTime - startTime).Ticks;
             }
         }
 
@@ -142,8 +142,8 @@ namespace CFRecorder
             {
                 recording = true;
                 ThreadPool.QueueUserWorkItem(new WaitCallback(DoRecording), this);
-                startTime = DateTime.Now();
-                endTime = (DateTime)((double)startTime + recordingTime);
+                startTime = DateTime.Now;
+                endTime = (startTime + new TimeSpan(recordingTime));
                 return true;
             }
             return false;
