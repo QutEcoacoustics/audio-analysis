@@ -260,43 +260,43 @@ extern BOOL EndAudioRecording(){
 	return TRUE;
 }
 
-extern BOOL PowerOffDisplay(){
-	//Why does turning off work through wrapper while turning on does not??
-	HDC gdc;
-	int iESC=SETPOWERMANAGEMENT;
-
-	gdc = ::GetDC(NULL);
-
-	if (ExtEscape(gdc, QUERYESCSUPPORT, sizeof(int), (LPCSTR)&iESC, 
-		0, NULL)==0)     {
-			gdc = ::GetDC(NULL);
-	}
-	VIDEO_POWER_MANAGEMENT vpm;
-	vpm.Length = sizeof(VIDEO_POWER_MANAGEMENT);
-	vpm.DPMSVersion = 0x0001;
-	vpm.PowerState = VideoPowerOff;
-	// Power off the display
-	ExtEscape(gdc, SETPOWERMANAGEMENT, vpm.Length, (LPCSTR) &vpm, 
-		0, NULL);
-	return TRUE;
-}
-
-extern BOOL PowerOnDisplay(){
-	HDC gdc;
-	int iESC=SETPOWERMANAGEMENT;
-
-	gdc = ::GetDC(NULL);
-
-	if (ExtEscape(gdc, QUERYESCSUPPORT, sizeof(int), (LPCSTR)&iESC, 
-		0, NULL)==0)     {
-			gdc = ::GetDC(NULL);
-	}
-	VIDEO_POWER_MANAGEMENT vpm;
-	vpm.Length = sizeof(VIDEO_POWER_MANAGEMENT);
-	vpm.DPMSVersion = 0x0001;
-	vpm.PowerState = VideoPowerOn;
-	ExtEscape(gdc, SETPOWERMANAGEMENT, vpm.Length, (LPCSTR) &vpm, 
-		0, NULL);	
-	return TRUE;
-}
+//extern BOOL PowerOffDisplay(){
+//	//Why does turning off work through wrapper while turning on does not??
+//	HDC gdc;
+//	int iESC=SETPOWERMANAGEMENT;
+//
+//	gdc = ::GetDC(NULL);
+//
+//	if (ExtEscape(gdc, QUERYESCSUPPORT, sizeof(int), (LPCSTR)&iESC, 
+//		0, NULL)==0)     {
+//			gdc = ::GetDC(NULL);
+//	}
+//	VIDEO_POWER_MANAGEMENT vpm;
+//	vpm.Length = sizeof(VIDEO_POWER_MANAGEMENT);
+//	vpm.DPMSVersion = 0x0001;
+//	vpm.PowerState = VideoPowerOff;
+//	// Power off the display
+//	ExtEscape(gdc, SETPOWERMANAGEMENT, vpm.Length, (LPCSTR) &vpm, 
+//		0, NULL);
+//	return TRUE;
+//}
+//
+//extern BOOL PowerOnDisplay(){
+//	HDC gdc;
+//	int iESC=SETPOWERMANAGEMENT;
+//
+//	gdc = ::GetDC(NULL);
+//
+//	if (ExtEscape(gdc, QUERYESCSUPPORT, sizeof(int), (LPCSTR)&iESC, 
+//		0, NULL)==0)     {
+//			gdc = ::GetDC(NULL);
+//	}
+//	VIDEO_POWER_MANAGEMENT vpm;
+//	vpm.Length = sizeof(VIDEO_POWER_MANAGEMENT);
+//	vpm.DPMSVersion = 0x0001;
+//	vpm.PowerState = VideoPowerOn;
+//	ExtEscape(gdc, SETPOWERMANAGEMENT, vpm.Length, (LPCSTR) &vpm, 
+//		0, NULL);	
+//	return TRUE;
+//}
 

@@ -1,7 +1,5 @@
 LIBRARY      AudioPhotoLibrary
 EXPORTS
-   PowerOffDisplay
-   PowerOnDisplay
    InitializeAudioRecording
    BeginAudioRecording
    EndAudioRecording
