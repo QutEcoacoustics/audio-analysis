@@ -35,8 +35,7 @@ namespace CFRecorder
 				using (FileStream input = file.OpenRead())
 					input.Read(buffer, 0, (int)file.Length);
 
-				QUT.Service.Service service = new QUT.Service.Service();
-				service.Url = string.Format("http://{0}/Service.asmx", Settings.Server);                    
+				QUT.Service.Service service = GetServiceProxy(Settings.Server);
 				service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime.Value, buffer);
 
 				File.Delete(file.FullName);
@@ -44,14 +43,21 @@ namespace CFRecorder
 			catch (Exception e) { Utilities.Log(e, "Uploading data"); }
 		}
 
-		public static bool ProcessFailures()
+		public static QUT.Service.Service GetServiceProxy(string server)
+		{
+			QUT.Service.Service service = new QUT.Service.Service();
+			service.Url = string.Format("http://{0}/Service.asmx", server);
+			return service;
+		}
+
+		public static int ProcessFailures()
 		{
 			return ProcessFailures(-1);
 		}
 
-		public static bool ProcessFailures(int maxUploads)
+		public static int ProcessFailures(int maxUploads)
 		{
-			bool retVal = false;
+			int uploaded = 0;
 			Regex fileRegex = new Regex(Settings.SensorName + @"_(?<date>\d{8}-\d{6})");
 
 			foreach (string file in Directory.GetFiles(Settings.SensorDataPath))
@@ -66,10 +72,10 @@ namespace CFRecorder
 					Recording recording = new Recording(time);
 					Upload(recording, true);
 					maxUploads--;
-					retVal = true;
+					uploaded++;
 				}
 			}
-			return retVal;
+			return uploaded;
 		}
 	}
 }

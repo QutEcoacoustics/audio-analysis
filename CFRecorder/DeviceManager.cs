@@ -53,7 +53,7 @@ namespace QUT
 					recordingTaken = true;
 				}
 
-				uploadedOldRecording = DataUploader.ProcessFailures(1);
+				uploadedOldRecording = DataUploader.ProcessFailures(1) > 0;
 			} while (uploadedOldRecording);
 		}
 

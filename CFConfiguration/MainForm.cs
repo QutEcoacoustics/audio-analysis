@@ -7,6 +7,8 @@ using System.Text;
 using System.Windows.Forms;
 using QUT;
 using System.IO;
+using CFRecorder;
+using QUT.Service;
 
 namespace CFConfiguration
 {
@@ -20,6 +22,9 @@ namespace CFConfiguration
 			txtFrequency.Text = Settings.ReadingFrequency.ToString();
 			txtDuration.Text = Settings.ReadingDuration.ToString();
 			txtRecordingPath.Text = Settings.SensorDataPath;
+
+			// Server
+			txtServer.Text = Settings.Server;
 
 			// Info
 			RefreshInfoTab();
@@ -44,6 +49,38 @@ namespace CFConfiguration
 		}
 
 		#region Event Handlers
+		#region Recordings
+		private void cmdUploadRecordings_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				int uploaded = DataUploader.ProcessFailures();
+				MessageBox.Show("Uploaded " + uploaded + " recordings.", "Upload Complete");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString(), "Upload failed");
+			}
+		}
+
+		private void cmdRecordNow_Click(object sender, EventArgs e)
+		{
+			int duration = Convert.ToInt32(txtDuration.Text);
+
+			DeviceManager.TakeRecording(DateTime.Now, DateTime.Now.AddMilliseconds(duration));
+		}
+
+		private void cmdChooseRecordingPath_Click(object sender, EventArgs e)
+		{
+			using (OpenFileDialog dia = new OpenFileDialog())
+			{
+				dia.FileName = "Filname Ignored";
+				dia.InitialDirectory = Settings.SensorDataPath;
+				if (dia.ShowDialog() == DialogResult.OK)
+					txtRecordingPath.Text = Path.GetDirectoryName(dia.FileName);
+			}
+		}
+
 		private void cmdSaveRecordings_Click(object sender, EventArgs e)
 		{
 			int freq = Convert.ToInt32(txtFrequency.Text);
@@ -61,28 +98,12 @@ namespace CFConfiguration
 			Utilities.QueueNextAppRunForRecorder(DateTime.Now.AddSeconds(30));
 			MessageBox.Show("Recording settings updated.");
 		}
+		#endregion
 
+		#region Info
 		private void cmdRefreshInfo_Click(object sender, EventArgs e)
 		{
 			RefreshInfoTab();
-		}
-
-		private void cmdChooseRecordingPath_Click(object sender, EventArgs e)
-		{
-			using (OpenFileDialog dia = new OpenFileDialog())
-			{
-				dia.FileName = "Filname Ignored";
-				dia.InitialDirectory = Settings.SensorDataPath;
-				if (dia.ShowDialog() == DialogResult.OK)
-					txtRecordingPath.Text = Path.GetDirectoryName(dia.FileName);
-			}
-		}
-
-		private void cmdRecordNow_Click(object sender, EventArgs e)
-		{
-			int duration = Convert.ToInt32(txtDuration.Text);
-
-			DeviceManager.TakeRecording(DateTime.Now, DateTime.Now.AddMilliseconds(duration));
 		}
 
 		private void timer_Tick(object sender, EventArgs e)
@@ -90,6 +111,28 @@ namespace CFConfiguration
 			if (SelectedTab == tabInfo)
 				txtCurrentTime.Text = DateTime.Now.ToString("dd/MM HH:mm:ss");
 		}
+		#endregion
+
+		#region Server
+		private void cmdTestServer_Click(object sender, EventArgs e)
+		{
+			try
+			{
+				Service service = DataUploader.GetServiceProxy(txtServer.Text);
+				Deployment d = service.FindSensor(Settings.SensorID.ToString());
+				MessageBox.Show("Server contacted");
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString(), "Error contacting server");
+			}
+		}
+
+		private void cmdSaveServer_Click(object sender, EventArgs e)
+		{
+			Settings.Server = txtServer.Text;
+		} 
+		#endregion
 		#endregion
 	}
 }
