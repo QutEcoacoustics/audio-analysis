@@ -51,9 +51,15 @@ namespace CFConfiguration
 			this.txtCurrentTime = new System.Windows.Forms.TextBox();
 			this.lblCurrentTime = new System.Windows.Forms.Label();
 			this.timer = new System.Windows.Forms.Timer();
+			this.txtServer = new System.Windows.Forms.TextBox();
+			this.lblServer = new System.Windows.Forms.Label();
+			this.cmdSaveServer = new System.Windows.Forms.Button();
+			this.cmdTestServer = new System.Windows.Forms.Button();
+			this.cmdUploadRecordings = new System.Windows.Forms.Button();
 			this.tabs.SuspendLayout();
 			this.tabRecording.SuspendLayout();
 			this.tabInfo.SuspendLayout();
+			this.tabServer.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// lblDuration
@@ -78,6 +84,7 @@ namespace CFConfiguration
 			// 
 			// tabRecording
 			// 
+			this.tabRecording.Controls.Add(this.cmdUploadRecordings);
 			this.tabRecording.Controls.Add(this.cmdRecordNow);
 			this.tabRecording.Controls.Add(this.cmdChooseRecordingPath);
 			this.tabRecording.Controls.Add(this.txtRecordingPath);
@@ -223,6 +230,10 @@ namespace CFConfiguration
 			// 
 			// tabServer
 			// 
+			this.tabServer.Controls.Add(this.cmdTestServer);
+			this.tabServer.Controls.Add(this.cmdSaveServer);
+			this.tabServer.Controls.Add(this.txtServer);
+			this.tabServer.Controls.Add(this.lblServer);
 			this.tabServer.Location = new System.Drawing.Point(0, 0);
 			this.tabServer.Name = "tabServer";
 			this.tabServer.Size = new System.Drawing.Size(240, 245);
@@ -261,6 +272,52 @@ namespace CFConfiguration
 			this.timer.Interval = 500;
 			this.timer.Tick += new System.EventHandler(this.timer_Tick);
 			// 
+			// txtServer
+			// 
+			this.txtServer.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtServer.Location = new System.Drawing.Point(57, 7);
+			this.txtServer.Name = "txtServer";
+			this.txtServer.Size = new System.Drawing.Size(176, 21);
+			this.txtServer.TabIndex = 5;
+			// 
+			// lblServer
+			// 
+			this.lblServer.Location = new System.Drawing.Point(7, 9);
+			this.lblServer.Name = "lblServer";
+			this.lblServer.Size = new System.Drawing.Size(44, 21);
+			this.lblServer.Text = "Server:";
+			// 
+			// cmdSaveServer
+			// 
+			this.cmdSaveServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdSaveServer.Location = new System.Drawing.Point(161, 222);
+			this.cmdSaveServer.Name = "cmdSaveServer";
+			this.cmdSaveServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdSaveServer.TabIndex = 7;
+			this.cmdSaveServer.Text = "&Save";
+			this.cmdSaveServer.Click += new System.EventHandler(this.cmdSaveServer_Click);
+			// 
+			// cmdTestServer
+			// 
+			this.cmdTestServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.cmdTestServer.Location = new System.Drawing.Point(7, 222);
+			this.cmdTestServer.Name = "cmdTestServer";
+			this.cmdTestServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdTestServer.TabIndex = 8;
+			this.cmdTestServer.Text = "&Test";
+			this.cmdTestServer.Click += new System.EventHandler(this.cmdTestServer_Click);
+			// 
+			// cmdUploadRecordings
+			// 
+			this.cmdUploadRecordings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.cmdUploadRecordings.Location = new System.Drawing.Point(7, 196);
+			this.cmdUploadRecordings.Name = "cmdUploadRecordings";
+			this.cmdUploadRecordings.Size = new System.Drawing.Size(123, 20);
+			this.cmdUploadRecordings.TabIndex = 11;
+			this.cmdUploadRecordings.Text = "Upload Recordings";
+			this.cmdUploadRecordings.Click += new System.EventHandler(this.cmdUploadRecordings_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -275,6 +332,7 @@ namespace CFConfiguration
 			this.tabs.ResumeLayout(false);
 			this.tabRecording.ResumeLayout(false);
 			this.tabInfo.ResumeLayout(false);
+			this.tabServer.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -304,6 +362,11 @@ namespace CFConfiguration
 		private System.Windows.Forms.TextBox txtCurrentTime;
 		private System.Windows.Forms.Label lblCurrentTime;
 		private System.Windows.Forms.Timer timer;
+		private System.Windows.Forms.TextBox txtServer;
+		private System.Windows.Forms.Label lblServer;
+		private System.Windows.Forms.Button cmdSaveServer;
+		private System.Windows.Forms.Button cmdTestServer;
+		private System.Windows.Forms.Button cmdUploadRecordings;
 	}
 }
 
