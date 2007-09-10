@@ -67,16 +67,6 @@ HRESULT hr = S_OK;
 CComVariant   varCamName;
 CPropertyBag  PropBag;	
 
-//
-//   FUNCTION: InitInstance(HINSTANCE, int)
-//
-//   PURPOSE: Saves instance handle and creates main window
-//
-//   COMMENTS:
-//
-//        In this function, we save the instance handle in a global variable and
-//        create and display the main program window.
-//
 extern BOOL InitializeAudioRecording()
 {
 	CoInitialize( NULL );
