@@ -3,4 +3,6 @@ EXPORTS
    InitializeAudioRecording
    BeginAudioRecording
    EndAudioRecording
+   PowerOnDisplay
+   PowerOffDisplay
    
