@@ -47,11 +47,11 @@ namespace CFRecorder
         [DllImport("AudioPhotoLibrary.dll")]
         public static extern Boolean EndAudioRecording();
         
-        //[DllImport("AudioPhotoLibrary.dll")]
-        //public static extern Boolean PowerOnDisplay();
+        [DllImport("AudioPhotoLibrary.dll")]
+        public static extern Boolean PowerOnDisplay();
         
-        //[DllImport("AudioPhotoLibrary.dll")]
-        //public static extern Boolean PowerOffDisplay();
+        [DllImport("AudioPhotoLibrary.dll")]
+        public static extern Boolean PowerOffDisplay();
 
         /// <summary>
         /// Empty Constructor, won't record anything
@@ -156,9 +156,11 @@ namespace CFRecorder
         /// <param name="recordingInfo">Recording info (time and name)</param>
         private void DoRecording(object recordingInfo)
         {
+            PowerOffDisplay();
             BeginAudioRecording(((LongRecorder)recordingInfo).FileLocation);
             Thread.Sleep(((LongRecorder)recordingInfo).RecordingTime);
             EndAudioRecording();
+            PowerOnDisplay();
             recording = false;
         }
     }
