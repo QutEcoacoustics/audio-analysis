@@ -13,7 +13,7 @@
     <PlatformFamilyName>PocketPC</PlatformFamilyName>
     <PlatformID>4118C335-430C-497f-BE48-11C3316B135E</PlatformID>
     <OSVersion>5.01</OSVersion>
-    <DeployDirSuffix>QUTSensor</DeployDirSuffix>
+    <DeployDirSuffix>QUTSensors</DeployDirSuffix>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FormFactorID>
     </FormFactorID>
@@ -67,6 +67,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DeviceManager.cs" />
     <Compile Include="HealthInfo.cs" />
     <Compile Include="LongRecorder.cs" />
     <Compile Include="Settings.cs" />
@@ -87,6 +88,7 @@
     </Compile>
     <Compile Include="Recording.cs" />
     <Compile Include="Sensor.cs" />
+    <Compile Include="Utilities.cs" />
     <Compile Include="WAV\Memory.cs" />
     <Compile Include="WAV\Wave.cs" />
     <Compile Include="WAV\WaveIn.cs" />

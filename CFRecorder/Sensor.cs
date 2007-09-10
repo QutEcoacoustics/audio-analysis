@@ -15,35 +15,19 @@ namespace CFRecorder
     {
         static ManualResetEvent staticRecordingComplete;
 
-        private HealthInfo hi = new HealthInfo();
+        HealthInfo hi = new HealthInfo();
+        QUT.Service.Service ws = new Service();
         OpenNETCF.Media.WaveAudio.Recorder soundRecorder = new OpenNETCF.Media.WaveAudio.Recorder();
 
-        #region Private Field
-        string myFriendlyName;
-        private string mySensorDataPath;
-        QUT.Service.Service ws = new Service();        
-        #endregion        
-
-        #region Constructor
-        public Sensor() //This is the constructor of the sensor, everything starts here.
-        {
-        }
-
-        #endregion
-
         #region Properties
+        string myFriendlyName;
         public string FriendlyName
         {
-            get
-            {
-                return Settings.FriendlyName;
-            }
-            set
-            {
-                myFriendlyName = value;
-            }
+            get { return Settings.FriendlyName; }
+            set { myFriendlyName = value; }
         }
-        
+
+        string mySensorDataPath;
         public string SensorDataPath
         {
             get { return "\\Storage Card\\"; }//return mySensorDataPath; }
@@ -52,49 +36,38 @@ namespace CFRecorder
 
         public Guid ID
         {
-            get
-            {
-                throw new System.NotImplementedException();
-            }
-            set
-            {
-            }
+            get { throw new System.NotImplementedException(); }
+            set { }
         }
         #endregion
 
         #region Public Methods
         public void Start()
-        {            
+        {
             Log("Auto queue @ {0}", DateTime.Now.AddMinutes(5));
             QueueNext(5); //Automatically queue for the next 5 mintues, anything happen it will still start again.
 
             RecordAudio();
             WaitForReading();
-        }       
+        }
 
         public void QueueNext(int minutes)
         {
             DateTime nextRun = DateTime.Now.AddMinutes(minutes);
             Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
-            Log("Queue @ {0}", nextRun);            
+            Log("Queue @ {0}", nextRun);
         }
 
         public void QueueNext()
         {
             QueueNext(30); //At this stage we just set to queue 30 minutes after automatically
         }
-        
+
         public void QueueNext(DateTime time)
         {
             DateTime nextRun = time;
             Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, nextRun);
             Log("Queue @ {0}", nextRun);
-        }
-        
-
-        public void TakeImageRecording()
-        {
-            throw new System.NotImplementedException();
         }
 
         public void Log(string format, params object[] args)
@@ -106,17 +79,14 @@ namespace CFRecorder
                 writer.WriteLine(format, args);
             }
         }
-
-
-#endregion
+        #endregion
 
         #region Internal Methods
-
         private void Finalise()
         {
             DataUploader.ProcessFailures();
             //Check next recording time
-            
+
             //TODO:If time is too short (less than 5 minutes), don't put it sleep.
             QueueNext();
 
@@ -128,9 +98,8 @@ namespace CFRecorder
             PDA.Hardware.SoftReset();
         }
         #endregion
-        
-        #region Audio Recording 
 
+        #region Audio Recording
         public void WaitForReading()
         {
             staticRecordingComplete.WaitOne();
@@ -170,9 +139,9 @@ namespace CFRecorder
 
             if (recording.Succeeded)
             {
-                Log("Reading done.");             
+                Log("Reading done.");
                 DataUploader.Upload(recording);
-                Log("Data upload done.");             
+                Log("Data upload done.");
                 Finalise();
             }
             else
