@@ -31,6 +31,7 @@ namespace QUT
 
 			UploadOldRecordings(ref recordingTaken);
 
+			nextRecording = CalculateNextRecordingTime(out nextRecordingEnd);
 			Utilities.QueueNextAppRun(nextRecording.AddMinutes(-1));
 
 			if (recordingTaken)
@@ -59,7 +60,7 @@ namespace QUT
 		private static void RecordAndUpload(ref DateTime nextRecordingEnd, ref DateTime nextRecording)
 		{
 			Recording recording = TakeRecording(nextRecording, nextRecordingEnd);
-			if (recording != null && recording.Succeeded)
+			if (recording != null)
 			{
 				Settings.LastRecordingTime = nextRecording;
 				DataUploader.Upload(recording);
