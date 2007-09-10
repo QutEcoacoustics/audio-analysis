@@ -48,6 +48,9 @@ namespace CFConfiguration
 			this.tabServer = new System.Windows.Forms.TabPage();
 			this.mainMenu = new System.Windows.Forms.MainMenu();
 			this.cmdRecordNow = new System.Windows.Forms.Button();
+			this.txtCurrentTime = new System.Windows.Forms.TextBox();
+			this.lblCurrentTime = new System.Windows.Forms.Label();
+			this.timer = new System.Windows.Forms.Timer();
 			this.tabs.SuspendLayout();
 			this.tabRecording.SuspendLayout();
 			this.tabInfo.SuspendLayout();
@@ -133,6 +136,8 @@ namespace CFConfiguration
 			// 
 			// tabInfo
 			// 
+			this.tabInfo.Controls.Add(this.txtCurrentTime);
+			this.tabInfo.Controls.Add(this.lblCurrentTime);
 			this.tabInfo.Controls.Add(this.lblLog);
 			this.tabInfo.Controls.Add(this.txtLog);
 			this.tabInfo.Controls.Add(this.cmdRefreshInfo);
@@ -145,7 +150,7 @@ namespace CFConfiguration
 			// 
 			// lblLastRecording
 			// 
-			this.lblLastRecording.Location = new System.Drawing.Point(7, 10);
+			this.lblLastRecording.Location = new System.Drawing.Point(7, 37);
 			this.lblLastRecording.Name = "lblLastRecording";
 			this.lblLastRecording.Size = new System.Drawing.Size(91, 20);
 			this.lblLastRecording.Text = "Last Recording:";
@@ -154,7 +159,7 @@ namespace CFConfiguration
 			// 
 			this.txtLastRecording.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtLastRecording.Location = new System.Drawing.Point(104, 7);
+			this.txtLastRecording.Location = new System.Drawing.Point(104, 34);
 			this.txtLastRecording.Name = "txtLastRecording";
 			this.txtLastRecording.ReadOnly = true;
 			this.txtLastRecording.Size = new System.Drawing.Size(129, 21);
@@ -175,17 +180,17 @@ namespace CFConfiguration
 			this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
 						| System.Windows.Forms.AnchorStyles.Left)
 						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtLog.Location = new System.Drawing.Point(7, 54);
+			this.txtLog.Location = new System.Drawing.Point(7, 80);
 			this.txtLog.Multiline = true;
 			this.txtLog.Name = "txtLog";
 			this.txtLog.ReadOnly = true;
 			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtLog.Size = new System.Drawing.Size(226, 160);
+			this.txtLog.Size = new System.Drawing.Size(226, 134);
 			this.txtLog.TabIndex = 3;
 			// 
 			// lblLog
 			// 
-			this.lblLog.Location = new System.Drawing.Point(7, 31);
+			this.lblLog.Location = new System.Drawing.Point(7, 57);
 			this.lblLog.Name = "lblLog";
 			this.lblLog.Size = new System.Drawing.Size(29, 20);
 			this.lblLog.Text = "Log:";
@@ -233,6 +238,29 @@ namespace CFConfiguration
 			this.cmdRecordNow.Text = "Record Now!";
 			this.cmdRecordNow.Click += new System.EventHandler(this.cmdRecordNow_Click);
 			// 
+			// txtCurrentTime
+			// 
+			this.txtCurrentTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtCurrentTime.Location = new System.Drawing.Point(104, 7);
+			this.txtCurrentTime.Name = "txtCurrentTime";
+			this.txtCurrentTime.ReadOnly = true;
+			this.txtCurrentTime.Size = new System.Drawing.Size(129, 21);
+			this.txtCurrentTime.TabIndex = 7;
+			// 
+			// lblCurrentTime
+			// 
+			this.lblCurrentTime.Location = new System.Drawing.Point(7, 10);
+			this.lblCurrentTime.Name = "lblCurrentTime";
+			this.lblCurrentTime.Size = new System.Drawing.Size(91, 20);
+			this.lblCurrentTime.Text = "Current Time:";
+			// 
+			// timer
+			// 
+			this.timer.Enabled = true;
+			this.timer.Interval = 500;
+			this.timer.Tick += new System.EventHandler(this.timer_Tick);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
@@ -273,6 +301,9 @@ namespace CFConfiguration
 		private System.Windows.Forms.TabPage tabServer;
 		private System.Windows.Forms.MainMenu mainMenu;
 		private System.Windows.Forms.Button cmdRecordNow;
+		private System.Windows.Forms.TextBox txtCurrentTime;
+		private System.Windows.Forms.Label lblCurrentTime;
+		private System.Windows.Forms.Timer timer;
 	}
 }
 

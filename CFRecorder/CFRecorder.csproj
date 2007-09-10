@@ -87,7 +87,6 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Recording.cs" />
-    <Compile Include="Sensor.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="WAV\Memory.cs" />
     <Compile Include="WAV\Wave.cs" />

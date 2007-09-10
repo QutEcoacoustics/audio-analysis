@@ -27,12 +27,6 @@ namespace CFRecorder
 		{
 			get { return startTime; }
 		}
-
-		private bool succeeded;
-		public bool Succeeded
-		{
-			get { return succeeded; }
-		}
 		#endregion
 
 		public string GetPath()
@@ -48,20 +42,24 @@ namespace CFRecorder
 			LongRecorder recorder = null;
 			if (start < DateTime.Now)
 			{
+				startTime = DateTime.Now;
 				int duration = (int)(end - DateTime.Now).TotalMilliseconds;
 				recorder = new LongRecorder(GetPath(), duration);
 			}
 			else
 			{
+				startTime = start;
 				int duration = (int)(end - start).TotalMilliseconds;
-				recorder = new LongRecorder(GetPath(), duration);
+				
 				WaitTill(start);
+				recorder = new LongRecorder(GetPath(), duration); // Would prefer this to be above the WaitTill but not working if put there.
 			}
 
 			if (!recorder.PerformRecording())
 				throw new Exception("PerformRecording failed");
 
 			recorder.WaitTillEnd();
+			Utilities.Log("Recording complete: {0:dd/MM HH:mm:ss}", DateTime.Now);
 		}
 
 		void WaitTill(DateTime time)
@@ -70,79 +68,5 @@ namespace CFRecorder
 			if (sleepTime > 0)
 				Thread.Sleep(sleepTime);
 		}
-
-		public void RecordFor(int duration)
-		{
-			Start(duration);
-			timer = new Timer(new TimerCallback(timer_Tick), null, duration, Timeout.Infinite);
-		}
-
-		private void Start(int expectedDuration)
-		{
-			PrepareRecording(expectedDuration);
-
-			Wave.MMSYSERR result = waveIn.Start();
-			if (result != Wave.MMSYSERR.NOERROR)
-				throw new Exception(string.Format("Error saving recording - {0}", result));
-			startTime = DateTime.Now;
-		}
-
-		bool prepared = false;
-		private void PrepareRecording(int expectedDuration)
-		{
-			if (waveIn != null)
-				throw new InvalidOperationException("Recording already started");
-
-			if (!prepared)
-			{
-				waveIn = new WaveIn();
-				Wave.MMSYSERR result = waveIn.Preload(expectedDuration, 2 * 1024 * 1024);
-				if (result != Wave.MMSYSERR.NOERROR)
-					throw new Exception(string.Format("Error saving recording - {0}", result));
-				prepared = true;
-			}
-		}
-
-		public void Stop()
-		{
-			string path = GetPath();
-			try
-			{
-				waveIn.Stop();
-				Wave.MMSYSERR result = waveIn.Save(path);
-                if (result != Wave.MMSYSERR.NOERROR)
-                    Utilities.Log("Error saving recording - {0}", result);
-				succeeded = true;
-			}
-			catch (IOException)
-			{
-				//Log("Recording stop failed - {0}", e);
-				try
-				{
-					File.Delete(path);
-				}
-				catch { }
-			}
-		}
-
-		void timer_Tick(object state)
-		{
-			Stop();
-			OnDoneRecording();
-		}
-
-		void recorder_DoneRecording()
-		{
-			OnDoneRecording();
-		}
-
-		#region Event Sources
-		public event EventHandler DoneRecording;
-		protected void OnDoneRecording()
-		{
-			if (DoneRecording != null)
-				DoneRecording(this, EventArgs.Empty);
-		}
-		#endregion
 	}
 }

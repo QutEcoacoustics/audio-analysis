@@ -25,12 +25,25 @@ namespace CFConfiguration
 			RefreshInfoTab();
 		}
 
+		#region Properties
+		TabPage SelectedTab
+		{
+			get { return tabs.TabPages[tabs.SelectedIndex]; }
+		}
+		#endregion
+
 		private void RefreshInfoTab()
 		{
 			txtLastRecording.Text = Settings.LastRecordingTime == null ? "Never" : Settings.LastRecordingTime.ToString();
-			txtLog.Text = Utilities.LoadLog();
+			string log = txtLog.Text = Utilities.LoadLog();
+			if (log != null && log.Length > 0)
+			{
+				txtLog.Select(log.Length - 1, 1);
+				txtLog.ScrollToCaret();
+			}
 		}
 
+		#region Event Handlers
 		private void cmdSaveRecordings_Click(object sender, EventArgs e)
 		{
 			int freq = Convert.ToInt32(txtFrequency.Text);
@@ -71,5 +84,12 @@ namespace CFConfiguration
 
 			DeviceManager.TakeRecording(DateTime.Now, DateTime.Now.AddMilliseconds(duration));
 		}
+
+		private void timer_Tick(object sender, EventArgs e)
+		{
+			if (SelectedTab == tabInfo)
+				txtCurrentTime.Text = DateTime.Now.ToString("dd/MM HH:mm:ss");
+		}
+		#endregion
 	}
 }
