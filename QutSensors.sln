@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 9.00
 # Visual Studio 2005
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\QUTSensor\WebFrontend\", "WebFrontend\", "{6E5C98FB-4833-40D3-9809-9FEF9B230E2A}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "C:\...\WebFrontend\", "WebFrontend\", "{6E5C98FB-4833-40D3-9809-9FEF9B230E2A}"
 	ProjectSection(WebsiteProperties) = preProject
 		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
@@ -23,23 +23,61 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\QUTSensor\WebFrontend\",
 	EndProjectSection
 EndProject
 Project("{4F174C21-8C12-11D0-8340-0000F80270F8}") = "QutSensorsDB", "QutSensorsDB\QutSensorsDB.dbp", "{F1E2B395-E3ED-4E2C-8FE8-1E44B6AF4ACC}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Importer", "QutSensors.Importer\QutSensors.Importer.csproj", "{0738E827-46BF-4F9C-B423-222EA34699E0}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFRecorder", "CFRecorder\CFRecorder.csproj", "{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "QutSensors.Uploader", "QutSensors.Uploader\QutSensors.Uploader.vbproj", "{965B663B-76E3-45D9-A062-1A4401EE4CA5}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3GTester", "3GTester\3GTester.csproj", "{C9C7A220-F239-49FD-9D99-D632689DB08C}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9F13571F-C20E-43AC-9257-15161D22231D}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 	ProjectSection(SolutionItems) = preProject
 		qut.ico = qut.ico
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intialiser", "Intialiser\Intialiser.csproj", "{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFConfiguration", "CFConfiguration\CFConfiguration.csproj", "{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -130,6 +168,20 @@ Global
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|.NET.ActiveCfg = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7A36BDD3-E862-4A8E-A343-51D7A2264EEE}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

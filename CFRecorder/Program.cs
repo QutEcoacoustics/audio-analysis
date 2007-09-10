@@ -1,25 +1,20 @@
 using System;
 using System.Windows.Forms;
+using QUT;
 
 namespace CFRecorder
 {
     static class Program
     {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-
-
         [MTAThread]
         static void Main()
         {
-            //Recorder recorder = new Recorder();
+			// Attempt to ensure any faults will be recovered from by re-running the application
+			Utilities.QueueNextAppRun(DateTime.Now.AddMinutes(5));
+			//TEMP removal
+			//PDA.Video.PowerOffScreen();
 
-            Settings.SensorDataPath = "\\Storage Card"; 
-            Sensor s = new Sensor();
-            s.Start();
-
+			DeviceManager.Start();
         }
-
     }
 }

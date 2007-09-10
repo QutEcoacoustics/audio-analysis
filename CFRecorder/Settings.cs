@@ -75,26 +75,42 @@ using System.Text;
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "ReadingDuration", value, Microsoft.Win32.RegistryValueKind.DWord); }
 		}
 
-		public static bool EnableLogging
+		/*public static bool EnableLogging
 		{
 			get { return Convert.ToBoolean(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", true)); }
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", value.ToString(), Microsoft.Win32.RegistryValueKind.String); }
-		}
+		}*/
 
-		public static string WirelessSSID
+		/*public static string WirelessSSID
 		{
 			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "WirelessSSID", "stargate"); }
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "WirelessSSID", value); }
-		}
+		}*/
 
-        public static int LogPosition
+        /*public static int LogPosition
         {
             get { return (int)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", 1); }
             set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", value); }
-        }
+        }*/
 
+		public static DateTime? LastRecordingTime
+		{
+			get
+			{
+				string retVal = (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LastRecording", null);
+				if (retVal == null)
+					return null;
+				return DateTime.Parse(retVal);
+			}
 
-		
+			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LastRecording", value.ToString()); }
+		}
+
+		public static string LogPath
+		{
+			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPath", "\\"); }
+			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPath", value); }
+		}
 		#endregion
 
 		private static Guid GenerateID()

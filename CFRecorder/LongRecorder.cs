@@ -75,62 +75,64 @@ namespace CFRecorder
             InitializeAudioRecording();            
         }
 
-        /// <summary>
-        /// Property to return milliseconds the object will record for
-        /// </summary>
-        public int RecordingTime
-        {
-            get
-            {
-                return recordingTime;
-            }
-        }
+		#region Properties
+		/// <summary>
+		/// Property to return milliseconds the object will record for
+		/// </summary>
+		public int RecordingTime
+		{
+			get
+			{
+				return recordingTime;
+			}
+		}
 
-        public DateTime StartTime
-        {
-            get
-            {
-                return startTime;
-            }
-        }
+		public DateTime StartTime
+		{
+			get
+			{
+				return startTime;
+			}
+		}
 
-        public DateTime EndTime
-        {
-            get
-            {
-                return endTime;
-            }
-        }
+		public DateTime EndTime
+		{
+			get
+			{
+				return endTime;
+			}
+		}
 
-        public int TicksRemaining
-        {
-            get
-            {
-                return (int)(endTime - startTime).Ticks;
-            }
-        }
+		public int TicksRemaining
+		{
+			get
+			{
+				return (int)(endTime - startTime).Ticks;
+			}
+		}
 
-        /// <summary>
-        /// Property to show if the object is currently recording or not.
-        /// </summary>
-        public bool Active
-        {
-            get
-            {
-                return recording;
-            }
-        }
+		/// <summary>
+		/// Property to show if the object is currently recording or not.
+		/// </summary>
+		public bool Active
+		{
+			get
+			{
+				return recording;
+			}
+		}
 
-        /// <summary>
-        /// Property to show file location that audio is being saved to
-        /// </summary>
-        public string FileLocation
-        {
-            get
-            {
-                return fileLocation;
-            }
-        }
+		/// <summary>
+		/// Property to show file location that audio is being saved to
+		/// </summary>
+		public string FileLocation
+		{
+			get
+			{
+				return fileLocation;
+			}
+		}
+		#endregion
 
         /// <summary>
         /// Creates a seperate thread that will perform the recording for the specified time.
@@ -141,13 +143,18 @@ namespace CFRecorder
             if (!recording)
             {
                 recording = true;
+				// NOTE: To speed up starting should we start the thread earlier and have it waiting on an event?
+				// In fact... perhaps we even build in the waiting till start time to minimise the path to recording.
                 ThreadPool.QueueUserWorkItem(new WaitCallback(DoRecording), this);
+				// NOTE: Should we set these in the recording thread since that's more accurate as to when it actually started
                 startTime = DateTime.Now;
                 endTime = (startTime + new TimeSpan(recordingTime));
                 return true;
             }
             return false;
         }
+
+		ManualResetEvent recordingFinished = new ManualResetEvent(false);
 
         /// <summary>
         /// Starts the audio recording in DirectShow thread, sleeps for recording time then
@@ -162,6 +169,12 @@ namespace CFRecorder
             EndAudioRecording();
             PowerOnDisplay();
             recording = false;
+			recordingFinished.Set();
         }
+
+		public void WaitTillEnd()
+		{
+			recordingFinished.WaitOne();
+		}
     }
 }
