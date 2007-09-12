@@ -9,9 +9,6 @@ namespace CFRecorder
 {
     public class Recording
     {
-		Timer timer;
-		WaveIn waveIn;
-
 		public Recording()
 		{
 		}

@@ -27,6 +27,7 @@ namespace CFConfiguration
 			txtServer.Text = Settings.Server;
 
 			// Info
+			chkDebugMode.Checked = Settings.DebugMode;
 			RefreshInfoTab();
 		}
 
@@ -72,10 +73,9 @@ namespace CFConfiguration
 
 		private void cmdChooseRecordingPath_Click(object sender, EventArgs e)
 		{
-			using (OpenFileDialog dia = new OpenFileDialog())
+			using (SaveFileDialog dia = new SaveFileDialog())
 			{
-				dia.FileName = "Filname Ignored";
-				dia.InitialDirectory = Settings.SensorDataPath;
+				dia.FileName = Path.Combine(Settings.SensorDataPath, "Filename Ignored");
 				if (dia.ShowDialog() == DialogResult.OK)
 					txtRecordingPath.Text = Path.GetDirectoryName(dia.FileName);
 			}
@@ -95,7 +95,7 @@ namespace CFConfiguration
 			Settings.ReadingDuration = duration;
 			Settings.SensorDataPath = txtRecordingPath.Text;
 			Utilities.Log("Recording settings updated.");
-			Utilities.QueueNextAppRunForRecorder(DateTime.Now.AddSeconds(30));
+			Utilities.QueueNextAppRunForRecorder(DateTime.Now.AddSeconds(15));
 			MessageBox.Show("Recording settings updated.");
 		}
 		#endregion
@@ -111,6 +111,11 @@ namespace CFConfiguration
 			if (SelectedTab == tabInfo)
 				txtCurrentTime.Text = DateTime.Now.ToString("dd/MM HH:mm:ss");
 		}
+
+		private void chkDebugMode_CheckStateChanged(object sender, EventArgs e)
+		{
+			Settings.DebugMode = chkDebugMode.Checked;
+		}
 		#endregion
 
 		#region Server
@@ -119,8 +124,10 @@ namespace CFConfiguration
 			try
 			{
 				Service service = DataUploader.GetServiceProxy(txtServer.Text);
-				Deployment d = service.FindSensor(Settings.SensorID.ToString());
-				MessageBox.Show("Server contacted");
+				if (service.TestConnection())
+					MessageBox.Show("Server contacted", "Server Connection Succeeded");
+				else
+					MessageBox.Show("Server return false for connection.", "Unexpected error");
 			}
 			catch (Exception ex)
 			{
@@ -131,7 +138,23 @@ namespace CFConfiguration
 		private void cmdSaveServer_Click(object sender, EventArgs e)
 		{
 			Settings.Server = txtServer.Text;
-		} 
+		}
+
+		private void cmdResetServer_Click(object sender, EventArgs e)
+		{
+			Settings.Server = null;
+			txtServer.Text = Settings.Server;
+		}
+		#endregion
+
+		#region Identity
+		private void cmdStartDeployment_Click(object sender, EventArgs e)
+		{
+			if (MessageBox.Show("Are you sure?", "Start new deployment", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+			{
+				MessageBox.Show("Not implemented yet");
+			}
+		}
 		#endregion
 		#endregion
 	}

@@ -73,7 +73,6 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Uploader.cs" />
     <Compile Include="PDA.cs" />
-    <Compile Include="Recorder.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -102,10 +101,10 @@
     <WebReferences Include="Web References\" />
   </ItemGroup>
   <ItemGroup>
-    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/Qutsensor/service.asmx">
+    <WebReferenceUrl Include="http://www.mquter.qut.edu.au/sensor/demo/Service.asmx">
       <UrlBehavior>Static</UrlBehavior>
       <RelPath>Web References\Service\</RelPath>
-      <UpdateFromURL>http://www.mquter.qut.edu.au/Qutsensor/service.asmx</UpdateFromURL>
+      <UpdateFromURL>http://www.mquter.qut.edu.au/sensor/demo/Service.asmx</UpdateFromURL>
       <ServiceLocationURL>
       </ServiceLocationURL>
       <CachedDynamicPropName>

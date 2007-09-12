@@ -17,6 +17,12 @@ namespace CFRecorder
     //    //DANCEBABY!!
     //}
 
+	// Altered Usage Example:
+	//
+	//LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
+	//recordingInfo.PerformRecording();
+	//recordingInfo.WaitTillEnd();
+
 
     /// <summary>
     /// Wrapper/Implementer Class for longer audio recordings
@@ -154,7 +160,7 @@ namespace CFRecorder
             return false;
         }
 
-		ManualResetEvent recordingFinished = new ManualResetEvent(false);
+		AutoResetEvent recordingFinished = new AutoResetEvent(false);
 
         /// <summary>
         /// Starts the audio recording in DirectShow thread, sleeps for recording time then
@@ -167,7 +173,8 @@ namespace CFRecorder
             BeginAudioRecording(((LongRecorder)recordingInfo).FileLocation);
             Thread.Sleep(((LongRecorder)recordingInfo).RecordingTime);
             EndAudioRecording();
-            PowerOnDisplay();
+			if (Settings.DebugMode)
+				PowerOnDisplay();
             recording = false;
 			recordingFinished.Set();
         }

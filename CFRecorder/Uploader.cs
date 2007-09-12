@@ -15,7 +15,7 @@ namespace CFRecorder
 			Upload(recording, false);
 		}
 
-		public static void Upload(Recording recording, bool silent)
+		public static bool Upload(Recording recording, bool silent)
 		{
 			if (recording.StartTime == null)
 			{
@@ -36,11 +36,13 @@ namespace CFRecorder
 					input.Read(buffer, 0, (int)file.Length);
 
 				QUT.Service.Service service = GetServiceProxy(Settings.Server);
-				service.AddAudioReading(Settings.SensorID.ToString(), null, recording.StartTime.Value, buffer);
+				service.AddAudioReading(Settings.SensorID, null, recording.StartTime.Value, buffer);
 
 				File.Delete(file.FullName);
+				return true;
 			}
 			catch (Exception e) { Utilities.Log(e, "Uploading data"); }
+			return false;
 		}
 
 		public static QUT.Service.Service GetServiceProxy(string server)
@@ -70,9 +72,11 @@ namespace CFRecorder
 				{
 					DateTime time = DateTime.ParseExact(m.Groups["date"].Value, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat);
 					Recording recording = new Recording(time);
-					Upload(recording, true);
-					maxUploads--;
-					uploaded++;
+					if (Upload(recording, true))
+					{
+						maxUploads--;
+						uploaded++;
+					}
 				}
 			}
 			return uploaded;

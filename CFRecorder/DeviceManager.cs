@@ -32,7 +32,7 @@ namespace QUT
 			UploadOldRecordings(ref recordingTaken);
 
 			nextRecording = CalculateNextRecordingTime(out nextRecordingEnd);
-			Utilities.QueueNextAppRun(nextRecording.AddMinutes(-1));
+			Utilities.QueueNextAppRun(nextRecording.AddSeconds(-30));
 
 			if (recordingTaken)
 				PDA.Hardware.SoftReset();
@@ -49,6 +49,8 @@ namespace QUT
 				if (nextRecording < DateTime.Now.AddMinutes(NearbyRecordingMinutes))
 				{
 					Utilities.Log("Queuing another recording immediately. No time for a reset: {0:dd/MM HH:mm:ss}", nextRecording);
+					if (DateTime.Now < nextRecording.AddSeconds(-31))
+						Utilities.QueueNextAppRun(nextRecording.AddSeconds(-30));
 					RecordAndUpload(ref nextRecordingEnd, ref nextRecording);
 					recordingTaken = true;
 				}

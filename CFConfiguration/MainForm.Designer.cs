@@ -31,35 +31,39 @@ namespace CFConfiguration
 			this.lblDuration = new System.Windows.Forms.Label();
 			this.tabs = new System.Windows.Forms.TabControl();
 			this.tabRecording = new System.Windows.Forms.TabPage();
-			this.tabIdentity = new System.Windows.Forms.TabPage();
-			this.lblFrequency = new System.Windows.Forms.Label();
-			this.txtFrequency = new System.Windows.Forms.TextBox();
-			this.txtDuration = new System.Windows.Forms.TextBox();
-			this.cmdSaveRecordings = new System.Windows.Forms.Button();
-			this.tabInfo = new System.Windows.Forms.TabPage();
-			this.lblLastRecording = new System.Windows.Forms.Label();
-			this.txtLastRecording = new System.Windows.Forms.TextBox();
-			this.cmdRefreshInfo = new System.Windows.Forms.Button();
-			this.txtLog = new System.Windows.Forms.TextBox();
-			this.lblLog = new System.Windows.Forms.Label();
+			this.cmdUploadRecordings = new System.Windows.Forms.Button();
+			this.cmdRecordNow = new System.Windows.Forms.Button();
+			this.cmdChooseRecordingPath = new System.Windows.Forms.Button();
 			this.txtRecordingPath = new System.Windows.Forms.TextBox();
 			this.lblRecordingPath = new System.Windows.Forms.Label();
-			this.cmdChooseRecordingPath = new System.Windows.Forms.Button();
+			this.cmdSaveRecordings = new System.Windows.Forms.Button();
+			this.txtDuration = new System.Windows.Forms.TextBox();
+			this.txtFrequency = new System.Windows.Forms.TextBox();
+			this.lblFrequency = new System.Windows.Forms.Label();
 			this.tabServer = new System.Windows.Forms.TabPage();
-			this.mainMenu = new System.Windows.Forms.MainMenu();
-			this.cmdRecordNow = new System.Windows.Forms.Button();
-			this.txtCurrentTime = new System.Windows.Forms.TextBox();
-			this.lblCurrentTime = new System.Windows.Forms.Label();
-			this.timer = new System.Windows.Forms.Timer();
+			this.cmdTestServer = new System.Windows.Forms.Button();
+			this.cmdSaveServer = new System.Windows.Forms.Button();
 			this.txtServer = new System.Windows.Forms.TextBox();
 			this.lblServer = new System.Windows.Forms.Label();
-			this.cmdSaveServer = new System.Windows.Forms.Button();
-			this.cmdTestServer = new System.Windows.Forms.Button();
-			this.cmdUploadRecordings = new System.Windows.Forms.Button();
+			this.tabIdentity = new System.Windows.Forms.TabPage();
+			this.cmdStartDeployment = new System.Windows.Forms.Button();
+			this.tabInfo = new System.Windows.Forms.TabPage();
+			this.chkDebugMode = new System.Windows.Forms.CheckBox();
+			this.txtCurrentTime = new System.Windows.Forms.TextBox();
+			this.lblCurrentTime = new System.Windows.Forms.Label();
+			this.lblLog = new System.Windows.Forms.Label();
+			this.txtLog = new System.Windows.Forms.TextBox();
+			this.cmdRefreshInfo = new System.Windows.Forms.Button();
+			this.txtLastRecording = new System.Windows.Forms.TextBox();
+			this.lblLastRecording = new System.Windows.Forms.Label();
+			this.mainMenu = new System.Windows.Forms.MainMenu();
+			this.timer = new System.Windows.Forms.Timer();
+			this.cmdResetServer = new System.Windows.Forms.Button();
 			this.tabs.SuspendLayout();
 			this.tabRecording.SuspendLayout();
-			this.tabInfo.SuspendLayout();
 			this.tabServer.SuspendLayout();
+			this.tabIdentity.SuspendLayout();
+			this.tabInfo.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// lblDuration
@@ -99,108 +103,35 @@ namespace CFConfiguration
 			this.tabRecording.Size = new System.Drawing.Size(240, 245);
 			this.tabRecording.Text = "Recordings";
 			// 
-			// tabIdentity
+			// cmdUploadRecordings
 			// 
-			this.tabIdentity.Location = new System.Drawing.Point(0, 0);
-			this.tabIdentity.Name = "tabIdentity";
-			this.tabIdentity.Size = new System.Drawing.Size(240, 245);
-			this.tabIdentity.Text = "Identity";
+			this.cmdUploadRecordings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.cmdUploadRecordings.Location = new System.Drawing.Point(7, 196);
+			this.cmdUploadRecordings.Name = "cmdUploadRecordings";
+			this.cmdUploadRecordings.Size = new System.Drawing.Size(123, 20);
+			this.cmdUploadRecordings.TabIndex = 11;
+			this.cmdUploadRecordings.Text = "Upload Recordings";
+			this.cmdUploadRecordings.Click += new System.EventHandler(this.cmdUploadRecordings_Click);
 			// 
-			// lblFrequency
+			// cmdRecordNow
 			// 
-			this.lblFrequency.Location = new System.Drawing.Point(7, 9);
-			this.lblFrequency.Name = "lblFrequency";
-			this.lblFrequency.Size = new System.Drawing.Size(65, 21);
-			this.lblFrequency.Text = "Frequency:";
+			this.cmdRecordNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.cmdRecordNow.Location = new System.Drawing.Point(7, 222);
+			this.cmdRecordNow.Name = "cmdRecordNow";
+			this.cmdRecordNow.Size = new System.Drawing.Size(85, 20);
+			this.cmdRecordNow.TabIndex = 10;
+			this.cmdRecordNow.Text = "Record Now!";
+			this.cmdRecordNow.Click += new System.EventHandler(this.cmdRecordNow_Click);
 			// 
-			// txtFrequency
+			// cmdChooseRecordingPath
 			// 
-			this.txtFrequency.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtFrequency.Location = new System.Drawing.Point(78, 7);
-			this.txtFrequency.Name = "txtFrequency";
-			this.txtFrequency.Size = new System.Drawing.Size(155, 21);
-			this.txtFrequency.TabIndex = 3;
-			// 
-			// txtDuration
-			// 
-			this.txtDuration.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtDuration.Location = new System.Drawing.Point(78, 34);
-			this.txtDuration.Name = "txtDuration";
-			this.txtDuration.Size = new System.Drawing.Size(155, 21);
-			this.txtDuration.TabIndex = 4;
-			// 
-			// cmdSaveRecordings
-			// 
-			this.cmdSaveRecordings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdSaveRecordings.Location = new System.Drawing.Point(161, 222);
-			this.cmdSaveRecordings.Name = "cmdSaveRecordings";
-			this.cmdSaveRecordings.Size = new System.Drawing.Size(72, 20);
-			this.cmdSaveRecordings.TabIndex = 5;
-			this.cmdSaveRecordings.Text = "&Save";
-			this.cmdSaveRecordings.Click += new System.EventHandler(this.cmdSaveRecordings_Click);
-			// 
-			// tabInfo
-			// 
-			this.tabInfo.Controls.Add(this.txtCurrentTime);
-			this.tabInfo.Controls.Add(this.lblCurrentTime);
-			this.tabInfo.Controls.Add(this.lblLog);
-			this.tabInfo.Controls.Add(this.txtLog);
-			this.tabInfo.Controls.Add(this.cmdRefreshInfo);
-			this.tabInfo.Controls.Add(this.txtLastRecording);
-			this.tabInfo.Controls.Add(this.lblLastRecording);
-			this.tabInfo.Location = new System.Drawing.Point(0, 0);
-			this.tabInfo.Name = "tabInfo";
-			this.tabInfo.Size = new System.Drawing.Size(240, 245);
-			this.tabInfo.Text = "Info";
-			// 
-			// lblLastRecording
-			// 
-			this.lblLastRecording.Location = new System.Drawing.Point(7, 37);
-			this.lblLastRecording.Name = "lblLastRecording";
-			this.lblLastRecording.Size = new System.Drawing.Size(91, 20);
-			this.lblLastRecording.Text = "Last Recording:";
-			// 
-			// txtLastRecording
-			// 
-			this.txtLastRecording.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtLastRecording.Location = new System.Drawing.Point(104, 34);
-			this.txtLastRecording.Name = "txtLastRecording";
-			this.txtLastRecording.ReadOnly = true;
-			this.txtLastRecording.Size = new System.Drawing.Size(129, 21);
-			this.txtLastRecording.TabIndex = 1;
-			// 
-			// cmdRefreshInfo
-			// 
-			this.cmdRefreshInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdRefreshInfo.Location = new System.Drawing.Point(161, 220);
-			this.cmdRefreshInfo.Name = "cmdRefreshInfo";
-			this.cmdRefreshInfo.Size = new System.Drawing.Size(72, 20);
-			this.cmdRefreshInfo.TabIndex = 2;
-			this.cmdRefreshInfo.Text = "&Refresh";
-			this.cmdRefreshInfo.Click += new System.EventHandler(this.cmdRefreshInfo_Click);
-			// 
-			// txtLog
-			// 
-			this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-						| System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtLog.Location = new System.Drawing.Point(7, 80);
-			this.txtLog.Multiline = true;
-			this.txtLog.Name = "txtLog";
-			this.txtLog.ReadOnly = true;
-			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtLog.Size = new System.Drawing.Size(226, 134);
-			this.txtLog.TabIndex = 3;
-			// 
-			// lblLog
-			// 
-			this.lblLog.Location = new System.Drawing.Point(7, 57);
-			this.lblLog.Name = "lblLog";
-			this.lblLog.Size = new System.Drawing.Size(29, 20);
-			this.lblLog.Text = "Log:";
+			this.cmdChooseRecordingPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdChooseRecordingPath.Location = new System.Drawing.Point(210, 61);
+			this.cmdChooseRecordingPath.Name = "cmdChooseRecordingPath";
+			this.cmdChooseRecordingPath.Size = new System.Drawing.Size(23, 20);
+			this.cmdChooseRecordingPath.TabIndex = 9;
+			this.cmdChooseRecordingPath.Text = " ...";
+			this.cmdChooseRecordingPath.Click += new System.EventHandler(this.cmdChooseRecordingPath_Click);
 			// 
 			// txtRecordingPath
 			// 
@@ -218,18 +149,44 @@ namespace CFConfiguration
 			this.lblRecordingPath.Size = new System.Drawing.Size(56, 20);
 			this.lblRecordingPath.Text = "Path:";
 			// 
-			// cmdChooseRecordingPath
+			// cmdSaveRecordings
 			// 
-			this.cmdChooseRecordingPath.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdChooseRecordingPath.Location = new System.Drawing.Point(210, 61);
-			this.cmdChooseRecordingPath.Name = "cmdChooseRecordingPath";
-			this.cmdChooseRecordingPath.Size = new System.Drawing.Size(23, 20);
-			this.cmdChooseRecordingPath.TabIndex = 9;
-			this.cmdChooseRecordingPath.Text = " ...";
-			this.cmdChooseRecordingPath.Click += new System.EventHandler(this.cmdChooseRecordingPath_Click);
+			this.cmdSaveRecordings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdSaveRecordings.Location = new System.Drawing.Point(161, 222);
+			this.cmdSaveRecordings.Name = "cmdSaveRecordings";
+			this.cmdSaveRecordings.Size = new System.Drawing.Size(72, 20);
+			this.cmdSaveRecordings.TabIndex = 5;
+			this.cmdSaveRecordings.Text = "&Save";
+			this.cmdSaveRecordings.Click += new System.EventHandler(this.cmdSaveRecordings_Click);
+			// 
+			// txtDuration
+			// 
+			this.txtDuration.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtDuration.Location = new System.Drawing.Point(78, 34);
+			this.txtDuration.Name = "txtDuration";
+			this.txtDuration.Size = new System.Drawing.Size(155, 21);
+			this.txtDuration.TabIndex = 4;
+			// 
+			// txtFrequency
+			// 
+			this.txtFrequency.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtFrequency.Location = new System.Drawing.Point(78, 7);
+			this.txtFrequency.Name = "txtFrequency";
+			this.txtFrequency.Size = new System.Drawing.Size(155, 21);
+			this.txtFrequency.TabIndex = 3;
+			// 
+			// lblFrequency
+			// 
+			this.lblFrequency.Location = new System.Drawing.Point(7, 9);
+			this.lblFrequency.Name = "lblFrequency";
+			this.lblFrequency.Size = new System.Drawing.Size(65, 21);
+			this.lblFrequency.Text = "Frequency:";
 			// 
 			// tabServer
 			// 
+			this.tabServer.Controls.Add(this.cmdResetServer);
 			this.tabServer.Controls.Add(this.cmdTestServer);
 			this.tabServer.Controls.Add(this.cmdSaveServer);
 			this.tabServer.Controls.Add(this.txtServer);
@@ -239,38 +196,25 @@ namespace CFConfiguration
 			this.tabServer.Size = new System.Drawing.Size(240, 245);
 			this.tabServer.Text = "Server";
 			// 
-			// cmdRecordNow
+			// cmdTestServer
 			// 
-			this.cmdRecordNow.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.cmdRecordNow.Location = new System.Drawing.Point(7, 222);
-			this.cmdRecordNow.Name = "cmdRecordNow";
-			this.cmdRecordNow.Size = new System.Drawing.Size(85, 20);
-			this.cmdRecordNow.TabIndex = 10;
-			this.cmdRecordNow.Text = "Record Now!";
-			this.cmdRecordNow.Click += new System.EventHandler(this.cmdRecordNow_Click);
+			this.cmdTestServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+			this.cmdTestServer.Location = new System.Drawing.Point(7, 222);
+			this.cmdTestServer.Name = "cmdTestServer";
+			this.cmdTestServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdTestServer.TabIndex = 8;
+			this.cmdTestServer.Text = "&Test";
+			this.cmdTestServer.Click += new System.EventHandler(this.cmdTestServer_Click);
 			// 
-			// txtCurrentTime
+			// cmdSaveServer
 			// 
-			this.txtCurrentTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-						| System.Windows.Forms.AnchorStyles.Right)));
-			this.txtCurrentTime.Location = new System.Drawing.Point(104, 7);
-			this.txtCurrentTime.Name = "txtCurrentTime";
-			this.txtCurrentTime.ReadOnly = true;
-			this.txtCurrentTime.Size = new System.Drawing.Size(129, 21);
-			this.txtCurrentTime.TabIndex = 7;
-			// 
-			// lblCurrentTime
-			// 
-			this.lblCurrentTime.Location = new System.Drawing.Point(7, 10);
-			this.lblCurrentTime.Name = "lblCurrentTime";
-			this.lblCurrentTime.Size = new System.Drawing.Size(91, 20);
-			this.lblCurrentTime.Text = "Current Time:";
-			// 
-			// timer
-			// 
-			this.timer.Enabled = true;
-			this.timer.Interval = 500;
-			this.timer.Tick += new System.EventHandler(this.timer_Tick);
+			this.cmdSaveServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdSaveServer.Location = new System.Drawing.Point(161, 222);
+			this.cmdSaveServer.Name = "cmdSaveServer";
+			this.cmdSaveServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdSaveServer.TabIndex = 7;
+			this.cmdSaveServer.Text = "&Save";
+			this.cmdSaveServer.Click += new System.EventHandler(this.cmdSaveServer_Click);
 			// 
 			// txtServer
 			// 
@@ -288,35 +232,126 @@ namespace CFConfiguration
 			this.lblServer.Size = new System.Drawing.Size(44, 21);
 			this.lblServer.Text = "Server:";
 			// 
-			// cmdSaveServer
+			// tabIdentity
 			// 
-			this.cmdSaveServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdSaveServer.Location = new System.Drawing.Point(161, 222);
-			this.cmdSaveServer.Name = "cmdSaveServer";
-			this.cmdSaveServer.Size = new System.Drawing.Size(72, 20);
-			this.cmdSaveServer.TabIndex = 7;
-			this.cmdSaveServer.Text = "&Save";
-			this.cmdSaveServer.Click += new System.EventHandler(this.cmdSaveServer_Click);
+			this.tabIdentity.Controls.Add(this.cmdStartDeployment);
+			this.tabIdentity.Location = new System.Drawing.Point(0, 0);
+			this.tabIdentity.Name = "tabIdentity";
+			this.tabIdentity.Size = new System.Drawing.Size(232, 242);
+			this.tabIdentity.Text = "Identity";
 			// 
-			// cmdTestServer
+			// cmdStartDeployment
 			// 
-			this.cmdTestServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.cmdTestServer.Location = new System.Drawing.Point(7, 222);
-			this.cmdTestServer.Name = "cmdTestServer";
-			this.cmdTestServer.Size = new System.Drawing.Size(72, 20);
-			this.cmdTestServer.TabIndex = 8;
-			this.cmdTestServer.Text = "&Test";
-			this.cmdTestServer.Click += new System.EventHandler(this.cmdTestServer_Click);
+			this.cmdStartDeployment.Location = new System.Drawing.Point(7, 222);
+			this.cmdStartDeployment.Name = "cmdStartDeployment";
+			this.cmdStartDeployment.Size = new System.Drawing.Size(145, 20);
+			this.cmdStartDeployment.TabIndex = 0;
+			this.cmdStartDeployment.Text = "Start new deployment";
+			this.cmdStartDeployment.Click += new System.EventHandler(this.cmdStartDeployment_Click);
 			// 
-			// cmdUploadRecordings
+			// tabInfo
 			// 
-			this.cmdUploadRecordings.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.cmdUploadRecordings.Location = new System.Drawing.Point(7, 196);
-			this.cmdUploadRecordings.Name = "cmdUploadRecordings";
-			this.cmdUploadRecordings.Size = new System.Drawing.Size(123, 20);
-			this.cmdUploadRecordings.TabIndex = 11;
-			this.cmdUploadRecordings.Text = "Upload Recordings";
-			this.cmdUploadRecordings.Click += new System.EventHandler(this.cmdUploadRecordings_Click);
+			this.tabInfo.Controls.Add(this.chkDebugMode);
+			this.tabInfo.Controls.Add(this.txtCurrentTime);
+			this.tabInfo.Controls.Add(this.lblCurrentTime);
+			this.tabInfo.Controls.Add(this.lblLog);
+			this.tabInfo.Controls.Add(this.txtLog);
+			this.tabInfo.Controls.Add(this.cmdRefreshInfo);
+			this.tabInfo.Controls.Add(this.txtLastRecording);
+			this.tabInfo.Controls.Add(this.lblLastRecording);
+			this.tabInfo.Location = new System.Drawing.Point(0, 0);
+			this.tabInfo.Name = "tabInfo";
+			this.tabInfo.Size = new System.Drawing.Size(240, 245);
+			this.tabInfo.Text = "Info";
+			// 
+			// chkDebugMode
+			// 
+			this.chkDebugMode.Location = new System.Drawing.Point(7, 7);
+			this.chkDebugMode.Name = "chkDebugMode";
+			this.chkDebugMode.Size = new System.Drawing.Size(226, 20);
+			this.chkDebugMode.TabIndex = 11;
+			this.chkDebugMode.Text = "Debug Mode";
+			this.chkDebugMode.CheckStateChanged += new System.EventHandler(this.chkDebugMode_CheckStateChanged);
+			// 
+			// txtCurrentTime
+			// 
+			this.txtCurrentTime.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtCurrentTime.Location = new System.Drawing.Point(104, 33);
+			this.txtCurrentTime.Name = "txtCurrentTime";
+			this.txtCurrentTime.ReadOnly = true;
+			this.txtCurrentTime.Size = new System.Drawing.Size(129, 21);
+			this.txtCurrentTime.TabIndex = 7;
+			// 
+			// lblCurrentTime
+			// 
+			this.lblCurrentTime.Location = new System.Drawing.Point(7, 36);
+			this.lblCurrentTime.Name = "lblCurrentTime";
+			this.lblCurrentTime.Size = new System.Drawing.Size(91, 20);
+			this.lblCurrentTime.Text = "Current Time:";
+			// 
+			// lblLog
+			// 
+			this.lblLog.Location = new System.Drawing.Point(7, 83);
+			this.lblLog.Name = "lblLog";
+			this.lblLog.Size = new System.Drawing.Size(29, 20);
+			this.lblLog.Text = "Log:";
+			// 
+			// txtLog
+			// 
+			this.txtLog.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+						| System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtLog.Location = new System.Drawing.Point(7, 106);
+			this.txtLog.Multiline = true;
+			this.txtLog.Name = "txtLog";
+			this.txtLog.ReadOnly = true;
+			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+			this.txtLog.Size = new System.Drawing.Size(226, 108);
+			this.txtLog.TabIndex = 3;
+			// 
+			// cmdRefreshInfo
+			// 
+			this.cmdRefreshInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.cmdRefreshInfo.Location = new System.Drawing.Point(161, 220);
+			this.cmdRefreshInfo.Name = "cmdRefreshInfo";
+			this.cmdRefreshInfo.Size = new System.Drawing.Size(72, 20);
+			this.cmdRefreshInfo.TabIndex = 2;
+			this.cmdRefreshInfo.Text = "&Refresh";
+			this.cmdRefreshInfo.Click += new System.EventHandler(this.cmdRefreshInfo_Click);
+			// 
+			// txtLastRecording
+			// 
+			this.txtLastRecording.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.txtLastRecording.Location = new System.Drawing.Point(104, 60);
+			this.txtLastRecording.Name = "txtLastRecording";
+			this.txtLastRecording.ReadOnly = true;
+			this.txtLastRecording.Size = new System.Drawing.Size(129, 21);
+			this.txtLastRecording.TabIndex = 1;
+			// 
+			// lblLastRecording
+			// 
+			this.lblLastRecording.Location = new System.Drawing.Point(7, 63);
+			this.lblLastRecording.Name = "lblLastRecording";
+			this.lblLastRecording.Size = new System.Drawing.Size(91, 20);
+			this.lblLastRecording.Text = "Last Recording:";
+			// 
+			// timer
+			// 
+			this.timer.Enabled = true;
+			this.timer.Interval = 500;
+			this.timer.Tick += new System.EventHandler(this.timer_Tick);
+			// 
+			// cmdResetServer
+			// 
+			this.cmdResetServer.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+			this.cmdResetServer.Location = new System.Drawing.Point(84, 222);
+			this.cmdResetServer.Name = "cmdResetServer";
+			this.cmdResetServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdResetServer.TabIndex = 10;
+			this.cmdResetServer.Text = "Reset";
+			this.cmdResetServer.Click += new System.EventHandler(this.cmdResetServer_Click);
 			// 
 			// MainForm
 			// 
@@ -331,8 +366,9 @@ namespace CFConfiguration
 			this.Text = "QUT Sensors Configuration";
 			this.tabs.ResumeLayout(false);
 			this.tabRecording.ResumeLayout(false);
-			this.tabInfo.ResumeLayout(false);
 			this.tabServer.ResumeLayout(false);
+			this.tabIdentity.ResumeLayout(false);
+			this.tabInfo.ResumeLayout(false);
 			this.ResumeLayout(false);
 
 		}
@@ -367,6 +403,9 @@ namespace CFConfiguration
 		private System.Windows.Forms.Button cmdSaveServer;
 		private System.Windows.Forms.Button cmdTestServer;
 		private System.Windows.Forms.Button cmdUploadRecordings;
+		private System.Windows.Forms.CheckBox chkDebugMode;
+		private System.Windows.Forms.Button cmdStartDeployment;
+		private System.Windows.Forms.Button cmdResetServer;
 	}
 }
 
