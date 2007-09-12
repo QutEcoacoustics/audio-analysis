@@ -26,6 +26,10 @@ namespace CFConfiguration
 			// Server
 			txtServer.Text = Settings.Server;
 
+			// Identity
+			txtHardwareID.Text = Settings.HardwareID;
+			RefreshIdentityTab();
+
 			// Info
 			chkDebugMode.Checked = Settings.DebugMode;
 			RefreshInfoTab();
@@ -37,6 +41,14 @@ namespace CFConfiguration
 			get { return tabs.TabPages[tabs.SelectedIndex]; }
 		}
 		#endregion
+
+		private void RefreshIdentityTab()
+		{
+			txtDeploymentID.Text = Settings.DeploymentID == null ? "" : Settings.DeploymentID.ToString();
+			txtDeploymentStarted.Text = Settings.DeploymentStartTime == null ? "" : Settings.DeploymentStartTime.Value.ToString("dd/mm/yy HH:mm:ss");
+			txtDeploymentName.Text = Settings.Name;
+			txtDeploymentDescription.Text = Settings.Description;
+		}
 
 		private void RefreshInfoTab()
 		{
@@ -150,10 +162,29 @@ namespace CFConfiguration
 		#region Identity
 		private void cmdStartDeployment_Click(object sender, EventArgs e)
 		{
-			if (MessageBox.Show("Are you sure?", "Start new deployment", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+			//if (MessageBox.Show("Are you sure?", "Start new deployment", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
+			if (MessageBox.Show("Are you sure you wish to start a new deployment called: '" + txtNewDeploymentName.Text + "'?", "Start New Deployment", MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
 			{
-				MessageBox.Show("Not implemented yet");
+				Service service = DataUploader.GetServiceProxy(Settings.Server);
+				Deployment deployment = service.StartDeployment(Settings.HardwareID, txtNewDeploymentName.Text);
+				if (deployment != null)
+					Settings.UpdateDeployment(deployment);
+
+				RefreshIdentityTab();
 			}
+		}
+
+		private void cmdUpdateDeployment_Click(object sender, EventArgs e)
+		{
+			MessageBox.Show("Not implemented yet");
+		}
+
+		private void cmdRefreshDeployment_Click(object sender, EventArgs e)
+		{
+			Service service = DataUploader.GetServiceProxy(Settings.Server);
+			Deployment deployment = service.GetLatestDeployment(Settings.HardwareID);
+			if (deployment != null)
+				Settings.UpdateDeployment(deployment);
 		}
 		#endregion
 		#endregion

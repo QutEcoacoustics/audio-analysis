@@ -24,18 +24,12 @@ namespace PDA
               
         private enum VideoPowerState : int
         {
-
             VideoPowerOn = 1,
-
             VideoPowerStandBy,
-
             VideoPowerSuspend,
-
             VideoPowerOff,
         }
-
-       
-#endregion
+		#endregion
 
         public static void PowerOffScreen()
         {
@@ -55,9 +49,7 @@ namespace PDA
     public partial class Hardware
     {
         private const int FILE_DEVICE_HAL = 257;
-
         private const int METHOD_BUFFERED = 0;
-
         private const int FILE_ANY_ACCESS = 0;
 
         static int CTL_CODE(int DeviceType, int Func, int Method, int Access)
@@ -92,8 +84,7 @@ namespace PDA
         }
 
         [DllImport("Coredll")]
-        private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus,
-            bool fUpdate);
+        private static extern uint GetSystemPowerStatusEx(SYSTEM_POWER_STATUS_EX lpSystemPowerStatus, bool fUpdate);
 
         public static byte GetBatteryLeftPercentage()
         {
@@ -104,12 +95,9 @@ namespace PDA
             return Convert.ToByte(Microsoft.WindowsMobile.Status.SystemState.GetValue(Microsoft.WindowsMobile.Status.SystemProperty.PowerBatteryStrength));
         }
 
-
         public enum DevicePowerState : int
         {
-
             Unspecified = -1,
-
             D0 = 0, // Full On: full power, full functionality
             D1, // Low Power On: fully functional at low power/performance
             D2, // Standby: partially powered with automatic wake
@@ -118,11 +106,7 @@ namespace PDA
         }
 
         [DllImport("coredll.dll", SetLastError = true)]
-        private static extern int SetDevicePower(
-        string pvDevice,
-        int dwDeviceFlags,
-        DevicePowerState DeviceState);
-
+        private static extern int SetDevicePower(string pvDevice, int dwDeviceFlags, DevicePowerState DeviceState);
         private const int POWER_NAME = 0x00000001;
 
         public static void TurnOffBackLight()
@@ -163,21 +147,9 @@ namespace PDA
     
     public partial class Utility
     {
-        public static void logError()
-        {
-            // TODO: Create a webservice in server to keep warning and error from the sensor.
-        }      
-
         public static double BytesToMegabytes(double Bytes)
         {
-            double dblAns;
-            dblAns = (Bytes / 1024) / 1024;
-            return dblAns;
-        }
-
-        public static void StartHouseKeeping()        
-        {
-            //throw new Exception("The method or operation is not implemented.");
+            return (Bytes / 1024) / 1024;
         }
 	}
 }

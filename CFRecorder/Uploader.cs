@@ -5,17 +5,39 @@ using System.IO;
 using CFRecorder;
 using System.Text.RegularExpressions;
 using QUT;
+using QUT.Service;
+using System.Windows.Forms;
 
 namespace CFRecorder
 {
 	public static class DataUploader
 	{
-		public static void Upload(Recording recording)
+		static Guid GetDeploymentID()
 		{
-			Upload(recording, false);
+			Guid? retVal = Settings.DeploymentID;
+			if (retVal == null)
+			{
+				Service service = GetServiceProxy(Settings.Server);
+				Deployment deployment = service.GetLatestDeployment(Settings.HardwareID);
+				if (deployment == null)
+					throw new Exception("DeploymentID is unavailable");
+				retVal = deployment.DeploymentID;
+				Settings.UpdateDeployment(deployment);
+			}
+			return retVal.Value;
+		}
+
+		public static bool Upload(Recording recording)
+		{
+			return Upload(recording, false);
 		}
 
 		public static bool Upload(Recording recording, bool silent)
+		{
+			return Upload(GetDeploymentID(), recording, silent);
+		}
+
+		public static bool Upload(Guid deploymentID, Recording recording, bool silent)
 		{
 			if (recording.StartTime == null)
 			{
@@ -35,8 +57,8 @@ namespace CFRecorder
 				using (FileStream input = file.OpenRead())
 					input.Read(buffer, 0, (int)file.Length);
 
-				QUT.Service.Service service = GetServiceProxy(Settings.Server);
-				service.AddAudioReading(Settings.SensorID, null, recording.StartTime.Value, buffer);
+				Service service = GetServiceProxy(Settings.Server);
+				service.AddAudioReading(deploymentID, null, recording.StartTime.Value, buffer);
 
 				File.Delete(file.FullName);
 				return true;
@@ -45,9 +67,9 @@ namespace CFRecorder
 			return false;
 		}
 
-		public static QUT.Service.Service GetServiceProxy(string server)
+		public static Service GetServiceProxy(string server)
 		{
-			QUT.Service.Service service = new QUT.Service.Service();
+			Service service = new Service();
 			service.Url = string.Format("http://{0}/Service.asmx", server);
 			return service;
 		}
@@ -60,22 +82,36 @@ namespace CFRecorder
 		public static int ProcessFailures(int maxUploads)
 		{
 			int uploaded = 0;
-			Regex fileRegex = new Regex(Settings.SensorName + @"_(?<date>\d{8}-\d{6})");
+			Regex fileRegex = new Regex(@"^(?<id>.*?)_(?<date>\d{8}-\d{6})");
 
 			foreach (string file in Directory.GetFiles(Settings.SensorDataPath))
 			{
 				if (maxUploads == 0)
 					break;
 
-				Match m = fileRegex.Match(file);
+				Match m = fileRegex.Match(file.Substring(1));
 				if (m.Success)
 				{
-					DateTime time = DateTime.ParseExact(m.Groups["date"].Value, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat);
-					Recording recording = new Recording(time);
-					if (Upload(recording, true))
+					string deploymentIDString = m.Groups["id"].Value;
+					if (deploymentIDString != "Unknown")
 					{
-						maxUploads--;
-						uploaded++;
+						Guid deploymentID;
+						try
+						{
+							deploymentID = new Guid(deploymentIDString);
+						}
+						catch (FormatException)
+						{
+							MessageBox.Show(deploymentIDString);
+							continue;
+						}
+						DateTime time = DateTime.ParseExact(m.Groups["date"].Value, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat);
+						Recording recording = new Recording(time);
+						if (Upload(deploymentID, recording, true))
+						{
+							maxUploads--;
+							uploaded++;
+						}
 					}
 				}
 			}
