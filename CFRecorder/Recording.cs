@@ -28,7 +28,7 @@ namespace CFRecorder
 
 		public string GetPath()
 		{
-			return Path.Combine(Settings.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.SensorName, startTime));
+			return Path.Combine(Settings.SensorDataPath, string.Format("{0}_{1:yyyyMMdd-HHmmss}.wav", Settings.DeploymentID == null ? "Unknown" : Settings.DeploymentID.ToString(), startTime));
 		}
 
 		public void TakeRecording(DateTime start, DateTime end)

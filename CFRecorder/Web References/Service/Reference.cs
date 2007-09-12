@@ -52,26 +52,28 @@ namespace QUT.Service {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddPhotoReading", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void AddPhotoReading(System.Guid sensorGuid, string readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
-            this.Invoke("AddPhotoReading", new object[] {
-                        sensorGuid,
+        public bool AddPhotoReading(System.Guid deploymentID, [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)] System.Nullable<System.Guid> readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
+            object[] results = this.Invoke("AddPhotoReading", new object[] {
+                        deploymentID,
                         readingGuid,
                         time,
                         buffer});
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginAddPhotoReading(System.Guid sensorGuid, string readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginAddPhotoReading(System.Guid deploymentID, System.Nullable<System.Guid> readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("AddPhotoReading", new object[] {
-                        sensorGuid,
+                        deploymentID,
                         readingGuid,
                         time,
                         buffer}, callback, asyncState);
         }
         
         /// <remarks/>
-        public void EndAddPhotoReading(System.IAsyncResult asyncResult) {
-            this.EndInvoke(asyncResult);
+        public bool EndAddPhotoReading(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
@@ -122,10 +124,11 @@ namespace QUT.Service {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/StartDeployment", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void StartDeployment(string sensorID, string name) {
-            this.Invoke("StartDeployment", new object[] {
+        public Deployment StartDeployment(string sensorID, string name) {
+            object[] results = this.Invoke("StartDeployment", new object[] {
                         sensorID,
                         name});
+            return ((Deployment)(results[0]));
         }
         
         /// <remarks/>
@@ -136,8 +139,9 @@ namespace QUT.Service {
         }
         
         /// <remarks/>
-        public void EndStartDeployment(System.IAsyncResult asyncResult) {
-            this.EndInvoke(asyncResult);
+        public Deployment EndStartDeployment(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((Deployment)(results[0]));
         }
     }
     

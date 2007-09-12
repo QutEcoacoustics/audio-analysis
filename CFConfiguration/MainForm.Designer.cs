@@ -41,6 +41,7 @@ namespace CFConfiguration
 			this.txtFrequency = new System.Windows.Forms.TextBox();
 			this.lblFrequency = new System.Windows.Forms.Label();
 			this.tabServer = new System.Windows.Forms.TabPage();
+			this.cmdResetServer = new System.Windows.Forms.Button();
 			this.cmdTestServer = new System.Windows.Forms.Button();
 			this.cmdSaveServer = new System.Windows.Forms.Button();
 			this.txtServer = new System.Windows.Forms.TextBox();
@@ -58,7 +59,20 @@ namespace CFConfiguration
 			this.lblLastRecording = new System.Windows.Forms.Label();
 			this.mainMenu = new System.Windows.Forms.MainMenu();
 			this.timer = new System.Windows.Forms.Timer();
-			this.cmdResetServer = new System.Windows.Forms.Button();
+			this.lblHardwareID = new System.Windows.Forms.Label();
+			this.txtHardwareID = new System.Windows.Forms.TextBox();
+			this.txtNewDeploymentName = new System.Windows.Forms.TextBox();
+			this.lblNewDeploymentName = new System.Windows.Forms.Label();
+			this.lblDeploymentID = new System.Windows.Forms.Label();
+			this.txtDeploymentID = new System.Windows.Forms.TextBox();
+			this.txtDeploymentName = new System.Windows.Forms.TextBox();
+			this.lblDeploymentName = new System.Windows.Forms.Label();
+			this.txtDeploymentDescription = new System.Windows.Forms.TextBox();
+			this.lblDeploymentDescription = new System.Windows.Forms.Label();
+			this.cmdUpdateDeployment = new System.Windows.Forms.Button();
+			this.txtDeploymentStarted = new System.Windows.Forms.TextBox();
+			this.lblDeploymentStarted = new System.Windows.Forms.Label();
+			this.cmdRefreshDeployment = new System.Windows.Forms.Button();
 			this.tabs.SuspendLayout();
 			this.tabRecording.SuspendLayout();
 			this.tabServer.SuspendLayout();
@@ -193,13 +207,23 @@ namespace CFConfiguration
 			this.tabServer.Controls.Add(this.lblServer);
 			this.tabServer.Location = new System.Drawing.Point(0, 0);
 			this.tabServer.Name = "tabServer";
-			this.tabServer.Size = new System.Drawing.Size(240, 245);
+			this.tabServer.Size = new System.Drawing.Size(232, 242);
 			this.tabServer.Text = "Server";
+			// 
+			// cmdResetServer
+			// 
+			this.cmdResetServer.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+			this.cmdResetServer.Location = new System.Drawing.Point(80, 219);
+			this.cmdResetServer.Name = "cmdResetServer";
+			this.cmdResetServer.Size = new System.Drawing.Size(72, 20);
+			this.cmdResetServer.TabIndex = 10;
+			this.cmdResetServer.Text = "Reset";
+			this.cmdResetServer.Click += new System.EventHandler(this.cmdResetServer_Click);
 			// 
 			// cmdTestServer
 			// 
 			this.cmdTestServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-			this.cmdTestServer.Location = new System.Drawing.Point(7, 222);
+			this.cmdTestServer.Location = new System.Drawing.Point(7, 219);
 			this.cmdTestServer.Name = "cmdTestServer";
 			this.cmdTestServer.Size = new System.Drawing.Size(72, 20);
 			this.cmdTestServer.TabIndex = 8;
@@ -209,7 +233,7 @@ namespace CFConfiguration
 			// cmdSaveServer
 			// 
 			this.cmdSaveServer.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdSaveServer.Location = new System.Drawing.Point(161, 222);
+			this.cmdSaveServer.Location = new System.Drawing.Point(153, 219);
 			this.cmdSaveServer.Name = "cmdSaveServer";
 			this.cmdSaveServer.Size = new System.Drawing.Size(72, 20);
 			this.cmdSaveServer.TabIndex = 7;
@@ -222,7 +246,7 @@ namespace CFConfiguration
 						| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtServer.Location = new System.Drawing.Point(57, 7);
 			this.txtServer.Name = "txtServer";
-			this.txtServer.Size = new System.Drawing.Size(176, 21);
+			this.txtServer.Size = new System.Drawing.Size(168, 21);
 			this.txtServer.TabIndex = 5;
 			// 
 			// lblServer
@@ -234,15 +258,29 @@ namespace CFConfiguration
 			// 
 			// tabIdentity
 			// 
+			this.tabIdentity.Controls.Add(this.cmdRefreshDeployment);
+			this.tabIdentity.Controls.Add(this.txtDeploymentStarted);
+			this.tabIdentity.Controls.Add(this.lblDeploymentStarted);
+			this.tabIdentity.Controls.Add(this.cmdUpdateDeployment);
+			this.tabIdentity.Controls.Add(this.txtDeploymentDescription);
+			this.tabIdentity.Controls.Add(this.lblDeploymentDescription);
+			this.tabIdentity.Controls.Add(this.txtDeploymentName);
+			this.tabIdentity.Controls.Add(this.lblDeploymentName);
+			this.tabIdentity.Controls.Add(this.txtDeploymentID);
+			this.tabIdentity.Controls.Add(this.lblDeploymentID);
+			this.tabIdentity.Controls.Add(this.lblNewDeploymentName);
+			this.tabIdentity.Controls.Add(this.txtNewDeploymentName);
+			this.tabIdentity.Controls.Add(this.txtHardwareID);
+			this.tabIdentity.Controls.Add(this.lblHardwareID);
 			this.tabIdentity.Controls.Add(this.cmdStartDeployment);
 			this.tabIdentity.Location = new System.Drawing.Point(0, 0);
 			this.tabIdentity.Name = "tabIdentity";
-			this.tabIdentity.Size = new System.Drawing.Size(232, 242);
+			this.tabIdentity.Size = new System.Drawing.Size(240, 245);
 			this.tabIdentity.Text = "Identity";
 			// 
 			// cmdStartDeployment
 			// 
-			this.cmdStartDeployment.Location = new System.Drawing.Point(7, 222);
+			this.cmdStartDeployment.Location = new System.Drawing.Point(7, 195);
 			this.cmdStartDeployment.Name = "cmdStartDeployment";
 			this.cmdStartDeployment.Size = new System.Drawing.Size(145, 20);
 			this.cmdStartDeployment.TabIndex = 0;
@@ -261,7 +299,7 @@ namespace CFConfiguration
 			this.tabInfo.Controls.Add(this.lblLastRecording);
 			this.tabInfo.Location = new System.Drawing.Point(0, 0);
 			this.tabInfo.Name = "tabInfo";
-			this.tabInfo.Size = new System.Drawing.Size(240, 245);
+			this.tabInfo.Size = new System.Drawing.Size(232, 242);
 			this.tabInfo.Text = "Info";
 			// 
 			// chkDebugMode
@@ -280,7 +318,7 @@ namespace CFConfiguration
 			this.txtCurrentTime.Location = new System.Drawing.Point(104, 33);
 			this.txtCurrentTime.Name = "txtCurrentTime";
 			this.txtCurrentTime.ReadOnly = true;
-			this.txtCurrentTime.Size = new System.Drawing.Size(129, 21);
+			this.txtCurrentTime.Size = new System.Drawing.Size(121, 21);
 			this.txtCurrentTime.TabIndex = 7;
 			// 
 			// lblCurrentTime
@@ -307,13 +345,13 @@ namespace CFConfiguration
 			this.txtLog.Name = "txtLog";
 			this.txtLog.ReadOnly = true;
 			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtLog.Size = new System.Drawing.Size(226, 108);
+			this.txtLog.Size = new System.Drawing.Size(218, 105);
 			this.txtLog.TabIndex = 3;
 			// 
 			// cmdRefreshInfo
 			// 
 			this.cmdRefreshInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdRefreshInfo.Location = new System.Drawing.Point(161, 220);
+			this.cmdRefreshInfo.Location = new System.Drawing.Point(153, 217);
 			this.cmdRefreshInfo.Name = "cmdRefreshInfo";
 			this.cmdRefreshInfo.Size = new System.Drawing.Size(72, 20);
 			this.cmdRefreshInfo.TabIndex = 2;
@@ -327,7 +365,7 @@ namespace CFConfiguration
 			this.txtLastRecording.Location = new System.Drawing.Point(104, 60);
 			this.txtLastRecording.Name = "txtLastRecording";
 			this.txtLastRecording.ReadOnly = true;
-			this.txtLastRecording.Size = new System.Drawing.Size(129, 21);
+			this.txtLastRecording.Size = new System.Drawing.Size(121, 21);
 			this.txtLastRecording.TabIndex = 1;
 			// 
 			// lblLastRecording
@@ -343,15 +381,110 @@ namespace CFConfiguration
 			this.timer.Interval = 500;
 			this.timer.Tick += new System.EventHandler(this.timer_Tick);
 			// 
-			// cmdResetServer
+			// lblHardwareID
 			// 
-			this.cmdResetServer.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.cmdResetServer.Location = new System.Drawing.Point(84, 222);
-			this.cmdResetServer.Name = "cmdResetServer";
-			this.cmdResetServer.Size = new System.Drawing.Size(72, 20);
-			this.cmdResetServer.TabIndex = 10;
-			this.cmdResetServer.Text = "Reset";
-			this.cmdResetServer.Click += new System.EventHandler(this.cmdResetServer_Click);
+			this.lblHardwareID.Location = new System.Drawing.Point(7, 8);
+			this.lblHardwareID.Name = "lblHardwareID";
+			this.lblHardwareID.Size = new System.Drawing.Size(79, 20);
+			this.lblHardwareID.Text = "Hardware ID:";
+			// 
+			// txtHardwareID
+			// 
+			this.txtHardwareID.Location = new System.Drawing.Point(92, 7);
+			this.txtHardwareID.Name = "txtHardwareID";
+			this.txtHardwareID.ReadOnly = true;
+			this.txtHardwareID.Size = new System.Drawing.Size(141, 21);
+			this.txtHardwareID.TabIndex = 2;
+			// 
+			// txtNewDeploymentName
+			// 
+			this.txtNewDeploymentName.Location = new System.Drawing.Point(55, 221);
+			this.txtNewDeploymentName.Name = "txtNewDeploymentName";
+			this.txtNewDeploymentName.Size = new System.Drawing.Size(178, 21);
+			this.txtNewDeploymentName.TabIndex = 3;
+			// 
+			// lblNewDeploymentName
+			// 
+			this.lblNewDeploymentName.Location = new System.Drawing.Point(7, 222);
+			this.lblNewDeploymentName.Name = "lblNewDeploymentName";
+			this.lblNewDeploymentName.Size = new System.Drawing.Size(42, 20);
+			this.lblNewDeploymentName.Text = "Name:";
+			// 
+			// lblDeploymentID
+			// 
+			this.lblDeploymentID.Location = new System.Drawing.Point(7, 35);
+			this.lblDeploymentID.Name = "lblDeploymentID";
+			this.lblDeploymentID.Size = new System.Drawing.Size(93, 20);
+			this.lblDeploymentID.Text = "Deployment ID:";
+			// 
+			// txtDeploymentID
+			// 
+			this.txtDeploymentID.Location = new System.Drawing.Point(106, 34);
+			this.txtDeploymentID.Name = "txtDeploymentID";
+			this.txtDeploymentID.ReadOnly = true;
+			this.txtDeploymentID.Size = new System.Drawing.Size(127, 21);
+			this.txtDeploymentID.TabIndex = 7;
+			// 
+			// txtDeploymentName
+			// 
+			this.txtDeploymentName.Location = new System.Drawing.Point(106, 88);
+			this.txtDeploymentName.Name = "txtDeploymentName";
+			this.txtDeploymentName.Size = new System.Drawing.Size(127, 21);
+			this.txtDeploymentName.TabIndex = 9;
+			// 
+			// lblDeploymentName
+			// 
+			this.lblDeploymentName.Location = new System.Drawing.Point(7, 89);
+			this.lblDeploymentName.Name = "lblDeploymentName";
+			this.lblDeploymentName.Size = new System.Drawing.Size(93, 20);
+			this.lblDeploymentName.Text = "Name:";
+			// 
+			// txtDeploymentDescription
+			// 
+			this.txtDeploymentDescription.Location = new System.Drawing.Point(106, 115);
+			this.txtDeploymentDescription.Name = "txtDeploymentDescription";
+			this.txtDeploymentDescription.Size = new System.Drawing.Size(127, 21);
+			this.txtDeploymentDescription.TabIndex = 12;
+			// 
+			// lblDeploymentDescription
+			// 
+			this.lblDeploymentDescription.Location = new System.Drawing.Point(7, 116);
+			this.lblDeploymentDescription.Name = "lblDeploymentDescription";
+			this.lblDeploymentDescription.Size = new System.Drawing.Size(93, 20);
+			this.lblDeploymentDescription.Text = "Description:";
+			// 
+			// cmdUpdateDeployment
+			// 
+			this.cmdUpdateDeployment.Location = new System.Drawing.Point(131, 142);
+			this.cmdUpdateDeployment.Name = "cmdUpdateDeployment";
+			this.cmdUpdateDeployment.Size = new System.Drawing.Size(102, 20);
+			this.cmdUpdateDeployment.TabIndex = 14;
+			this.cmdUpdateDeployment.Text = "Update Details";
+			this.cmdUpdateDeployment.Click += new System.EventHandler(this.cmdUpdateDeployment_Click);
+			// 
+			// txtDeploymentStarted
+			// 
+			this.txtDeploymentStarted.Location = new System.Drawing.Point(106, 61);
+			this.txtDeploymentStarted.Name = "txtDeploymentStarted";
+			this.txtDeploymentStarted.ReadOnly = true;
+			this.txtDeploymentStarted.Size = new System.Drawing.Size(127, 21);
+			this.txtDeploymentStarted.TabIndex = 16;
+			// 
+			// lblDeploymentStarted
+			// 
+			this.lblDeploymentStarted.Location = new System.Drawing.Point(7, 62);
+			this.lblDeploymentStarted.Name = "lblDeploymentStarted";
+			this.lblDeploymentStarted.Size = new System.Drawing.Size(93, 20);
+			this.lblDeploymentStarted.Text = "Date Started:";
+			// 
+			// cmdRefreshDeployment
+			// 
+			this.cmdRefreshDeployment.Location = new System.Drawing.Point(7, 168);
+			this.cmdRefreshDeployment.Name = "cmdRefreshDeployment";
+			this.cmdRefreshDeployment.Size = new System.Drawing.Size(133, 20);
+			this.cmdRefreshDeployment.TabIndex = 18;
+			this.cmdRefreshDeployment.Text = "Refresh from server";
+			this.cmdRefreshDeployment.Click += new System.EventHandler(this.cmdRefreshDeployment_Click);
 			// 
 			// MainForm
 			// 
@@ -406,6 +539,20 @@ namespace CFConfiguration
 		private System.Windows.Forms.CheckBox chkDebugMode;
 		private System.Windows.Forms.Button cmdStartDeployment;
 		private System.Windows.Forms.Button cmdResetServer;
+		private System.Windows.Forms.TextBox txtHardwareID;
+		private System.Windows.Forms.Label lblHardwareID;
+		private System.Windows.Forms.TextBox txtDeploymentName;
+		private System.Windows.Forms.Label lblDeploymentName;
+		private System.Windows.Forms.TextBox txtDeploymentID;
+		private System.Windows.Forms.Label lblDeploymentID;
+		private System.Windows.Forms.Label lblNewDeploymentName;
+		private System.Windows.Forms.TextBox txtNewDeploymentName;
+		private System.Windows.Forms.TextBox txtDeploymentStarted;
+		private System.Windows.Forms.Label lblDeploymentStarted;
+		private System.Windows.Forms.Button cmdUpdateDeployment;
+		private System.Windows.Forms.TextBox txtDeploymentDescription;
+		private System.Windows.Forms.Label lblDeploymentDescription;
+		private System.Windows.Forms.Button cmdRefreshDeployment;
 	}
 }
 
