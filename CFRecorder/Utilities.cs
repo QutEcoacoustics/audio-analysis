@@ -13,7 +13,7 @@ namespace QUT
 		const int MaxFileSize = 10 * 1024; // 10K
 		const string LogFilePattern = "{0}LogFile_{1}.txt";
 
-		static string GetLogPath(int index)
+		public static string GetLogPath(int index)
 		{
 			return string.Format(LogFilePattern, Settings.LogPath, index);
 		}
@@ -36,8 +36,8 @@ namespace QUT
 			if (index >= MaxLogFiles)
 			{
 				index = 0;
-				DateTime fileTime = DateTime.MaxValue;
-				for (int i = 0; i <= MaxLogFiles; i++)
+				DateTime fileTime = File.GetLastWriteTime(GetLogPath(0));
+				for (int i = 1; i < MaxLogFiles; i++)
 				{
 					DateTime newFileTime = File.GetLastWriteTime(GetLogPath(i));
 					if (newFileTime < fileTime)

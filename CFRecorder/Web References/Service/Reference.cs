@@ -29,30 +29,30 @@ namespace QUT.Service {
         
         /// <remarks/>
         public Service() {
-            this.Url = "http://www.mquter.qut.edu.au/Qutsensor/service.asmx";
+            this.Url = "http://www.mquter.qut.edu.au/sensor/demo/Service.asmx";
         }
         
         /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/HelloWorld", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public string HelloWorld() {
-            object[] results = this.Invoke("HelloWorld", new object[0]);
-            return ((string)(results[0]));
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/TestConnection", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public bool TestConnection() {
+            object[] results = this.Invoke("TestConnection", new object[0]);
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginHelloWorld(System.AsyncCallback callback, object asyncState) {
-            return this.BeginInvoke("HelloWorld", new object[0], callback, asyncState);
+        public System.IAsyncResult BeginTestConnection(System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("TestConnection", new object[0], callback, asyncState);
         }
         
         /// <remarks/>
-        public string EndHelloWorld(System.IAsyncResult asyncResult) {
+        public bool EndTestConnection(System.IAsyncResult asyncResult) {
             object[] results = this.EndInvoke(asyncResult);
-            return ((string)(results[0]));
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddPhotoReading", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void AddPhotoReading(string sensorGuid, string readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
+        public void AddPhotoReading(System.Guid sensorGuid, string readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
             this.Invoke("AddPhotoReading", new object[] {
                         sensorGuid,
                         readingGuid,
@@ -61,7 +61,7 @@ namespace QUT.Service {
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginAddPhotoReading(string sensorGuid, string readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginAddPhotoReading(System.Guid sensorGuid, string readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("AddPhotoReading", new object[] {
                         sensorGuid,
                         readingGuid,
@@ -76,46 +76,68 @@ namespace QUT.Service {
         
         /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddAudioReading", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public void AddAudioReading(string sensorGuid, string readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
-            this.Invoke("AddAudioReading", new object[] {
-                        sensorGuid,
+        public bool AddAudioReading(System.Guid deploymentID, [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)] System.Nullable<System.Guid> readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer) {
+            object[] results = this.Invoke("AddAudioReading", new object[] {
+                        deploymentID,
                         readingGuid,
                         time,
                         buffer});
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginAddAudioReading(string sensorGuid, string readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginAddAudioReading(System.Guid deploymentID, System.Nullable<System.Guid> readingGuid, System.DateTime time, byte[] buffer, System.AsyncCallback callback, object asyncState) {
             return this.BeginInvoke("AddAudioReading", new object[] {
-                        sensorGuid,
+                        deploymentID,
                         readingGuid,
                         time,
                         buffer}, callback, asyncState);
         }
         
         /// <remarks/>
-        public void EndAddAudioReading(System.IAsyncResult asyncResult) {
-            this.EndInvoke(asyncResult);
+        public bool EndAddAudioReading(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
         }
         
         /// <remarks/>
-        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/FindSensor", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
-        public Deployment FindSensor(string sensorGUID) {
-            object[] results = this.Invoke("FindSensor", new object[] {
-                        sensorGUID});
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/GetLatestDeployment", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public Deployment GetLatestDeployment(string sensorID) {
+            object[] results = this.Invoke("GetLatestDeployment", new object[] {
+                        sensorID});
             return ((Deployment)(results[0]));
         }
         
         /// <remarks/>
-        public System.IAsyncResult BeginFindSensor(string sensorGUID, System.AsyncCallback callback, object asyncState) {
-            return this.BeginInvoke("FindSensor", new object[] {
-                        sensorGUID}, callback, asyncState);
+        public System.IAsyncResult BeginGetLatestDeployment(string sensorID, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("GetLatestDeployment", new object[] {
+                        sensorID}, callback, asyncState);
         }
         
         /// <remarks/>
-        public Deployment EndFindSensor(System.IAsyncResult asyncResult) {
+        public Deployment EndGetLatestDeployment(System.IAsyncResult asyncResult) {
             object[] results = this.EndInvoke(asyncResult);
             return ((Deployment)(results[0]));
+        }
+        
+        /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/StartDeployment", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public void StartDeployment(string sensorID, string name) {
+            this.Invoke("StartDeployment", new object[] {
+                        sensorID,
+                        name});
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginStartDeployment(string sensorID, string name, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("StartDeployment", new object[] {
+                        sensorID,
+                        name}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public void EndStartDeployment(System.IAsyncResult asyncResult) {
+            this.EndInvoke(asyncResult);
         }
     }
     
@@ -127,6 +149,9 @@ namespace QUT.Service {
         
         /// <remarks/>
         public System.Guid DeploymentID;
+        
+        /// <remarks/>
+        public Hardware Hardware;
         
         /// <remarks/>
         public string Name;
@@ -145,14 +170,29 @@ namespace QUT.Service {
     }
     
     /// <remarks/>
-    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Deployment))]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://mquter.qut.edu.au/sensors/")]
-    public abstract partial class ActiveRecordBaseOfDeployment : ActiveRecordBase {
+    public partial class Hardware : ActiveRecordBaseOfHardware {
+        
+        /// <remarks/>
+        public int HardwareID;
+        
+        /// <remarks/>
+        public string UniqueID;
     }
     
     /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Hardware))]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://mquter.qut.edu.au/sensors/")]
+    public abstract partial class ActiveRecordBaseOfHardware : ActiveRecordBase {
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ActiveRecordBaseOfHardware))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Hardware))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ActiveRecordBaseOfDeployment))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Deployment))]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -163,11 +203,21 @@ namespace QUT.Service {
     
     /// <remarks/>
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ActiveRecordBase))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(ActiveRecordBaseOfHardware))]
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Hardware))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(ActiveRecordBaseOfDeployment))]
     [System.Xml.Serialization.XmlIncludeAttribute(typeof(Deployment))]
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.ComponentModel.DesignerCategoryAttribute("code")]
     [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://mquter.qut.edu.au/sensors/")]
     public abstract partial class ActiveRecordHooksBase {
+    }
+    
+    /// <remarks/>
+    [System.Xml.Serialization.XmlIncludeAttribute(typeof(Deployment))]
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.ComponentModel.DesignerCategoryAttribute("code")]
+    [System.Xml.Serialization.XmlTypeAttribute(Namespace="http://mquter.qut.edu.au/sensors/")]
+    public abstract partial class ActiveRecordBaseOfDeployment : ActiveRecordBase {
     }
 }

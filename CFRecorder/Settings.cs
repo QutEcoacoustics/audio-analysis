@@ -57,10 +57,17 @@ using System.Text;
 			set {Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "SensorDataPath", value);}
 		}
 
+		const string DefaultServer = "www.mquter.qut.edu.au/sensor/demo/";
 		public static string Server
 		{
-			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Server", "www.mquter.qut.edu.au/sensor/SensorInterface/"); }
-			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Server", value); }
+			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Server", DefaultServer); }
+			set
+			{
+				if (value == null)
+					Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Server", DefaultServer);
+				else
+					Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "Server", value);
+			}
 		}
 
 		public static int ReadingFrequency
@@ -74,24 +81,6 @@ using System.Text;
 			get { return Convert.ToInt32(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "ReadingDuration", 30 * 1000)); } // 30 Seconds
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "ReadingDuration", value, Microsoft.Win32.RegistryValueKind.DWord); }
 		}
-
-		/*public static bool EnableLogging
-		{
-			get { return Convert.ToBoolean(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", true)); }
-			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "EnableLogging", value.ToString(), Microsoft.Win32.RegistryValueKind.String); }
-		}*/
-
-		/*public static string WirelessSSID
-		{
-			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "WirelessSSID", "stargate"); }
-			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "WirelessSSID", value); }
-		}*/
-
-        /*public static int LogPosition
-        {
-            get { return (int)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", 1); }
-            set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPosition", value); }
-        }*/
 
 		public static DateTime? LastRecordingTime
 		{
@@ -110,6 +99,12 @@ using System.Text;
 		{
 			get { return (string)Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPath", "\\"); }
 			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "LogPath", value); }
+		}
+
+		public static bool DebugMode
+		{
+			get { return Convert.ToBoolean(Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "DebugMode", false)); }
+			set { Microsoft.Win32.Registry.SetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\QUT", "DebugMode", value); }
 		}
 		#endregion
 
