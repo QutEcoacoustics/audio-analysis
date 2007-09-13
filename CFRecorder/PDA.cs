@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Runtime.InteropServices;
 using OpenNETCF;
-using OpenNETCF.IO;
+//using OpenNETCF.IO;
 using Microsoft.WindowsMobile;
 
 

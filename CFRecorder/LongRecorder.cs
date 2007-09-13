@@ -4,23 +4,18 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using QUT;
 
 namespace CFRecorder
 {
-    //Usage Example:
-    //
-    //LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
-    //recordingInfo.PerformRecording();
-    //while (recordingInfo.Active)
-    //{
-    //    Thread.Sleep(20);
-    //    //DANCEBABY!!
-    //}
-
 	// Altered Usage Example:
 	//
+    //--Begining
 	//LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
-	//recordingInfo.PerformRecording();
+	//recordingInfo.SetupAudioRecording();
+    //
+    //--When ready to record
+    //recordingInfo.BeginAudioRecorind
 	//recordingInfo.WaitTillEnd();
 
 
@@ -39,6 +34,8 @@ namespace CFRecorder
 
         private DateTime endTime;
 
+        private AutoResetEvent startWait;
+
         //Is this object currently recording aution
         public bool recording = false;
 
@@ -48,7 +45,7 @@ namespace CFRecorder
         
         // ## Removed unsafe, see how it works without it ##
         [DllImport("AudioPhotoLibrary.dll")]
-        public static extern Boolean BeginAudioRecording([MarshalAs(UnmanagedType.LPWStr)]String str);
+        public static extern Boolean PrepareAudioRecording([MarshalAs(UnmanagedType.LPWStr)]String str);
         
         [DllImport("AudioPhotoLibrary.dll")]
         public static extern Boolean EndAudioRecording();
@@ -78,7 +75,9 @@ namespace CFRecorder
         {
             recordingTime = time;
             fileLocation = name;
-            InitializeAudioRecording();            
+            startWait = new AutoResetEvent(false);
+            InitializeAudioRecording();
+            SetupAudioRecording();
         }
 
 		#region Properties
@@ -144,23 +143,23 @@ namespace CFRecorder
         /// Creates a seperate thread that will perform the recording for the specified time.
         /// </summary>
         /// <returns>If the thread has been created (won't create if already recording)</returns>
-        public bool PerformRecording()
+        public bool SetupAudioRecording()
         {
             if (!recording)
             {
-                recording = true;
-				// NOTE: To speed up starting should we start the thread earlier and have it waiting on an event?
-				// In fact... perhaps we even build in the waiting till start time to minimise the path to recording.
                 ThreadPool.QueueUserWorkItem(new WaitCallback(DoRecording), this);
-				// NOTE: Should we set these in the recording thread since that's more accurate as to when it actually started
-                startTime = DateTime.Now;
-                endTime = (startTime + new TimeSpan(recordingTime));
                 return true;
             }
             return false;
         }
 
 		AutoResetEvent recordingFinished = new AutoResetEvent(false);
+
+        public bool BeginAudioRecording()
+        {
+            startWait.Set();
+            return true;
+        }
 
         /// <summary>
         /// Starts the audio recording in DirectShow thread, sleeps for recording time then
@@ -169,12 +168,20 @@ namespace CFRecorder
         /// <param name="recordingInfo">Recording info (time and name)</param>
         private void DoRecording(object recordingInfo)
         {
-            PowerOffDisplay();
-            BeginAudioRecording(((LongRecorder)recordingInfo).FileLocation);
+            PDA.Video.PowerOffScreen();
+            if (Settings.DebugMode)
+                Utilities.Log("DEBUG - Recording Start");
+            PrepareAudioRecording(((LongRecorder)recordingInfo).FileLocation);
+            startWait.WaitOne();       
+            ((LongRecorder)recordingInfo).startTime = DateTime.Now;
+            ((LongRecorder)recordingInfo).endTime = (startTime + new TimeSpan(recordingTime));
             Thread.Sleep(((LongRecorder)recordingInfo).RecordingTime);
             EndAudioRecording();
-			if (Settings.DebugMode)
-				PowerOnDisplay();
+            if (Settings.DebugMode)
+            {
+                PDA.Video.PowerOnScreen();
+                Utilities.Log("DEBUG - Recording Finished"); 
+            }
             recording = false;
 			recordingFinished.Set();
         }
