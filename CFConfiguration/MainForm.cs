@@ -80,7 +80,7 @@ namespace CFConfiguration
 		{
 			int duration = Convert.ToInt32(txtDuration.Text);
 
-			DeviceManager.TakeRecording(DateTime.Now, DateTime.Now.AddMilliseconds(duration));
+			DeviceManager.TakeRecording(DateTime.Now.AddSeconds(15), DateTime.Now.AddSeconds(15).AddMilliseconds(duration));
 		}
 
 		private void cmdChooseRecordingPath_Click(object sender, EventArgs e)
