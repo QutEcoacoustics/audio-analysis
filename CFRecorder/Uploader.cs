@@ -89,7 +89,7 @@ namespace CFRecorder
 				if (maxUploads == 0)
 					break;
 
-				Match m = fileRegex.Match(file.Substring(1));
+				Match m = fileRegex.Match(Path.GetFileNameWithoutExtension(file));
 				if (m.Success)
 				{
 					string deploymentIDString = m.Groups["id"].Value;
