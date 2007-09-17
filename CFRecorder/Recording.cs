@@ -47,12 +47,12 @@ namespace CFRecorder
 			{
 				startTime = start;
 				int duration = (int)(end - start).TotalMilliseconds;
-				
-				WaitTill(start);
+
 				recorder = new LongRecorder(GetPath(), duration); // Would prefer this to be above the WaitTill but not working if put there.
+				WaitTill(start);
 			}
                         
-			if (!recorder.BeginAudioRecording())
+			if (!recorder.PerformRecording())
                 throw new Exception("BeginAudioRecording failed");
 
 			recorder.WaitTillEnd();

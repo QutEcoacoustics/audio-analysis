@@ -102,7 +102,7 @@ namespace CFRecorder
 						}
 						catch (FormatException)
 						{
-							MessageBox.Show(deploymentIDString);
+							//MessageBox.Show(deploymentIDString);
 							continue;
 						}
 						DateTime time = DateTime.ParseExact(m.Groups["date"].Value, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat);
