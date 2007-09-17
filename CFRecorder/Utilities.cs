@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using OpenNETCF.WindowsCE.Notification;
 using System.Reflection;
+using System.Windows.Forms;
 
 namespace QUT
 {
@@ -97,13 +98,34 @@ namespace QUT
 
 		public static void QueueNextAppRunForRecorder(DateTime time)
 		{
-			QueueNextAppRun(time, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Programs), "QUTSensors\\CFRecorder.exe"));
+			QueueNextAppRun(time, GetRecorderExePath());
+		}
+
+		public static string GetRecorderExePath()
+		{
+			return @"\Program Files\QUTSensors\CFRecorder.exe";
 		}
 
 		public static void QueueNextAppRun(DateTime time, string path)
 		{
 			Notify.RunAppAtTime(Assembly.GetExecutingAssembly().GetName().CodeBase, time);
 			Log("Queue @ {0:dd/MM HH:mm:ss}", time);
+		}
+
+		public static void AddToStartMenu(string name, string path)
+		{
+			CreateShortcut(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), path, name);
+		}
+
+		public static void AddToStartup(string path)
+		{
+			CreateShortcut(Environment.GetFolderPath(Environment.SpecialFolder.Startup), path, Path.GetFileNameWithoutExtension(path));
+		}
+
+		private static void CreateShortcut(string targetPath, string path, string name)
+		{
+			using (StreamWriter writer = new StreamWriter(Path.Combine(targetPath, name + ".lnk"), false))
+				writer.Write("{0}#\"{1}\"", path.Length + 2, path);
 		}
 	}
 }
