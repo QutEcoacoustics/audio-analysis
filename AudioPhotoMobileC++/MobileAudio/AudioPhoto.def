@@ -1,7 +1,0 @@
-LIBRARY      AudioPhotoLibrary
-EXPORTS
-   InitializeAudioRecording
-   StartAudioRecording
-   PrepareAudioRecording
-   EndAudioRecording
-   
