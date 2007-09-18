@@ -61,8 +61,8 @@ int count = 0;
 
 HRESULT hr = S_OK;
 
-CComVariant   varCamName;
-CPropertyBag  PropBag;	
+//CComVariant   varCamName;
+//CPropertyBag  PropBag;	
 
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
@@ -233,7 +233,9 @@ extern BOOL StartAudioRecording(){
 }
 
 extern BOOL EndAudioRecording(){
-	OutputDebugString( L"Stopping the capture" );
+	
+	//dwStart=0;
+	//pGraph->QueryInterface(&pMediaSeeking );
 	pMediaSeeking->GetCurrentPosition( &dwEnd );
 	//	pCaptureGraphBuilder->ControlStream( &PIN_CATEGORY_CAPTURE,
 	//										 &MEDIATYPE_Video, pVideoCap,
@@ -245,16 +247,28 @@ extern BOOL EndAudioRecording(){
 	// Wait for the ControlStream event. 
 	// Since data isn't being encoded ATM this doesn't need to be run through, instead cut
 	// the audio off at throat and let the blood spill.
-	//do
-	//{
-	//	pMediaEvent->GetEvent( &lEventCode, &lParam1, &lParam2, INFINITE );
-	//	pMediaEvent->FreeEventParams( lEventCode, lParam1, lParam2 );
+	do
+	{
+		pMediaEvent->GetEvent( &lEventCode, &lParam1, &lParam2, INFINITE );
+		pMediaEvent->FreeEventParams( lEventCode, lParam1, lParam2 );
 
-	//	if( lEventCode == EC_STREAM_CONTROL_STOPPED ) {
-	//		OutputDebugString( L"Received a control stream stop event" );
-	//		count++;
-	//	}
-	//} while( count < 1);
+		if( lEventCode == EC_STREAM_CONTROL_STOPPED ) {
+			count++;
+		}
+	} while( count < 1);
+
+	pAudioCaptureFilter.Release();
+	pAudioDecoder.Release();
+	pMediaEvent.Release();
+	pMediaSeeking.Release();
+	pMediaControl.Release();
+	pFileSink.Release();
+	pAsfWriter.Release();
+	pAudioWrapperFilter.Release();
+	pGraph.Release();
+	pCaptureGraphBuilder.Release();
+
+	CoUninitialize();
 	
 	return TRUE;
 }
@@ -298,4 +312,5 @@ extern BOOL EndAudioRecording(){
 //		0, NULL);	
 //	return TRUE;
 //}
+
 

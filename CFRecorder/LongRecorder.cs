@@ -17,11 +17,11 @@ namespace CFRecorder
     //    //DANCEBABY!!
     //}
 
-	// Altered Usage Example:
-	//
-	//LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
-	//recordingInfo.PerformRecording();
-	//recordingInfo.WaitTillEnd();
+    // Altered Usage Example:
+    //
+    //LongRecorder recordingInfo = new LongRecorder("\\Storage Card\\filename.asf", 10000.0);
+    //recordingInfo.PerformRecording();
+    //recordingInfo.WaitTillEnd();
 
 
     /// <summary>
@@ -45,19 +45,17 @@ namespace CFRecorder
         //Imports, can't unload.
         [DllImport("AudioPhotoLibrary.dll")]
         public static extern Boolean InitializeAudioRecording();
-        
+
         // ## Removed unsafe, see how it works without it ##
         [DllImport("AudioPhotoLibrary.dll")]
-        public static extern Boolean BeginAudioRecording([MarshalAs(UnmanagedType.LPWStr)]String str);
-        
+        unsafe public static extern Boolean PrepareAudioRecording([MarshalAs(UnmanagedType.LPWStr)]String str);
+        //public static extern Boolean PrepareAudioRecording();
+
+        [DllImport("AudioPhotoLibrary.dll")]
+        public static extern Boolean StartAudioRecording();
+
         [DllImport("AudioPhotoLibrary.dll")]
         public static extern Boolean EndAudioRecording();
-        
-        [DllImport("AudioPhotoLibrary.dll")]
-        public static extern Boolean PowerOnDisplay();
-        
-        [DllImport("AudioPhotoLibrary.dll")]
-        public static extern Boolean PowerOffDisplay();
 
         /// <summary>
         /// Empty Constructor, won't record anything
@@ -78,67 +76,68 @@ namespace CFRecorder
         {
             recordingTime = time;
             fileLocation = name;
-            InitializeAudioRecording();            
+            InitializeAudioRecording();
+            PrepareAudioRecording(name);
         }
 
-		#region Properties
-		/// <summary>
-		/// Property to return milliseconds the object will record for
-		/// </summary>
-		public int RecordingTime
-		{
-			get
-			{
-				return recordingTime;
-			}
-		}
+        #region Properties
+        /// <summary>
+        /// Property to return milliseconds the object will record for
+        /// </summary>
+        public int RecordingTime
+        {
+            get
+            {
+                return recordingTime;
+            }
+        }
 
-		public DateTime StartTime
-		{
-			get
-			{
-				return startTime;
-			}
-		}
+        public DateTime StartTime
+        {
+            get
+            {
+                return startTime;
+            }
+        }
 
-		public DateTime EndTime
-		{
-			get
-			{
-				return endTime;
-			}
-		}
+        public DateTime EndTime
+        {
+            get
+            {
+                return endTime;
+            }
+        }
 
-		public int TicksRemaining
-		{
-			get
-			{
-				return (int)(endTime - startTime).Ticks;
-			}
-		}
+        public int TicksRemaining
+        {
+            get
+            {
+                return (int)(endTime - startTime).Ticks;
+            }
+        }
 
-		/// <summary>
-		/// Property to show if the object is currently recording or not.
-		/// </summary>
-		public bool Active
-		{
-			get
-			{
-				return recording;
-			}
-		}
+        /// <summary>
+        /// Property to show if the object is currently recording or not.
+        /// </summary>
+        public bool Active
+        {
+            get
+            {
+                return recording;
+            }
+        }
 
-		/// <summary>
-		/// Property to show file location that audio is being saved to
-		/// </summary>
-		public string FileLocation
-		{
-			get
-			{
-				return fileLocation;
-			}
-		}
-		#endregion
+        /// <summary>
+        /// Property to show file location that audio is being saved to
+        /// </summary>
+        public string FileLocation
+        {
+            get
+            {
+                return fileLocation;
+            }
+        }
+        #endregion
 
         /// <summary>
         /// Creates a seperate thread that will perform the recording for the specified time.
@@ -149,10 +148,10 @@ namespace CFRecorder
             if (!recording)
             {
                 recording = true;
-				// NOTE: To speed up starting should we start the thread earlier and have it waiting on an event?
-				// In fact... perhaps we even build in the waiting till start time to minimise the path to recording.
+                // NOTE: To speed up starting should we start the thread earlier and have it waiting on an event?
+                // In fact... perhaps we even build in the waiting till start time to minimise the path to recording.
                 ThreadPool.QueueUserWorkItem(new WaitCallback(DoRecording), this);
-				// NOTE: Should we set these in the recording thread since that's more accurate as to when it actually started
+                // NOTE: Should we set these in the recording thread since that's more accurate as to when it actually started
                 startTime = DateTime.Now;
                 endTime = (startTime + new TimeSpan(recordingTime));
                 return true;
@@ -160,7 +159,7 @@ namespace CFRecorder
             return false;
         }
 
-		AutoResetEvent recordingFinished = new AutoResetEvent(false);
+        AutoResetEvent recordingFinished = new AutoResetEvent(false);
 
         /// <summary>
         /// Starts the audio recording in DirectShow thread, sleeps for recording time then
@@ -169,19 +168,19 @@ namespace CFRecorder
         /// <param name="recordingInfo">Recording info (time and name)</param>
         private void DoRecording(object recordingInfo)
         {
-            PowerOffDisplay();
-            BeginAudioRecording(((LongRecorder)recordingInfo).FileLocation);
+            PDA.Video.PowerOffScreen();
+            StartAudioRecording();
             Thread.Sleep(((LongRecorder)recordingInfo).RecordingTime);
             EndAudioRecording();
-			if (Settings.DebugMode)
-				PowerOnDisplay();
+            if (Settings.DebugMode)
+                PDA.Video.PowerOnScreen();
             recording = false;
-			recordingFinished.Set();
+            recordingFinished.Set();
         }
 
-		public void WaitTillEnd()
-		{
-			recordingFinished.WaitOne();
-		}
+        public void WaitTillEnd()
+        {
+            recordingFinished.WaitOne();
+        }
     }
 }
