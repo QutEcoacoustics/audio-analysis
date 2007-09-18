@@ -44,10 +44,18 @@ namespace PDA
             byte[] vpm = {12, 0, 0, 0, 1, 0, 0, 0, (byte)VideoPowerState.VideoPowerOn, 0, 0, 0, 0};
             ExtEscapeSet(hdc, SETPOWERMANAGEMENT, 12, vpm, 0, IntPtr.Zero);
         }
+        
+        public static void Standby()
+        {
+            IntPtr hdc = GetDC(IntPtr.Zero);
+            byte[] vpm = { 12, 0, 0, 0, 1, 0, 0, 0, (byte)VideoPowerState.VideoPowerStandBy, 0, 0, 0, 0 };
+            ExtEscapeSet(hdc, SETPOWERMANAGEMENT, 12, vpm, 0, IntPtr.Zero);
+        }
     }
 
     public partial class Hardware
     {
+        
         private const int FILE_DEVICE_HAL = 257;
         private const int METHOD_BUFFERED = 0;
         private const int FILE_ANY_ACCESS = 0;
