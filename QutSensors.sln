@@ -46,18 +46,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFRecorder", "CFRecorder\CF
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "QutSensors.Uploader", "QutSensors.Uploader\QutSensors.Uploader.vbproj", "{965B663B-76E3-45D9-A062-1A4401EE4CA5}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "3GTester", "3GTester\3GTester.csproj", "{C9C7A220-F239-49FD-9D99-D632689DB08C}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9F13571F-C20E-43AC-9257-15161D22231D}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
@@ -131,29 +119,6 @@ Global
 		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Release|.NET.ActiveCfg = Release|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{965B663B-76E3-45D9-A062-1A4401EE4CA5}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|.NET.ActiveCfg = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{C9C7A220-F239-49FD-9D99-D632689DB08C}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8DDD99AD-1B8A-41C9-AC0D-EC31969A975F}.Debug|Any CPU.Build.0 = Debug|Any CPU

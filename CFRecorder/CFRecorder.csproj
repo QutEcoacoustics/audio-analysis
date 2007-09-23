@@ -2,7 +2,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>9.0.20706</ProductVersion>
+    <ProductVersion>8.0.50727</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}</ProjectGuid>
     <OutputType>WinExe</OutputType>
@@ -36,6 +36,7 @@
     <FileAlignment>512</FileAlignment>
     <WarningLevel>4</WarningLevel>
     <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>

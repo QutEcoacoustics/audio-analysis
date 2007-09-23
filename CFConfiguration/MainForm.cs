@@ -9,6 +9,7 @@ using QUT;
 using System.IO;
 using CFRecorder;
 using QUT.Service;
+using System.Reflection;
 
 namespace CFConfiguration
 {
@@ -17,6 +18,8 @@ namespace CFConfiguration
 		public MainForm()
 		{
 			InitializeComponent();
+
+			lblVersion.Text = Assembly.GetExecutingAssembly().GetName().Version.ToString();
 
 			// Recordings
 			txtFrequency.Text = Settings.ReadingFrequency.ToString();

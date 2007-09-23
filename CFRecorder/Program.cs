@@ -18,6 +18,8 @@ namespace CFRecorder
 					PDA.Video.PowerOffScreen();
 
 				DeviceManager.Start();
+
+				PDA.Video.Standby();
 			}
 			catch (Exception e)
 			{
