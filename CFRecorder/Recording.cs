@@ -24,6 +24,11 @@ namespace CFRecorder
 		{
 			get { return startTime; }
 		}
+
+		public string MimeType
+		{
+			get { return "audio/asf"; }
+		}
 		#endregion
 
 		public string GetPath()

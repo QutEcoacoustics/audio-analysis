@@ -58,7 +58,7 @@ namespace CFRecorder
 					input.Read(buffer, 0, (int)file.Length);
 
 				Service service = GetServiceProxy(Settings.Server);
-				service.AddAudioReading(deploymentID, null, recording.StartTime.Value, buffer);
+				service.AddAudioReadingWithType(deploymentID, null, recording.StartTime.Value, buffer, recording.MimeType);
 
 				File.Delete(file.FullName);
 				return true;

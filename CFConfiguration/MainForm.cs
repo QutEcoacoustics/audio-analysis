@@ -26,6 +26,9 @@ namespace CFConfiguration
 			txtDuration.Text = Settings.ReadingDuration.ToString();
 			txtRecordingPath.Text = Settings.SensorDataPath;
 
+			DateTime endTime;
+			txtNextRecording.Text = DeviceManager.CalculateNextRecordingTime(out endTime).ToLongTimeString();
+
 			// Server
 			txtServer.Text = Settings.Server;
 
@@ -109,9 +112,32 @@ namespace CFConfiguration
 			Settings.ReadingFrequency = freq;
 			Settings.ReadingDuration = duration;
 			Settings.SensorDataPath = txtRecordingPath.Text;
+
+			if (nextRecordingChanged)
+			{
+				try
+				{
+					DateTime nextRecording = DateTime.Parse(txtNextRecording.Text);
+					Settings.LastRecordingTime = nextRecording.AddMilliseconds(-1 * freq);
+				}
+				catch (FormatException)
+				{
+					MessageBox.Show("Invalid format for next recording time.", "Invalid Format", MessageBoxButtons.OK, MessageBoxIcon.Hand, MessageBoxDefaultButton.Button1);
+				}
+			}
+
+			DateTime endTime;
+			txtNextRecording.Text = DeviceManager.CalculateNextRecordingTime(out endTime).ToLongTimeString();
+
 			Utilities.Log("Recording settings updated.");
 			Utilities.QueueNextAppRunForRecorder(DateTime.Now.AddSeconds(15));
 			MessageBox.Show("Recording settings updated.");
+		}
+
+		bool nextRecordingChanged;
+		private void txtNextRecording_TextChanged(object sender, EventArgs e)
+		{
+			nextRecordingChanged = true;
 		}
 		#endregion
 

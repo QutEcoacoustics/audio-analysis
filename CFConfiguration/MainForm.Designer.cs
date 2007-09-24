@@ -63,6 +63,7 @@ namespace CFConfiguration
 			this.lblHardwareID = new System.Windows.Forms.Label();
 			this.cmdStartDeployment = new System.Windows.Forms.Button();
 			this.tabInfo = new System.Windows.Forms.TabPage();
+			this.lblVersion = new System.Windows.Forms.Label();
 			this.chkDebugMode = new System.Windows.Forms.CheckBox();
 			this.txtCurrentTime = new System.Windows.Forms.TextBox();
 			this.lblCurrentTime = new System.Windows.Forms.Label();
@@ -73,7 +74,8 @@ namespace CFConfiguration
 			this.lblLastRecording = new System.Windows.Forms.Label();
 			this.mainMenu = new System.Windows.Forms.MainMenu();
 			this.timer = new System.Windows.Forms.Timer();
-			this.lblVersion = new System.Windows.Forms.Label();
+			this.lblNextRecording = new System.Windows.Forms.Label();
+			this.txtNextRecording = new System.Windows.Forms.TextBox();
 			this.tabs.SuspendLayout();
 			this.tabRecording.SuspendLayout();
 			this.tabServer.SuspendLayout();
@@ -103,6 +105,8 @@ namespace CFConfiguration
 			// 
 			// tabRecording
 			// 
+			this.tabRecording.Controls.Add(this.txtNextRecording);
+			this.tabRecording.Controls.Add(this.lblNextRecording);
 			this.tabRecording.Controls.Add(this.cmdUploadRecordings);
 			this.tabRecording.Controls.Add(this.cmdRecordNow);
 			this.tabRecording.Controls.Add(this.cmdChooseRecordingPath);
@@ -406,8 +410,16 @@ namespace CFConfiguration
 			this.tabInfo.Controls.Add(this.lblLastRecording);
 			this.tabInfo.Location = new System.Drawing.Point(0, 0);
 			this.tabInfo.Name = "tabInfo";
-			this.tabInfo.Size = new System.Drawing.Size(240, 245);
+			this.tabInfo.Size = new System.Drawing.Size(232, 242);
 			this.tabInfo.Text = "Info";
+			// 
+			// lblVersion
+			// 
+			this.lblVersion.Location = new System.Drawing.Point(133, 4);
+			this.lblVersion.Name = "lblVersion";
+			this.lblVersion.Size = new System.Drawing.Size(100, 20);
+			this.lblVersion.Text = "Version";
+			this.lblVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
 			// 
 			// chkDebugMode
 			// 
@@ -425,7 +437,7 @@ namespace CFConfiguration
 			this.txtCurrentTime.Location = new System.Drawing.Point(104, 33);
 			this.txtCurrentTime.Name = "txtCurrentTime";
 			this.txtCurrentTime.ReadOnly = true;
-			this.txtCurrentTime.Size = new System.Drawing.Size(129, 21);
+			this.txtCurrentTime.Size = new System.Drawing.Size(121, 21);
 			this.txtCurrentTime.TabIndex = 7;
 			// 
 			// lblCurrentTime
@@ -452,13 +464,13 @@ namespace CFConfiguration
 			this.txtLog.Name = "txtLog";
 			this.txtLog.ReadOnly = true;
 			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtLog.Size = new System.Drawing.Size(226, 108);
+			this.txtLog.Size = new System.Drawing.Size(218, 105);
 			this.txtLog.TabIndex = 3;
 			// 
 			// cmdRefreshInfo
 			// 
 			this.cmdRefreshInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdRefreshInfo.Location = new System.Drawing.Point(161, 220);
+			this.cmdRefreshInfo.Location = new System.Drawing.Point(153, 217);
 			this.cmdRefreshInfo.Name = "cmdRefreshInfo";
 			this.cmdRefreshInfo.Size = new System.Drawing.Size(72, 20);
 			this.cmdRefreshInfo.TabIndex = 2;
@@ -472,7 +484,7 @@ namespace CFConfiguration
 			this.txtLastRecording.Location = new System.Drawing.Point(104, 60);
 			this.txtLastRecording.Name = "txtLastRecording";
 			this.txtLastRecording.ReadOnly = true;
-			this.txtLastRecording.Size = new System.Drawing.Size(129, 21);
+			this.txtLastRecording.Size = new System.Drawing.Size(121, 21);
 			this.txtLastRecording.TabIndex = 1;
 			// 
 			// lblLastRecording
@@ -488,13 +500,20 @@ namespace CFConfiguration
 			this.timer.Interval = 500;
 			this.timer.Tick += new System.EventHandler(this.timer_Tick);
 			// 
-			// lblVersion
+			// lblNextRecording
 			// 
-			this.lblVersion.Location = new System.Drawing.Point(133, 4);
-			this.lblVersion.Name = "lblVersion";
-			this.lblVersion.Size = new System.Drawing.Size(100, 20);
-			this.lblVersion.Text = "Version";
-			this.lblVersion.TextAlign = System.Drawing.ContentAlignment.TopRight;
+			this.lblNextRecording.Location = new System.Drawing.Point(7, 89);
+			this.lblNextRecording.Name = "lblNextRecording";
+			this.lblNextRecording.Size = new System.Drawing.Size(95, 20);
+			this.lblNextRecording.Text = "Next Recording:";
+			// 
+			// txtNextRecording
+			// 
+			this.txtNextRecording.Location = new System.Drawing.Point(108, 88);
+			this.txtNextRecording.Name = "txtNextRecording";
+			this.txtNextRecording.Size = new System.Drawing.Size(125, 21);
+			this.txtNextRecording.TabIndex = 16;
+			this.txtNextRecording.TextChanged += new System.EventHandler(this.txtNextRecording_TextChanged);
 			// 
 			// MainForm
 			// 
@@ -564,6 +583,8 @@ namespace CFConfiguration
 		private System.Windows.Forms.Label lblDeploymentDescription;
 		private System.Windows.Forms.Button cmdRefreshDeployment;
 		private System.Windows.Forms.Label lblVersion;
+		private System.Windows.Forms.TextBox txtNextRecording;
+		private System.Windows.Forms.Label lblNextRecording;
 	}
 }
 

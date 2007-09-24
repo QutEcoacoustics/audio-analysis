@@ -5,6 +5,7 @@ Begin DataProject = "QutSensorsDB"
    Begin Folder = "Change Scripts"
       Script = "02_SensorSpatialInformation.sql"
       Script = "03_SensorStatus.sql"
+      Script = "04_AddMimeTypes.sql"
       Script = "UploadedBitForReadings.sql"
       Script = "V2Upgrade.sql"
    End
