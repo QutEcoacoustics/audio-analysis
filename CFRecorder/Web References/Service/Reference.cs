@@ -103,6 +103,34 @@ namespace QUT.Service {
         }
         
         /// <remarks/>
+        [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/AddAudioReadingWithType", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
+        public bool AddAudioReadingWithType(System.Guid deploymentID, [System.Xml.Serialization.XmlElementAttribute(IsNullable=true)] System.Nullable<System.Guid> readingGuid, System.DateTime time, [System.Xml.Serialization.XmlElementAttribute(DataType="base64Binary")] byte[] buffer, string mimeType) {
+            object[] results = this.Invoke("AddAudioReadingWithType", new object[] {
+                        deploymentID,
+                        readingGuid,
+                        time,
+                        buffer,
+                        mimeType});
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
+        public System.IAsyncResult BeginAddAudioReadingWithType(System.Guid deploymentID, System.Nullable<System.Guid> readingGuid, System.DateTime time, byte[] buffer, string mimeType, System.AsyncCallback callback, object asyncState) {
+            return this.BeginInvoke("AddAudioReadingWithType", new object[] {
+                        deploymentID,
+                        readingGuid,
+                        time,
+                        buffer,
+                        mimeType}, callback, asyncState);
+        }
+        
+        /// <remarks/>
+        public bool EndAddAudioReadingWithType(System.IAsyncResult asyncResult) {
+            object[] results = this.EndInvoke(asyncResult);
+            return ((bool)(results[0]));
+        }
+        
+        /// <remarks/>
         [System.Web.Services.Protocols.SoapDocumentMethodAttribute("http://mquter.qut.edu.au/sensors/GetLatestDeployment", RequestNamespace="http://mquter.qut.edu.au/sensors/", ResponseNamespace="http://mquter.qut.edu.au/sensors/", Use=System.Web.Services.Description.SoapBindingUse.Literal, ParameterStyle=System.Web.Services.Protocols.SoapParameterStyle.Wrapped)]
         public Deployment GetLatestDeployment(string sensorID) {
             object[] results = this.Invoke("GetLatestDeployment", new object[] {

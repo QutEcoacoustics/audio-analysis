@@ -47,6 +47,24 @@
           </s:sequence>
         </s:complexType>
       </s:element>
+      <s:element name="AddAudioReadingWithType">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="deploymentID" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="readingGuid" nillable="true" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+            <s:element minOccurs="0" maxOccurs="1" name="mimeType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReadingWithTypeResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddAudioReadingWithTypeResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
       <s:element name="GetLatestDeployment">
         <s:complexType>
           <s:sequence>
@@ -144,6 +162,12 @@
   <wsdl:message name="AddAudioReadingSoapOut">
     <wsdl:part name="parameters" element="tns:AddAudioReadingResponse" />
   </wsdl:message>
+  <wsdl:message name="AddAudioReadingWithTypeSoapIn">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingWithType" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingWithTypeSoapOut">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingWithTypeResponse" />
+  </wsdl:message>
   <wsdl:message name="GetLatestDeploymentSoapIn">
     <wsdl:part name="parameters" element="tns:GetLatestDeployment" />
   </wsdl:message>
@@ -168,6 +192,10 @@
     <wsdl:operation name="AddAudioReading">
       <wsdl:input message="tns:AddAudioReadingSoapIn" />
       <wsdl:output message="tns:AddAudioReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <wsdl:input message="tns:AddAudioReadingWithTypeSoapIn" />
+      <wsdl:output message="tns:AddAudioReadingWithTypeSoapOut" />
     </wsdl:operation>
     <wsdl:operation name="GetLatestDeployment">
       <wsdl:input message="tns:GetLatestDeploymentSoapIn" />
@@ -200,6 +228,15 @@
     </wsdl:operation>
     <wsdl:operation name="AddAudioReading">
       <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReadingWithType" style="document" />
       <wsdl:input>
         <soap:body use="literal" />
       </wsdl:input>
@@ -248,6 +285,15 @@
     </wsdl:operation>
     <wsdl:operation name="AddAudioReading">
       <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReadingWithType" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>

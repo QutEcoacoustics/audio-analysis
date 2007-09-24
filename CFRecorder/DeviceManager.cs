@@ -69,7 +69,7 @@ namespace QUT
 			}
 		}
 
-		private static DateTime CalculateNextRecordingTime(out DateTime endTime)
+		public static DateTime CalculateNextRecordingTime(out DateTime endTime)
 		{
 			DateTime? retVal = Settings.LastRecordingTime;
 			if (retVal == null)
