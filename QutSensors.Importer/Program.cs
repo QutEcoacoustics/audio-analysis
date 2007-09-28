@@ -1,5 +1,6 @@
 using System;
 using System.ServiceProcess;
+using System.Collections;
 
 namespace QutSensors.Importer
 {
@@ -7,6 +8,19 @@ namespace QutSensors.Importer
 	{
 		static void Main(string[] args)
 		{
+			Castle.ActiveRecord.Framework.Config.InPlaceConfigurationSource source = new Castle.ActiveRecord.Framework.Config.InPlaceConfigurationSource();
+
+			Hashtable properties = new Hashtable();
+
+			properties.Add("hibernate.connection.driver_class", "NHibernate.Driver.SqlClientDriver");
+			properties.Add("hibernate.dialect", "NHibernate.Dialect.MsSql2000Dialect");
+			properties.Add("hibernate.connection.provider", "NHibernate.Connection.DriverConnectionProvider");
+			properties.Add("hibernate.connection.connection_string", "Data Source=www.mquter.qut.edu.au;Initial Catalog=QutSensors;Integrated Security=True;");
+
+			source.Add(typeof(Castle.ActiveRecord.ActiveRecordBase), properties);
+
+			Castle.ActiveRecord.ActiveRecordStarter.Initialize(typeof(QutSensors.DB).Assembly, source);
+
 			if (args.Length > 0)
 			{
 				switch (args[0].ToLower())
