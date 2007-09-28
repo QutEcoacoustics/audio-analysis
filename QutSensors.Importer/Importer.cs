@@ -52,10 +52,10 @@ namespace QutSensors.Importer
 
 		void timer_Tick(object state)
 		{
-			SynchroniseData();
+			//SynchroniseData();
 		}
 
-		readonly object dataSyncObject = new object();
+		/*readonly object dataSyncObject = new object();
 		public void SynchroniseData()
 		{
 			if (Monitor.TryEnter(dataSyncObject, 0))
@@ -151,6 +151,6 @@ namespace QutSensors.Importer
 
 				File.Move(file, file + ".bak");
 			}
-		}
+		}*/
 	}
 }

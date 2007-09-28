@@ -27,7 +27,7 @@ namespace CFRecorder
 
 		public string MimeType
 		{
-			get { return "audio/asf"; }
+			get { return "video/x-ms-asf"; }
 		}
 		#endregion
 
