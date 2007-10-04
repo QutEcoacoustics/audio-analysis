@@ -59,6 +59,10 @@
     <Reference Include="OpenNETCF.Net, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="OpenNETCF.WindowsCE, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
     <Reference Include="OpenNETCF.WindowsMobile, Version=2.0.0.0, Culture=neutral, PublicKeyToken=e60dbea84bb431b7, processorArchitecture=MSIL" />
+    <Reference Include="Rebooter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\Rebooter\Rebooter\bin\Debug\Rebooter.exe</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />

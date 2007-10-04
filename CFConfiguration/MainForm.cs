@@ -214,6 +214,8 @@ namespace CFConfiguration
 			Deployment deployment = service.GetLatestDeployment(Settings.HardwareID);
 			if (deployment != null)
 				Settings.UpdateDeployment(deployment);
+			RefreshIdentityTab();
+			MessageBox.Show("Refreshed");
 		}
 		#endregion
 		#endregion

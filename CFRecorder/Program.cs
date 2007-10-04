@@ -14,6 +14,10 @@ namespace CFRecorder
 				// Attempt to ensure any faults will be recovered from by re-running the application
 				Utilities.QueueNextAppRun(DateTime.Now.AddMinutes(5));
 
+				Utilities.QueueNextAppRun(DateTime.Now.AddDays(1), @"\Program Files\QUTSensors\Rebooter1.exe");
+				Utilities.QueueNextAppRun(DateTime.Now.AddDays(3), @"\Program Files\QUTSensors\Rebooter3.exe");
+				Utilities.QueueNextAppRun(DateTime.Now.AddDays(5), @"\Program Files\QUTSensors\Rebooter5.exe");
+
 				if (!Settings.DebugMode)
 					PDA.Video.PowerOffScreen();
 

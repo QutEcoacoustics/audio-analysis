@@ -3,6 +3,7 @@ using System.Reflection;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using QUT;
+using System.IO;
 
 namespace CFConfiguration
 {
@@ -26,6 +27,14 @@ namespace CFConfiguration
 		{
 			Utilities.AddToStartMenu("QutSensors Configuration", Assembly.GetExecutingAssembly().GetName().CodeBase);
 			Utilities.AddToStartup(Utilities.GetRecorderExePath());
+
+			// Create rebooter copies
+			if (!File.Exists(@"\Program Files\QUTSensors\Rebooter1.exe"))
+				File.Copy(@"\Program Files\QUTSensors\Rebooter.exe", @"\Program Files\QUTSensors\Rebooter1.exe");
+			if (!File.Exists(@"\Program Files\QUTSensors\Rebooter3.exe"))
+				File.Copy(@"\Program Files\QUTSensors\Rebooter.exe", @"\Program Files\QUTSensors\Rebooter3.exe");
+			if (!File.Exists(@"\Program Files\QUTSensors\Rebooter5.exe"))
+				File.Copy(@"\Program Files\QUTSensors\Rebooter.exe", @"\Program Files\QUTSensors\Rebooter5.exe");
 		}
 	}
 }
