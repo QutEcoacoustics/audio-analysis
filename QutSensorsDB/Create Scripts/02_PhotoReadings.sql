@@ -12,9 +12,3 @@ CREATE TABLE PhotoReadings
 	Data	image
 )
 GO
-
-/*
-GRANT SELECT ON Table_Name TO PUBLIC
-
-GO
-*/

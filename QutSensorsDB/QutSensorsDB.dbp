@@ -1,11 +1,13 @@
 # Microsoft Developer Studio Project File - Database Project
 Begin DataProject = "QutSensorsDB"
    MSDTVersion = "80"
-   DefDBRef = "fit10013030\sqlexpress.QutSensors.dbo"
+   DefDBRef = "fit10013386.QUTSensors.dbo"
    Begin Folder = "Change Scripts"
       Script = "02_SensorSpatialInformation.sql"
       Script = "03_SensorStatus.sql"
       Script = "04_AddMimeTypes.sql"
+      Script = "05_AudioTags.sql"
+      Script = "06_RemoveSensorTables.sql"
       Script = "UploadedBitForReadings.sql"
       Script = "V2Upgrade.sql"
    End
@@ -39,6 +41,11 @@ Begin DataProject = "QutSensorsDB"
    Begin DBRefFolder = "Database References"
       Begin DBRefNode = "fit10013030\sqlexpress.QutSensors.dbo"
          ConnectStr = "Data Source=(local)\SQLEXPRESS;Initial Catalog=QutSensors;Integrated Security=True"
+         Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
+         Colorizer = 6
+      End
+      Begin DBRefNode = "fit10013386.QUTSensors.dbo"
+         ConnectStr = "Data Source=(local);Initial Catalog=QUTSensors;Integrated Security=True"
          Provider = "{91510608-8809-4020-8897-FBA057E22D54}"
          Colorizer = 6
       End

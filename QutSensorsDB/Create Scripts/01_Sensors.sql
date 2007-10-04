@@ -14,9 +14,3 @@ CREATE TABLE Sensors
 	Description	ntext
 )
 GO
-
-/*
-GRANT SELECT ON Table_Name TO PUBLIC
-
-GO
-*/

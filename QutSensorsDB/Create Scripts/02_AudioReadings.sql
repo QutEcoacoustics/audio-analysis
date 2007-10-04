@@ -14,9 +14,3 @@ CREATE TABLE AudioReadings
 	SpectrogramData image
 )
 GO
-
-/*
-GRANT SELECT ON Table_Name TO PUBLIC
-
-GO
-*/

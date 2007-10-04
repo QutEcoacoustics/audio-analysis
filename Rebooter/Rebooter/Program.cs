@@ -25,7 +25,7 @@ namespace Rebooter
 
 			//Suspend for 10secs (docs says this ensure data is dumped to flash ram) 
 			SetSystemPowerState(null, POWER_STATE_SUSPEND, 0);
-			Thread.Sleep(1200);
+			Thread.Sleep(12000);
 
 			//Reset device
 			using (StreamWriter shutdownLog = new StreamWriter("\\QSShutdown.log", true))
