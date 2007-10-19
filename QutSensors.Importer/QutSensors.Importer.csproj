@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -83,6 +84,10 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AudioTools\AudioTools.csproj">
+      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
+      <Name>AudioTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>

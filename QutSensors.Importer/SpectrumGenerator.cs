@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Collections.Generic;
 using QutSensors.Data.ActiveRecords;
+using AudioTools;
 
 namespace QutSensors.Importer
 {
@@ -22,6 +23,7 @@ namespace QutSensors.Importer
 		public void DebugStart()
 		{
 			OnStart(null);
+			timer_Tick(null);
 		}
 
 		public void DebugStop()
@@ -101,19 +103,37 @@ namespace QutSensors.Importer
 			int index = 1;
 			foreach (QutSensors.Data.ActiveRecords.AudioReading reading in readings)
 			{
+				GC.Collect();
 				if (Stopping) // Indicates we're supposed to stop
 					return;
-				if (reading.MimeType == "audio/x-wav")
+				byte[] buffer = reading.Data.Data;
+				if (!MimeTypes.IsWav(reading.MimeType))
+				{
+					if (MimeTypes.IsAsf(reading.MimeType))
+					{
+						try
+						{
+							buffer = AudioTools.WavConverter.FromAsf(buffer);
+						}
+						catch (Exception e)
+						{
+							Console.WriteLine("Unable to convert to WAV format - {0}", e);
+							buffer = null;
+						}
+					}
+					else
+						buffer = null;
+				}
+				if (buffer != null)
 				{
 					Console.WriteLine("Processing reading {0}/{1} - {2} - {3}", index++, readings.Length, reading.ID, reading.MimeType);
 					try
 					{
-						byte[] buffer = reading.Data.Data;
 						if (buffer != null)
 						{
 							string basePath = Path.GetTempFileName();
 							File.Delete(basePath);
-							basePath = Path.Combine(System.Configuration.ConfigurationManager.AppSettings["SpectrumGeneratorPath"], Path.GetFileNameWithoutExtension(basePath));
+							basePath = Path.Combine(System.Configuration.ConfigurationManager.AppSettings["SpectrumGeneratorDataPath"], Path.GetFileNameWithoutExtension(basePath));
 							string wavPath = basePath + ".wav";
 							string freqSpectrumPath = basePath + "-freqspectrum.jpg";
 							string spectrogramPath = basePath + "-spectrogram.png";
@@ -126,7 +146,13 @@ namespace QutSensors.Importer
 								ProcessStartInfo psi = new ProcessStartInfo("java", string.Format("-classpath .;jfreechart-1.0.5.jar;jcommon-1.0.9.jar;jl1.0.jar SpectrumGenerator {0}", wavPath));
 								psi.WorkingDirectory = System.Configuration.ConfigurationManager.AppSettings["SpectrumGeneratorPath"];
 								psi.CreateNoWindow = true;
+								psi.UseShellExecute = false;
 								Process process = Process.Start(psi);
+								try
+								{
+									process.PriorityClass = ProcessPriorityClass.BelowNormal;
+								}
+								catch { }
 								process.WaitForExit();
 
 								using (FileStream stream = File.Open(freqSpectrumPath, FileMode.Open))
@@ -163,18 +189,10 @@ namespace QutSensors.Importer
 							}
 							finally
 							{
-								try
-								{
-									if (File.Exists(wavPath))
-										File.Delete(wavPath);
-									if (File.Exists(freqSpectrumPath))
-										File.Delete(freqSpectrumPath);
-									if (File.Exists(spectrogramPath))
-										File.Delete(spectrogramPath);
-									if (File.Exists(dataPath))
-										File.Delete(dataPath);
-								}
-								catch { }
+								TryDeleteFile(wavPath);
+								TryDeleteFile(freqSpectrumPath);
+								TryDeleteFile(spectrogramPath);
+								TryDeleteFile(dataPath);
 							}
 						}
 					}
@@ -186,6 +204,18 @@ namespace QutSensors.Importer
 				}
 				else
 					Console.WriteLine("Skipping reading - invalid mime type: {0}", reading.MimeType);
+			}
+		}
+
+		private static void TryDeleteFile(string wavPath)
+		{
+			while (File.Exists(wavPath))
+			{
+				try
+				{
+					File.Delete(wavPath);
+				}
+				catch { Thread.Sleep(500); }
 			}
 		}
 	}
