@@ -209,7 +209,8 @@ namespace QutSensors.Importer
 
 		private static void TryDeleteFile(string wavPath)
 		{
-			while (File.Exists(wavPath))
+			int count = 0;
+			while (File.Exists(wavPath) && count++ < 40)
 			{
 				try
 				{
