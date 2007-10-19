@@ -15,7 +15,7 @@ namespace QutSensors.Importer
 			properties.Add("hibernate.connection.driver_class", "NHibernate.Driver.SqlClientDriver");
 			properties.Add("hibernate.dialect", "NHibernate.Dialect.MsSql2000Dialect");
 			properties.Add("hibernate.connection.provider", "NHibernate.Connection.DriverConnectionProvider");
-			properties.Add("hibernate.connection.connection_string", "Data Source=www.mquter.qut.edu.au;Initial Catalog=QutSensors;Integrated Security=True;");
+			properties.Add("hibernate.connection.connection_string", System.Configuration.ConfigurationManager.ConnectionStrings["LocalSqlServer"]);
 
 			source.Add(typeof(Castle.ActiveRecord.ActiveRecordBase), properties);
 
