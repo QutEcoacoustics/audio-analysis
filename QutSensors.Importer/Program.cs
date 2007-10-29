@@ -1,6 +1,10 @@
 using System;
 using System.ServiceProcess;
 using System.Collections;
+using QutSensors.Data.ActiveRecords;
+using NHibernate.Expression;
+using System.IO;
+using AudioTools;
 
 namespace QutSensors.Importer
 {
@@ -37,6 +41,9 @@ namespace QutSensors.Importer
 						Console.ReadLine();
 						generator.DebugStop();
 						break;
+					case "raw":
+						ExtractData(args);
+						break;
 				}
 			}
 			else
@@ -51,6 +58,30 @@ namespace QutSensors.Importer
 
 				ServiceBase.Run(servicesToRun);
 			}
+		}
+
+		// Extracts raw data for an audio recording.
+		// Created to get data for AFP
+		private static void ExtractData(string[] args)
+		{
+			Deployment deployment = Deployment.GetByName("BAC1");
+			QutSensors.Data.ActiveRecords.AudioReading[] readings = QutSensors.Data.ActiveRecords.AudioReading.SlicedFindAll(0, 20, new Order[] { new Order("Time", false) }, Expression.Eq("Deployment", deployment));
+			
+			foreach (QutSensors.Data.ActiveRecords.AudioReading reading in readings)
+			{
+				Console.WriteLine("Writing {0} to {1}", reading.DataLength, GetPath(reading, ""));
+				File.WriteAllBytes(GetPath(reading, "wav"), WavConverter.FromAsf(reading.Data.Data));
+				File.WriteAllBytes(GetPath(reading, "mp3"), Mp3Converter.FromAsf(reading.Data.Data));
+			}
+		}
+
+		private static string GetPath(QutSensors.Data.ActiveRecords.AudioReading reading, string extension)
+		{
+			string path = string.Format(@"C:\Sensors\{0:yyyyMMdd-HHmmss}." + extension, reading.Time);
+			int attempt = 0;
+			while (File.Exists(path))
+				path = string.Format(@"C:\Sensors\{0:yyyyMMdd-HHmmss}_{1}." + extension, reading.Time, attempt);
+			return path;
 		}
 	}
 }
