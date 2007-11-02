@@ -64,7 +64,7 @@ namespace QutSensors.Importer
 		// Created to get data for AFP
 		private static void ExtractData(string[] args)
 		{
-			Deployment deployment = Deployment.GetByName("BAC1");
+			Deployment deployment = Deployment.GetByName(args[1]);
 			QutSensors.Data.ActiveRecords.AudioReading[] readings = QutSensors.Data.ActiveRecords.AudioReading.SlicedFindAll(0, 20, new Order[] { new Order("Time", false) }, Expression.Eq("Deployment", deployment));
 			
 			foreach (QutSensors.Data.ActiveRecords.AudioReading reading in readings)
