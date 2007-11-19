@@ -78,10 +78,13 @@ namespace QUT
 			{
 				retVal = retVal.Value.AddMilliseconds(Settings.ReadingFrequency);
 
-				while (retVal.Value < DateTime.Now.AddMilliseconds(-1 * Settings.ReadingDuration))
+				int readingDuration = Settings.ReadingDuration;
+				while (retVal.Value < DateTime.Now.AddMilliseconds(-1 * readingDuration))
 				{
-					Utilities.Log("Missed recording: {0}", retVal.Value);
+					//Utilities.Log("Missed recording: {0}", retVal.Value);
 					retVal = retVal.Value.AddMilliseconds(Settings.ReadingFrequency);
+					if (retVal.Value.AddDays(10) < DateTime.Today)
+						retVal = retVal.Value.AddDays(10);
 				}
 			}
 
