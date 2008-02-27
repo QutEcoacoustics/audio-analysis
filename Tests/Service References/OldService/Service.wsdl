@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="utf-8"?>
+<wsdl:definitions xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:tm="http://microsoft.com/wsdl/mime/textMatching/" xmlns:soapenc="http://schemas.xmlsoap.org/soap/encoding/" xmlns:mime="http://schemas.xmlsoap.org/wsdl/mime/" xmlns:tns="http://mquter.qut.edu.au/sensors/" xmlns:s1="http://microsoft.com/wsdl/types/" xmlns:s="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/" xmlns:http="http://schemas.xmlsoap.org/wsdl/http/" targetNamespace="http://mquter.qut.edu.au/sensors/" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/">
+  <wsdl:types>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://mquter.qut.edu.au/sensors/">
+      <s:import namespace="http://microsoft.com/wsdl/types/" />
+      <s:element name="TestConnection">
+        <s:complexType />
+      </s:element>
+      <s:element name="TestConnectionResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="TestConnectionResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="deploymentID" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="readingGuid" nillable="true" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddPhotoReadingResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReadingWithType">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="deploymentID" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="readingGuid" nillable="true" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+            <s:element minOccurs="0" maxOccurs="1" name="mimeType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddPhotoReadingWithTypeResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddPhotoReadingWithTypeResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReading">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="deploymentID" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="readingGuid" nillable="true" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReadingResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddAudioReadingResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReadingWithType">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="deploymentID" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="readingGuid" nillable="true" type="s1:guid" />
+            <s:element minOccurs="1" maxOccurs="1" name="time" type="s:dateTime" />
+            <s:element minOccurs="0" maxOccurs="1" name="buffer" type="s:base64Binary" />
+            <s:element minOccurs="0" maxOccurs="1" name="mimeType" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="AddAudioReadingWithTypeResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="1" maxOccurs="1" name="AddAudioReadingWithTypeResult" type="s:boolean" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetLatestDeployment">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorID" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="GetLatestDeploymentResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="GetLatestDeploymentResult" type="tns:Deployment" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:complexType name="Deployment">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ActiveRecordBaseOfDeployment">
+            <s:sequence>
+              <s:element minOccurs="1" maxOccurs="1" name="DeploymentID" type="s1:guid" />
+              <s:element minOccurs="0" maxOccurs="1" name="Hardware" type="tns:Hardware" />
+              <s:element minOccurs="0" maxOccurs="1" name="Name" type="s:string" />
+              <s:element minOccurs="1" maxOccurs="1" name="DateStarted" type="s:dateTime" />
+              <s:element minOccurs="0" maxOccurs="1" name="Description" type="s:string" />
+              <s:element minOccurs="0" maxOccurs="1" name="Longitude" type="s:string" />
+              <s:element minOccurs="0" maxOccurs="1" name="Latitude" type="s:string" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ActiveRecordBaseOfDeployment" abstract="true">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ActiveRecordBase" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ActiveRecordBase" abstract="true">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ActiveRecordHooksBase" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="ActiveRecordHooksBase" abstract="true" />
+      <s:complexType name="ActiveRecordBaseOfHardware" abstract="true">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ActiveRecordBase" />
+        </s:complexContent>
+      </s:complexType>
+      <s:complexType name="Hardware">
+        <s:complexContent mixed="false">
+          <s:extension base="tns:ActiveRecordBaseOfHardware">
+            <s:sequence>
+              <s:element minOccurs="1" maxOccurs="1" name="HardwareID" type="s:int" />
+              <s:element minOccurs="0" maxOccurs="1" name="UniqueID" type="s:string" />
+            </s:sequence>
+          </s:extension>
+        </s:complexContent>
+      </s:complexType>
+      <s:element name="StartDeployment">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="sensorID" type="s:string" />
+            <s:element minOccurs="0" maxOccurs="1" name="name" type="s:string" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+      <s:element name="StartDeploymentResponse">
+        <s:complexType>
+          <s:sequence>
+            <s:element minOccurs="0" maxOccurs="1" name="StartDeploymentResult" type="tns:Deployment" />
+          </s:sequence>
+        </s:complexType>
+      </s:element>
+    </s:schema>
+    <s:schema elementFormDefault="qualified" targetNamespace="http://microsoft.com/wsdl/types/">
+      <s:simpleType name="guid">
+        <s:restriction base="s:string">
+          <s:pattern value="[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}" />
+        </s:restriction>
+      </s:simpleType>
+    </s:schema>
+  </wsdl:types>
+  <wsdl:message name="TestConnectionSoapIn">
+    <wsdl:part name="parameters" element="tns:TestConnection" />
+  </wsdl:message>
+  <wsdl:message name="TestConnectionSoapOut">
+    <wsdl:part name="parameters" element="tns:TestConnectionResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:AddPhotoReading" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:AddPhotoReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingWithTypeSoapIn">
+    <wsdl:part name="parameters" element="tns:AddPhotoReadingWithType" />
+  </wsdl:message>
+  <wsdl:message name="AddPhotoReadingWithTypeSoapOut">
+    <wsdl:part name="parameters" element="tns:AddPhotoReadingWithTypeResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingSoapIn">
+    <wsdl:part name="parameters" element="tns:AddAudioReading" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingSoapOut">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingResponse" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingWithTypeSoapIn">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingWithType" />
+  </wsdl:message>
+  <wsdl:message name="AddAudioReadingWithTypeSoapOut">
+    <wsdl:part name="parameters" element="tns:AddAudioReadingWithTypeResponse" />
+  </wsdl:message>
+  <wsdl:message name="GetLatestDeploymentSoapIn">
+    <wsdl:part name="parameters" element="tns:GetLatestDeployment" />
+  </wsdl:message>
+  <wsdl:message name="GetLatestDeploymentSoapOut">
+    <wsdl:part name="parameters" element="tns:GetLatestDeploymentResponse" />
+  </wsdl:message>
+  <wsdl:message name="StartDeploymentSoapIn">
+    <wsdl:part name="parameters" element="tns:StartDeployment" />
+  </wsdl:message>
+  <wsdl:message name="StartDeploymentSoapOut">
+    <wsdl:part name="parameters" element="tns:StartDeploymentResponse" />
+  </wsdl:message>
+  <wsdl:portType name="ServiceSoap">
+    <wsdl:operation name="TestConnection">
+      <wsdl:input message="tns:TestConnectionSoapIn" />
+      <wsdl:output message="tns:TestConnectionSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <wsdl:input message="tns:AddPhotoReadingSoapIn" />
+      <wsdl:output message="tns:AddPhotoReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReadingWithType">
+      <wsdl:input message="tns:AddPhotoReadingWithTypeSoapIn" />
+      <wsdl:output message="tns:AddPhotoReadingWithTypeSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <wsdl:input message="tns:AddAudioReadingSoapIn" />
+      <wsdl:output message="tns:AddAudioReadingSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <wsdl:input message="tns:AddAudioReadingWithTypeSoapIn" />
+      <wsdl:output message="tns:AddAudioReadingWithTypeSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="GetLatestDeployment">
+      <wsdl:input message="tns:GetLatestDeploymentSoapIn" />
+      <wsdl:output message="tns:GetLatestDeploymentSoapOut" />
+    </wsdl:operation>
+    <wsdl:operation name="StartDeployment">
+      <wsdl:input message="tns:StartDeploymentSoapIn" />
+      <wsdl:output message="tns:StartDeploymentSoapOut" />
+    </wsdl:operation>
+  </wsdl:portType>
+  <wsdl:binding name="ServiceSoap" type="tns:ServiceSoap">
+    <soap:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="TestConnection">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/TestConnection" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReadingWithType">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReadingWithType" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReadingWithType" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLatestDeployment">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/GetLatestDeployment" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartDeployment">
+      <soap:operation soapAction="http://mquter.qut.edu.au/sensors/StartDeployment" style="document" />
+      <wsdl:input>
+        <soap:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:binding name="ServiceSoap12" type="tns:ServiceSoap">
+    <soap12:binding transport="http://schemas.xmlsoap.org/soap/http" />
+    <wsdl:operation name="TestConnection">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/TestConnection" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReading">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddPhotoReadingWithType">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddPhotoReadingWithType" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReading">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReading" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="AddAudioReadingWithType">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/AddAudioReadingWithType" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetLatestDeployment">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/GetLatestDeployment" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="StartDeployment">
+      <soap12:operation soapAction="http://mquter.qut.edu.au/sensors/StartDeployment" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+  <wsdl:service name="Service">
+    <wsdl:port name="ServiceSoap" binding="tns:ServiceSoap">
+      <soap:address location="http://localhost:4041/WebFrontend/Service.asmx" />
+    </wsdl:port>
+    <wsdl:port name="ServiceSoap12" binding="tns:ServiceSoap12">
+      <soap12:address location="http://localhost:4041/WebFrontend/Service.asmx" />
+    </wsdl:port>
+  </wsdl:service>
+</wsdl:definitions>
