@@ -29,6 +29,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CFRecorder", "CFRecorder\CFRecorder.csproj", "{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{9C770301-DE29-45E0-8677-669F4DDBFFD0}"
 	ProjectSection(SolutionItems) = preProject
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
@@ -102,6 +104,20 @@ Global
 		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Any CPU.Build.0 = Release|Any CPU
 		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|.NET.ActiveCfg = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4C9B383A-E7FD-4FE3-89E1-64FEFC02061F}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
