@@ -42,7 +42,7 @@ namespace WebsiteTests
 		[TestMethod()]
 		public void GetReadingsSqlTest()
 		{
-			var actual = AudioReading.GetReadingsSql(null, ReadStatus.Both, Guid.Empty, null, null, null, 0, 20);
+			var actual = AudioReading.GetReadingsSql((string[])null, ReadStatus.Both, Guid.Empty, null, null, null, 0, 20);
 			Assert.IsNotNull(actual);
 		}
 
@@ -59,7 +59,7 @@ namespace WebsiteTests
 			var rr = ReadReading.FindFirst();
 			Assert.IsNotNull(rr, "This test requires a reading to have been read on the database. You must set this up manually");
 
-			var actual = AudioReading.GetReadingsSql(null, ReadStatus.Read, rr.AspNetProfilesUserId, null, null, null, 0, 20);
+			var actual = AudioReading.GetReadingsSql((string[])null, ReadStatus.Read, rr.AspNetProfilesUserId, null, null, null, 0, 20);
 			Assert.IsNotNull(actual);
 			Assert.IsTrue(actual.Count > 0);
 		}
@@ -67,7 +67,7 @@ namespace WebsiteTests
 		[TestMethod()]
 		public void GetReadingsWithMinDateRestriction()
 		{
-			var actual = AudioReading.GetReadingsSql(null, ReadStatus.Both, Guid.Empty, System.Data.SqlTypes.SqlDateTime.MinValue.Value, null, null, 0, 20);
+			var actual = AudioReading.GetReadingsSql((string[])null, ReadStatus.Both, Guid.Empty, System.Data.SqlTypes.SqlDateTime.MinValue.Value, null, null, 0, 20);
 			Assert.IsNotNull(actual);
 			Assert.IsTrue(actual.Count > 0, "This test requires there to be some readings in the database. You must set this up manually.");
 		}
@@ -75,7 +75,7 @@ namespace WebsiteTests
 		[TestMethod()]
 		public void GetReadingsWithMaxDateRestriction()
 		{
-			var actual = AudioReading.GetReadingsSql(null, ReadStatus.Both, Guid.Empty, null, System.Data.SqlTypes.SqlDateTime.MaxValue.Value, null, 0, 20);
+			var actual = AudioReading.GetReadingsSql((string[])null, ReadStatus.Both, Guid.Empty, null, System.Data.SqlTypes.SqlDateTime.MaxValue.Value, null, 0, 20);
 			Assert.IsNotNull(actual);
 			Assert.IsTrue(actual.Count > 0, "This test requires there to be some readings in the database. You must set this up manually.");
 		}
@@ -83,7 +83,7 @@ namespace WebsiteTests
 		[TestMethod()]
 		public void GetReadingsWithAudioTags()
 		{
-			var actual = AudioReading.GetReadingsSql(null, ReadStatus.Both, Guid.Empty, null, null, new string[] {"Bird"}, 0, 20);
+			var actual = AudioReading.GetReadingsSql((string[])null, ReadStatus.Both, Guid.Empty, null, null, new string[] { "Bird" }, 0, 20);
 			Assert.IsNotNull(actual);
 		}
 	}
