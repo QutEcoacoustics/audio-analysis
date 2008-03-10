@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioTools", "AudioTools\AudioTools.csproj", "{6A03A803-AD91-4E12-967E-39DCDB2BB030}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestSupport", "TestSupport\TestSupport.csproj", "{7AD855C6-7123-4E67-B96E-5347F1ACAB32}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = SensorV2.vsmdi
@@ -129,6 +131,20 @@ Global
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|.NET.ActiveCfg = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7AD855C6-7123-4E67-B96E-5347F1ACAB32}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
