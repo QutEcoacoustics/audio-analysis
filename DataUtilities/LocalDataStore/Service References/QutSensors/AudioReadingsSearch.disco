@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<discovery xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.xmlsoap.org/disco/">
+  <contractRef ref="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx?wsdl" docRef="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx" xmlns="http://schemas.xmlsoap.org/disco/scl/" />
+  <soap address="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx" xmlns:q1="http://mquter.qut.edu.au/sensors/" binding="q1:AudioReadingsSearchSoap" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+  <soap address="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx" xmlns:q2="http://mquter.qut.edu.au/sensors/" binding="q2:AudioReadingsSearchSoap12" xmlns="http://schemas.xmlsoap.org/disco/soap/" />
+</discovery>

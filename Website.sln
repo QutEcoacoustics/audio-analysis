@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\", "{8E39BFC8-8503-4546-B1B3-A799361C49B1}"
 	ProjectSection(WebsiteProperties) = preProject
 		TargetFramework = "3.5"
+		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
 		Debug.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
@@ -12,7 +13,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Debug.AspNetCompiler.FixedNames = "false"
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.VirtualPath = "/WebFrontend"
-		Release.AspNetCompiler.PhysicalPath = "..\WebFrontend\"
+		Release.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Release.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
 		Release.AspNetCompiler.Updateable = "true"
 		Release.AspNetCompiler.ForceOverwrite = "true"

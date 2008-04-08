@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="a1766d13-ff62-4c7f-9afd-bc805fb7e539" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>true</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="AudioReadingsSearch.wsdl" MetadataType="Wsdl" ID="9172c6d7-0d8c-42f4-83e6-d8ef8c6bc152" SourceId="1" SourceUrl="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx?wsdl" />
+    <MetadataFile FileName="AudioReadingsSearch.disco" MetadataType="Disco" ID="0c7d6c96-70e2-44e5-8bd9-b72d804a0683" SourceId="1" SourceUrl="http://www.mquter.qut.edu.au/sensor/demo/AudioReadingsSearch.asmx?disco" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
