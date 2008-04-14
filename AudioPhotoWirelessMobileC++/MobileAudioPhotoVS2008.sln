@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MobileAudioPhoto", "MobileAudio\MobileAudio.vcproj", "{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug (exe)|Windows Mobile 6 Professional SDK (ARMV4I) = Debug (exe)|Windows Mobile 6 Professional SDK (ARMV4I)
+		Release (dll)|Windows Mobile 6 Professional SDK (ARMV4I) = Release (dll)|Windows Mobile 6 Professional SDK (ARMV4I)
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Debug (exe)|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Debug (exe)|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Debug (exe)|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Debug|Windows Mobile 6 Professional SDK (ARMV4I)
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Release (dll)|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Windows Mobile 6 Professional SDK (ARMV4I)
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Release (dll)|Windows Mobile 6 Professional SDK (ARMV4I).Build.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
+		{CD0F502B-186C-4599-BC6C-E1CDCDA9C6A4}.Release (dll)|Windows Mobile 6 Professional SDK (ARMV4I).Deploy.0 = Release|Windows Mobile 6 Professional SDK (ARMV4I)
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
