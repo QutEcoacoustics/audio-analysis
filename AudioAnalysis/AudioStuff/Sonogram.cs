@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Text;
 using System.Drawing;
 using TowseyLib;
 
@@ -9,95 +9,57 @@ namespace AudioStuff
 {
 	public sealed class Sonogram
 	{
-        private string wavFileDir;
-        private string wavFileExt = ".wav"; //default value
-        private string wavFName;
-        public  string WavFName { get { return wavFName; } set { wavFName = value; } }
+        public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
+
+
+
+        private SonoConfig state = new SonoConfig();  //class containing state of all application parameters
+        public SonoConfig State { get { return state; } set { state = value; } }
+
+        public string BmpFName { get { return state.BmpFName; } }
+ 
+
+
+        private double[,] matrix; //the actual sonogram
+        public  double[,] Matrix { get { return matrix; } /*set { matrix = value; }*/ }
+        private double[,] gradM; //the gradient version of the sonogram
+        public  double[,] GradM  { get { return gradM; } /*set { gradM = value; }*/ }
+        private double[,] melFM; //the Mel Frequency version of the sonogram
+        public  double[,] MelFM  { get { return melFM; } /*set { melFM = value; }*/ }
+
+
+        //  RESULTS variables
+        private Results results =  new Results(); //set up a results file
+        public Results Results { get { return results; } set { results = value; } }
+        public double NoiseAv { get { return results.NoiseAv; } }
+        public double NoiseSD { get { return results.NoiseSd; } }
+        public double[] ActivityHisto { get { return results.ActivityHisto; } }
+
+
+        //****************************************************************************************************
+        //****************************************************************************************************
+        //****************************************************************************************************
+        //  CONSTRUCTORS
         
-        private int windowSize;
-        public int WindowSize { get { return windowSize; } }
-        private double windowOverlap;
-        public double WindowOverlap { get { return windowOverlap; } set { windowOverlap = value; } }
-        private FFT.WindowFunc windowFnc;
-        private string windowFncName;
-        public string WindowFncName { get { return windowFncName; } set { windowFncName = value; } }
-        private int sampleRate;
-        public int SampleRate { get { return sampleRate; } }
-        private int maxFreq;
-        public int MaxFreq { get { return maxFreq; } }
-        private int sampleCount;
-        public int SampleCount { get { return sampleCount; } }
-        private double audioDuration;
-        public double AudioDuration { get { return audioDuration; } set { audioDuration = value; } }
-        private int windowDuration;
-        private int nonOverlapDuration;
-
-        private int spectrumCount;
-        public int SpectrumCount { get { return spectrumCount; } }
-        private int freqBinCount;
-        public int FreqBinCount { get { return freqBinCount; } }
-
-        private double fBinWidth;
-        public double FBinWidth { get { return fBinWidth; } }
-
-        private double[,] matrix;
-        public double[,] Matrix { get { return matrix; } /*set { matrix = value; }*/ }
-        private double minP; //min power in sonogram
-        public double MinP { get { return minP; } set { minP = value; } }
-        private double maxP; //max power in sonogram
-        public double MaxP { get { return maxP; } set { maxP = value; } }
-
-        private double minPercentile;
-        public double MinPercentile { get { return minPercentile; } set { minPercentile = value; } }
-        private double maxPercentile;
-        public double MaxPercentile { get { return maxPercentile; } set { maxPercentile = value; } }
-        private double minCut; //power of min percentile
-        public double MinCut { get { return minCut; } set { minCut = value; } }
-        private double maxCut; //power of max percentile
-        public double MaxCut { get { return maxCut; } set { maxCut = value; } }
-
-        //freq bins of the scanned part of sonogram
-        private int topScanBin;
-        public int TopScanBin { get { return topScanBin; } set { topScanBin = value; } }
-        private int midScanBin;
-        public int MidScanBin { get { return midScanBin; } set { midScanBin = value; } }
-        private int bottomScanBin;
-        public int BottomScanBin { get { return bottomScanBin; } set { bottomScanBin = value; } }
-        private int midTemplateFreq;
-        public int MidTemplateFreq { get { return midTemplateFreq; } set { midTemplateFreq = value; } }
-
-        private string sonogramDir;
-        public string SonogramDir { get { return sonogramDir; } set { sonogramDir = value; } }
-        private string bmpFName = null;
-        public string BmpFName { get { return bmpFName; } set { bmpFName = value; } }
-        private string bmpFileExt = ".bmp";//default value
-        private bool addGrid;
-        private int blurNH;
-        private int blurNH_time;
-        private int blurNH_freq;
-        private bool normSonogram;
-
-        private double noiseAv;
-        public double NoiseAv { get { return noiseAv; } set { noiseAv = value; } }
-        private double noiseSD;
-        public double NoiseSD { get { return noiseSD; } set { noiseSD = value; } }
-        private double zScoreThreshold;
-        public double ZScoreThreshold { get { return zScoreThreshold; } set { zScoreThreshold = value; } }
-        private int verbosity = 0;
 
         /// <summary>
         /// CONSTRUCTOR 1
         /// </summary>
         /// <param name="props"></param>
         /// <param name="wav"></param>
-        public Sonogram(Params props, WavReader wav)
+        public Sonogram(Configuration cfg, WavReader wav)
         {
-            this.wavFileDir = wav.WavFileDir;
-            this.wavFName = wav.WavFileName;
-            this.wavFName = wavFName.Substring(0, wavFName.Length - 4);
-            CopyParams(props);
+            state.ReadConfig(cfg);
+            //this.results = new Results(); //set up a results file
+
+            state.WavFileDir = wav.WavFileDir;
+            state.WavFName = wav.WavFileName;
+            state.WavFName = state.WavFName.Substring(0, state.WavFName.Length - 4);
+            state.SignalMax = wav.GetMaxValue();
+            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
+            state.SetDateAndTime(state.WavFName);
             Make(wav);
-            if(this.verbosity!=0) WriteInfo();
+            if(state.Verbosity!=0) WriteInfo();
         }
 
         /// <summary>
@@ -107,17 +69,22 @@ namespace AudioStuff
         /// <param name="wavFName"></param>
         public Sonogram(string iniFName, string wavPath)
         {
-            FileInfo fi = new FileInfo(wavPath);
-            this.wavFileDir = fi.DirectoryName;
-            this.wavFName = fi.Name.Substring(0,fi.Name.Length-4);
-            this.wavFileExt = fi.Extension;
+            state.ReadConfig(iniFName);
+            //this.results = new Results(); //set up a results file
 
-            TowseyLib.Params props = new TowseyLib.Params(iniFName);
-            CopyParams(props);
+            FileInfo fi = new FileInfo(wavPath);
+            state.WavFileDir = fi.DirectoryName;
+            state.WavFName = fi.Name.Substring(0, fi.Name.Length - 4);
+            state.WavFileExt = fi.Extension;
+
             //read the .WAV file
             WavReader wav = new WavReader(wavPath);
+            state.SignalMax = wav.GetMaxValue();
+            //Console.WriteLine("Max Value=" + state.SignalMax);
+            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
+            state.SetDateAndTime(state.WavFName);
             Make(wav);
-            if (this.verbosity != 0) WriteInfo();
+            if (state.Verbosity != 0) WriteInfo();
         }
 
         /// <summary>
@@ -129,141 +96,368 @@ namespace AudioStuff
         /// <returns></returns>
         public Sonogram(string iniFName, string wavPath, byte[] wavBytes)
         {
-            TowseyLib.Params props = new TowseyLib.Params(iniFName);
+            state.ReadConfig(iniFName);
+            //this.results = new Results(); //set up a results file
+
 
             FileInfo fi = new FileInfo(wavPath);
-            this.wavFileDir = fi.DirectoryName;
-            this.wavFName   = fi.Name.Substring(0, fi.Name.Length - 4);
-            this.wavFileExt = fi.Extension;
+            state.WavFileDir = fi.DirectoryName;
+            state.WavFName = fi.Name.Substring(0, fi.Name.Length - 4);
+            state.WavFileExt = fi.Extension;
 
             //initialise WAV class with bytes array
-            WavReader wav = new WavReader(wavBytes, wavFName);
+            WavReader wav = new WavReader(wavBytes, state.WavFName);
+            state.SignalMax = wav.GetMaxValue();
+            //Console.WriteLine("Max Value=" + state.SignalMax);
+            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
+            state.SetDateAndTime(state.WavFName);
             Make(wav);
-            if (this.verbosity != 0) WriteInfo();
+            if (state.Verbosity != 0) WriteInfo();
         }
 
-        private void CopyParams(Params props)
-        {
-            this.wavFileExt = props.GetValue("WAV_FILEEXT");
-            this.sonogramDir = props.GetValue("SONOGRAM_DIR");
-            this.windowSize = props.GetInt("WINDOW_SIZE");
-            this.windowOverlap = props.GetDouble("WINDOW_OVERLAP");
-            this.windowFncName = props.GetValue("WINDOW_FUNCTION");
-            this.windowFnc = FFT.GetWindowFunction(windowFncName);
-            this.minPercentile = props.GetDouble("MIN_PERCENTILE");
-            this.maxPercentile = props.GetDouble("MAX_PERCENTILE");
-            this.wavFileExt = props.GetValue("WAV_FILEEXT");
-            this.bmpFileExt = props.GetValue("BMP_FILEEXT");
-            this.addGrid = props.GetBoolean("ADDGRID");
-            this.zScoreThreshold = props.GetDouble("ZSCORE_THRESHOLD");
-            this.verbosity = props.GetInt("VERBOSITY");
-            this.blurNH = props.GetInt("BLUR_NEIGHBOURHOOD");
-            this.blurNH_time = props.GetInt("BLUR_TIME_NEIGHBOURHOOD");
-            this.blurNH_freq = props.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
-            this.normSonogram = props.GetBoolean("NORMALISE_SONOGRAM");
-        }
 
         private void Make(WavReader wav)
         {
-            //string waveFileDir = props.GetValue("WAV_DIR");
+            //store essential parameters for this sonogram
+            this.state.WavFName = wav.WavFileName;
+            this.state.SampleRate = wav.SampleRate;
+            this.state.SampleCount = wav.SampleLength;
+            this.state.AudioDuration = state.SampleCount / (double)state.SampleRate;
+            this.state.MaxFreq = state.SampleRate / 2;
+            this.state.WindowDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
+            this.state.NonOverlapDuration = this.state.WindowDuration * (1 - this.state.WindowOverlap);// duration in seconds
+            this.state.FreqBinCount = this.state.WindowSize / 2; // other half is phase info
+            this.state.FBinWidth = this.state.MaxFreq / (double)this.state.FreqBinCount;
+            this.state.SpectrumCount = (int)(this.state.AudioDuration / this.state.NonOverlapDuration);
+            this.state.SpectraPerSecond = 1 / this.state.NonOverlapDuration;
 
-            this.wavFName = wav.WavFileName;
-            this.sampleRate = wav.SampleRate;
-            this.sampleCount = wav.SampleLength;
-            this.audioDuration = sampleCount / (double)sampleRate;
-            this.maxFreq = sampleRate / 2;
-            this.windowDuration = windowSize * 1000 / sampleRate;
-            this.nonOverlapDuration = (int)(windowDuration * (1 - windowOverlap));
-            this.freqBinCount = windowSize / 2;//other half is phase info
-            this.fBinWidth = this.maxFreq / (double)freqBinCount;
+            // init the class which calculates the FFT
+            FFT fft = new FFT(this.state.WindowSize, this.state.WindowFnc);
+            int step = (int)(this.state.WindowSize * (1 - this.state.WindowOverlap));
 
-            FFT fft = new FFT(windowSize, windowFnc);
-            int step = (int)(windowSize * (1 - windowOverlap));
-
-            this.matrix = GenerateSpectrogram(wav, fft, step, out minP, out maxP);
-            this.matrix = DataTools.Blur(this.matrix, this.blurNH_freq, this.blurNH_time);
+            //generate the spectrum
+            double minP = Double.MaxValue;
+            double avgP = -Double.MaxValue;
+            double maxP = -Double.MaxValue;
+            this.matrix = GenerateSpectrogram(wav, fft, step, out minP, out avgP, out maxP);
+            this.state.MinPower = minP;
+            this.state.AvgPower = avgP;
+            this.state.MaxPower = maxP;
+            this.matrix = DataTools.Blur(this.matrix, this.state.BlurNH_freq, this.state.BlurNH_time);
             //normalise and bound the values
-            if (this.normSonogram) NormalizeAndBound();
+            if (this.state.NormSonogram) NormalizeAndBound();
 
-            this.spectrumCount = this.matrix.GetLength(0);
+            this.state.SpectrumCount = this.matrix.GetLength(0);
         }
 
-		public double[,] GenerateSpectrogram(WavReader wav, FFT fft, int step, out double min, out double max)
+        public double[,] GenerateSpectrogram(WavReader wav, FFT fft, int step, out double min, out double avg, out double max)
 		{
-			//if (width < 2) throw new ArgumentException("width must be at least 2");
             if (step < 1)
-                throw new ArgumentException("Step must be at least 1");
+                throw new ArgumentException("Frame Step must be at least 1");
             if (step > fft.WindowSize)
-                throw new ArgumentException("Step must be <=" + fft.WindowSize);
+                throw new ArgumentException("Frame Step must be <=" + fft.WindowSize);
 
 
 			double[] data = wav.Samples;
             int width     = (data.Length - fft.WindowSize) / step;
-			int height    = fft.WindowSize / 2;
+            if (width < 2) throw new ArgumentException("Sonogram width must be at least 2");
+            int height = fft.WindowSize / 2;
+
+            //calculate a minimum amplitude to prevent taking log of small number
+            //this would increase the range when normalising
+            double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1); 
+	
 
 			double offset = 0.0;
 			double[,] sonogram = new double[width, height];
-			min = Double.MaxValue; max = Double.MinValue;
+			min = Double.MaxValue; 
+            max = Double.MinValue;
+            double sum = 0.0;
+
 			for (int i = 0; i < width; i++)//foreach time step
 			{
 				double[] f1 = fft.Invoke(data, (int)Math.Floor(offset));
-                for (int j = 0; j < height; j++)//foreach freq bin
+                for (int j = 0; j < height; j++) //foreach freq bin
 				{
-					double bels = Math.Log10(f1[j + 1]);//convert to Bels
-                    //NOTE: this should be the log of a ratio. 
-                    // here we assume the reference power = 1.0.
-                    if (bels < min) min = bels;
-                    if (bels > max) max = bels;
-                    sonogram[i, j] = bels;
+                    double amplitude = f1[j + 1];
+                    if (amplitude < epsilon) amplitude = epsilon; //to prevent log of a very small number
+                    double dBels = 20 * Math.Log10(amplitude);    //convert to decibels
+                    //NOTE: the decibels calculation should be a ratio. 
+                    // Here the ratio is implied ie relative to the power in the normalised wav signal
+                    if (dBels <= min) min = dBels;
+                    else
+                    if (dBels >= max) max = dBels;
+                    sonogram[i, j] = dBels;
+                    sum += dBels;
 				}
 				offset += step;
-			}
-			if (min < wav.Epsilon) min = wav.Epsilon;
+			} //end matrix
+            avg = sum / (width * height);
             return sonogram;
 		}
 
 
-		public double[] GetPowerSpectrum(double[,] f2, double max)
-		{
-			int width = f2.GetLength(0);
-			int height = f2.GetLength(1);
-			double[] f1 = new double[height];
 
-			for (int y = 0; y < height; y++)
-			{
-				double sum = 0.0;
-				for (int x = 0; x < width; x++)
-					sum += Math.Pow(10.0, 2.0 * (f2[x, y] - max));
-				f1[y] = Math.Log10(sum / width) + 2.0 * max;
-			}
-			return f1;
-		}
-
-		
-        //public double Normalize(double[] data)
+        // following method not used
+        //public double[] GetPowerSpectrum(double[,] f2, double max)
         //{
-        //    double max = 0.0;
-        //    for (int i = 0; i < data.Length; i++)
-        //        max = Math.Max(max, Math.Abs(data[i]));
-        //    max = 1.0 / max;
-        //    for (int i = 0; i < data.Length; i++)
-        //        data[i] *= max;
-        //    return max;
+        //    int width = f2.GetLength(0);
+        //    int height = f2.GetLength(1);
+        //    double[] f1 = new double[height];
+
+        //    for (int y = 0; y < height; y++)
+        //    {
+        //        double sum = 0.0;
+        //        for (int x = 0; x < width; x++)
+        //            sum += Math.Pow(10.0, 2.0 * (f2[x, y] - max));
+        //        f1[y] = Math.Log10(sum / width) + 2.0 * max;
+        //    }
+        //    return f1;
         //}
 
 
-        //normalise and compress/bound the values
-        public void Normalize(double minPercentile, double maxPercentile)
+
+        public void Gradient()
         {
-            this.minPercentile = minPercentile;
-            this.maxPercentile = maxPercentile;
-            DataTools.GetPercentileCutoffs(this.matrix, minP, maxP, minPercentile, maxPercentile, out minCut, out maxCut);
-            this.matrix = DataTools.boundMatrix(this.matrix, minCut, maxCut);
+            double gradThreshold = 1.5;
+            int fBlurNH = 5;
+            int tBlurNH = 4;
+            this.gradM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
+            int height = this.gradM.GetLength(0);
+            int width = this.gradM.GetLength(1);
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+
+            for (int y = 0; y < height-1; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    this.gradM[y, x] = gradM[y + 1, x] - gradM[y, x];//calculate gradient
+
+                    //get min and max gradient
+                    if (this.gradM[y, x] < min)      min = this.gradM[y, x];
+                    else
+                    if (this.gradM[y, x] > max)      max = this.gradM[y, x];
+
+                    // quantize the gradients
+                    if (this.gradM[y, x] < -gradThreshold) this.gradM[y, x] = 0.0;
+                    else
+                    if (this.gradM[y, x] > gradThreshold)  this.gradM[y, x] = 1.0;
+                    else                                   this.gradM[y, x] = 0.5;
+                }
+            }
+
+            results.MinGrad = min;
+            results.MaxGrad = max;
+
+            for (int x = 0; x < width; x++) this.gradM[height - 1, x] = 0.5; //patch in last time step with medium gradient
+            this.state.MinCut = 0.0;
+            this.state.MaxCut = 1.0;
         }
+
+
+        public void Convert2MelFreq(int bandCount)
+        {
+            double[,] inData = this.Matrix;
+            int M = inData.GetLength(0);
+            int N = inData.GetLength(1);
+            double[,] outData = new double[M, bandCount];
+            double Nyquist    = this.state.MaxFreq;
+            double linBand    = Nyquist / bandCount;
+            double melBand    = Speech.Mel(Nyquist) / bandCount;
+            double min = double.PositiveInfinity;
+            double max = double.NegativeInfinity;
+            for (int i = 0; i < M; i++)
+                for (int j = 0; j < bandCount; j++)
+                {
+                    double a = Speech.InverseMel(j * melBand) / linBand;
+                    double b = Speech.InverseMel((j + 1) * melBand) / linBand;
+                    int ai = (int)Math.Ceiling(a);
+                    int bi = (int)Math.Floor(b);
+
+                    double sum = 0.0;
+                    if (ai > 0)
+                    {
+                        double ya = (1.0 - ai + a) * inData[i, ai - 1] + (ai - a) * inData[i, ai];
+                        sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, inData[i, ai]);
+                    }
+                    for (int k = ai; k < bi; k++)
+                    {
+                        sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, inData[i, k], inData[i, k + 1]);
+                    }
+                    if (bi < (N - 1)) //this.Bands in Greg's original code
+                    {
+                        double yb = (b - bi) * inData[i, bi] + (1.0 - b + bi) * inData[i, bi + 1];
+                        sum += Speech.MelIntegral(bi * linBand, b * linBand, inData[i, bi], yb);
+                    }
+                    sum /= melBand;
+
+                    outData[i, j] = sum;
+                    if (sum < min) min = sum;
+                    if (sum > max) max = sum;
+                }
+            this.melFM = outData;
+            //return new Spectrum() { Data = outData, Min = min, Epsilon = this.Epsilon, Max = max, Nyquist = Mel(Nyquist) };
+        }
+
+
+        public double[] CalculatePowerHisto()
+        {
+            int bandCount = this.State.MaxFreq / Sonogram.binWidth;
+            this.State.FreqBandCount = bandCount;
+            int tracksPerBand = this.State.FreqBinCount / bandCount;
+            int height = this.matrix.GetLength(0); //time dimension
+            int width = this.matrix.GetLength(1);
+            double[] power = new double[bandCount];
+
+
+            for (int f = 0; f < bandCount; f++) // over all 11 bands
+            {
+                int minTrack = f * tracksPerBand;
+                int maxTrack = ((f + 1) * tracksPerBand) - 1;
+                for (int y = 0; y < height; y++) //full duration of recording
+                {
+                    for (int x = minTrack; x < maxTrack; x++) //full width of freq band
+                    {
+                        power[f] += this.matrix[y, x]; //sum the power
+                    }
+                }
+
+            }
+
+            double[] histo = new double[bandCount];
+            for (int f = 0; f < bandCount; f++)
+            {
+                histo[f] = power[f] / (double)tracksPerBand / state.SpectrumCount;
+            }
+            return histo;
+        }
+        public double[] CalculateEventHisto()
+        {
+            int bandCount = this.State.MaxFreq / Sonogram.binWidth;
+            this.State.FreqBandCount = bandCount;
+            int tracksPerBand = this.State.FreqBinCount / bandCount;
+            int height = this.matrix.GetLength(0); //time dimension
+            int width = this.matrix.GetLength(1);
+            int[] counts = new int[bandCount];
+
+            for (int f = 0; f < bandCount; f++) // over all 11 bands
+            {
+                int minTrack = f * tracksPerBand;
+                int maxTrack = ((f + 1) * tracksPerBand) - 1;
+                for (int y = 1; y < height; y++) //full duration of recording
+                {
+                    for (int x = minTrack; x < maxTrack; x++) //full width of freq band
+                    {
+                        if (this.gradM[y, x] != this.gradM[y-1, x]) counts[f]++; //count any gradient change
+                    }
+                }
+            }
+            double[] histo = new double[bandCount];
+            for (int f = 0; f < bandCount; f++)
+            {
+                histo[f] = counts[f] / (double)tracksPerBand / state.AudioDuration;
+            }
+            return histo;
+        }
+        public double[] CalculateEvent2Histo()
+        {
+            int bandCount = this.State.MaxFreq / Sonogram.binWidth;
+            this.State.FreqBandCount = bandCount;
+            int tracksPerBand = this.State.FreqBinCount / bandCount;
+            int height = this.matrix.GetLength(0); //time dimension
+            int width  = this.matrix.GetLength(1);
+            double[] positiveGrad = new double[bandCount];
+            double[] negitiveGrad = new double[bandCount];
+
+
+            for (int f = 0; f < bandCount; f++) // over all 11 bands
+            {
+                int minTrack = f * tracksPerBand;
+                int maxTrack = ((f + 1) * tracksPerBand) - 1;
+                for (int y = 0; y < height; y++) //full duration of recording
+                {
+                    for (int x = minTrack; x < maxTrack; x++) //full width of freq band
+                    {
+                        double d = this.gradM[y,x];
+                        if (d == 0) negitiveGrad[f]++;
+                        else if (d == 1) positiveGrad[f]++;
+                    }
+                }
+            }
+            double[] histo = new double[bandCount];
+            for (int f = 0; f < bandCount; f++)
+            {
+                if (positiveGrad[f] > negitiveGrad[f]) histo[f] = positiveGrad[f] / (double)tracksPerBand / state.AudioDuration;
+                else                                   histo[f] = negitiveGrad[f] / (double)tracksPerBand / state.AudioDuration;
+            }
+            return histo;
+        }
+
+        public double[] CalculateActivityHisto()
+        {
+            int bandCount = this.State.MaxFreq / Sonogram.binWidth;
+            this.State.FreqBandCount = bandCount;
+            int tracksPerBand = this.State.FreqBinCount / bandCount;
+            int height = this.matrix.GetLength(0); //time dimension
+            int width = this.matrix.GetLength(1);
+            double[] activity = new double[bandCount];
+
+
+            for (int f = 0; f < bandCount; f++) // over all 11 bands
+            {
+                int minTrack = f * tracksPerBand;
+                int maxTrack = ((f + 1) * tracksPerBand) - 1;
+                for (int y = 0; y < height; y++) //full duration of recording
+                {
+                    for (int x = minTrack; x < maxTrack; x++) //full width of freq band
+                    {
+                        activity[f] += (this.gradM[y, x] * this.gradM[y, x]); //add square of gradient
+                    }
+                }
+
+            }
+
+            double[] histo = new double[bandCount];
+            for (int f = 0; f < bandCount; f++)
+            {
+                histo[f] = activity[f] / (double)tracksPerBand / state.AudioDuration;
+            }
+            return histo;
+        }
+
+
+        public void CalculateIndices()
+        {
+            Gradient();
+            results.EventHisto   = CalculateEventHisto(); //calculate statistics
+            results.PowerHisto   = CalculatePowerHisto();
+            //results.PowerEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(results.PowerHisto));
+            results.EventEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(results.EventHisto));
+        }
+
+
+        //normalise and compress/bound the values
+        public void NormalizeAndBound(double minPercentile, double maxPercentile)
+        {
+            this.state.MinPercentile = minPercentile;
+            this.state.MaxPercentile = maxPercentile;
+            double minCut;
+            double maxCut;
+            DataTools.GetPercentileCutoffs(this.matrix, this.state.MinPower, this.state.MaxPower, minPercentile, maxPercentile, out minCut, out maxCut);
+            this.state.MinCut = minCut;
+            this.state.MaxCut = maxCut;
+            this.matrix = DataTools.boundMatrix(this.matrix, this.state.MinCut, this.state.MaxCut);
+        }
+
         //normalise and compress/bound the values
         public void NormalizeAndBound()
         {
-            DataTools.GetPercentileCutoffs(this.matrix, minP, maxP, this.minPercentile, this.maxPercentile, out minCut, out maxCut);
+            double minCut;
+            double maxCut;
+            DataTools.GetPercentileCutoffs(this.matrix, this.state.MinPower, this.state.MaxPower, this.state.MinPercentile, this.state.MaxPercentile, out minCut, out maxCut);
+            this.state.MinCut = minCut;
+            this.state.MaxCut = maxCut;
             this.matrix = DataTools.boundMatrix(this.matrix, minCut, maxCut);
         }
 
@@ -271,50 +465,188 @@ namespace AudioStuff
         public void WriteInfo()
         {
             Console.WriteLine("\nSONOGRAM INFO");
-            Console.WriteLine(" WavSampleRate=" + this.sampleRate + " SampleCount=" + sampleCount + "  Duration=" + (sampleCount / (double)sampleRate).ToString("F3") + "s");
-            Console.WriteLine(" Window Size=" + this.windowSize + "  Max FFT Freq =" + maxFreq);
-            Console.WriteLine(" Window Overlap=" + this.windowOverlap + " Window duration=" + windowDuration + "ms. (non-overlapped=" + nonOverlapDuration + "ms)");
-            Console.WriteLine(" Freq Bin Width=" + (this.maxFreq / (double)freqBinCount).ToString("F3") + "hz");
-            Console.WriteLine(" Min power=" + this.minP.ToString("F3") + "  Max power=" + this.maxP.ToString("F3"));
-            Console.WriteLine(" Min percentile=" + this.minPercentile.ToString("F2") + "  Max percentile=" + this.maxPercentile.ToString("F2"));
-            Console.WriteLine(" Min cutoff=" + this.minCut.ToString("F3") + "  Max cutoff=" + this.maxCut.ToString("F3"));
+            Console.WriteLine(" WavSampleRate=" + this.state.SampleRate + " SampleCount=" + this.state.SampleCount + "  Duration=" + (this.state.SampleCount / (double)this.state.SampleRate).ToString("F3") + "s");
+            Console.WriteLine(" Window Size=" + this.state.WindowSize + "  Max FFT Freq =" + this.state.MaxFreq);
+            Console.WriteLine(" Window Overlap=" + this.state.WindowOverlap + " Window duration=" + this.state.WindowDuration + "ms. (non-overlapped=" + this.state.NonOverlapDuration + "ms)");
+            Console.WriteLine(" Freq Bin Width=" + (this.state.MaxFreq / (double)this.state.FreqBinCount).ToString("F3") + "hz");
+            Console.WriteLine(" Min power=" + this.state.MinPower.ToString("F3") + " Avg power=" + this.state.AvgPower.ToString("F3") + " Max power=" + this.state.MaxPower.ToString("F3"));
+            Console.WriteLine(" Min percentile=" + this.state.MinPercentile.ToString("F2") + "  Max percentile=" + this.state.MaxPercentile.ToString("F2"));
+            Console.WriteLine(" Min cutoff=" + this.state.MinCut.ToString("F3") + "  Max cutoff=" + this.state.MaxCut.ToString("F3"));
         }
 
-
-        public Bitmap GetImage(bool addGrid)
+        public void WriteStatistics()
         {
-            // prepare Bitmap image
-            BitMaps bmps = new BitMaps(SampleRate, AudioDuration, 0.0);
-            Bitmap bmp = bmps.CreateBitmap(matrix, minCut, maxCut, addGrid, null, 0, 0);
-            return bmp;
-        }
-        public Bitmap GetImage(bool addGrid, double[] scoreArray, double threshold)
-        {
-            BitMaps bmps = new BitMaps(SampleRate, AudioDuration, threshold);
-            Bitmap bmp = bmps.CreateBitmap(matrix, minCut, maxCut,
-                                    addGrid, scoreArray, topScanBin, bottomScanBin);
-            return bmp;
+            Console.WriteLine("\nSONOGRAM STATISTICS");
+            Console.WriteLine(" Max power=" + this.State.MaxPower.ToString("F3") + " dB");
+            Console.WriteLine(" Avg power=" + this.State.AvgPower.ToString("F3") + " dB");
+            results.WritePowerHisto();
+            //results.WritePowerEntropy();
+            results.WriteEventHisto();
+            results.WriteEventEntropy();
         }
 
-        public void SaveImage()
+        public void SaveGradientImage()
         {
-            string imageFileName = this.sonogramDir + this.wavFName + this.bmpFileExt;
-            this.bmpFName = imageFileName;
-            Bitmap bmp = GetImage(this.addGrid);
-            bmp.Save(imageFileName);
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.gradM, null);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_grad" + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
         }
-        public void SaveImage(double[] scoreArray)
+
+        public void SaveMelImage()
         {
-            string imageFileName = this.sonogramDir + this.wavFName + this.bmpFileExt;
-            this.bmpFName = imageFileName;
-            Bitmap bmp = GetImage(this.addGrid, scoreArray, this.zScoreThreshold);
-            bmp.Save(imageFileName);
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.melFM, null);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_melScale" + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+        /// <summary>
+        /// save bmp image with a zscore track at the bottom. Method assumes zscores and truncates below zero.
+        /// if zscores==null, no score track is drawn
+        /// </summary>
+        /// <param name="zscores"></param>
+        public void SaveImage(double[] zscores)
+        {
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+        public void SaveImage(string opDir, double[] zscores)
+        {
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
+
+            string fName = opDir + "//" + this.state.WavFName + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
         }
 
 
     } //end class Sonogram
 
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public class SonoConfig
+    {
 
+        private string wavFileExt = ".wav"; //default value
+        public string WavFileExt { get { return wavFileExt; } set { wavFileExt = value; } }
+        private string bmpFileExt = ".bmp";//default value
+        public string BmpFileExt { get { return bmpFileExt; } set { bmpFileExt = value; } }
+
+
+        //wav file info
+        public string  WavFileDir { get; set; }
+        public string  WavFName { get; set; }
+        public double  SignalMax { get; set; }
+        public string  DeployName { get; set; }
+        public string  Date { get; set; }
+        public int  Hour { get; set; }
+        public int  Minute { get; set; }
+        public int  TimeSlot { get; set; }
+        
+        public int WindowSize { get; set; }
+        public double WindowOverlap { get; set; }
+        public string WindowFncName { get; set; }
+        public FFT.WindowFunc WindowFnc { get; set; }
+
+        public int SampleRate { get; set; }
+        public int SampleCount { get; set; }
+        public int MaxFreq { get; set; }
+        public double AudioDuration { get; set; }
+        public double WindowDuration { get; set; }     //duration of full window in seconds
+        public double NonOverlapDuration { get; set; } //duration of non-overlapped part of window in seconds
+
+        public int SpectrumCount { get; set; }
+        public double SpectraPerSecond { get; set; }
+        public int FreqBinCount { get; set; }
+        public int FreqBandCount { get; set; }
+
+        public double FBinWidth { get;set; }
+        public double MinPower { get; set; }//min power in sonogram
+        public double AvgPower { get; set; }//average power in sonogram
+        public double MaxPower { get; set; }//max power in sonogram
+        public double MinPercentile { get; set; }
+        public double MaxPercentile { get; set; }
+        public double MinCut { get; set; } //power of min percentile
+        public double MaxCut { get; set; } //power of max percentile
+
+
+        //freq bins of the scanned part of sonogram
+        public int TopScanBin { get; set; }
+        public int MidScanBin { get; set; }
+        public int BottomScanBin { get; set; }
+   //     public int MidTemplateFreq { get; set; }
+
+        public string SonogramDir { get; set; }
+        public string BmpFName { get; set; }
+        public bool AddGrid { get; set; }
+        public int BlurNH { get; set; }
+        public int BlurNH_time { get; set; }
+        public int BlurNH_freq { get; set; }
+        public bool NormSonogram { get; set; }
+
+        public int ZscoreSmoothingWindow { get; set; }
+        public double ZScoreThreshold { get; set; }
+        public int Verbosity { get; set; }
+
+        /// <summary>
+        /// converts wave file names into component info 
+        /// wave file name have following format: "BAC1_20071008-081607"
+        /// </summary>
+        /// <param name="FName"></param>
+        public void SetDateAndTime(string fName)
+        {
+            string[] parts = fName.Split('_');
+            this.DeployName = parts[0];
+            parts = parts[1].Split('-');
+            this.Date = parts[0];
+            this.Hour = Int32.Parse(parts[1].Substring(0,2));
+            this.Minute = Int32.Parse(parts[1].Substring(2, 2));
+            this.TimeSlot = ((this.Hour*60)+Minute)/30; //convert to half hour time slots
+        }
+
+        
+        public void ReadConfig(string iniFName)
+        {
+            Configuration cfg = new Configuration(iniFName);
+            ReadConfig(cfg);
+        }
+
+        public void ReadConfig(Configuration cfg)
+        {
+            this.wavFileExt = cfg.GetString("WAV_FILEEXT");
+            this.SonogramDir = cfg.GetString("SONOGRAM_DIR");
+            this.WindowSize = cfg.GetInt("WINDOW_SIZE");
+            this.WindowOverlap = cfg.GetDouble("WINDOW_OVERLAP");
+            this.WindowFncName = cfg.GetString("WINDOW_FUNCTION");
+            this.WindowFnc = FFT.GetWindowFunction(this.WindowFncName);
+            this.MinPercentile = cfg.GetDouble("MIN_PERCENTILE");
+            this.MaxPercentile = cfg.GetDouble("MAX_PERCENTILE");
+            this.wavFileExt = cfg.GetString("WAV_FILEEXT");
+            this.bmpFileExt = cfg.GetString("BMP_FILEEXT");
+            this.AddGrid = cfg.GetBoolean("ADDGRID");
+            this.Verbosity = cfg.GetInt("VERBOSITY");
+            this.BlurNH = cfg.GetInt("BLUR_NEIGHBOURHOOD");
+            this.BlurNH_time = cfg.GetInt("BLUR_TIME_NEIGHBOURHOOD");
+            this.BlurNH_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
+            this.NormSonogram = cfg.GetBoolean("NORMALISE_SONOGRAM");
+            this.ZscoreSmoothingWindow = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
+            this.ZScoreThreshold = cfg.GetDouble("ZSCORE_THRESHOLD");
+        }
+
+
+    } //end class SonoConfig
 
 
 
@@ -499,192 +831,6 @@ namespace AudioStuff
             if(name.StartsWith("Hamming")) return FFT.Hamming;
             else return null;
         }
-	}
+	}//end class FFT
 
-
-
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
- 
-    
-    
-    public sealed class WavReader
-	{
-		//declare variables, getters and setters
-        private int channels;
-		public int Channels { get { return channels; } private set { channels = value; } }
-		private int sampleRate;
-		public int SampleRate   { get { return sampleRate; }   private set { sampleRate   = value; } }
-        private int sampleLength;
-        public int SampleLength { get { return sampleLength; } private set { sampleLength = value; } }
-		private int bitsPerSample;
-		public int BitsPerSample { get { return bitsPerSample; } private set { bitsPerSample = value; } }
-		private double[] samples;
-		public double[] Samples { get { return samples; } private set { samples = value; } }
-        
-        private string wavFileDir;
-        public string WavFileDir { get { return wavFileDir; } private set { wavFileDir = value; } }
-        private string wavFileName;
-        public string WavFileName { get { return wavFileName; } private set { wavFileName = value; } }
-
-
-		public TimeSpan Time
-		{
-			get { return TimeSpan.FromSeconds(((double)Samples.Length) / SampleRate); }
-		}
-
-		public double Epsilon
-		{
-			get { return Math.Log10(Math.Pow(0.5, bitsPerSample - 1)); }
-		}
-
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// </summary>
-        /// <param name="waveFileDir"></param>
-        /// <param name="wavFileName"></param>
-        public WavReader(string wavFileDir, string wavFileName, string wavFileExt)
-        {
-            this.wavFileDir = wavFileDir;
-            this.wavFileName = wavFileName;
-            string path = wavFileDir + wavFileName + wavFileExt;
-            ParseData(File.ReadAllBytes(path));
-        }
-        /// <summary>
-        /// CONSTRUCTOR 2
-        /// </summary>
-        /// <param name="waveFileDir"></param>
-        /// <param name="wavFileName"></param>
-        public WavReader(string wavPath)
-        {
-            FileInfo fi = new FileInfo(wavPath);
-            this.wavFileDir = fi.DirectoryName;
-            this.wavFileName = fi.Name;
-            this.wavFileName = wavFileName.Substring(0, wavFileName.Length - 4);
-            ParseData(File.ReadAllBytes(wavPath));
-        }
-        /// <summary>
-        /// CONSTRUCTOR 3
-        /// </summary>
-        /// <param name="wavData"></param>
-        public WavReader(byte[] wavData)
-        {
-            ParseData(wavData);
-        }
-        /// <summary>
-        /// CONSTRUCTOR 3
-        /// </summary>
-        /// <param name="wavBytes"></param>
-        /// <param name="wavFName"></param>
-        public WavReader(byte[] wavBytes, string wavFName)
-        {
-            this.wavFileName = wavFName;
-            ParseData(wavBytes);
-        }
-        /// <summary>
-        /// CONSTRUCTOR 4
-        /// </summary>
-        /// <param name="rawData"></param>
-        /// <param name="sampleRate"></param>
-		public WavReader(double[] rawData, int sampleRate)
-		{
-			this.Channels = 1;
-			this.BitsPerSample = 16;
-			this.SampleRate   = sampleRate;
-            this.SampleLength = rawData.Length;
-            this.Samples = rawData;
-		}
-
-        private void ParseData(byte[] data)
-		{
-			// http://technology.niagarac.on.ca/courses/ctec1631/WavFileFormat.html
-
-			if (!BitConverter.IsLittleEndian)
-				throw new NotSupportedException("System.BitConverter does not read little endian.");
-
-			// "RIFF"
-			if (data[0] != 0x52 || data[1] != 0x49 || data[2] != 0x46 || data[3] != 0x46)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// Total Length Of Package To Follow
-			if (BitConverter.ToUInt32(data, 4) < 36u)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// "WAVE"
-			if (data[8] != 0x57 || data[9] != 0x41 || data[10] != 0x56 || data[11] != 0x45)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// "fmt "
-			if (data[12] != 0x66 || data[13] != 0x6D || data[14] != 0x74 || data[15] != 0x20)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// Length Of FORMAT Chunk
-			int p = (int)BitConverter.ToUInt32(data, 16) - 16;
-			if (p < 0) throw new InvalidOperationException("Cannot parse WAV header."); 
-
-			// Always 0x01
-			if (data[20] != 0x01 || data[21] != 0x00)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// Channel Numbers 
-			this.Channels = BitConverter.ToUInt16(data, 22);
-
-			// Sample Rate
-			this.SampleRate = (int)BitConverter.ToUInt32(data, 24);
-
-			// Bytes Per Second
-			BitConverter.ToUInt32(data, 28);
-
-			// Bytes Per Sample
-			int bytesPerSample = BitConverter.ToUInt16(data, 32);
-
-			// Bits Per Sample
-			this.BitsPerSample = BitConverter.ToUInt16(data, 34);
-
-			// "data"
-			if (data[36+p] != 0x64 || data[37+p] != 0x61 || data[38+p] != 0x74 || data[39+p] != 0x61)
-				throw new InvalidOperationException("Cannot parse WAV header.");
-
-			// Length Of Data To Follow
-			int dataLength = (int)BitConverter.ToUInt32(data, 40+p);
-			int headerLength = 44 + p;
-			if (dataLength == 0 || dataLength > data.Length - headerLength)
-				dataLength = data.Length - headerLength;
-
-			this.SampleLength = dataLength / bytesPerSample;
-			this.Samples = new double[sampleLength];
-
-			switch (this.BitsPerSample)
-			{
-				case 8:
-					for (int i = 0, offset = headerLength; i < sampleLength; i++, offset += bytesPerSample)
-						this.Samples[i] = data[offset] / 128.0;
-					break;
-				case 16:
-					for (int i = 0, offset = headerLength; i < sampleLength; i++, offset += bytesPerSample)
-						this.Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
-					break;
-				default:
-					throw new NotSupportedException("Bits per sample other than 8 and 16.");
-			}
-		}
-
-		public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
-		{
-			int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
-			double[] data = new double[n];
-			for (int i = 0; i < n; i++)
-				data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
-			return new WavReader(data, sampleRate);
-		}
-
-
-
-
-
-	}
 }

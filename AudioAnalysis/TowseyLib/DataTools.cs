@@ -230,8 +230,8 @@ namespace TowseyLib
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
                 {
-                    if (M[i,j] < min) newM[i,j] = min;
-                    else if (M[i,j] > max) newM[i,j] = max;
+                    if (M[i, j] <= min) newM[i, j] = min;
+                    else if (M[i,j] >= max) newM[i,j] = max;
                     else newM[i,j] = M[i,j];
                 }
             return newM;
@@ -252,6 +252,12 @@ namespace TowseyLib
         /// <param name="maxCut">power value equivalent to maxPercentile</param>
         public static void GetPercentileCutoffs(double[,] matrix, double min, double max, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
         {
+            if ((minPercentile == 0.0) && (maxPercentile == 1.0))
+            {
+                minCut = min;
+                maxCut = max;
+                return;
+            }
             if (max < min) throw new ArgumentException("max must be greater than or equal to min");
             if (maxPercentile < minPercentile) throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
             if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
@@ -518,6 +524,13 @@ namespace TowseyLib
             return (ret);
         }
 
+        /// <summary>
+        /// normalises the values in a matrix between the passed min and max.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="normMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
         public static double[,] normalise(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
@@ -576,7 +589,8 @@ namespace TowseyLib
             int N = matrix.GetLength(1);
 
             int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            double[,] newMatrix = new double[M, N];
+            //double[,] newMatrix = new double[M, N];
+            double[,] newMatrix = (double[,])matrix.Clone();
 
             for (int i = nh; i < (M - nh); i++)
                 for (int j = nh; j < (N - nh); j++)
@@ -605,9 +619,9 @@ namespace TowseyLib
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
-            int cellCount = ((2 * cNH) + 1) * ((2 * rNH) + 1);
+            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
 
-            double[,] newMatrix = new double[rows, cols];
+            double[,] newMatrix = new double[rows, cols];//init new matrix to return
             for (int r = rNH; r < (rows - rNH); r++)
                 for (int c = cNH; c < (cols - cNH); c++)
                 {
@@ -621,7 +635,7 @@ namespace TowseyLib
                             sum += matrix[y, x]; 
                         }
                     }
-                    newMatrix[r, c] = sum / (double)cellCount; 
+                    newMatrix[r, c] = sum / (double)area; 
                 }
             return newMatrix;
         }
@@ -669,7 +683,96 @@ namespace TowseyLib
     
     return(ret); 
   }
-  
+
+//***************************************************************************************************************************************
+
+  public const double ln2 = 0.69314718;   //log 2 base e
+
+    /// <summary>
+    /// normalises an array of doubles to probabilities that sum to one.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+  static public double[] NormaliseProbabilites(double[] data)
+  {
+      int length = data.Length;
+      double[] probs = new double[length];
+
+      double sum = 0;
+      for (int i = 0; i < length; i++) sum += data[i];
+
+      for (int i = 0; i < length; i++)
+      {
+          probs[i] = data[i] / sum;
+      }
+      return probs;
+  } // end NormaliseProbabilites()
+
+
+  /// <summary>
+  /// Calculates the entropy of the passed discrete distribution.
+  /// 
+  /// It is assumed that each of the elements in distr[] represent the 
+  /// probability of that state and that the probabilities sum to 1.0
+  /// 
+  /// Math.log() is base e. To convert to log base 2 need to divide by the natural log of 2 = ln2 = 0.69314.  
+  /// NOTE: In the limit as rf approaches 0, rf*log(rf) = 0.
+  /// 
+  /// </summary>
+  /// <param name="data"></param>
+  /// <returns></returns>
+      
+  static public double Entropy(double[] distr)
+  {
+      double H=0.0;
+
+      for (int i = 0; i < distr.Length; i++)
+      {
+          if (distr[i] != 0.00) H -= distr[i] * Math.Log(distr[i]) / ln2;
+      }
+      return H;
+  }
+	
+ 	
+ 	/**
+ 	 * Calculates the relative entropy of the passed 
+ 	 * discrete probability distribution.
+ 	 * It is assumed that each of the elements in dist[] 
+ 	 * represents the probability of a symbol/state and the 
+ 	 * probabilities sum to 1.0
+ 	 * The relative entropy is with respect a uniform distribution. 
+ 	 */
+  public static double RelativeEntropy(double[] distr)
+ 	{   int length = distr.Length;
+ 	    // generate a uniform reference distribution
+ 	 	double[] refDistr = new double[length];
+        for(int i=0; i<length; i++)refDistr[i]= 1/(double)length;
+     
+ 	 	double H1 = Entropy(refDistr);
+ 	 	double H2 = Entropy(distr);
+ 	    return H1-H2; 		
+ 	}
+  	
+ 	/**
+ 	 * Calculates the relative entropy of the passed 
+ 	 * discrete probability distribution.
+ 	 * It is assumed that each of the elements in dist[] 
+ 	 * represents the probability of a symbol/state and the 
+ 	 * probabilities sum to 1.0
+ 	 * The relative entropy is with respect to the background
+ 	 * or reference distribution contained in the array refDist. 
+ 	 */
+	public static double RelativeEntropy(double[] dist, double[] refDist)
+ 	{  
+ 	 	double H1 = Entropy(refDist);
+ 	 	double H2 = Entropy(dist);
+ 	  return H1-H2; 		
+ 	}
+
+
+
+
+//***************************************************************************************************************************************
   
   /**
    * returns the min and max of a set of integer values
@@ -697,7 +800,7 @@ namespace TowseyLib
                 if (data[i] < min)
                 {
                     min = data[i];
-                }
+                } else
                 if (data[i] > max)
                 {
                     max = data[i];
@@ -723,7 +826,7 @@ namespace TowseyLib
                 if (data[i,j] < min)
                 {
                     min = data[i,j];
-                }
+                }else
                 if (data[i,j] > max)
                 {
                     max = data[i,j];
@@ -764,6 +867,13 @@ namespace TowseyLib
       double max;
       getMinMax(data, out min, out max);
       Console.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
+  }
+  static public void WriteMinMaxOfArray(string arrayname, double[] data)
+  {
+      double min;
+      double max;
+      getMinMax(data, out min, out max);
+      Console.WriteLine(arrayname+":  Min={0:F5}  Max={1:F5}", min, max);
   }
 
 

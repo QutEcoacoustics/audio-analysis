@@ -106,6 +106,24 @@ namespace TowseyLib
         }// end WriteTextFile()
 
 
+        public static void Append2TextFile(string fPath, string line)
+        {
+            ArrayList list;
+            if (File.Exists(fPath)) list = ReadTextFile(fPath);
+            else                    list = new ArrayList();
+            list.Add(line);
+            WriteTextFile(fPath, list);
+        }// end Append2TextFile()
+
+        public static void Append2TextFile(string fPath, ArrayList list)
+        {
+            ArrayList oldList = new ArrayList();
+            if (File.Exists(fPath)) oldList = ReadTextFile(fPath);
+            oldList.Add(list);
+            WriteTextFile(fPath, list);
+        }// end Append2TextFile()
+
+
         public static double[,] ReadDoubles2Matrix(string fName)
         {
             ArrayList lines = ReadTextFile(fName);
