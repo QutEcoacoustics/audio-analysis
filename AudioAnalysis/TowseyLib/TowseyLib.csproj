@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TowseyLib</RootNamespace>
     <AssemblyName>TowseyLib</AssemblyName>
-    <StartupObject>TowseyLib.DataTools</StartupObject>
+    <StartupObject>TowseyLib.DSP</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -40,13 +40,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Distribution.cs" />
-    <Compile Include="Params.cs" />
+    <Compile Include="DSP.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />
     <Compile Include="NormalDist.cs" />
     <Compile Include="DataTools.cs" />
     <Compile Include="FileTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Speech.cs" />
+    <Compile Include="WavReader.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
