@@ -15,7 +15,7 @@ namespace AudioStuff
     /// ExtractTemplate:Extracts a call template from the sonogram 
     /// ScanSonogram:Scans the sonogram with a call template
     /// </summary>
-    enum Mode { MakeSonogram, MakeSonogramGradient, CreateTemplate, CreateTemplateAndScan, TemplateNoiseResponse, ReadTemplateAndScan, TestTemplate, ERRONEOUS }
+    enum Mode { ArtificialSignal, MakeSonogram, MakeSonogramGradient, MakeSonogramShapes, CreateTemplate, CreateTemplateAndScan, TemplateNoiseResponse, ReadTemplateAndScan, TestTemplate, ERRONEOUS }
 
     static class MainApp
     {
@@ -33,17 +33,19 @@ namespace AudioStuff
             const string iniFName = @"C:\SensorNetworks\Templates\sonogram.ini";
             const string templateDir = @"C:\SensorNetworks\Templates\";
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
-            const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
-            //const string opDirName = @"C:\SensorNetworks\Sonograms\";
+            //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
+            const string opDirName = @"C:\SensorNetworks\Sonograms\";
             const string wavFExt = WavReader.wavFExt;
 
             //training file
             string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
             //string wavFileName = "BAC2_20071014-022040nightnoise"; //night with no signal in Kek-kek band.
+
 
     
             //test wav files
@@ -56,9 +58,11 @@ namespace AudioStuff
             //String wavFileName = "BAC1_20071008-084607";   //faint kek-kek @ 1.7sec
 
 
-            
-            Mode userMode = Mode.MakeSonogram;
+
+            //Mode userMode = Mode.ArtificialSignal;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
+            Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;
@@ -67,6 +71,8 @@ namespace AudioStuff
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //************* CALL PARAMETERS ***************
+            int melBandCount = 512;
+
 
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
@@ -76,11 +82,11 @@ namespace AudioStuff
             //int y1 = 115; int x1 = 302;
             //int y2 = 155; int x2 = 332;
 
-            //int callID = 2;
-            //string callName = "Lewin's Rail Kek-kek";
-            //string callComment = "Template consists of a single KEK!";
-            //int x1 = 662; int y1 = 284; //image coordinates
-            //int x2 = 668; int y2 = 431;
+            int callID = 2;
+            string callName = "Lewin's Rail Kek-kek";
+            string callComment = "Template consists of a single KEK!";
+            int x1 = 662; int y1 = 284; //image coordinates
+            int x2 = 668; int y2 = 431;
 
             //int callID = 3;
             //string callName = "Lewin's Rail Kek-kek";
@@ -101,11 +107,11 @@ namespace AudioStuff
             //int x2 = 255; int y2 = 511;
 
 
-            int callID = 6;
-            string callName = "Lewin's Rail Kek-kek";
-            string callComment = "Template consists of three KEK-KEKs!";
-            int x1 = 663; int y1 = 284; //image coordinates
-            int x2 = 682; int y2 = 431;
+            //int callID = 6;
+            //string callName = "Lewin's Rail Kek-kek";
+            //string callComment = "Template consists of three KEK-KEKs!";
+            //int x1 = 663; int y1 = 284; //image coordinates
+            //int x2 = 682; int y2 = 431;
             //************** END OF USER PARAMETERS ***************************
             
             
@@ -115,15 +121,40 @@ namespace AudioStuff
             //SWITCH USER MODES
             switch (userMode)
             {
+                case Mode.ArtificialSignal:
+                    try
+                    {
+                        int sampleRate = 22050;
+                        double duration = 30.245; //sig duration in seconds
+                        string sigName = "artificialSignal";
+                        int[] harmonics = {1500, 3000, 4500, 6000};
+                        double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
+                        s = new Sonogram(iniFName, sigName, signal, sampleRate);
+                        s.SaveImage(null);
+                        //s.MelFreqSonogram(melBandCount);
+                        //s.SaveMelImage(null);
+                        //s.CepstralSonogram(s.MelFM);
+                        s.CepstralSonogram(s.Matrix);
+                        s.SaveCepImage(null);
+                        Console.WriteLine(" Image in file " + s.BmpFName);
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("FAILED ON ARTIFICIAL SIGNAL");
+                        Console.WriteLine(e.ToString());
+                    }
+                    break;
+
                 case Mode.MakeSonogram:     //make sonogram and bmp image
                     string wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        int bandCount = 512;
-                        s.Convert2MelFreq(bandCount);
-                        //s.SaveImage();
-                        s.SaveMelImage();
+                        s.SaveImage(null);
+                        //s.MelFreqSonogram(melBandCount);
+                        //s.SaveMelImage(null);
+                        //s.CepstralSonogram(s.MelFM);
+                        //s.SaveCepImage(null);
                         Console.WriteLine(" Image in file " + s.BmpFName);
                     }
                     catch(Exception e)
@@ -139,9 +170,27 @@ namespace AudioStuff
                     {
                         s = new Sonogram(iniFName, wavPath);
                         s.CalculateIndices();
-                        s.SaveGradientImage();
-                        Console.WriteLine(" Grad Image in file " + s.BmpFName);
                         s.WriteStatistics();
+                        Console.WriteLine(" Grad Image in file " + s.BmpFName);
+                        s.SaveGradientImage();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("\nFAILED TO EXTRACT SONOGRAM OR SUBSEQUENT STEP");
+                        Console.WriteLine(e.ToString());
+                    }
+                    break;
+
+                case Mode.MakeSonogramShapes:     //make sonogram and detect shapes
+                    wavPath = wavDirName + "\\" + wavFileName + wavFExt;
+                    try
+                    {
+                        s = new Sonogram(iniFName, wavPath);
+                        s.Shapes(); //stores shapes in GradM
+                        //s.SaveGradientImage();
+                        //Console.WriteLine(" Grad Image in file " + s.BmpFName);
+                        ArrayList shapes = Shape.Shapes_Detect(s.ShapeM);
+                        s.SaveShapeImage(shapes);
                     }
                     catch (Exception e)
                     {
@@ -223,10 +272,12 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try{
                         s = new Sonogram(iniFName, wavPath);
+                        s.MelFreqSonogram(melBandCount);
 
                         Template t = new Template(callID, templateDir);
                         Classifier cl = new Classifier(t, s);
-                        s.SaveImage(cl.Zscores);
+                        //s.SaveImage(cl.Zscores);
+                        s.SaveMelImage(cl.Zscores);
                         s.CalculateIndices();
                         s.WriteStatistics();
                         cl.WriteResults();

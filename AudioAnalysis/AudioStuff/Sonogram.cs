@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -20,12 +21,16 @@ namespace AudioStuff
  
 
 
-        private double[,] matrix; //the actual sonogram
+        private double[,] matrix; //the original sonogram
         public  double[,] Matrix { get { return matrix; } /*set { matrix = value; }*/ }
         private double[,] gradM; //the gradient version of the sonogram
         public  double[,] GradM  { get { return gradM; } /*set { gradM = value; }*/ }
         private double[,] melFM; //the Mel Frequency version of the sonogram
         public  double[,] MelFM  { get { return melFM; } /*set { melFM = value; }*/ }
+        private double[,] cepsM; //the Mel Frequency Cepstral version of the sonogram
+        public  double[,] CepsM  { get { return cepsM; } /*set { cepsM = value; }*/ }
+        private double[,] shapeM; //the Shape outline version of the sonogram
+        public  double[,] ShapeM { get { return shapeM; } /*set { shapeM = value; }*/ }
 
 
         //  RESULTS variables
@@ -70,7 +75,6 @@ namespace AudioStuff
         public Sonogram(string iniFName, string wavPath)
         {
             state.ReadConfig(iniFName);
-            //this.results = new Results(); //set up a results file
 
             FileInfo fi = new FileInfo(wavPath);
             state.WavFileDir = fi.DirectoryName;
@@ -97,8 +101,6 @@ namespace AudioStuff
         public Sonogram(string iniFName, string wavPath, byte[] wavBytes)
         {
             state.ReadConfig(iniFName);
-            //this.results = new Results(); //set up a results file
-
 
             FileInfo fi = new FileInfo(wavPath);
             state.WavFileDir = fi.DirectoryName;
@@ -115,6 +117,27 @@ namespace AudioStuff
             if (state.Verbosity != 0) WriteInfo();
         }
 
+        /// <summary>
+        /// CONSTRUCTOR 4
+        /// </summary>
+        /// <param name="iniFName"></param>
+        /// <param name="wavPath"></param>
+        /// <param name="rawData"></param>
+        /// <param name="sampleRate"></param>
+        public Sonogram(string iniFName, string sigName, double[] rawData, int sampleRate)
+        {
+            state.ReadConfig(iniFName);
+            state.WavFName = sigName;
+            state.WavFileExt = "sig";
+
+            //initialise WAV class with double array
+            WavReader wav = new WavReader(rawData, sampleRate, sigName);
+            state.SignalMax = wav.GetMaxValue();
+            Console.WriteLine("Max Value=" + state.SignalMax);
+            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
+            Make(wav);
+            if (state.Verbosity != 0) WriteInfo();
+        }
 
         private void Make(WavReader wav)
         {
@@ -165,7 +188,8 @@ namespace AudioStuff
 
             //calculate a minimum amplitude to prevent taking log of small number
             //this would increase the range when normalising
-            double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1); 
+            double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+            int smoothingWindow = 5; //to smooth the spectrum 
 	
 
 			double offset = 0.0;
@@ -177,6 +201,7 @@ namespace AudioStuff
 			for (int i = 0; i < width; i++)//foreach time step
 			{
 				double[] f1 = fft.Invoke(data, (int)Math.Floor(offset));
+                f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //to smooth the spectrum - reduce variance
                 for (int j = 0; j < height; j++) //foreach freq bin
 				{
                     double amplitude = f1[j + 1];
@@ -217,87 +242,268 @@ namespace AudioStuff
 
 
 
+        public void Shapes()
+        {
+            double gradThreshold = 1.2;
+            int fBlurNH = 9;
+            int tBlurNH = 4;
+            int bandCount = 10;
+            double[,] blurM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
+            double[] threshold = DataTools.ImageThreshold(blurM, bandCount);
+
+            int height = blurM.GetLength(0);
+            int width = blurM.GetLength(1);
+            double bandWidth = width / (double)bandCount;
+
+            double[,] M = new double[height, width];
+
+            for (int x = 0; x < width; x++) M[0, x] = 0.0; //patch in first  time step with zero gradient
+            for (int x = 0; x < width; x++) M[1, x] = 0.0; //patch in second time step with zero gradient
+
+            for (int b = 0; b < bandCount; b++)//for all bands
+            {
+                //Console.WriteLine("Threshold " + b + " = " + threshold[b]);
+                int start = (int)(b * bandWidth);
+                int stop = (int)((b+1) * bandWidth);
+                for (int x = start; x < stop; x++)
+                {
+                    int state = 0;
+                    for (int y = 2; y < height - 1; y++)
+                    {
+
+                        double grad1 = blurM[y, x] - blurM[y - 1, x];//calculate one step gradient
+                        double grad2 = blurM[y+1, x] - blurM[y - 1, x];//calculate two step gradient
+
+                        if (blurM[y, x] < threshold[b]) state = 0;
+                        else
+                            if (grad1 < -gradThreshold) state = 0;    // local decrease
+                            else
+                                if (grad1 > gradThreshold) state = 1;     // local increase
+                                else
+                                    if (grad2 < -gradThreshold) state = 0;    // local decrease
+                                    else
+                                        if (grad2 > gradThreshold) state = 1;     // local increase
+
+                        M[y, x] = (double)state;
+                    }
+                }//for all x in a band
+            }//for all bands
+            this.state.MinCut = 0.0;
+            this.state.MaxCut = 1.0;
+
+            this.shapeM = Shapes_CleanUp(M);
+
+        }// end of Shapes()
+
+        public double[,] Shapes_CleanUp(double[,] m)
+        {
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[,] M = new double[height,width];
+
+            //remove single lines in height dimension
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 1; y < height - 1; y++)
+                {
+                    M[y, x] = m[y, x];
+                    if ((m[y-1, x] == 0.0) && (m[y+1, x] == 0.0)) M[y, x] = 0.0;
+                    else if ((m[y-1, x] == 1.0) && (m[y+1, x] == 1.0)) M[y, x] = 1.0;
+                }
+            }
+            //remove double lines in height dimension
+            //for (int x = 0; x < width; x++)
+            //{
+            //    for (int y = 3; y < height - 2; y++)
+            //    {
+            //        if ((M[y - 3, x] == 0.0) && (M[y - 2, x] == 0.0) && (M[y + 1, x] == 0.0) && (m[y + 2, x] == 0.0))
+            //        { M[y-1, x] = 0.0; M[y, x] = 0.0; }
+            //        else if ((M[y - 3, x] == 1.0) && (M[y - 2, x] == 1.0) && (M[y + 1, x] == 1.0) && (m[y + 2, x] == 1.0))
+            //        { M[y - 1, x] = 1.0; M[y, x] = 1.0; }
+            //    }
+            //}
+
+            //remove single lines in width dimension
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 1; x < width-1; x++)
+                {
+                    if ((M[y, x-1] == 0.0) && (M[y, x+1] == 0.0)) M[y, x] = 0.0;
+                    else if ((M[y,x-1] == 1.0) && (M[y,x+1] == 1.0)) M[y, x] = 1.0;
+                }
+            }
+            //remove double lines in width dimension
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 3; x < width - 2; x++)
+                {
+                    if ((M[y, x - 3] == 0.0) && (M[y, x - 2] == 0.0) && (M[y, x + 1] == 0.0) && (M[y, x + 2] == 0.0))
+                    { M[y, x - 1] = 0.0; M[y, x] = 0.0; }
+                    else if ((M[y, x - 3] == 1.0) && (M[y, x - 2] == 1.0) && (M[y, x + 1] == 1.0) && (M[y, x + 2] == 1.0))
+                    { M[y, x - 1] = 1.0; M[y, x] = 1.0; }
+                }
+            }
+            //remove triple lines in width dimension
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 4; x < width - 3; x++)
+                {
+                    if ((M[y, x - 4] == 0.0) && (M[y, x - 3] == 0.0) && (M[y, x + 1] == 0.0) && (M[y, x + 2] == 0.0))
+                    { M[y, x - 2] = 0.0; M[y, x - 1] = 0.0; M[y, x] = 0.0; }
+                    else if ((M[y, x - 4] == 1.0) && (M[y, x - 3] == 1.0) && (M[y, x + 1] == 1.0) && (M[y, x + 2] == 1.0))
+                    { M[y, x - 2] = 1.0; M[y, x - 1] = 1.0; M[y, x] = 1.0; }
+                }
+            }
+
+            return M;
+        }
+
+
+
         public void Gradient()
         {
-            double gradThreshold = 1.5;
+            double gradThreshold = 2.0;
             int fBlurNH = 5;
             int tBlurNH = 4;
-            this.gradM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
-            int height = this.gradM.GetLength(0);
-            int width = this.gradM.GetLength(1);
+            double[,] blurM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
+            int height = blurM.GetLength(0);
+            int width  = blurM.GetLength(1);
+            this.gradM = new double[height, width];
+
             double min = Double.MaxValue;
             double max = -Double.MaxValue;
 
-            for (int y = 0; y < height-1; y++)
+            for (int x = 0; x < width; x++) this.gradM[0, x] = 0.5; //patch in first  time step with zero gradient
+            for (int x = 0; x < width; x++) this.gradM[1, x] = 0.5; //patch in second time step with zero gradient
+           // for (int x = 0; x < width; x++) this.gradM[2, x] = 0.5; //patch in second time step with zero gradient
+
+            for (int y = 2; y < height - 1; y++)
             {
                 for (int x = 0; x < width; x++)
                 {
-                    this.gradM[y, x] = gradM[y + 1, x] - gradM[y, x];//calculate gradient
+                    double grad1 = blurM[y, x] - blurM[y - 1, x];//calculate one step gradient
+                    double grad2 = blurM[y, x] - blurM[y - 2, x];//calculate two step gradient
 
                     //get min and max gradient
-                    if (this.gradM[y, x] < min)      min = this.gradM[y, x];
+                    if (grad1 < min) min = grad1;
                     else
-                    if (this.gradM[y, x] > max)      max = this.gradM[y, x];
+                    if (grad1 > max) max = grad1;
 
                     // quantize the gradients
-                    if (this.gradM[y, x] < -gradThreshold) this.gradM[y, x] = 0.0;
+                    if (grad1 < -gradThreshold) this.gradM[y, x] = 0.0;
                     else
-                    if (this.gradM[y, x] > gradThreshold)  this.gradM[y, x] = 1.0;
-                    else                                   this.gradM[y, x] = 0.5;
+                        if (grad1 > gradThreshold) this.gradM[y, x] = 1.0;
+                        else
+                            if (grad2 < -gradThreshold) this.gradM[y, x] = 0.0;
+                            else
+                                if (grad2 > gradThreshold) this.gradM[y, x] = 1.0;
+                                else this.gradM[y, x] = 0.5;
                 }
             }
 
             results.MinGrad = min;
             results.MaxGrad = max;
 
-            for (int x = 0; x < width; x++) this.gradM[height - 1, x] = 0.5; //patch in last time step with medium gradient
+            //for (int x = 0; x < width; x++) this.gradM[height - 1, x] = 0.5; //patch in last time step with medium gradient
             this.state.MinCut = 0.0;
             this.state.MaxCut = 1.0;
         }
 
 
-        public void Convert2MelFreq(int bandCount)
+        public void MelFreqSonogram(int melBandCount)
         {
-            double[,] inData = this.Matrix;
-            int M = inData.GetLength(0);
-            int N = inData.GetLength(1);
-            double[,] outData = new double[M, bandCount];
+            int M = this.Matrix.GetLength(0); //number of spectra or time steps
+            int N = this.Matrix.GetLength(1); //number of Hz bands
+            double[,] outData = new double[M, melBandCount];
             double Nyquist    = this.state.MaxFreq;
-            double linBand    = Nyquist / bandCount;
-            double melBand    = Speech.Mel(Nyquist) / bandCount;
-            double min = double.PositiveInfinity;
+            double linBand = this.State.FBinWidth;
+            double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
+            double min = double.PositiveInfinity; //to obtain mel min and max
             double max = double.NegativeInfinity;
-            for (int i = 0; i < M; i++)
-                for (int j = 0; j < bandCount; j++)
+
+            for (int i = 0; i < M; i++) //for all spectra or time steps
+                for (int j = 0; j < melBandCount; j++) //for all mel bands
                 {
-                    double a = Speech.InverseMel(j * melBand) / linBand;
-                    double b = Speech.InverseMel((j + 1) * melBand) / linBand;
+                    double a = Speech.InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
+                    double b = Speech.InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
                     int ai = (int)Math.Ceiling(a);
                     int bi = (int)Math.Floor(b);
 
                     double sum = 0.0;
-                    if (ai > 0)
+
+                    if (bi < ai) //a and b are in same Hz band
                     {
-                        double ya = (1.0 - ai + a) * inData[i, ai - 1] + (ai - a) * inData[i, ai];
-                        sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, inData[i, ai]);
+                        ai = (int)Math.Floor(a);
+                        bi = (int)Math.Ceiling(b);
+                        double ya = Speech.LinearInterpolate((double)ai, bi, this.Matrix[i, ai], this.Matrix[i, bi], a);
+                        double yb = Speech.LinearInterpolate((double)ai, bi, this.Matrix[i, ai], this.Matrix[i, bi], b);
+                        //sum = Speech.LinearIntegral(a, b, ya, yb);
+                        sum = Speech.MelIntegral(a * linBand, b * linBand, ya, yb);
                     }
-                    for (int k = ai; k < bi; k++)
+                    else
                     {
-                        sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, inData[i, k], inData[i, k + 1]);
+                        if (ai > 0)
+                        {
+                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, this.Matrix[i, ai - 1], this.Matrix[i, ai], a);
+                            //sum += Speech.LinearIntegral(a, (double)ai, ya, this.Matrix[i, ai]);
+                            sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, this.Matrix[i, ai]);
+                        }
+                        for (int k = ai; k < bi; k++)
+                        {
+                            sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, this.Matrix[i, k], this.Matrix[i, k + 1]);
+                            //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
+                        }
+                        if (bi < (N - 1)) //this.Bands in Greg's original code
+                        {
+                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi+1), this.Matrix[i, bi], this.Matrix[i, bi+1], b);
+                            sum += Speech.MelIntegral(bi * linBand, b * linBand, this.Matrix[i, bi], yb);
+                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
+                        }
                     }
-                    if (bi < (N - 1)) //this.Bands in Greg's original code
-                    {
-                        double yb = (b - bi) * inData[i, bi] + (1.0 - b + bi) * inData[i, bi + 1];
-                        sum += Speech.MelIntegral(bi * linBand, b * linBand, inData[i, bi], yb);
-                    }
-                    sum /= melBand;
+                    sum /= melBand; //to obtain power per mel
 
                     outData[i, j] = sum;
                     if (sum < min) min = sum;
                     if (sum > max) max = sum;
                 }
             this.melFM = outData;
+            this.State.MelBinCount = melBandCount;
+            this.State.MinMelPower = min;
+            this.State.MaxMelPower = max;
+            this.State.MaxMel = Speech.Mel(Nyquist);
             //return new Spectrum() { Data = outData, Min = min, Epsilon = this.Epsilon, Max = max, Nyquist = Mel(Nyquist) };
+        }
+
+
+
+        public void CepstralSonogram(double[,] sMatrix)
+        {
+            int M = sMatrix.GetLength(0); //number of spectra or time steps
+            int inN = sMatrix.GetLength(1); //number of Hz or mel bands
+			int outN = inN / 2 + 1;
+			double[,] outData = new double[M, outN];
+            FFT fft = new FFT(inN);
+            double min = Double.MaxValue, max = 0.0;
+
+			for (int i = 0; i < M; i++) //for all time steps or spectra
+			{
+				double[] inSpectrum = new double[inN];
+                for (int j = 0; j < inN; j++) inSpectrum[j] = sMatrix[i, j];
+				double[] outSpectrum = fft.Invoke(inSpectrum, 0);
+				for (int j = 0; j < outN; j++)
+				{
+					double amplitude = outSpectrum[j];
+					if (amplitude < min) min = amplitude;
+					if (amplitude > max) max = amplitude;
+					outData[i, j] = amplitude;
+				}
+			}
+
+            this.cepsM = outData;
+            this.State.CepBinCount = outN;
+            this.State.MinCepPower = min;
+            this.State.MaxCepPower = max;
+            //return new Spectrum() { Data = outData, Min = min, Epsilon = double.NaN, Max = max, Nyquist = double.NaN };
         }
 
 
@@ -332,6 +538,8 @@ namespace AudioStuff
             }
             return histo;
         }
+
+
         public double[] CalculateEventHisto()
         {
             int bandCount = this.State.MaxFreq / Sonogram.binWidth;
@@ -485,25 +693,9 @@ namespace AudioStuff
             results.WriteEventEntropy();
         }
 
-        public void SaveGradientImage()
-        {
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(this.gradM, null);
 
-            string fName = this.state.SonogramDir + this.state.WavFName + "_grad" + this.state.BmpFileExt;
-            this.state.BmpFName = fName;
-            bmp.Save(fName);
-        }
-
-        public void SaveMelImage()
-        {
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(this.melFM, null);
-
-            string fName = this.state.SonogramDir + this.state.WavFName + "_melScale" + this.state.BmpFileExt;
-            this.state.BmpFName = fName;
-            bmp.Save(fName);
-        }
+//***********************************************************************************************************************************
+        //         IMAGE SAVING METHODS
 
         /// <summary>
         /// save bmp image with a zscore track at the bottom. Method assumes zscores and truncates below zero.
@@ -512,8 +704,9 @@ namespace AudioStuff
         /// <param name="zscores"></param>
         public void SaveImage(double[] zscores)
         {
+            int type = 0; //image is linear scale not mel scale
             SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
+            Bitmap bmp = image.CreateBitmap(this.matrix, zscores, type);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
@@ -521,10 +714,55 @@ namespace AudioStuff
         }
         public void SaveImage(string opDir, double[] zscores)
         {
+            int type = 0; //image is linear scale not mel scale
             SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
+            Bitmap bmp = image.CreateBitmap(this.matrix, zscores, type);
 
             string fName = opDir + "//" + this.state.WavFName + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+        public void SaveGradientImage()
+        {
+            int type = 0; //image is linear scale not mel scale
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.gradM, null, type);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_grad" + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+        public void SaveMelImage(double[] zscores)
+        {
+            int type = 1; //image is mel scale
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.melFM, zscores, type);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_melScale" + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+        public void SaveCepImage(double[] zscores)
+        {
+            int type = 2; //image is cepstral
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.cepsM, zscores, type);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_cepstrum" + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+        public void SaveShapeImage(ArrayList shapes)
+        {
+            //int type = 0; //image is linear scale
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(this.shapeM, shapes);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + "_shape" + this.state.BmpFileExt;
             this.state.BmpFName = fName;
             bmp.Save(fName);
         }
@@ -532,10 +770,18 @@ namespace AudioStuff
 
     } //end class Sonogram
 
+
+
+    //***********************************************************************************
+    //***********************************************************************************
+    //***********************************************************************************
+    //***********************************************************************************
+    //***********************************************************************************
+    //***********************************************************************************
+
+
+
     
-    /// <summary>
-    /// 
-    /// </summary>
     public class SonoConfig
     {
 
@@ -562,17 +808,17 @@ namespace AudioStuff
 
         public int SampleRate { get; set; }
         public int SampleCount { get; set; }
-        public int MaxFreq { get; set; }
+        public int MaxFreq { get; set; }               //Nyquist frequency = half audio sampling freq
         public double AudioDuration { get; set; }
         public double WindowDuration { get; set; }     //duration of full window in seconds
         public double NonOverlapDuration { get; set; } //duration of non-overlapped part of window in seconds
 
         public int SpectrumCount { get; set; }
         public double SpectraPerSecond { get; set; }
-        public int FreqBinCount { get; set; }
-        public int FreqBandCount { get; set; }
-
+        public int FreqBinCount { get; set; }  //number of spectral values 
+        public int FreqBandCount { get; set; } //number of one kHz bands
         public double FBinWidth { get;set; }
+
         public double MinPower { get; set; }//min power in sonogram
         public double AvgPower { get; set; }//average power in sonogram
         public double MaxPower { get; set; }//max power in sonogram
@@ -581,6 +827,14 @@ namespace AudioStuff
         public double MinCut { get; set; } //power of min percentile
         public double MaxCut { get; set; } //power of max percentile
 
+        public int    MelBinCount { get; set; } //number of mel spectral values 
+        public double MinMelPower { get; set; } //min power in mel sonogram
+        public double MaxMelPower { get; set; } //max power in mel sonogram
+        public double MaxMel { get; set; }      //Nyquist frequency on Mel scale
+
+        public int    CepBinCount { get; set; } //number of cepstral values 
+        public double MinCepPower { get; set; } //min value in cepstral sonogram
+        public double MaxCepPower { get; set; } //max value in cepstral sonogram
 
         //freq bins of the scanned part of sonogram
         public int TopScanBin { get; set; }
@@ -647,190 +901,5 @@ namespace AudioStuff
 
 
     } //end class SonoConfig
-
-
-
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-    //***********************************************************************************
-
-	public sealed class FFT
-	{
-		public delegate double WindowFunc(int n, int N);
-
-		//public int WindowSize { get; private set; }
-		private int windowSize;
-		public int WindowSize { get { return windowSize; } private set { windowSize = value; } }
-
-		//public double[] WindowWeights { get; private set; }
-		private double[] windowWeights;
-		public double[] WindowWeights { get { return windowWeights; } private set { windowWeights = value; } }
-
-		public FFT(int windowSize)
-			: this(windowSize, null)
-		{
-		}
-
-		public FFT(int windowSize, WindowFunc w)
-		{
-			if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
-
-			this.WindowSize = windowSize;
-			if (w != null)
-			{
-				this.WindowWeights = new double[windowSize];
-				for (int i = 0; i < windowSize; i++)
-					this.WindowWeights[i] = w(i, windowSize);
-			}
-		}
-
-		public double[] Invoke(double[] data, int offset)
-		{
-			double[] cdata = new double[2 * WindowSize];
-			if (WindowWeights != null)
-				for (int i = 0; i < WindowSize; i++)
-					cdata[2 * i] = WindowWeights[i] * data[offset + i];
-			else
-				for (int i = 0; i < WindowSize; i++)
-					cdata[2 * i] = data[offset + i];
-
-			four1(cdata);
-
-			double[] f = new double[WindowSize / 2 + 1];
-			for (int i = 0; i < WindowSize / 2 + 1; i++)
-				f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
-			return f;
-		}
-
-		private static double hypot(double x, double y)
-		{
-			return Math.Sqrt(x * x + y * y);
-		}
-
-		// from http://www.nrbook.com/a/bookcpdf/c12-2.pdf
-		private static void four1(double[] data)
-		{
-			int nn = data.Length / 2;
-			int n = nn << 1;
-			int j = 1;
-			for (int i = 1; i < n; i += 2)
-			{
-				if (j > i)
-				{
-					double tmp;
-					tmp = data[j - 1];
-					data[j - 1] = data[i - 1];
-					data[i - 1] = tmp;
-					tmp = data[j];
-					data[j] = data[i];
-					data[i] = tmp;
-				}
-				int m = nn;
-				while (m >= 2 && j > m)
-				{
-					j -= m;
-					m >>= 1;
-				}
-				j += m;
-			}
-
-			int mmax = 2;
-			while (n > mmax)
-			{
-				int istep = mmax << 1;
-				double theta = 2.0 * Math.PI / mmax;
-				double wtemp = Math.Sin(0.5 * theta);
-				double wpr = -2.0 * wtemp * wtemp;
-				double wpi = Math.Sin(theta);
-				double wr = 1.0;
-				double wi = 0.0;
-				for (int m = 1; m < mmax; m += 2)
-				{
-					for (int i = m; i <= n; i += istep)
-					{
-						j = i + mmax;
-						double tempr = wr * data[j - 1] - wi * data[j];
-						double tempi = wr * data[j] + wi * data[j - 1];
-						data[j - 1] = data[i - 1] - tempr;
-						data[j] = data[i] - tempi;
-						data[i - 1] += tempr;
-						data[i] += tempi;
-					}
-					wr = (wtemp = wr) * wpr - wi * wpi + wr;
-					wi = wi * wpr + wtemp * wpi + wi;
-				}
-				mmax = istep;
-			}
-		}
-
-		#region Window functions
-		// from http://en.wikipedia.org/wiki/Window_function
-
-		public static readonly WindowFunc Hamming = delegate(int n, int N)
-		{
-			double x = 2.0 * Math.PI * n / (N - 1);
-			return 0.53836 - 0.46164 * Math.Cos(x);
-		};
-
-		public static WindowFunc Gauss(double sigma)
-		{
-			if (sigma <= 0.0 || sigma > 0.5) throw new ArgumentOutOfRangeException("sigma");
-			return delegate(int n, int N)
-			{
-				double num = n - 0.5 * (N - 1);
-				double den = sigma * 0.5 * (N - 1);
-				double quot = num / den;
-				return Math.Exp(-0.5 * quot * quot);
-			};
-		}
-
-		public static readonly WindowFunc Lanczos = delegate(int n, int N) {
-			double x = 2.0 * n / (N - 1) - 1.0;
-			return x != 0.0 ? Math.Sin(x) / x : 1.0;
-		};
-
-		public static readonly WindowFunc Nuttall = delegate(int n, int N) { return lrw(0.355768, 0.487396, 0.144232, 0.012604, n, N); };
-
-		public static readonly WindowFunc BlackmanHarris = delegate(int n, int N) { return lrw(0.35875, 0.48829, 0.14128, 0.01168, n, N); };
-
-		public static readonly WindowFunc BlackmanNuttall = delegate(int n, int N) { return lrw(0.3635819, 0.4891775, 0.1365995, 0.0106411, n, N); };
-
-		private static double lrw(double a0, double a1, double a2, double a3, int n, int N)
-		{
-			double c1 = Math.Cos(2.0 * Math.PI * n / (N - 1));
-			double c2 = Math.Cos(4.0 * Math.PI * n / (N - 1));
-			double c3 = Math.Cos(6.0 * Math.PI * n / (N - 1));
-			return a0 - a1 * c1 + a2 * c2 - a3 * c3;
-		}
-
-		public static readonly WindowFunc FlatTop = delegate(int n, int N) {
-			double c1 = Math.Cos(2.0 * Math.PI * n / (N - 1));
-			double c2 = Math.Cos(4.0 * Math.PI * n / (N - 1));
-			double c3 = Math.Cos(6.0 * Math.PI * n / (N - 1));
-			double c4 = Math.Cos(8.0 * Math.PI * n / (N - 1));
-			return 1.0 - 1.93 * c1 + 1.29 * c2 - 0.388 * c3 + 0.032 * c4;
-		};
-		#endregion
-
-		private static bool IsPowerOf2(int n)
-		{
-			while (n > 1)
-			{
-				if (n == 2) return true;
-				n >>= 1;
-			}
-			return false;
-		}
-
-        public static FFT.WindowFunc GetWindowFunction(string name)
-        {
-            //FFT.WindowFunc windowFnc;
-            if(name.StartsWith("Hamming")) return FFT.Hamming;
-            else return null;
-        }
-	}//end class FFT
 
 }

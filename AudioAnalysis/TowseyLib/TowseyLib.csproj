@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TowseyLib</RootNamespace>
     <AssemblyName>TowseyLib</AssemblyName>
-    <StartupObject>TowseyLib.DSP</StartupObject>
+    <StartupObject>TowseyLib.Shape</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -42,12 +42,14 @@
     <Compile Include="Distribution.cs" />
     <Compile Include="DSP.cs" />
     <Compile Include="Configuration.cs" />
+    <Compile Include="FFT.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />
     <Compile Include="NormalDist.cs" />
     <Compile Include="DataTools.cs" />
     <Compile Include="FileTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Shape.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="WavReader.cs" />
   </ItemGroup>
