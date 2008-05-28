@@ -352,6 +352,11 @@ namespace TowseyLib
 //=============================================================================
 
 
+  public static void writeArray(int[] array)
+  {
+      for (int i = 0; i < array.Length; i++)
+          Console.WriteLine(i + "  " + array[i]);
+  }
   public static void writeArray(double[] array)
   {
       for (int i = 0; i < array.Length; i++)
@@ -401,13 +406,17 @@ namespace TowseyLib
     if(max>7200)sf=100;
     if(max>8000)sf=200;
     if(max>16000)sf=300;
+    if(max>32000)sf=600;
 
     for (int i=0; i < data.Length; i++)
     {
       if(max<20) data[i]*=2;
       if(i<10)Console.Write(" ");// formatting only
       Console.Write(" "+i+"|");
-      for (int j = 0; j < (data[i] / sf); j++) Console.Write("=");
+      double v = data[i] / (double)sf;
+      int ht = (int)Math.Floor(v);
+      if((v>0.00)&&(v<1.00)) ht = 1;
+      for (int j = 0; j <ht; j++) Console.Write("=");
       Console.WriteLine();
     }
     Console.WriteLine("Min="+min+" Max="+max+"  Scaling factor="+sf);
@@ -450,7 +459,7 @@ namespace TowseyLib
   }
 
 
-  public static int[] getHisto(double[] data, int binCount)
+  public static int[] Histo(double[] data, int binCount)
   {
       double min;
       double max;
@@ -467,6 +476,49 @@ namespace TowseyLib
       }
       return bins;
   }
+
+  static public int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
+  {
+      int rows = data.GetLength(0);
+      int cols = data.GetLength(1);
+      int[] histo = new int[binCount];
+      min = double.MaxValue;
+      max = -double.MaxValue;
+      getMinMax(data, out min, out max);
+      binWidth = (max - min) / binCount;
+
+      for (int i = 0; i < rows; i++)
+          for (int j = 0; j < cols; j++)
+          {
+              int bin = (int)((data[i, j] - min) / binWidth);
+              if (bin >= binCount) bin = binCount - 1;
+              histo[bin]++;
+          }
+
+      return histo;
+  }
+
+  static public int[] Histo(int[] data, int binCount, out double binWidth, out int min, out int max)
+  {
+      int length = data.Length;
+      int[] histo = new int[binCount];
+      min = Int32.MaxValue;
+      max = -Int32.MaxValue;
+      getMinMax(data, out min, out max);
+      binWidth = (max - min) / binCount;
+
+      for (int i = 0; i < length; i++)
+      {
+              int bin = (int)((double)(data[i] - min) / binWidth);
+              if (bin >= binCount) bin = binCount - 1;
+              histo[bin]++;
+      }
+
+      return histo;
+  }
+
+
+
 
     /// <summary>
     /// normalise an array of double between 0 and 1
@@ -576,6 +628,62 @@ namespace TowseyLib
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++)
                 ret[i] = (v[i] - min) / (double)(max - min);
+
+            return (ret);
+        }
+
+
+        /// <summary>
+        /// normalises the values in a matrix such that the minimum value
+        /// is the average of the edge values.
+        /// Truncate thos original values that are below the edge average.
+        /// This method is used to normalise image templates where there should be no power at the edge
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="normMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
+        public static double[,] normalise_zeroEdge(double[,] m, double normMin, double normMax)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double edge = 0.0;
+            for (int i = 0; i < rows; i++)   edge += (m[i, 0] + m[i, (cols-1)]); //sum the sides
+            for (int i = 1; i < cols-1; i++) edge += (m[0, i] + m[(rows-1), i]); //sum top and bottom
+            edge /= ((2*rows) + (2*cols) - 4);
+
+            //truncate everything to edge average
+            //for (int i = 0; i < rows; i++)
+            //    for (int j = 0; j < cols; j++) if (m[i, j] < edge) m[i, j] = edge;
+            //set all edges to edge average
+            for (int i = 0; i < rows; i++)   m[i, 0]      = edge;
+            for (int i = 0; i < rows; i++)   m[i, cols-1] = edge;
+            for (int i = 1; i < cols-1; i++) m[0, i]      = edge;
+            for (int i = 1; i < cols-1; i++) m[rows-1, i] = edge; 
+
+            //find min and max
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    if (m[i, j] > max)
+                        max = m[i, j];
+                    if (m[i, j] < min)
+                        min = m[i, j];
+                }
+
+            double range = max - min;
+            double normRange = normMax - normMin;
+            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+
+            double[,] ret = new double[rows, cols];
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    double norm01 = (m[i, j] - min) / range;
+                    ret[i, j] = normMin + (norm01 * normRange);
+                }
 
             return (ret);
         }
@@ -979,6 +1087,51 @@ namespace TowseyLib
 
     return binCounts;
   }
+
+  public static double ImageThreshold(double[,] M)
+  {
+    int indexBias = 8;
+    int binCount = 50;
+    double binWidth;
+    double min; 
+    double max;
+    int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
+    powerHisto[binCount-1] = 0; //just in case it is the max
+    double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
+    int maxindex;
+    DataTools.getMaxIndex(smooth, out maxindex);
+    int i = maxindex + indexBias;
+    if (i > binCount) i = maxindex;
+    double threshold = min + (i * binWidth);
+
+    //for (int b = 0; b < binCount; b++) powerHisto[b] = (int)(smooth[b] / (double)2);
+    //DataTools.writeBarGraph(powerHisto);
+    return threshold;
+  }
+
+  public static double[] ImageThreshold(double[,] M, int bandCount)
+  {
+      int height = M.GetLength(0);
+      int width  = M.GetLength(1);
+      double bandWidth = width / (double)bandCount;
+
+      double[] thresholds = new double[bandCount];
+      for (int b = 0; b < bandCount; b++)//for all bands
+      {
+          int start = (int)(b * bandWidth);
+          int stop = (int)((b+1) * bandWidth);
+          if (stop >= width) stop = width - 1;
+
+          double[,] subMatrix = Submatrix(M, 0, start, height-1, stop);
+          
+          thresholds[b] = ImageThreshold(subMatrix);
+          //Console.WriteLine("Threshold " + b + " = " + thresholds[b]);
+      }
+      return thresholds;
+  }
+
+
+
 
 
 //=============================================================================

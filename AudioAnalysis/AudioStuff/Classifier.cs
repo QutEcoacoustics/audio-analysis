@@ -18,7 +18,7 @@ namespace AudioStuff
     /// </summary>
     class Classifier
     {
-        private readonly int noiseSampleCount = 1000;
+        private readonly int noiseSampleCount = 10000;
 
         private double tHalf = 0.5;//seconds
         //private double period = 0.227; //seconds
@@ -213,6 +213,7 @@ namespace AudioStuff
             //const int scanType = 2; //difference
             //const int scanType = 3; //noise pre-calculated
             //const int scanType = 4; //noise noise stratified
+            //const int scanType = 5; //inverse of euclidan distance
 
             ExchangeData(s);
             this.results = s.Results;
@@ -252,6 +253,11 @@ namespace AudioStuff
                 Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
                 break;
 
+                case 5:   //Euclidian
+                scores = Scan_Euclidian(normSonogram);
+                NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
+                break;
+
                 default:
                 throw new System.Exception("\nWARNING: INVALID SCAN TYPE!");
             }
@@ -278,6 +284,7 @@ namespace AudioStuff
 
             //normalise template to [-1,+1]
             this.Template = DataTools.normalise(this.Template, -1.0, 1.0);
+            //this.Template = DataTools.normalise_zeroEdge(this.Template, -1.0, 1.0); //this did not work
             //DataTools.writeMatrix(this.Template);
 
 
@@ -306,6 +313,51 @@ namespace AudioStuff
             return scores;
         }
 
+        public double[] Scan_Euclidian(double[,] normSonogram)
+        {
+            //calculate ranges of templates etc
+            int tWidth = template.GetLength(0);
+            int tHeight = template.GetLength(1);
+            int sWidth = normSonogram.GetLength(0);
+            int sHeight = normSonogram.GetLength(1);
+
+            this.fBinWidth = this.maxFreq / (double)sHeight;
+            this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
+            this.topScanBin = this.midScanBin - (tHeight / 2);
+            this.bottomScanBin = this.topScanBin + tHeight - 1;
+
+            int cellCount = tWidth * tHeight;
+            int halfWidth = tWidth / 2;
+
+            //normalise template to [0,+1]
+            this.Template = DataTools.normalise(this.Template);
+
+            double[] scores = new double[sWidth];
+            double avScore = 0.0;
+            for (int x = 0; x < (sWidth - tWidth); x++)//scan over sonogram
+            {
+                double sum = 0.0;
+                for (int i = 0; i < tWidth; i++)
+                {
+                    for (int j = 0; j < tHeight; j++)
+                    {
+                        double v = normSonogram[x + i, this.topScanBin + j] - template[i, j];
+                        sum += (v*v);
+                    }
+                }
+                scores[x + halfWidth] = 1/Math.Sqrt(sum); //place score in middle of template
+                avScore += scores[x + halfWidth];
+                //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
+            }//end of loop over sonogram
+
+
+            //fix up edge effects by making the first and last scores = the average score
+            avScore /= (sWidth - tWidth);
+            for (int x = 0; x < halfWidth; x++) scores[x] = avScore;
+            for (int x = (sWidth - halfWidth - 1); x < sWidth; x++) scores[x] = avScore;
+
+            return scores;
+        }
         public double[] Scan_Difference(double[,] normSonogram)
         {
             //calculate ranges of templates etc
@@ -363,9 +415,11 @@ namespace AudioStuff
             peaks = RemoveSubThresholdPeaks(zscores, peaks, zScoreThreshold);
             peaks = AdjustPeaks(callID, peaks); //use prior knowledge
 
+            int[] hitPeriods = GetHitPeriods(peaks, 200);
+
             int halfWidth = template.GetLength(0) / 2;
 
-            //zscores = ReconstituteScores(zscores, peaks, halfWidth);
+            zscores = ReconstituteScores(zscores, peaks, halfWidth);
             double[] fscores = DSP.Filter_DecayingSinusoid(zscores, this.spectraPerSecond, tHalf, period, filterDuration);
             int index;
             DataTools.getMaxIndex(fscores, out index);
@@ -378,8 +432,12 @@ namespace AudioStuff
             this.results.Zscores = zscores;
             this.results.Fscores = fscores;
             this.results.Hits = CountPeaks(peaks);
+            this.results.KekPeriodScore = hitPeriods[5] + hitPeriods[6] + hitPeriods[7];
+
             this.results.MaxFilteredScore = fscores[index];
             this.results.MaxFilteredScoreLocation = (double)index * this.nonOverlapDuration;
+
+
         }
 
 
@@ -396,13 +454,16 @@ namespace AudioStuff
         {   
             int length = scores.Length;
             double[] newScores = new double[length];
-            for (int n = tHalfWidth; n < length - tHalfWidth; n++)
+            //for (int n = tHalfWidth; n < length - tHalfWidth; n++)
+            //{
+            //    if (peaks[n])
+            //        for (int i = n - tHalfWidth; i < n + tHalfWidth; i++)
+            //            newScores[i] = scores[i];
+            //}
+            for (int n = 0; n < length; n++)
             {
-                if(peaks[n])
-                    for (int i = n-tHalfWidth; i < n+tHalfWidth; i++) 
-                        newScores[i] = scores[i];
-            }
-            return newScores;
+                if (peaks[n]) newScores[n] = scores[n];
+            } return newScores;
         } // end of ReconstituteScores()
 
 
@@ -420,15 +481,13 @@ namespace AudioStuff
 
             switch (callID)
             {
-                case 2: // single kek periodicity = 6-7 frames
-                    int period = 7; //7 frames
-                    int minPeakCount = 4;
-                    newPeaks = RemoveIsolatedPeaks(peaks, period, minPeakCount);
+                case 2: //single Kek template
+                    newPeaks = IdentifyKekKeks(peaks);
                     break;
 
                 case 3: // two kek periodicity = 6-7 frames
-                    period = 7; //7 frames
-                    minPeakCount = 4;
+                    int period = 7; //7 frames
+                    int minPeakCount = 4;
                     newPeaks = RemoveIsolatedPeaks(peaks, period, minPeakCount);
                     break;
 
@@ -469,6 +528,34 @@ namespace AudioStuff
             return newPeaks;
         }
 
+        public bool[] IdentifyKekKeks(bool[] peaks)
+        {
+            int nh = 7; //maximum separation of two consecutive keks
+            int length = peaks.Length;
+            bool[] newPeaks = new bool[length];
+
+            //for all location in the peak array
+            for (int n=nh; n < (length-nh); n++)
+            {
+                if(!peaks[n]) continue; //centre location is not a kek.
+                if (!(peaks[n-7] || peaks[n-6] || peaks[n-5])) continue; //no peak to left
+                if (!(peaks[n+5] || peaks[n+6] || peaks[n+7])) continue; //no peak to right
+                int count = 0; //to count peaks in neighbourhood
+                for (int i = -7; i < 7; i++) if (peaks[n + i]) count++;
+                if (count != 3) continue; //require exactly 3 peaks in the neighbourhood 
+                newPeaks[n] = true;
+                //reset side peaks to increase hit count
+                if (peaks[n - 6])      newPeaks[n - 6] = true; 
+                //else if (peaks[n - 7]) newPeaks[n - 7] = true; 
+                //else if (peaks[n - 5]) newPeaks[n - 5] = true; 
+                if (peaks[n + 6])      newPeaks[n + 6] = true; 
+                //else if (peaks[n + 7]) newPeaks[n + 7] = true; 
+                //else if (peaks[n + 5]) newPeaks[n + 5] = true; 
+            }//end for loop
+            return newPeaks;
+        }
+
+
         public int CountPeaks(bool[] peaks)
         {
             int count = 0;
@@ -478,6 +565,42 @@ namespace AudioStuff
             }
             return count;
         }
+
+        /// <summary>
+        /// Calculates a histogram of the intervals between hits (trues) in the peaks array
+        /// </summary>
+        /// <param name="peaks"></param>
+        /// <param name="maxPeriod"></param>
+        /// <returns></returns>
+        public int[] GetHitPeriods(bool[] peaks, int maxPeriod)
+        {
+            int[] periods = new int[maxPeriod];
+            int length = peaks.Length;
+            int index = 0;
+
+            for (int n = 0; n < length; n++)
+            {   index = n;
+                if (peaks[n]) break;
+            }
+            if (index == length - 1) return periods; //i.e. no peaks in the array
+
+            // have located index of the first peak
+            for (int n = index+1; n < length; n++)
+            {
+                if (peaks[n])
+                {
+                    int period = n-index;
+                    if (period > maxPeriod) period = maxPeriod - 1;
+                    periods[period]++;
+                    index = n;
+                }
+            }
+
+            //DataTools.writeArray(periods);
+            return periods;
+        }
+
+
 
         public void NoiseResponse(double[,] normSonogram, out double av, out double sd, int sampleCount, int type)
         {   
@@ -516,6 +639,15 @@ namespace AudioStuff
                     {
                         double[,] noise = GetNoise_stratified(normSonogram);
                         noiseScores[n] = scoreMatch_DotProduct(template, noise);
+                    }
+                    break;
+
+                case 5: //score as inverse of euclidian  distance
+                    //sample score COUNT times. 
+                    for (int n = 0; n < sampleCount; n++)
+                    {
+                        double[,] noise = GetNoise(normSonogram);
+                        noiseScores[n] = scoreMatch_Euclidian(template, noise);
                     }
                     break;
 
@@ -634,6 +766,28 @@ namespace AudioStuff
             return sum / cellCount;
         } //end scoreMatch_DotProduct()
 
+        public double scoreMatch_Euclidian(double[,] template, double[,] signal)
+        {
+            int tWidth = template.GetLength(0);
+            int tHeight = template.GetLength(1);
+            int nWidth = signal.GetLength(0);
+            int nHeight = signal.GetLength(1);
+            if (tWidth != nWidth) throw new System.Exception("Template and Noise matrices have unequal widths.");
+            if (tHeight != nHeight) throw new System.Exception("Template and Noise matrices have unequal heights.");
+
+            //calculate euclidian distance
+            double sum = 0.0;
+            for (int i = 0; i < tWidth; i++)
+            {
+                for (int j = 0; j < tHeight; j++)
+                {
+                    double v = template[i, j] - signal[i, j];
+                    sum += (v*v);
+                }
+            }
+            return 1 / Math.Sqrt(sum);
+        } //end scoreMatch_Euclidian()
+
         public double scoreMatch_Difference(double[,] template, double[,] signal)
         {
             int tWidth = template.GetLength(0);
@@ -671,7 +825,8 @@ namespace AudioStuff
             DataTools.WriteMinMaxOfArray(" Minmax of score array", this.results.Scores);
             DataTools.WriteMinMaxOfArray(" Minmax of z-score array", this.results.Zscores);
             DataTools.WriteMinMaxOfArray(" Minmax after Bandpass Filtering", this.results.Fscores);
-            Console.WriteLine(" Number of hits=" + this.results.Hits);
+            Console.WriteLine(" Number of hits =" + this.results.Hits);
+            Console.WriteLine(" KekPeriodScore =" + this.results.KekPeriodScore);
             Console.WriteLine(" Maximum filtered score = " + this.maxFilteredScore.ToString("F1") + " at " + this.maxFilteredScoreLocation.ToString("F1") + " s");
         }
 
@@ -753,6 +908,7 @@ namespace AudioStuff
         public double EventEntropy { get; set; }
         public double[] ActivityHisto { get; set; }
         public int Hits { get; set; }
+        public int KekPeriodScore { get; set; }
         public double MaxFilteredScore { get; set; }
         public double MaxFilteredScoreLocation { get; set; }
 
