@@ -159,14 +159,17 @@ namespace AudioStuff
             int step = (int)(this.state.WindowSize * (1 - this.state.WindowOverlap));
 
             //generate the spectrum
-            double minP = Double.MaxValue;
-            double avgP = -Double.MaxValue;
-            double maxP = -Double.MaxValue;
+            double minP;
+            double maxP;
+            double avgP;
             this.matrix = GenerateSpectrogram(wav, fft, step, out minP, out avgP, out maxP);
+            Console.WriteLine("min=" + minP + "   max=" + maxP);
+            this.matrix = DataTools.DeciBels(this.matrix, out minP, out maxP);
+            Console.WriteLine("min=" + minP + "   max=" + maxP);
             this.state.MinPower = minP;
-            this.state.AvgPower = avgP;
             this.state.MaxPower = maxP;
-            this.matrix = DataTools.Blur(this.matrix, this.state.BlurNH_freq, this.state.BlurNH_time);
+            this.state.AvgPower = avgP;
+            this.matrix = DataTools.Blur(this.matrix, this.state.BlurWindow_freq, this.state.BlurWindow_time);
             //normalise and bound the values
             if (this.state.NormSonogram) NormalizeAndBound();
 
@@ -205,15 +208,16 @@ namespace AudioStuff
                 for (int j = 0; j < height; j++) //foreach freq bin
 				{
                     double amplitude = f1[j + 1];
-                    if (amplitude < epsilon) amplitude = epsilon; //to prevent log of a very small number
-                    double dBels = 20 * Math.Log10(amplitude);    //convert to decibels
-                    //NOTE: the decibels calculation should be a ratio. 
-                    // Here the ratio is implied ie relative to the power in the normalised wav signal
-                    if (dBels <= min) min = dBels;
+                    if (amplitude < epsilon) amplitude = epsilon; //to prevent possible log of a very small number
+                    double power = amplitude * amplitude; //convert amplitude to power
+                    //power = 10 * Math.Log10(power);    //convert to decibels
+                    ////NOTE: the decibels calculation should be a ratio. 
+                    //// Here the ratio is implied ie relative to the power in the normalised wav signal
+                    if (power < min) min = power;
                     else
-                    if (dBels >= max) max = dBels;
-                    sonogram[i, j] = dBels;
-                    sum += dBels;
+                    if (power > max) max = power;
+                    sonogram[i, j] = power;
+                    sum += power;
 				}
 				offset += step;
 			} //end matrix
@@ -845,9 +849,9 @@ namespace AudioStuff
         public string SonogramDir { get; set; }
         public string BmpFName { get; set; }
         public bool AddGrid { get; set; }
-        public int BlurNH { get; set; }
-        public int BlurNH_time { get; set; }
-        public int BlurNH_freq { get; set; }
+        public int BlurWindow { get; set; }
+        public int BlurWindow_time { get; set; }
+        public int BlurWindow_freq { get; set; }
         public bool NormSonogram { get; set; }
 
         public int ZscoreSmoothingWindow { get; set; }
@@ -891,9 +895,9 @@ namespace AudioStuff
             this.bmpFileExt = cfg.GetString("BMP_FILEEXT");
             this.AddGrid = cfg.GetBoolean("ADDGRID");
             this.Verbosity = cfg.GetInt("VERBOSITY");
-            this.BlurNH = cfg.GetInt("BLUR_NEIGHBOURHOOD");
-            this.BlurNH_time = cfg.GetInt("BLUR_TIME_NEIGHBOURHOOD");
-            this.BlurNH_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
+            this.BlurWindow = cfg.GetInt("BLUR_NEIGHBOURHOOD");
+            this.BlurWindow_time = cfg.GetInt("BLUR_TIME_NEIGHBOURHOOD");
+            this.BlurWindow_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
             this.NormSonogram = cfg.GetBoolean("NORMALISE_SONOGRAM");
             this.ZscoreSmoothingWindow = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
             this.ZScoreThreshold = cfg.GetDouble("ZSCORE_THRESHOLD");
