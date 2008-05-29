@@ -5,23 +5,23 @@ using System.Collections;
 
 namespace TowseyLib
 {
-    public class Params
+    public class Configuration
     {
         private string fName;
         Hashtable table;
 
-        public Params()
+        public Configuration()
         {
             this.table = new Hashtable();
         }
 
-        public Params(string fName)
+        public Configuration(string fName)
         {
             this.fName = fName;
             this.table = FileTools.ReadPropertiesFile(fName);
         }
 
-        public string GetValue(string key)
+        public string GetString(string key)
         {
             bool keyExists = this.table.ContainsKey(key);
             if (keyExists) return this.table[key].ToString();

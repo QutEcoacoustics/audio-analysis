@@ -60,9 +60,9 @@ namespace AudioStuff
 
 
             //Mode userMode = Mode.ArtificialSignal;
-            //Mode userMode = Mode.MakeSonogram;
+            Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
-            Mode userMode = Mode.MakeSonogramShapes;
+            //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;

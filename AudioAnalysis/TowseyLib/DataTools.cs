@@ -492,6 +492,7 @@ namespace TowseyLib
           {
               int bin = (int)((data[i, j] - min) / binWidth);
               if (bin >= binCount) bin = binCount - 1;
+              if (bin < 0) bin = 0;
               histo[bin]++;
           }
 
@@ -575,6 +576,37 @@ namespace TowseyLib
 
             return (ret);
         }
+
+
+        /// <summary>
+        /// convert values to Decibels.
+        /// Assume that all values are positive
+        /// </summary>
+        /// <param name="m">matrix of positive power values</param>
+        /// <returns></returns>
+        public static double[,] DeciBels(double[,] m, out double min, out double max)
+        {
+            min = Double.MaxValue;
+            max = -Double.MaxValue;
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double[,] ret = new double[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                {
+                    double dBels = 10 * Math.Log10(m[i,j]);    //convert power to decibels
+                    //NOTE: the decibels calculation should be a ratio. 
+                    // Here the ratio is implied ie relative to the power in the original normalised signal
+                    if (dBels <= min) min = dBels;
+                    else
+                    if (dBels >= max) max = dBels;
+                    m[i, j] = dBels;
+                }
+            return ret;
+        }
+
 
         /// <summary>
         /// normalises the values in a matrix between the passed min and max.
@@ -717,15 +749,17 @@ namespace TowseyLib
         /// 
         /// </summary>
         /// <param name="matrix"></param>
-        /// <param name="cNH">column neighbourhood i.e. x-dimension</param>
-        /// <param name="rNH">row neighbourhood i.e. y-dimension</param>
+        /// <param name="cNH">column Window i.e. x-dimension</param>
+        /// <param name="rNH">row Window i.e. y-dimension</param>
         /// <returns></returns>
-        public static double[,] Blur(double[,] matrix, int cNH, int rNH)
+        public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
         {
-            if ((cNH <= 0) && (rNH <= 0)) return matrix; //no blurring required
+            if ((cWindow <= 0) && (rWindow <= 0)) return matrix; //no blurring required
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
+            int cNH = cWindow / 2;
+            int rNH = rWindow / 2;
 
             int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
 
