@@ -19,27 +19,24 @@ namespace AudioStuff
         public const double zScoreMax = 8.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
         public const int    trackHt   = 50;   //pixel height of the score tracks
-        int maxF    =  0;  //max frequency = Nyquist freq = sf/2
 
-        int sf; //sample rate or sampling frequency
-        double recordingLength; //length in seconds 
-        double scoreThreshold;
-        double min;  //min value in sonogram  
-        double max;  //max value in sonogram
-        bool addGrid;
-        int topScanBin;  //top Scan Bin i.e. the index of the bin
-        int bottomScanBin; //bottom Scan Bin
+        private int sf; //sample rate or sampling frequency
+        private int NyquistF = 0;  //max frequency = Nyquist freq = sf/2
+        private double recordingLength; //length in seconds 
+        private double scoreThreshold;
+        private bool addGrid;
+
+        private int topScanBin;  //top Scan Bin i.e. the index of the bin
+        private int bottomScanBin; //bottom Scan Bin
+
+
+
 
         public SonoImage(SonoConfig state)
         {
             this.sf = state.SampleRate;
-            this.maxF = this.sf / 2; //max frequency
+            this.NyquistF = this.sf / 2; //max frequency
             this.recordingLength = state.AudioDuration;
-            double minP = state.MinPower;
-            double maxP = state.MaxPower;
-            this.min = state.MinCut;
-            this.max = state.MaxCut;
-            if (max < min) throw new ArgumentException("max must be greater than or equal to min");
             this.addGrid = state.AddGrid;
             this.topScanBin = state.TopScanBin;       //only used when scanning with a template
             this.bottomScanBin = state.BottomScanBin;
@@ -57,16 +54,15 @@ namespace AudioStuff
 
         public Bitmap CreateBitmap(double[,] sonogram, double[] scoreArray, int type)
         {
-
             int width     = sonogram.GetLength(0);
             int sHeight   = sonogram.GetLength(1);
-            double range  = this.max - this.min;
             int imageHt   = sHeight; //image ht= sonogram ht. Later include grid and score scales
-            double hzBin  = maxF / (double)sHeight;
-            double melBin = Speech.Mel(this.maxF) / (double)sHeight;
+            double hzBin  = NyquistF / (double)sHeight;
+            double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
 
             byte[] hScale = CreateHorizintalScale(width);
             int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
+
             if (type == 1) //do mel scale conversions
             {
                 vScale = CreateMelVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
@@ -81,13 +77,14 @@ namespace AudioStuff
             bool add1kHzLines = addGrid;
             if(type == 2) add1kHzLines = false;
 
+            double min;
+            double max;
+            DataTools.MinMax(sonogram, out min, out max);
+            double range  = max - min;
 
             Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
             BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, imageHt), ImageLockMode.WriteOnly, bmp.PixelFormat);
             if (bmpData.Stride < 0) throw new NotSupportedException("Bottum-up bitmaps");
-
-
-            //Console.WriteLine("hScaleLength=" + hScale.GetLength(0) + "  width=" + width);
 
 
             unsafe
@@ -106,6 +103,7 @@ namespace AudioStuff
                             *p1++ = hScale[x]; //g          
                             *p1++ = hScale[x]; //r           
                         }
+                        //following sometimes need as filler
                         //*p1++ = hScale[width-1]; //b          
                         //*p1++ = hScale[width-1]; //g          
                         //*p1++ = hScale[width-1]; //r 
@@ -125,11 +123,8 @@ namespace AudioStuff
                         gridCount--;
                         for (int x = 0; x < width; x++)
                         {
-                            //*p1++ = (byte)50;    //b         
-                            //*p1++ = (byte)100;   //g  //red 
-                            //*p1++ = (byte)200;   //r       
                             *p1++ = (byte)200;   //b         
-                            *p1++ = (byte)200;   //g  //black  
+                            *p1++ = (byte)200;   //g  //light gray - for red: b=50,g=100,r=200
                             *p1++ = (byte)200;   //r       
                         }
                         p0 += bmpData.Stride;
@@ -139,10 +134,9 @@ namespace AudioStuff
                     for (int x = 0; x < width; x++) //for pixels in the line
                     {
                         //normalise and bound the value - use min bound, max and 255 image intensity range
-                        double normal = (sonogram[x, y - 1] - min) / range;
-                        int c = (int)Math.Floor(255.0 * normal); //original version
+                        double value = (sonogram[x, y - 1] - min) / (double)range;
+                        int c = (int)Math.Floor(255.0 * value); //original version
                         //int c = (int)Math.Floor(255.0 * normal * normal); //take square of normalised value to enhance features
-
                         if (c < 0) c = 0;      //truncate if < 0
                         else
                         if (c >= 256) c = 255; //truncate if >255
@@ -150,9 +144,6 @@ namespace AudioStuff
 
                         int g = c + 40; //green tinge used in the template scan band 
                         if (g >= 256) g = 255;
-                        //  *p1++ = (byte)c; //b           c 
-                        //  *p1++ = (byte)c; //g          (c/2)
-                        //  *p1++ = (byte)c; //r           0
 
                         if ((y > topScanBin) && (y < bottomScanBin)) 
                         {   *p1++ = (byte)c; //b           c 
@@ -210,55 +201,14 @@ namespace AudioStuff
         }
 
 
-
-        //public int[] CreateLinearVerticleScale(int herzInterval, int imageHt)
-        //{
-        //    double herzBin = this.maxF / (double)imageHt;
-        //    int gridCount = this.maxF / herzInterval;
-
-        //    int binsPerGridBand = (int)(herzInterval / herzBin);
-        //    int[] vScale = new int[gridCount];
-        //    for (int i = 0; i < gridCount; i++)
-        //    {
-        //        vScale[i] = (1 + i) * binsPerGridBand;
-        //        //Console.WriteLine("grid " + i + " =" + vScale[i]);
-        //    }
-        //    return vScale;
-        //}
-        ///// <summary>
-        ///// use this method to generate grid lines for mel scale image
-        ///// </summary>
-        ///// <param name="herzInterval"></param>
-        ///// <param name="imageHt"></param>
-        ///// <param name="dummy"></param>
-        ///// <returns></returns>
-        //public int[] CreateMelVerticleScale(int herzInterval, int imageHt)
-        //{
-        //    double herzBin = this.maxF / (double)imageHt;
-        //    int gridCount = this.maxF / herzInterval;
-        //    double melBin = Speech.Mel(this.maxF) / (double)imageHt;
-
-        //    int binsPerGridBand = (int)(herzInterval / herzBin);
-        //    int[] vScale = new int[gridCount];
-        //    for (int i = 0; i < gridCount; i++)
-        //    {
-        //        double freq = (1 + i) * herzInterval; //draw grid line at this freq
-        //        double mel = Speech.Mel(freq);
-        //        vScale[i] = (int)(mel / melBin);
-        //        //Console.WriteLine("freq="+freq+"  mel="+mel+"   grid " + i + " =" + vScale[i]);
-        //    }
-        //    return vScale;
-        //}
-
         public Bitmap CreateBitmap(double[,] sonogram, ArrayList shapes)
         {
 
             int width = sonogram.GetLength(0);
             int sHeight = sonogram.GetLength(1);
-            double range = this.max - this.min;
             int imageHt = sHeight; //image ht= sonogram ht. Later include grid and score scales
-            double hzBin = maxF / (double)sHeight;
-            double melBin = Speech.Mel(this.maxF) / (double)sHeight;
+            double hzBin = NyquistF / (double)sHeight;
+            double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
 
             byte[] hScale = CreateHorizintalScale(width);
             int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
@@ -275,6 +225,10 @@ namespace AudioStuff
             bool add1kHzLines = addGrid;
             //if (type == 2) add1kHzLines = false;
 
+            double min;
+            double max;
+            DataTools.MinMax(sonogram, out min, out max);
+            double range = max - min;
 
             Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
             BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, imageHt), ImageLockMode.WriteOnly, bmp.PixelFormat);
@@ -319,11 +273,8 @@ namespace AudioStuff
                         gridCount--;
                         for (int x = 0; x < width; x++)
                         {
-                            //*p1++ = (byte)50;    //b         
-                            //*p1++ = (byte)100;   //g  //red 
-                            //*p1++ = (byte)200;   //r       
                             *p1++ = (byte)200;   //b         
-                            *p1++ = (byte)200;   //g  //black  
+                            *p1++ = (byte)200;   //g  //light gray - for red: b=50,g=100,r=200
                             *p1++ = (byte)200;   //r       
                         }
                         p0 += bmpData.Stride;
@@ -359,12 +310,12 @@ namespace AudioStuff
                         }
                         else
                         {
-                            //*p1++ = (byte)c; //b           c 
-                            //*p1++ = (byte)c; //g          (c/2)
-                            //*p1++ = (byte)c; //r           0
-                            *p1++ = (byte)255; //b           c 
-                            *p1++ = (byte)255; //g          (c/2)
-                            *p1++ = (byte)255; //r           0
+                            *p1++ = (byte)c; //b           c 
+                            *p1++ = (byte)c; //g          (c/2)
+                            *p1++ = (byte)c; //r           0
+                            //*p1++ = (byte)255; //b           c 
+                            //*p1++ = (byte)255; //g          (c/2)
+                            //*p1++ = (byte)255; //r           0
                         }
 
 
@@ -398,8 +349,8 @@ namespace AudioStuff
 
         public int[] CreateLinearVerticleScale(int herzInterval, int imageHt)
         {
-            double herzBin = this.maxF / (double)imageHt;
-            int gridCount = this.maxF / herzInterval;
+            double herzBin = this.NyquistF / (double)imageHt;
+            int gridCount = this.NyquistF / herzInterval;
 
             int binsPerGridBand = (int)(herzInterval / herzBin);
             int[] vScale = new int[gridCount];
@@ -422,9 +373,9 @@ namespace AudioStuff
         /// <returns></returns>
         public int[] CreateMelVerticleScale(int herzInterval, int imageHt)
         {
-            double herzBin = this.maxF / (double)imageHt;
-            int gridCount = this.maxF / herzInterval;
-            double melBin = Speech.Mel(this.maxF) / (double)imageHt;
+            double herzBin = this.NyquistF / (double)imageHt;
+            int gridCount = this.NyquistF / herzInterval;
+            double melBin = Speech.Mel(this.NyquistF) / (double)imageHt;
 
             int binsPerGridBand = (int)(herzInterval / herzBin);
             int[] vScale = new int[gridCount];

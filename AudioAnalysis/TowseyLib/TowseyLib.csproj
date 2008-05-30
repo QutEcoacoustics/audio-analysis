@@ -43,6 +43,7 @@
     <Compile Include="DSP.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="FFT.cs" />
+    <Compile Include="ImageTools.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />
     <Compile Include="NormalDist.cs" />

@@ -189,7 +189,7 @@ namespace TowseyLib
         {
             double min;
             double max;
-            DataTools.getMinMax(this.Samples, out min, out max);
+            DataTools.MinMax(this.Samples, out min, out max);
             return max;
         }
 

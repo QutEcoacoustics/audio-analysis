@@ -34,7 +34,7 @@ namespace TowseyLib
             for (int i = 0; i < totalCount; i++) doubleData[i] = (double)data[i];
             bins = get16binDistribution(doubleData, this.av, this.sd);
             
-            DataTools.getMinMax(doubleData, out min, out max);
+            DataTools.MinMax(doubleData, out min, out max);
         }
 
         /// <summary>
@@ -50,7 +50,7 @@ namespace TowseyLib
             this.av = average;
             this.sd = stdev;
             bins = get16binDistribution(data, average, stdev);
-            DataTools.getMinMax(data, out this.min, out this.max);
+            DataTools.MinMax(data, out this.min, out this.max);
         }
 
 
@@ -60,7 +60,7 @@ namespace TowseyLib
             this.av = AV;
             this.sd = SD;
             bins = get16binDistribution(data, av, SD);
-            DataTools.getMinMax(data, out this.min, out this.max);
+            DataTools.MinMax(data, out this.min, out this.max);
         }
 
 
@@ -454,7 +454,7 @@ namespace TowseyLib
   { 
     int min;
     int max;
-    DataTools.getMinMax(data, out min, out max);
+    DataTools.MinMax(data, out min, out max);
     int length = max / binWidth;
     
     int[] counts = new int[length+1];
@@ -475,7 +475,7 @@ namespace TowseyLib
     {
         double min;
         double max;
-        DataTools.getMinMax(scores, out min, out max);
+        DataTools.MinMax(scores, out min, out max);
         double av;
         double sd;
         getAverageAndSD(scores, out av, out sd);
@@ -495,7 +495,7 @@ namespace TowseyLib
         getAverageAndSD(scores, out av, out sd);
         int min;
         int max;
-        DataTools.getMinMax(scores, out min, out max);
+        DataTools.MinMax(scores, out min, out max);
         double[,] histo = get16binDistribution(scores, av, sd);
         Console.WriteLine(" ===== SCORE STATISTICS =====");
         Console.WriteLine("Average ="+av+"+/-"+sd);
@@ -514,7 +514,7 @@ namespace TowseyLib
         getAverageAndSD(scores, out av, out sd);
         double min;
         double max;
-        DataTools.getMinMax(scores, out min, out max);
+        DataTools.MinMax(scores, out min, out max);
         double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
         Console.WriteLine(" ===== SCORE STATISTICS =====");
         Console.WriteLine("Average ="+av+"+/-"+sd);
