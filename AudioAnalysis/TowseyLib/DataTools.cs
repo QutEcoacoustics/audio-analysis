@@ -163,7 +163,7 @@ namespace TowseyLib
         {
             double min;
             double max;
-            getMinMax(V, out min, out max);
+            MinMax(V, out min, out max);
             double range = max - min;
             
             double[] Vnorm = new double[V.Length];
@@ -250,18 +250,21 @@ namespace TowseyLib
         /// <param name="maxPercentile"></param>
         /// <param name="minCut">power value equivalent to minPercentile</param>
         /// <param name="maxCut">power value equivalent to maxPercentile</param>
-        public static void GetPercentileCutoffs(double[,] matrix, double min, double max, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
+        public static void PercentileCutoffs(double[,] matrix, double minPercentile, double maxPercentile, out double minCut, out double maxCut)
         {
-            if ((minPercentile == 0.0) && (maxPercentile == 1.0))
-            {
-                minCut = min;
-                maxCut = max;
-                return;
-            }
-            if (max < min) throw new ArgumentException("max must be greater than or equal to min");
             if (maxPercentile < minPercentile) throw new ArgumentException("maxPercentile must be greater than or equal to minPercentile");
-            if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
-            if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
+            if (minPercentile < 0.0) minPercentile = 0.0;
+            if (maxPercentile > 1.0) maxPercentile = 1.0;
+            //if (minPercentile < 0.0) throw new ArgumentException("minPercentile must be at least 0.0");
+            //if (maxPercentile > 1.0) throw new ArgumentException("maxPercentile must be at most 1.0");
+            double min;
+            double max;
+            MinMax(matrix, out min, out max);
+            if (max <= min) throw new ArgumentException("max="+max+" must be > min="+min);
+            minCut = min;
+            maxCut = max;
+            if ((minPercentile == 0.0) && (maxPercentile == 1.0)) return;
+
 
             const int n = 1024;      //number of bins for histogram
             int[] bins = new int[n]; //histogram of power in sonogram
@@ -387,7 +390,7 @@ namespace TowseyLib
   {
     int min;
     int max;
-    getMinMax(data, out min, out max);
+    MinMax(data, out min, out max);
     int sf = 1;  // scaling factor for graphing bars
     if(max>80) sf=2;
     if(max>160)sf=3;
@@ -427,7 +430,7 @@ namespace TowseyLib
         {
             int min;
             int max;
-            getMinMax(data, out min, out max);
+            MinMax(data, out min, out max);
             int[] histo = new int[max + 1];
             for (int i = 0; i < data.Length; i++)
             {
@@ -463,7 +466,7 @@ namespace TowseyLib
   {
       double min;
       double max;
-      getMinMax(data, out min, out max);
+      MinMax(data, out min, out max);
       double range = max - min;
       double binWidth = range / (double)binCount;
       // init freq bin array
@@ -484,7 +487,7 @@ namespace TowseyLib
       int[] histo = new int[binCount];
       min = double.MaxValue;
       max = -double.MaxValue;
-      getMinMax(data, out min, out max);
+      MinMax(data, out min, out max);
       binWidth = (max - min) / binCount;
 
       for (int i = 0; i < rows; i++)
@@ -505,7 +508,7 @@ namespace TowseyLib
       int[] histo = new int[binCount];
       min = Int32.MaxValue;
       max = -Int32.MaxValue;
-      getMinMax(data, out min, out max);
+      MinMax(data, out min, out max);
       binWidth = (max - min) / binCount;
 
       for (int i = 0; i < length; i++)
@@ -599,10 +602,10 @@ namespace TowseyLib
                     double dBels = 10 * Math.Log10(m[i,j]);    //convert power to decibels
                     //NOTE: the decibels calculation should be a ratio. 
                     // Here the ratio is implied ie relative to the power in the original normalised signal
-                    if (dBels <= min) min = dBels;
-                    else
-                    if (dBels >= max) max = dBels;
-                    m[i, j] = dBels;
+            //        if (dBels <= min) min = dBels;
+              //      else
+                //    if (dBels >= max) max = dBels;
+                    ret[i, j] = dBels;
                 }
             return ret;
         }
@@ -721,70 +724,6 @@ namespace TowseyLib
         }
 
 
-        public static double[,] Blur(double[,] matrix, int nh)
-        {
-            if (nh <= 0) return matrix; //no blurring required
-
-            int M = matrix.GetLength(0);
-            int N = matrix.GetLength(1);
-
-            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            //double[,] newMatrix = new double[M, N];
-            double[,] newMatrix = (double[,])matrix.Clone();
-
-            for (int i = nh; i < (M - nh); i++)
-                for (int j = nh; j < (N - nh); j++)
-                {
-                    double sum = 0.0;
-                    for (int x = i - nh; x < (i + nh); x++)
-                        for (int y = j - nh; y < (j + nh); y++) sum += matrix[x, y];
-                    double v = sum / cellCount;
-                    newMatrix[i, j] = v;
-                }
-
-            return newMatrix;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="cNH">column Window i.e. x-dimension</param>
-        /// <param name="rNH">row Window i.e. y-dimension</param>
-        /// <returns></returns>
-        public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
-        {
-            if ((cWindow <= 0) && (rWindow <= 0)) return matrix; //no blurring required
-
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            int cNH = cWindow / 2;
-            int rNH = rWindow / 2;
-
-            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
-
-            double[,] newMatrix = new double[rows, cols];//init new matrix to return
-            for (int r = rNH; r < (rows - rNH); r++)
-                for (int c = cNH; c < (cols - cNH); c++)
-                {
-                    double sum = 0.0;
-                    for (int y = (r - rNH); y <= (r + rNH); y++)
-                    {
-                        //System.Console.WriteLine(r+", "+c+ "  y="+y);
-                        for (int x = (c - cNH); x <= (c + cNH); x++)
-                        {
-                            double d = matrix[y, x];
-                            sum += matrix[y, x]; 
-                        }
-                    }
-                    newMatrix[r, c] = sum / (double)area; 
-                }
-            return newMatrix;
-        }
-        
-
-
-
         /**
          * differs from above in that want area under curve = 1;
          * @param v
@@ -825,6 +764,18 @@ namespace TowseyLib
     
     return(ret); 
   }
+
+
+  //normalise and compress/bound the values
+  public static double[,] Clip(double[,] m, double minPercentile, double maxPercentile)
+  {
+      double minCut;
+      double maxCut;
+      PercentileCutoffs(m, minPercentile, maxPercentile, out minCut, out maxCut);
+      return boundMatrix(m, minCut, maxCut);
+  }
+
+
 
 //***************************************************************************************************************************************
 
@@ -921,7 +872,7 @@ namespace TowseyLib
    * @param data
    * @return
    */
-  static public void getMinMax(int[] data, out int min, out int max)
+  static public void MinMax(int[] data, out int min, out int max)
   { min = data[0];
     max = data[0];
     for(int i=1; i<data.Length; i++)
@@ -933,7 +884,7 @@ namespace TowseyLib
 
 //=============================================================================
 
-        static public void getMinMax(double[] data, out double min, out double max)
+        static public void MinMax(double[] data, out double min, out double max)
         {
             min = data[0];
             max = data[0];
@@ -951,12 +902,12 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// returns the mina and max values in a matrix of doubles
+        /// returns the min and max values in a matrix of doubles
         /// </summary>
         /// <param name="data"></param>
         /// <param name="min"></param>
         /// <param name="max"></param>
-        static public void getMinMax(double[,] data, out double min, out double max)
+        static public void MinMax(double[,] data, out double min, out double max)
         {
             int rows = data.GetLength(0);
             int cols = data.GetLength(1);
@@ -975,13 +926,15 @@ namespace TowseyLib
                 }
             }//end double loop
         }
+
+
         /**
          * returns the min and max of an array of doubles
          * and the index for both.
          * @param data
          * @return 
          */  
-  static public void getMinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
+  static public void MinMax(double[] data, out int indexMin, out int indexMax, out double min, out double max)
   {
       indexMin = 0;
       indexMax = 0;
@@ -1007,14 +960,14 @@ namespace TowseyLib
   {
       double min;
       double max;
-      getMinMax(data, out min, out max);
+      MinMax(data, out min, out max);
       Console.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
   }
   static public void WriteMinMaxOfArray(string arrayname, double[] data)
   {
       double min;
       double max;
-      getMinMax(data, out min, out max);
+      MinMax(data, out min, out max);
       Console.WriteLine(arrayname+":  Min={0:F5}  Max={1:F5}", min, max);
   }
 

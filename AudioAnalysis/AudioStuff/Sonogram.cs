@@ -30,7 +30,7 @@ namespace AudioStuff
         private double[,] cepsM; //the Mel Frequency Cepstral version of the sonogram
         public  double[,] CepsM  { get { return cepsM; } /*set { cepsM = value; }*/ }
         private double[,] shapeM; //the Shape outline version of the sonogram
-        public  double[,] ShapeM { get { return shapeM; } /*set { shapeM = value; }*/ }
+        public  double[,] ShapeM { get { return shapeM; } set { shapeM = value; } }
 
 
         //  RESULTS variables
@@ -55,14 +55,12 @@ namespace AudioStuff
         public Sonogram(Configuration cfg, WavReader wav)
         {
             state.ReadConfig(cfg);
-            //this.results = new Results(); //set up a results file
-
             state.WavFileDir = wav.WavFileDir;
             state.WavFName = wav.WavFileName;
             state.WavFName = state.WavFName.Substring(0, state.WavFName.Length - 4);
             state.SignalMax = wav.GetMaxValue();
-            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
             state.SetDateAndTime(state.WavFName);
+            if (wav.GetMaxValue() == 0.0) throw new ArgumentException("Wav file has zero signal");
             Make(wav);
             if(state.Verbosity!=0) WriteInfo();
         }
@@ -80,13 +78,11 @@ namespace AudioStuff
             state.WavFileDir = fi.DirectoryName;
             state.WavFName = fi.Name.Substring(0, fi.Name.Length - 4);
             state.WavFileExt = fi.Extension;
+            state.SetDateAndTime(state.WavFName);
 
             //read the .WAV file
             WavReader wav = new WavReader(wavPath);
-            state.SignalMax = wav.GetMaxValue();
-            //Console.WriteLine("Max Value=" + state.SignalMax);
-            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
-            state.SetDateAndTime(state.WavFName);
+            if (wav.GetMaxValue() == 0.0) throw new ArgumentException("Wav file has zero signal");
             Make(wav);
             if (state.Verbosity != 0) WriteInfo();
         }
@@ -106,13 +102,11 @@ namespace AudioStuff
             state.WavFileDir = fi.DirectoryName;
             state.WavFName = fi.Name.Substring(0, fi.Name.Length - 4);
             state.WavFileExt = fi.Extension;
+            state.SetDateAndTime(state.WavFName);
 
             //initialise WAV class with bytes array
             WavReader wav = new WavReader(wavBytes, state.WavFName);
-            state.SignalMax = wav.GetMaxValue();
-            //Console.WriteLine("Max Value=" + state.SignalMax);
-            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
-            state.SetDateAndTime(state.WavFName);
+            if (wav.GetMaxValue() == 0.0) throw new ArgumentException("Wav file has zero signal");
             Make(wav);
             if (state.Verbosity != 0) WriteInfo();
         }
@@ -132,9 +126,7 @@ namespace AudioStuff
 
             //initialise WAV class with double array
             WavReader wav = new WavReader(rawData, sampleRate, sigName);
-            state.SignalMax = wav.GetMaxValue();
-            Console.WriteLine("Max Value=" + state.SignalMax);
-            if (state.SignalMax == 0.0) throw new ArgumentException("Wav file has zero signal");
+            if (wav.GetMaxValue() == 0.0) throw new ArgumentException("Wav file has zero signal");
             Make(wav);
             if (state.Verbosity != 0) WriteInfo();
         }
@@ -142,7 +134,8 @@ namespace AudioStuff
         private void Make(WavReader wav)
         {
             //store essential parameters for this sonogram
-            this.state.WavFName = wav.WavFileName;
+            this.state.SignalMax  = wav.GetMaxValue();
+            this.state.WavFName   = wav.WavFileName;
             this.state.SampleRate = wav.SampleRate;
             this.state.SampleCount = wav.SampleLength;
             this.state.AudioDuration = state.SampleCount / (double)state.SampleRate;
@@ -159,19 +152,14 @@ namespace AudioStuff
             int step = (int)(this.state.WindowSize * (1 - this.state.WindowOverlap));
 
             //generate the spectrum
-            double minP;
-            double maxP;
-            double avgP;
-            this.matrix = GenerateSpectrogram(wav, fft, step, out minP, out avgP, out maxP);
-            Console.WriteLine("min=" + minP + "   max=" + maxP);
-            this.matrix = DataTools.DeciBels(this.matrix, out minP, out maxP);
-            Console.WriteLine("min=" + minP + "   max=" + maxP);
-            this.state.MinPower = minP;
-            this.state.MaxPower = maxP;
-            this.state.AvgPower = avgP;
-            this.matrix = DataTools.Blur(this.matrix, this.state.BlurWindow_freq, this.state.BlurWindow_time);
-            //normalise and bound the values
-            if (this.state.NormSonogram) NormalizeAndBound();
+            double min;
+            double max;
+            double avg;
+            this.matrix = GenerateSpectrogram(wav, fft, step, out min, out avg, out max);
+            this.state.MinPower = min;
+            this.state.MaxPower = max;
+            this.state.AvgPower = avg;
+            NormalizeAndBound();  //normalise and bound the values
 
             this.state.SpectrumCount = this.matrix.GetLength(0);
         }
@@ -194,7 +182,6 @@ namespace AudioStuff
             double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
             int smoothingWindow = 5; //to smooth the spectrum 
 	
-
 			double offset = 0.0;
 			double[,] sonogram = new double[width, height];
 			min = Double.MaxValue; 
@@ -210,7 +197,7 @@ namespace AudioStuff
                     double amplitude = f1[j + 1];
                     if (amplitude < epsilon) amplitude = epsilon; //to prevent possible log of a very small number
                     double power = amplitude * amplitude; //convert amplitude to power
-                    //power = 10 * Math.Log10(power);    //convert to decibels
+                    power = 10 * Math.Log10(power);    //convert to decibels
                     ////NOTE: the decibels calculation should be a ratio. 
                     //// Here the ratio is implied ie relative to the power in the normalised wav signal
                     if (power < min) min = power;
@@ -246,130 +233,13 @@ namespace AudioStuff
 
 
 
-        public void Shapes()
-        {
-            double gradThreshold = 1.2;
-            int fBlurNH = 9;
-            int tBlurNH = 4;
-            int bandCount = 10;
-            double[,] blurM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
-            double[] threshold = DataTools.ImageThreshold(blurM, bandCount);
-
-            int height = blurM.GetLength(0);
-            int width = blurM.GetLength(1);
-            double bandWidth = width / (double)bandCount;
-
-            double[,] M = new double[height, width];
-
-            for (int x = 0; x < width; x++) M[0, x] = 0.0; //patch in first  time step with zero gradient
-            for (int x = 0; x < width; x++) M[1, x] = 0.0; //patch in second time step with zero gradient
-
-            for (int b = 0; b < bandCount; b++)//for all bands
-            {
-                //Console.WriteLine("Threshold " + b + " = " + threshold[b]);
-                int start = (int)(b * bandWidth);
-                int stop = (int)((b+1) * bandWidth);
-                for (int x = start; x < stop; x++)
-                {
-                    int state = 0;
-                    for (int y = 2; y < height - 1; y++)
-                    {
-
-                        double grad1 = blurM[y, x] - blurM[y - 1, x];//calculate one step gradient
-                        double grad2 = blurM[y+1, x] - blurM[y - 1, x];//calculate two step gradient
-
-                        if (blurM[y, x] < threshold[b]) state = 0;
-                        else
-                            if (grad1 < -gradThreshold) state = 0;    // local decrease
-                            else
-                                if (grad1 > gradThreshold) state = 1;     // local increase
-                                else
-                                    if (grad2 < -gradThreshold) state = 0;    // local decrease
-                                    else
-                                        if (grad2 > gradThreshold) state = 1;     // local increase
-
-                        M[y, x] = (double)state;
-                    }
-                }//for all x in a band
-            }//for all bands
-            this.state.MinCut = 0.0;
-            this.state.MaxCut = 1.0;
-
-            this.shapeM = Shapes_CleanUp(M);
-
-        }// end of Shapes()
-
-        public double[,] Shapes_CleanUp(double[,] m)
-        {
-            int height = m.GetLength(0);
-            int width = m.GetLength(1);
-            double[,] M = new double[height,width];
-
-            //remove single lines in height dimension
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 1; y < height - 1; y++)
-                {
-                    M[y, x] = m[y, x];
-                    if ((m[y-1, x] == 0.0) && (m[y+1, x] == 0.0)) M[y, x] = 0.0;
-                    else if ((m[y-1, x] == 1.0) && (m[y+1, x] == 1.0)) M[y, x] = 1.0;
-                }
-            }
-            //remove double lines in height dimension
-            //for (int x = 0; x < width; x++)
-            //{
-            //    for (int y = 3; y < height - 2; y++)
-            //    {
-            //        if ((M[y - 3, x] == 0.0) && (M[y - 2, x] == 0.0) && (M[y + 1, x] == 0.0) && (m[y + 2, x] == 0.0))
-            //        { M[y-1, x] = 0.0; M[y, x] = 0.0; }
-            //        else if ((M[y - 3, x] == 1.0) && (M[y - 2, x] == 1.0) && (M[y + 1, x] == 1.0) && (m[y + 2, x] == 1.0))
-            //        { M[y - 1, x] = 1.0; M[y, x] = 1.0; }
-            //    }
-            //}
-
-            //remove single lines in width dimension
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 1; x < width-1; x++)
-                {
-                    if ((M[y, x-1] == 0.0) && (M[y, x+1] == 0.0)) M[y, x] = 0.0;
-                    else if ((M[y,x-1] == 1.0) && (M[y,x+1] == 1.0)) M[y, x] = 1.0;
-                }
-            }
-            //remove double lines in width dimension
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 3; x < width - 2; x++)
-                {
-                    if ((M[y, x - 3] == 0.0) && (M[y, x - 2] == 0.0) && (M[y, x + 1] == 0.0) && (M[y, x + 2] == 0.0))
-                    { M[y, x - 1] = 0.0; M[y, x] = 0.0; }
-                    else if ((M[y, x - 3] == 1.0) && (M[y, x - 2] == 1.0) && (M[y, x + 1] == 1.0) && (M[y, x + 2] == 1.0))
-                    { M[y, x - 1] = 1.0; M[y, x] = 1.0; }
-                }
-            }
-            //remove triple lines in width dimension
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 4; x < width - 3; x++)
-                {
-                    if ((M[y, x - 4] == 0.0) && (M[y, x - 3] == 0.0) && (M[y, x + 1] == 0.0) && (M[y, x + 2] == 0.0))
-                    { M[y, x - 2] = 0.0; M[y, x - 1] = 0.0; M[y, x] = 0.0; }
-                    else if ((M[y, x - 4] == 1.0) && (M[y, x - 3] == 1.0) && (M[y, x + 1] == 1.0) && (M[y, x + 2] == 1.0))
-                    { M[y, x - 2] = 1.0; M[y, x - 1] = 1.0; M[y, x] = 1.0; }
-                }
-            }
-
-            return M;
-        }
-
-
 
         public void Gradient()
         {
             double gradThreshold = 2.0;
-            int fBlurNH = 5;
-            int tBlurNH = 4;
-            double[,] blurM = DataTools.Blur(this.matrix, fBlurNH, tBlurNH);
+            int fWindow = 11;
+            int tWindow = 9;
+            double[,] blurM = ImageTools.Blur(this.matrix, fWindow, tWindow);
             int height = blurM.GetLength(0);
             int width  = blurM.GetLength(1);
             this.gradM = new double[height, width];
@@ -648,26 +518,12 @@ namespace AudioStuff
             results.EventEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(results.EventHisto));
         }
 
-
-        //normalise and compress/bound the values
-        public void NormalizeAndBound(double minPercentile, double maxPercentile)
-        {
-            this.state.MinPercentile = minPercentile;
-            this.state.MaxPercentile = maxPercentile;
-            double minCut;
-            double maxCut;
-            DataTools.GetPercentileCutoffs(this.matrix, this.state.MinPower, this.state.MaxPower, minPercentile, maxPercentile, out minCut, out maxCut);
-            this.state.MinCut = minCut;
-            this.state.MaxCut = maxCut;
-            this.matrix = DataTools.boundMatrix(this.matrix, this.state.MinCut, this.state.MaxCut);
-        }
-
         //normalise and compress/bound the values
         public void NormalizeAndBound()
         {
             double minCut;
             double maxCut;
-            DataTools.GetPercentileCutoffs(this.matrix, this.state.MinPower, this.state.MaxPower, this.state.MinPercentile, this.state.MaxPercentile, out minCut, out maxCut);
+            DataTools.PercentileCutoffs(this.matrix, this.state.MinPercentile, this.state.MaxPercentile, out minCut, out maxCut);
             this.state.MinCut = minCut;
             this.state.MaxCut = maxCut;
             this.matrix = DataTools.boundMatrix(this.matrix, minCut, maxCut);
@@ -716,6 +572,17 @@ namespace AudioStuff
             this.state.BmpFName = fName;
             bmp.Save(fName);
         }
+        public void SaveImage(double[,] matrix, double[] zscores)
+        {
+            int type = 0; //image is linear scale not mel scale
+            SonoImage image = new SonoImage(this.state);
+            Bitmap bmp = image.CreateBitmap(matrix, zscores, type);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
         public void SaveImage(string opDir, double[] zscores)
         {
             int type = 0; //image is linear scale not mel scale

@@ -221,7 +221,7 @@ namespace AudioStuff
             this.Matrix = s.Matrix;
             ConvertImageCoords2SonogramCoords(this.sonogramState.FreqBinCount, imageCoords);
             this.Matrix = DataTools.Submatrix(sMatrix, this.t1, this.bin1, this.t2, this.bin2);
-            DataTools.getMinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
+            DataTools.MinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
         }//end ExtractTemplate
 
         public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)

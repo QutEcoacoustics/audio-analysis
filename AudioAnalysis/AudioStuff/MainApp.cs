@@ -60,9 +60,9 @@ namespace AudioStuff
 
 
             //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
-            //Mode userMode = Mode.MakeSonogramShapes;
+            Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;
@@ -150,7 +150,17 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        s.SaveImage(null);
+                        //s.SaveImage(null);
+                        //double[,] m = ImageTools.Blur(s.Matrix, 41, 41);
+                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.LowPass);
+                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HighPass2);
+                        //m = ImageTools.Subtract(m, s.Matrix);
+                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HorizontalLine5);
+                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
+                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
+                        double[,] m = ImageTools.Texture2(s.Matrix, 7);
+                        m = ImageTools.Blur(m, 7, 7);
+                        s.SaveImage(m, null);
                         //s.MelFreqSonogram(melBandCount);
                         //s.SaveMelImage(null);
                         //s.CepstralSonogram(s.MelFM);
@@ -186,11 +196,13 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        s.Shapes(); //stores shapes in GradM
-                        //s.SaveGradientImage();
-                        //Console.WriteLine(" Grad Image in file " + s.BmpFName);
-                        ArrayList shapes = Shape.Shapes_Detect(s.ShapeM);
-                        s.SaveShapeImage(shapes);
+                        double[,] m = ImageTools.Texture2(s.Matrix, 7);
+                        m = ImageTools.Invert(m);
+                        int bandCount = 20;
+                        m = ImageTools.PointProcess(m, bandCount, 1); //clip
+                        //m = ImageTools.Shapes(m); 
+                        //ArrayList shapes = Shape.Shapes_Detect(s.ShapeM);
+                        s.SaveImage(m, null);
                     }
                     catch (Exception e)
                     {
