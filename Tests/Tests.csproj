@@ -77,12 +77,18 @@
     <Compile Include="AudioReadingTest.cs" />
     <Compile Include="DeploymentTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SensorV2.cs" />
     <Compile Include="Service References\OldService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="OldService.cs" />
+    <Compile Include="Service References\NewService\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
     <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +97,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="AuthoringTests.txt" />
+    <None Include="Service References\NewService\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+    <None Include="Service References\NewService\configuration.svcinfo" />
+    <None Include="Service References\NewService\SensorV2.disco" />
+    <None Include="Service References\NewService\WebsiteTests.NewService.DeviceSchedule.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
     <None Include="Service References\OldService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
@@ -100,12 +115,14 @@
     <None Include="Service References\OldService\WebsiteTests.OldService.Deployment.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
+    <None Include="Service References\NewService\SensorV2.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\OldService\" />
+    <WCFMetadataStorage Include="Service References\NewService\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
