@@ -100,21 +100,43 @@ namespace TowseyLib
         /*
          * converts a matrix to a vector by concatenating columns.
          */
-        public static double[] Matrix2Vector(double[,] M)
+        public static double[] Matrix2Array(double[,] M)
         {
-            int width  = M.GetLength(0);
-            int ht     = M.GetLength(1);
-            double[] v = new double[width * ht];
+            int ht  = M.GetLength(0);
+            int width     = M.GetLength(1);
+            double[] v = new double[ht * width];
 
-            for (int i = 0; i < width; i++)
+            int id = 0;
+            for (int col = 0; col < width; col++)
             {
-                int offset = i * width;
-                for (int j = 0; j < ht; j++)
-                {   v[offset+j] = M[i,j];
+                for (int row = 0; row < ht; row++)
+                {   v[id++] = M[row,col];
                 }
             }
             return v;
         }
+
+
+        public static double[,] TwoOfThree(double[,] m1, double[,] m2, double[,] m3)
+        {
+            int rows = m1.GetLength(0); //assume all matrices have same dimensions
+            int cols = m2.GetLength(1);
+            double[,] M = new double[rows, cols];
+
+            for (int col = 0; col < cols; col++)
+            {
+                for (int row = 0; row < rows; row++)
+                {
+                    int count = 0;
+                    if (m1[row, col] == 1.0) count++;
+                    if (m2[row, col] == 1.0) count++;
+                    if (m3[row, col] == 1.0) count++;
+                    if (count >=2) M[row, col] = 1;
+                }
+            }
+            return M;
+        }
+
 
         /// <summary>
         /// returns the euclidian length of vector
@@ -1074,49 +1096,6 @@ namespace TowseyLib
 
     return binCounts;
   }
-
-  public static double ImageThreshold(double[,] M)
-  {
-    int indexBias = 8;
-    int binCount = 50;
-    double binWidth;
-    double min; 
-    double max;
-    int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
-    powerHisto[binCount-1] = 0; //just in case it is the max
-    double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
-    int maxindex;
-    DataTools.getMaxIndex(smooth, out maxindex);
-    int i = maxindex + indexBias;
-    if (i > binCount) i = maxindex;
-    double threshold = min + (i * binWidth);
-
-    //for (int b = 0; b < binCount; b++) powerHisto[b] = (int)(smooth[b] / (double)2);
-    //DataTools.writeBarGraph(powerHisto);
-    return threshold;
-  }
-
-  public static double[] ImageThreshold(double[,] M, int bandCount)
-  {
-      int height = M.GetLength(0);
-      int width  = M.GetLength(1);
-      double bandWidth = width / (double)bandCount;
-
-      double[] thresholds = new double[bandCount];
-      for (int b = 0; b < bandCount; b++)//for all bands
-      {
-          int start = (int)(b * bandWidth);
-          int stop = (int)((b+1) * bandWidth);
-          if (stop >= width) stop = width - 1;
-
-          double[,] subMatrix = Submatrix(M, 0, start, height-1, stop);
-          
-          thresholds[b] = ImageThreshold(subMatrix);
-          //Console.WriteLine("Threshold " + b + " = " + thresholds[b]);
-      }
-      return thresholds;
-  }
-
 
 
 

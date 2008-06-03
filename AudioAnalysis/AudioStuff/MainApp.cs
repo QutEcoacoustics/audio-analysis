@@ -196,11 +196,14 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        double[,] m = ImageTools.Texture2(s.Matrix, 7);
-                        m = ImageTools.Invert(m);
-                        int bandCount = 20;
-                        m = ImageTools.PointProcess(m, bandCount, 1); //clip
-                        //m = ImageTools.Shapes(m); 
+                        //double[,] m = ImageTools.Texture2(s.Matrix, 7);
+                        //m = ImageTools.Invert(m);
+                        //int bandCount = 20;
+                        //m = ImageTools.PointProcess(m, bandCount, 1); //clip
+                        double[,] m1 = ImageTools.Shapes_lines(s.Matrix);
+                        double[,] m2 = ImageTools.Shapes1(s.Matrix);
+                        double[,] m3 = ImageTools.Shapes2(s.Matrix);
+                        double[,] m = DataTools.TwoOfThree(m1,m2,m3);
                         //ArrayList shapes = Shape.Shapes_Detect(s.ShapeM);
                         s.SaveImage(m, null);
                     }

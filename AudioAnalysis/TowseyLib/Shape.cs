@@ -180,6 +180,21 @@ namespace TowseyLib
             return shapes;
         }
 
+
+        public static void Row_Width(double[,] m, int col, int row, out int rowWidth) //explore shape in y dimension
+        {
+            int rowCount = m.GetLength(0);
+            rowWidth = 0;
+            while (((row + rowWidth) < rowCount) && (m[row + rowWidth, col] == 1.0)) rowWidth++;
+        }
+        public static void Col_Width(double[,] m, int col, int row, out int colWidth) //explore shape in x dimension
+        {
+            int colCount = m.GetLength(1);
+            colWidth = 0;
+            while (((col + colWidth) < colCount) && (m[row, col + colWidth] == 1.0)) colWidth++;
+        }
+
+
         public static bool InExistingShape(int row, int col, ArrayList shapes)
         {
             if (shapes == null) return false;
