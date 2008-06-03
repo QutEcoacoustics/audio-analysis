@@ -159,6 +159,8 @@ namespace AudioStuff
             this.state.MinPower = min;
             this.state.MaxPower = max;
             this.state.AvgPower = avg;
+            //this.state.MinCut = 0.0;
+            //this.state.MaxCut = 1.0;
             NormalizeAndBound();  //normalise and bound the values
 
             this.state.SpectrumCount = this.matrix.GetLength(0);
