@@ -201,7 +201,7 @@ namespace TowseyLib
                         }
                     double av;
                     double sd;
-                    NormalDist.getAverageAndSD(values, out av, out sd);
+                    NormalDist.AverageAndSD(values, out av, out sd);
                     newMatrix[i, j] = sd*sd;
                 }
 
@@ -233,7 +233,7 @@ namespace TowseyLib
                         }
                     }
                     double av; double sd;
-                    NormalDist.getAverageAndSD(values, out av, out sd);
+                    NormalDist.AverageAndSD(values, out av, out sd);
                     if(sd<0.0001) newMatrix[r, c] = -4;
                     else newMatrix[r, c] = Math.Log10(sd);
                 }
@@ -423,7 +423,7 @@ namespace TowseyLib
                 double[,] subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
                 double[] array = DataTools.Matrix2Array(subMatrix);
                 double av; double sd;
-                NormalDist.getAverageAndSD(array, out av, out sd);
+                NormalDist.AverageAndSD(array, out av, out sd);
                 //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
 

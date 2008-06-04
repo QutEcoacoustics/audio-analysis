@@ -26,7 +26,7 @@ namespace TowseyLib
             totalCount = data.Length;
             double average;
             double stdev;
-            getAverageAndSD(data, out average, out stdev);
+            AverageAndSD(data, out average, out stdev);
             this.av = average;
             this.sd = stdev;
             //convert data to doubles
@@ -46,7 +46,7 @@ namespace TowseyLib
             totalCount = data.Length;
             double average;
             double stdev;
-            getAverageAndSD(data, out average, out stdev);
+            AverageAndSD(data, out average, out stdev);
             this.av = average;
             this.sd = stdev;
             bins = get16binDistribution(data, average, stdev);
@@ -114,7 +114,7 @@ namespace TowseyLib
          * @param data
          * @return
          */
-        static public void getAverageAndSD(int[] data, out double av, out double sd)
+        static public void AverageAndSD(int[] data, out double av, out double sd)
         {
             int N = data.Length;
             int sum = 0;
@@ -147,7 +147,7 @@ namespace TowseyLib
          * @param data
          * @return
          */
-        static public void getAverageAndSD(double[] data, out double av, out double sd)
+        static public void AverageAndSD(double[] data, out double av, out double sd)
         {
             int N = data.Length;
             double sum = 0.0;
@@ -174,11 +174,27 @@ namespace TowseyLib
         }
 
 
-        public static double[] normalise(double[] data)
+
+        public static void AverageAndSD(double[,] data, out double av, out double sd)
+        {
+            int rows = data.GetLength(0);
+            int cols = data.GetLength(1);
+            
+            double[] values = new double[rows*cols];
+            int id = 0;
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    values[id++] = data[i,j];
+
+            AverageAndSD(values, out av, out sd);
+        }
+
+
+        public static double[] Normalise(double[] data)
         {
             double av;
             double sd;
-            getAverageAndSD(data, out av, out sd);
+            AverageAndSD(data, out av, out sd);
             double[] ndata = new double[data.Length];
             for (int i = 0; i < data.Length; i++)
             {
@@ -197,7 +213,7 @@ namespace TowseyLib
          * @param count
          * @return
          */
-        public static double variance(double SumSq, double Sum, int count)
+        public static double Variance(double SumSq, double Sum, int count)
         {
             double var = count * SumSq - Sum * Sum;
             var /= (count * (count - 1));
@@ -205,7 +221,7 @@ namespace TowseyLib
         }
         public static double SD(double SumSq, double Sum, int count)
         {
-            double var = variance(SumSq, Sum, count);
+            double var = Variance(SumSq, Sum, count);
             return Math.Sqrt(var);
         }
 
@@ -478,7 +494,7 @@ namespace TowseyLib
         DataTools.MinMax(scores, out min, out max);
         double av;
         double sd;
-        getAverageAndSD(scores, out av, out sd);
+        AverageAndSD(scores, out av, out sd);
 
         double[,] histo = get16binDistribution(scores,av,sd);
         Console.WriteLine(" ===== SCORE STATISTICS =====");
@@ -492,7 +508,7 @@ namespace TowseyLib
     {
         double av;
         double sd;
-        getAverageAndSD(scores, out av, out sd);
+        AverageAndSD(scores, out av, out sd);
         int min;
         int max;
         DataTools.MinMax(scores, out min, out max);
@@ -511,7 +527,7 @@ namespace TowseyLib
     {
         double av;
         double sd;
-        getAverageAndSD(scores, out av, out sd);
+        AverageAndSD(scores, out av, out sd);
         double min;
         double max;
         DataTools.MinMax(scores, out min, out max);
