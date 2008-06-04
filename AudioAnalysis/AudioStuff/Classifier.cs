@@ -209,8 +209,8 @@ namespace AudioStuff
 
         public void Scan(Sonogram s)
         {
-            const int scanType = 1; //dot product - noise totally random
-            //const int scanType = 2; //difference
+            //const int scanType = 1; //dot product - noise totally random
+            const int scanType = 2; //cross correlation
             //const int scanType = 3; //noise pre-calculated
             //const int scanType = 4; //noise noise stratified
             //const int scanType = 5; //inverse of euclidan distance
@@ -234,9 +234,8 @@ namespace AudioStuff
                 NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 break;
 
-                case 2:
-                scores = Scan_Difference(normSonogram);
-                //calculate the av/sd of template scores for noise model and store in results
+                case 2:   //Cross Correlation
+                scores = Scan_CrossCorrelation(normSonogram);
                 NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 break;
 
@@ -358,7 +357,8 @@ namespace AudioStuff
 
             return scores;
         }
-        public double[] Scan_Difference(double[,] normSonogram)
+
+        public double[] Scan_CrossCorrelation(double[,] normSonogram)
         {
             //calculate ranges of templates etc
             int tWidth = template.GetLength(0);
@@ -374,25 +374,21 @@ namespace AudioStuff
             int cellCount = tWidth * tHeight;
             int halfWidth = tWidth / 2;
 
-            //normalise template to [0,+1]
-            this.Template = DataTools.normalise(this.Template);
+            //normalise template to difference from mean
+            this.Template = DataTools.DiffFromMean(this.Template);
 
             double[] scores = new double[sWidth];
             double avScore = 0.0;
-            for (int x = 0; x < (sWidth - tWidth); x++)//scan over sonogram
+            for (int r = 0; r < (sWidth - tWidth); r++)//scan over sonogram
             {
-                double sum = 0.0;
-                for (int i = 0; i < tWidth; i++)
-                {
-                    for (int j = 0; j < tHeight; j++)
-                    {
-                        sum -= Math.Abs(normSonogram[x + i, this.topScanBin + j] - template[i, j]);
-                    }
-                }
-                scores[x + halfWidth] = sum / cellCount; //place score in middle of template
-                avScore += scores[x + halfWidth];
+                Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tHeight)+"  topScanBin="+topScanBin);
+                double[,] subMatrix = DataTools.Submatrix(normSonogram, r, bottomScanBin, r + tHeight, topScanBin);
+                subMatrix = DataTools.DiffFromMean(subMatrix);
+                scores[r + halfWidth] = DataTools.DotProduct(this.Template, subMatrix); //place score in middle of template
+                avScore += scores[r + halfWidth];
                 //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
             }//end of loop over sonogram
+
 
             //fix up edge effects by making the first and last scores = the average score
             avScore /= (sWidth - tWidth);
@@ -401,7 +397,6 @@ namespace AudioStuff
 
             return scores;
         }
-
 
 
         public void ProcessScores(double[] scores, double noiseAv, double noiseSd)
@@ -655,7 +650,7 @@ namespace AudioStuff
                     throw new System.Exception("\nWARNING: INVALID MODE!");
             }//end case statement
 
-            NormalDist.getAverageAndSD(noiseScores, out av, out sd);
+            NormalDist.AverageAndSD(noiseScores, out av, out sd);
 
         } //end CalculateNoiseResponse
 

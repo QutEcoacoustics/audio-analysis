@@ -604,6 +604,40 @@ namespace TowseyLib
 
 
         /// <summary>
+        /// shift values by their mean.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[,] DiffFromMean(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            double av; double sd;
+            NormalDist.AverageAndSD(m, out av, out sd);  
+
+            double[,] ret = new double[rows,cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    ret[i, j] = m[i, j] - av;
+
+            return ret;
+        }
+
+
+        public static double DotProduct(double[,] m1, double[,] m2)
+        {
+            //assume m1 and m2 have same dimensions
+            int rows = m1.GetLength(0);
+            int cols = m1.GetLength(1);
+            double sum = 0.0;
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    sum += (m1[i, j] * m2[i, j]);
+            return sum;
+        }
+
+        /// <summary>
         /// convert values to Decibels.
         /// Assume that all values are positive
         /// </summary>

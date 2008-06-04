@@ -62,10 +62,10 @@ namespace AudioStuff
             //Mode userMode = Mode.ArtificialSignal;
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
-            Mode userMode = Mode.MakeSonogramShapes;
+            //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -287,7 +287,7 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try{
                         s = new Sonogram(iniFName, wavPath);
-                        s.MelFreqSonogram(melBandCount);
+                        //s.MelFreqSonogram(melBandCount);
 
                         Template t = new Template(callID, templateDir);
                         Classifier cl = new Classifier(t, s);
