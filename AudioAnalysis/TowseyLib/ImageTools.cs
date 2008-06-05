@@ -33,214 +33,6 @@ namespace TowseyLib
 
 
 
-
-        public static double[,] Subtract(double[,] m1, double[,] m2)
-        {
-            int m1Rows = m1.GetLength(0);
-            int m1Cols = m1.GetLength(1);
-            int m2Rows = m2.GetLength(0);
-            int m2Cols = m2.GetLength(1);
-            if (!(m1Rows == m2Rows)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            if (!(m1Cols == m2Cols)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
-            
-            double[,] newMatrix = (double[,])m1.Clone();
-            for (int i = 0; i < m1Rows; i++)
-                for (int j = 0; j < m1Cols; j++)
-                {
-                    newMatrix[i, j] = m1[i, j] - m2[i, j];
-                }
-            return newMatrix;
-        }
-
-        public static double[,] Invert(double[,] m)
-        {
-            int mRows = m.GetLength(0);
-            int mCols = m.GetLength(1);
-            double[,] newMatrix = DataTools.normalise(m);
-            for (int i = 0; i < mRows; i++)
-                for (int j = 0; j < mCols; j++)
-                {
-                    newMatrix[i, j] = 255 - newMatrix[i, j];
-                }
-            return newMatrix;
-        }
-
-
-        public static double[,] Blur(double[,] matrix, int nh)
-        {
-            if (nh <= 0) return matrix; //no blurring required
-
-            int M = matrix.GetLength(0);
-            int N = matrix.GetLength(1);
-
-            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            //double[,] newMatrix = new double[M, N];
-            double[,] newMatrix = (double[,])matrix.Clone();
-
-            for (int i = nh; i < (M - nh); i++)
-                for (int j = nh; j < (N - nh); j++)
-                {
-                    double sum = 0.0;
-                    for (int x = i - nh; x < (i + nh); x++)
-                        for (int y = j - nh; y < (j + nh); y++) sum += matrix[x, y];
-                    double v = sum / cellCount;
-                    newMatrix[i, j] = v;
-                }
-
-            return newMatrix;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="cNH">column Window i.e. x-dimension</param>
-        /// <param name="rNH">row Window i.e. y-dimension</param>
-        /// <returns></returns>
-        public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
-        {
-            if ((cWindow <= 1) && (rWindow <= 1)) return matrix; //no blurring required
-
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            int cNH = cWindow / 2;
-            int rNH = rWindow / 2;
-            //Console.WriteLine("cNH=" + cNH + ", rNH" + rNH);
-            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
-            double[,] newMatrix = new double[rows, cols];//init new matrix to return
-
-            // fix up the edges first
-            for (int r = 0; r < rows; r++)
-            {
-                for (int c = 0; c < cNH; c++)
-                {
-                    newMatrix[r, c] = matrix[r, c];
-                }
-                for (int c = (cols - cNH); c < cols; c++)
-                {
-                    newMatrix[r, c] = matrix[r, c];
-                }
-            }
-            // fix up other edges
-            for (int c = 0; c < cols; c++)
-            {
-                for (int r = 0; r < rNH; r++)
-                {
-                    newMatrix[r, c] = matrix[r, c];
-                }
-                for (int r = (rows - rNH); r < rows; r++)
-                {
-                    newMatrix[r, c] = matrix[r, c];
-                }
-            }
-
-            for (int r = rNH; r < (rows - rNH); r++)
-                for (int c = cNH; c < (cols - cNH); c++)
-                {
-                    double sum = 0.0;
-                    for (int y = (r - rNH); y <= (r + rNH); y++)
-                    {
-                        //System.Console.WriteLine(r+", "+c+ "  y="+y);
-                        for (int x = (c - cNH); x <= (c + cNH); x++)
-                        {
-                            sum += matrix[y, x];
-                        }
-                    }
-                    newMatrix[r, c] = sum / (double)area;
-                }
-
-            return newMatrix;
-        }//end method Blur()
-
-
-        public static double[,] Texture1(double[,] matrix, int window)
-        {
-
-            int nh = window / 2;
-            int M = matrix.GetLength(0);
-            int N = matrix.GetLength(1);
-
-            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            double[,] newMatrix = new double[M, N];
-
-            for (int i = nh; i < (M - nh); i++)
-                for (int j = nh; j < (N - nh); j++)
-                {
-                    double sum = 0.0;
-                    for (int x = (i - nh + 1); x < (i + nh); x++)
-                        for (int y = (j - nh + 1); y < (j + nh); y++)
-                        {
-                            //values[id++] = matrix[x, y];
-                            sum += Math.Abs(matrix[x, y] - matrix[x-1, y-1]);
-                        }
-                    newMatrix[i, j] = sum;
-                }
-
-            return newMatrix;
-        }
-        public static double[,] Texture2(double[,] matrix, int window)
-        {
-
-            int nh = window / 2;
-            int M = matrix.GetLength(0);
-            int N = matrix.GetLength(1);
-
-            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            double[,] newMatrix = new double[M, N];
-
-            for (int i = nh; i < (M - nh); i++)
-                for (int j = nh; j < (N - nh); j++)
-                {
-                    int id = 0;
-                    double[] values = new double[cellCount];
-                    for (int x = i - nh; x < (i + nh); x++)
-                        for (int y = j - nh; y < (j + nh); y++)
-                        {
-                            values[id++] = matrix[x, y];
-                    
-                        }
-                    double av;
-                    double sd;
-                    NormalDist.AverageAndSD(values, out av, out sd);
-                    newMatrix[i, j] = sd*sd;
-                }
-
-            return newMatrix;
-        }
-
-        public static double[,] Texture4(double[,] matrix, int cWindow, int rWindow)
-        {
-            if ((cWindow <= 1) && (rWindow <= 1)) return matrix; //no operation required
-
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            int cNH = cWindow / 2;
-            int rNH = rWindow / 2;
-            //Console.WriteLine("cNH=" + cNH + ", rNH" + rNH);
-            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
-
-            double[,] newMatrix = new double[rows, cols];//init new matrix to return
-            for (int r = rNH; r < (rows - rNH); r++)
-                for (int c = cNH; c < (cols - cNH); c++)
-                {
-                    int id = 0;
-                    double[] values = new double[area];
-                    for (int y = (r - rNH); y <= (r + rNH); y++)
-                    {
-                        for (int x = (c - cNH); x <= (c + cNH); x++)
-                        {
-                            values[id++] = matrix[y, x];
-                        }
-                    }
-                    double av; double sd;
-                    NormalDist.AverageAndSD(values, out av, out sd);
-                    if(sd<0.0001) newMatrix[r, c] = -4;
-                    else newMatrix[r, c] = Math.Log10(sd);
-                }
-            return newMatrix;
-        }
-
-
         
         public static double[,] Convolve(double[,] matrix, Kernal name)
         {
@@ -346,128 +138,287 @@ namespace TowseyLib
 
 
 
-
-        //public static double[,] PointProcess(double[,] m, int bandCount, int type)
-        //{
-        //    int height = m.GetLength(0);
-        //    int width = m.GetLength(1);
-        //    double bandWidth = width / (double)bandCount;
-
-        //    double[,] M = new double[height, width];
-        //    int prevStop = -1;
-        //    for (int b = 0; b < bandCount; b++)//for all bands
-        //    {
-        //        int start = prevStop+1;
-        //        int stop = (int)((b + 1) * bandWidth);
-        //        if (stop >= width) stop = width - 1;
-        //        prevStop = stop;
-        //        //extract the submatrix
-        //        double[,] subMatrix = DataTools.Submatrix(m, 0, start, height - 1, stop);
-
-        //        //now do operation
-        //        //double threshold = DataTools.ImageThreshold(subMatrix);
-        //        //double threshold = 20.0;
-        //        //Console.WriteLine("Threshold " + b + " = " + threshold);
-        //        //subMatrix = DataTools.Clip(subMatrix, 0.0, 1.0);
-
-        //        //return subMatrix to output matrix;
-        //        for (int x = start; x < stop; x++)
-        //            for (int y = 0; y < height; y++)
-        //            {
-        //                //M[y, x] = subMatrix[y, x-start];
-        //                M[y, x] = m[y, x];
-        //            }//for all x in a band
-        //    }//for all bands
-
-        //    return M;
-
-        //}// end of PointProcess()
+        /// <summary>
+        /// Reverses a 256 grey scale image
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[,] Reverse256GreyScale(double[,] m)
+        {
+            const int scaleMax = 256 - 1;
+            int mRows = m.GetLength(0);
+            int mCols = m.GetLength(1);
+            double[,] newMatrix = DataTools.normalise(m);
+            for (int i = 0; i < mRows; i++)
+                for (int j = 0; j < mCols; j++)
+                {
+                    newMatrix[i, j] = scaleMax - newMatrix[i, j];
+                }
+            return newMatrix;
+        }
 
 
+        /// <summary>
+        /// blurs an image using a square neighbourhood
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="nh">Note that neighbourhood is distance either side of central pixel.</param>
+        /// <returns></returns>
+        public static double[,] Blur(double[,] matrix, int nh)
+        {
+            if (nh <= 0) return matrix; //no blurring required
 
-        public static double ImageThreshold(double[,] M, int indexBias)
+            int M = matrix.GetLength(0);
+            int N = matrix.GetLength(1);
+
+            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
+            //double[,] newMatrix = new double[M, N];
+            double[,] newMatrix = (double[,])matrix.Clone();
+
+            for (int i = nh; i < (M - nh); i++)
+                for (int j = nh; j < (N - nh); j++)
+                {
+                    double sum = 0.0;
+                    for (int x = i - nh; x < (i + nh); x++)
+                        for (int y = j - nh; y < (j + nh); y++) sum += matrix[x, y];
+                    double v = sum / cellCount;
+                    newMatrix[i, j] = v;
+                }
+
+            return newMatrix;
+        }
+
+        /// <summary>
+        /// blurs and image using a rectangular neighbourhood.
+        /// Note that in this method neighbourhood dimensions are full side or window.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="cNH">column Window i.e. x-dimension</param>
+        /// <param name="rNH">row Window i.e. y-dimension</param>
+        /// <returns></returns>
+        public static double[,] Blur(double[,] matrix, int cWindow, int rWindow)
+        {
+            if ((cWindow <= 1) && (rWindow <= 1)) return matrix; //no blurring required
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            int cNH = cWindow / 2;
+            int rNH = rWindow / 2;
+            //Console.WriteLine("cNH=" + cNH + ", rNH" + rNH);
+            int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
+            double[,] newMatrix = new double[rows, cols];//init new matrix to return
+
+            // fix up the edges first
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cNH; c++)
+                {
+                    newMatrix[r, c] = matrix[r, c];
+                }
+                for (int c = (cols - cNH); c < cols; c++)
+                {
+                    newMatrix[r, c] = matrix[r, c];
+                }
+            }
+            // fix up other edges
+            for (int c = 0; c < cols; c++)
+            {
+                for (int r = 0; r < rNH; r++)
+                {
+                    newMatrix[r, c] = matrix[r, c];
+                }
+                for (int r = (rows - rNH); r < rows; r++)
+                {
+                    newMatrix[r, c] = matrix[r, c];
+                }
+            }
+
+            for (int r = rNH; r < (rows - rNH); r++)
+                for (int c = cNH; c < (cols - cNH); c++)
+                {
+                    double sum = 0.0;
+                    for (int y = (r - rNH); y <= (r + rNH); y++)
+                    {
+                        //System.Console.WriteLine(r+", "+c+ "  y="+y);
+                        for (int x = (c - cNH); x <= (c + cNH); x++)
+                        {
+                            sum += matrix[y, x];
+                        }
+                    }
+                    newMatrix[r, c] = sum / (double)area;
+                }
+            return newMatrix;
+        }//end method Blur()
+
+
+        public static void Signal2NoiseThreshold(double[,] M, double shoulder, out double min, out double lowerThreshold, out double upperThreshold)
         {
             int binCount = 50;
+            int count = M.GetLength(0) * M.GetLength(1);
             double binWidth;
-            double min;
             double max;
             int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
-            powerHisto[binCount - 1] = 0; //just in case it is the max
+            powerHisto[binCount - 1] = 0;   //just in case it is the max
             double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
             int maxindex;
             DataTools.getMaxIndex(smooth, out maxindex);
-            int i = maxindex + indexBias;
-            if (i > binCount) i = binCount-2;
-            double threshold = min + (i * binWidth);
+            double value = smooth[maxindex] * shoulder;
+            int i = maxindex;
+            while ((smooth[i] > value) && (i < binCount)) i++;
+            upperThreshold = min + (i * binWidth);
+            //i = maxindex;
+            //while ((smooth[i] > value)&&(i > 0)) i--;
+            double minBound = 0.1;
+            int minCount = (int)(minBound * count);
+            i = 0;
+            int sum = 0;
+            while ((sum < minCount) && (i < binCount)) sum += powerHisto[i++];
+            lowerThreshold = min + (i * binWidth);
 
             //DataTools.writeBarGraph(powerHisto);
-            return threshold;
+            //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
         }
 
-        public static double[,] SubtractAverage(double[,] matrix)
+
+        /// <summary>
+        /// Calculates the local signal to noise ratio in the neighbourhood of side=window
+        /// SNR is diefined as local mean / local std dev.
+        /// Must check that the local std dev is not too small.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="window"></param>
+        /// <returns></returns>
+        public static double[,] Signal2NoiseRatio_Local(double[,] matrix, int window)
         {
-            int bandCount = 200;
+
+            int nh = window / 2;
+            int M = matrix.GetLength(0);
+            int N = matrix.GetLength(1);
+
+            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
+            double[,] newMatrix = new double[M, N];
+
+            for (int i = nh; i < (M - nh); i++)
+                for (int j = nh; j < (N - nh); j++)
+                {
+                    int id = 0;
+                    double[] values = new double[cellCount];
+                    for (int x = (i - nh + 1); x < (i + nh); x++)
+                        for (int y = (j - nh + 1); y < (j + nh); y++)
+                        {
+                            values[id++] = matrix[x, y];
+                        }
+                    double av; double sd;
+                    NormalDist.AverageAndSD(values, out av, out sd);
+                    if (sd < 0.0001) sd = 0.0001;
+                    newMatrix[i, j] = (matrix[i, j] - av) / sd;
+                }
+            return newMatrix;
+        }
+
+
+        public static double[,] Signal2NoiseRatio_BandWise(double[,] matrix)
+        {
+            int bandWidth = 64;
+            int halfWidth = bandWidth / 2;
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
-            double bandWidth = width / (double)bandCount;
 
             double[,] M = new double[height, width];
+            double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
 
-            for (int b = 0; b < bandCount; b++)//for all bands
+            for (int col = 0; col < width; col++)//for all cols
             {
-                int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
-                int stop = (int)((b + 2) * bandWidth);
+                int stop = col + halfWidth;
                 if (stop >= width) stop = width - 1;
 
-                double[,] subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
-                double[] array = DataTools.Matrix2Array(subMatrix);
+                if ((col % 8 == 0) && (!(col == 0)))
+                    subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+
                 double av; double sd;
-                NormalDist.AverageAndSD(array, out av, out sd);
-                //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
+                NormalDist.AverageAndSD(subMatrix, out av, out sd);
+                if (sd < 0.0001) sd = 0.0001;  //to prevent division by zero
 
-
-                for (int x = start; x < stop; x++)
+                for (int y = 0; y < height; y++)
                 {
-                    for (int y = 2; y < height - 1; y++)
-                    {
-                        M[y, x] = matrix[y, x]-av;
-                    }
-                }//for all x in a band
-            }//for all bands
+                    M[y, col] = (matrix[y, col] - av) / sd;
+                }
+            }//for all cols
             return M;
         }// end of SubtractAverage()
 
-        public static double[,] SubtractThreshold(double[,] matrix)
+
+
+        public static double[,] SubtractAverage_BandWise(double[,] matrix)
         {
-            int bandCount = 200;
-            int indexBias = 8;
+            int bandWidth = 64;
+            int halfWidth = bandWidth / 2;
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
-            double bandWidth = width / (double)bandCount;
 
             double[,] M = new double[height, width];
+            double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
 
-            for (int b = 0; b < bandCount; b++)//for all bands
+            for (int col = 0; col < width; col++)//for all cols
             {
-                int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
-                int stop = (int)((b + 2) * bandWidth);
+                int stop = col + halfWidth;
                 if (stop >= width) stop = width - 1;
 
-                double[,] subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
-                double threshold = ImageThreshold(subMatrix, indexBias);
+                if ((col % 8 == 0) && (!(col == 0)))
+                    subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                double av; double sd;
+                NormalDist.AverageAndSD(subMatrix, out av, out sd);
                 //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
-
-                for (int x = start; x < stop; x++)
+                for (int y = 0; y < height; y++)
                 {
-                    for (int y = 2; y < height - 1; y++)
-                    {
-                        M[y, x] = matrix[y, x] - threshold;
-                    }
-                }//for all x in a band
-            }//for all bands
+                    M[y, col] = matrix[y, col] - av;
+                }//for all rows
+            }//for all cols
+            return M;
+        }// end of SubtractAverage()
+
+
+
+        public static double[,] SubtractNoise(double[,] matrix)
+        {
+            double shoulder = 0.5;
+            int bandWidth = 64;
+            int halfWidth = bandWidth / 2;
+            int height = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
+
+            double[,] M = new double[height, width];
+            double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
+            double min; double lowerThreshold; double upperThreshold;
+            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+
+            for (int col = 0; col < width; col++)//for all cols
+            {
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                if (start < 0) start = 0;
+                int stop = col + halfWidth;
+                if (stop >= width) stop = width - 1;
+
+                if ((col % 8 == 0) && (!(col == 0)))
+                {
+                    subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                }
+
+                for (int y = 0; y < height; y++)
+                {
+                    M[y, col] = matrix[y, col] - upperThreshold;
+                    if (M[y, col] < upperThreshold) M[y, col] = upperThreshold;
+
+                    //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
+                    //else M[y, col] = 1.0;
+                }
+            }//for all cols
             return M;
         }// end of SubtractAverage()
 
@@ -478,8 +429,8 @@ namespace TowseyLib
             double gradThreshold = 1.2;
             int fWindow = 9;
             int tWindow = 9;
-            int bandCount = 200;
-            int indexBias = 8; //used to increase or decrease the threshold from modal value
+            int bandCount = 16;  // 16 bands, width=512pixels, 32pixels/band 
+            double shoulder = 0.3; //used to increase or decrease the threshold from modal value
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
 
             int height = blurM.GetLength(0);
@@ -499,7 +450,8 @@ namespace TowseyLib
                 if (stop >= width) stop = width - 1;
 
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
-                double threshold = ImageThreshold(subMatrix, indexBias);
+                double min; double lowerThreshold; double upperThreshold;
+                Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
                 //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
 
@@ -512,7 +464,7 @@ namespace TowseyLib
                         double grad1 = blurM[y, x] - blurM[y - 1, x];//calculate one step gradient
                         double grad2 = blurM[y + 1, x] - blurM[y - 1, x];//calculate two step gradient
 
-                        if (blurM[y, x] < threshold) state = 0;
+                        if (blurM[y, x] < upperThreshold) state = 0;
                         else
                             if (grad1 < -gradThreshold) state = 0;    // local decrease
                             else
@@ -536,96 +488,101 @@ namespace TowseyLib
 
         public static double[,] Shapes2(double[,] matrix)
         {
-            int fWindow = 9;
-            int tWindow = 9;
-            int bandCount = 200;
-            int thresholdBias = 10;
-            double[,] textureM = ImageTools.Texture4(matrix, fWindow, tWindow);
+            double shoulder = 0.25;
+            int bandWidth = 64;
+            int halfWidth = bandWidth / 2;
+
+            int fWindow = 7;
+            int tWindow = 5;
+            //double[,] blurM = matrix;
+            double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
-            double bandWidth = width / (double)bandCount;
-
             double[,] M = new double[height, width];
 
-            for (int b = 0; b < bandCount; b++)//for all bands
+            double[,] subMatrix = DataTools.Submatrix(blurM, 0, 0, height - 1, bandWidth);
+            double min; double lowerThreshold; double upperThreshold;
+            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+
+            for (int col = 0; col < width; col++)//for all cols
             {
-                int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
-                int stop = (int)((b + 2) * bandWidth);
+                int stop = col + halfWidth;
                 if (stop >= width) stop = width - 1;
 
-                double[,] subMatrix = DataTools.Submatrix(textureM, 0, start, height - 1, stop);
-                double threshold = ImageThreshold(subMatrix, thresholdBias);
-                //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
-
-
-                for (int x = start; x < stop; x++)
+                if ((col % 8 == 0) && (!(col == 0)))
                 {
-                    for (int y = 0; y < height; y++)
-                    {
-                        if (textureM[y, x] >= threshold) M[y, x] = 1.0;
-                    }
-                }//for all x columns in a band
-            }//for all bands
+                    subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
+                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                }
 
-            int minColWidth = 10;
-            M = Shapes_RemoveSmall(M, minColWidth);
-            //M = Shapes_CleanUp(M);
-            double min; double max;
-            DataTools.MinMax(M, out min, out max);
-            Console.WriteLine("Min=" + min + "   Max=" + max);
+                for (int y = 0; y < height; y++)
+                {
+                    if (blurM[y, col] < upperThreshold) M[y, col] = 0.0;
+                    else M[y, col] = 1.0;
+                }
+            }//for all cols
             return M;
+        }// end of Shapes2()
 
-        }// end of Shapes()
+
 
         public static double[,] Shapes_lines(double[,] matrix)
         {
-            int bandCount = 200;
-            int indexBias = 8; //used to increase or decrease the threshold from modal value
-            double[,] blurM = ImageTools.Blur(matrix, 7, 13);
+            double shoulder = 0.2;
+            int bandWidth = 64;
+            int halfWidth = bandWidth / 2;
+
+            int fWindow = 7;
+            int tWindow = 3;
+            double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
             double[,] lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
+            lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
 
-            int height = lines.GetLength(0);
-            int width = lines.GetLength(1);
-            double bandWidth = width / (double)bandCount;
-
+            int height = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
             double[,] M = new double[height, width];
 
-            for (int b = 0; b < bandCount; b++)//for all bands
+            double[,] subMatrix = DataTools.Submatrix(lines, 0, 0, height - 1, bandWidth);
+            double min; double lowerThreshold; double upperThreshold;
+            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+
+            for (int col = 0; col < width; col++)//for all cols
             {
-                int start = (int)((b - 1) * bandWidth);   //extend range of submatrix below b for smoother changes
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
-                int stop = (int)((b + 2) * bandWidth);
+                int stop = col + halfWidth;
                 if (stop >= width) stop = width - 1;
 
-                double[,] subMatrix = DataTools.Submatrix(lines, 0, start, height - 1, stop);
-                double threshold = ImageThreshold(subMatrix, indexBias);
-                //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
-
-
-                for (int x = start; x < stop; x++)
+                if ((col % 8 == 0) && (!(col == 0)))
                 {
-                    for (int y = 2; y < height - 1; y++)
+                    subMatrix = DataTools.Submatrix(lines, 0, start, height - 1, stop);
+                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                }
+
+                for (int y = 1; y < height-1; y++)
+                {
+                    if (lines[y, col] > upperThreshold)
                     {
-                        if (lines[y, x] > threshold)
-                        {
-                            //M[y, x]     = lines[y, x];
-                            //M[y - 1, x] = lines[y - 1, x];
-                            //M[y + 1, x] = lines[y + 1, x];
-                            M[y, x] = 1;
-                            M[y - 1, x] = 1;
-                            M[y + 1, x] = 1;
-                        }
+                        //M[y, col]     = lines[y, col];
+                        //M[y - 1, col] = lines[y - 1, col];
+                        //M[y + 1, col] = lines[y + 1, col];
+                        M[y, col] = 1;
+                        //M[y - 2, col] = 1;
+                        M[y - 1, col] = 1;
+                        //M[y + 1, col] = 1;
                     }
-                }//for all x columns in a band
-            }//for all bands
-
-            int minColWidth = 20;
-            M = Shapes_RemoveSmall(M, minColWidth);
+                }
+            }//for all cols
+            int minRowWidth = 2;
+            int minColWidth = 10;
+            M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
+        }// end of Shapes_lines()
 
-        }// end of Shapes()
+        
 
         public static double[,] Shapes_CleanUp(double[,] m)
         {
@@ -689,12 +646,11 @@ namespace TowseyLib
         }
 
 
-        public static double[,] Shapes_RemoveSmall(double[,] m, int minColWidth)
+        public static double[,] Shapes_RemoveSmall(double[,] m, int minRowWidth, int minColWidth)
         {
             int height = m.GetLength(0);
             int width = m.GetLength(1);
             double[,] M = new double[height, width];
-            int minRowWidth = 3;
 
             for (int x = 0; x < width; x++)
             {
@@ -731,6 +687,36 @@ namespace TowseyLib
         }
 
 
+        public static double[,] Texture2(double[,] matrix, int window)
+        {
+
+            int nh = window / 2;
+            int M = matrix.GetLength(0);
+            int N = matrix.GetLength(1);
+
+            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
+            double[,] newMatrix = new double[M, N];
+
+            for (int i = nh; i < (M - nh); i++)
+                for (int j = nh; j < (N - nh); j++)
+                {
+                    int id = 0;
+                    double[] values = new double[cellCount];
+                    for (int x = i - nh; x < (i + nh); x++)
+                        for (int y = j - nh; y < (j + nh); y++)
+                        {
+                            values[id++] = matrix[x, y];
+                        }
+                    double av;
+                    double sd;
+                    NormalDist.AverageAndSD(values, out av, out sd);
+                    double v = sd * sd;
+                    if(v< 0.0001) v = 0.0001;
+                    newMatrix[i, j] = v;
+                }
+
+            return newMatrix;
+        }
 
 
     }

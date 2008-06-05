@@ -18,6 +18,12 @@ namespace AudioStuff
     /// </summary>
     class Classifier
     {
+        //private readonly int scanType = 1; //dot product - noise totally random
+        private readonly int scanType = 2; //cross correlation
+        //private readonly int scanType = 3; //noise pre-calculated
+        //private readonly int scanType = 4; //noise noise stratified
+        //private readonly int scanType = 5; //inverse of euclidan distance
+
         private readonly int noiseSampleCount = 10000;
 
         private double tHalf = 0.5;//seconds
@@ -137,7 +143,7 @@ namespace AudioStuff
         public Classifier(Template t, Sonogram s)
         {
             TransferDataFromTemplate(t);
-            Scan(s);
+            Scan(s, this.scanType);
         }//end ScanSonogram 
 
         /// <summary>
@@ -150,7 +156,7 @@ namespace AudioStuff
         {
             Template t = new Template(callID, templateDir);
             TransferDataFromTemplate(t);
-            Scan(s);
+            Scan(s, this.scanType);
         } 
 
 
@@ -207,14 +213,8 @@ namespace AudioStuff
         }
 
 
-        public void Scan(Sonogram s)
+        public void Scan(Sonogram s, int scanType)
         {
-            //const int scanType = 1; //dot product - noise totally random
-            const int scanType = 2; //cross correlation
-            //const int scanType = 3; //noise pre-calculated
-            //const int scanType = 4; //noise noise stratified
-            //const int scanType = 5; //inverse of euclidan distance
-
             ExchangeData(s);
             this.results = s.Results;
             double[,] sonogram = s.Matrix;
@@ -275,15 +275,14 @@ namespace AudioStuff
 
             this.fBinWidth     = this.maxFreq/(double)sHeight;
             this.midScanBin    = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.topScanBin    = this.midScanBin - (tHeight/2);
-            this.bottomScanBin = this.topScanBin + tHeight - 1;
+            this.bottomScanBin = this.midScanBin - (tHeight / 2);
+            this.topScanBin    = this.topScanBin + tHeight - 1;
 
             int cellCount = tWidth * tHeight;
             int halfWidth = tWidth / 2;
 
             //normalise template to [-1,+1]
             this.Template = DataTools.normalise(this.Template, -1.0, 1.0);
-            //this.Template = DataTools.normalise_zeroEdge(this.Template, -1.0, 1.0); //this did not work
             //DataTools.writeMatrix(this.Template);
 
 
@@ -295,7 +294,8 @@ namespace AudioStuff
                 for (int i = 0; i < tWidth; i++)
                 {
                     for (int j = 0; j < tHeight; j++)
-                    {  sum += (normSonogram[x+i,this.topScanBin+j] * template[i,j]);
+                    {
+                        sum += (normSonogram[x + i, this.bottomScanBin + j] * template[i, j]);
                     }
                 }
                 scores[x + halfWidth] = sum / cellCount; //place score in middle of template
@@ -322,8 +322,8 @@ namespace AudioStuff
 
             this.fBinWidth = this.maxFreq / (double)sHeight;
             this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.topScanBin = this.midScanBin - (tHeight / 2);
-            this.bottomScanBin = this.topScanBin + tHeight - 1;
+            this.bottomScanBin = this.midScanBin - (tHeight / 2);
+            this.topScanBin    = this.topScanBin + tHeight - 1;
 
             int cellCount = tWidth * tHeight;
             int halfWidth = tWidth / 2;
@@ -340,7 +340,7 @@ namespace AudioStuff
                 {
                     for (int j = 0; j < tHeight; j++)
                     {
-                        double v = normSonogram[x + i, this.topScanBin + j] - template[i, j];
+                        double v = normSonogram[x + i, this.bottomScanBin + j] - template[i, j];
                         sum += (v*v);
                     }
                 }
@@ -368,22 +368,23 @@ namespace AudioStuff
 
             this.fBinWidth = this.maxFreq / (double)sHeight;
             this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.topScanBin = this.midScanBin - (tHeight / 2);
-            this.bottomScanBin = this.topScanBin + tHeight - 1;
+            this.bottomScanBin = this.midScanBin - (tHeight / 2);
+            this.topScanBin = this.topScanBin + tHeight - 1;
 
             int cellCount = tWidth * tHeight;
             int halfWidth = tWidth / 2;
 
             //normalise template to difference from mean
             this.Template = DataTools.DiffFromMean(this.Template);
+            //normSonogram = DataTools.DiffFromMean(normSonogram);  //############################################
 
             double[] scores = new double[sWidth];
             double avScore = 0.0;
             for (int r = 0; r < (sWidth - tWidth); r++)//scan over sonogram
             {
-                Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tHeight)+"  topScanBin="+topScanBin);
-                double[,] subMatrix = DataTools.Submatrix(normSonogram, r, bottomScanBin, r + tHeight, topScanBin);
-                subMatrix = DataTools.DiffFromMean(subMatrix);
+                //Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tWidth)+"  topScanBin="+topScanBin);
+                double[,] subMatrix = DataTools.Submatrix(normSonogram, r, bottomScanBin, r + tWidth, topScanBin);
+                subMatrix = DataTools.DiffFromMean(subMatrix);  //############################################
                 scores[r + halfWidth] = DataTools.DotProduct(this.Template, subMatrix); //place score in middle of template
                 avScore += scores[r + halfWidth];
                 //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
@@ -408,7 +409,7 @@ namespace AudioStuff
             //find peaks and process them
             bool[] peaks = DataTools.GetPeaks(zscores);
             peaks = RemoveSubThresholdPeaks(zscores, peaks, zScoreThreshold);
-            peaks = AdjustPeaks(callID, peaks); //use prior knowledge
+            //peaks = AdjustPeaks(callID, peaks); //use prior knowledge
 
             int[] hitPeriods = GetHitPeriods(peaks, 200);
 
@@ -617,7 +618,7 @@ namespace AudioStuff
                     for (int n = 0; n < sampleCount; n++)
                     {
                         double[,] noise = GetNoise(normSonogram);
-                        noiseScores[n] = scoreMatch_Difference(template, noise);
+                        noiseScores[n] = scoreMatch_CrossCorrelation(template, noise);
                     }
                     break;
 
@@ -783,7 +784,7 @@ namespace AudioStuff
             return 1 / Math.Sqrt(sum);
         } //end scoreMatch_Euclidian()
 
-        public double scoreMatch_Difference(double[,] template, double[,] signal)
+        public double scoreMatch_CrossCorrelation(double[,] template, double[,] signal)
         {
             int tWidth = template.GetLength(0);
             int tHeight = template.GetLength(1);
@@ -798,13 +799,13 @@ namespace AudioStuff
             {
                 for (int j = 0; j < tHeight; j++)
                 {
-                    sum -= Math.Abs(template[i, j] - signal[i, j]);
+                    sum += template[i, j] * signal[i, j];
                 }
             }
-            int cellCount = tWidth * tHeight;
+            //int cellCount = tWidth * tHeight;
 
-            return sum / cellCount;
-        } //end scoreMatch_Difference()
+            return sum;
+        } //end scoreMatch_CrossCorrelation()
 
 
 
