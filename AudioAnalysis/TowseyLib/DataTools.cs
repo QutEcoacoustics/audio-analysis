@@ -544,6 +544,30 @@ namespace TowseyLib
   }
 
 
+  /// <summary>
+  /// Subtrace matrix m2 from matrix m1
+  /// </summary>
+  /// <param name="m1"></param>
+  /// <param name="m2"></param>
+  /// <returns></returns>
+  public static double[,] SubtractMatrices(double[,] m1, double[,] m2)
+  {
+      int m1Rows = m1.GetLength(0);
+      int m1Cols = m1.GetLength(1);
+      int m2Rows = m2.GetLength(0);
+      int m2Cols = m2.GetLength(1);
+      if (!(m1Rows == m2Rows)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+      if (!(m1Cols == m2Cols)) throw new Exception("ERROR! Matrix dims must be same for matrix subtraction.");
+
+      double[,] newMatrix = (double[,])m1.Clone();
+      for (int i = 0; i < m1Rows; i++)
+          for (int j = 0; j < m1Cols; j++)
+          {
+              newMatrix[i, j] = m1[i, j] - m2[i, j];
+          }
+      return newMatrix;
+  }
+
 
 
     /// <summary>

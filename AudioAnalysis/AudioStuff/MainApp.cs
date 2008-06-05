@@ -60,12 +60,12 @@ namespace AudioStuff
 
 
             //Mode userMode = Mode.ArtificialSignal;
-            //Mode userMode = Mode.MakeSonogram;
+            Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
             //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -150,16 +150,19 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
+                        double[,] m = s.Matrix;
                         //s.SaveImage(null);
                         //double[,] m = ImageTools.Blur(s.Matrix, 41, 41);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.LowPass);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HighPass2);
-                        //m = ImageTools.Subtract(m, s.Matrix);
+                        //m = DataTools.Subtract(m, s.Matrix);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HorizontalLine5);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
-                        double[,] m = ImageTools.Texture2(s.Matrix, 7);
-                        m = ImageTools.Blur(m, 7, 7);
+                        //m = ImageTools.Signal2NoiseRatio_Local(m, 21);
+                        //m = ImageTools.SubtractNoise(m);
+                        //m = ImageTools.Shapes_lines(m);
+                        //m = ImageTools.SubtractAverage_BandWise(m);
                         s.SaveImage(m, null);
                         //s.MelFreqSonogram(melBandCount);
                         //s.SaveMelImage(null);
@@ -291,12 +294,11 @@ namespace AudioStuff
 
                         Template t = new Template(callID, templateDir);
                         Classifier cl = new Classifier(t, s);
-                        //s.SaveImage(cl.Zscores);
-                        s.SaveMelImage(cl.Zscores);
+                        s.SaveImage(cl.Zscores);
+                        //s.SaveMelImage(cl.Zscores);
                         s.CalculateIndices();
                         s.WriteStatistics();
                         cl.WriteResults();
-                        Console.WriteLine("Number of template hits=" + cl.Hits);
                     }
                     catch (Exception e)
                     {
