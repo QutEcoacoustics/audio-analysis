@@ -484,6 +484,17 @@ namespace AudioStuff
                     //newPeaks = RemoveIsolatedPeaks(peaks, period, minPeakCount);
                     break;
 
+                case 4: //single CICADA CHIRP template
+                    results.Hits = CountPeaks(peaks);
+                    int[] call4Periods = GetHitPeriods(peaks, 200);
+                    results.TemplatePeriodScore = call4Periods[5] + call4Periods[6] + call4Periods[7];
+                    period = 6; //modal period for this cicada
+                    int[] cicada2Scores = GetPeriodScores(peaks, period);
+                    DataTools.getMaxIndex(cicada2Scores, out index);
+                    results.MaxFilteredScore = cicada2Scores[index];
+                    results.MaxFilteredScoreLocation = (double)index * this.nonOverlapDuration;
+                    break;
+
                 default: //return the original array
                     break;
             }// end switch

@@ -64,8 +64,8 @@ namespace AudioStuff
             //Mode userMode = Mode.MakeSonogramGradient;
             //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
-            //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.CreateTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -82,11 +82,11 @@ namespace AudioStuff
             //int y1 = 115; int x1 = 545;
             //int y2 = 415; int x2 = 552;
 
-            int callID = 2;
-            string callName = "Lewin's Rail Kek-kek";
-            string callComment = "Template consists of a single KEK!";
-            int x1 = 662; int y1 = 284; //image coordinates
-            int x2 = 668; int y2 = 431;
+            //int callID = 2;
+            //string callName = "Lewin's Rail Kek-kek";
+            //string callComment = "Template consists of a single KEK!";
+            //int x1 = 662; int y1 = 284; //image coordinates
+            //int x2 = 668; int y2 = 431;
 
             //int callID = 3;
             //string callName = "Lewin's Rail Kek-kek";
@@ -94,11 +94,11 @@ namespace AudioStuff
             //int x1 = 663; int y1 = 284; //image coordinates
             //int x2 = 675; int y2 = 431;
 
-            //int callID = 4;
-            //string callName = "TEST";
-            //string callComment = "Template is a TEST KEK!";
-            //int x1 = 662; int y1 = 284; //image coordinates
-            //int x2 = 668; int y2 = 431;
+            int callID = 4;
+            string callName = "Cicada";
+            string callComment = "2 Broadband Chirps Repeated @ 5Hz";
+            int y1 = 115; int x1 = 545;
+            int y2 = 415; int x2 = 560;
 
             //int callID = 5;
             //string callName = "Cicada";
@@ -242,10 +242,12 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
+                        Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
                         //s.CalculateIndices();
                         //s.WriteStatistics();
 
+                        Console.WriteLine("CREATING TEMPLATE");
                         Template t = new Template(callID, callName, callComment, templateDir);
                         t.SetWavFileName(wavFileName);
                         t.ExtractTemplateFromImage2File(s, x1, y1, x2, y2);
