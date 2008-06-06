@@ -40,7 +40,7 @@ namespace AudioStuff
             //training file
             string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
-            //string wavFileName = "BAC2_20071011-182040";  //repeated cicada chirp 5 hz bursts of white noise
+            //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
@@ -60,12 +60,12 @@ namespace AudioStuff
 
 
             //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
             //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -77,10 +77,10 @@ namespace AudioStuff
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
             //int callID = 1;
-            //string callName = "cricket_8100Hz";
-            //string callComment = "Repeated cricket chirp centred on 8100Hz";
-            //int y1 = 115; int x1 = 302;
-            //int y2 = 155; int x2 = 332;
+            //string callName = "Cicada";
+            //string callComment = "Broadband Chirp Repeated @ 5Hz";
+            //int y1 = 115; int x1 = 545;
+            //int y2 = 415; int x2 = 552;
 
             int callID = 2;
             string callName = "Lewin's Rail Kek-kek";
@@ -243,8 +243,8 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        s.CalculateIndices();
-                        s.WriteStatistics();
+                        //s.CalculateIndices();
+                        //s.WriteStatistics();
 
                         Template t = new Template(callID, callName, callComment, templateDir);
                         t.SetWavFileName(wavFileName);
@@ -296,8 +296,8 @@ namespace AudioStuff
                         Classifier cl = new Classifier(t, s);
                         s.SaveImage(cl.Zscores);
                         //s.SaveMelImage(cl.Zscores);
-                        s.CalculateIndices();
-                        s.WriteStatistics();
+                        //s.CalculateIndices();
+                        //s.WriteStatistics();
                         cl.WriteResults();
                     }
                     catch (Exception e)

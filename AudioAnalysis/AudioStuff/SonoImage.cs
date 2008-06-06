@@ -398,7 +398,7 @@ namespace AudioStuff
             double period = this.recordingLength/width;
 
             for (int x = 0; x < width; x++) ba[x] = (byte)230; //set background pale gray colour
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < width-1; x++)
             {
                 double elapsedTime = x * this.recordingLength / (double)width;
                 double mod1sec = elapsedTime % 1.0000;
