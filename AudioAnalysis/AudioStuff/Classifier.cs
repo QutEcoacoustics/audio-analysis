@@ -386,7 +386,8 @@ namespace AudioStuff
                 //Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tWidth)+"  topScanBin="+topScanBin);
                 double[,] subMatrix = DataTools.Submatrix(normSonogram, r, bottomScanBin, r + tWidth, topScanBin);
                 //subMatrix = DataTools.DiffFromMean(subMatrix);  //############################################
-                scores[r + halfWidth] = DataTools.DotProduct(this.Template, subMatrix); //place score in middle of template
+                double ccc = DataTools.DotProduct(this.Template, subMatrix);  //cross-correlation coeff
+                scores[r + halfWidth] = ccc / cellCount; //place score in middle of template
                 avScore += scores[r + halfWidth];
                 //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
             }//end of loop over sonogram
@@ -620,7 +621,7 @@ namespace AudioStuff
         public void NoiseResponse(double[,] normSonogram, out double av, out double sd, int sampleCount, int type)
         {   
             double[] noiseScores = new double[sampleCount];
-            if (sampleCount == normSonogram.GetLength(0)) type = 3;
+            //if (sampleCount == normSonogram.GetLength(0)) type = 3;
 
             switch (type)
             {
@@ -633,10 +634,11 @@ namespace AudioStuff
                     }
                     break;
 
-                case 2:
+                case 2:  //cross-correlation
                     for (int n = 0; n < sampleCount; n++)
                     {
                         double[,] noise = GetNoise(normSonogram);
+                        //double[,] noise = GetNoise_stratified(normSonogram);
                         noiseScores[n] = scoreMatch_CrossCorrelation(template, noise);
                     }
                     break;
@@ -657,17 +659,9 @@ namespace AudioStuff
                     }
                     break;
 
-                case 5: //score as inverse of euclidian  distance
-                    //sample score COUNT times. 
-                    for (int n = 0; n < sampleCount; n++)
-                    {
-                        double[,] noise = GetNoise(normSonogram);
-                        noiseScores[n] = scoreMatch_Euclidian(template, noise);
-                    }
-                    break;
 
                 default:
-                    throw new System.Exception("\nWARNING: INVALID MODE!");
+                    throw new System.Exception("\nWARNING: INVALID NOISE ESTIMATAION MODE!");
             }//end case statement
 
             NormalDist.AverageAndSD(noiseScores, out av, out sd);
@@ -821,9 +815,9 @@ namespace AudioStuff
                     sum += template[i, j] * signal[i, j];
                 }
             }
-            //int cellCount = tWidth * tHeight;
-
-            return sum;
+            int cellCount = tWidth * tHeight;
+            //return sum;
+            return sum/cellCount;
         } //end scoreMatch_CrossCorrelation()
 
 

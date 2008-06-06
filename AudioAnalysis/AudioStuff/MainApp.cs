@@ -38,8 +38,8 @@ namespace AudioStuff
             const string wavFExt = WavReader.wavFExt;
 
             //training file
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -82,11 +82,11 @@ namespace AudioStuff
             //int y1 = 115; int x1 = 545;
             //int y2 = 415; int x2 = 552;
 
-            //int callID = 2;
-            //string callName = "Lewin's Rail Kek-kek";
-            //string callComment = "Template consists of a single KEK!";
-            //int x1 = 662; int y1 = 284; //image coordinates
-            //int x2 = 668; int y2 = 431;
+            int callID = 2;
+            string callName = "Lewin's Rail Kek-kek";
+            string callComment = "Template consists of a single KEK!";
+            int x1 = 662; int y1 = 284; //image coordinates
+            int x2 = 668; int y2 = 431;
 
             //int callID = 3;
             //string callName = "Lewin's Rail Kek-kek";
@@ -94,11 +94,11 @@ namespace AudioStuff
             //int x1 = 663; int y1 = 284; //image coordinates
             //int x2 = 675; int y2 = 431;
 
-            int callID = 4;
-            string callName = "Cicada";
-            string callComment = "2 Broadband Chirps Repeated @ 5Hz";
-            int y1 = 115; int x1 = 545;
-            int y2 = 415; int x2 = 560;
+            //int callID = 4;
+            //string callName = "Cicada";
+            //string callComment = "2 Broadband Chirps Repeated @ 5Hz";
+            //int y1 = 115; int x1 = 545;
+            //int y2 = 415; int x2 = 560;
 
             //int callID = 5;
             //string callName = "Cicada";
