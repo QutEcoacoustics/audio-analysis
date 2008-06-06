@@ -64,8 +64,8 @@ namespace AudioStuff
             //Mode userMode = Mode.MakeSonogramGradient;
             //Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
-            Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.CreateTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -300,7 +300,11 @@ namespace AudioStuff
                         //s.SaveMelImage(cl.Zscores);
                         //s.CalculateIndices();
                         //s.WriteStatistics();
-                        cl.WriteResults();
+                        //cl.WriteResults();
+                        Console.WriteLine("# Template Hits =" + cl.Results.Hits);
+                        Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
+                        Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
+                        Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation+" sec");
                     }
                     catch (Exception e)
                     {
@@ -332,6 +336,10 @@ namespace AudioStuff
                                     s.SaveImage(opDirName, cl.Zscores);
                                     s.CalculateIndices();
                                     array.Add(cl.OneLineResult(count));
+                                    Console.WriteLine("# Template Hits =" + cl.Results.Hits);
+                                    Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
+                                    Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
+                                    Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
                                 }
                                 catch (Exception e)
                                 {

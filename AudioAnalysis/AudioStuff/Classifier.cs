@@ -101,11 +101,11 @@ namespace AudioStuff
         private double zScoreThreshold;
 
         //TEMPLATE RESULTS 
-        private Results  results;
+        private Results results =  new Results(); //set up a results file
+        public Results Results { get { return results; } set { results = value; } }
         public double NoiseAv { set; get; }
         public double NoiseSd { set; get; }
         public double[] Zscores { get { return results.Zscores; } }
-//        public int Hits { get { return results.Hits; } }
 
         //STATISTICS
         public double MinGrad { get { return results.MinGrad; } }
@@ -216,7 +216,7 @@ namespace AudioStuff
         public void Scan(Sonogram s, int scanType)
         {
             ExchangeData(s);
-            this.results = s.Results;
+            //this.results = s.Results;
             double[,] sonogram = s.Matrix;
 
 
@@ -452,18 +452,18 @@ namespace AudioStuff
                 case 1: //single CICADA CHIRP template
                     results.Hits = CountPeaks(peaks);
                     int[] call1Periods = GetHitPeriods(peaks, 200);
-                    results.TemplatePeriodScore = call1Periods[5] + call1Periods[6] + call1Periods[7];
+                    results.PeriodicHits = call1Periods[5] + call1Periods[6] + call1Periods[7];
                     int period = 6; //modal period for this cicada
                     int[] cicadaScores = GetPeriodScores(peaks, period);
                     DataTools.getMaxIndex(cicadaScores, out index);
-                    results.MaxFilteredScore = cicadaScores[index];
-                    results.MaxFilteredScoreLocation = (double)index * this.nonOverlapDuration;
+                    results.BestCallScore = cicadaScores[index];
+                    results.BestScoreLocation = (double)index * this.nonOverlapDuration;
                     break;
 
                 case 2: //single Kek template
                     results.Hits = CountPeaks(peaks);
                     int[] call2Periods = GetHitPeriods(peaks, 200);
-                    results.TemplatePeriodScore = call2Periods[5] + call2Periods[6] + call2Periods[7];
+                    results.PeriodicHits = call2Periods[5] + call2Periods[6] + call2Periods[7];
                     period = 6; //modal period for kek-keks
                     int[] kkScores = GetPeriodScores(peaks, period);
                     
@@ -474,8 +474,8 @@ namespace AudioStuff
                     //double[] binary = DataTools.Bool2Binary(peaks);
                     //double[] fscores = DSP.Filter_DecayingSinusoid(binary, this.spectraPerSecond, tHalf, period, filterDuration);
                     DataTools.getMaxIndex(kkScores, out index);
-                    results.MaxFilteredScore = kkScores[index];
-                    results.MaxFilteredScoreLocation = (double)index * this.nonOverlapDuration;
+                    results.BestCallScore = kkScores[index];
+                    results.BestScoreLocation = (double)index * this.nonOverlapDuration;
                     break;
 
                 case 3: // two kek periodicity = 6-7 frames
@@ -487,12 +487,12 @@ namespace AudioStuff
                 case 4: //single CICADA CHIRP template
                     results.Hits = CountPeaks(peaks);
                     int[] call4Periods = GetHitPeriods(peaks, 200);
-                    results.TemplatePeriodScore = call4Periods[5] + call4Periods[6] + call4Periods[7];
+                    results.PeriodicHits = call4Periods[5] + call4Periods[6] + call4Periods[7];
                     period = 6; //modal period for this cicada
                     int[] cicada2Scores = GetPeriodScores(peaks, period);
                     DataTools.getMaxIndex(cicada2Scores, out index);
-                    results.MaxFilteredScore = cicada2Scores[index];
-                    results.MaxFilteredScoreLocation = (double)index * this.nonOverlapDuration;
+                    results.BestCallScore = cicada2Scores[index];
+                    results.BestScoreLocation = (double)index * this.nonOverlapDuration;
                     break;
 
                 default: //return the original array
@@ -840,8 +840,8 @@ namespace AudioStuff
             DataTools.WriteMinMaxOfArray(" Min/max of scores", this.results.Scores);
             DataTools.WriteMinMaxOfArray(" Min/max of z-scores", this.results.Zscores);
             Console.WriteLine(" Number of template hits =" + this.results.Hits);
-            Console.WriteLine(" Template Period Score =" + this.results.TemplatePeriodScore);
-            Console.WriteLine(" Maximum Period score at " /*+ this.results.MaxFilteredScore.ToString("F1") + " at "*/ + this.results.MaxFilteredScoreLocation.ToString("F1") + " s");
+            Console.WriteLine(" Template Period Score =" + this.results.BestCallScore);
+            Console.WriteLine(" Maximum Period score at " /*+ this.results.MaxFilteredScore.ToString("F1") + " at "*/ + this.results.BestScoreLocation.ToString("F1") + " s");
         }
 
 
@@ -875,8 +875,8 @@ namespace AudioStuff
             sb.Append(this.results.EventEntropy.ToString("F4") + spacer); //Event Entropy
 
             sb.Append(this.results.Hits.ToString("D3") + spacer); //Hits
-            sb.Append(this.results.MaxFilteredScore.ToString("F4") + spacer);
-            sb.Append(this.results.MaxFilteredScoreLocation.ToString("F4") + spacer);
+            sb.Append(this.results.BestCallScore.ToString("F4") + spacer);
+            sb.Append(this.results.BestScoreLocation.ToString("F4") + spacer);
             return sb.ToString();
         }
 
@@ -922,9 +922,9 @@ namespace AudioStuff
         public double EventEntropy { get; set; }
         public double[] ActivityHisto { get; set; }
         public int Hits { get; set; }
-        public int TemplatePeriodScore { get; set; }
-        public double MaxFilteredScore { get; set; }
-        public double MaxFilteredScoreLocation { get; set; }
+        public int PeriodicHits { get; set; }
+        public int BestCallScore { get; set; }
+        public double BestScoreLocation { get; set; } //in seconds from beginning of recording
 
         public void WritePowerHisto()
         {
