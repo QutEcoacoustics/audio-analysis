@@ -152,6 +152,11 @@ namespace AudioStuff
             this.dataFName = callStemName + "_" + callID + ".txt";
             this.matrixFName = templateStemName + "_" + callID + ".txt";
             this.imageFName = templateStemName + "_" + callID + Template.bmpFileExt;
+
+            int status = ReadTemplateConfigFile();
+            if (status != 0) throw new System.Exception("Failed to read call info file. Exist status = " + status);
+            status = ReadTemplateFile();
+            if (status != 0) throw new System.Exception("Failed to read call matrix file. Exist status = " + status);
         }
 
         public void SetWavFileName(string wavFileName)
@@ -195,6 +200,18 @@ namespace AudioStuff
 
         }
 
+
+
+
+        public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
+        {
+            ExtractTemplateUsingImageCoordinates(s, imageCoords);
+            FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
+        }
+
+
+
+
         /// <summary>
         /// Extracts a template (submatrix) from the passed sonogram but 
         /// using coordinates that the user would have obtained from the BMP image
@@ -224,12 +241,8 @@ namespace AudioStuff
             DataTools.MinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
         }//end ExtractTemplate
 
-        public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
-        {
-            ExtractTemplateUsingImageCoordinates(s, imageCoords);
-            FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
-        }
 
+        
         public void WriteTemplateConfigFile()
         {
             //write the call data to a file
@@ -288,14 +301,14 @@ namespace AudioStuff
             data.Add(" TEMPLATE_MIN_POWER=" + this.minTemplatePower.ToString("F3"));
             data.Add(" TEMPLATE_MAX_POWER=" + this.maxTemplatePower.ToString("F3"));
 
-            data.Add("#");
-            data.Add("#INFO ABOUT SCORE PROCESSING");
-            data.Add("#NIGHT NOISE RESPONSE");
-            data.Add("NOISE_AV=-0.03421");
-            data.Add("NOISE_SD=0.00043");
-            data.Add("#RAIN NOISE RESPONSE");
-            data.Add("#NOISE_AV=-0.02976");
-            data.Add("#NOISE_SD=0.00042");
+            //data.Add("#");
+            //data.Add("#INFO ABOUT SCORE PROCESSING");
+            //data.Add("#NIGHT NOISE RESPONSE");
+            //data.Add("NOISE_AV=-0.03421");
+            //data.Add("NOISE_SD=0.00043");
+            //data.Add("#RAIN NOISE RESPONSE");
+            //data.Add("#NOISE_AV=-0.02976");
+            //data.Add("#NOISE_SD=0.00042");
 
 
 

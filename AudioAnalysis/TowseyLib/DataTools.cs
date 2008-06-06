@@ -330,8 +330,16 @@ namespace TowseyLib
 
 
 //=============================================================================
+    public static double[] Bool2Binary(bool[] boolArray)
+    {
+        int L = boolArray.Length;
+        double[] binary = new double[L];
+        for (int i = 0; i < L; i++) // iterate through boolArray
+            if (boolArray[i]) binary[i] = 1.0;
+        return binary;
+    }
 
-
+//=============================================================================
 
   static public double[] counts2RF(int[] counts)
   { int L = counts.Length;
