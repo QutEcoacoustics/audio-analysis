@@ -152,11 +152,7 @@ namespace AudioStuff
             this.dataFName = callStemName + "_" + callID + ".txt";
             this.matrixFName = templateStemName + "_" + callID + ".txt";
             this.imageFName = templateStemName + "_" + callID + Template.bmpFileExt;
-
-            int status = ReadTemplateConfigFile();
-            if (status != 0) throw new System.Exception("Failed to read call info file. Exist status = " + status);
-            status = ReadTemplateFile();
-            if (status != 0) throw new System.Exception("Failed to read call matrix file. Exist status = " + status);
+            this.templateState = new TemplateConfig();
         }
 
         public void SetWavFileName(string wavFileName)
@@ -172,6 +168,21 @@ namespace AudioStuff
         {
             this.sonogramState = s.State;
             //this.templateState = s.State;
+
+            this.TemplateState.AudioDuration = s.State.AudioDuration;
+            this.templateState.MaxFreq = s.State.MaxFreq;
+            this.templateState.SampleRate = s.State.SampleRate;
+            this.templateState.WindowSize  = s.State.WindowSize;
+            this.templateState.WindowOverlap  = s.State.WindowOverlap;
+            this.templateState.WindowFncName  = s.State.WindowFncName;
+            this.templateState.SampleRate  = s.State.SampleRate;
+            this.templateState.SampleCount  = s.State.SampleCount;
+            this.templateState.MaxFreq  = s.State.MaxFreq;
+            this.templateState.WindowDuration  = s.State.WindowDuration;
+            this.templateState.NonOverlapDuration  = s.State.NonOverlapDuration;
+            this.templateState.SpectrumCount  = s.State.SpectrumCount;
+            this.templateState.SpectraPerSecond  = s.State.SpectraPerSecond;
+            this.templateState.FreqBinCount  = s.State.FreqBinCount;
 
             this.timeBin = this.sonogramState.AudioDuration / (double)this.sonogramState.SpectrumCount;
             this.spectraPerSecond = this.sonogramState.SpectrumCount / (double)this.sonogramState.AudioDuration;
@@ -199,16 +210,6 @@ namespace AudioStuff
             this.midTemplateFreq = minTemplateFreq + ((maxTemplateFreq - minTemplateFreq) / 2); //Hz
 
         }
-
-
-
-
-        public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
-        {
-            ExtractTemplateUsingImageCoordinates(s, imageCoords);
-            FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
-        }
-
 
 
 
@@ -240,6 +241,14 @@ namespace AudioStuff
             this.Matrix = DataTools.Submatrix(sMatrix, this.t1, this.bin1, this.t2, this.bin2);
             DataTools.MinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
         }//end ExtractTemplate
+
+
+
+        public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
+        {
+            ExtractTemplateUsingImageCoordinates(s, imageCoords);
+            FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
+        }
 
 
         
