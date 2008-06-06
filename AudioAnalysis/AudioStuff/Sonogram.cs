@@ -34,11 +34,9 @@ namespace AudioStuff
 
 
         //  RESULTS variables
-        private Results results =  new Results(); //set up a results file
-        public Results Results { get { return results; } set { results = value; } }
-        public double NoiseAv { get { return results.NoiseAv; } }
-        public double NoiseSD { get { return results.NoiseSd; } }
-        public double[] ActivityHisto { get { return results.ActivityHisto; } }
+        //public double NoiseAv { get { return results.NoiseAv; } }
+        //public double NoiseSD { get { return results.NoiseSd; } }
+        //public double[] ActivityHisto { get { return results.ActivityHisto; } }
 
 
         //****************************************************************************************************
@@ -277,8 +275,8 @@ namespace AudioStuff
                 }
             }
 
-            results.MinGrad = min;
-            results.MaxGrad = max;
+            //results.MinGrad = min;
+            //results.MaxGrad = max;
 
             //for (int x = 0; x < width; x++) this.gradM[height - 1, x] = 0.5; //patch in last time step with medium gradient
             this.state.MinCut = 0.0;
@@ -514,10 +512,9 @@ namespace AudioStuff
         public void CalculateIndices()
         {
             Gradient();
-            results.EventHisto   = CalculateEventHisto(); //calculate statistics
-            results.PowerHisto   = CalculatePowerHisto();
-            //results.PowerEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(results.PowerHisto));
-            results.EventEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(results.EventHisto));
+//            this.EventHisto   = CalculateEventHisto(); //calculate statistics
+//            this.PowerHisto   = CalculatePowerHisto();
+//            this.EventEntropy = DataTools.RelativeEntropy(DataTools.NormaliseProbabilites(this.EventHisto));
         }
 
         //normalise and compress/bound the values
@@ -549,10 +546,10 @@ namespace AudioStuff
             Console.WriteLine("\nSONOGRAM STATISTICS");
             Console.WriteLine(" Max power=" + this.State.MaxPower.ToString("F3") + " dB");
             Console.WriteLine(" Avg power=" + this.State.AvgPower.ToString("F3") + " dB");
-            results.WritePowerHisto();
+            //results.WritePowerHisto();
             //results.WritePowerEntropy();
-            results.WriteEventHisto();
-            results.WriteEventEntropy();
+            //results.WriteEventHisto();
+            //results.WriteEventEntropy();
         }
 
 
