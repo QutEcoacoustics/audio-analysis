@@ -16,7 +16,7 @@ namespace AudioStuff
     /// <summary>
     /// this class scans a sonogram using a template.
     /// </summary>
-    class Classifier
+    public class Classifier
     {
         //private readonly int scanType = 1; //dot product - noise totally random
         private readonly int scanType = 2; //cross correlation

@@ -55,9 +55,12 @@ namespace AudioStuff
             state.ReadConfig(cfg);
             state.WavFileDir = wav.WavFileDir;
             state.WavFName = wav.WavFileName;
-            state.WavFName = state.WavFName.Substring(0, state.WavFName.Length - 4);
             state.SignalMax = wav.GetMaxValue();
-            state.SetDateAndTime(state.WavFName);
+            if (wav.WavFileName != null)
+            {
+                state.WavFName = state.WavFName.Substring(0, state.WavFName.Length - 4);
+                state.SetDateAndTime(state.WavFName);
+            }
             if (wav.GetMaxValue() == 0.0) throw new ArgumentException("Wav file has zero signal");
             Make(wav);
             if(state.Verbosity!=0) WriteInfo();
