@@ -38,8 +38,8 @@ namespace AudioStuff
             const string wavFExt = WavReader.wavFExt;
 
             //training file
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -62,10 +62,10 @@ namespace AudioStuff
             //Mode userMode = Mode.ArtificialSignal;
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.MakeSonogramGradient;
-            //Mode userMode = Mode.MakeSonogramShapes;
+            Mode userMode = Mode.MakeSonogramShapes;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
@@ -152,17 +152,17 @@ namespace AudioStuff
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
                         //s.SaveImage(null);
-                        //double[,] m = ImageTools.Blur(s.Matrix, 41, 41);
+                        //m = ImageTools.Blur(m, 3, 3);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.LowPass);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HighPass2);
                         //m = DataTools.Subtract(m, s.Matrix);
-                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HorizontalLine5);
+                        //m = ImageTools.Convolve(m, Kernal.HorizontalLine5);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
                         //m = ImageTools.Signal2NoiseRatio_Local(m, 21);
                         //m = ImageTools.SubtractNoise(m);
-                        //m = ImageTools.Shapes_lines(m);
-                        //m = ImageTools.SubtractAverage_BandWise(m);
+                        m = ImageTools.TrimPercentiles(m);
+                        m = ImageTools.Shapes_lines(m);
                         s.SaveImage(m, null);
                         //s.MelFreqSonogram(melBandCount);
                         //s.SaveMelImage(null);
@@ -199,15 +199,19 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        //double[,] m = ImageTools.Texture2(s.Matrix, 7);
+                        double[,] m = s.Matrix;
+                        m = DataTools.normalise(m);
                         //m = ImageTools.Invert(m);
                         //int bandCount = 20;
                         //m = ImageTools.PointProcess(m, bandCount, 1); //clip
-                        double[,] m1 = ImageTools.Shapes_lines(s.Matrix);
-                        double[,] m2 = ImageTools.Shapes1(s.Matrix);
-                        double[,] m3 = ImageTools.Shapes2(s.Matrix);
-                        double[,] m = DataTools.TwoOfThree(m1,m2,m3);
+                        //double[,] m1 = ImageTools.Shapes_lines(s.Matrix);
+                        //double[,] m2 = ImageTools.Shapes1(s.Matrix);
+                        //double[,] m3 = ImageTools.Shapes2(s.Matrix);
+                        //double[,] m = DataTools.TwoOfThree(m1,m2,m3);
                         //ArrayList shapes = Shape.Shapes_Detect(s.ShapeM);
+                        //m = ImageTools.PointProcess(m, bandCount, 1);
+                        m = ImageTools.GridFilter(m, Kernal.Grid2);
+
                         s.SaveImage(m, null);
                     }
                     catch (Exception e)
