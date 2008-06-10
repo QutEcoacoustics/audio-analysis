@@ -7,7 +7,9 @@ namespace TowseyLib
     public enum Kernal
     {
         LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5, 
-                         DiagLine1, DiagLine2, Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS }
+                            DiagLine1, DiagLine2,
+                            Grid2, Grid3, Grid4, //grid filters
+                            Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS }
 
     
     public class ImageTools
@@ -31,7 +33,53 @@ namespace TowseyLib
         static double[,] Laplace3Kernal = { { 1.0, -2.0, 1.0 }, { -2.0, 4.0, -2.0 }, { 1.0, -2.0, 1.0 } };
         static double[,] Laplace4Kernal = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } }; //subtracts original
 
+        static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, 
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}};
 
+        static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, 
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+                                            { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}};
+
+        static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, 
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+                                            { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}};
+
+        //static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, 
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}};
+
+        //static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, 
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}};
+
+        //static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, 
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
+        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}};
 
         
         public static double[,] Convolve(double[,] matrix, Kernal name)
@@ -135,6 +183,135 @@ namespace TowseyLib
                 }
             return newMatrix;
         }//end method Convolve()
+
+
+
+        public static double[,] GridFilter(double[,] matrix, Kernal name)
+        {
+            double[,] kernal;
+            int noiseSampleCount = 10000;
+            double thresholdZScore = 3.1;
+
+            //SWITCH KERNALS
+            switch (name)
+            {
+                case Kernal.Grid2: kernal = grid2;
+                    Console.WriteLine("Applied Grid Kernal 2");
+                    break;
+                case Kernal.Grid3: kernal = grid3;
+                    Console.WriteLine("Applied Grid Kernal 2");
+                    break;
+                case Kernal.Grid4: kernal = grid4;
+                    Console.WriteLine("Applied Grid Kernal 2");
+                    break;
+
+                default:
+                    throw new System.Exception("\nWARNING: INVALID MODE!");
+            }//end of switch statement
+
+
+            int mRows = matrix.GetLength(0);
+            int mCols = matrix.GetLength(1);
+            int kRows = kernal.GetLength(0);
+            int kCols = kernal.GetLength(1);
+            int rNH = kRows / 2;
+            int cNH = kCols / 2;
+            if ((rNH <= 0) && (cNH <= 0)) return matrix; //no operation required
+            //int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
+
+            double[] noiseScores = new double[noiseSampleCount];
+            for (int n = 0; n < noiseSampleCount; n++)
+            {
+                double[,] noise = GetNoise(matrix, kRows, kCols);
+                double sum = 0.0;
+                for (int i = 0; i < kRows; i++)
+                {
+                    for (int j = 0; j < kCols; j++)
+                        sum += noise[i, j] * kernal[i, j];
+                }
+                noiseScores[n] = sum / (double)kRows;
+            }
+            double noiseAv; double noiseSd;
+            NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
+            Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
+
+            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+
+            // fix up the edges first
+            //for (int r = 0; r < mRows; r++)
+            //{
+            //    for (int c = 0; c < cNH; c++)
+            //    {
+            //        newMatrix[r, c] = matrix[r, c];
+            //    }
+            //    for (int c = (mCols - cNH); c < mCols; c++)
+            //    {
+            //        newMatrix[r, c] = matrix[r, c];
+            //    }
+            //}
+            // fix up other edges
+            //for (int c = 0; c < mCols; c++)
+            //{
+            //    for (int r = 0; r < rNH; r++)
+            //    {
+            //        newMatrix[r, c] = matrix[r, c];
+            //    }
+            //    for (int r = (mRows - rNH); r < mRows; r++)
+            //    {
+            //        newMatrix[r, c] = matrix[r, c];
+            //    }
+            //}
+
+            //now do bulk of image
+            for (int r = rNH; r < (mRows - rNH); r++)
+                for (int c = cNH; c < (mCols - cNH); c++)
+                {
+                    double sum = 0.0;
+                    for (int y = -rNH; y < rNH; y++)
+                        for (int x = -cNH; x < cNH; x++)
+                        {
+                            sum += (matrix[r + y, c + x] * kernal[rNH + y, cNH + x]);
+                        }
+                    sum /= (double)kRows;
+                    //Console.WriteLine("sum="+sum);
+                    double zScore = (sum - noiseAv) / noiseSd;
+//                    double zScore = sum;
+//                    newMatrix[r, c] = zScore;
+                    //Console.WriteLine("zScore="+zScore);
+
+
+                    if (zScore > thresholdZScore)
+                    {
+                        newMatrix[r, c] = 1.0;
+                        newMatrix[r + 1, c] = 1.0;
+                        newMatrix[r, c + 1] = 1.0;
+                        newMatrix[r + 1, c + 1] = 1.0;
+                        //newMatrix[r, c] = zScore;
+                        //newMatrix[r + 1, c] = zScore;
+                        //newMatrix[r, c + 1] = zScore;
+                        //newMatrix[r + 1, c + 1] = zScore;
+                    }
+                }//end of loops
+            return newMatrix;
+        }//end method GridFilter()
+
+
+        public static double[,] GetNoise(double[,] m, int kRows, int kCols)
+        {
+            int mHeight = m.GetLength(0);
+            int mWidth  = m.GetLength(1);
+
+            double[,] noise = new double[kRows, kCols];
+            RandomNumber rn = new RandomNumber();
+            for (int r = 0; r < kRows; r++)
+            {
+                int randomRow = rn.getInt(mHeight - kRows);
+                int randomCol = rn.getInt(mWidth - kCols);
+                for (int c = 0; c < kCols; c++)
+                    noise[r, c] = m[randomRow, randomCol+c];
+            }
+            return noise;
+        } //end getNoise()
 
 
 
@@ -251,7 +428,37 @@ namespace TowseyLib
         }//end method Blur()
 
 
-        public static void Signal2NoiseThreshold(double[,] M, double shoulder, out double min, out double lowerThreshold, out double upperThreshold)
+        public static void PercentileThresholds(double[,] M, double lowerCut, double upperCut, out double lowerThreshold, out double upperThreshold)
+        {
+            int binCount = 50;
+            int count = M.GetLength(0) * M.GetLength(1);
+            double binWidth;
+            double min; double max;
+            int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
+            powerHisto[binCount - 1] = 0;   //just in case it is the max
+            double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
+            int maxindex;
+            DataTools.getMaxIndex(smooth, out maxindex);
+
+            //calculate threshold for upper percentile
+            int clipCount = (int)(upperCut * count);
+            int i = binCount-1;
+            int sum = 0;
+            while ((sum < clipCount) && (i > 0)) sum += powerHisto[i--];
+            upperThreshold = min + (i * binWidth);
+
+            //calculate threshold for lower percentile
+            clipCount = (int)(lowerCut * count);
+            int j = 0;
+            sum = 0;
+            while ((sum < clipCount) && (j < binCount)) sum += powerHisto[j++];
+            lowerThreshold = min + (j * binWidth);
+
+            //DataTools.writeBarGraph(powerHisto);
+            //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
+        }
+
+        public static void NoiseThresholds(double[,] M, double lowerCut, double upperCut, out double min, out double lowerThreshold, out double upperThreshold)
         {
             int binCount = 50;
             int count = M.GetLength(0) * M.GetLength(1);
@@ -262,18 +469,19 @@ namespace TowseyLib
             double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
             int maxindex;
             DataTools.getMaxIndex(smooth, out maxindex);
-            double value = smooth[maxindex] * shoulder;
+
+            //calculate threshold for upper shoulder
             int i = maxindex;
-            while ((smooth[i] > value) && (i < binCount)) i++;
+            double thresholdCount = smooth[maxindex] * upperCut; //
+            while ((smooth[i] > thresholdCount) && (i < binCount)) i++;
             upperThreshold = min + (i * binWidth);
-            //i = maxindex;
-            //while ((smooth[i] > value)&&(i > 0)) i--;
-            double minBound = 0.1;
-            int minCount = (int)(minBound * count);
-            i = 0;
-            int sum = 0;
-            while ((sum < minCount) && (i < binCount)) sum += powerHisto[i++];
-            lowerThreshold = min + (i * binWidth);
+
+
+            //calculate threshold for lower shoulder
+            int j = maxindex;
+            thresholdCount = smooth[maxindex] * lowerCut; //
+            while ((smooth[j] > thresholdCount) && (j > 0)) j--;
+            lowerThreshold = min + (j * binWidth);
 
             //DataTools.writeBarGraph(powerHisto);
             //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
@@ -386,40 +594,128 @@ namespace TowseyLib
 
         public static double[,] SubtractNoise(double[,] matrix)
         {
-            double shoulder = 0.5;
-            int bandWidth = 64;
-            int halfWidth = bandWidth / 2;
+            //set up parameters for a set of overlapping bands. All numbers should be powers of 2
+            int ncbbc = 16;  //number of columns between band centres
+            int bandWidth = 32;
+            double lowerShoulder = 1.0;
+            double upperShoulder = 0.001;
+
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
+            int halfWidth = bandWidth / 2;
+            int bandCount = width / ncbbc;
+            int bandID = 0;
+            int tmpCol = 0;
 
-            double[,] M = new double[height, width];
-            double[,] subMatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
+            double[,] tmpM = new double[height, ncbbc]; 
+            double[,] outM = new double[height, width];
+            double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
             double min; double lowerThreshold; double upperThreshold;
-            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+            NoiseThresholds(thresholdSubatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
 
             for (int col = 0; col < width; col++)//for all cols
             {
-                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                if (start < 0) start = 0;
-                int stop = col + halfWidth;
-                if (stop >= width) stop = width - 1;
-
-                if ((col % 8 == 0) && (!(col == 0)))
+                bandID = col / ncbbc;  // determine band ID
+                tmpCol = col % ncbbc;  // determine col relative to current band
+                if ((tmpCol==0) && (!(col == 0)))
                 {
-                    subMatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
-                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                    //normalise existing submatrix and transfer to the output matrix, outM
+                    tmpM = DataTools.normalise(tmpM);
+                    for (int y = 0; y < height; y++)
+                        for (int x = 0; x < ncbbc; x++)
+                        {
+                            int startCol = col - ncbbc;
+                            outM[y, startCol+x] = tmpM[y, x];
+                        }
+
+                    //set up a new submatrix for processing
+                    tmpM = new double[height, ncbbc]; 
+
+                    //construct new threshold submatrix to recalculate the current threshold
+                    int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                    if (start < 0) start = 0;
+                    int stop = col + halfWidth;
+                    if (stop >= width) stop = width - 1;
+                    thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                    NoiseThresholds(thresholdSubatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
                 }
 
                 for (int y = 0; y < height; y++)
                 {
-                    M[y, col] = matrix[y, col] - upperThreshold;
-                    if (M[y, col] < upperThreshold) M[y, col] = upperThreshold;
+                    tmpM[y, tmpCol] = matrix[y, col];
+                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
+                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
+                    //outM[y, col] = matrix[y, col] - upperThreshold;
+                    //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
 
                     //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
                     //else M[y, col] = 1.0;
                 }
             }//for all cols
-            return M;
+            return outM;
+        }// end of SubtractAverage()
+
+        public static double[,] TrimPercentiles(double[,] matrix)
+        {
+            //set up parameters for a set of overlapping bands. All numbers should be powers of 2
+            int ncbbc = 8;  //number of columns between band centres
+            int bandWidth = 64;
+            double lowerPercentile = 0.7;
+            double upperPercentile = 0.001;
+
+            int height = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
+            int halfWidth = bandWidth / 2;
+            int bandCount = width / ncbbc;
+            int bandID = 0;
+            int tmpCol = 0;
+
+            double[,] tmpM = new double[height, ncbbc];
+            double[,] outM = new double[height, width];
+            double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
+            double lowerThreshold; double upperThreshold;
+            PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+
+            for (int col = 0; col < width; col++)//for all cols
+            {
+                bandID = col / ncbbc;  // determine band ID
+                tmpCol = col % ncbbc;  // determine col relative to current band
+                if ((tmpCol == 0) && (!(col == 0)))
+                {
+                    //normalise existing submatrix and transfer to the output matrix, outM
+                    tmpM = DataTools.normalise(tmpM);
+                    for (int y = 0; y < height; y++)
+                        for (int x = 0; x < ncbbc; x++)
+                        {
+                            int startCol = col - ncbbc;
+                            outM[y, startCol + x] = tmpM[y, x];
+                        }
+
+                    //set up a new submatrix for processing
+                    tmpM = new double[height, ncbbc];
+
+                    //construct new threshold submatrix to recalculate the current threshold
+                    int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                    if (start < 0) start = 0;
+                    int stop = col + halfWidth;
+                    if (stop >= width) stop = width - 1;
+                    thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                    PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+                }
+
+                for (int y = 0; y < height; y++)
+                {
+                    tmpM[y, tmpCol] = matrix[y, col];
+                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
+                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
+                    //outM[y, col] = matrix[y, col] - upperThreshold;
+                    //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
+
+                    //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
+                    //else M[y, col] = 1.0;
+                }
+            }//for all cols
+            return outM;
         }// end of SubtractAverage()
 
 
@@ -430,7 +726,9 @@ namespace TowseyLib
             int fWindow = 9;
             int tWindow = 9;
             int bandCount = 16;  // 16 bands, width=512pixels, 32pixels/band 
-            double shoulder = 0.3; //used to increase or decrease the threshold from modal value
+            double lowerShoulder = 0.5;   //used to increase or decrease the threshold from modal value
+            double upperShoulder = 0.05;
+            
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
 
             int height = blurM.GetLength(0);
@@ -451,7 +749,7 @@ namespace TowseyLib
 
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
                 double min; double lowerThreshold; double upperThreshold;
-                Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
                 //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
 
@@ -488,7 +786,8 @@ namespace TowseyLib
 
         public static double[,] Shapes2(double[,] matrix)
         {
-            double shoulder = 0.25;
+            double lowerShoulder = 0.3;   //used to increase or decrease the threshold from modal value
+            double upperShoulder = 0.3;
             int bandWidth = 64;
             int halfWidth = bandWidth / 2;
 
@@ -503,7 +802,7 @@ namespace TowseyLib
 
             double[,] subMatrix = DataTools.Submatrix(blurM, 0, 0, height - 1, bandWidth);
             double min; double lowerThreshold; double upperThreshold;
-            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+            NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
 
             for (int col = 0; col < width; col++)//for all cols
             {
@@ -515,7 +814,7 @@ namespace TowseyLib
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
                     subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
-                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                    NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
                 }
 
                 for (int y = 0; y < height; y++)
@@ -531,14 +830,15 @@ namespace TowseyLib
 
         public static double[,] Shapes_lines(double[,] matrix)
         {
-            double shoulder = 0.2;
+            double lowerShoulder = 0.2;   //used to increase or decrease the threshold from modal value
+            double upperShoulder = 0.2;
             int bandWidth = 64;
             int halfWidth = bandWidth / 2;
 
             int fWindow = 7;
             int tWindow = 3;
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
-            double[,] lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
+            double[,] lines = ImageTools.Convolve(blurM, Kernal.HorizontalLine5);
             lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
 
             int height = matrix.GetLength(0);
@@ -547,7 +847,7 @@ namespace TowseyLib
 
             double[,] subMatrix = DataTools.Submatrix(lines, 0, 0, height - 1, bandWidth);
             double min; double lowerThreshold; double upperThreshold;
-            Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+            NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
 
             for (int col = 0; col < width; col++)//for all cols
             {
@@ -559,7 +859,7 @@ namespace TowseyLib
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
                     subMatrix = DataTools.Submatrix(lines, 0, start, height - 1, stop);
-                    Signal2NoiseThreshold(subMatrix, shoulder, out min, out lowerThreshold, out upperThreshold);
+                    NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
                 }
 
                 for (int y = 1; y < height-1; y++)
