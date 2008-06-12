@@ -44,6 +44,32 @@ namespace AudioStuff
         }
 
 
+        /// <summary>
+        /// converts matrix coordinates to image coordinates through 90 degree rotation
+        /// </summary>
+        /// <param name="r1"></param>
+        /// <param name="c1"></param>
+        /// <param name="r2"></param>
+        /// <param name="c2"></param>
+        /// <param name="x1"></param>
+        /// <param name="y1"></param>
+        /// <param name="x2"></param>
+        /// <param name="y2"></param>
+        public void TransformCoordinates(int r1, int c1, int r2, int c2, out int x1, out int y1, out int x2, out int y2, int mWidth)
+        {
+            x1 = r1;
+            x2 = r2;
+            y1 = mWidth - c2;
+            y2 = mWidth - c1;
+            if (this.addGrid)
+            {
+                y1 -= SonoImage.scaleHt;
+                y2 -= SonoImage.scaleHt;
+            }
+
+        }
+
+
         public Bitmap CreateBitMapOfTemplate(double[,] matrix)
         {
             this.addGrid = false;
@@ -449,6 +475,29 @@ namespace AudioStuff
             for (int x = 0; x < width; x++) track[x, significanceLine] = (byte)100;  //grey colour
             return track;
         } //end CreateTrack()
+
+
+
+        public Bitmap AddShapeBoundaries(Bitmap bmp, ArrayList shapes, Color col)
+        {
+            int x1; int y1; int x2; int y2;
+            int mWidth = bmp.Height; 
+
+            foreach (Shape shape in shapes)
+            {
+                int r1 = shape.r1;
+                int c1 = shape.c1;
+                int r2 = shape.r2;
+                int c2 = shape.c2;
+                TransformCoordinates(r1,c1,r2,c2,out x1, out y1, out x2, out y2, mWidth);
+                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y1, col);
+                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y2, col);
+                for (int i = y1; i <= y2; i++) bmp.SetPixel(x1, i, col);
+                for (int i = y1; i <= y2; i++) bmp.SetPixel(x2, i, col);
+            }
+            return bmp;
+        }
+
 
 
     }// end class SonoImage
