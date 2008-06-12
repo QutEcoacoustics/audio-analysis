@@ -54,9 +54,18 @@ namespace TowseyLib
         public int[] Centroid()
         {
             int[] centre = new int[2];
-            centre[0] = r1 + RowWidth/2;
-            centre[1] = c1 + ColWidth/2;
+            centre[0] = this.r1 + RowWidth/2;
+            centre[1] = this.c1 + ColWidth/2;
             return centre;
+        }
+
+        public int row_Centroid()
+        {
+            return this.r1 + (RowWidth / 2);
+        }
+        public int col_Centroid()
+        {
+            return this.c1 + (ColWidth / 2);
         }
 
         public bool IncludesRow(int rowNumber)
@@ -99,10 +108,16 @@ namespace TowseyLib
         {
             int[] c1 = this.Centroid();
             int[] c2 = s2.Centroid();
-            int dx = c1[1] - c2[1];
-            int dy = c1[0] - c2[0];
+            int dx = c2[1] - c1[1]; 
+            int dy = c2[0] - c1[0];
             double dist = Math.Sqrt((dx * dx) + (dy * dy));
             return dist;
+        }
+
+        public int RowShift(Shape s2)
+        {
+            int dy = s2.row_Centroid() - this.row_Centroid();
+            return dy;
         }
 
         public void WriteBounds()
@@ -267,6 +282,39 @@ namespace TowseyLib
             return shapes;
         }
 
+        public static ArrayList MergeShapes(ArrayList shapes, int dyThreshold)
+        {
+            // merge shapes whose ends overlap
+
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
+                Shape s1 = (Shape)shapes[i];
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    Shape s2 = (Shape)shapes[j];
+                    if (!s1.Overlaps(s2)) continue;
+                    double dy = s1.RowShift(s2);
+                    Console.WriteLine("dy=" + dy);
+                    if (Math.Abs(dy) > dyThreshold) continue;
+                    //Console.WriteLine("dy=" + dy);
+
+                    s2.r1 = (s1.r1 + s2.r1) / 2;
+                    s2.r2 = (s1.r2 + s2.r2) / 2;
+                    if (dy > 0) //s2 to right of s1
+                    {
+                        s2.c1 = s1.c1;
+                    }
+                    else
+                    {
+                        s2.c2 = s1.c2;
+                    }
+                    shapes.RemoveAt(i);
+                    //shapes[j] = s2;
+                }
+            }
+            return shapes;
+        }
+
         public static ArrayList ProcessShapes(ArrayList shapes)
         {
             shapes = RemoveSmallShapes(shapes);
@@ -316,7 +364,7 @@ namespace TowseyLib
 
             } //end test1
 
-            if (true) //test2 method IncludesRow(), IncludesColumn(), PointInside()
+            if (false) //test2 method IncludesRow(), IncludesColumn(), PointInside()
             {
                 Console.WriteLine("Test Method Name()");
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
@@ -353,14 +401,44 @@ namespace TowseyLib
                 overlapped = s1.Overlaps(s2);
                 Console.WriteLine("s1 and s2 overlap =" + overlapped);
 
-            } //end test1
+            } //end test2
 
+            if (true) //test Method MergeShapes()
+            {
+                Console.WriteLine("Test MergeShapes()");
+                ArrayList list = new ArrayList();
+                int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
+                Shape s1 = new Shape(r1, c1, r2, c2);
+                s1.WriteBounds();
+                list.Add(s1);
+                r1 = 17; c1 = 16; r2 = 23; c2 = 24;
+                Shape s2 = new Shape(r1, c1, r2, c2);
+                s2.WriteBounds();
+                list.Add(s2);
+                r1 = 20; c1 = 20; r2 = 30; c2 = 30;
+                Shape s3 = new Shape(r1, c1, r2, c2);
+                s3.WriteBounds();
+                list.Add(s3);
+
+                Console.WriteLine(" dy(s2-s1)= " + s1.RowShift(s2));
+                Console.WriteLine(" dy(s3-s2)= " + s2.RowShift(s3));
+
+                int dyThreshold = 6;
+                list = MergeShapes(list, dyThreshold);
+                Console.WriteLine("List size="+list.Count);
+                foreach (Shape s in list)
+                {
+                    s.WriteBounds();
+                }
+
+            
+            } //end test3
 
 
             if (false) //test Method()
             {
                 Console.WriteLine("Test Method Name()");
-            } //end test2
+            } //end test4
 
 
             Console.WriteLine("\nFINISHED!!");
