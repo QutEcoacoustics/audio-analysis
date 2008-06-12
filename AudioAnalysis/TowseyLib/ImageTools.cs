@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -8,7 +9,7 @@ namespace TowseyLib
     {
         LowPass, HighPass1, HighPass2, VerticalLine, HorizontalLine3, HorizontalLine5, 
                             DiagLine1, DiagLine2,
-                            Grid2, Grid3, Grid4, //grid filters
+                            Grid2, Grid3, Grid4, Grid2Wave, Grid3Wave, //grid filters
                             Laplace1, Laplace2, Laplace3, Laplace4, ERRONEOUS }
 
     
@@ -35,12 +36,15 @@ namespace TowseyLib
 
         static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
                                             { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, 
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+//                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+//                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+//                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
+//                                            { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
                                             { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}};
 
+        //static double[,] grid2Wave =      { { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5},
+        //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}, 
+        //                                    { -0.5, 1.0, -1.5, 2.0, -1.5, 1.0, -0.5}};
         static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, 
                                             { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
@@ -57,29 +61,26 @@ namespace TowseyLib
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
                                             { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}};
 
-        //static double[,] grid2 =          { { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}, 
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -1.0, 1.0, -1.0, 1.0, -0.5}};
+        static double[,] grid2Wave =      { { -0.5, -0.5, -0.5 },
+                                            {  1.0,  1.0,  1.0 },
+                                            { -1.5, -1.5, -1.5 }, 
+                                            {  2.0,  2.0,  2.0 }, 
+                                            { -1.5, -1.5, -1.5 }, 
+                                            {  1.0,  1.0,  1.0 },
+                                            { -0.5, -0.5, -0.5 }};
 
-        //static double[,] grid3 =          { { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}, 
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5},
-        //                                    { -0.5, 1.0, -0.5, -0.5, 1.0, -0.5, -0.5, 1.0, -0.5}};
+        static double[,] grid3Wave =      { { -0.5, -0.5, -0.5 },
+                                            {  1.0,  1.0,  1.0 },
+                                            { -0.5, -0.5, -0.5 }, 
+                                            { -1.0, -1.0, -1.0 }, 
+                                            {  2.0,  2.0,  2.0 }, 
+                                            { -1.0, -1.0, -1.0 }, 
+                                            { -0.5, -0.5, -0.5 }, 
+                                            {  1.0,  1.0,  1.0 },
+                                            { -0.5, -0.5, -0.5 }};
 
-        //static double[,] grid4 =          { { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}, 
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375},
-        //                                    { -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375, -0.375, -0.375, 1.0, -0.375}};
+
+
 
         
         public static double[,] Convolve(double[,] matrix, Kernal name)
@@ -186,11 +187,14 @@ namespace TowseyLib
 
 
 
-        public static double[,] GridFilter(double[,] matrix, Kernal name)
+        public static double[,] GridFilter(double[,] m, Kernal name)
         {
             double[,] kernal;
-            int noiseSampleCount = 10000;
-            double thresholdZScore = 3.1;
+            int noiseSampleCount = 500000;
+            //double thresholdZScore = 3.1;  //zscore threshold for p=0.001
+            //double thresholdZScore = 2.58; //zscore threshold for p=0.005
+            //double thresholdZScore = 2.33; //zscore threshold for p=0.01
+            double thresholdZScore = 1.98;   //zscore threshold for p=0.05
 
             //SWITCH KERNALS
             switch (name)
@@ -204,25 +208,34 @@ namespace TowseyLib
                 case Kernal.Grid4: kernal = grid4;
                     Console.WriteLine("Applied Grid Kernal 2");
                     break;
+                case Kernal.Grid2Wave: kernal = grid2Wave;
+                    Console.WriteLine("Applied Grid Wave Kernal 2");
+                    break;
+                case Kernal.Grid3Wave: kernal = grid3Wave;
+                    Console.WriteLine("Applied Grid Wave Kernal 3");
+                    break;
+
 
                 default:
                     throw new System.Exception("\nWARNING: INVALID MODE!");
             }//end of switch statement
 
 
-            int mRows = matrix.GetLength(0);
-            int mCols = matrix.GetLength(1);
+            int mRows = m.GetLength(0);
+            int mCols = m.GetLength(1);
             int kRows = kernal.GetLength(0);
             int kCols = kernal.GetLength(1);
             int rNH = kRows / 2;
             int cNH = kCols / 2;
-            if ((rNH <= 0) && (cNH <= 0)) return matrix; //no operation required
+            if ((rNH <= 0) && (cNH <= 0)) return m; //no operation required
             //int area = ((2 * cNH) + 1) * ((2 * rNH) + 1);//area of rectangular neighbourhood
+
+            double[,] normM = DataTools.normalise(m);
 
             double[] noiseScores = new double[noiseSampleCount];
             for (int n = 0; n < noiseSampleCount; n++)
             {
-                double[,] noise = GetNoise(matrix, kRows, kCols);
+                double[,] noise = GetNoise(normM, kRows, kCols);
                 double sum = 0.0;
                 for (int i = 0; i < kRows; i++)
                 {
@@ -237,31 +250,6 @@ namespace TowseyLib
 
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
 
-            // fix up the edges first
-            //for (int r = 0; r < mRows; r++)
-            //{
-            //    for (int c = 0; c < cNH; c++)
-            //    {
-            //        newMatrix[r, c] = matrix[r, c];
-            //    }
-            //    for (int c = (mCols - cNH); c < mCols; c++)
-            //    {
-            //        newMatrix[r, c] = matrix[r, c];
-            //    }
-            //}
-            // fix up other edges
-            //for (int c = 0; c < mCols; c++)
-            //{
-            //    for (int r = 0; r < rNH; r++)
-            //    {
-            //        newMatrix[r, c] = matrix[r, c];
-            //    }
-            //    for (int r = (mRows - rNH); r < mRows; r++)
-            //    {
-            //        newMatrix[r, c] = matrix[r, c];
-            //    }
-            //}
-
             //now do bulk of image
             for (int r = rNH; r < (mRows - rNH); r++)
                 for (int c = cNH; c < (mCols - cNH); c++)
@@ -270,27 +258,20 @@ namespace TowseyLib
                     for (int y = -rNH; y < rNH; y++)
                         for (int x = -cNH; x < cNH; x++)
                         {
-                            sum += (matrix[r + y, c + x] * kernal[rNH + y, cNH + x]);
+                            sum += (normM[r + y, c + x] * kernal[rNH + y, cNH + x]);
                         }
                     sum /= (double)kRows;
-                    //Console.WriteLine("sum="+sum);
                     double zScore = (sum - noiseAv) / noiseSd;
-//                    double zScore = sum;
-//                    newMatrix[r, c] = zScore;
-                    //Console.WriteLine("zScore="+zScore);
 
 
-                    if (zScore > thresholdZScore)
+                    if (zScore >= thresholdZScore)
                     {
                         newMatrix[r, c] = 1.0;
-                        newMatrix[r + 1, c] = 1.0;
-                        newMatrix[r, c + 1] = 1.0;
-                        newMatrix[r + 1, c + 1] = 1.0;
+                        for (int n = -rNH; n < rNH; n++) newMatrix[r + n, c] = 1.0;
                         //newMatrix[r, c] = zScore;
                         //newMatrix[r + 1, c] = zScore;
-                        //newMatrix[r, c + 1] = zScore;
-                        //newMatrix[r + 1, c + 1] = zScore;
                     }
+                    //else newMatrix[r, c] = 0.0;
                 }//end of loops
             return newMatrix;
         }//end method GridFilter()
@@ -312,6 +293,70 @@ namespace TowseyLib
             }
             return noise;
         } //end getNoise()
+
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[,] SobelEdgeDetection(double[,] m)
+        {
+            //define indices into grid using Lindley notation
+            const int a = 0; const int b = 1; const int c = 2; const int d = 3; const int e = 4;
+            const int f = 5; const int g = 6; const int h = 7; const int i = 8;
+            int mRows = m.GetLength(0);
+            int mCols = m.GetLength(1);
+            double[,] normM = DataTools.normalise(m);
+            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[] grid = new double[9]; //to represent 3x3 grid
+            double min = Double.MaxValue; double max = -Double.MaxValue;
+
+            for (int y = 1; y < mRows-1; y++)
+                for (int x = 1; x < mCols-1; x++)
+                {
+                    grid[a] = normM[y - 1, x - 1];
+                    grid[b] = normM[y,     x - 1];
+                    grid[c] = normM[y + 1, x - 1];
+                    grid[d] = normM[y - 1, x];
+                    grid[e] = normM[y,     x];
+                    grid[f] = normM[y + 1, x];
+                    grid[g] = normM[y - 1, x + 1];
+                    grid[h] = normM[y,     x + 1];
+                    grid[i] = normM[y + 1, x + 1];
+                    double[] differences = new double[4];
+                    double DivideAEI_avBelow = (grid[d] + grid[g] + grid[h]) / (double)3;
+                    double DivideAEI_avAbove = (grid[b] + grid[c] + grid[f]) / (double)3;
+                    differences[0] = Math.Abs(DivideAEI_avAbove - DivideAEI_avBelow);
+
+                    double DivideBEH_avBelow = (grid[a] + grid[d] + grid[g]) / (double)3;
+                    double DivideBEH_avAbove = (grid[c] + grid[f] + grid[i]) / (double)3;
+                    differences[1] = Math.Abs(DivideBEH_avAbove - DivideBEH_avBelow);
+
+                    double DivideCEG_avBelow = (grid[f] + grid[h] + grid[i]) / (double)3;
+                    double DivideCEG_avAbove = (grid[a] + grid[b] + grid[d]) / (double)3;
+                    differences[2] = Math.Abs(DivideCEG_avAbove - DivideCEG_avBelow);
+
+                    double DivideDEF_avBelow = (grid[g] + grid[h] + grid[i]) / (double)3;
+                    double DivideDEF_avAbove = (grid[a] + grid[b] + grid[c]) / (double)3;
+                    differences[3] = Math.Abs(DivideDEF_avAbove - DivideDEF_avBelow);
+                    double gridMin; double gridMax;
+                    DataTools.MinMax(differences, out gridMin, out gridMax);
+
+                    newMatrix[y, x] = gridMax;
+                    if(min > gridMin) min = gridMin;
+                    if(max < gridMax) max = gridMax;
+                }
+
+            double threshold = min + (max - min) / 5;
+
+            for (int y = 1; y < mRows - 1; y++)
+                for (int x = 1; x < mCols - 1; x++)
+                    if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
+                    else newMatrix[y, x] = 0.0;
+
+            return newMatrix;
+        }
 
 
 
@@ -592,11 +637,11 @@ namespace TowseyLib
 
 
 
-        public static double[,] SubtractNoise(double[,] matrix)
+        public static double[,] TrimWrtMode(double[,] matrix)
         {
             //set up parameters for a set of overlapping bands. All numbers should be powers of 2
-            int ncbbc = 16;  //number of columns between band centres
-            int bandWidth = 32;
+            int ncbbc = 8;  //number of columns between band centres
+            int bandWidth = 64;
             double lowerShoulder = 1.0;
             double upperShoulder = 0.001;
 
@@ -719,8 +764,13 @@ namespace TowseyLib
         }// end of SubtractAverage()
 
 
-
-        public static double[,] Shapes1(double[,] matrix)
+        /// <summary>
+        /// Detect high intensity / high energy regions in an image using blurring
+        /// followed by rules involving positive and negative gradients.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] DetectHighEnergyRegions1(double[,] matrix)
         {
             double gradThreshold = 1.2;
             int fWindow = 9;
@@ -777,23 +827,28 @@ namespace TowseyLib
                 }//for all x in a band
             }//for all bands
 
-            //M = Shapes_RemoveSmall(M);
-            M = Shapes_CleanUp(M);
+            int minRowWidth = 2;
+            int minColWidth = 5;
+            M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
 
         }// end of Shapes()
 
-
-        public static double[,] Shapes2(double[,] matrix)
+        /// <summary>
+        /// Detect high intensity / high energy regions in an image using blurring
+        /// followed by bandwise thresholding.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] DetectHighEnergyRegions3(double[,] matrix)
         {
-            double lowerShoulder = 0.3;   //used to increase or decrease the threshold from modal value
-            double upperShoulder = 0.3;
+            double lowerShoulder = 0.3;   //used to increase/decrease the intensity threshold from modal value
+            double upperShoulder = 0.4;
             int bandWidth = 64;
             int halfWidth = bandWidth / 2;
 
             int fWindow = 7;
-            int tWindow = 5;
-            //double[,] blurM = matrix;
+            int tWindow = 7;
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
 
             int height = matrix.GetLength(0);
@@ -828,15 +883,166 @@ namespace TowseyLib
 
 
 
+        public static double[,] Shapes3(double[,] m)
+        {
+            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
+            double[,] m2 = ImageTools.Shapes_lines(m);
+
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[,] tmpM = new double[height, width];
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (m2[y, x] == 0.0) continue; //nothing here
+                    if (tmpM[y, x] == 1.0) continue; //already have something here
+
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(m2, x, y, out colWidth);
+                    int x2 = x + colWidth; 
+                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+ 
+                    //find distance to nearest object in hi frequency direction
+                    // and join the two if within threshold distance
+                    int thresholdDistance = 15;
+                    int dist = 1;
+                    while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
+                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                }
+            }
+
+            //transfer line objects to output matrix IF they overlap a high energy blob in m1
+            double[,] outM = new double[height, width];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (tmpM[y, x] == 0.0) continue; //nothing here
+                    if (outM[y, x] == 1.0) continue; //already have something here
+
+                    //int rowWidth; //rowWidth of object
+                    //Shape.Row_Width(m2, x, y, out rowWidth);
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(tmpM, x, y, out colWidth);
+                    int x2 = x + colWidth;
+                    //check to see if object is in blob
+                    bool overlapsHighEnergy = false;
+                    for (int j = x; j < x2; j++)
+                    {
+                        if (m1[y, j] == 1.0)
+                        {
+                            overlapsHighEnergy = true;
+                            break;
+                        }
+                    }//end of ascertaining if line overlapsHighEnergy
+                    if (overlapsHighEnergy) for (int j = x; j < x2; j++) outM[y, j] = 1.0;
+                }
+            }
+
+            outM = FillGaps(outM);
+            int minRowWidth = 2;
+            int minColWidth = 4;
+            outM = Shapes_RemoveSmallUnattached(outM, minRowWidth, minColWidth);
+            return outM;
+        }
+
+
+
+        public static ArrayList Shapes4(double[,] m)
+        {
+            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
+            double[,] m2 = ImageTools.Shapes_lines(m);
+
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[,] tmpM = new double[height, width];
+            ArrayList shapes = new ArrayList();
+
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (m2[y, x] == 0.0) continue; //nothing here
+                    if (tmpM[y, x] == 1.0) continue; //already have something here
+
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(m2, x, y, out colWidth);
+                    int x2 = x + colWidth;
+                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+
+                    //find distance to nearest object in hi frequency direction
+                    // and join the two if within threshold distance
+                    int thresholdDistance = 10;
+                    int dist = 1;
+                    while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
+                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                }
+            }
+
+            //transfer line objects to output matrix IF they overlap a high energy blob in m1
+            int objectCount = 0;
+            double[,] outM = new double[height, width];
+            for (int y = 0; y < height-2; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (tmpM[y, x] == 0.0) continue; //nothing here
+                    if (outM[y, x] == 1.0) continue; //already have something here
+
+                    //int rowWidth; //rowWidth of object
+                    //Shape.Row_Width(m2, x, y, out rowWidth);
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(tmpM, x, y, out colWidth);
+                    //int colWidth2; //colWidth of object
+                    //Shape.Col_Width(tmpM, x, y, out colWidth2);
+                    //int colWidth = colWidth1;
+                    //if (colWidth2 > colWidth) colWidth = colWidth2;
+
+                    int x2 = x + colWidth;
+                    //check to see if object is in blob
+                    bool overlapsHighEnergy = false;
+                    for (int j = x; j < x2; j++)
+                    {
+                        if ((m1[y+1, j] == 1.0) || (m1[y, j] == 1.0))
+                        {
+                            overlapsHighEnergy = true;
+                            break;
+                        }
+                    }//end of ascertaining if line overlapsHighEnergy
+                    if (overlapsHighEnergy)
+                    {
+                        shapes.Add(new Shape(y, x, y + 2, x2));
+                        //tmpM[y+1, x] = 0.0;
+                        //tmpM[y + 2, x] = 0.0;
+                        objectCount++;
+                        for (int j = x; j < x2; j++) outM[y, j] = 1.0;
+                        for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
+                        for (int j = x; j < x2; j++) outM[y+1, j] = 1.0;
+                        for (int j = x; j < x2; j++) tmpM[y+1, j] = 0.0;
+                    }
+                }//end cols
+            }//end rows
+            Console.WriteLine("Object Count =" + objectCount);
+            int dyThreshold = 2;
+            shapes = Shape.MergeShapes(shapes, dyThreshold);
+            Console.WriteLine("Object Count =" + shapes.Count);
+            //shapes = Shape.MergeCloseShapes(shapes);
+            return shapes;
+        }
+
+
         public static double[,] Shapes_lines(double[,] matrix)
         {
             double lowerShoulder = 0.2;   //used to increase or decrease the threshold from modal value
-            double upperShoulder = 0.2;
+            double upperShoulder = 0.3;
             int bandWidth = 64;
             int halfWidth = bandWidth / 2;
 
             int fWindow = 7;
-            int tWindow = 3;
+            int tWindow = 7;
             double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
             double[,] lines = ImageTools.Convolve(blurM, Kernal.HorizontalLine5);
             lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
@@ -870,80 +1076,18 @@ namespace TowseyLib
                         //M[y - 1, col] = lines[y - 1, col];
                         //M[y + 1, col] = lines[y + 1, col];
                         M[y, col] = 1;
-                        //M[y - 2, col] = 1;
                         M[y - 1, col] = 1;
                         //M[y + 1, col] = 1;
                     }
                 }
             }//for all cols
             int minRowWidth = 2;
-            int minColWidth = 10;
+            int minColWidth = 5;
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
         }// end of Shapes_lines()
 
         
-
-        public static double[,] Shapes_CleanUp(double[,] m)
-        {
-            int height = m.GetLength(0);
-            int width = m.GetLength(1);
-            double[,] M = new double[height, width];
-
-            //remove double lines in height dimension
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 2; y < height - 1; y++)
-                {
-                    if ((M[y - 2, x] == 0.0) && (M[y + 1, x] == 0.0)) { M[y - 1, x] = 0.0; M[y, x] = 0.0; }
-                    else if ((M[y - 2, x] == 1.0) && (M[y + 1, x] == 1.0) ) { M[y - 1, x] = 1.0; M[y, x] = 1.0; }
-                }
-            }
-            //remove single lines in height dimension
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 1; y < height - 1; y++)
-                {
-                    M[y, x] = m[y, x];
-                    if ((m[y - 1, x] == 0.0) && (m[y + 1, x] == 0.0)) M[y, x] = 0.0;
-                    //else if ((m[y - 1, x] == 1.0) && (m[y + 1, x] == 1.0)) M[y, x] = 1.0;
-                }
-            }
-
-            //remove single lines in width dimension
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 1; x < width - 1; x++)
-                {
-                    if ((M[y, x - 1] == 0.0) && (M[y, x + 1] == 0.0)) M[y, x] = 0.0;
-                    //else if ((M[y, x - 1] == 1.0) && (M[y, x + 1] == 1.0)) M[y, x] = 1.0;
-                }
-            }
-            //remove double lines in width dimension
-            for (int y = 0; y < height; y++)
-            {
-                for (int x = 2; x < width - 2; x++)
-                {
-                    if ((M[y, x - 2] == 0.0) && (M[y, x + 1] == 0.0))
-                    { M[y, x - 1] = 0.0; M[y, x] = 0.0; }
-                    else if ((M[y, x - 2] == 1.0) && (M[y, x + 1] == 1.0))
-                    { M[y, x - 1] = 1.0; M[y, x] = 1.0; }
-                }
-            }
-            //remove triple lines in width dimension
-            //for (int y = 0; y < height; y++)
-            //{
-            //    for (int x = 3; x < width - 3; x++)
-            //    {
-            //        if ((M[y, x - 3] == 0.0) && (M[y, x - 3] == 0.0) && (M[y, x + 1] == 0.0) && (M[y, x + 2] == 0.0))
-            //        { M[y, x - 2] = 0.0; M[y, x - 1] = 0.0; M[y, x] = 0.0; }
-            //        else if ((M[y, x - 4] == 1.0) && (M[y, x - 3] == 1.0) && (M[y, x + 1] == 1.0) && (M[y, x + 2] == 1.0))
-            //        { M[y, x - 2] = 1.0; M[y, x - 1] = 1.0; M[y, x] = 1.0; }
-            //    }
-            //}
-
-            return M;
-        }
 
 
         public static double[,] Shapes_RemoveSmall(double[,] m, int minRowWidth, int minColWidth)
@@ -963,18 +1107,16 @@ namespace TowseyLib
                     Shape.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
                     Shape.Col_Width(m, x, y, out colWidth);
+                    bool sizeOK = false;
+                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
 
-                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth))
+                    if (sizeOK)
                     {
                         for (int c = 0; c < colWidth; c++)
                         {
-                            //Shape.Row_Width(m, x+c, y, out rowWidth);
                             for (int r = 0; r < minRowWidth; r++)
                             {
                                 M[y + r, x + c] = 1.0;
-                                //if ((y + r + 1) < height) M[y + r + 1, x + c] = m[y + r + 1, x + c];
-                                //if ((y + r + 2) < height) M[y + r + 2, x + c] = m[y + r + 2, x + c];
-                                //m[y + r, x + c] = 0.0;
                             }
                         }
                     }
@@ -985,6 +1127,96 @@ namespace TowseyLib
 
             return M;
         }
+
+
+        public static double[,] Shapes_RemoveSmallUnattached(double[,] m, int minRowWidth, int minColWidth)
+        {
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[,] M = new double[height, width];
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 1; y < height - 3; y++)
+                {
+                    if (m[y, x] == 0.0) continue; //nothing here
+                    if (M[y, x] == 1.0) continue; //already have something here
+
+                    int rowWidth; //rowWidth of object
+                    Shape.Row_Width(m, x, y, out rowWidth);
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(m, x, y, out colWidth);
+                    bool sizeOK = false;
+                    if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
+
+                    //now check if object is unattached to other object
+                    bool attachedOK = false;
+                    for (int j = x; j < x + colWidth; j++)
+                    {
+                        if ((m[y - 1, j] == 1.0) || /*(m[y + 1, j] == 1.0) ||*/ (m[y + 2, j] == 1.0) || (m[y + 3, j] == 1.0))
+                        {
+                            attachedOK = true;
+                            break;
+                        }
+                    }//end of ascertaining if line overlapsHighEnergy
+
+                    //attachedOK = true;
+                    if (sizeOK && attachedOK)
+                    {
+                        for (int c = 0; c < colWidth; c++)
+                        {
+                            //Shape.Row_Width(m, x+c, y, out rowWidth);
+                            for (int r = 0; r < minRowWidth; r++)
+                            {
+                                M[y + r, x + c] = 1.0;
+                            }
+                        }
+                    }
+                }//end y loop
+            }//end x loop
+            //M = m;
+
+            return M;
+        }
+
+        public static double[,] FillGaps(double[,] m)
+        {
+            double coverThreshold = 0.7;
+            int cNH = 4; //neighbourhood
+            int rNH = 11;
+
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            //double[,] M = new double[height, width];
+            int area = ((2*cNH)+1)*((2*rNH)+1);
+            //Console.WriteLine("area=" + area);
+
+            for (int x = cNH; x < width - cNH; x++)
+            {
+                for (int y = rNH; y < height - rNH; y++)
+                {
+                    double sum = 0.0;
+                    for (int r = -rNH; r < rNH; r++)
+                        for (int c = -cNH; c < cNH; c++)
+                        {
+                            sum += m[y + r, x + c];
+                        }
+                    double cover = sum /(double) area;
+
+                    if (cover >= coverThreshold)
+                    {
+                        m[y, x] = 1.0;
+                        m[y-1, x] = 1.0;
+                        m[y+1, x] = 1.0;
+                        //m[y - 2, x] = 1.0;
+                        //m[y + 2, x] = 1.0;
+                    }
+                }//end y loop
+            }//end x loop
+
+            return m;
+        }
+
 
 
         public static double[,] Texture2(double[,] matrix, int window)
