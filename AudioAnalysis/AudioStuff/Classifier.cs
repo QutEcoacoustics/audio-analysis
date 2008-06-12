@@ -587,7 +587,7 @@ namespace AudioStuff
 
             //find first peak
             int i=0;
-            while (! peaks[i]) i++;
+            while (i < L && !peaks[i]) i++;
             int prevLoc = i;
 
             while (i<L)
