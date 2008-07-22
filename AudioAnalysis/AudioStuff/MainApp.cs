@@ -10,12 +10,14 @@ using TowseyLib;
 namespace AudioStuff
 {
     /// <summary>
-    /// This program runs in three modes:
-    /// MakeSonogram:Reads .wav file and converts data to a sonogram 
-    /// ExtractTemplate:Extracts a call template from the sonogram 
-    /// ScanSonogram:Scans the sonogram with a call template
+    /// This program runs in several modes:
+    /// MakeSonogram: Reads .wav file and converts data to a sonogram 
+    /// ExtractTemplate: Extracts a call template from the sonogram 
+    /// ReadTemplateAndScan: Scans the sonogram with a previously prepared template
     /// </summary>
-    enum Mode { ArtificialSignal, MakeSonogram, MakeSonogramGradient, MakeSonogramShapes, CreateTemplate, CreateTemplateAndScan, TemplateNoiseResponse, ReadTemplateAndScan, TestTemplate, ERRONEOUS }
+    enum Mode { ArtificialSignal, MakeSonogram, IdentifySyllables, CreateTemplate, CreateTemplateAndScan, 
+                ReadTemplateAndScan, ScanMultipleRecordingsWithTemplate, AnalyseMultipleRecordings, ERRONEOUS
+    }
 
     static class MainApp
     {
@@ -35,12 +37,13 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
             const string opDirName = @"C:\SensorNetworks\Sonograms\";
+            const string artDirName = @"C:\SensorNetworks\ART\";
             const string wavFExt = WavReader.wavFExt;
 
             //training file
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
-            //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
+            string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
@@ -67,14 +70,14 @@ namespace AudioStuff
 
 
             //Mode userMode = Mode.ArtificialSignal;
-            //Mode userMode = Mode.MakeSonogram;
-            //Mode userMode = Mode.MakeSonogramGradient;
-            Mode userMode = Mode.MakeSonogramShapes;
+            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;
-            //Mode userMode = Mode.TemplateNoiseResponse;
             //Mode userMode = Mode.TestTemplate;
+            //Mode userMode = Mode.AnalyseMultipleRecordings;
+            
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //************* CALL PARAMETERS ***************
@@ -158,16 +161,13 @@ namespace AudioStuff
                     {
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
-                        //s.SaveImage(null);
-                        //m = ImageTools.Blur(m, 3, 3);
-                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.LowPass);
-                        //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.HighPass2);
-                        //m = DataTools.Subtract(m, s.Matrix);
+                        //m = ImageTools.NoiseReduction(m);
+                        //double threshold = 0.20;
+                        //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
+                        //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
                         //m = ImageTools.Convolve(m, Kernal.HorizontalLine5);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
-                        //m = ImageTools.Signal2NoiseRatio_Local(m, 21);
-                        m = ImageTools.TrimWrtMode(m);
                         //m = ImageTools.TrimPercentiles(m);
                         //m = ImageTools.Shapes_lines(m);
                         s.SaveImage(m, null);
@@ -184,41 +184,41 @@ namespace AudioStuff
                     }
                     break;
 
-                case Mode.MakeSonogramGradient:     //make sonogram and gradient bmp image
-                    wavPath = wavDirName + "\\" + wavFileName+wavFExt;
-                    try
-                    {
-                        s = new Sonogram(iniFName, wavPath);
-                        s.CalculateIndices();
-                        s.WriteStatistics();
-                        Console.WriteLine(" Grad Image in file " + s.BmpFName);
-                        s.SaveGradientImage();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("\nFAILED TO EXTRACT SONOGRAM OR SUBSEQUENT STEP");
-                        Console.WriteLine(e.ToString());
-                    }
-                    break;
-
-                case Mode.MakeSonogramShapes:     //make sonogram and detect shapes
+                case Mode.IdentifySyllables:     //make sonogram and detect shapes
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
+                        //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
+
                         double[,] m = s.Matrix;
-                        //m = ImageTools.Invert(m);
-                        //int bandCount = 20;
-                        //m = ImageTools.PointProcess(m, bandCount, 1); //clip
-                        //double[,] m2 = ImageTools.Shapes1(s.Matrix);
-                        //double[,] m2 = ImageTools.Shapes3(m);
-                        //ArrayList shapes = Shape.Shapes_Detect(m2);
-                        ArrayList shapes = ImageTools.Shapes4(m);
-                        //m = ImageTools.PointProcess(m, bandCount, 1);
-                        //m = ImageTools.GridFilter(m, Kernal.Grid2Wave);
-                        //m = ImageTools.SobelEdgeDetection(m);
-                        Color col = Color.Wheat;
-                        s.SaveImage(m, shapes, col);
+                        m = ImageTools.NoiseReduction(m);
+
+                        //extract syllables from sonogram and calculate their distribution
+                        //Color col = Color.DarkBlue;
+                        Color col = Color.Red;
+                        ArrayList syllables = ImageTools.Shapes5(m);
+                        int[] syllableDistribution = Shape.Distribution(syllables);//distrbution over frequency columns 
+                        //if (true) { s.SaveImage(m, syllables, col); Console.WriteLine("Finished Syllable Extraction"); break; }
+
+
+                        //cluster the shapes using FuzzyART
+                        int categoryCount;
+                        double[,] data = Shape.FeatureMatrix(syllables); //derive data set from syllables
+                        int[] categories = Shape.ClusterShapesWithFuzzyART(data, out categoryCount);
+                        Console.WriteLine("Number of categories = " + categoryCount);
+                        syllables = Shape.AssignCategories(syllables, categories);
+
+                        //derive average shape of each category
+                        //ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
+                        //int[] categoryDistribution = Shape.Distribution(categoryAvShapes);
+
+                        //Console.WriteLine("Syllable count=" + DataTools.Sum(syllableDistribution) + "  Category count=" + DataTools.Sum(categoryDistribution));
+
+                        s.SaveImage(m, syllables, col);
+                        //s.SaveImageOfSolids(m, syllables, col);
+                        //s.SaveImage(m, categoryAvShapes, col);
+                        //s.SaveImageOfCentroids(m, categoryAvShapes, col);
                     }
                     catch (Exception e)
                     {
@@ -254,8 +254,6 @@ namespace AudioStuff
                     {
                         Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
-                        //s.CalculateIndices();
-                        //s.WriteStatistics();
 
                         Console.WriteLine("CREATING TEMPLATE");
                         Template t = new Template(callID, callName, callComment, templateDir);
@@ -267,28 +265,6 @@ namespace AudioStuff
                         Classifier cl = new Classifier(t, s);
                         s.SaveImage(cl.Zscores);
                         cl.WriteResults();
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine("FAILED TO EXTRACT SONOGRAM");
-                        Console.WriteLine(e.ToString());
-                    }
-                    break;
-
-                case Mode.TemplateNoiseResponse:
-                    wavPath = wavDirName + "\\" + wavFileName + wavFExt;
-                    try
-                    {
-                        s = new Sonogram(iniFName, wavPath);
-                        double[,] normSonogram = DataTools.normalise(s.Matrix);
-
-                        Template t = new Template(callID, templateDir);
-                        Classifier cl = new Classifier(t, s);
-                        s.SaveImage(null);
-                        const int scanType = 1; //1=dot product;   2=difference
-                        double noiseAv; double noiseSd;
-                        cl.NoiseResponse(normSonogram, out noiseAv, out noiseSd, normSonogram.GetLength(0), scanType);
-                        Console.WriteLine("Noise Av=" + cl.NoiseAv.ToString("F5") + "     Noise SD=" + cl.NoiseSd.ToString("F5"));
                     }
                     catch (Exception e)
                     {
@@ -323,11 +299,11 @@ namespace AudioStuff
                     }
                     break;
 
-                case Mode.TestTemplate:
+                case Mode.ScanMultipleRecordingsWithTemplate:
                     DirectoryInfo d = new DirectoryInfo(testDirName);
                     FileInfo[] files = d.GetFiles("*" + wavFExt);
                     ArrayList array = new ArrayList();
-                    array.Add(Classifier.ResultHeader());
+                    array.Add(Classifier.ResultsHeader());
 
                     try
                     {
@@ -344,8 +320,6 @@ namespace AudioStuff
                                     s = new Sonogram(iniFName, wavPath);
                                     Classifier cl = new Classifier(t, s);
                                     s.SaveImage(opDirName, cl.Zscores);
-                                    s.CalculateIndices();
-                                    array.Add(cl.OneLineResult(count));
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                                     Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
                                     Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
@@ -369,6 +343,59 @@ namespace AudioStuff
                         string opPath = opDirName + "\\outputCall" + callID + ".txt";
                         FileTools.WriteTextFile(opPath, array);
                         Console.WriteLine("\n\n##### DATA WRITTEN TO FILE> " + opPath);
+                    }
+                    break;
+
+                case Mode.AnalyseMultipleRecordings:
+                    d = new DirectoryInfo(testDirName);
+                    files = d.GetFiles("*" + wavFExt);  //FileInfo[] 
+                    ArrayList lines = new ArrayList();
+                    lines.Add(Sonogram.AnalysisHeader());
+
+                    try
+                    {
+                        int count = 1; //wav file counter
+                        foreach (FileInfo fi in files) if (fi.Extension == wavFExt) //for all .wav files
+                        {
+                            string fName = fi.Name;
+                            Console.WriteLine("\n##########################################");
+                            Console.WriteLine("##### " + (count++) + " File=" + fName);
+                            wavPath = testDirName + "\\" + fName;
+                            s = new Sonogram(iniFName, wavPath);
+                            double[,] m = s.Matrix;
+
+                            //extract syllables from sonogram and calculate their distribution
+                            ArrayList syllables = ImageTools.Shapes4(m);
+                            int[] syllableDistribution = Shape.Distribution(syllables);//distrbution over frequency columns 
+
+                            //cluster the shapes using FuzzyART
+                            int categoryCount;
+                            double[,] data = Shape.FeatureMatrix(syllables); //derive data set from syllables
+                            int[] categories = Shape.ClusterShapesWithFuzzyART(data, out categoryCount);
+                            syllables = Shape.AssignCategories(syllables, categories);
+
+                            //derive average shape of each category
+                            ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
+                            int[] categoryDistribution = Shape.Distribution(categoryAvShapes);
+
+                            Color col = Color.Wheat;
+                            s.SaveImage(m, syllables, col);
+
+                            //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
+                            //SignalAvMax  SignalAbsMax  syllableDistribution  categoryDistribution
+                            lines.Add(s.OneLineResult(count, syllableDistribution, categoryDistribution, categoryCount));
+                        }//end all wav files
+                    }//end try
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("UNCAUGHT ERROR!!");
+                        Console.WriteLine(e.ToString());
+                    }
+                    finally
+                    {
+                        string opPath = opDirName + "\\outputAnalysis" + callID + ".txt";
+                        FileTools.WriteTextFile(opPath, lines);
+                        Console.WriteLine("\n\n##### ANALYSIS DATA WRITTEN TO FILE> " + opPath);
                     }
                     break;
 
