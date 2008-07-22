@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using NeuralNets;
 
 namespace TowseyLib
 {
@@ -10,14 +11,24 @@ namespace TowseyLib
 
     public class Shape
     {
-        public int RowWidth { get; set; }
-        public int ColWidth { get; set; }
-        public int RandomNumber { get; set; }
-
         public int r1 { get; set; }  //location of top left corner in parent matrix
         public int c1 { get; set; }  //location of top left corner in parent matrix
         public int r2 { get; set; }  //location of bot right corner in parent matrix
         public int c2 { get; set; }  //location of bot right corner in parent matrix
+
+        //private int rowWidth;
+        //public int RowWidth { get { row2 - row1 + 1; } }
+        public int RowWidth { get; set; }
+        public int ColWidth { get; set; }
+        public int RandomNumber { get; set; }
+        public int category { get; set; }
+        public static bool Verbose { get; set; }
+
+        //vars required to set up Fuzzy Sets for row centroid feature
+        static int maxCol = 512;
+        int countColCentroid_FS = 2; //number of fuzzy sets 
+        int[] colCentroid_FS;
+
 
         /// <summary>
         /// CONSTRUCTOR
@@ -34,12 +45,18 @@ namespace TowseyLib
             this.c2 = col2;
             this.RowWidth = row2 - row1 + 1;
             this.ColWidth = col2 - col1 + 1;
+            category = -1;
+
+
+            //set up fuzzy sets
+            FuzzySetCentres();
         }
 
         public int Area()
         {
             return (RowWidth * ColWidth);
         }
+
 
         public bool PointInside(int rowNumber, int colNumber)
         {
@@ -104,6 +121,39 @@ namespace TowseyLib
             else return false;
         }
 
+
+        public int OverlapArea(Shape s2)
+        {
+            bool row1Overlap = this.IncludesRow(s2.r1);
+            bool row2Overlap = this.IncludesRow(s2.r2);
+            bool col1Overlap = this.IncludesColumn(s2.c1);
+            bool col2Overlap = this.IncludesColumn(s2.c2);
+            if (row1Overlap && row2Overlap && col1Overlap && col2Overlap) return s2.Area();
+
+            if (!row1Overlap && !row2Overlap && !col1Overlap && !col2Overlap && this.Overlaps(s2)) return this.Area();
+            return 0;
+        }
+
+
+        public bool Encloses(Shape s2)
+        {
+            bool row1Overlap = this.IncludesRow(s2.r1);
+            bool row2Overlap = this.IncludesRow(s2.r2);
+            bool col1Overlap = this.IncludesColumn(s2.c1);
+            bool col2Overlap = this.IncludesColumn(s2.c2);
+            if (row1Overlap && row2Overlap && col1Overlap && col2Overlap) return true;
+            return false;
+        }
+
+
+        public bool AdjacentRows(Shape s2)
+        {
+            //this.top-s2.bottom adjacency  OR  this.bottom-s2.top adjacency
+            bool rowAdjacency = ((Math.Abs(this.r2 - s2.r1) == 1) || (Math.Abs(this.r1 - s2.r2) == 1));
+            return rowAdjacency;
+        }
+
+
         public double CentroidDistance(Shape s2)
         {
             int[] c1 = this.Centroid();
@@ -120,9 +170,153 @@ namespace TowseyLib
             return dy;
         }
 
+
+        public int ColumnShift(Shape s2)
+        {
+            int dx = s2.col_Centroid() - this.col_Centroid();
+            return dx;
+        }
+
+
         public void WriteBounds()
         {
             Console.WriteLine(" r1=" + this.r1 + " c1=" + this.c1 + " r2=" + this.r2 + " c2=" + this.c2);
+        }
+
+        //***********************************************************************************************************************
+        //***********************************************************************************************************************
+        //***********************************************************************************************************************
+
+        public double[] Features()
+        {
+            int featureCount = countColCentroid_FS + 2;
+            double[] features = new double[featureCount];
+            double[] fuzzyMemberships = FuzzySetMemberships(this.col_Centroid());
+            for (int i = 0; i < countColCentroid_FS; i++) features[0] = fuzzyMemberships[i];
+
+            
+          //  features[0] = this.col_Centroid(); //column centroid
+          //  features[1] = this.col_Centroid(); //column centroid
+          //  features[2] = this.col_Centroid(); //column centroid
+            features[countColCentroid_FS]   = this.ColWidth; //column width
+            features[countColCentroid_FS+1] = this.RowWidth; //row width
+            return features;
+        }
+        public double[] Features_Normalised()
+        {
+            int featureCount = countColCentroid_FS + 2;
+            int maxRows = 54; //to normalise rowWidth.  27 rows/sec. ie row width is the fraction of 2 seconds
+            double[] features = Features(); //get raw feature values
+            //features[0] /= (double)maxCols; //column centroid
+            //features[1] /= (double)maxCols; //column centroid
+            //features[2] /= (double)maxCols; //column centroid
+            features[countColCentroid_FS]    /= (double)Shape.maxCol; //column width
+            features[countColCentroid_FS + 1] /= (double)maxRows; //row width
+
+            for (int i = 0; i < featureCount; i++)
+            {
+                if (features[i] < 0.0) features[i] = 0.0;
+                if (features[i] > 1.0) features[i] = 1.0;
+            }
+            return features;
+        }
+
+        private void FuzzySetCentres()
+        {
+            int space = maxCol / (countColCentroid_FS-1);
+            colCentroid_FS = new int[countColCentroid_FS];
+            colCentroid_FS[0] = 0;
+            colCentroid_FS[countColCentroid_FS - 1] = maxCol;
+            for (int i = 1; i < countColCentroid_FS - 1; i++) colCentroid_FS[i] = (i * space);
+            //Console.WriteLine("Array of " + countColCentroid_FS + " Fuzzy Set Centres");
+            //DataTools.writeArray(colCentroid_FS);
+            //Console.ReadLine();
+        }
+
+        private double[] FuzzySetMemberships(int row)
+        {
+            int n = countColCentroid_FS; //for clarity!!!!!
+            double[] FM = new double[n]; //fuzzy memberships
+            int x1, x2;
+            double y1, y2;
+            //row = 192; //for testing
+
+            //calculate membership of fuzzy set 0;
+            if ((row < 0) || (row >= colCentroid_FS[1])) FM[0] = 0;
+            //else FM[0] = LinearInterpolate(x1, y1, x2, y2, x3);
+            else
+            {
+                x1 = 0;
+                x2 = colCentroid_FS[1];
+                y1 = 1.0;
+                y2 = 0.0;
+                FM[0] = LinearInterpolate(x1, y1, x2, y2, row);
+            }
+
+            //calculate membership of fuzzy set n;
+            if ((row > maxCol) || (row <= colCentroid_FS[n-2])) FM[n-1] = 0;
+            else
+            {
+                x1 = colCentroid_FS[n - 2];
+                x2 = colCentroid_FS[n - 1];
+                y1 = 0.0;
+                y2 = 1.0;
+                FM[n-1] = LinearInterpolate(x1, y1, x2, y2, row);
+            }
+
+            //calculate membership of fuzzy sets 1 to n-1;
+            for (int i = 1; i < countColCentroid_FS - 1; i++)
+            {
+                if ((row >= colCentroid_FS[i + 1]) || (row <= colCentroid_FS[i - 1])) FM[i] = 0;
+                else //row below mode of membership function
+                    if (row < colCentroid_FS[i])
+                    {
+                        x1 = colCentroid_FS[i - 1];
+                        x2 = colCentroid_FS[i];
+                        y1 = 0.0;
+                        y2 = 1.0;
+                        FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                    }
+                    else //row above mode of membership function
+                        if (row >= colCentroid_FS[i])
+                        {
+                            x1 = colCentroid_FS[i];
+                            x2 = colCentroid_FS[i + 1];
+                            y1 = 1.0;
+                            y2 = 0.0;
+                            FM[i] = LinearInterpolate(x1, y1, x2, y2, row);
+                        }
+            }//end for loop
+            //Console.WriteLine("For row "+row+" memberships are:");
+            //DataTools.writeArray(FM);
+            //Console.ReadLine();
+            return FM;
+        }
+
+        private static double LinearInterpolate(int x1, double y1, int x2, double y2, int x3)
+        {
+            if((x3 < x1)||(x3 > x2)||(x1>x2))
+            {
+                Console.WriteLine("ERROR with Linear Interpolation! ((x3 < x1)||(x3 > x2)||(x1>x2))!!");
+                return Double.MaxValue;
+            }
+            double slope = (y2 - y1) / (double)(x2 - x1);
+            double dy = slope * (x3 - x1);
+            return (y1 + dy);
+        }
+
+
+
+        //***********************************************************************************************************************
+        //***********************************************************************************************************************
+        //***********************************************************************************************************************
+
+
+
+
+        public static Shape Clone(Shape s)
+        {
+            return new Shape(s.r1, s.c1, s.r2, s.c2);
         }
 
 
@@ -188,7 +382,7 @@ namespace TowseyLib
                 x += 4; //jump through 5 lines at a time.
             }
 
-            Console.WriteLine("Number of shapes="+shapes.Count);
+            if (Shape.Verbose) Console.WriteLine("Number of shapes=" + shapes.Count);
             shapes = ProcessShapes(shapes);
 
             //Console.ReadLine();
@@ -282,9 +476,10 @@ namespace TowseyLib
             return shapes;
         }
 
-        public static ArrayList MergeShapes(ArrayList shapes, int dyThreshold)
+        public static ArrayList MergeShapesWhoseEndsOverlap(ArrayList shapes, int dyThreshold)
         {
             // merge shapes whose ends overlap
+            if (Shape.Verbose) Console.WriteLine("Merge shapes whose ends overlap.");
 
             for (int i = shapes.Count - 1; i >= 0; i--)
             {
@@ -294,7 +489,7 @@ namespace TowseyLib
                     Shape s2 = (Shape)shapes[j];
                     if (!s1.Overlaps(s2)) continue;
                     double dy = s1.RowShift(s2);
-                    Console.WriteLine("dy=" + dy);
+                    if (Shape.Verbose) Console.WriteLine("dy=" + dy);
                     if (Math.Abs(dy) > dyThreshold) continue;
                     //Console.WriteLine("dy=" + dy);
 
@@ -303,10 +498,13 @@ namespace TowseyLib
                     if (dy > 0) //s2 to right of s1
                     {
                         s2.c1 = s1.c1;
+                        s2.ColWidth = s2.c2 - s2.c1 + 1;
+
                     }
                     else
                     {
                         s2.c2 = s1.c2;
+                        s2.ColWidth = s2.c2 - s2.c1 + 1;
                     }
                     shapes.RemoveAt(i);
                     //shapes[j] = s2;
@@ -315,15 +513,394 @@ namespace TowseyLib
             return shapes;
         }
 
-        public static ArrayList ProcessShapes(ArrayList shapes)
+        public static ArrayList MergeShapesWithAdjacentRows(ArrayList shapes, int dxThreshold, double ratio)
         {
-            shapes = RemoveSmallShapes(shapes);
-            Console.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
-            shapes = MergeCloseShapes(shapes);
-            Console.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
+            // merge shapes whose ends overlap
+            if (Shape.Verbose) Console.WriteLine("Merge shapes whose sides are adjacent.");
+
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
+                Shape s1 = (Shape)shapes[i];
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    Shape s2 = (Shape)shapes[j];
+                    if (!s1.AdjacentRows(s2)) continue; //not adjacent
+
+                    double dx = s1.ColumnShift(s2);
+                    //Console.WriteLine("dx=" + dx);
+                    if (Math.Abs(dx) > dxThreshold) continue; //too much centroid displacement
+
+                    if (((s1.ColWidth / (double)s2.ColWidth) > ratio) || ((s2.ColWidth / (double)s1.ColWidth) > ratio)) continue; //too much difference in shape width  
+
+                    //average the left and right column bounds
+                    int s1w = s1.ColWidth;
+                    int s2w = s2.ColWidth;
+                    s2.c1 = ((s1.c1 * s1w) + (s2.c1 * s2w)) / (s1w + s2w); // weighted average
+                    s2.c2 = ((s1.c2 * s1w) + (s2.c2 * s2w)) / (s1w + s2w);
+                    //s2.c2 = (s1.c2  + s2.c2) / 2;
+
+                    //adjust the row bounds
+                    if (Math.Abs(s1.r2 - s2.r1) == 1) //s1 is above s2
+                    {
+                        s2.r1 = s1.r1;
+                        s2.RowWidth = s2.r2 - s2.r1 + 1;
+                    }
+                    else  //s1 is below s2
+                    {
+                        s2.r2 = s1.r2;
+                        s2.RowWidth = s2.r2 - s2.r1 + 1;
+                    }
+                    //Console.WriteLine("size="+shapes.Count+"  i="+i);
+                    shapes.RemoveAt(i);  //remove s1
+                    //shapes[j] = s2;    //keep s2
+                    break; //break inner loop if get to here
+                }//inner loop
+            }
             return shapes;
         }
 
+        public static ArrayList RemoveOverlappingShapes(ArrayList shapes)
+        {
+            if (Shape.Verbose) Console.WriteLine("Remove the smaller of any pair of overlapping shapes.");
+
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
+                Shape s1 = (Shape)shapes[i];
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    Shape s2 = (Shape)shapes[j];
+                    if (!s1.Overlaps(s2)) continue; //not overlapping
+                    if (s1.Area() < s2.Area()) shapes.RemoveAt(i);  //remove s1
+                    else
+                    if (s1.Area() > s2.Area())
+                    {
+                        shapes[j] = Shape.Clone(s1);//copy s1 in place of s2
+                        shapes.RemoveAt(i);  //remove s1
+                    }
+                }
+            }
+            return shapes;
+        }
+
+        public static ArrayList RemoveEnclosedShapes(ArrayList shapes)
+        {
+            if (Shape.Verbose) Console.WriteLine("Remove enclosed shapes.");
+
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
+                Shape s1 = (Shape)shapes[i];
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    Shape s2 = (Shape)shapes[j];
+                    if (s2.Encloses(s1))
+                    {
+                        shapes.RemoveAt(i);  //remove s1
+                        continue;
+                    }
+                    if (s1.Encloses(s2))
+                    {
+                        shapes[j] = Shape.Clone(s1);//copy s1 in place of s2
+                        shapes.RemoveAt(i);  //remove s1
+                    }
+                }//inner loop
+            }//outer loop
+            return shapes;
+        }
+
+        public static ArrayList RemoveSmall(ArrayList shapes, int minArea)
+        {
+            for (int i = shapes.Count - 1; i >= 0; i--)
+            {
+                Shape s1 = (Shape)shapes[i];
+                if (s1.Area() < minArea) shapes.RemoveAt(i);
+            }
+            return shapes;
+        }
+
+
+        public static ArrayList ProcessShapes(ArrayList shapes)
+        {
+            shapes = RemoveSmallShapes(shapes);
+            if (Shape.Verbose) Console.WriteLine("Number of shapes after removing small ones=" + shapes.Count);
+            shapes = MergeCloseShapes(shapes);
+            if (Shape.Verbose) Console.WriteLine("Number of shapes after merging close shapes=" + shapes.Count);
+            return shapes;
+        }
+
+        public static double[,] FeatureMatrix(ArrayList shapes)
+        {
+            int count = shapes.Count;
+            if (count == 0) return null;
+            Shape s = (Shape)shapes[0]; //get first shape to identify dimensions
+            double[] features = s.Features();
+            double[,] data = new double[count, features.Length];
+
+            for (int i = 0; i < count; i++)
+            {
+                s = (Shape)shapes[i];
+                features = s.Features_Normalised();
+                for (int j = 0; j < features.Length; j++) data[i, j] = features[j];
+            }
+            return data;
+        }
+
+
+        public static void WriteData2File(ArrayList shapes, string shapesDataFname)
+        {
+            double[,] data = FeatureMatrix(shapes);
+            FileTools.WriteMatrix2File(data, shapesDataFname);
+        }
+
+        public static int[] ClusterShapes(string dataFname)
+        {
+            double[,] trainingData = FileTools.ReadDoubles2Matrix(dataFname);
+            return ClusterShapesWithART2a(trainingData);
+        }
+
+        public static int[] ClusterShapesWithART2a(double[,] trainingData)
+        {
+
+            //DataTools.WriteMinMaxOfFeatures(trainingData);
+            //if (true) Console.ReadLine();
+
+
+            //string paramsFpath = @"C:\etc";
+            int trnSetSize = trainingData.GetLength(0);
+            int F1Size = trainingData.GetLength(1);
+            int F2Size = trnSetSize;
+            int numberOfRepeats = 1;
+            int maxIterations = 100;
+            if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
+            bool[] uncommittedJ = new bool[F2Size];               // : PtrToArrayOfBool;
+            int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2Neta units}
+            int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
+
+            int code = 0;        //        : word; {used for getting error messages}
+
+
+            //{************************** INITIALISE VALUES *************************}
+
+
+            //double[,] parameters = ART.ReadParameterValues(paramsFpath);
+            //int simulationsCount = parameters.GetLength(0);
+            //int paramCount = parameters.GetLength(1);
+            int simulationsCount = 1;
+            double alpha = 0.4;  //increasing alpha proliferates categories - 0.57 is good value
+            double beta = 0.5;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+            double rho = 0.99;   //vigilance parameter - increasing rho proliferates categories
+            double theta = 0.05; //threshold for contrast enhancing
+
+            ART_2A art2a = new ART_2A(F1Size, F2Size);
+
+            //{********** DO SIMULATIONS WITH DIFFERENT PARAMETER VALUES ***********}
+            for (int simul = 0; simul < simulationsCount; simul++)
+            {
+                //pass the eight params for this run of ART2A - alpha, beta, c, d, rho, theta, add1, rhoStar
+                art2a.SetParameterValues(alpha, beta, rho, theta);
+                art2a.WriteParameters();
+                //art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3],);
+                //Console.ReadLine();
+
+                //{********** DO REPEATS ***********}
+                for (int rep = 0; rep < numberOfRepeats; rep++)
+                {
+                    //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
+                    art2a.InitialiseArrays();
+                    code = 0;
+                    art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
+
+                    if (code != 0) break;
+                    noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
+                    //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
+                    //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                    //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
+                    //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                    if (Shape.Verbose) Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+                } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
+
+            }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
+
+            int[] keepScore = art2a.inputCategory;
+            return keepScore;
+
+        } //END of ClusterShapes.
+
+
+        public static int[] ClusterShapesWithFuzzyART(double[,] trainingData, out int committedNodeCount)
+        {
+            FuzzyART.Verbose = Shape.Verbose;
+            if (trainingData == null)
+            {
+                Console.WriteLine("WARNING: ClusterShapesWithFuzzyART() PASSED NULL TRAINING DATA!");
+                committedNodeCount = 0;
+                return null;
+            }
+            //DataTools.WriteMinMaxOfFeatures(trainingData);
+            //if (true) Console.ReadLine();
+
+
+            //string paramsFpath = @"C:\etc";
+            int trnSetSize = trainingData.GetLength(0);
+            int IPSize = trainingData.GetLength(1);
+            int F2Size = trnSetSize;
+            int numberOfRepeats = 1;
+            int maxIterations = 100;
+            if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+            int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
+            int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
+
+            int code = 0;        //        : word; {used for getting error messages}
+
+
+            //{************************** INITIALISE VALUES *************************}
+
+
+            //double[,] parameters = ART.ReadParameterValues(paramsFpath);
+            //int simulationsCount = parameters.GetLength(0);
+            //int paramCount = parameters.GetLength(1);
+            int simulationsCount = 1;
+            //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
+            //double beta = 0.5;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+            //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+            //double theta = 0.05; //threshold for contrast enhancing
+
+            double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
+            double beta = 0.1;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+            double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+            double theta = 0.0; //threshold for contrast enhancing
+
+            FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size);
+
+            //{********** DO SIMULATIONS WITH DIFFERENT PARAMETER VALUES ***********}
+            for (int simul = 0; simul < simulationsCount; simul++)
+            {
+                //pass the eight params for this run of ART2A - alpha, beta, c, d, rho, theta, add1, rhoStar
+                fuzzyART.SetParameterValues(alpha, beta, rho, theta);
+                if (FuzzyART.Verbose) fuzzyART.WriteParameters();
+                //art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3],);
+                //Console.ReadLine();
+
+                //{********** DO REPEATS ***********}
+                for (int rep = 0; rep < numberOfRepeats; rep++)
+                {
+                    //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
+                    fuzzyART.InitialiseArrays();
+                    code = 0;
+                    fuzzyART.TrainNet(trainingData, maxIterations, simul, rep, code);
+
+                    if (code != 0) break;
+                    noOfCommittedF2[rep] = fuzzyART.CountCommittedF2Nodes();
+                    //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
+                    //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                    //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
+                    //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                    //Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+                } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
+
+            }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
+
+            committedNodeCount = noOfCommittedF2[0];
+            int[] keepScore = fuzzyART.inputCategory;
+            return keepScore;
+
+        } //END of ClusterShapesWithFuzzyART.
+
+
+        public static ArrayList AssignCategories(ArrayList shapes, int[] categories)
+        {
+            if (shapes == null) return null;
+            if (categories == null) return shapes;
+
+            for (int i=0; i< shapes.Count; i++)
+            {
+                Shape s = (Shape)shapes[i];
+                s.category = categories[i];
+                shapes[i] = s;
+                //int colorID = ((Shape)shapes[i]).category;
+            }
+
+            return shapes;
+        }
+
+        /// <summary>
+        /// returns a list of shapes that represent the averages of shapes in each category dervied
+        /// from FuzzyART clustering.
+        /// </summary>
+        /// <param name="shapes"></param>
+        /// <param name="categories"></param>
+        /// <param name="categoryCount"></param>
+        /// <returns></returns>
+        public static ArrayList CategoryShapes(ArrayList shapes, int[] categories, int categoryCount)
+        {
+            if (shapes == null)     return null;
+            if (categories == null) return null;
+            if (categoryCount == 0) return null;
+
+            ArrayList categoryShapes = new ArrayList();
+            for (int c = 0; c < categoryCount; c++)
+            {
+                int r1 = 0;
+                int c1 = 0;
+                int r2 = 0;
+                int c2 = 0;
+                int count = 0;
+                for (int i = 0; i < shapes.Count; i++)
+                {
+                    if (categories[i] != c) continue; // skip shapes not in category c
+                    count++; //keep count of numbers in category c
+                    Shape s = (Shape)shapes[i];
+                    r1 += s.r1;
+                    c1 += s.c1;
+                    r2 += s.r2;
+                    c2 += s.c2;
+                }
+                if (count == 0) continue; // no shapes assigned to this category
+                r1 /= count;
+                c1 /= count;
+                r2 /= count;
+                c2 /= count;
+                Shape shape = new Shape(r1, c1, r2, c2);
+                shape.category = c;
+
+                categoryShapes.Add(shape);
+            }
+            return categoryShapes;
+        }
+
+
+        public static int[] Distribution(ArrayList shapes, int binCount)
+        {
+            if (shapes == null) return null;
+
+            int binWidth = Shape.maxCol / binCount; 
+
+            int[] distribution = new int[binCount];
+            for (int i = 0; i < shapes.Count; i++)
+            {
+                Shape s = (Shape)shapes[i];
+                int bin = s.col_Centroid() / binWidth;
+                if (bin >= binCount) bin = binCount - 1;
+                distribution[bin]++;
+            }
+            if (Shape.Verbose) WriteDistribution(distribution);
+            return distribution;
+        }
+
+        public static void WriteDistribution(int[] distribution)
+        {
+            int binCount = distribution.Length; //number of bins
+            Console.WriteLine("\nDistribution over "+binCount+" bins");
+            for (int i = 0; i < binCount; i++)
+            {
+                Console.Write(i+"\t");
+            }
+            Console.WriteLine();
+            for (int i = 0; i < binCount; i++)
+            {
+                Console.Write(distribution[i] + "\t");
+            }
+            Console.WriteLine("Total=" + DataTools.Sum(distribution));
+        }
 
 
 
@@ -335,12 +912,12 @@ namespace TowseyLib
         //****************************************************************************************************************
         //  MAIN METHOD FOR UNIT TESTING 
         
-        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
         static void Main()
         {
             Console.WriteLine("TESTING METHODS IN CLASS DataTools");
 
+            //string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
             if (false) //test1 method AREA, CENTROID and CENTROID-DISTANCE()
             {
@@ -424,7 +1001,7 @@ namespace TowseyLib
                 Console.WriteLine(" dy(s3-s2)= " + s2.RowShift(s3));
 
                 int dyThreshold = 6;
-                list = MergeShapes(list, dyThreshold);
+                list = MergeShapesWhoseEndsOverlap(list, dyThreshold);
                 Console.WriteLine("List size="+list.Count);
                 foreach (Shape s in list)
                 {
