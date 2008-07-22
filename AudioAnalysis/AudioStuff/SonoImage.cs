@@ -13,6 +13,11 @@ using TowseyLib;
 namespace AudioStuff
 {
 
+
+    public enum ImageType { linearScale, melScale, ceptral }
+
+
+
     public sealed class SonoImage
     {
 
@@ -73,12 +78,12 @@ namespace AudioStuff
         public Bitmap CreateBitMapOfTemplate(double[,] matrix)
         {
             this.addGrid = false;
-            int type = 0; //image is linear scale not mel scale
+            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
             return CreateBitmap(matrix, null, type);
         }
 
 
-        public Bitmap CreateBitmap(double[,] sonogram, double[] scoreArray, int type)
+        public Bitmap CreateBitmap(double[,] sonogram, double[] scoreArray, ImageType type)
         {
             int width     = sonogram.GetLength(0);
             int sHeight   = sonogram.GetLength(1);
@@ -89,7 +94,7 @@ namespace AudioStuff
             byte[] hScale = CreateHorizintalScale(width);
             int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
 
-            if (type == 1) //do mel scale conversions
+            if (type == ImageType.melScale) //do mel scale conversions
             {
                 vScale = CreateMelVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
                 double topMel = Speech.Mel(this.topScanBin*hzBin);
@@ -101,7 +106,7 @@ namespace AudioStuff
             if (addGrid) imageHt = scaleHt + sHeight + scaleHt;
             if (scoreArray != null) imageHt += trackHt;
             bool add1kHzLines = addGrid;
-            if(type == 2) add1kHzLines = false;
+            if(type == ImageType.ceptral) add1kHzLines = false;
 
             double min;
             double max;
@@ -166,6 +171,8 @@ namespace AudioStuff
                         if (c < 0) c = 0;      //truncate if < 0
                         else
                         if (c >= 256) c = 255; //truncate if >255
+                        //c /= 2; //half the image intensity
+
                         c = 255 - c; //reverse the gray scale
 
                         int g = c + 40; //green tinge used in the template scan band 
@@ -225,152 +232,6 @@ namespace AudioStuff
             bmp.UnlockBits(bmpData);
             return bmp;
         }
-
-
-        public Bitmap CreateBitmap(double[,] sonogram, ArrayList shapes)
-        {
-
-            int width = sonogram.GetLength(0);
-            int sHeight = sonogram.GetLength(1);
-            int imageHt = sHeight; //image ht= sonogram ht. Later include grid and score scales
-            double hzBin = NyquistF / (double)sHeight;
-            double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
-
-            byte[] hScale = CreateHorizintalScale(width);
-            int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
-        //if (type == 1) //do mel scale conversions
-        //{
-        //    vScale = CreateMelVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
-        //    double topMel = Speech.Mel(this.topScanBin * hzBin);
-        //    double botMel = Speech.Mel(this.bottomScanBin * hzBin);
-        //    this.topScanBin = (int)(topMel / melBin);
-        //    this.bottomScanBin = (int)(botMel / melBin);
-        //}
-
-            if (addGrid) imageHt = scaleHt + sHeight + scaleHt;
-            bool add1kHzLines = addGrid;
-            //if (type == 2) add1kHzLines = false;
-
-            double min;
-            double max;
-            DataTools.MinMax(sonogram, out min, out max);
-            double range = max - min;
-
-            Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
-            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, imageHt), ImageLockMode.WriteOnly, bmp.PixelFormat);
-            if (bmpData.Stride < 0) throw new NotSupportedException("Bottum-up bitmaps");
-
-
-            //Console.WriteLine("hScaleLength=" + hScale.GetLength(0) + "  width=" + width);
-
-
-            unsafe
-            {
-                byte* p0 = (byte*)bmpData.Scan0;
-
-                if (addGrid) //add top time line with one second tick intervals
-                {
-                    byte* p1 = p0;
-
-                    for (int h = 0; h < scaleHt; h++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            *p1++ = hScale[x]; //b          
-                            *p1++ = hScale[x]; //g          
-                            *p1++ = hScale[x]; //r           
-                        }
-                        //*p1++ = hScale[width-1]; //b          
-                        //*p1++ = hScale[width-1]; //g          
-                        //*p1++ = hScale[width-1]; //r 
-
-                        p0 += bmpData.Stride;  //add in the scale
-                    }
-                } //end of adding time grid
-
-                int gridCount = vScale.Length - 1; //used to control addition of horizontal grid lines
-                for (int y = sHeight; y > 0; y--) //over all freq bins from high to low
-                {
-                    byte* p1 = p0;
-
-                    //add in 1 kHz grid line
-                    if (add1kHzLines && (gridCount >= 0) && (y == vScale[gridCount]))
-                    {
-                        gridCount--;
-                        for (int x = 0; x < width; x++)
-                        {
-                            *p1++ = (byte)200;   //b         
-                            *p1++ = (byte)200;   //g  //light gray - for red: b=50,g=100,r=200
-                            *p1++ = (byte)200;   //r       
-                        }
-                        p0 += bmpData.Stride;
-                        continue;
-                    }
-
-                    for (int x = 0; x < width; x++) //for pixels in the line
-                    {
-                        //normalise and bound the value - use min bound, max and 255 image intensity range
-                        double normal = (sonogram[x, y - 1] - min) / range;
-                        int c = (int)Math.Floor(255.0 * normal); //original version
-                        //int c = (int)Math.Floor(255.0 * normal * normal); //take square of normalised value to enhance features
-
-                        if (c < 0) c = 0;      //truncate if < 0
-                        else
-                            if (c >= 256) c = 255; //truncate if >255
-                        c = 255 - c; //reverse the gray scale
-
-                        Shape shape = Shape.GetShape(x, y, shapes);
-                        //shape = null;
-
-                        int g = c + 40; //green tinge used in the template scan band 
-                        if (g >= 256) g = 255;
-                        //  *p1++ = (byte)c; //b           c 
-                        //  *p1++ = (byte)c; //g          (c/2)
-                        //  *p1++ = (byte)c; //r           0
-
-                        if (shape != null)
-                        {
-                            *p1++ = (byte)c; //b           c 
-                            *p1++ = (byte)shape.RandomNumber; //g          (c/2)
-                            *p1++ = (byte)c; //r           0
-                        }
-                        else
-                        {
-                            *p1++ = (byte)c; //b           c 
-                            *p1++ = (byte)c; //g          (c/2)
-                            *p1++ = (byte)c; //r           0
-                            //*p1++ = (byte)255; //b           c 
-                            //*p1++ = (byte)255; //g          (c/2)
-                            //*p1++ = (byte)255; //r           0
-                        }
-
-
-                    }
-                    p0 += bmpData.Stride;
-                }//end over all freq bins
-
-                if (addGrid)//add bottom time line with one second tick intervals
-                {
-                    byte* p1 = p0;
-                    for (int h = 0; h < scaleHt; h++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            *p1++ = hScale[x]; //b          
-                            *p1++ = hScale[x]; //g          
-                            *p1++ = hScale[x]; //r           
-                        }
-                        p0 += bmpData.Stride;  //add in the scale
-                    }
-                } //end of adding seconds ticks
-
-
-            } //end unsafe
-
-            bmp.UnlockBits(bmpData);
-            return bmp;
-        }
-
 
 
         public int[] CreateLinearVerticleScale(int herzInterval, int imageHt)
@@ -481,7 +342,8 @@ namespace AudioStuff
         public Bitmap AddShapeBoundaries(Bitmap bmp, ArrayList shapes, Color col)
         {
             int x1; int y1; int x2; int y2;
-            int mWidth = bmp.Height; 
+            int mWidth = bmp.Height;
+            Color shapeColor;
 
             foreach (Shape shape in shapes)
             {
@@ -489,14 +351,73 @@ namespace AudioStuff
                 int c1 = shape.c1;
                 int r2 = shape.r2;
                 int c2 = shape.c2;
+                int colorCount = ImageTools.darkColors.Length;
+                int colorID = shape.category % colorCount;
+                if (shape.category == -1) shapeColor = col;
+                else                      shapeColor = ImageTools.darkColors[colorID];
+                //Console.WriteLine("category=" + shape.category);
+                
                 TransformCoordinates(r1,c1,r2,c2,out x1, out y1, out x2, out y2, mWidth);
-                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y1, col);
-                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y2, col);
-                for (int i = y1; i <= y2; i++) bmp.SetPixel(x1, i, col);
-                for (int i = y1; i <= y2; i++) bmp.SetPixel(x2, i, col);
+                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y1, shapeColor);
+                for (int i = x1; i <= x2; i++) bmp.SetPixel(i, y2, shapeColor);
+                for (int i = y1; i <= y2; i++) bmp.SetPixel(x1, i, shapeColor);
+                for (int i = y1; i <= y2; i++) bmp.SetPixel(x2, i, shapeColor);
             }
             return bmp;
         }
+
+        public Bitmap AddShapeSolids(Bitmap bmp, ArrayList shapes, Color col)
+        {
+            int x1; int y1; int x2; int y2;
+            int mWidth = bmp.Height;
+            Color shapeColor = col;
+            //int categoryToView = 14;
+
+            foreach (Shape shape in shapes)
+            {
+                int r1 = shape.r1;
+                int c1 = shape.c1;
+                int r2 = shape.r2;
+                int c2 = shape.c2;
+                //if (shape.category != categoryToView) continue;
+                int colorCount = ImageTools.darkColors.Length;
+                int colorID = shape.category % colorCount;
+                //if (shape.category == -1) shapeColor = col;
+                //else shapeColor = ImageTools.darkColors[colorID];
+
+                TransformCoordinates(r1, c1, r2, c2, out x1, out y1, out x2, out y2, mWidth);
+                for (int i = x1; i <= x2; i++) 
+                for (int j = y1; j <= y2; j++) bmp.SetPixel(i, j, shapeColor);
+            }
+            return bmp;
+        }
+
+        public Bitmap AddCentroidBoundaries(Bitmap bmp, ArrayList shapes, Color col)
+        {
+            int x1; int y1; int x2; int y2;
+            int mWidth = bmp.Height;
+            Color shapeColor = col;
+            int r1 = 0;
+
+            foreach (Shape shape in shapes)
+            {
+                r1 += 10;
+                int c1 = shape.c1;
+                int r2 = r1 + shape.RowWidth;
+                int c2 = shape.c2;
+                int colorCount = ImageTools.darkColors.Length;
+                int colorID = shape.category % colorCount;
+                //if (shape.category == -1) shapeColor = col;
+                //else shapeColor = ImageTools.darkColors[colorID];
+
+                TransformCoordinates(r1, c1, r2, c2, out x1, out y1, out x2, out y2, mWidth);
+                for (int i = x1; i <= x2; i++)
+                    for (int j = y1; j <= y2; j++) bmp.SetPixel(i, j, shapeColor);
+                r1 += shape.RowWidth;
+            }
+            return bmp;
+        }
+
 
 
 
