@@ -24,6 +24,7 @@ namespace AudioStuff
         //private readonly int scanType = 4; //noise noise stratified
         //private readonly int scanType = 5; //inverse of euclidan distance
 
+
         private readonly int noiseSampleCount = 10000;
 
         private int templateID;
@@ -42,10 +43,8 @@ namespace AudioStuff
 
         private double recordingLength; //total length in seconds of sonogram
         public double RecordingLength { get { return recordingLength; } set { recordingLength = value; } }
-        private double maxSignal; //max amplitude in original wav signal
-        public double SignalMax { get { return maxSignal; } set { maxSignal = value; } }
-        private double maxPower;  //max power in sonogram
-        public double PowerMax { get { return maxPower; } set { maxPower = value; } }
+        public double SignalMax { get; set; }//max amplitude in original wav signal
+        public double PowerMax { get; set; } //max power in sonogram
         public double PowerAvg { get; set; }
         public static int FreqBandCount { get; set; }
 
@@ -202,9 +201,9 @@ namespace AudioStuff
             this.WavHour = s.State.Hour;
             this.WavMinute = s.State.Minute;
             this.WavTimeSlot = s.State.TimeSlot;
-            this.SignalMax = s.State.SignalMax;
-            this.PowerAvg = s.State.AvgPower;
-            this.PowerMax = s.State.MaxPower;
+            this.SignalMax = s.State.SignalAbsMax;
+            this.PowerAvg = s.State.PowerAvg;
+            this.PowerMax = s.State.PowerMax;
             this.ZscoreSmoothingWindow = s.State.ZscoreSmoothingWindow;
             this.zScoreThreshold = s.State.ZScoreThreshold;
             this.spectraPerSecond = s.State.SpectrumCount / (double)s.State.AudioDuration;
@@ -216,12 +215,7 @@ namespace AudioStuff
         public void Scan(Sonogram s, int scanType)
         {
             ExchangeData(s);
-            //this.results = s.Results;
-            double[,] sonogram = s.Matrix;
-
-
-            //normalise sonogram to [0,1]
-            double[,] normSonogram = DataTools.normalise(sonogram);
+            double[,] m = DataTools.normalise(s.Matrix);
             double[] scores;
             double noiseAv;
             double noiseSd;
@@ -229,32 +223,25 @@ namespace AudioStuff
             switch(scanType)
             {
                 case 1:  //noise totally random
-                scores = Scan_DotProduct(normSonogram);
+                    scores = Scan_DotProduct(m);
                 //calculate the av/sd of template scores for noise model and store in results
-                NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
+                    NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 break;
 
                 case 2:   //Cross Correlation
-                scores = Scan_CrossCorrelation(normSonogram);
-                NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
-                break;
-
-                case 3:   //noise precalculated
-                scores = Scan_DotProduct(normSonogram);
-                noiseAv = this.NoiseAv;
-                noiseSd = this.NoiseSd;
-                Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
+                scores = Scan_CrossCorrelation(m);
+                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 break;
 
                 case 4:   //noise stratified
-                scores = Scan_DotProduct(normSonogram);
-                NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
+                scores = Scan_DotProduct(m);
+                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
                 break;
 
                 case 5:   //Euclidian
-                scores = Scan_Euclidian(normSonogram);
-                NoiseResponse(normSonogram, out noiseAv, out noiseSd, noiseSampleCount, scanType);
+                scores = Scan_Euclidian(m);
+                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
                 break;
 
                 default:
@@ -265,13 +252,14 @@ namespace AudioStuff
         }
 
 
-        public double[] Scan_DotProduct(double[,] normSonogram)
+        public double[] Scan_DotProduct(double[,] normMatrix)
         {
+
             //calculate ranges of templates etc
             int tWidth  = template.GetLength(0);
             int tHeight = template.GetLength(1);
-            int sWidth  = normSonogram.GetLength(0);
-            int sHeight = normSonogram.GetLength(1);
+            int sWidth = normMatrix.GetLength(0);
+            int sHeight = normMatrix.GetLength(1);
 
             this.fBinWidth     = this.maxFreq/(double)sHeight;
             this.midScanBin    = (int)(this.MidTemplateFreq / this.fBinWidth);
@@ -296,7 +284,7 @@ namespace AudioStuff
                 {
                     for (int j = 0; j < tHeight; j++)
                     {
-                        sum += (normSonogram[x + i, this.bottomScanBin + j] * template[i, j]);
+                        sum += (normMatrix[x + i, this.bottomScanBin + j] * template[i, j]);
                     }
                 }
                 scores[x + halfWidth] = sum / cellCount; //place score in middle of template
@@ -313,13 +301,13 @@ namespace AudioStuff
             return scores;
         }
 
-        public double[] Scan_Euclidian(double[,] normSonogram)
+        public double[] Scan_Euclidian(double[,] normMatrix)
         {
             //calculate ranges of templates etc
             int tWidth = template.GetLength(0);
             int tHeight = template.GetLength(1);
-            int sWidth = normSonogram.GetLength(0);
-            int sHeight = normSonogram.GetLength(1);
+            int sWidth = normMatrix.GetLength(0);
+            int sHeight = normMatrix.GetLength(1);
 
             this.fBinWidth = this.maxFreq / (double)sHeight;
             this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
@@ -341,7 +329,7 @@ namespace AudioStuff
                 {
                     for (int j = 0; j < tHeight; j++)
                     {
-                        double v = normSonogram[x + i, this.bottomScanBin + j] - template[i, j];
+                        double v = normMatrix[x + i, this.bottomScanBin + j] - template[i, j];
                         sum += (v*v);
                     }
                 }
@@ -359,13 +347,13 @@ namespace AudioStuff
             return scores;
         }
 
-        public double[] Scan_CrossCorrelation(double[,] normSonogram)
+        public double[] Scan_CrossCorrelation(double[,] normMatrix)
         {
             //calculate ranges of templates etc
             int tWidth = template.GetLength(0);
             int tHeight = template.GetLength(1);
-            int sWidth = normSonogram.GetLength(0);
-            int sHeight = normSonogram.GetLength(1);
+            int sWidth = normMatrix.GetLength(0);
+            int sHeight = normMatrix.GetLength(1);
 
             this.fBinWidth = this.maxFreq / (double)sHeight;
             this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
@@ -377,14 +365,16 @@ namespace AudioStuff
 
             //normalise template to difference from mean
             this.Template = DataTools.DiffFromMean(this.Template);
-            normSonogram = DataTools.DiffFromMean(normSonogram);  //############################################
+            //normMatrix = ImageTools.TrimPercentiles(normMatrix);
+            normMatrix = DataTools.DiffFromMean(normMatrix);  //############################################
+
 
             double[] scores = new double[sWidth];
             double avScore = 0.0;
             for (int r = 0; r < (sWidth - tWidth); r++)//scan over sonogram
             {
                 //Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tWidth)+"  topScanBin="+topScanBin);
-                double[,] subMatrix = DataTools.Submatrix(normSonogram, r, bottomScanBin, r + tWidth, topScanBin);
+                double[,] subMatrix = DataTools.Submatrix(normMatrix, r, bottomScanBin, r + tWidth, topScanBin);
                 //subMatrix = DataTools.DiffFromMean(subMatrix);  //############################################
                 double ccc = DataTools.DotProduct(this.Template, subMatrix);  //cross-correlation coeff
                 scores[r + halfWidth] = ccc / cellCount; //place score in middle of template
@@ -587,7 +577,7 @@ namespace AudioStuff
 
             //find first peak
             int i=0;
-            while (i < L && !peaks[i]) i++;
+            while ((! peaks[i])&&(i<(L-1))) i++;
             int prevLoc = i;
 
             while (i<L)
@@ -820,7 +810,10 @@ namespace AudioStuff
             return sum/cellCount;
         } //end scoreMatch_CrossCorrelation()
 
-
+        public static string ResultsHeader()
+        {
+            return Results.ResultsHeader();
+        }
 
         public void WriteResults()
         {
@@ -836,42 +829,6 @@ namespace AudioStuff
             Console.WriteLine(" Number of template hits =" + this.results.Hits);
             Console.WriteLine(" Template Period Score =" + this.results.BestCallScore);
             Console.WriteLine(" Maximum Period score at " /*+ this.results.MaxFilteredScore.ToString("F1") + " at "*/ + this.results.BestScoreLocation.ToString("F1") + " s");
-        }
-
-
-        public static string ResultHeader()
-        {
-            return Results.ResultHeader();
-        }
-
-        public string OneLineResult(int id)
-        {
-            string spacer = "\t";
-            StringBuilder sb = new StringBuilder();
-            sb.Append(id + spacer); //CALLID
-            //sb.Append(DateTime.Now.ToString("u") + spacer); //DATE
-            sb.Append(this.WavName.ToString() + spacer); //sonogram FNAME
-            sb.Append(this.WavDate.ToString() + spacer); //sonogram date
-            sb.Append(this.Deploy + spacer); //Deployment name
-            sb.Append(this.WavDuration.ToString("F2") + spacer); //length of recording
-            sb.Append(this.WavHour + spacer); //hour when recording made
-            sb.Append(this.WavMinute + spacer); //hour when recording made
-            sb.Append(this.WavTimeSlot + spacer); //hour when recording made
-
-            sb.Append(this.SignalMax.ToString("F4") + spacer);
-            sb.Append(this.PowerMax.ToString("F4") + spacer);
-            sb.Append(this.PowerAvg.ToString("F4") + spacer);
-            sb.Append(this.MinGrad.ToString("F4") + spacer);
-            sb.Append(this.MaxGrad.ToString("F4") + spacer);
-
-            for (int f = 0; f < Results.NumberOfFreqBands; f++) sb.Append(this.results.EventHisto[f].ToString("F4") + spacer);
-            sb.Append(this.results.EventAverage.ToString("F4") + spacer); //avg number of events per band per sec
-            sb.Append(this.results.EventEntropy.ToString("F4") + spacer); //Event Entropy
-
-            sb.Append(this.results.Hits.ToString("D3") + spacer); //Hits
-            sb.Append(this.results.BestCallScore.ToString("F4") + spacer);
-            sb.Append(this.results.BestScoreLocation.ToString("F4") + spacer);
-            return sb.ToString();
         }
 
 
@@ -896,7 +853,10 @@ namespace AudioStuff
     /// </summary>
     public class Results
     {
-        public static int NumberOfFreqBands = 11;
+        public const int analysisBandCount = 11;   //number of bands in which to divide freq columns of sonogram for analysis
+        public const string spacer = "\t";  //used when writing data arrays to file
+        public const char spacerC   = '\t';  //used as match for splitting string
+
 
         public double MinGrad { get; set; }
         public double MaxGrad { get; set; }
@@ -906,12 +866,11 @@ namespace AudioStuff
         public double[] Zscores { get; set; } // the Z-scores
         public double[] Fscores { get; set; } // the filtered Z-scores 
         public double[] PowerHisto { get; set; }
-        //public double   PowerEntropy { get; set; }
         public double[] EventHisto { get; set; }
         public double EventAverage { 
             get{ double sum = 0.0;
-            for (int i = 0; i < NumberOfFreqBands; i++) sum += EventHisto[i];
-                return sum / (double)NumberOfFreqBands;
+            for (int i = 0; i < Results.analysisBandCount; i++) sum += EventHisto[i];
+            return sum / (double)Results.analysisBandCount;
             }}
         public double EventEntropy { get; set; }
         public double[] ActivityHisto { get; set; }
@@ -928,10 +887,6 @@ namespace AudioStuff
                 Console.WriteLine(" Freq band " + i + "-" + (i + 1) + "kHz=\t" + PowerHisto[i].ToString("F2") + " dB");
             }
         }
-        //public void WritePowerEntropy()
-        //{
-        //    Console.WriteLine("Power Rel. Entropy="+this.PowerEntropy.ToString("F3"));
-        //}
 
         public void WriteActivityHisto()
         {
@@ -954,9 +909,8 @@ namespace AudioStuff
             Console.WriteLine(" Event Rel. Entropy=" + this.EventEntropy.ToString("F3"));
         }
 
-        public static string ResultHeader()
+        public static string ResultsHeader()
         {
-            string spacer = "\t";
             StringBuilder sb = new StringBuilder();
             sb.Append("#" + spacer);
             sb.Append("Name                " + spacer);
@@ -967,19 +921,163 @@ namespace AudioStuff
             sb.Append("Min " + spacer);
             sb.Append("TSlot" + spacer);
 
-            sb.Append("SigMax" + spacer);
-            sb.Append("PowMax" + spacer);
-            sb.Append("PowAvg" + spacer);
-            sb.Append("MinGrad" + spacer);
-            sb.Append("MaxGrad" + spacer);
-
-            for (int f = 0; f < NumberOfFreqBands; f++) sb.Append("FrBnd" + f + spacer);
-            sb.Append("EventAv" + spacer);
-            sb.Append("EventH" + spacer);
-
             sb.Append("Hits " + spacer);
             sb.Append("MaxScr" + spacer);
             sb.Append("MaxLoc" + spacer);
+            return sb.ToString();
+        }
+
+
+        public static string AnalysisHeader()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("#" + spacer);
+            sb.Append("Name                " + spacer);
+            sb.Append("Date    " + spacer);
+            sb.Append("Dploy" + spacer);
+            sb.Append("Durat" + spacer);
+            sb.Append("Hour" + spacer);
+            sb.Append("Min " + spacer);
+            sb.Append("TSlot" + spacer);
+
+            sb.Append("SgMaxi" + spacer);
+            sb.Append("SgAvMx" + spacer);
+            sb.Append("SgRati" + spacer);
+            sb.Append("PwrMax" + spacer);
+            sb.Append("PowrAvg" + spacer);
+
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
+            sb.Append("Sylls" + spacer);
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
+            sb.Append("Catgs" + spacer);
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Monot" + f + spacer);
+            sb.Append("Monotny" + spacer);
+            sb.Append("Name" + spacer);
+
+
+            // element content
+            //0 #
+            //1 Name 
+            //2 Date
+            //3 Dploy   deployment
+            //4 Durat   duration
+            //5 Hour
+            //6 Min
+            //7 TSlot    48 timeslots in 24 hours
+            //8 SigMax
+            //9 SgAvMx
+            //10 SgRatio
+            //11 PwrMax
+            //13 PwrAvg
+
+            //14 FrBnd0 syllables in freq band
+            //15 FrBnd1
+            //16 FrBnd2
+            //17 FrBnd3
+            //18 FrBnd4
+            //19 FrBnd5
+            //20 FrBnd6
+            //21 FrBnd7
+            //22 FrBnd8
+            //23 FrBnd9
+            //24 FrBnd10
+            //25 Sylls  syllable total over all freq bands of sonogram
+
+            //26 FrBnd0 clusters in freq band 
+            //27 FrBnd1
+            //28 FrBnd2
+            //29 FrBnd3
+            //30 FrBnd4
+            //31 FrBnd5
+            //32 FrBnd6
+            //33 FrBnd7
+            //34 FrBnd8
+            //35 FrBnd9
+            //36 FrBnd10
+            //37 Catgs  cluster total over all freq bands of sonogram
+
+            //38 FrBnd0 monotony in freq band
+            //39 FrBnd1
+            //40 FrBnd2
+            //41 FrBnd3
+            //42 FrBnd4
+            //43 FrBnd5
+            //44 FrBnd6
+            //45 FrBnd7
+            //46 FrBnd8
+            //47 FrBnd9
+            //48 FrBnd10
+            //49 Av monotony over all freq bands of sonogram
+            //50 Name (same as element 1)
+
+            return sb.ToString();
+        }
+        public static string Analysis24HourHeader()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append("Time" + spacer);
+
+            sb.Append("SgMaxi" + spacer);
+            sb.Append("SgAvMx" + spacer);
+            sb.Append("SgRati" + spacer);
+            sb.Append("PwrMax" + spacer);
+            sb.Append("PowrAvg" + spacer);
+
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
+            sb.Append("Sylls" + spacer);
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
+            sb.Append("Catgs" + spacer);
+            for (int f = 0; f < analysisBandCount; f++) sb.Append("Mon" + f + spacer);
+            sb.Append("Mntny" + spacer);
+
+
+            // element content
+            //7 Time    48 timeslots in 24 hours
+            //8 SigMax
+            //9 SgAvMx
+            //10 SgRati
+            //11 PwrMax
+            //12 PwrAvg
+
+            //13 FrBnd0 syllables in freq band
+            //14 FrBnd1
+            //15 FrBnd2
+            //16 FrBnd3
+            //17 FrBnd4
+            //18 FrBnd5
+            //19 FrBnd6
+            //20 FrBnd7
+            //21 FrBnd8
+            //22 FrBnd9
+            //23 FrBnd10
+            //24 Sylls  syllable total over all freq bands of sonogram
+
+            //25 FrBnd0 clusters in freq band 
+            //26 FrBnd1
+            //27 FrBnd2
+            //28 FrBnd3
+            //29 FrBnd4
+            //30 FrBnd5
+            //31 FrBnd6
+            //32 FrBnd7
+            //33 FrBnd8
+            //34 FrBnd9
+            //35 FrBnd10
+            //36 Catgs  cluster total over all freq bands of sonogram
+
+            //37 FrBnd0 monotony in freq band
+            //38 FrBnd1
+            //39 FrBnd2
+            //40 FrBnd3
+            //41 FrBnd4
+            //42 FrBnd5
+            //43 FrBnd6
+            //44 FrBnd7
+            //45 FrBnd8
+            //46 FrBnd9
+            //47 FrBnd10
+            //48 Av monotony over all freq bands of sonogram
+
             return sb.ToString();
         }
 
@@ -1000,106 +1098,89 @@ namespace AudioStuff
             /// </summary>
         static void Main()
         {
+            //WARNING!! timeSlotCount = 48 MUST BE CONSISTENT WITH TIMESLOT CALCULATION IN class SonoConfig.SetDateAndTime(string fName)
+            // that is, every half hour
             const int timeSlotCount = 48;
-            const int freqBandCount = 11;
-            const string testDirName = @"C:\SensorNetworks\TestOutput_Exp5\";
-            const string resultsFile = "outputCall6_Exp5.txt";
+
+            const string testDirName = @"C:\SensorNetworks\TestOutput_Exp7\";
+            const string resultsFile = "outputAnalysisExp7.txt";
             string ipPath = testDirName + resultsFile;
-            const string opFile = "Exp5_24hrCycle.txt";
+            const string opFile = "Exp7_24hrCycle.txt";
             string opPath = testDirName + opFile;
 
+            Console.WriteLine("START ANALYSIS. \n  output to: " + opPath);
+
+
             //set up arrays to contain TimeSlot info
-            int[] counts = new int[timeSlotCount];
-            double[] signalMaxs = new double[timeSlotCount]; //column 8
-            double[] powerMaxs = new double[timeSlotCount];  //column 9
-            double[] powerAvgs = new double[timeSlotCount];  //column 10
-            double[] eventAvgs = new double[timeSlotCount];  //column 24
-            double[] eventEntropy= new double[timeSlotCount];
-            double[,] frBand = new double[timeSlotCount, freqBandCount];
+            int[] counts = new int[timeSlotCount]; //require counts in each time slot for averages
+            double[] signalMax = new double[timeSlotCount]; //column 8
+            double[] sigAvgMax = new double[timeSlotCount]; //column 9
+            double[] sigMRatio = new double[timeSlotCount]; //column 10
+            double[] powerMaxs = new double[timeSlotCount];  //column 11
+            double[] powerAvgs = new double[timeSlotCount];  //column 12
 
+            double[,] syllBand = new double[timeSlotCount, Results.analysisBandCount]; //columns 13 - 23 syllables in freq band
+            double[] syllables = new double[timeSlotCount];  //column 24
 
-            // element content
-            //#  name
-            //0 #
-            //1 Name                	   			Name                	Cicadas	Kek-kek
-            //2 Date
-            //3 Dploy   deployment
-            //4 Durat   duration
-            //5 Hour
-            //6 Min
-            //7 TSlot    48 timeslots in 24 hours
-            //8 SigMax
-            //9 PowMax
-            //10 PowAvg
-            //11 MinGrad
-            //12 MaxGrad
-            //13 FrBnd0 event in freq band over 1 sec
-            //14 FrBnd1
-            //15 FrBnd2
-            //16 FrBnd3
-            //17 FrBnd4
-            //18 FrBnd5
-            //19 FrBnd6
-            //20 FrBnd7
-            //21 FrBnd8
-            //22 FrBnd9
-            //23 FrBnd10
-            //24 EventAv  event average over 11 freq bands
-            //25 EventH event relative entropy
-            //26 Hits   kek-kek hits
-            //27 MaxScr
-            //28 MaxLoc
-            //29 Name
-            //30 Cicadas present 0/1
-            //31 Kek-kek present 0/1
-            
+            double[,] clstBand = new double[timeSlotCount, Results.analysisBandCount]; //columns 25 - 35 syllables in freq band
+            double[] clusters  = new double[timeSlotCount];  //column 36
+
+            double[,] monotony = new double[timeSlotCount, Results.analysisBandCount]; //columns 37 - 47 syllables in freq band
+            double[] avMonotny = new double[timeSlotCount];  //column 48
+
             
             using (TextReader reader = new StreamReader(ipPath))
             {
                 string line = reader.ReadLine(); //skip the first header line
                 while ((line = reader.ReadLine()) != null)
                 {
-                    string[] words = line.Split('\t');
-                   //Console.WriteLine(words[7]+"   "+words[13]);
+                    if (line == "\t") continue;
+                    if (line == "") continue;
+                    string[] words = line.Split(spacerC);
+                    Console.WriteLine(words[0] + "   " + words[7] + "   " + words[13]);
                    int id = Int32.Parse(words[7]);  //the time slot
 
-                   counts[id]++;
-                   double sigMax = Double.Parse(words[8]);
-                   signalMaxs[id] += sigMax;
-                   double pMax = Double.Parse(words[9]);
-                   powerMaxs[id] += pMax;
-                   double pAvg = Double.Parse(words[10]);
-                   powerAvgs[id] += pAvg;
-                   for (int f = 0; f < freqBandCount; f++ )
-                   {
-                       double v = Double.Parse(words[13+f]);
-                       frBand[id, f] += v;
-                   }
-                   double eventAvg = Double.Parse(words[24]);
-                   eventAvgs[id] += eventAvg;
-                   double eventH = Double.Parse(words[25]);
-                   eventEntropy[id] += eventH;
+                   counts[id]++; //require counts in each time slot for averages
+                   signalMax[id] += Double.Parse(words[8]);  //SUM ALL VALUES FOR CALCULATION OF AVERAGES
+                   sigAvgMax[id] += Double.Parse(words[9]);
+                   sigMRatio[id] += Double.Parse(words[10]);
+                   powerMaxs[id] += Double.Parse(words[11]);
+                   powerAvgs[id] += Double.Parse(words[12]);
+
+                   for (int f = 0; f < Results.analysisBandCount; f++) syllBand[id, f] += Int32.Parse(words[13 + f]);
+                   syllables[id] += Int32.Parse(words[24]);
+
+                   for (int f = 0; f < Results.analysisBandCount; f++) clstBand[id, f] += Int32.Parse(words[25 + f]);
+                   clusters[id] += Int32.Parse(words[36]);
+
+                   for (int f = 0; f < Results.analysisBandCount; f++) monotony[id, f] += Double.Parse(words[37 + f]);
+                   avMonotny[id] += Double.Parse(words[48]);
+
                 }//end while
             }//end using
 
 
             ArrayList opLines = new ArrayList();
-            string header = "time\tsigMax\tpMax\tpAvg\tevents\trelEnt";
-            opLines.Add(header);
-            for (int i = 0; i < signalMaxs.Length; i++)
+            opLines.Add(Results.Analysis24HourHeader());
+            for (int i = 0; i < timeSlotCount; i++)
             {
-                string line = ((i) / (double)2).ToString("F1")
-                + "\t" + (signalMaxs[i] / (double)counts[i]).ToString("F2")
-                + "\t" + (powerMaxs[i] / (double)counts[i]).ToString("F2")
-                + "\t" + (powerAvgs[i] / (double)counts[i]).ToString("F2");
+                string line = ((i / (double)2).ToString("F1") //calculate time as 24 hour clock
+                +"\t" + (signalMax[i] / (double)counts[i]).ToString("F4")
+                +"\t" + (sigAvgMax[i] / (double)counts[i]).ToString("F4")
+                +"\t" + (sigMRatio[i] / (double)counts[i]).ToString("F4")
+                +"\t" + (powerMaxs[i] / (double)counts[i]).ToString("F2")
+                +"\t" + (powerAvgs[i] / (double)counts[i]).ToString("F2"));
 
-                for (int f = 0; f < freqBandCount; f++)
-                    line += ("\t" + (frBand[i,f] / (double)counts[i]).ToString("F2"));
+                for (int f = 0; f < Results.analysisBandCount; f++) line += ("\t" + (syllBand[i, f] / (double)counts[i]).ToString("F2"));
+                line += "\t" + (syllables[i] / (double)counts[i]).ToString("F2");
 
-                line +=  ("\t" + (eventAvgs[i] / (double)counts[i]).ToString("F2")
-                        + "\t" + (eventEntropy[i] / (double)counts[i]).ToString("F2"));
+                for (int f = 0; f < Results.analysisBandCount; f++) line += ("\t" + (clstBand[i, f] / (double)counts[i]).ToString("F2"));
+                line += "\t" + (clusters[i] / (double)counts[i]).ToString("F2");
 
-                Console.WriteLine(line);
+                for (int f = 0; f < Results.analysisBandCount; f++) line += ("\t" + (monotony[i, f] / (double)counts[i]).ToString("F2"));
+                line += "\t" + (avMonotny[i] / (double)counts[i]).ToString("F2");
+
+                //Console.WriteLine(line);
                 opLines.Add(line);
             }
             FileTools.WriteTextFile(opPath, opLines);
