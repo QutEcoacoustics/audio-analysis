@@ -578,6 +578,65 @@ namespace TowseyLib
 
 
 
+  /// <summary>
+  /// Returns binary matrix with values set = 1 if they exceed the threshold else set = 0;
+  /// </summary>
+  /// <param name="matrix"></param>
+  /// <returns></returns>
+  public static double[,] Threshold(double[,] matrix, double threshold)
+  {
+      int height = matrix.GetLength(0);
+      int width = matrix.GetLength(1);
+      double[,] M = new double[height, width];
+
+      for (int col = 0; col < width; col++)//for all cols
+      {
+          for (int y = 0; y < height; y++) //for all rows
+          {
+              if (matrix[y, col] < threshold) M[y, col] = 0.0;
+              else M[y, col] = 1.0;
+          }
+      }//for all cols
+      return M;
+  }// end of Threshold()
+
+
+
+
+  public static double[] GetColumn(double[,] m, int colID)
+  {
+      int rows = m.GetLength(0);
+      double[] column = new double[rows];
+      for (int i = 0; i < rows; i++) column[i] = m[i,colID];
+      return column;
+  }
+
+  public static double[] GetRow(double[,] m, int rowID)
+  {
+      int cols = m.GetLength(1);
+      double[] row = new double[cols];
+      for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
+      return row;
+  }
+
+
+        //copy first n values of vector1 into vector 2}
+    public static double[] CopyVector(int n, double[] v1)
+    {
+        double[] v2 = new double[v1.Length];
+        for (int i = 0; i < n; i++) v2[i] = v1[i];
+        return v2;
+    }
+    //returns copy of a vector
+    public static double[] CopyVector(double[] v1)
+    {
+        double[] v2 = new double[v1.Length];
+        for (int i = 0; i < v1.Length; i++) v2[i] = v1[i];
+        return v2;
+    }
+
+
+
     /// <summary>
     /// normalise an array of double between 0 and 1
     /// </summary>
@@ -842,7 +901,7 @@ namespace TowseyLib
     }
     // square root of sum to get vector mapLength
     double norm = Math.Sqrt(SS);
-    Console.WriteLine("SS="+SS+"  norm="+norm);
+    //Console.WriteLine("SS="+SS+"  norm="+norm);
     
     double[] ret = new double[length]; // vector to return
     for(int i=0; i<length; i++) 
@@ -852,6 +911,26 @@ namespace TowseyLib
     
     return(ret); 
   }
+  public static double[] normalise2UnitLength(double[] v)
+  {
+      double SS = 0.0; //sum of squares
+      int length = v.Length;
+
+      for (int i = 0; i < length; i++) SS += (v[i] * v[i]);
+      
+      // square root of sum to get vector mapLength
+      double norm = Math.Sqrt(SS);
+      //Console.WriteLine("SS=" + SS + "  norm=" + norm);
+
+      double[] ret = new double[length]; // vector to return
+      for (int i = 0; i < length; i++)
+      {
+          ret[i] = v[i] / norm;
+      }
+
+      return (ret);
+  }
+
 
 
   //normalise and compress/bound the values
@@ -861,6 +940,14 @@ namespace TowseyLib
       double maxCut;
       PercentileCutoffs(m, minPercentile, maxPercentile, out minCut, out maxCut);
       return boundMatrix(m, minCut, maxCut);
+  }
+
+  public static int Sum(int[] data)
+  {
+      if (data == null) return 0;
+      int sum = 0;
+      for (int i = 0; i < data.Length; i++) sum += data[i];
+      return sum;
   }
 
 
@@ -989,6 +1076,27 @@ namespace TowseyLib
             }
         }
 
+        static public void MinMaxAv(double[] data, out double min, out double max, out double av)
+        {
+            min = data[0];
+            max = data[0];
+            av  = data[0];
+            for (int i = 1; i < data.Length; i++)
+            {
+                if (data[i] < min)
+                {
+                    min = data[i];
+                }
+                else
+                    if (data[i] > max)
+                    {
+                        max = data[i];
+                    }
+                av += data[i];
+            }//end for loop
+            av /= data.Length;
+        }
+
         /// <summary>
         /// returns the min and max values in a matrix of doubles
         /// </summary>
@@ -1050,6 +1158,23 @@ namespace TowseyLib
       double max;
       MinMax(data, out min, out max);
       Console.WriteLine("Array Min={0:F5}  Array Max={1:F5}", min, max);
+  }
+
+
+  static public void WriteMinMaxOfFeatures(double[,] m)
+  {
+
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      double min=0;
+      double max=0;
+      double av=0;
+      for (int i = 0; i < cols; i++)
+      {
+          double[] column = GetColumn(m, i);
+          MinMaxAv(column, out min, out max, out av);
+          Console.WriteLine("Column:{0:D} min={1:F4}  max={2:F4}  av={3:F4}", i, min, max, av);
+      }
   }
   static public void WriteMinMaxOfArray(string arrayname, double[] data)
   {
