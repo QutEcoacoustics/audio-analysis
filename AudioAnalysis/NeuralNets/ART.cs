@@ -855,9 +855,8 @@ namespace NeuralNets
         for (int simul = 0; simul < simulationsCount; simul++)
         {
             //pass the eight params for this run of ART2A
-            //alpha, beta, c, d, rho, theta, add1, rhoStar
-            art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3],
-                                     parameters[simul, 4], parameters[simul, 5], parameters[simul, 6], parameters[simul, 7]);
+            //alpha, beta, rho, theta, rhoStar
+            art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3]);
                               
             //set up file name for simulation test results}
             resultsFPath = ART.ARTDir+ wtsFname+ "s"+ simul.ToString("D2") +"_results.txt";
@@ -882,7 +881,7 @@ namespace NeuralNets
                     art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
 
                     if (code != 0) break;
-                    noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes(uncommittedJ);
+                    noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
 
@@ -913,7 +912,7 @@ namespace NeuralNets
                     art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
 
                     if (code != 0) break;
-                    noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes(uncommittedJ);
+                    noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
                     //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
 
                     wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
