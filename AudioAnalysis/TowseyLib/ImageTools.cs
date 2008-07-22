@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Drawing;
+
 
 namespace TowseyLib
 {
@@ -15,6 +17,73 @@ namespace TowseyLib
     
     public class ImageTools
     {
+
+        public static bool Verbose { set; get; }
+
+        // this is a list of predefined colors in the Color class.
+        public static string[] colorNames={"AliceBlue","AntiqueWhite","Aqua","Aquamarine","Azure","Beige","Bisque","Black","BlanchedAlmond","Blue","BlueViolet",
+                            "Brown","BurlyWood","CadetBlue","Chartreuse","Chocolate","Coral","CornflowerBlue","Cornsilk","Crimson","Cyan",
+                            "DarkBlue", "DarkCyan","DarkGoldenrod","DarkGray","DarkGreen","DarkKhaki","DarkMagenta","DarkOliveGreen","DarkOrange",
+                            "DarkOrchid","DarkRed","DarkSalmon","DarkSeaGreen","DarkSlateBlue","DarkSlateGray","DarkTurquoise","DarkViolet",
+                            "DeepPink","DeepSkyBlue","DimGray","DodgerBlue","Firebrick","FloralWhite","ForestGreen","Fuchsia","Gainsboro",
+                            "GhostWhite","Gold","Goldenrod","Gray","Green","GreenYellow","Honeydew","HotPink","IndianRed","Indigo","Ivory","Khaki",
+                            "Lavender","LavenderBlush","LawnGreen","LemonChiffon","LightBlue","LightCoral","LightCyan","LightGoldenrodYellow",
+                            "LightGray","LightGreen","LightPink","LightSalmon","LightSeaGreen","LightSkyBlue","LightSlateGray","LightSteelBlue",
+                            "LightYellow","Lime","LimeGreen","Linen","Magenta","Maroon","MediumAquamarine","MediumBlue","MediumOrchid",
+                            "MediumPurple","MediumSeaGreen","MediumSlateBlue","MediumSpringGreen","MediumTurquoise","MediumVioletRed",
+                            "MidnightBlue","MintCream","MistyRose","Moccasin","NavajoWhite","Navy","OldLace","Olive","OliveDrab","Orange",
+                            "OrangeRed","Orchid","PaleGoldenrod","PaleGreen","PaleTurquoise","PaleVioletRed","PapayaWhip","PeachPuff","Peru",
+                            "Pink","Plum","PowderBlue","Purple","Red","RosyBrown","RoyalBlue","SaddleBrown","Salmon","SandyBrown","SeaGreen",
+                            "SeaShell","Sienna","Silver","SkyBlue","SlateBlue","SlateGray","Snow","SpringGreen","SteelBlue","Tan","Teal",
+                            "Thistle","Tomato",/*"Transparent",*/"Turquoise","Violet","Wheat","White","WhiteSmoke","Yellow","YellowGreen"};
+        public static Color[] colors = { Color.AliceBlue, Color.AntiqueWhite, Color.Aqua, Color.Aquamarine, Color.Azure, Color.Beige, Color.Bisque, Color.Black,
+                             Color.BlanchedAlmond, Color.Blue, Color.BlueViolet, Color.Brown, Color.BurlyWood, Color.CadetBlue, Color.Chartreuse, 
+                             Color.Chocolate, Color.Coral, Color.CornflowerBlue, Color.Cornsilk, Color.Crimson, Color.Cyan, Color.DarkBlue, 
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen, 
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.FloralWhite, Color.ForestGreen, Color.Fuchsia, 
+                             Color.Gainsboro, Color.GhostWhite, Color.Gold, Color.Goldenrod, Color.Gray, Color.Green, Color.GreenYellow, 
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, Color.Ivory, Color.Khaki, Color.Lavender, 
+                             Color.LavenderBlush, Color.LawnGreen, Color.LemonChiffon, Color.LightBlue, Color.LightCoral, Color.LightCyan, 
+                             Color.LightGoldenrodYellow, Color.LightGray, Color.LightGreen, Color.LightPink, Color.LightSalmon, 
+                             Color.LightSeaGreen, Color.LightSkyBlue, Color.LightSlateGray, Color.LightSteelBlue, Color.LightYellow, Color.Lime, 
+                             Color.LimeGreen, Color.Linen, Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
+                             Color.MediumOrchid, Color.MediumPurple, Color.MediumSeaGreen, Color.MediumSlateBlue, Color.MediumSpringGreen, 
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, Color.MintCream, Color.MistyRose, Color.Moccasin, 
+                             Color.NavajoWhite, Color.Navy, Color.OldLace, Color.Olive, Color.OliveDrab, Color.Orange, Color.OrangeRed, 
+                             Color.Orchid, Color.PaleGoldenrod, Color.PaleGreen, Color.PaleTurquoise, Color.PaleVioletRed, Color.PapayaWhip, 
+                             Color.PeachPuff, Color.Peru, Color.Pink, Color.Plum, Color.PowderBlue, Color.Purple, Color.Red, Color.RosyBrown, 
+                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, Color.SandyBrown, Color.SeaGreen, Color.SeaShell, Color.Sienna, 
+                             Color.Silver, Color.SkyBlue, Color.SlateBlue, Color.SlateGray, Color.Snow, Color.SpringGreen, Color.SteelBlue, 
+                             Color.Tan, Color.Teal, Color.Thistle, Color.Tomato, /*Color.Transparent,*/ Color.Turquoise, Color.Violet, Color.Wheat, 
+                             Color.White, Color.WhiteSmoke, Color.Yellow, Color.YellowGreen };
+
+        public static Color[] darkColors = { /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/ Color.Black,
+                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/ 
+                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.Cyan, Color.DarkBlue, 
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkRed, Color.DarkSalmon, Color.DarkSeaGreen, 
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia, 
+                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/ 
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender, 
+                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime, 
+                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
+                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen, 
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/ 
+                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ Color.Orange, Color.OrangeRed, 
+                             /*Color.Orchid, Color.PaleVioletRed, Color.PapayaWhip, */
+                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Pink, Color.Plum, /*Color.PowderBlue,*/ Color.Purple, Color.Red, Color.RosyBrown, 
+                             Color.RoyalBlue, Color.SaddleBrown, Color.Salmon, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/ 
+                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue, 
+                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Tomato, Color.Turquoise, Color.Violet, /*Color.Wheat,*/ 
+                             /*Color.Yellow,*/ Color.YellowGreen };
+
+
+
+
+
         static double[,] lowPassKernal = { { 0.1, 0.1, 0.1 }, { 0.1, 0.2, 0.1 }, { 0.1, 0.1, 0.1 } };
         static double[,] highPassKernal1 = { { -1.0, -1.0, -1.0 }, { -1.0, 9.0, -1.0 }, { -1.0, -1.0, -1.0 } };
         static double[,] highPassKernal2 = { { -0.3, -0.3, -0.3, -0.3, -0.3},
@@ -95,32 +164,32 @@ namespace TowseyLib
                 case Kernal.HighPass1: kernal = highPassKernal1;
                     break;
                 case Kernal.HighPass2: kernal = highPassKernal2;
-                    Console.WriteLine("Applied highPassKernal2 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied highPassKernal2 Kernal");
                     break;
                 case Kernal.HorizontalLine3: kernal = horiLineKernal3;
                     break;
                 case Kernal.HorizontalLine5: kernal = horiLineKernal5;
-                    Console.WriteLine("Applied Horizontal Line5 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Horizontal Line5 Kernal");
                     break;
                 case Kernal.VerticalLine: kernal = vertLineKernal;
                     break;
                 case Kernal.DiagLine1: kernal = diagLineKernal1;
-                    Console.WriteLine("Applied diagLine1 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied diagLine1 Kernal");
                     break;
                 case Kernal.DiagLine2: kernal = diagLineKernal2;
-                    Console.WriteLine("Applied diagLine2 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied diagLine2 Kernal");
                     break;
                 case Kernal.Laplace1: kernal = Laplace1Kernal;
-                    Console.WriteLine("Applied Laplace1 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace1 Kernal");
                     break;
                 case Kernal.Laplace2: kernal = Laplace2Kernal;
-                    Console.WriteLine("Applied Laplace2 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace2 Kernal");
                     break;
                 case Kernal.Laplace3: kernal = Laplace3Kernal;
-                    Console.WriteLine("Applied Laplace3 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace3 Kernal");
                     break;
                 case Kernal.Laplace4: kernal = Laplace4Kernal;
-                    Console.WriteLine("Applied Laplace4 Kernal");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Laplace4 Kernal");
                     break;
                     
 
@@ -200,19 +269,19 @@ namespace TowseyLib
             switch (name)
             {
                 case Kernal.Grid2: kernal = grid2;
-                    Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid3: kernal = grid3;
-                    Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid4: kernal = grid4;
-                    Console.WriteLine("Applied Grid Kernal 2");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Kernal 2");
                     break;
                 case Kernal.Grid2Wave: kernal = grid2Wave;
-                    Console.WriteLine("Applied Grid Wave Kernal 2");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Wave Kernal 2");
                     break;
                 case Kernal.Grid3Wave: kernal = grid3Wave;
-                    Console.WriteLine("Applied Grid Wave Kernal 3");
+                    if (ImageTools.Verbose) Console.WriteLine("Applied Grid Wave Kernal 3");
                     break;
 
 
@@ -246,7 +315,7 @@ namespace TowseyLib
             }
             double noiseAv; double noiseSd;
             NormalDist.AverageAndSD(noiseScores, out noiseAv, out noiseSd);
-            Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
+            if (ImageTools.Verbose) Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
 
             double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
 
@@ -277,6 +346,15 @@ namespace TowseyLib
         }//end method GridFilter()
 
 
+        /// <summary>
+        /// Returns a small matrix of pixels chosen randomly from the passed matrix, m.
+        /// The row and column is chosen randomly and then the reuired number of consecutive pixels is transferred.
+        /// These noise matrices are used to obtain statistics for cross-correlation coefficients.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="kRows"></param>
+        /// <param name="kCols"></param>
+        /// <returns></returns>
         public static double[,] GetNoise(double[,] m, int kRows, int kCols)
         {
             int mHeight = m.GetLength(0);
@@ -293,6 +371,9 @@ namespace TowseyLib
             }
             return noise;
         } //end getNoise()
+
+
+
 
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
@@ -473,15 +554,28 @@ namespace TowseyLib
         }//end method Blur()
 
 
+
+
+        // ###################################################################################################################################
+
+        /// <summary>
+        /// returns the upper and lower thresholds for the pass upper and lower percentile cuts of matrix M
+        /// Used for some of the noise reduciton algorithms
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="lowerCut"></param>
+        /// <param name="upperCut"></param>
+        /// <param name="lowerThreshold"></param>
+        /// <param name="upperThreshold"></param>
         public static void PercentileThresholds(double[,] M, double lowerCut, double upperCut, out double lowerThreshold, out double upperThreshold)
         {
             int binCount = 50;
-            int count = M.GetLength(0) * M.GetLength(1);
+            int count = M.GetLength(0) * M.GetLength(1); 
             double binWidth;
             double min; double max;
             int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
-            powerHisto[binCount - 1] = 0;   //just in case it is the max
-            double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
+            powerHisto[binCount - 1] = 0;   //just in case it is the max ????????????????????????????????????? !!!!!!!!!!!!!!!
+            double[] smooth = DataTools.filterMovingAverage(powerHisto, 3);
             int maxindex;
             DataTools.getMaxIndex(smooth, out maxindex);
 
@@ -503,39 +597,76 @@ namespace TowseyLib
             //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
         }
 
-        public static void NoiseThresholds(double[,] M, double lowerCut, double upperCut, out double min, out double lowerThreshold, out double upperThreshold)
+
+        public static double[,] TrimPercentiles(double[,] matrix)
         {
-            int binCount = 50;
-            int count = M.GetLength(0) * M.GetLength(1);
-            double binWidth;
-            double max;
-            int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
-            powerHisto[binCount - 1] = 0;   //just in case it is the max
-            double[] smooth = DataTools.filterMovingAverage(powerHisto, 5);
-            int maxindex;
-            DataTools.getMaxIndex(smooth, out maxindex);
+            //set up parameters for a set of overlapping bands. All numbers should be powers of 2
+            int ncbbc = 8;  //number of columns between band centres
+            int bandWidth = 64;
+            double lowerPercentile = 0.7;
+            double upperPercentile = 0.001;
 
-            //calculate threshold for upper shoulder
-            int i = maxindex;
-            double thresholdCount = smooth[maxindex] * upperCut; //
-            while ((smooth[i] > thresholdCount) && (i < binCount)) i++;
-            upperThreshold = min + (i * binWidth);
+            int height = matrix.GetLength(0);
+            int width = matrix.GetLength(1);
+            int halfWidth = bandWidth / 2;
+            int bandCount = width / ncbbc;
+            int bandID = 0;
+            int tmpCol = 0;
 
+            double[,] tmpM = new double[height, ncbbc];
+            double[,] outM = new double[height, width];
+            double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
+            double lowerThreshold; double upperThreshold;
+            PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
 
-            //calculate threshold for lower shoulder
-            int j = maxindex;
-            thresholdCount = smooth[maxindex] * lowerCut; //
-            while ((smooth[j] > thresholdCount) && (j > 0)) j--;
-            lowerThreshold = min + (j * binWidth);
+            for (int col = 0; col < width; col++)//for all cols
+            {
+                bandID = col / ncbbc;  // determine band ID
+                tmpCol = col % ncbbc;  // determine col relative to current band
+                if ((tmpCol == 0) && (!(col == 0)))
+                {
+                    //normalise existing submatrix and transfer to the output matrix, outM
+                    tmpM = DataTools.normalise(tmpM);
+                    for (int y = 0; y < height; y++)
+                        for (int x = 0; x < ncbbc; x++)
+                        {
+                            int startCol = col - ncbbc;
+                            outM[y, startCol + x] = tmpM[y, x];
+                        }
 
-            //DataTools.writeBarGraph(powerHisto);
-            //Console.WriteLine("LowerThreshold=" + lowerThreshold + "  UpperThreshold=" + upperThreshold);
-        }
+                    //set up a new submatrix for processing
+                    tmpM = new double[height, ncbbc];
+
+                    //construct new threshold submatrix to recalculate the current threshold
+                    int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                    if (start < 0) start = 0;
+                    int stop = col + halfWidth;
+                    if (stop >= width) stop = width - 1;
+                    thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                    PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+                }
+
+                for (int y = 0; y < height; y++)
+                {
+                    tmpM[y, tmpCol] = matrix[y, col];
+                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
+                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
+                    //outM[y, col] = matrix[y, col] - upperThreshold;
+                    //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
+
+                    //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
+                    //else M[y, col] = 1.0;
+                }
+            }//for all cols
+            return outM;
+        }// end of TrimPercentiles()
+
+// ###################################################################################################################################
 
 
         /// <summary>
         /// Calculates the local signal to noise ratio in the neighbourhood of side=window
-        /// SNR is diefined as local mean / local std dev.
+        /// SNR is defined as local mean / local std dev.
         /// Must check that the local std dev is not too small.
         /// </summary>
         /// <param name="matrix"></param>
@@ -637,76 +768,62 @@ namespace TowseyLib
 
 
 
-        public static double[,] TrimWrtMode(double[,] matrix)
+        // ###################################################################################################################################
+
+        /// <summary>
+        /// This method called by NoiseReduction method.
+        /// returns a transfer Function - an array of scaling factors used to adjust the intensity of image pixels.
+        /// Each scaling factor represents the probability that an intensity value contains signal as opposed to noise. 
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="binCount"></param>
+        /// <param name="min"></param>
+        /// <param name="binWidth"></param>
+        /// <returns></returns>
+        public static double[] TransferFunction(double[,] M, int binCount, out double min, out double binWidth)
         {
-            //set up parameters for a set of overlapping bands. All numbers should be powers of 2
-            int ncbbc = 8;  //number of columns between band centres
-            int bandWidth = 64;
-            double lowerShoulder = 1.0;
-            double upperShoulder = 0.001;
+            int count = M.GetLength(0) * M.GetLength(1);
+            double max;
+            int[] powerHisto = DataTools.Histo(M, binCount, out binWidth, out min, out max);
+            //DataTools.writeBarGraph(powerHisto);
+            //Console.WriteLine("min intensity=" + min + "  max intensity=" + max);
+            //powerHisto[binCount - 1] = 0;   //just in case it is the max
+            double[] smoothHisto = DataTools.filterMovingAverage(powerHisto, 5);
+            int maxindex; //mode
+            DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
 
-            int height = matrix.GetLength(0);
-            int width = matrix.GetLength(1);
-            int halfWidth = bandWidth / 2;
-            int bandCount = width / ncbbc;
-            int bandID = 0;
-            int tmpCol = 0;
-
-            double[,] tmpM = new double[height, ncbbc]; 
-            double[,] outM = new double[height, width];
-            double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
-            double min; double lowerThreshold; double upperThreshold;
-            NoiseThresholds(thresholdSubatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
-
-            for (int col = 0; col < width; col++)//for all cols
+            //init transfer function, tf
+            double[] tf = new double[binCount];
+            //set all values below mode = 0.0
+            for (int i = 0; i < maxindex; i++) tf[i] = 0.0;
+            //assume noise is gaussian and upper bound is twice mode
+            int upperBound = 2 * maxindex;
+            if (upperBound > binCount) upperBound = binCount;
+            //set tf[i] to probability that value is signal
+            int offset = 0;
+            for (int i = maxindex; i < upperBound; i++)
             {
-                bandID = col / ncbbc;  // determine band ID
-                tmpCol = col % ncbbc;  // determine col relative to current band
-                if ((tmpCol==0) && (!(col == 0)))
-                {
-                    //normalise existing submatrix and transfer to the output matrix, outM
-                    tmpM = DataTools.normalise(tmpM);
-                    for (int y = 0; y < height; y++)
-                        for (int x = 0; x < ncbbc; x++)
-                        {
-                            int startCol = col - ncbbc;
-                            outM[y, startCol+x] = tmpM[y, x];
-                        }
+                double noise = smoothHisto[maxindex - offset];
+                offset++;
+                double prob = (smoothHisto[i] - noise) / smoothHisto[i];
+                if (prob < 0.0) prob = 0.0;
+                tf[i] = prob;
+            }
+            // above the noise band set transfer function = 1.0;
+            for (int i = upperBound; i < binCount; i++) tf[i] = 1.0;
+            if (tf[binCount-1]==0.0) return new double[binCount];
+            return tf;
+        }
 
-                    //set up a new submatrix for processing
-                    tmpM = new double[height, ncbbc]; 
-
-                    //construct new threshold submatrix to recalculate the current threshold
-                    int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                    if (start < 0) start = 0;
-                    int stop = col + halfWidth;
-                    if (stop >= width) stop = width - 1;
-                    thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
-                    NoiseThresholds(thresholdSubatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
-                }
-
-                for (int y = 0; y < height; y++)
-                {
-                    tmpM[y, tmpCol] = matrix[y, col];
-                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
-                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
-                    //outM[y, col] = matrix[y, col] - upperThreshold;
-                    //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
-
-                    //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
-                    //else M[y, col] = 1.0;
-                }
-            }//for all cols
-            return outM;
-        }// end of SubtractAverage()
-
-        public static double[,] TrimPercentiles(double[,] matrix)
+        public static double[,] NoiseReduction(double[,] matrix)
         {
             //set up parameters for a set of overlapping bands. All numbers should be powers of 2
-            int ncbbc = 8;  //number of columns between band centres
+            int ncbbc = 2;  //number of columns between band centres
             int bandWidth = 64;
-            double lowerPercentile = 0.7;
-            double upperPercentile = 0.001;
+            int quantaCount = 100;  //number of pixel intensity bins
+            double momentum = 0.4;  //determines how rapidly Transfer Function changes as one ascends the freq bands
+            double quantum;  //width of an intensity bin
+            double minIntensity; // min intensity in current submatrix
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
@@ -715,11 +832,19 @@ namespace TowseyLib
             int bandID = 0;
             int tmpCol = 0;
 
-            double[,] tmpM = new double[height, ncbbc];
+            matrix = DataTools.normalise(matrix);
+
+            //init matrix from which histogram and transfer fnc derived
+            double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
+            double[,] tmpM = new double[height, ncbbc];  //matrix to which transfer function is applied
             double[,] outM = new double[height, width];
-            double[,] thresholdSubatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
-            double lowerThreshold; double upperThreshold;
-            PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+
+            //get transfer fnc for first processing band
+            double[] transferFnc = TransferFunction(submatrix, quantaCount, out minIntensity, out quantum); 
+            double[] prevTransferFnc = transferFnc; //to smooth the transition between functions
+            //Console.WriteLine("######################################################");
+            //Console.WriteLine("Quantum=" + quantum);
+            //DataTools.writeArray(transferFnc);
 
             for (int col = 0; col < width; col++)//for all cols
             {
@@ -728,7 +853,7 @@ namespace TowseyLib
                 if ((tmpCol == 0) && (!(col == 0)))
                 {
                     //normalise existing submatrix and transfer to the output matrix, outM
-                    tmpM = DataTools.normalise(tmpM);
+                    //tmpM = DataTools.normalise(tmpM);
                     for (int y = 0; y < height; y++)
                         for (int x = 0; x < ncbbc; x++)
                         {
@@ -739,29 +864,36 @@ namespace TowseyLib
                     //set up a new submatrix for processing
                     tmpM = new double[height, ncbbc];
 
-                    //construct new threshold submatrix to recalculate the current threshold
+                    //construct new submatrix to recalculate the current transfer function
                     int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                     if (start < 0) start = 0;
                     int stop = col + halfWidth;
                     if (stop >= width) stop = width - 1;
-                    thresholdSubatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
-                    PercentileThresholds(thresholdSubatrix, lowerPercentile, upperPercentile, out lowerThreshold, out upperThreshold);
+                    submatrix = DataTools.Submatrix(matrix, 0, start, height - 1, stop);
+                    prevTransferFnc = transferFnc;
+                    transferFnc = TransferFunction(submatrix, quantaCount, out minIntensity, out quantum);
                 }
 
-                for (int y = 0; y < height; y++)
+                for (int y = 0; y < height; y++) //for all rows
                 {
-                    tmpM[y, tmpCol] = matrix[y, col];
-                    if (tmpM[y, tmpCol] > upperThreshold) tmpM[y, tmpCol] = upperThreshold;
-                    if (tmpM[y, tmpCol] < lowerThreshold) tmpM[y, tmpCol] = lowerThreshold;
-                    //outM[y, col] = matrix[y, col] - upperThreshold;
-                    //if (outM[y, col] < upperThreshold) outM[y, col] = upperThreshold;
+                    int intensityQuantum = (int)Math.Floor((matrix[y, col] - minIntensity) / quantum);
+                    //Console.WriteLine("matrix["+y+","+ col+"]="+matrix[y, col]+" intensityQuantum=" + intensityQuantum);
+                    if (intensityQuantum >= quantaCount) intensityQuantum = quantaCount - 1;
+                    else if (intensityQuantum < 0) intensityQuantum = 0;
+                    double factor = ((1-momentum) * transferFnc[intensityQuantum]) + (momentum * prevTransferFnc[intensityQuantum]);
 
-                    //if (matrix[y, col] < upperThreshold) M[y, col] = 0.0;
-                    //else M[y, col] = 1.0;
+                    // SEVERAL DIFFERENT IMAGE OUTPUT OPTIONS
+                    //tmpM[y, tmpCol] = matrix[y, col] * factor;          // (1) multiply pixel by factor
+                    //if (tmpM[y, tmpCol] < 0.01) tmpM[y, tmpCol] = 0.00; // (2) zero weak intensity pixels
+                    tmpM[y, tmpCol] = factor * factor;                  // (3) set pixel = factor
+                    if(tmpM[y, tmpCol] < 0.5)tmpM[y, tmpCol] = 0.0;     // (4) set pixel = thresholded factor 
                 }
             }//for all cols
             return outM;
-        }// end of SubtractAverage()
+        }// end of NoiseReduction()
+
+        // ###################################################################################################################################
+
 
 
         /// <summary>
@@ -798,8 +930,8 @@ namespace TowseyLib
                 if (stop >= width) stop = width - 1;
 
                 double[,] subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
-                double min; double lowerThreshold; double upperThreshold;
-                NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
+                double lowerThreshold; double upperThreshold;
+                PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
                 //Console.WriteLine(0 + "," + start + "," + (height - 1) + "," + stop + "   Threshold " + b + "=" + threshold);
 
 
@@ -831,8 +963,9 @@ namespace TowseyLib
             int minColWidth = 5;
             M = Shapes_RemoveSmall(M, minRowWidth, minColWidth);
             return M;
+        }// end of DetectHighEnergyRegions1()
 
-        }// end of Shapes()
+
 
         /// <summary>
         /// Detect high intensity / high energy regions in an image using blurring
@@ -856,8 +989,8 @@ namespace TowseyLib
             double[,] M = new double[height, width];
 
             double[,] subMatrix = DataTools.Submatrix(blurM, 0, 0, height - 1, bandWidth);
-            double min; double lowerThreshold; double upperThreshold;
-            NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
+            double lowerThreshold; double upperThreshold;
+            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
 
             for (int col = 0; col < width; col++)//for all cols
             {
@@ -869,7 +1002,7 @@ namespace TowseyLib
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
                     subMatrix = DataTools.Submatrix(blurM, 0, start, height - 1, stop);
-                    NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
+                    PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
                 }
 
                 for (int y = 0; y < height; y++)
@@ -952,25 +1085,25 @@ namespace TowseyLib
 
         public static ArrayList Shapes4(double[,] m)
         {
-            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //detect blobs of high acoustic energy
-            double[,] m2 = ImageTools.Shapes_lines(m);
+            double[,] m1 = ImageTools.DetectHighEnergyRegions3(m); //binary matrix showing areas of high acoustic energy
+            double[,] m2 = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
 
             int height = m.GetLength(0);
             int width = m.GetLength(1);
             double[,] tmpM = new double[height, width];
             ArrayList shapes = new ArrayList();
 
-
-            for (int y = 0; y < height; y++)
+            //transfer m2 lines spectrogram to temporary matrix and merge adjacent high energy objects
+            for (int y = 0; y < height; y++) //row at a time
             {
-                for (int x = 0; x < width; x++)
+                for (int x = 0; x < width; x++) //transfer values to tmpM
                 {
                     if (m2[y, x] == 0.0) continue; //nothing here
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
                     Shape.Col_Width(m2, x, y, out colWidth);
-                    int x2 = x + colWidth;
+                    int x2 = x + colWidth-1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
                     //find distance to nearest object in hi frequency direction
@@ -980,9 +1113,10 @@ namespace TowseyLib
                     while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
                     if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
                 }
+                y++; //only even rows
             }
 
-            //transfer line objects to output matrix IF they overlap a high energy blob in m1
+            //transfer line objects to output matrix IF they overlap a high energy region in m1
             int objectCount = 0;
             double[,] outM = new double[height, width];
             for (int y = 0; y < height-2; y++)
@@ -992,17 +1126,11 @@ namespace TowseyLib
                     if (tmpM[y, x] == 0.0) continue; //nothing here
                     if (outM[y, x] == 1.0) continue; //already have something here
 
-                    //int rowWidth; //rowWidth of object
-                    //Shape.Row_Width(m2, x, y, out rowWidth);
                     int colWidth; //colWidth of object
                     Shape.Col_Width(tmpM, x, y, out colWidth);
-                    //int colWidth2; //colWidth of object
-                    //Shape.Col_Width(tmpM, x, y, out colWidth2);
-                    //int colWidth = colWidth1;
-                    //if (colWidth2 > colWidth) colWidth = colWidth2;
 
                     int x2 = x + colWidth;
-                    //check to see if object is in blob
+                    //check to see if object is in high energy region
                     bool overlapsHighEnergy = false;
                     for (int j = x; j < x2; j++)
                     {
@@ -1014,9 +1142,7 @@ namespace TowseyLib
                     }//end of ascertaining if line overlapsHighEnergy
                     if (overlapsHighEnergy)
                     {
-                        shapes.Add(new Shape(y, x, y + 2, x2));
-                        //tmpM[y+1, x] = 0.0;
-                        //tmpM[y + 2, x] = 0.0;
+                        shapes.Add(new Shape(y, x, y + 1, x2));
                         objectCount++;
                         for (int j = x; j < x2; j++) outM[y, j] = 1.0;
                         for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
@@ -1025,37 +1151,174 @@ namespace TowseyLib
                     }
                 }//end cols
             }//end rows
-            Console.WriteLine("Object Count =" + objectCount);
-            int dyThreshold = 2;
-            shapes = Shape.MergeShapes(shapes, dyThreshold);
-            Console.WriteLine("Object Count =" + shapes.Count);
-            //shapes = Shape.MergeCloseShapes(shapes);
+
+            //NOW DO SHAPE MERGING TO REDUCE NUMBERS
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
+            int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
+            double widthRatio = 5.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
+            shapes = Shape.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
+            //shapes = Shape.RemoveEnclosedShapes(shapes);
+            shapes = Shape.RemoveOverlappingShapes(shapes);
+            int minArea = 14;
+            shapes = Shape.RemoveSmall(shapes, minArea);
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
 
+        /// <summary>
+        /// Returns an ArrayList of rectabgular shapes that represent syllables in the sonogram.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static ArrayList Shapes5(double[,] m)
+        {
+            //get binary matrix showing high energy regions
+            int fWindow = 5;
+            int tWindow = 3;
+            double[,] tmp = ImageTools.Blur(m, fWindow, tWindow);
+            double threshold = 0.2;
+            double[,] m1 = DataTools.Threshold(tmp, threshold);
 
+            //get binary matrix showing high energy lines
+            double[,] m2 = ImageTools.Convolve(tmp, Kernal.HorizontalLine5);
+            threshold = 0.2;
+            m2 = DataTools.Threshold(m2, threshold); 
+
+
+            //prepare to extract acoustic events or shapes
+            int height = m.GetLength(0);
+            int width = m.GetLength(1);
+            double[,] tmpM = new double[height, width];
+            ArrayList shapes = new ArrayList();
+            //transfer m2 lines spectrogram to temporary matrix and join adjacent high energy objects
+            for (int y = 0; y < height; y++) //row at a time
+            {
+                for (int x = 0; x < width; x++) //transfer values to tmpM
+                {
+                    if (m2[y, x] == 0.0) continue; //nothing here
+                    if (tmpM[y, x] == 1.0) continue; //already have something here
+
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(m2, x, y, out colWidth);
+                    int x2 = x + colWidth - 1;
+                    for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
+
+                    //find distance to nearest object in hi frequency direction
+                    // and join the two if within threshold distance
+                    int thresholdDistance = 10;
+                    int dist = 1;
+                    while (((x2 + dist) < width) && (m2[y, x2 + dist] == 0)) { dist++; }
+                    if (((x2 + dist) < width) && (dist < thresholdDistance)) for (int d = 0; d < dist; d++) tmpM[y, x2 + d] = 1.0;
+                }
+                y++; //only even rows
+            }
+
+            //transfer line objects to output matrix IF they overlap a high energy region in m1
+            int objectCount = 0;
+            double[,] outM = new double[height, width];
+            for (int y = 0; y < height - 2; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    if (tmpM[y, x] == 0.0) continue; //nothing here
+                    if (outM[y, x] == 1.0) continue; //already have something here
+
+                    int colWidth; //colWidth of object
+                    Shape.Col_Width(tmpM, x, y, out colWidth);
+
+                    int x2 = x + colWidth;
+                    //check to see if object is in high energy region
+                    bool overlapsHighEnergy = false;
+                    for (int j = x; j < x2; j++)
+                    {
+                        if ((m1[y + 1, j] == 1.0) || (m1[y, j] == 1.0))
+                        {
+                            overlapsHighEnergy = true;
+                            break;
+                        }
+                    }//end of ascertaining if line overlapsHighEnergy
+                    if (overlapsHighEnergy)
+                    {
+                        shapes.Add(new Shape(y, x, y + 1, x2));
+                        objectCount++;
+                        for (int j = x; j < x2; j++) outM[y, j] = 1.0;
+                        for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
+                        for (int j = x; j < x2; j++) outM[y + 1, j] = 1.0;
+                        for (int j = x; j < x2; j++) tmpM[y + 1, j] = 0.0;
+                    }
+                }//end cols
+            }//end rows
+
+            //NOW DO SHAPE MERGING TO REDUCE NUMBERS
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
+            int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
+            double widthRatio = 4.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
+            shapes = Shape.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
+            shapes = Shape.RemoveEnclosedShapes(shapes);
+            //shapes = Shape.RemoveOverlappingShapes(shapes);
+            int minArea = 30;
+            shapes = Shape.RemoveSmall(shapes, minArea);
+            if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
+            return shapes;
+        }
+        
+        
+        
+        /// <summary>
+        /// Returns a binary matrix containing high energy lines in the oriignal spectrogram 
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
         public static double[,] Shapes_lines(double[,] matrix)
         {
-            double lowerShoulder = 0.2;   //used to increase or decrease the threshold from modal value
-            double upperShoulder = 0.3;
+            double threshold = 0.3;   
+
+            int fWindow = 5;
+            int tWindow = 3;
+            double[,] tmpM = ImageTools.Blur(matrix, fWindow, tWindow);
+            //double[,] tmpM = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
+            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
+            //tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
+
+            //int height = matrix.GetLength(0);
+            //int width = matrix.GetLength(1);
+            //double[,] M = new double[height, width];
+            double[,] M = DataTools.Threshold(tmpM, threshold); 
+            return M;
+        }// end of Shapes_lines()
+
+
+
+        /// <summary>
+        /// Returns a binary matrix containing high energy lines in the original spectrogram
+        /// calculates the threshold bandwise
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] Shapes_lines_bandwise(double[,] matrix)
+        {
+            double lowerShoulder = 0.7;   //used to increase or decrease the threshold from modal value
+            double upperShoulder = 0.1;
             int bandWidth = 64;
             int halfWidth = bandWidth / 2;
 
-            int fWindow = 7;
-            int tWindow = 7;
-            double[,] blurM = ImageTools.Blur(matrix, fWindow, tWindow);
-            double[,] lines = ImageTools.Convolve(blurM, Kernal.HorizontalLine5);
-            lines = ImageTools.Convolve(matrix, Kernal.HorizontalLine5);
+            int fWindow = 3;
+            int tWindow = 3;
+            double[,] tmpM = ImageTools.Blur(matrix, fWindow, tWindow);
+            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
+            tmpM = ImageTools.Convolve(tmpM, Kernal.HorizontalLine5);
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
             double[,] M = new double[height, width];
 
-            double[,] subMatrix = DataTools.Submatrix(lines, 0, 0, height - 1, bandWidth);
-            double min; double lowerThreshold; double upperThreshold;
-            NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
+            double[,] subMatrix = DataTools.Submatrix(tmpM, 0, 0, height - 1, bandWidth);
+            double lowerThreshold; double upperThreshold;
+            PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
 
-            for (int col = 0; col < width; col++)//for all cols
+            for (int col = 2; col < width; col++)//for all cols
             {
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
@@ -1064,20 +1327,20 @@ namespace TowseyLib
 
                 if ((col % 8 == 0) && (!(col == 0)))
                 {
-                    subMatrix = DataTools.Submatrix(lines, 0, start, height - 1, stop);
-                    NoiseThresholds(subMatrix, lowerShoulder, upperShoulder, out min, out lowerThreshold, out upperThreshold);
+                    subMatrix = DataTools.Submatrix(tmpM, 0, start, height - 1, stop);
+                    PercentileThresholds(subMatrix, lowerShoulder, upperShoulder, out lowerThreshold, out upperThreshold);
                 }
 
-                for (int y = 1; y < height-1; y++)
+                for (int y = 1; y < height - 1; y++)
                 {
-                    if (lines[y, col] > upperThreshold)
+                    bool evenRow = (y % 2 == 0);
+                    if (tmpM[y, col] > upperThreshold)
                     {
-                        //M[y, col]     = lines[y, col];
-                        //M[y - 1, col] = lines[y - 1, col];
-                        //M[y + 1, col] = lines[y + 1, col];
                         M[y, col] = 1;
-                        M[y - 1, col] = 1;
-                        //M[y + 1, col] = 1;
+                        if (evenRow) M[y + 1, col] = 1;
+                        else M[y - 1, col] = 1;
+                        //fill in gaps
+                        if ((M[y, col - 2] == 1.0) && (M[y, col - 1] == 0.0)) M[y, col - 1] = 1;
                     }
                 }
             }//for all cols
@@ -1217,39 +1480,5 @@ namespace TowseyLib
             return m;
         }
 
-
-
-        public static double[,] Texture2(double[,] matrix, int window)
-        {
-
-            int nh = window / 2;
-            int M = matrix.GetLength(0);
-            int N = matrix.GetLength(1);
-
-            int cellCount = ((2 * nh) + 1) * ((2 * nh) + 1);
-            double[,] newMatrix = new double[M, N];
-
-            for (int i = nh; i < (M - nh); i++)
-                for (int j = nh; j < (N - nh); j++)
-                {
-                    int id = 0;
-                    double[] values = new double[cellCount];
-                    for (int x = i - nh; x < (i + nh); x++)
-                        for (int y = j - nh; y < (j + nh); y++)
-                        {
-                            values[id++] = matrix[x, y];
-                        }
-                    double av;
-                    double sd;
-                    NormalDist.AverageAndSD(values, out av, out sd);
-                    double v = sd * sd;
-                    if(v< 0.0001) v = 0.0001;
-                    newMatrix[i, j] = v;
-                }
-
-            return newMatrix;
-        }
-
-
-    }
+    }//end class
 }
