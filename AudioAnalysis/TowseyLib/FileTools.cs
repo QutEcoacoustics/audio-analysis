@@ -190,6 +190,38 @@ namespace TowseyLib
 
         } //end of WriteMatrix2File
 
+        public static void WriteArray2File_Formatted(double[] array, string fName, string formatString)
+        {
+            int length = array.Length;
+
+            ArrayList lines = new ArrayList();
+            for (int i = 0; i < length; i++)
+            {
+                string line = array[i].ToString(formatString);
+                lines.Add(line);
+            }//end of all rows
+            WriteTextFile(fName, lines); //write matrix to file
+
+        } //end of WriteArray2File_Formatted
+
+        public static void WriteArray2File_Formatted(int[] array, string fName, string formatString)
+        {
+            int length = array.Length;
+
+            ArrayList lines = new ArrayList();
+            for (int i = 0; i < length; i++)
+            {
+                string line = array[i].ToString(formatString);
+                lines.Add(line);
+            }//end of all rows
+            WriteTextFile(fName, lines); //write matrix to file
+
+        } //end of WriteArray2File_Formatted
+
+
+
+
+
         public static Hashtable ReadPropertiesFile(string fName)
         {
             Hashtable table = new Hashtable();

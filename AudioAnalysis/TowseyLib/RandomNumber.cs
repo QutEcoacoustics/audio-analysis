@@ -5,71 +5,57 @@ using System.Text;
 namespace TowseyLib
 {
  
-/**
- * @author towsey
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Generation - Code and Comments
- */
 public class RandomNumber
 {
-	Random R = new Random();
-
-    /**
-     * 
-     */
+	Random R;
+    
+    /// <summary>
+    /// CONSTRUCTOR 1
+    /// </summary>
     public RandomNumber()
     {
+        R = new Random();
     }
 
-	/**
-	 * 
-	 */
-	public RandomNumber(int seed)
+    /// <summary>
+    /// CONSTRUCTOR 2
+    /// </summary>
+    public RandomNumber(int seed)
     {
-        Random R = new Random(seed);
+        R = new Random(seed);
 	}
 	
-	
-	
-
     /// <summary>
     /// returns a random number between 0.0 and 1.0
     /// </summary>
     /// <returns></returns>
 	public double getDouble()
-	{ return R.NextDouble();		
+	{ 
+        return R.NextDouble();		
 	}
 
-  public double getDouble(int max)
-  { return R.NextDouble()* max;    
-  }
-
-	/**
-	 * this generates numbers 0 to max-1
-	 * @param max
-	 * @return
-   */
-    public int getInt(int max)
-    { return (int)Math.Floor(getDouble(max));		
+    public double getDouble(int max)
+    { 
+        return R.NextDouble()* max;    
     }
 
-	/**
-	 * this generates numbers 1 - 100
-	 * @return
-	 */
+    /// <summary>
+    ///  generates numbers 0 to max-1
+    /// </summary>
+    /// <param name="max"></param>
+    /// <returns></returns>
+    public int getInt(int max)
+    { 
+        return (int)Math.Floor(getDouble(max));		
+    }
+
+    /// <summary>
+    /// generates numbers 1 - 100
+    /// </summary>
+    /// <returns></returns>
 	public int getRandomPercent()
 	{ return  1+ (int)(99.0 * R.NextDouble());
 	}
-
-  /**
-   * returns a number that has standard normal distribution
-   * ie mean = 0 and SD=1;
-   */
-    //public double getGaussian()
-    //{
-    //    return R.NextGaussian();
-    //}
 
 
   /**
@@ -105,9 +91,40 @@ public class RandomNumber
   //}
 
 
+    /// <summary>
+    /// returns integers up to N in random order.
+    /// Use of seed will always return the same order.
+    /// If seed is negative, it will be ignored ie different random order every time method called.
+    /// </summary>
+    /// <param name="n"></param>
+    /// <param name="seed"></param>
+    /// <returns></returns>
+    public static int[] RandomizeNumberOrder(int n, int seed)
+    {
+        RandomNumber rn = new RandomNumber(seed);
+        if(seed <0) rn = new RandomNumber();
+        int r;      //: word;      {a random number between 0 and k-1}
+        int dummy;  // : word;      {holder for random number}
+
+        int[] randomArray = new int[n];
+        for (int i = 0; i < n; i++) randomArray[i] = i;   // integers in ascending order
+
+        for (int k = n - 1; k >= 0; k--)
+        {
+            r = rn.getInt(k);       //a random integer between 0 and k
+            dummy = randomArray[k];
+            randomArray[k] = randomArray[r];
+            randomArray[r] = dummy;
+        }
+        return randomArray;
+    } //end of RandomizeNumberOrder()
+
+
 
     /// <summary>
     /// IMPORTANT - THIS METHOD NEEDS WORK!!
+    /// returns the passed array but with the elements in a random order
+    /// see method above which was originally written for FuzzyART in 1995
     /// </summary>
     /// <param name="array"></param>
     /// <param name="seed"></param>
@@ -127,7 +144,8 @@ public class RandomNumber
         //}
         return rArray;
     }
-  
+ 
+ 
   /**
    * returns a boolean array as a string of bits 0/1
    */
