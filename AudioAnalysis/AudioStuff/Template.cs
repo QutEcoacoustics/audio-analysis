@@ -279,9 +279,9 @@ namespace AudioStuff
             data.Add(" MAX_FREQ=" + this.sonogramState.MaxFreq);
             data.Add(" NUMBER_OF_FREQ_BINS=" + this.sonogramState.FreqBinCount);
             data.Add(" FREQ_BIN_WIDTH=" + hzBin.ToString("F2")+"hz");
-            data.Add(" MIN_POWER=" + this.sonogramState.MinPower.ToString("F3"));
-            data.Add(" AVG_POWER=" + this.sonogramState.AvgPower.ToString("F3"));
-            data.Add(" MAX_POWER=" + this.sonogramState.MaxPower.ToString("F3"));
+            data.Add(" MIN_POWER=" + this.sonogramState.PowerMin.ToString("F3"));
+            data.Add(" AVG_POWER=" + this.sonogramState.PowerAvg.ToString("F3"));
+            data.Add(" MAX_POWER=" + this.sonogramState.PowerMax.ToString("F3"));
             data.Add(" MIN_CUTOFF=" + this.sonogramState.MinCut.ToString("F3"));
             data.Add(" MAX_CUTOFF=" + this.sonogramState.MaxCut.ToString("F3"));
             //data.Add(" SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
