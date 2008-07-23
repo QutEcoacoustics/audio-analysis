@@ -31,6 +31,16 @@ namespace AudioStuff
         static void Main()
         {
             //******************** USER PARAMETERS ***************************
+            //Mode userMode = Mode.ArtificialSignal;
+            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.IdentifySyllables;
+            //Mode userMode = Mode.CreateTemplate;
+            //Mode userMode = Mode.CreateTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.TestTemplate;
+            //Mode userMode = Mode.AnalyseMultipleRecordings;
+            
+
             // directory structure
             const string iniFName = @"C:\SensorNetworks\Templates\sonogram.ini";
             const string templateDir = @"C:\SensorNetworks\Templates\";
@@ -41,9 +51,11 @@ namespace AudioStuff
             const string wavFExt = WavReader.wavFExt;
 
             //training file
+            //string wavFileName = "sineSignal";
+            string wavFileName = "golden-whistler";
             //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
-            string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
+            //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
@@ -69,15 +81,6 @@ namespace AudioStuff
 
 
 
-            //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
-            //Mode userMode = Mode.IdentifySyllables;
-            //Mode userMode = Mode.CreateTemplate;
-            //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
-            //Mode userMode = Mode.TestTemplate;
-            //Mode userMode = Mode.AnalyseMultipleRecordings;
-            
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //************* CALL PARAMETERS ***************
@@ -137,15 +140,24 @@ namespace AudioStuff
                         int sampleRate = 22050;
                         double duration = 30.245; //sig duration in seconds
                         string sigName = "artificialSignal";
-                        int[] harmonics = {1500, 3000, 4500, 6000};
+                        //int[] harmonics = { 1500, 3000, 4500, 6000 };
+                        int[] harmonics = { 1000, 4000 };
                         double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
                         s = new Sonogram(iniFName, sigName, signal, sampleRate);
-                        s.SaveImage(null);
-                        //s.MelFreqSonogram(melBandCount);
-                        //s.SaveMelImage(null);
-                        //s.CepstralSonogram(s.MelFM);
-                        s.CepstralSonogram(s.Matrix);
-                        s.SaveCepImage(null);
+                        double[,] m = s.Matrix;
+
+                        //ImageType type = ImageType.linearScale; //image is linear freq scale
+                        //ImageType type = ImageType.melScale;    //image is mel freq scale
+                        ImageType type = ImageType.ceptral;       //image is of MFCCs
+
+                        //m = s.MelScale(m, melBandCount);
+                        //m = Speech.DecibelSpectra(m);
+
+                        int filterBankCount = 512;
+                        int coeffCount = 32;
+                        m = s.MFCCs(m, filterBankCount, coeffCount);
+
+                        s.SaveImage(m, null, type);
                         Console.WriteLine(" Image in file " + s.BmpFName);
                     }
                     catch (Exception e)
@@ -159,9 +171,21 @@ namespace AudioStuff
                     string wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
+                        //ImageType type = ImageType.linearScale; //image is linear freq scale
+                        //ImageType type = ImageType.melScale;    //image is mel freq scale
+                        ImageType type = ImageType.ceptral;       //image is of MFCCs
+
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
+                        //m = s.MelScale(m, melBandCount);
+                        //m = Speech.DecibelSpectra(m);
+
+                        int filterBankCount = 512;
+                        int coeffCount = 32;
+                        m = s.MFCCs(m, filterBankCount, coeffCount);
+
                         //m = ImageTools.NoiseReduction(m);
+                        //m = ImageTools.SobelEdgeDetection(m);
                         //double threshold = 0.20;
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
                         //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
@@ -169,13 +193,12 @@ namespace AudioStuff
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
                         //m = ImageTools.TrimPercentiles(m);
-                        //m = ImageTools.Shapes_lines(m);
-                        s.SaveImage(m, null);
-                        //s.MelFreqSonogram(melBandCount);
-                        //s.SaveMelImage(null);
+                        s.SaveImage(m, null, type);
                         //s.CepstralSonogram(s.MelFM);
-                        //s.SaveCepImage(null);
-                        Console.WriteLine(" Image in file " + s.BmpFName);
+                        Console.WriteLine(" Sampling Rate = " + s.State.SampleRate);
+                        Console.WriteLine(" Nyquist freq  = " + s.State.MaxFreq);
+                        Console.WriteLine(" Sig duration  = " + s.State.AudioDuration);
+                        Console.WriteLine(" Image in file = " + s.BmpFName);
                     }
                     catch(Exception e)
                     {
@@ -198,7 +221,8 @@ namespace AudioStuff
                         //Color col = Color.DarkBlue;
                         Color col = Color.Red;
                         ArrayList syllables = ImageTools.Shapes5(m);
-                        int[] syllableDistribution = Shape.Distribution(syllables);//distrbution over frequency columns 
+                        //calculate distribution of syllables over frequency columns 
+                        int[] syllableDistribution = Shape.Distribution(syllables, Results.analysisBandCount);
                         //if (true) { s.SaveImage(m, syllables, col); Console.WriteLine("Finished Syllable Extraction"); break; }
 
 
@@ -210,8 +234,8 @@ namespace AudioStuff
                         syllables = Shape.AssignCategories(syllables, categories);
 
                         //derive average shape of each category
-                        //ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
-                        //int[] categoryDistribution = Shape.Distribution(categoryAvShapes);
+                        ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
+                        int[] categoryDistribution = Shape.Distribution(categoryAvShapes, Results.analysisBandCount);
 
                         //Console.WriteLine("Syllable count=" + DataTools.Sum(syllableDistribution) + "  Category count=" + DataTools.Sum(categoryDistribution));
 
@@ -254,6 +278,9 @@ namespace AudioStuff
                     {
                         Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
+                        double[,] m = s.Matrix;
+                        //m = ImageTools.NoiseReduction(m);
+
 
                         Console.WriteLine("CREATING TEMPLATE");
                         Template t = new Template(callID, callName, callComment, templateDir);
@@ -263,7 +290,7 @@ namespace AudioStuff
                         t.WriteInfo();//writes to System.Console.
 
                         Classifier cl = new Classifier(t, s);
-                        s.SaveImage(cl.Zscores);
+                        s.SaveImage(m, cl.Zscores);
                         cl.WriteResults();
                     }
                     catch (Exception e)
@@ -278,12 +305,13 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try{
                         s = new Sonogram(iniFName, wavPath);
-                        //s.MelFreqSonogram(melBandCount);
+                        double[,] m = s.Matrix;
+                        //m = s.MelScale(m, melBandCount);
+                        //m = ImageTools.NoiseReduction(m);
 
                         Template t = new Template(callID, templateDir);
                         Classifier cl = new Classifier(t, s);
-                        s.SaveImage(cl.Zscores);
-                        //s.SaveMelImage(cl.Zscores);
+                        s.SaveImage(m, cl.Zscores);
                         //s.CalculateIndices();
                         //s.WriteStatistics();
                         //cl.WriteResults();
@@ -304,6 +332,7 @@ namespace AudioStuff
                     FileInfo[] files = d.GetFiles("*" + wavFExt);
                     ArrayList array = new ArrayList();
                     array.Add(Classifier.ResultsHeader());
+                    ImageType imageType = ImageType.linearScale; //image is linear freq scale
 
                     try
                     {
@@ -319,10 +348,11 @@ namespace AudioStuff
                                 {
                                     s = new Sonogram(iniFName, wavPath);
                                     Classifier cl = new Classifier(t, s);
-                                    s.SaveImage(opDirName, cl.Zscores);
+                                    s.SaveImage(opDirName, cl.Zscores, imageType);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                                     Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
                                     Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
+                                    Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
                                     Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
                                 }
                                 catch (Exception e)
@@ -350,7 +380,7 @@ namespace AudioStuff
                     d = new DirectoryInfo(testDirName);
                     files = d.GetFiles("*" + wavFExt);  //FileInfo[] 
                     ArrayList lines = new ArrayList();
-                    lines.Add(Sonogram.AnalysisHeader());
+                    lines.Add(Results.AnalysisHeader());
 
                     try
                     {
@@ -363,27 +393,36 @@ namespace AudioStuff
                             wavPath = testDirName + "\\" + fName;
                             s = new Sonogram(iniFName, wavPath);
                             double[,] m = s.Matrix;
+                            m = s.MelScale(m, melBandCount);
+                            m = ImageTools.NoiseReduction(m);
 
                             //extract syllables from sonogram and calculate their distribution
-                            ArrayList syllables = ImageTools.Shapes4(m);
-                            int[] syllableDistribution = Shape.Distribution(syllables);//distrbution over frequency columns 
+                            Color col = Color.Black;
+                            ArrayList syllables = ImageTools.Shapes5(m);
+                            //calculate distribution of syllables over frequency columns 
+                            int[] syllableDistribution = Shape.Distribution(syllables, Results.analysisBandCount);
 
                             //cluster the shapes using FuzzyART
-                            int categoryCount;
+                            int categoryCount = 0;
                             double[,] data = Shape.FeatureMatrix(syllables); //derive data set from syllables
+
                             int[] categories = Shape.ClusterShapesWithFuzzyART(data, out categoryCount);
+                            Console.WriteLine("Number of categories = " + categoryCount);
                             syllables = Shape.AssignCategories(syllables, categories);
 
                             //derive average shape of each category
                             ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
-                            int[] categoryDistribution = Shape.Distribution(categoryAvShapes);
+                            int[] categoryDistribution = Shape.Distribution(categoryAvShapes, Results.analysisBandCount);
 
-                            Color col = Color.Wheat;
-                            s.SaveImage(m, syllables, col);
+                            //ImageType type = ImageType.linearScale; //image is linear freq scale
+                            ImageType type = ImageType.melScale;    //image is mel freq scale
+                            s.SaveImage(m, syllables, col, type);
 
                             //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
                             //SignalAvMax  SignalAbsMax  syllableDistribution  categoryDistribution
                             lines.Add(s.OneLineResult(count, syllableDistribution, categoryDistribution, categoryCount));
+                            count++;
+                            //if (count == 10) break;
                         }//end all wav files
                     }//end try
                     catch (Exception e)

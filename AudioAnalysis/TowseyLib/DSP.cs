@@ -16,6 +16,7 @@ namespace TowseyLib
 
         public static double[] GetSignal(int sampleRate, double duration, int[] freq)
         {
+            double ampl = 10000;
             int length = (int)(sampleRate * duration); 
             double[] data = new double[length];
             int count = freq.Length;
@@ -30,10 +31,12 @@ namespace TowseyLib
             for (int i = 0; i < length; i++)
             {
                 //for (int f = 0; f < count; f++) data[i] += Math.Sin(omega[f] * i);
-                for (int f = 0; f < count; f++) data[i] += Math.Sin(2.0 * Math.PI * freq[f] * i / (double)sampleRate);
+                for (int f = 0; f < count; f++) data[i] += (ampl * Math.Sin(2.0 * Math.PI * freq[f] * i / (double)sampleRate));
             }
             return data;
         }
+
+
 
         /// <summary>
         /// converts passed arguments into step decay and step radians ie radians per sample or OMEGA

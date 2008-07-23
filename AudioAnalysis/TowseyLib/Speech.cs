@@ -8,6 +8,30 @@ namespace TowseyLib
     {
 
 
+
+        public static double[,] DecibelSpectra(double[,] spectra)
+        {
+            int frameCount = spectra.GetLength(0);
+            int binCount = spectra.GetLength(1);
+
+            double[,] SPEC = new double[frameCount, binCount];
+
+            for (int i = 0; i < frameCount; i++)//foreach time step
+            {
+                for (int j = 0; j < binCount; j++) //foreach freq bin
+                {
+                    double amplitude = spectra[i, j];
+                    double power = amplitude * amplitude; //convert amplitude to power
+                    power = 10 * Math.Log10(power);    //convert to decibels
+                    ////NOTE: the decibels calculation should be a ratio. 
+                    //// Here the ratio is implied ie relative to the power in the normalised wav signal
+                    SPEC[i, j] = power;
+                }
+            } //end of all frames
+            return SPEC;
+        }
+
+
         public static double LinearInterpolate(double x0, double x1, double y0, double y1, double x2)
         {
             double dX = x1 - x0;
@@ -46,11 +70,13 @@ namespace TowseyLib
 
         public static double Mel(double f)
         {
+            if (f <= 1000) return f; //linear below 1 kHz
             return 2595.0 * Math.Log10(1.0 + f / 700.0);
         }
 
         public static double InverseMel(double m)
         {
+            if (m <= 1000) return m; //linear below 1 kHz
             return (Math.Pow(10.0, m / 2595.0) - 1.0) * 700.0;
         }
 
@@ -127,54 +153,61 @@ namespace TowseyLib
 
 
 
-        public static double[,] CepstralSonogram(double[,] sMatrix)
-        {
-            int M = sMatrix.GetLength(0); //number of spectra or time steps
-            int inN = sMatrix.GetLength(1); //number of Hz or mel bands
-            int outN = inN / 2 + 1;
-            double[,] outData = new double[M, outN];
-            FFT fft = new FFT(inN);
-            double min = Double.MaxValue, max = 0.0;
-
-            for (int i = 0; i < M; i++) //for all time steps or spectra
-            {
-                double[] inSpectrum = new double[inN];
-                for (int j = 0; j < inN; j++) inSpectrum[j] = sMatrix[i, j];
-                double[] outSpectrum = fft.Invoke(inSpectrum, 0);
-                for (int j = 0; j < outN; j++)
-                {
-                    double amplitude = outSpectrum[j];
-                    if (amplitude < min) min = amplitude;
-                    if (amplitude > max) max = amplitude;
-                    outData[i, j] = amplitude;
-                }
-            }
-
-            //this.State.CepBinCount = outN;  //could return these values via outs
-            //this.State.MinCepPower = min;
-            //this.State.MaxCepPower = max;
-            //return new Spectrum() { Data = outData, Min = min, Epsilon = double.NaN, Max = max, Nyquist = double.NaN };
-            return outData;
-        }
-
-
-        public static double[,] MFCCs(double[,] spectra, int filterBankCount)
+        public static double[,] MFCCs(double[,] spectra, int filterBankCount, double Nyquist, int coeffCount)
         {
             int frameCount = spectra.GetLength(0);
             int binCount = spectra.GetLength(1);
 
-            double[,] M = new double[frameCount, binCount];
+            double[,] M = spectra;
+            //M = MelScale(spectra, filterBankCount, Nyquist);
+            M = DecibelSpectra(M);
+            //M = ImageTools.NoiseReduction(M);
 
+            FFT fft = new FFT(filterBankCount);
+            double[,] cosines = Cosines(binCount, coeffCount + 1);
+
+            double[,] OP = new double[frameCount, coeffCount];
             for (int i = 0; i < frameCount; i++)//foreach time step
             {
-                for (int j = 0; j < binCount; j++) //foreach freq bin
-                {
-                }
+                double[] spectrum = DataTools.GetRow(M, i); //transfer matrix row to vector
+                double[] cepstrum = DCT(spectrum, cosines);
+                //double[] cepstrum = fft.Invoke(spectrum);
+
+                for (int j = 0; j < coeffCount; j++) OP[i, j] = cepstrum[j+1]; //skip first DC value
             } //end of all frames
-            return M;
+            return OP;
         }
 
+        public static double[,] Cosines(int spectrumLength, int coeffCount)
+        {
+            double[,] cosines = new double[spectrumLength, coeffCount + 1];
+            for (int k = 0; k < coeffCount + 1; k++)//foreach coeff
+            {
+                double kPiOnM = k * Math.PI / spectrumLength;
+                for (int m = 0; m < spectrumLength; m++) // spectral bin
+                {
+                    cosines[m, k] = Math.Cos(kPiOnM * (m - 0.5));
+                }
+            }
+            return cosines;
+        }
 
+        public static double[] DCT(double[] spectrum, double[,] cosines)
+        {
+            int L = spectrum.Length;
+            int coeffCount = cosines.GetLength(1);
+            double[] cepstrum = new double[coeffCount+1];
+            for (int k = 0; k < coeffCount; k++)//foreach coeff
+            {
+                double sum = 0.0;
+                for (int m = 0; m < L; m++) // spectral bin
+                {
+                    sum += (spectrum[m] * cosines[m,k]);
+                }
+                cepstrum[k] = sum;
+            }
+            return cepstrum;
+        }
 
     }//end of class Speech
 }

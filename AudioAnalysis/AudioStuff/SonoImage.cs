@@ -23,7 +23,7 @@ namespace AudioStuff
 
         public const double zScoreMax = 8.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
-        public const int    trackHt   = 50;   //pixel height of the score tracks
+        public const int    scoreHt   = 50;   //pixel height of the score tracks
 
         private int sf; //sample rate or sampling frequency
         private int NyquistF = 0;  //max frequency = Nyquist freq = sf/2
@@ -85,36 +85,37 @@ namespace AudioStuff
 
         public Bitmap CreateBitmap(double[,] sonogram, double[] scoreArray, ImageType type)
         {
-            int width     = sonogram.GetLength(0);
-            int sHeight   = sonogram.GetLength(1);
-            int imageHt   = sHeight; //image ht= sonogram ht. Later include grid and score scales
+            int width = sonogram.GetLength(0);
+            int sHeight = sonogram.GetLength(1);
+
+            int binHt = 1;
+            if (type == ImageType.ceptral) binHt = 512 / sHeight;
+
+            int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
+            int totalHt   = imageHt;
             double hzBin  = NyquistF / (double)sHeight;
             double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
 
-            byte[] hScale = CreateHorizintalScale(width);
-            int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
+            byte[] hScale = CreateHorizintalScale(width, this.recordingLength);
 
             if (type == ImageType.melScale) //do mel scale conversions
             {
-                vScale = CreateMelVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
                 double topMel = Speech.Mel(this.topScanBin*hzBin);
                 double botMel = Speech.Mel(this.bottomScanBin*hzBin);
                 this.topScanBin    = (int)(topMel / melBin);
                 this.bottomScanBin = (int)(botMel / melBin);
             }
 
-            if (addGrid) imageHt = scaleHt + sHeight + scaleHt;
-            if (scoreArray != null) imageHt += trackHt;
-            bool add1kHzLines = addGrid;
-            if(type == ImageType.ceptral) add1kHzLines = false;
+            if (addGrid) totalHt = scaleHt + imageHt + scaleHt;
+            if (scoreArray != null) totalHt += scoreHt;
 
             double min;
             double max;
             DataTools.MinMax(sonogram, out min, out max);
             double range  = max - min;
 
-            Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
-            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, imageHt), ImageLockMode.WriteOnly, bmp.PixelFormat);
+            Bitmap bmp = new Bitmap(width, totalHt, PixelFormat.Format24bppRgb);
+            BitmapData bmpData = bmp.LockBits(new Rectangle(0, 0, width, totalHt), ImageLockMode.WriteOnly, bmp.PixelFormat);
             if (bmpData.Stride < 0) throw new NotSupportedException("Bottum-up bitmaps");
 
 
@@ -122,114 +123,68 @@ namespace AudioStuff
             {
                 byte* p0 = (byte*)bmpData.Scan0;
 
-                if (addGrid) //add top time line with one second tick intervals
+                if (addGrid) //add spacer track for top time tics
                 {
                     byte* p1 = p0;
-
                     for (int h = 0; h < scaleHt; h++)
                     {
                         for (int x = 0; x < width; x++)
                         {
-                            *p1++ = hScale[x]; //b          
-                            *p1++ = hScale[x]; //g          
-                            *p1++ = hScale[x]; //r           
+                            *p1++ = 0; //b          
+                            *p1++ = 0; //g          
+                            *p1++ = 0; //r           
                         }
-                        //following sometimes need as filler
-                        //*p1++ = hScale[width-1]; //b          
-                        //*p1++ = hScale[width-1]; //g          
-                        //*p1++ = hScale[width-1]; //r 
-
                         p0 += bmpData.Stride;  //add in the scale
                     }
                 } //end of adding time grid
 
-                int gridCount = vScale.Length-1; //used to control addition of horizontal grid lines
+
+
                 for (int y = sHeight; y > 0; y--) //over all freq bins
                 {
                     byte* p1 = p0;
-
-                    //add in 1 kHz grid line
-                    if (add1kHzLines && (gridCount >= 0) && (y == vScale[gridCount]))
+                    for (int r = 0; r < binHt; r++) //repeat this bin if ceptral image
                     {
-                        gridCount--;
-                        for (int x = 0; x < width; x++)
+                        for (int x = 0; x < width; x++) //for pixels in the line
                         {
-                            *p1++ = (byte)200;   //b         
-                            *p1++ = (byte)200;   //g  //light gray - for red: b=50,g=100,r=200
-                            *p1++ = (byte)200;   //r       
+                            //normalise and bound the value - use min bound, max and 255 image intensity range
+                            double value = (sonogram[x, y - 1] - min) / (double)range;
+                            int c = (int)Math.Floor(255.0 * value); //original version
+                            //int c = (int)Math.Floor(255.0 * normal * normal); //take square of normalised value to enhance features
+                            if (c < 0) c = 0;      //truncate if < 0
+                            else
+                                if (c >= 256) c = 255; //truncate if >255
+                            //c /= 2; //half the image intensity
+
+                            c = 255 - c; //reverse the gray scale
+
+                            int g = c + 40; //green tinge used in the template scan band 
+                            if (g >= 256) g = 255;
+
+                            if ((y > topScanBin) && (y < bottomScanBin))
+                            {
+                                *p1++ = (byte)c; //b           c 
+                                *p1++ = (byte)g; //g          (c/2)
+                                *p1++ = (byte)c; //r           0
+                            }
+                            else
+                            {
+                                *p1++ = (byte)c; //b           c 
+                                *p1++ = (byte)c; //g          (c/2)
+                                *p1++ = (byte)c; //r           0
+                            }
                         }
                         p0 += bmpData.Stride;
-                        continue;
-                    }
-
-                    for (int x = 0; x < width; x++) //for pixels in the line
-                    {
-                        //normalise and bound the value - use min bound, max and 255 image intensity range
-                        double value = (sonogram[x, y - 1] - min) / (double)range;
-                        int c = (int)Math.Floor(255.0 * value); //original version
-                        //int c = (int)Math.Floor(255.0 * normal * normal); //take square of normalised value to enhance features
-                        if (c < 0) c = 0;      //truncate if < 0
-                        else
-                        if (c >= 256) c = 255; //truncate if >255
-                        //c /= 2; //half the image intensity
-
-                        c = 255 - c; //reverse the gray scale
-
-                        int g = c + 40; //green tinge used in the template scan band 
-                        if (g >= 256) g = 255;
-
-                        if ((y > topScanBin) && (y < bottomScanBin)) 
-                        {   *p1++ = (byte)c; //b           c 
-                            *p1++ = (byte)g; //g          (c/2)
-                            *p1++ = (byte)c; //r           0
-                        }else
-                        {   
-                            *p1++ = (byte)c; //b           c 
-                            *p1++ = (byte)c; //g          (c/2)
-                            *p1++ = (byte)c; //r           0
-                        }
-
-
-                    }
-                    p0 += bmpData.Stride;
+                    } //end repeats over one track
                 }//end over all freq bins
-
-                if (addGrid)//add bottom time line with one second tick intervals
-                {
-                    byte* p1 = p0;
-                    for (int h = 0; h < scaleHt; h++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            *p1++ = hScale[x]; //b          
-                            *p1++ = hScale[x]; //g          
-                            *p1++ = hScale[x]; //r           
-                        }
-                        p0 += bmpData.Stride;  //add in the scale
-                    }
-                } //end of adding seconds ticks
-
-                if (scoreArray != null) //add a score track
-                {
-                    byte[,] scoreTrack = CreateTrack(scoreArray);
-                    //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
-
-                    byte* p1 = p0;
-                    for (int h = 0; h < trackHt; h++)
-                    {
-                        for (int x = 0; x < width; x++)
-                        {
-                            *p1++ = scoreTrack[x, h]; //b          
-                            *p1++ = scoreTrack[x, h]; //g          
-                            *p1++ = scoreTrack[x, h]; //r
-                        }
-                        p0 += bmpData.Stride;  //add in the track
-                    }
-                } // end of adding track if (scoreArray != null)
-
             } //end unsafe
 
             bmp.UnlockBits(bmpData);
+
+            if (addGrid) bmp = AddGrid(bmp);
+            bmp = Add1kHzLines(bmp, scaleHt, type);
+            if (scoreArray != null) AddScoretrack(bmp, scaleHt, scoreHt, scoreArray);  //add a score track
+
             return bmp;
         }
 
@@ -279,7 +234,7 @@ namespace AudioStuff
 
 
 
-        public byte[] CreateHorizintalScale(int width)
+        public byte[] CreateHorizintalScale(int width, double timeDuration)
         {
             byte[] ba = new byte[width]; //byte array
             double period = this.recordingLength/width;
@@ -287,7 +242,7 @@ namespace AudioStuff
             for (int x = 0; x < width; x++) ba[x] = (byte)230; //set background pale gray colour
             for (int x = 0; x < width-1; x++)
             {
-                double elapsedTime = x * this.recordingLength / (double)width;
+                double elapsedTime = x * timeDuration / (double)width;
                 double mod1sec = elapsedTime % 1.0000;
                 double mod10sec = elapsedTime % 10.0000;
                 if (mod10sec < period)//double black line
@@ -308,7 +263,54 @@ namespace AudioStuff
         }
 
 
+        public Bitmap AddGrid(Bitmap bmp)
+        {
+            int width = bmp.Width;
+            int height = bmp.Height;
+            byte[] hScale = CreateHorizintalScale(width, this.recordingLength);
+            Color black = Color.Black;
 
+            for (int x = 0; x < width; x++)
+            {
+                Color c = Color.White;
+                if (hScale[x] == 50) c = Color.Gray;
+                else
+                if (hScale[x] == 0)  c = Color.Black;
+
+                for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, h, c);
+                bmp.SetPixel(x, scaleHt, black);
+                for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, height-h-1, c);
+                bmp.SetPixel(x, height - scaleHt - 1, black);
+            } //end of adding time grid
+            return bmp;
+        }
+
+        public Bitmap Add1kHzLines(Bitmap bmp, int scaleHt, ImageType type)
+        {
+            if (type == ImageType.ceptral) return bmp; //do not add to cepstral image
+
+            int width  = bmp.Width;
+            int height = bmp.Height;
+
+            int sHeight = height - scaleHt - scaleHt;
+
+            int[] vScale = CreateLinearVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines
+            if (type == ImageType.melScale)
+            {
+                vScale = CreateMelVerticleScale(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
+            }
+
+            int gridCount = vScale.Length - 1; //used to control addition of horizontal grid lines
+            Color c = Color.LightGray;
+
+            for (int b = 0; b < vScale.Length; b++) //over grid lines
+            {
+                int y = scaleHt + sHeight - vScale[b];
+   
+                for (int x = 0; x < width; x++) bmp.SetPixel(x, y, c);
+            }
+            return bmp;
+        }//end method Add1kHzLines()
 
         /// <summary>
         /// This method assumes that the passed score array has been range normalised.
@@ -317,26 +319,51 @@ namespace AudioStuff
         /// <param name="trackHt"></param>
         /// <param name="SDs"></param>
         /// <returns></returns>
-        public byte[,] CreateTrack(double[] scoreArray)
-        {          
+        public byte[,] CreateScoreTrack(double[] scoreArray)
+        {
             int width = scoreArray.GetLength(0);
-            byte[,] track = new byte[width, trackHt];//matrix to hold track's grey-scale intensity data
+            byte[,] track = new byte[width, scoreHt];//matrix to hold track's grey-scale intensity data
 
             for (int x = 0; x < width; x++) //over length of image
             {
-                int id = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * scoreArray[x] / SonoImage.zScoreMax);
+                int id = SonoImage.scoreHt - 1 - (int)(SonoImage.scoreHt * scoreArray[x] / SonoImage.zScoreMax);
                 if (id < 0) id = 0;
-                else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
+                else if (id > SonoImage.scoreHt) id = SonoImage.scoreHt;
 
                 for (int z = 0; z < id; z++) track[x, z] = (byte)200; //black vertical histogram bar
             }
 
             //add in horizontal threshold significance line
-            int significanceLine = (int)(SonoImage.trackHt * (1 - (this.scoreThreshold / SonoImage.zScoreMax)));
+            int significanceLine = (int)(SonoImage.scoreHt * (1 - (this.scoreThreshold / SonoImage.zScoreMax)));
             for (int x = 0; x < width; x++) track[x, significanceLine] = (byte)100;  //grey colour
             return track;
         } //end CreateTrack()
 
+
+        public Bitmap AddScoretrack(Bitmap bmp, int scaleHt, int scoreHt, double[] scoreArray)
+        {
+            byte[,] scoreTrack = CreateScoreTrack(scoreArray);
+            //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
+
+            int width = bmp.Width;
+            int height = bmp.Height;
+
+            Color black = Color.Black;
+            Color white = Color.White;
+
+            for (int h = 0; h < scoreHt; h++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Color c = white;
+                    if (scoreTrack[x,h] == 100) c = Color.Gray;
+                    else
+                        if (scoreTrack[x,h] == 200) c = black;
+                    bmp.SetPixel(x, height - h, c);
+                }
+            }
+            return bmp;
+        }
 
 
         public Bitmap AddShapeBoundaries(Bitmap bmp, ArrayList shapes, Color col)
