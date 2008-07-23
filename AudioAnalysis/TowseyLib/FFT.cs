@@ -148,31 +148,6 @@ namespace TowseyLib
 
 
 
-        public static double[,] DecibelSpectra(double[,] spectra)
-        {
-            int frameCount = spectra.GetLength(0);
-            int binCount = spectra.GetLength(1);
-
-            double[,] SPEC = new double[frameCount, binCount];
-
-            for (int i = 0; i < frameCount; i++)//foreach time step
-            {
-                for (int j = 0; j < binCount; j++) //foreach freq bin
-                {
-                    double amplitude = spectra[i, j];
-                    double power = amplitude * amplitude; //convert amplitude to power
-                    power = 10 * Math.Log10(power);    //convert to decibels
-                    ////NOTE: the decibels calculation should be a ratio. 
-                    //// Here the ratio is implied ie relative to the power in the normalised wav signal
-                    SPEC[i, j] = power;
-                }
-            } //end of all frames
-            return SPEC;
-        }
-
-
-
-
         #region Window functions
         // from http://en.wikipedia.org/wiki/Window_function
 

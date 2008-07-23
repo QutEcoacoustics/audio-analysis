@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TowseyLib</RootNamespace>
     <AssemblyName>TowseyLib</AssemblyName>
-    <StartupObject>TowseyLib.Shape</StartupObject>
+    <StartupObject>TowseyLib.WavWriter</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -58,6 +58,7 @@
     <Compile Include="Shape.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="WavReader.cs" />
+    <Compile Include="WavWriter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

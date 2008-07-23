@@ -257,7 +257,7 @@ namespace AudioStuff
             FFT fft = new FFT(N, w); // init class which calculates the FFT
 
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
-            int smoothingWindow = 5; //to smooth the spectrum 
+            int smoothingWindow = 3; //to smooth the spectrum 
 
             double[,] sonogram = new double[frameCount, binCount];
 
@@ -325,7 +325,6 @@ namespace AudioStuff
         public double[,] MelScale(double[,] matrix, int melBandCount)
         {
             double Nyquist = this.state.MaxFreq;
-            double linBand = this.State.FBinWidth;
             double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
 
             this.State.MelBinCount = melBandCount;
@@ -334,6 +333,17 @@ namespace AudioStuff
             return Speech.MelScale(matrix, melBandCount, Nyquist);
         }
 
+
+        public double[,] MFCCs(double[,] matrix, int melBandCount, int coeffCount)
+        {
+            double Nyquist = this.state.MaxFreq;
+            double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
+
+            this.State.MelBinCount = melBandCount;
+            this.State.MaxMel = Speech.Mel(Nyquist);
+
+            return Speech.MFCCs(matrix, melBandCount, Nyquist, coeffCount);
+        }
 
 
         public double[,] Gradient()
@@ -790,6 +800,15 @@ namespace AudioStuff
         public void SetDateAndTime(string fName)
         {
             string[] parts = fName.Split('_');
+            if(parts.Length == 1)
+            {
+                this.DeployName = fName;
+                this.Date = "000000";
+                this.Hour = 0;
+                this.Minute = 0;
+                this.TimeSlot = 0; 
+                return;
+            }
             this.DeployName = parts[0];
             parts = parts[1].Split('-');
             this.Date = parts[0];
