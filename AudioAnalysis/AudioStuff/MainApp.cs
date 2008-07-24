@@ -32,11 +32,11 @@ namespace AudioStuff
         {
             //******************** USER PARAMETERS ***************************
             //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -52,8 +52,8 @@ namespace AudioStuff
 
             //training file
             //string wavFileName = "sineSignal";
-            string wavFileName = "golden-whistler";
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "golden-whistler";
+            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
@@ -171,20 +171,20 @@ namespace AudioStuff
                     string wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        //ImageType type = ImageType.linearScale; //image is linear freq scale
+                        ImageType type = ImageType.linearScale; //image is linear freq scale
                         //ImageType type = ImageType.melScale;    //image is mel freq scale
-                        ImageType type = ImageType.ceptral;       //image is of MFCCs
+                        //ImageType type = ImageType.ceptral;       //image is of MFCCs
 
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
-                        //m = s.MelScale(m, melBandCount);
-                        //m = Speech.DecibelSpectra(m);
+                        if (type == ImageType.melScale) m = s.MelScale(m, melBandCount);
+                        if (type != ImageType.ceptral) m = Speech.DecibelSpectra(m);
+                        //m = ImageTools.NoiseReduction(m);
 
                         int filterBankCount = 512;
                         int coeffCount = 32;
-                        m = s.MFCCs(m, filterBankCount, coeffCount);
+                        if (type == ImageType.ceptral) m = s.MFCCs(m, filterBankCount, coeffCount);
 
-                        //m = ImageTools.NoiseReduction(m);
                         //m = ImageTools.SobelEdgeDetection(m);
                         //double threshold = 0.20;
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
@@ -279,6 +279,7 @@ namespace AudioStuff
                         Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
+                        m = Speech.DecibelSpectra(m);
                         //m = ImageTools.NoiseReduction(m);
 
 
@@ -307,6 +308,7 @@ namespace AudioStuff
                         s = new Sonogram(iniFName, wavPath);
                         double[,] m = s.Matrix;
                         //m = s.MelScale(m, melBandCount);
+                        m = Speech.DecibelSpectra(m);
                         //m = ImageTools.NoiseReduction(m);
 
                         Template t = new Template(callID, templateDir);

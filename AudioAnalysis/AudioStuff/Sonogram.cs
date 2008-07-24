@@ -11,7 +11,11 @@ namespace AudioStuff
 	public sealed class Sonogram
 	{
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
-
+        public const double minLogEnergy = -11.0;
+        public const double maxLogEnergy = -1.3863; // = Math.Log(0.25);   //assumes max average amplitude in a signal = 0.5
+        //public const double maxLogEnergy = -1.022;    // = Math.Log(0.36); //assumes max average amplitude in a signal = 0.6
+        //public const double maxLogEnergy = -0.713;    // = Math.Log(0.49); //assumes max average amplitude in a signal = 0.7
+        //note that cicada recording reaches max av amplitude = 0.55
 
 
 
@@ -220,8 +224,8 @@ namespace AudioStuff
         /// <returns></returns>
         public double[] SignalEnergy(double[,] frames)
         {
-            const double minLogEnergy = -5.0;
-            double maxLogEnergy = Math.Log(0.25);//assumes max average amplitude in a signal = 0.5
+            //const double minLogEnergy = -5.0; //defined in class header
+            //double maxLogEnergy = Math.Log(0.25);//reference energy level = max average amplitude in a signal = 0.5
             
             int frameCount = frames.GetLength(0);
             int N          = frames.GetLength(1);
@@ -233,17 +237,19 @@ namespace AudioStuff
                 {
                     sum += (frames[i,j] * frames[i,j]); //sum the energy
                 }
-                double e = sum / (double)N;
+                double e = sum / (double)N; //normalise to frame size
                 if (e <= 0.0) energy[i] = minLogEnergy;
+                //if (Math.Log(e) < minLogEnergy) energy[i] = minLogEnergy;
                 else          energy[i] = Math.Log(e);
+                energy[i] = energy[i] - maxLogEnergy; //normalise to absolute scale
             }
-            //double maxEnergy = energy[DataTools.getMaxIndex()];
 
-            //normalise to an absolute energy value
-            for (int i = 0; i < frameCount; i++) //foreach time step
-            {
-                energy[i] = ((energy[i] - maxLogEnergy) * 0.1) + 1.0; //see method header for reference 
-            }
+            //normalise to relative energy value i.e. max in the signal
+            //double maxEnergy = energy[DataTools.getMaxIndex()];
+            //for (int i = 0; i < frameCount; i++) //foreach time step
+            //{
+            //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
+            //}
             return energy;
         }
 
@@ -556,19 +562,31 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, double[] zscores)
         {
-            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, zscores, type);
+            ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
+            TrackType trackType = TrackType.score;       //include score track
+            if (zscores == null) trackType = TrackType.energy;
+
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp;
+            if(zscores == null) bmp = image.CreateBitmap(matrix, energy);
+            else
+            bmp = image.CreateBitmap(matrix, zscores);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
             bmp.Save(fName);
         }
 
-        public void SaveImage(double[,] matrix, double[] zscores, ImageType type)
+        public void SaveImage(double[,] matrix, double[] zscores, ImageType imageType)
         {
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, zscores, type);
+            TrackType trackType = TrackType.score;
+            if (zscores == null) trackType = TrackType.energy;
+
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp;
+            if (zscores == null) bmp = image.CreateBitmap(matrix, energy);
+            else
+                bmp = image.CreateBitmap(matrix, zscores);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
@@ -577,19 +595,22 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col)
         {
-            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, null, type);
+            ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
+            TrackType trackType = TrackType.none;
+
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
             bmp.Save(fName);
         }
-        public void SaveImage(double[,] matrix, ArrayList shapes, Color col, ImageType type)
+        public void SaveImage(double[,] matrix, ArrayList shapes, Color col, ImageType imageType)
         {
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, null, type);
+            TrackType trackType = TrackType.none;
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -600,9 +621,11 @@ namespace AudioStuff
 
         public void SaveImageOfSolids(double[,] matrix, ArrayList shapes, Color col)
         {
-            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, null, type);
+            ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
+            TrackType trackType = TrackType.none;
+
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeSolids(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -612,9 +635,11 @@ namespace AudioStuff
 
         public void SaveImageOfCentroids(double[,] matrix, ArrayList shapes, Color col)
         {
-            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(matrix, null, type);
+            ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
+            TrackType trackType = TrackType.none;
+
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddCentroidBoundaries(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -623,10 +648,11 @@ namespace AudioStuff
         }
 
 
-        public void SaveImage(string opDir, double[] zscores, ImageType type)
+        public void SaveImage(string opDir, double[] zscores, ImageType imageType)
         {
-            SonoImage image = new SonoImage(this.state);
-            Bitmap bmp = image.CreateBitmap(this.matrix, zscores, type);
+            TrackType trackType = TrackType.none;
+            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
 
             string fName = opDir + "//" + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;

@@ -1480,5 +1480,15 @@ namespace TowseyLib
             return m;
         }
 
+
+        public static Color[] GrayScale()
+        {
+            int max = 256;
+            Color[] grayScale = new Color[256];
+            for (int c = 0; c < max; c++) grayScale[c] = Color.FromArgb(c, c, c);
+            return grayScale;
+        }
+
+
     }//end class
 }
