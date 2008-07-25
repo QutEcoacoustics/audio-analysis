@@ -15,7 +15,7 @@ namespace AudioStuff
 
 
     public enum ImageType { linearScale, melScale, ceptral }
-    public enum TrackType { none, energy, score }
+    public enum TrackType { none, energy, zeroCrossings, score }
 
 
 
@@ -38,14 +38,36 @@ namespace AudioStuff
         private ImageType imageType;
         private TrackType trackType;
 
+        private double[] energy;
+        private int[] zeroCrossings;
+        private int[] sigState;
 
 
+
+        public SonoImage(Sonogram sonogram, ImageType imageType, TrackType trackType)
+        {
+            SonoConfig state = sonogram.State;
+            this.sf = state.SampleRate;
+            this.NyquistF = this.sf / 2; //max frequency
+            this.recordingLength = state.TimeDuration;
+            this.addGrid = state.AddGrid;
+            this.topScanBin = state.TopScanBin;       //only used when scanning with a template
+            this.bottomScanBin = state.BottomScanBin;
+            this.scoreThreshold = state.ZScoreThreshold;
+
+            this.imageType = imageType;
+            this.trackType = trackType;
+
+            this.energy = sonogram.Energy;
+            this.zeroCrossings = sonogram.ZeroCross;
+            this.sigState = sonogram.SigState;
+        }
 
         public SonoImage(SonoConfig state, ImageType imageType, TrackType trackType)
         {
             this.sf = state.SampleRate;
             this.NyquistF = this.sf / 2; //max frequency
-            this.recordingLength = state.AudioDuration;
+            this.recordingLength = state.TimeDuration;
             this.addGrid = state.AddGrid;
             this.topScanBin = state.TopScanBin;       //only used when scanning with a template
             this.bottomScanBin = state.BottomScanBin;
@@ -85,15 +107,14 @@ namespace AudioStuff
         public Bitmap CreateBitMapOfTemplate(double[,] matrix)
         {
             this.addGrid = false;
-            ImageType type = ImageType.linearScale; //image is linear scale not mel scale
             return CreateBitmap(matrix, null);
         }
 
 
-        public Bitmap CreateBitmap(double[,] sonogram, double[] dataArray)
+        public Bitmap CreateBitmap(double[,] matrix, double[] dataArray)
         {
-            int width   = sonogram.GetLength(0); //number of spectra in sonogram
-            int sHeight = sonogram.GetLength(1); //number of freq bins in sonogram
+            int width   = matrix.GetLength(0); //number of spectra in sonogram
+            int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
             int binHt = 1;
             if (this.imageType == ImageType.ceptral) binHt = 512 / sHeight;
@@ -113,17 +134,22 @@ namespace AudioStuff
             //calculate total height of the bmp
             int totalHt = imageHt;
             if (this.addGrid) totalHt = scaleHt + imageHt + scaleHt;
-            if (dataArray != null) totalHt += trackHt;
+            if (this.trackType != TrackType.none) totalHt += trackHt;
 
             Bitmap bmp = new Bitmap(width, totalHt, PixelFormat.Format24bppRgb);
             //bmp = AddSonogram(bmp, sonogram, binHt, unsafePixels);
-            bmp = AddSonogram(bmp, sonogram, binHt);
+            bmp = AddSonogram(bmp, matrix, binHt);
 
             if (addGrid) bmp = Add1kHzLines(bmp);
             if (addGrid) bmp = AddXaxis(bmp);
             if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
-            else if (this.trackType == TrackType.energy) AddEnergyTrack(bmp, dataArray);  
-
+            else if (this.trackType == TrackType.energy) AddEnergyTrack(bmp, this.energy, this.sigState);
+            else if (this.trackType == TrackType.zeroCrossings)
+            {
+                double[] zxs = DataTools.normalise(this.zeroCrossings);
+                zxs = DataTools.Normalise(zxs, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
+                AddEnergyTrack(bmp, zxs, this.sigState);
+            }
             return bmp;
         }
 
@@ -365,7 +391,9 @@ namespace AudioStuff
             int width  = bmp.Width;
             int height = bmp.Height;
 
-            int sHeight = height - SonoImage.scaleHt - SonoImage.scaleHt;
+            int sHeight = height;
+            if(addGrid) sHeight -= (SonoImage.scaleHt + SonoImage.scaleHt);
+            if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
 
             int[] vScale = CreateLinearYaxis(1000, sHeight); //calculate location of 1000Hz grid lines
             if (this.imageType == ImageType.melScale)
@@ -428,7 +456,7 @@ namespace AudioStuff
         /// <param name="bmp"></param>
         /// <param name="scoreArray"></param>
         /// <returns></returns>
-        public Bitmap AddEnergyTrack(Bitmap bmp, double[] array)
+        public Bitmap AddEnergyTrack(Bitmap bmp, double[] array, int[] sigState)
         {
             int width  = bmp.Width;
             int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
@@ -438,6 +466,7 @@ namespace AudioStuff
             Color white = Color.White;
             double min = Sonogram.minLogEnergy;
             double range = Sonogram.maxLogEnergy - Sonogram.minLogEnergy;
+            Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
             for (int x = 0; x < width; x++)
             {
@@ -447,6 +476,12 @@ namespace AudioStuff
                 else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
                 //paint white and leave a black vertical bar
                 for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
+
+                //put state as top two pixels
+                Color col = stateColors[sigState[x]];
+                bmp.SetPixel(x, offset, col);
+                bmp.SetPixel(x, offset + 1, col);
+                bmp.SetPixel(x, offset + 2, col);
             }
             return bmp;
         }

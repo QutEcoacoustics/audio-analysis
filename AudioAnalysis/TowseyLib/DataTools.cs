@@ -45,10 +45,10 @@ namespace TowseyLib
                 DataTools.writeMatrix(matrix);
                 double normMin=-2.0;
                 double normMax= 1.0;
-                matrix = normalise(matrix, normMin, normMax);
+                matrix = Normalise(matrix, normMin, normMax);
                 Console.WriteLine("\n\n");
                 DataTools.writeMatrix(matrix);
-                matrix = normalise(matrix, 0, 1);
+                matrix = Normalise(matrix, 0, 1);
                 Console.WriteLine("\n\n");
                 DataTools.writeMatrix(matrix);
 
@@ -765,7 +765,7 @@ namespace TowseyLib
         /// <param name="normMin"></param>
         /// <param name="normMax"></param>
         /// <returns></returns>
-        public static double[,] normalise(double[,] m, double normMin, double normMax)
+        public static double[,] Normalise(double[,] m, double normMin, double normMax)
         {
             //m = normalise(m);
             double min = Double.MaxValue;
@@ -796,6 +796,41 @@ namespace TowseyLib
             return (ret);
         }
 
+
+        /// <summary>
+        /// normalises the values in a vector between the passed min and max.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="normMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
+        public static double[] Normalise(double[] v, double normMin, double normMax)
+        {
+            //m = normalise(m);
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+
+            int length = v.Length;
+            double[] ret = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                if (v[i] > max) max = v[i];
+                if (v[i] < min) min = v[i];
+            }
+            double range = max - min;
+            double normRange = normMax - normMin;
+            //Console.WriteLine("range ="+ range+"  normRange="+normRange);
+
+            for (int i = 0; i < length; i++)
+            {
+                double norm01 = (v[i] - min) / range;
+                ret[i] = normMin + (norm01 * normRange);
+            }
+
+            return (ret);
+        }
+
+        
         public static double[] normalise(int[] v)
         {
             int min = Int32.MaxValue;
@@ -1203,6 +1238,29 @@ namespace TowseyLib
          //Console.WriteLine("max="+max+"@ i="+i);
       }
     }
+  }
+
+    /// <summary>
+    /// Same as above method but returns index instead of outting it!
+    /// returns the index of max value in an array of doubles.
+    /// array index starts at zero.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <returns></returns>
+  static public int GetMaxIndex(double[] data)
+  {
+      //if(data == null) return -1;
+      int indexMax = 0;
+      double max = data[0];
+      for (int i = 1; i < data.Length; i++)
+      {
+          if (data[i] > max)
+          {
+              max = data[i];
+              indexMax = i;
+          }
+      }
+      return indexMax;
   }
 
   /**

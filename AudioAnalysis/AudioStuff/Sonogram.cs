@@ -11,8 +11,8 @@ namespace AudioStuff
 	public sealed class Sonogram
 	{
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
-        public const double minLogEnergy = -11.0;
-        public const double maxLogEnergy = -1.3863; // = Math.Log(0.25);   //assumes max average amplitude in a signal = 0.5
+        public const double minLogEnergy = -11.0;       //typical noise value for BAC2 recordings = -10.5
+        public const double maxLogEnergy = -1.3863;     // = Math.Log(0.25); //assumes max average amplitude in a signal = 0.5
         //public const double maxLogEnergy = -1.022;    // = Math.Log(0.36); //assumes max average amplitude in a signal = 0.6
         //public const double maxLogEnergy = -0.713;    // = Math.Log(0.49); //assumes max average amplitude in a signal = 0.7
         //note that cicada recording reaches max av amplitude = 0.55
@@ -27,6 +27,12 @@ namespace AudioStuff
 
         private double[] energy; //energy per signal frame
         public  double[] Energy { get { return energy; } /*set { energy = value; }*/ }
+
+        private int[] zeroCross; //number of zero crossings per frame
+        public  int[] ZeroCross { get { return zeroCross; } /*set { zeroCross = value; }*/ }
+
+        private int[] sigState; //integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
+        public  int[] SigState { get { return sigState; } /*set { sigState = value; }*/ }
 
         private double[,] matrix; //the original sonogram
         public  double[,] Matrix { get { return matrix; } /*set { matrix = value; }*/ }
@@ -114,7 +120,8 @@ namespace AudioStuff
         {
             state.ReadConfig(iniFName);
             state.WavFName = sigName;
-            state.WavFileExt = "sig";
+            state.WavFileExt = WavReader.wavFExt;
+            //state.WavFileExt = "sig";
 
             //initialise WAV class with double array
             WavReader wav = new WavReader(rawData, sampleRate, sigName);
@@ -126,18 +133,17 @@ namespace AudioStuff
         {
             //store essential parameters for this sonogram
             if (wav.Amplitude_AbsMax == 0.0) throw new ArgumentException("Wav file has zero signal. Cannot make sonogram.");
-            this.state.SignalAbsMax = wav.Amplitude_AbsMax;
-            this.state.SignalAvgMax = wav.Amplitude_AvMax;
-            this.state.WavFName = wav.WavFileName;
-            this.state.SampleRate = wav.SampleRate;
-            this.state.SampleCount = wav.SampleCount;
-            this.state.AudioDuration = state.SampleCount / (double)state.SampleRate;
-            this.state.MaxFreq = state.SampleRate / 2;
+            this.state.WavMax         = wav.Amplitude_AbsMax;
+            this.state.WavFName       = wav.WavFileName;
+            this.state.SampleRate     = wav.SampleRate;
+            this.state.SampleCount    = wav.SampleCount;
+            this.state.TimeDuration  = state.SampleCount / (double)state.SampleRate;
+            this.state.MaxFreq        = state.SampleRate / 2;
             this.state.WindowDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
             this.state.NonOverlapDuration = this.state.WindowDuration * (1 - this.state.WindowOverlap);// duration in seconds
             this.state.FreqBinCount = this.state.WindowSize / 2; // other half is phase info
             this.state.FBinWidth = this.state.MaxFreq / (double)this.state.FreqBinCount;
-            this.state.SpectrumCount = (int)(this.state.AudioDuration / this.state.NonOverlapDuration);
+            this.state.SpectrumCount = (int)(this.state.TimeDuration / this.state.NonOverlapDuration);
             this.state.SpectraPerSecond = 1 / this.state.NonOverlapDuration;
 
             double[] signal = wav.Samples;
@@ -146,111 +152,39 @@ namespace AudioStuff
             if (doPreemphasis)
             {
                 double coeff = 0.96;
-                signal = PreEmphasis(signal, coeff);
+                signal = DSP.PreEmphasis(signal, coeff);
             }
 
             //FRAME WINDOWING
             int step = (int)(this.state.WindowSize * (1 - this.state.WindowOverlap));
-            double[,] frames = Frames(signal, this.state.WindowSize, step);
+            double[,] frames = DSP.Frames(signal, this.state.WindowSize, step);
             this.state.SpectrumCount = frames.GetLength(0);
 
             //ENERGY PER FRAME
-            this.energy = SignalEnergy(frames);
+            this.energy = DSP.SignalEnergy(frames, minLogEnergy, maxLogEnergy);
+            double min;
+            double max;
+            DataTools.MinMax(energy, out min, out max);
+            this.State.SigNoise = min;
+            this.state.SigMax = max;
+            this.State.SigNoiseRatio = 10 * (max - min);
+            //noise reduce the energy array
+            double noiseThreshold = 10.0; //dB
+            this.energy = DSP.NoiseReduce(this.energy, min, max, noiseThreshold);
 
+            // ZERO CROSSINGS
+            //this.zeroCross = DSP.ZeroCrossings(frames);
+            double lowerEnergyThreshold = -10.5;
+            double upperEnergyThreshold = -9.5;
+            int latency = 5;
+            int gapThreshold = 15;
+            //this.sigState = Speech.SignalDetection(this.energy, lowerEnergyThreshold, upperEnergyThreshold, gapThreshold, this.zeroCross);
+            this.sigState = Speech.SignalDetection(this.energy, lowerEnergyThreshold, upperEnergyThreshold, latency, gapThreshold, null);
 
             //generate the spectra
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
             double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
             this.matrix = GenerateSpectra(frames, this.state.WindowFnc, epsilon);
-        }
-
-        /// <summary>
-        /// The source signal for voiced speech, that is, the vibration generated by the glottis or vocal chords,
-        /// has a spectral content with more power in low freq than in high. The spectrum has roll off of -6dB/octave.
-        /// Many speech analysis methods work better when the souce signal is spectrally flattened.
-        /// This is achieved by a high pass filter.
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="coeff"></param>
-        /// <returns></returns>
-        public double[] PreEmphasis(double[] signal, double coeff)
-        {
-            int L = signal.Length;
-            double[] newSig = new double[L-1];
-            for (int i = 0; i < L-1; i++) newSig[i] = signal[i+1] - (coeff* signal[i]); 
-            return newSig;
-        }
-
-        /// <summary>
-        /// Breaks a long audio signal into frames with given step
-        /// </summary>
-        /// <param name="data"></param>
-        /// <param name="windowSize"></param>
-        /// <param name="step"></param>
-        /// <returns></returns>
-        public double[,] Frames(double[] data, int windowSize, int step)
-        {
-            if (step < 1)
-                throw new ArgumentException("Frame Step must be at least 1");
-            if (step > windowSize)
-                throw new ArgumentException("Frame Step must be <=" + windowSize);
-
-
-            int framecount = (data.Length - windowSize) / step; //this truncates residual samples
-            if (framecount < 2) throw new ArgumentException("Sonogram width must be at least 2");
-
-            int offset = 0;
-            double[,] frames = new double[framecount, windowSize];
-
-            for (int i = 0; i < framecount; i++) //foreach frame
-            {
-                for (int j = 0; j < windowSize; j++) //foreach sample
-                {
-                    frames[i, j] = data[offset+j];
-                }
-                offset += step;
-            } //end matrix
-            return frames;
-        }
-
-
-        /// <summary>
-        /// Frame energy is the log of the summed energy of the samples.
-        /// Need to normalise. Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
-        /// Automatic Speech Recognition: From Theory to Practice.
-        /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
-        /// </summary>
-        /// <param name="frames"></param>
-        /// <returns></returns>
-        public double[] SignalEnergy(double[,] frames)
-        {
-            //const double minLogEnergy = -5.0; //defined in class header
-            //double maxLogEnergy = Math.Log(0.25);//reference energy level = max average amplitude in a signal = 0.5
-            
-            int frameCount = frames.GetLength(0);
-            int N          = frames.GetLength(1);
-            double[] energy = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
-            {
-                double sum = 0.0;
-                for (int j = 0; j < N; j++)  //foreach sample in frame
-                {
-                    sum += (frames[i,j] * frames[i,j]); //sum the energy
-                }
-                double e = sum / (double)N; //normalise to frame size
-                if (e <= 0.0) energy[i] = minLogEnergy;
-                //if (Math.Log(e) < minLogEnergy) energy[i] = minLogEnergy;
-                else          energy[i] = Math.Log(e);
-                energy[i] = energy[i] - maxLogEnergy; //normalise to absolute scale
-            }
-
-            //normalise to relative energy value i.e. max in the signal
-            //double maxEnergy = energy[DataTools.getMaxIndex()];
-            //for (int i = 0; i < frameCount; i++) //foreach time step
-            //{
-            //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
-            //}
-            return energy;
         }
 
 
@@ -455,7 +389,7 @@ namespace AudioStuff
             double[] histo = new double[bandCount];
             for (int f = 0; f < bandCount; f++)
             {
-                histo[f] = counts[f] / (double)tracksPerBand / state.AudioDuration;
+                histo[f] = counts[f] / (double)tracksPerBand / state.TimeDuration;
             }
             return histo;
         }
@@ -487,8 +421,8 @@ namespace AudioStuff
             double[] histo = new double[bandCount];
             for (int f = 0; f < bandCount; f++)
             {
-                if (positiveGrad[f] > negitiveGrad[f]) histo[f] = positiveGrad[f] / (double)tracksPerBand / state.AudioDuration;
-                else                                   histo[f] = negitiveGrad[f] / (double)tracksPerBand / state.AudioDuration;
+                if (positiveGrad[f] > negitiveGrad[f]) histo[f] = positiveGrad[f] / (double)tracksPerBand / state.TimeDuration;
+                else                                   histo[f] = negitiveGrad[f] / (double)tracksPerBand / state.TimeDuration;
             }
             return histo;
         }
@@ -520,7 +454,7 @@ namespace AudioStuff
             double[] histo = new double[bandCount];
             for (int f = 0; f < bandCount; f++)
             {
-                histo[f] = activity[f] / (double)tracksPerBand / state.AudioDuration;
+                histo[f] = activity[f] / (double)tracksPerBand / state.TimeDuration;
             }
             return histo;
         }
@@ -562,43 +496,30 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, double[] zscores)
         {
-            ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
-            TrackType trackType = TrackType.score;       //include score track
-            if (zscores == null) trackType = TrackType.energy;
-
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
-            Bitmap bmp;
-            if(zscores == null) bmp = image.CreateBitmap(matrix, energy);
-            else
-            bmp = image.CreateBitmap(matrix, zscores);
-
-            string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
-            this.state.BmpFName = fName;
-            bmp.Save(fName);
+            SaveImage(matrix, zscores, ImageType.linearScale);//image is linear scale not mel scale
         }
 
         public void SaveImage(double[,] matrix, double[] zscores, ImageType imageType)
         {
             TrackType trackType = TrackType.score;
             if (zscores == null) trackType = TrackType.energy;
+            //if (zscores == null) trackType = TrackType.zeroCrossings;
 
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
-            Bitmap bmp;
-            if (zscores == null) bmp = image.CreateBitmap(matrix, energy);
-            else
-                bmp = image.CreateBitmap(matrix, zscores);
+            SonoImage image = new SonoImage(this, imageType, trackType);
+            Bitmap bmp = image.CreateBitmap(matrix, zscores);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
             bmp.Save(fName);
         }
 
+
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col)
         {
             ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
             TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            SonoImage image = new SonoImage(this, imageType, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
@@ -609,7 +530,7 @@ namespace AudioStuff
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col, ImageType imageType)
         {
             TrackType trackType = TrackType.none;
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            SonoImage image = new SonoImage(this, imageType, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
@@ -624,7 +545,7 @@ namespace AudioStuff
             ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
             TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            SonoImage image = new SonoImage(this, imageType, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeSolids(bmp, shapes, col);
 
@@ -638,7 +559,7 @@ namespace AudioStuff
             ImageType imageType = ImageType.linearScale; //image is linear scale not mel scale
             TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            SonoImage image = new SonoImage(this, imageType, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddCentroidBoundaries(bmp, shapes, col);
 
@@ -651,7 +572,7 @@ namespace AudioStuff
         public void SaveImage(string opDir, double[] zscores, ImageType imageType)
         {
             TrackType trackType = TrackType.none;
-            SonoImage image = new SonoImage(this.state, imageType, trackType);
+            SonoImage image = new SonoImage(state, imageType, trackType);
             Bitmap bmp = image.CreateBitmap(this.matrix, zscores);
 
             string fName = opDir + "//" + this.state.WavFName + this.state.BmpFileExt;
@@ -677,15 +598,14 @@ namespace AudioStuff
             sb.Append(this.State.WavFName.ToString() + Results.spacer); //sonogram FNAME
             sb.Append(this.State.Date.ToString() + Results.spacer); //sonogram date
             sb.Append(this.State.DeployName + Results.spacer); //Deployment name
-            sb.Append(this.State.AudioDuration.ToString("F2") + Results.spacer); //length of recording
+            sb.Append(this.State.TimeDuration.ToString("F2") + Results.spacer); //length of recording
             sb.Append(this.State.Hour + Results.spacer); //hour when recording made
             sb.Append(this.State.Minute + Results.spacer); //hour when recording made
             sb.Append(this.State.TimeSlot + Results.spacer); //half hour when recording made
 
-            sb.Append(this.State.SignalAbsMax.ToString("F4") + Results.spacer);
-            sb.Append(this.State.SignalAvgMax.ToString("F4") + Results.spacer);
-            double sigRatio = (this.State.SignalAvgMax / this.State.SignalAbsMax);
-            sb.Append(sigRatio.ToString("F4") + Results.spacer);
+            sb.Append(this.State.WavMax.ToString("F4") + Results.spacer);
+            sb.Append(this.State.SigNoise.ToString("F4") + Results.spacer);
+            sb.Append(this.State.SigNoiseRatio.ToString("F4") + Results.spacer);
             sb.Append(this.State.PowerMax.ToString("F3") + Results.spacer);
             sb.Append(this.State.PowerAvg.ToString("F3") + Results.spacer);
 
@@ -748,7 +668,7 @@ namespace AudioStuff
     public class SonoConfig
     {
 
-        private string wavFileExt = ".wav"; //default value
+        private string wavFileExt = WavReader.wavFExt; //default value
         public string WavFileExt { get { return wavFileExt; } set { wavFileExt = value; } }
         private string bmpFileExt = ".bmp";//default value
         public string BmpFileExt { get { return bmpFileExt; } set { bmpFileExt = value; } }
@@ -757,8 +677,10 @@ namespace AudioStuff
         //wav file info
         public string  WavFileDir { get; set; }
         public string  WavFName { get; set; }
-        public double  SignalAbsMax { get; set; }
-        public double  SignalAvgMax { get; set; }
+        public double  WavMax { get; set; }
+        public double  SigMax { get; set; }
+        public double  SigNoise { get; set; }
+        public double  SigNoiseRatio { get; set; }
         public string  DeployName { get; set; }
         public string  Date { get; set; }
         public int     Hour { get; set; }
@@ -773,7 +695,7 @@ namespace AudioStuff
         public int SampleRate { get; set; }
         public int SampleCount { get; set; }
         public int MaxFreq { get; set; }               //Nyquist frequency = half audio sampling freq
-        public double AudioDuration { get; set; }
+        public double TimeDuration { get; set; }
         public double WindowDuration { get; set; }     //duration of full window in seconds
         public double NonOverlapDuration { get; set; } //duration of non-overlapped part of window in seconds
 

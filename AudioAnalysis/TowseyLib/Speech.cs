@@ -32,6 +32,54 @@ namespace TowseyLib
         }
 
 
+
+        public static int[] SignalDetection(double[] energy, double lowerEnergyThreshold, double upperEnergyThreshold, int latency, int gapThreshold, int[] zeroCrossings)
+        {
+            int L = energy.Length;
+            int[] state = new int[L];
+            int lowEnergyID = 0;
+            int hiEnergyID = 0;
+            for (int i = 0; i < L; i++)//foreach time step
+            {
+                if (energy[i] < lowerEnergyThreshold)
+                {
+                    lowEnergyID = i;
+                    int delay = i - hiEnergyID;
+                    if (delay < latency) for (int j = 1; j <= delay; j++) state[i - j] = 0;
+                    state[i] = 0;
+                }
+                if (energy[i] > upperEnergyThreshold)
+                {
+                    hiEnergyID = i;
+                    int delay = i - lowEnergyID;
+                    if (delay < latency) for (int j = 1; j <= delay; j++) state[i - j] = 2;
+                    state[i] = 2;
+                }
+            }
+
+            // fill in probable inter-syllable gaps
+            bool sig = true;
+            int count = 0;
+            for (int i = 0; i < L; i++)//foreach time step
+            {
+                if (state[i] == 0)
+                {
+                    sig = false;
+                    count++;
+                }
+                else
+                if (state[i] == 2)
+                {
+                    //Console.WriteLine("count["+i+"]="+count);
+                    sig = true;
+                    if (count < gapThreshold) for (int j = 1; j <= count; j++) state[i - j] = 1;
+                    count = 0;
+                }
+            }
+            return state;
+        }
+
+
         public static double LinearInterpolate(double x0, double x1, double y0, double y1, double x2)
         {
             double dX = x1 - x0;
