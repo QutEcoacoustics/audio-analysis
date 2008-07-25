@@ -24,8 +24,6 @@ namespace TowseyLib
         public int BitsPerSample { get { return bitsPerSample; } private set { bitsPerSample = value; } }
         private double[] samples;
         public double[] Samples { get { return samples; } private set { samples = value; } }
-        private double amplitude_AvMax;
-        public double Amplitude_AvMax { get { return amplitude_AvMax; } }
         private double amplitude_AbsMax;
         public double Amplitude_AbsMax { get { return amplitude_AbsMax; } }
 
@@ -53,7 +51,7 @@ namespace TowseyLib
             this.wavFileName = wavFileName;
             string path = wavFileDir + wavFileName + wavFileExt;
             ParseData(File.ReadAllBytes(path));
-            MaxValue(out this.amplitude_AbsMax, out this.amplitude_AvMax);
+            MaxValue(out this.amplitude_AbsMax);
         }
 
         /// <summary>
@@ -68,7 +66,7 @@ namespace TowseyLib
             this.wavFileName = fi.Name;
             this.wavFileName = wavFileName.Substring(0, wavFileName.Length - 4);
             ParseData(File.ReadAllBytes(wavPath));
-            MaxValue(out this.amplitude_AbsMax, out this.amplitude_AvMax);
+            MaxValue(out this.amplitude_AbsMax);
         }
 
         /// <summary>
@@ -78,7 +76,7 @@ namespace TowseyLib
         public WavReader(byte[] wavData)
         {
             ParseData(wavData);
-            MaxValue(out this.amplitude_AbsMax, out this.amplitude_AvMax);
+            MaxValue(out this.amplitude_AbsMax);
         }
 
         /// <summary>
@@ -91,7 +89,7 @@ namespace TowseyLib
         {
             this.wavFileName = wavFName;
             ParseData(wavBytes);
-            MaxValue(out this.amplitude_AbsMax, out this.amplitude_AvMax);
+            MaxValue(out this.amplitude_AbsMax);
         }
         /// <summary>
         /// CONSTRUCTOR 4
@@ -107,7 +105,7 @@ namespace TowseyLib
             this.wavFileName = sigName;
             this.Channels = 1;
             this.BitsPerSample = 16;
-            MaxValue(out this.amplitude_AbsMax, out this.amplitude_AvMax);
+            MaxValue(out this.amplitude_AbsMax);
         }
 
         private void ParseData(byte[] data)
@@ -194,23 +192,24 @@ namespace TowseyLib
         }
 
 
-        public void MaxValue(out double absMax, out double avMax)
+        public void MaxValue(out double absMax)
         {
-            avMax = 0.0;
-            absMax = -Double.MaxValue;
-            int duration = this.SampleCount / this.SampleRate; //duration in seconds
-            for (int t = 0; t < duration; t++) //over time in seconds
-            {
-                double localMax = -Double.MaxValue;
-                for (int s = 0; s < this.SampleRate; s++)
-                {
-                    double value = this.samples[(t*this.SampleRate)+s];
-                    if ( value > absMax) absMax = value;
-                    if (value > localMax) localMax = value;
-                }
-                avMax += localMax;
-            }
-            avMax /= (double)duration;
+            //avMax = 0.0;
+            //absMax = -Double.MaxValue;
+            //int duration = this.SampleCount / this.SampleRate; //duration in seconds
+            //for (int t = 0; t < duration; t++) //over time in seconds
+            //{
+            //    //double localMax = -Double.MaxValue;
+            //    for (int s = 0; s < this.SampleRate; s++)
+            //    {
+            //        double value = this.samples[(t*this.SampleRate)+s];
+            //        if ( value > absMax) absMax = value;
+            //        if (value > localMax) localMax = value;
+            //    }
+            //    avMax += localMax;
+            //}
+            ////avMax /= (double)duration;
+            absMax = this.samples[DataTools.GetMaxIndex(this.samples)];
         }
 
 

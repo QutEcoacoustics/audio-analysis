@@ -169,7 +169,7 @@ namespace AudioStuff
             this.sonogramState = s.State;
             //this.templateState = s.State;
 
-            this.TemplateState.AudioDuration = s.State.AudioDuration;
+            this.TemplateState.AudioDuration = s.State.TimeDuration;
             this.templateState.MaxFreq = s.State.MaxFreq;
             this.templateState.SampleRate = s.State.SampleRate;
             this.templateState.WindowSize  = s.State.WindowSize;
@@ -184,8 +184,8 @@ namespace AudioStuff
             this.templateState.SpectraPerSecond  = s.State.SpectraPerSecond;
             this.templateState.FreqBinCount  = s.State.FreqBinCount;
 
-            this.timeBin = this.sonogramState.AudioDuration / (double)this.sonogramState.SpectrumCount;
-            this.spectraPerSecond = this.sonogramState.SpectrumCount / (double)this.sonogramState.AudioDuration;
+            this.timeBin = this.sonogramState.TimeDuration / (double)this.sonogramState.SpectrumCount;
+            this.spectraPerSecond = this.sonogramState.SpectrumCount / (double)this.sonogramState.TimeDuration;
             this.spectrumDuration = 1/spectraPerSecond;
         }
 
@@ -266,7 +266,7 @@ namespace AudioStuff
             data.Add("#\n#INFO ABOUT ORIGINAL .WAV FILE");
             data.Add(" WAV_FILE_NAME=" + this.wavFname);
             data.Add(" WAV_SAMPLE_RATE=" + this.sonogramState.SampleRate);
-            data.Add(" WAV_DURATION=" + this.sonogramState.AudioDuration.ToString("F3"));
+            data.Add(" WAV_DURATION=" + this.sonogramState.TimeDuration.ToString("F3"));
 
             data.Add("#\n#INFO ABOUT SONOGRAM");
             data.Add(" FFT_WINDOW_SIZE=" + this.sonogramState.WindowSize);

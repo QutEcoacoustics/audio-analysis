@@ -32,11 +32,11 @@ namespace AudioStuff
         {
             //******************** USER PARAMETERS ***************************
             //Mode userMode = Mode.ArtificialSignal;
-            //Mode userMode = Mode.MakeSonogram;
+            Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -197,7 +197,9 @@ namespace AudioStuff
                         //s.CepstralSonogram(s.MelFM);
                         Console.WriteLine(" Sampling Rate = " + s.State.SampleRate);
                         Console.WriteLine(" Nyquist freq  = " + s.State.MaxFreq);
-                        Console.WriteLine(" Sig duration  = " + s.State.AudioDuration);
+                        Console.WriteLine(" Sig duration  = " + s.State.TimeDuration.ToString("F3"));
+                        Console.WriteLine(" Sig noise     = " + s.State.SigNoise.ToString("F3"));
+                        Console.WriteLine(" S/N Ratio dB  = " + s.State.SigNoiseRatio.ToString("F3"));
                         Console.WriteLine(" Image in file = " + s.BmpFName);
                     }
                     catch(Exception e)

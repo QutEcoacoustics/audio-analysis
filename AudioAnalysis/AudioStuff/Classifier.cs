@@ -196,17 +196,17 @@ namespace AudioStuff
             //transfer sonogram state info to Classifier
             this.WavName = s.State.WavFName;
             this.Deploy = s.State.DeployName;
-            this.WavDuration = s.State.AudioDuration;
+            this.WavDuration = s.State.TimeDuration;
             this.WavDate = s.State.Date;
             this.WavHour = s.State.Hour;
             this.WavMinute = s.State.Minute;
             this.WavTimeSlot = s.State.TimeSlot;
-            this.SignalMax = s.State.SignalAbsMax;
+            this.SignalMax = s.State.WavMax;
             this.PowerAvg = s.State.PowerAvg;
             this.PowerMax = s.State.PowerMax;
             this.ZscoreSmoothingWindow = s.State.ZscoreSmoothingWindow;
             this.zScoreThreshold = s.State.ZScoreThreshold;
-            this.spectraPerSecond = s.State.SpectrumCount / (double)s.State.AudioDuration;
+            this.spectraPerSecond = s.State.SpectrumCount / (double)s.State.TimeDuration;
             this.nonOverlapDuration = s.State.NonOverlapDuration;
             Classifier.FreqBandCount = s.State.FreqBandCount;
         }
@@ -271,7 +271,7 @@ namespace AudioStuff
 
             //normalise template to [-1,+1]
             //this.Template = ImageTools.Convolve(this.Template, Kernal.HorizontalLine5);
-            this.Template = DataTools.normalise(this.Template, -1.0, 1.0);
+            this.Template = DataTools.Normalise(this.Template, -1.0, 1.0);
             //DataTools.writeMatrix(this.Template);
 
 
