@@ -97,6 +97,9 @@ namespace TowseyLib
         /// Need to normalise. Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
         /// Automatic Speech Recognition: From Theory to Practice.
         /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
+        /// 
+        /// Calculate energy of frame as  energy[i] = logEnergy - maxLogEnergy;
+        /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
         /// </summary>
         /// <param name="frames"></param>
         /// <returns></returns>
@@ -116,10 +119,15 @@ namespace TowseyLib
                     sum += (frames[i, j] * frames[i, j]); //sum the energy
                 }
                 double e = sum / (double)N; //normalise to frame size
-                if (e <= 0.0) energy[i] = minLogEnergy;
-                //if (Math.Log(e) < minLogEnergy) energy[i] = minLogEnergy;
-                else energy[i] = Math.Log(e);
-                energy[i] = energy[i] - maxLogEnergy; //normalise to absolute scale
+                if (e <= 0.0)
+                {
+                    System.Console.WriteLine("Warning!!! Energy < zero =" + e);
+                    energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
+                    continue;
+                }
+                double logEnergy = Math.Log10(e);
+                if (logEnergy < minLogEnergy) energy[i] = minLogEnergy - maxLogEnergy;
+                else energy[i] = logEnergy - maxLogEnergy;
             }
 
             //normalise to relative energy value i.e. max in the signal
@@ -155,38 +163,47 @@ namespace TowseyLib
             return zc;
         }
 
+        
+         
         /// <summary>
         /// algorithm described in Lamel et al, 1981.
+        /// NOTE: noiseThreshold is passed as decibels
+        /// energy array is log energy ie not yet converted to decibels.
         /// </summary>
-        /// <param name="energy"></param>
-        /// <param name="minEnergy"></param>
-        /// <param name="maxEnergy"></param>
-        /// <param name="noiseThreshold"></param>
+        /// <param name="logEnergy"></param>
+        /// <param name="min_dB"></param>
+        /// <param name="max_dB"></param>
+        /// <param name="noiseThreshold_dB"></param>
+        /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseReduce(double[] energy, double minEnergy, double maxEnergy, double noiseThreshold)
+        public static double[] NoiseReduce(double[] logEnergy, double min_dB, double max_dB, double noiseThreshold_dB, out double Q)
         {
             int binCount = 100;
-//            double min;
-//            double max;
-            int[] histo = DataTools.Histo(energy, binCount);
-            //int[] histo = DataTools.Histo(energy, binCount, out binWidth, out min, out max);
+            double binWidth = noiseThreshold_dB / binCount;
+            int[] histo = new int[binCount];
+            int L = logEnergy.Length;
+
+            for (int i = 0; i < L; i++)
+            {
+                double dB = 10 * logEnergy[i];
+                if (dB <= noiseThreshold_dB)
+                {
+                    int id = (int)((dB - min_dB) / binWidth);
+                    if (id >= binCount) id = binCount - 1;
+                    histo[id]++;    
+                }
+            }
             double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
 
-            //transfer lowest 10dB bins
-            double binWidth = (maxEnergy - minEnergy) / (double)binCount; //db/bin
-            int low10dB_BinCount = (int)(10 / binWidth);
-            if (low10dB_BinCount > binCount) low10dB_BinCount = binCount;
-            double[] lowBins = new double[low10dB_BinCount];
-            for (int i = 0; i < low10dB_BinCount; i++) lowBins[i] = smoothHisto[i];
-
             // find peak of lowBins histogram
-            int peakID = DataTools.GetMaxIndex(lowBins);
-            double Q = (peakID * binWidth) + (0.5 * binWidth);
+            int peakID = DataTools.GetMaxIndex(smoothHisto);
+            Q = min_dB + (peakID * binWidth);
 
             // subtract noise energy
-            int L = energy.Length;
             double[] en = new double[L];
-            for (int i = 0; i < L; i++) en[i] = energy[i] - Q;
+            for (int i = 0; i < L; i++) en[i] = (logEnergy[i]*10) - Q;
+            Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
+            Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
 
             return en;
         }

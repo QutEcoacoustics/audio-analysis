@@ -38,7 +38,9 @@ namespace AudioStuff
         private ImageType imageType;
         private TrackType trackType;
 
-        private double[] energy;
+        private double[] decibels;
+        private double MinDecibelReference;
+        private double MaxDecibelReference;
         private int[] zeroCrossings;
         private int[] sigState;
 
@@ -58,7 +60,9 @@ namespace AudioStuff
             this.imageType = imageType;
             this.trackType = trackType;
 
-            this.energy = sonogram.Energy;
+            this.decibels = sonogram.Decibels;
+            this.MinDecibelReference = state.MinDecibelReference;
+            this.MaxDecibelReference = state.MaxDecibelReference;
             this.zeroCrossings = sonogram.ZeroCross;
             this.sigState = sonogram.SigState;
         }
@@ -143,12 +147,12 @@ namespace AudioStuff
             if (addGrid) bmp = Add1kHzLines(bmp);
             if (addGrid) bmp = AddXaxis(bmp);
             if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
-            else if (this.trackType == TrackType.energy) AddEnergyTrack(bmp, this.energy, this.sigState);
+            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels, this.sigState, this.MinDecibelReference, this.MaxDecibelReference);
             else if (this.trackType == TrackType.zeroCrossings)
             {
                 double[] zxs = DataTools.normalise(this.zeroCrossings);
-                zxs = DataTools.Normalise(zxs, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
-                AddEnergyTrack(bmp, zxs, this.sigState);
+                zxs = DataTools.Normalise(zxs, this.MinDecibelReference, this.MaxDecibelReference);
+                AddDecibelTrack(bmp, zxs, this.sigState, this.MinDecibelReference, this.MaxDecibelReference);
             }
             return bmp;
         }
@@ -450,13 +454,13 @@ namespace AudioStuff
 
 
         /// <summary>
-        /// This method assumes that the passed log(energy) array has bounds determined by constants
+        /// This method assumes that the passed decibel array has zero minimum bounds determined by constants
         /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
         /// </summary>
         /// <param name="bmp"></param>
         /// <param name="scoreArray"></param>
         /// <returns></returns>
-        public Bitmap AddEnergyTrack(Bitmap bmp, double[] array, int[] sigState)
+        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array, int[] sigState, double minReference, double maxReference)
         {
             int width  = bmp.Width;
             int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
@@ -464,13 +468,13 @@ namespace AudioStuff
             //Console.WriteLine("height=" + height);
             int offset = height - SonoImage.trackHt;
             Color white = Color.White;
-            double min = Sonogram.minLogEnergy;
-            double range = Sonogram.maxLogEnergy - Sonogram.minLogEnergy;
+            double range = maxReference - minReference;
+            Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
             for (int x = 0; x < width; x++)
             {
-                double norm = (array[x] - min) / range;
+                double norm = (array[x] - minReference) / range;
                 int id = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * norm);
                 if (id < 0) id = 0;
                 else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
@@ -482,6 +486,16 @@ namespace AudioStuff
                 bmp.SetPixel(x, offset, col);
                 bmp.SetPixel(x, offset + 1, col);
                 bmp.SetPixel(x, offset + 2, col);
+                bmp.SetPixel(x, offset + 3, col);
+            }
+
+            //display threshold
+            double threshold = 1.0;
+            double v = (threshold - minReference) / range;
+            int t = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v);
+            for (int x = 0; x < width; x++)
+            {
+                bmp.SetPixel(x, offset + t, Color.Red);
             }
             return bmp;
         }

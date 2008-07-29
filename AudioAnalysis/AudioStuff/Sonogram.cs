@@ -11,10 +11,10 @@ namespace AudioStuff
 	public sealed class Sonogram
 	{
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
-        public const double minLogEnergy = -11.0;       //typical noise value for BAC2 recordings = -10.5
-        public const double maxLogEnergy = -1.3863;     // = Math.Log(0.25); //assumes max average amplitude in a signal = 0.5
-        //public const double maxLogEnergy = -1.022;    // = Math.Log(0.36); //assumes max average amplitude in a signal = 0.6
-        //public const double maxLogEnergy = -0.713;    // = Math.Log(0.49); //assumes max average amplitude in a signal = 0.7
+        public const double minLogEnergy = -5.0;       // typical noise value for BAC2 recordings = -4.5
+        public const double maxLogEnergy = -0.602;      // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
+        //public const double maxLogEnergy = -0.444;    // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
+        //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
         //note that cicada recording reaches max av amplitude = 0.55
 
 
@@ -27,6 +27,9 @@ namespace AudioStuff
 
         private double[] energy; //energy per signal frame
         public  double[] Energy { get { return energy; } /*set { energy = value; }*/ }
+
+        private double[] decibels; //normalised decibels per signal frame
+        public double[] Decibels { get { return decibels; } /*set { decibels = value; }*/ }
 
         private int[] zeroCross; //number of zero crossings per frame
         public  int[] ZeroCross { get { return zeroCross; } /*set { zeroCross = value; }*/ }
@@ -165,21 +168,30 @@ namespace AudioStuff
             double min;
             double max;
             DataTools.MinMax(energy, out min, out max);
-            this.State.SigNoise = min;
-            this.state.SigMax = max;
-            this.State.SigNoiseRatio = 10 * (max - min);
-            //noise reduce the energy array
+            double min_dB = min * 10;  //multiply by 10 to convert to decibels
+            double max_dB = max * 10;
+            this.State.SigNoise = min_dB; //min decibels of all frames 
+            this.State.SigMax   = max_dB;
+            this.State.SigNoiseRatio = max_dB - min_dB; 
+            //noise reduce the energy array to produce decibels array
             double noiseThreshold = 10.0; //dB
-            this.energy = DSP.NoiseReduce(this.energy, min, max, noiseThreshold);
+            double Q;
+            this.decibels = DSP.NoiseReduce(this.energy, min_dB, max_dB, noiseThreshold, out Q);
+            this.State.NoiseSubtracted = Q;
+            //this.State.MinDecibelReference = (minLogEnergy * 10) - Q;
+            this.State.MinDecibelReference = min_dB - Q;
+            this.State.MaxDecibelReference = (maxLogEnergy * 10) - Q;
 
             // ZERO CROSSINGS
             //this.zeroCross = DSP.ZeroCrossings(frames);
-            double lowerEnergyThreshold = -10.5;
-            double upperEnergyThreshold = -9.5;
+
+            //DETERMINE ENDPOINTS OF VOCALISATIONS
+            double lowerDBThreshold = -0.1;
+            double upperDBThreshold = 0.0;
             int latency = 5;
             int gapThreshold = 15;
-            //this.sigState = Speech.SignalDetection(this.energy, lowerEnergyThreshold, upperEnergyThreshold, gapThreshold, this.zeroCross);
-            this.sigState = Speech.SignalDetection(this.energy, lowerEnergyThreshold, upperEnergyThreshold, latency, gapThreshold, null);
+            //this.sigState = Speech.SignalDetection(this.energy, lowerDBThreshold, upperDBThreshold, gapThreshold, this.zeroCross);
+            this.sigState = Speech.SignalDetection(this.decibels, lowerDBThreshold, upperDBThreshold, latency, gapThreshold, null);
 
             //generate the spectra
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
@@ -708,6 +720,10 @@ namespace AudioStuff
         public double PowerMin { get; set; }//min power in sonogram
         public double PowerAvg { get; set; }//average power in sonogram
         public double PowerMax { get; set; }//max power in sonogram
+        public double NoiseSubtracted { get; set; }//noise (dB) subtracted from each frame decibel value
+        public double MinDecibelReference { get; set; }//min reference dB value after noise substraction
+        public double MaxDecibelReference { get; set; }//max reference dB value after noise substraction
+
         public double MinPercentile { get; set; }
         public double MaxPercentile { get; set; }
         public double MinCut { get; set; } //power of min percentile
