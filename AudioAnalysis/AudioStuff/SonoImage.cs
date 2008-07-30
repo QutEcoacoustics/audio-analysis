@@ -39,8 +39,10 @@ namespace AudioStuff
         private TrackType trackType;
 
         private double[] decibels;
-        private double MinDecibelReference;
-        private double MaxDecibelReference;
+        private double minDecibelReference;
+        private double maxDecibelReference;
+        private double SegmentationThreshold_k1;
+        private double SegmentationThreshold_k2;
         private int[] zeroCrossings;
         private int[] sigState;
 
@@ -61,8 +63,10 @@ namespace AudioStuff
             this.trackType = trackType;
 
             this.decibels = sonogram.Decibels;
-            this.MinDecibelReference = state.MinDecibelReference;
-            this.MaxDecibelReference = state.MaxDecibelReference;
+            this.minDecibelReference = state.MinDecibelReference;
+            this.maxDecibelReference = state.MaxDecibelReference;
+            this.SegmentationThreshold_k1 = state.SegmentationThreshold_k1;
+            this.SegmentationThreshold_k2 = state.SegmentationThreshold_k2;
             this.zeroCrossings = sonogram.ZeroCross;
             this.sigState = sonogram.SigState;
         }
@@ -147,12 +151,12 @@ namespace AudioStuff
             if (addGrid) bmp = Add1kHzLines(bmp);
             if (addGrid) bmp = AddXaxis(bmp);
             if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
-            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels, this.sigState, this.MinDecibelReference, this.MaxDecibelReference);
+            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels, this.sigState, this.minDecibelReference, this.maxDecibelReference, this.SegmentationThreshold_k2);
             else if (this.trackType == TrackType.zeroCrossings)
             {
                 double[] zxs = DataTools.normalise(this.zeroCrossings);
-                zxs = DataTools.Normalise(zxs, this.MinDecibelReference, this.MaxDecibelReference);
-                AddDecibelTrack(bmp, zxs, this.sigState, this.MinDecibelReference, this.MaxDecibelReference);
+                zxs = DataTools.Normalise(zxs, this.minDecibelReference, this.maxDecibelReference);
+                AddDecibelTrack(bmp, zxs, this.sigState, this.minDecibelReference, this.maxDecibelReference, this.SegmentationThreshold_k2);
             }
             return bmp;
         }
@@ -460,7 +464,7 @@ namespace AudioStuff
         /// <param name="bmp"></param>
         /// <param name="scoreArray"></param>
         /// <returns></returns>
-        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array, int[] sigState, double minReference, double maxReference)
+        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array, int[] sigState, double minReference, double maxReference, double segmentThreshold)
         {
             int width  = bmp.Width;
             int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
@@ -469,7 +473,7 @@ namespace AudioStuff
             int offset = height - SonoImage.trackHt;
             Color white = Color.White;
             double range = maxReference - minReference;
-            Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
+            //Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
             for (int x = 0; x < width; x++)
@@ -490,12 +494,15 @@ namespace AudioStuff
             }
 
             //display threshold
-            double threshold = 1.0;
-            double v = (threshold - minReference) / range;
-            int t = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v);
+            double v1 = (SegmentationThreshold_k1 - minReference) / range;
+            int k1 = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v1);
+            double v2 = (SegmentationThreshold_k2 - minReference) / range;
+            int k2 = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v2);
+            //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
             for (int x = 0; x < width; x++)
             {
-                bmp.SetPixel(x, offset + t, Color.Red);
+                bmp.SetPixel(x, offset + k1, Color.Pink);
+                bmp.SetPixel(x, offset + k2, Color.Lime);
             }
             return bmp;
         }

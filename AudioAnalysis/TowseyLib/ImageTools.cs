@@ -791,6 +791,10 @@ namespace TowseyLib
             double[] smoothHisto = DataTools.filterMovingAverage(powerHisto, 5);
             int maxindex; //mode
             DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
+            //double modalIntensity = (maxindex * binWidth) + min;
+            //if (maxindex > 30) maxindex = 30;
+            //if ((modalIntensity-min) > 0.1) maxindex = (int)((modalIntensity-min) / binWidth);
+            //Console.WriteLine("min intensity=" + min.ToString("F3") + "  max intensity=" + max.ToString("F3") + "  maxindex=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
 
             //init transfer function, tf
             double[] tf = new double[binCount];
@@ -807,7 +811,8 @@ namespace TowseyLib
                 offset++;
                 double prob = (smoothHisto[i] - noise) / smoothHisto[i];
                 if (prob < 0.0) prob = 0.0;
-                tf[i] = prob;
+                //tf[i] = prob;
+                tf[i] = Math.Sqrt(prob);
             }
             // above the noise band set transfer function = 1.0;
             for (int i = upperBound; i < binCount; i++) tf[i] = 1.0;
@@ -883,9 +888,9 @@ namespace TowseyLib
                     double factor = ((1-momentum) * transferFnc[intensityQuantum]) + (momentum * prevTransferFnc[intensityQuantum]);
 
                     // SEVERAL DIFFERENT IMAGE OUTPUT OPTIONS
-                    //tmpM[y, tmpCol] = matrix[y, col] * factor;          // (1) multiply pixel by factor
+                    tmpM[y, tmpCol] = matrix[y, col] * factor;          // (1) multiply pixel by factor
                     //if (tmpM[y, tmpCol] < 0.01) tmpM[y, tmpCol] = 0.00; // (2) zero weak intensity pixels
-                    tmpM[y, tmpCol] = factor * factor;                  // (3) set pixel = factor
+                    //tmpM[y, tmpCol] = factor * factor;                  // (3) set pixel = factor
                     if(tmpM[y, tmpCol] < 0.5)tmpM[y, tmpCol] = 0.0;     // (4) set pixel = thresholded factor 
                 }
             }//for all cols

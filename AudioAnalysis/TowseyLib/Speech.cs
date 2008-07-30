@@ -33,26 +33,26 @@ namespace TowseyLib
 
 
 
-        public static int[] SignalDetection(double[] energy, double lowerEnergyThreshold, double upperEnergyThreshold, int latency, int gapThreshold, int[] zeroCrossings)
+        public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableDelay, int minPulse, int[] zeroCrossings)
         {
-            int L = energy.Length;
+            int L = decibels.Length;
             int[] state = new int[L];
             int lowEnergyID = 0;
-            int hiEnergyID = 0;
+            int hiEnergyID  = 0;
             for (int i = 0; i < L; i++)//foreach time step
             {
-                if (energy[i] < lowerEnergyThreshold)
+                if (decibels[i] < lowerDBThreshold)
                 {
                     lowEnergyID = i;
                     int delay = i - hiEnergyID;
-                    if (delay < latency) for (int j = 1; j <= delay; j++) state[i - j] = 0;
+                    if (delay < k1_k2delay) for (int j = 1; j < delay; j++) state[i - j] = 2;
                     state[i] = 0;
                 }
-                if (energy[i] > upperEnergyThreshold)
+                if (decibels[i] > upperDBThreshold)
                 {
                     hiEnergyID = i;
                     int delay = i - lowEnergyID;
-                    if (delay < latency) for (int j = 1; j <= delay; j++) state[i - j] = 2;
+                    if (delay < k1_k2delay) for (int j = 1; j < delay; j++) state[i - j] = 2;
                     state[i] = 2;
                 }
             }
@@ -72,7 +72,7 @@ namespace TowseyLib
                 {
                     //Console.WriteLine("count["+i+"]="+count);
                     sig = true;
-                    if (count < gapThreshold) for (int j = 1; j <= count; j++) state[i - j] = 1;
+                    if (count < syllableDelay) for (int j = 1; j <= count; j++) state[i - j] = 1;
                     count = 0;
                 }
             }

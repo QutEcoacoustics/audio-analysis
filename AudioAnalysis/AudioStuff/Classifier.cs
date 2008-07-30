@@ -207,7 +207,7 @@ namespace AudioStuff
             this.ZscoreSmoothingWindow = s.State.ZscoreSmoothingWindow;
             this.zScoreThreshold = s.State.ZScoreThreshold;
             this.spectraPerSecond = s.State.SpectrumCount / (double)s.State.TimeDuration;
-            this.nonOverlapDuration = s.State.NonOverlapDuration;
+            this.nonOverlapDuration = s.State.FrameOffset;
             Classifier.FreqBandCount = s.State.FreqBandCount;
         }
 

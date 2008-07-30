@@ -98,15 +98,15 @@ namespace TowseyLib
         /// Automatic Speech Recognition: From Theory to Practice.
         /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
         /// 
-        /// Calculate energy of frame as  energy[i] = logEnergy - maxLogEnergy;
+        /// Calculate normalised energy of frame as  energy[i] = logEnergy - maxLogEnergy;
         /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
         /// </summary>
         /// <param name="frames"></param>
         /// <returns></returns>
         public static double[] SignalEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy)
         {
-            //const double minLogEnergy = -5.0; //defined in class header
-            //double maxLogEnergy = Math.Log(0.25);//reference energy level = max average amplitude in a signal = 0.5
+            //double minLogEnergy = -5.0; //defined in header of Sonogram class
+            //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
 
             int frameCount = frames.GetLength(0);
             int N = frames.GetLength(1);
@@ -126,6 +126,7 @@ namespace TowseyLib
                     continue;
                 }
                 double logEnergy = Math.Log10(e);
+                //calculate normalised energy of frame 
                 if (logEnergy < minLogEnergy) energy[i] = minLogEnergy - maxLogEnergy;
                 else energy[i] = logEnergy - maxLogEnergy;
             }
@@ -199,11 +200,11 @@ namespace TowseyLib
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min_dB + (peakID * binWidth);
 
-            // subtract noise energy
+            // subtract noise energy` and return relative energy as decibel values.
             double[] en = new double[L];
             for (int i = 0; i < L; i++) en[i] = (logEnergy[i]*10) - Q;
-            Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
-            Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
+            //Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
+            //Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
 
             return en;
         }

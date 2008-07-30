@@ -178,8 +178,8 @@ namespace AudioStuff
             this.templateState.SampleRate  = s.State.SampleRate;
             this.templateState.SampleCount  = s.State.SampleCount;
             this.templateState.MaxFreq  = s.State.MaxFreq;
-            this.templateState.WindowDuration  = s.State.WindowDuration;
-            this.templateState.NonOverlapDuration  = s.State.NonOverlapDuration;
+            this.templateState.WindowDuration  = s.State.FrameDuration;
+            this.templateState.NonOverlapDuration  = s.State.FrameOffset;
             this.templateState.SpectrumCount  = s.State.SpectrumCount;
             this.templateState.SpectraPerSecond  = s.State.SpectraPerSecond;
             this.templateState.FreqBinCount  = s.State.FreqBinCount;
@@ -271,8 +271,8 @@ namespace AudioStuff
             data.Add("#\n#INFO ABOUT SONOGRAM");
             data.Add(" FFT_WINDOW_SIZE=" + this.sonogramState.WindowSize);
             data.Add(" FFT_WINDOW_OVERLAP=" + this.sonogramState.WindowOverlap);
-            data.Add(" WINDOW_DURATION_MS=" + (this.sonogramState.WindowDuration * 1000).ToString("F3"));//convert to milliseconds
-            data.Add(" NONOVERLAP_WINDOW_DURATION_MS=" + (this.sonogramState.NonOverlapDuration * 1000).ToString("F3"));//convert to milliseconds
+            data.Add(" WINDOW_DURATION_MS=" + (this.sonogramState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
+            data.Add(" NONOVERLAP_WINDOW_DURATION_MS=" + (this.sonogramState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
             data.Add(" NUMBER_OF_SPECTRA=" + spectrumCount);
             data.Add(" SPECTRA_PER_SECOND=" + spectraPerSecond.ToString("F3"));
             data.Add(" WINDOW_FUNCTION=" + windowFunction);
