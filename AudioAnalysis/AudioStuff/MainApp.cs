@@ -53,8 +53,8 @@ namespace AudioStuff
             //training file
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -179,7 +179,7 @@ namespace AudioStuff
                         double[,] m = s.Matrix;
                         if (type == ImageType.melScale) m = s.MelScale(m, melBandCount);
                         if (type != ImageType.ceptral) m = Speech.DecibelSpectra(m);
-                        //m = ImageTools.NoiseReduction(m);
+                        m = ImageTools.NoiseReduction(m);
 
                         int filterBankCount = 512;
                         int coeffCount = 32;
@@ -198,7 +198,9 @@ namespace AudioStuff
                         Console.WriteLine(" Sampling Rate = " + s.State.SampleRate);
                         Console.WriteLine(" Nyquist freq  = " + s.State.MaxFreq);
                         Console.WriteLine(" Sig duration  = " + s.State.TimeDuration.ToString("F3"));
-                        Console.WriteLine(" Sig noise     = " + s.State.SigNoise.ToString("F3"));
+                        Console.WriteLine(" Frame duration= " + s.State.FrameDuration.ToString("F4"));
+                        Console.WriteLine(" Frame offset  = " + s.State.FrameOffset.ToString("F4"));
+                        Console.WriteLine(" Sig noise     = " + s.State.SigNoise.ToString("F4"));
                         Console.WriteLine(" S/N Ratio dB  = " + s.State.SigNoiseRatio.ToString("F3"));
                         Console.WriteLine(" Image in file = " + s.BmpFName);
                     }

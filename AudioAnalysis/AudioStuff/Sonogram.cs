@@ -11,11 +11,32 @@ namespace AudioStuff
 	public sealed class Sonogram
 	{
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
-        public const double minLogEnergy = -5.0;       // typical noise value for BAC2 recordings = -4.5
-        public const double maxLogEnergy = -0.602;      // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
+
+        //constants for analysing the logEnergy array for signal segmentation
+        public const double minLogEnergy = -9.0;        // typical noise value for BAC2 recordings = -4.5
+        public const double maxLogEnergy = -0.60206;    // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double maxLogEnergy = -0.444;    // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
         //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        //note that cicada recording reaches max av amplitude = 0.55
+        //note that the cicada recordings reache max average frame amplitude = 0.55
+
+        //Following const used to normalise the logEnergy values to the background noise.
+        //Has the effect of setting bcakground noise level to 0 dB. Value of 10dB is in Lamel et al, 1981 
+        //Lamel et al call it "Adaptive Level equalisatsion".
+        public const double noiseThreshold = 10.0; //dB
+        
+        //following constants used for end point detection of vocalizations
+        //see Lamel et al 1981. They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.
+        //I set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames) and "minimum pulse length"= 0.075s (2 frames) 
+        public const double SegmentationThreshold_k1 = 3.0;  //decibels above the minimum level
+        public const double SegmentationThreshold_k2 = 5.0;  //decibels
+        public const double k1_k2Latency = 0.187; //seconds delay between signal reaching k1 and k2 thresholds
+        public const double vocalDelay   = 0.373; //seconds delay required to separate vocalisations 
+        public const double minPulseDuration = 0.075; //minimum length of energy pulse - do not use this - accept all pulses.
+
+
+
+
+
 
 
 
@@ -142,12 +163,12 @@ namespace AudioStuff
             this.state.SampleCount    = wav.SampleCount;
             this.state.TimeDuration  = state.SampleCount / (double)state.SampleRate;
             this.state.MaxFreq        = state.SampleRate / 2;
-            this.state.WindowDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
-            this.state.NonOverlapDuration = this.state.WindowDuration * (1 - this.state.WindowOverlap);// duration in seconds
+            this.state.FrameDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
+            this.state.FrameOffset = this.state.FrameDuration * (1 - this.state.WindowOverlap);// duration in seconds
             this.state.FreqBinCount = this.state.WindowSize / 2; // other half is phase info
             this.state.FBinWidth = this.state.MaxFreq / (double)this.state.FreqBinCount;
-            this.state.SpectrumCount = (int)(this.state.TimeDuration / this.state.NonOverlapDuration);
-            this.state.SpectraPerSecond = 1 / this.state.NonOverlapDuration;
+            this.state.SpectrumCount = (int)(this.state.TimeDuration / this.state.FrameOffset);
+            this.state.SpectraPerSecond = 1 / this.state.FrameOffset;
 
             double[] signal = wav.Samples;
             //SIGNAL PRE-EMPHASIS helps with speech signals
@@ -174,11 +195,10 @@ namespace AudioStuff
             this.State.SigMax   = max_dB;
             this.State.SigNoiseRatio = max_dB - min_dB; 
             //noise reduce the energy array to produce decibels array
-            double noiseThreshold = 10.0; //dB
             double Q;
             this.decibels = DSP.NoiseReduce(this.energy, min_dB, max_dB, noiseThreshold, out Q);
             this.State.NoiseSubtracted = Q;
-            //this.State.MinDecibelReference = (minLogEnergy * 10) - Q;
+
             this.State.MinDecibelReference = min_dB - Q;
             this.State.MaxDecibelReference = (maxLogEnergy * 10) - Q;
 
@@ -186,12 +206,15 @@ namespace AudioStuff
             //this.zeroCross = DSP.ZeroCrossings(frames);
 
             //DETERMINE ENDPOINTS OF VOCALISATIONS
-            double lowerDBThreshold = -0.1;
-            double upperDBThreshold = 0.0;
-            int latency = 5;
-            int gapThreshold = 15;
-            //this.sigState = Speech.SignalDetection(this.energy, lowerDBThreshold, upperDBThreshold, gapThreshold, this.zeroCross);
-            this.sigState = Speech.SignalDetection(this.decibels, lowerDBThreshold, upperDBThreshold, latency, gapThreshold, null);
+            double k1 = this.State.MinDecibelReference + Sonogram.SegmentationThreshold_k1;
+            double k2 = this.State.MinDecibelReference + Sonogram.SegmentationThreshold_k2;
+            this.State.SegmentationThreshold_k1 = k1;
+            this.State.SegmentationThreshold_k2 = k2;
+            int k1_k2delay    = (int)(Sonogram.k1_k2Latency / this.State.FrameOffset); //=5  frames delay between signal reaching k1 and k2 thresholds
+            int syllableDelay = (int)(Sonogram.vocalDelay / this.State.FrameOffset); //=10 frames delay required to separate vocalisations 
+            int minPulse      = (int)(Sonogram.minPulseDuration / this.State.FrameOffset); //=2 frames is min vocal length
+            //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
+            this.sigState = Speech.VocalizationDetection(this.decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
 
             //generate the spectra
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
@@ -478,7 +501,7 @@ namespace AudioStuff
             Console.WriteLine("\nSONOGRAM INFO");
             Console.WriteLine(" WavSampleRate=" + this.state.SampleRate + " SampleCount=" + this.state.SampleCount + "  Duration=" + (this.state.SampleCount / (double)this.state.SampleRate).ToString("F3") + "s");
             Console.WriteLine(" Window Size=" + this.state.WindowSize + "  Max FFT Freq =" + this.state.MaxFreq);
-            Console.WriteLine(" Window Overlap=" + this.state.WindowOverlap + " Window duration=" + this.state.WindowDuration + "ms. (non-overlapped=" + this.state.NonOverlapDuration + "ms)");
+            Console.WriteLine(" Window Overlap=" + this.state.WindowOverlap + " Window duration=" + this.state.FrameDuration + "ms. (non-overlapped=" + this.state.FrameOffset + "ms)");
             Console.WriteLine(" Freq Bin Width=" + (this.state.MaxFreq / (double)this.state.FreqBinCount).ToString("F3") + "hz");
             Console.WriteLine(" Min power=" + this.state.PowerMin.ToString("F3") + " Avg power=" + this.state.PowerAvg.ToString("F3") + " Max power=" + this.state.PowerMax.ToString("F3"));
             Console.WriteLine(" Min percentile=" + this.state.MinPercentile.ToString("F2") + "  Max percentile=" + this.state.MaxPercentile.ToString("F2"));
@@ -708,8 +731,8 @@ namespace AudioStuff
         public int SampleCount { get; set; }
         public int MaxFreq { get; set; }               //Nyquist frequency = half audio sampling freq
         public double TimeDuration { get; set; }
-        public double WindowDuration { get; set; }     //duration of full window in seconds
-        public double NonOverlapDuration { get; set; } //duration of non-overlapped part of window in seconds
+        public double FrameDuration { get; set; }     //duration of full frame or window in seconds
+        public double FrameOffset { get; set; }       //duration of non-overlapped part of window/frame in seconds
 
         public int SpectrumCount { get; set; }
         public double SpectraPerSecond { get; set; }
@@ -723,6 +746,8 @@ namespace AudioStuff
         public double NoiseSubtracted { get; set; }//noise (dB) subtracted from each frame decibel value
         public double MinDecibelReference { get; set; }//min reference dB value after noise substraction
         public double MaxDecibelReference { get; set; }//max reference dB value after noise substraction
+        public double SegmentationThreshold_k1 { get; set; }//dB threshold for recognition of vocalisations
+        public double SegmentationThreshold_k2 { get; set; }//dB threshold for recognition of vocalisations
 
         public double MinPercentile { get; set; }
         public double MaxPercentile { get; set; }
