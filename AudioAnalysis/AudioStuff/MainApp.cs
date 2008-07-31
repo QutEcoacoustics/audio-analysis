@@ -47,14 +47,14 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
             const string opDirName = @"C:\SensorNetworks\Sonograms\";
-            const string artDirName = @"C:\SensorNetworks\ART\";
+            //const string artDirName = @"C:\SensorNetworks\ART\";
             const string wavFExt = WavReader.wavFExt;
 
             //training file
             //string wavFileName = "sineSignal";
-            //string wavFileName = "golden-whistler";
+            string wavFileName = "golden-whistler";
             //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -68,6 +68,11 @@ namespace AudioStuff
             //string wavFileName = "BAC7_20080608-110000";
             //string wavFileName = "BAC6_20080608-130000";
 
+
+            //KOALA recordings  - training files etc
+            //const string wavDirName = @"C:\SensorNetworks\Koala\";
+            //const string opDirName  = @"C:\SensorNetworks\Koala\";
+            //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
 
     
             //test wav files
@@ -84,8 +89,6 @@ namespace AudioStuff
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //************* CALL PARAMETERS ***************
-            int melBandCount = 512;
-
 
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
@@ -144,21 +147,11 @@ namespace AudioStuff
                         int[] harmonics = { 1000, 4000 };
                         double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
                         s = new Sonogram(iniFName, sigName, signal, sampleRate);
-                        double[,] m = s.Matrix;
+                        s.SetVerbose(1);
+                        //double[,] m = s.Matrix;
+                        double[,] m = s.Specgram;
 
-                        //ImageType type = ImageType.linearScale; //image is linear freq scale
-                        //ImageType type = ImageType.melScale;    //image is mel freq scale
-                        ImageType type = ImageType.ceptral;       //image is of MFCCs
-
-                        //m = s.MelScale(m, melBandCount);
-                        //m = Speech.DecibelSpectra(m);
-
-                        int filterBankCount = 512;
-                        int coeffCount = 32;
-                        m = s.MFCCs(m, filterBankCount, coeffCount);
-
-                        s.SaveImage(m, null, type);
-                        Console.WriteLine(" Image in file " + s.BmpFName);
+                        s.SaveImage(m, null);
                     }
                     catch (Exception e)
                     {
@@ -171,38 +164,18 @@ namespace AudioStuff
                     string wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        ImageType type = ImageType.linearScale; //image is linear freq scale
-                        //ImageType type = ImageType.melScale;    //image is mel freq scale
-                        //ImageType type = ImageType.ceptral;       //image is of MFCCs
-
                         s = new Sonogram(iniFName, wavPath);
-                        double[,] m = s.Matrix;
-                        if (type == ImageType.melScale) m = s.MelScale(m, melBandCount);
-                        if (type != ImageType.ceptral) m = Speech.DecibelSpectra(m);
-                        m = ImageTools.NoiseReduction(m);
-
-                        int filterBankCount = 512;
-                        int coeffCount = 32;
-                        if (type == ImageType.ceptral) m = s.MFCCs(m, filterBankCount, coeffCount);
+                        s.SetVerbose(1);
+                        //double[,] m = s.Matrix;
+                        double[,] m = s.Specgram;
 
                         //m = ImageTools.SobelEdgeDetection(m);
-                        //double threshold = 0.20;
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
                         //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
                         //m = ImageTools.Convolve(m, Kernal.HorizontalLine5);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                         //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
-                        //m = ImageTools.TrimPercentiles(m);
-                        s.SaveImage(m, null, type);
-                        //s.CepstralSonogram(s.MelFM);
-                        Console.WriteLine(" Sampling Rate = " + s.State.SampleRate);
-                        Console.WriteLine(" Nyquist freq  = " + s.State.MaxFreq);
-                        Console.WriteLine(" Sig duration  = " + s.State.TimeDuration.ToString("F3"));
-                        Console.WriteLine(" Frame duration= " + s.State.FrameDuration.ToString("F4"));
-                        Console.WriteLine(" Frame offset  = " + s.State.FrameOffset.ToString("F4"));
-                        Console.WriteLine(" Sig noise     = " + s.State.SigNoise.ToString("F4"));
-                        Console.WriteLine(" S/N Ratio dB  = " + s.State.SigNoiseRatio.ToString("F3"));
-                        Console.WriteLine(" Image in file = " + s.BmpFName);
+                        s.SaveImage(m, null);
                     }
                     catch(Exception e)
                     {
@@ -338,7 +311,7 @@ namespace AudioStuff
                     FileInfo[] files = d.GetFiles("*" + wavFExt);
                     ArrayList array = new ArrayList();
                     array.Add(Classifier.ResultsHeader());
-                    ImageType imageType = ImageType.linearScale; //image is linear freq scale
+                    SonogramType sonogramType = SonogramType.linearScale; //image is linear freq scale
 
                     try
                     {
@@ -354,7 +327,7 @@ namespace AudioStuff
                                 {
                                     s = new Sonogram(iniFName, wavPath);
                                     Classifier cl = new Classifier(t, s);
-                                    s.SaveImage(opDirName, cl.Zscores, imageType);
+                                    s.SaveImage(opDirName, cl.Zscores, sonogramType);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                                     Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
                                     Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
@@ -399,7 +372,7 @@ namespace AudioStuff
                             wavPath = testDirName + "\\" + fName;
                             s = new Sonogram(iniFName, wavPath);
                             double[,] m = s.Matrix;
-                            m = s.MelScale(m, melBandCount);
+                            m = s.MelSonogram(m);
                             m = ImageTools.NoiseReduction(m);
 
                             //extract syllables from sonogram and calculate their distribution
@@ -421,7 +394,7 @@ namespace AudioStuff
                             int[] categoryDistribution = Shape.Distribution(categoryAvShapes, Results.analysisBandCount);
 
                             //ImageType type = ImageType.linearScale; //image is linear freq scale
-                            ImageType type = ImageType.melScale;    //image is mel freq scale
+                            SonogramType type = SonogramType.melScale;    //image is mel freq scale
                             s.SaveImage(m, syllables, col, type);
 
                             //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);

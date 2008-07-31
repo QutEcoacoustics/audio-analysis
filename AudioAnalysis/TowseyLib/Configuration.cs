@@ -87,7 +87,8 @@ namespace TowseyLib
                 return false;
             }
             return b;
-        }
+        }//end getBoolean
 
-    }
+
+    }  // end of class Configuration
 }
