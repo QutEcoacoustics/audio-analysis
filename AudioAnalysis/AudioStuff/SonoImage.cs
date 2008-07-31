@@ -14,7 +14,6 @@ namespace AudioStuff
 {
 
 
-    public enum ImageType { linearScale, melScale, ceptral }
     public enum TrackType { none, energy, zeroCrossings, score }
 
 
@@ -35,7 +34,7 @@ namespace AudioStuff
         private int topScanBin;  //top Scan Bin i.e. the index of the bin
         private int bottomScanBin; //bottom Scan Bin
 
-        private ImageType imageType;
+        private SonogramType sonogramType;
         private TrackType trackType;
 
         private double[] decibels;
@@ -48,7 +47,7 @@ namespace AudioStuff
 
 
 
-        public SonoImage(Sonogram sonogram, ImageType imageType, TrackType trackType)
+        public SonoImage(Sonogram sonogram, SonogramType sonogramType, TrackType trackType)
         {
             SonoConfig state = sonogram.State;
             this.sf = state.SampleRate;
@@ -59,7 +58,7 @@ namespace AudioStuff
             this.bottomScanBin = state.BottomScanBin;
             this.scoreThreshold = state.ZScoreThreshold;
 
-            this.imageType = imageType;
+            this.sonogramType = sonogramType;
             this.trackType = trackType;
 
             this.decibels = sonogram.Decibels;
@@ -71,7 +70,7 @@ namespace AudioStuff
             this.sigState = sonogram.SigState;
         }
 
-        public SonoImage(SonoConfig state, ImageType imageType, TrackType trackType)
+        public SonoImage(SonoConfig state, SonogramType sonogramType, TrackType trackType)
         {
             this.sf = state.SampleRate;
             this.NyquistF = this.sf / 2; //max frequency
@@ -81,7 +80,7 @@ namespace AudioStuff
             this.bottomScanBin = state.BottomScanBin;
             this.scoreThreshold = state.ZScoreThreshold;
 
-            this.imageType = imageType;
+            this.sonogramType = sonogramType;
             this.trackType = trackType;
         }
 
@@ -124,13 +123,13 @@ namespace AudioStuff
             int width   = matrix.GetLength(0); //number of spectra in sonogram
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
-            int binHt = 1;
-            if (this.imageType == ImageType.ceptral) binHt = 512 / sHeight;
+            int binHt = 1; // 1 pixel per freq bin
+            if (this.sonogramType == SonogramType.melCepstral) binHt = 512 / sHeight; //several pixels per cepstral coefficient
 
             int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
             double hzBin  = NyquistF / (double)sHeight;
 
-            if (this.imageType == ImageType.melScale) //do mel scale conversions
+            if (this.sonogramType == SonogramType.melScale) //do mel scale conversions
             {
                 double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
                 double topMel = Speech.Mel(this.topScanBin * hzBin);
@@ -141,8 +140,11 @@ namespace AudioStuff
 
             //calculate total height of the bmp
             int totalHt = imageHt;
-            if (this.addGrid) totalHt = scaleHt + imageHt + scaleHt;
-            if (this.trackType != TrackType.none) totalHt += trackHt;
+            if (this.addGrid)
+            {
+                totalHt = scaleHt + imageHt + scaleHt;
+                if (this.trackType != TrackType.none) totalHt += trackHt;
+            }
 
             Bitmap bmp = new Bitmap(width, totalHt, PixelFormat.Format24bppRgb);
             //bmp = AddSonogram(bmp, sonogram, binHt, unsafePixels);
@@ -151,12 +153,12 @@ namespace AudioStuff
             if (addGrid) bmp = Add1kHzLines(bmp);
             if (addGrid) bmp = AddXaxis(bmp);
             if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
-            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels, this.sigState, this.minDecibelReference, this.maxDecibelReference, this.SegmentationThreshold_k2);
+            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels);
             else if (this.trackType == TrackType.zeroCrossings)
             {
                 double[] zxs = DataTools.normalise(this.zeroCrossings);
                 zxs = DataTools.Normalise(zxs, this.minDecibelReference, this.maxDecibelReference);
-                AddDecibelTrack(bmp, zxs, this.sigState, this.minDecibelReference, this.maxDecibelReference, this.SegmentationThreshold_k2);
+                AddDecibelTrack(bmp, zxs);
             }
             return bmp;
         }
@@ -284,7 +286,7 @@ namespace AudioStuff
                         Color col = grayScale[c];
                         if ((y > this.topScanBin) && (y < this.bottomScanBin))col = Color.FromArgb(c,g,c);
                         //int row = sOffset - y;
-                        bmp.SetPixel(x, yOffset, col);
+                        bmp.SetPixel(x, yOffset-1, col);
                     }//for all pixels in line
 
                     yOffset--;
@@ -293,17 +295,23 @@ namespace AudioStuff
             return bmp;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="herzInterval"></param>
+        /// <param name="imageHt"></param>
+        /// <returns></returns>
         public int[] CreateLinearYaxis(int herzInterval, int imageHt)
         {
-            double herzBin = this.NyquistF / (double)imageHt;
+            double herzBin = this.NyquistF / (double)(imageHt - 1); //-1 because have 2^n +1 bins the extra bin for DC
             int gridCount = this.NyquistF / herzInterval;
 
-            int binsPerGridBand = (int)(herzInterval / herzBin);
+            double binsPerGridBand = herzInterval / herzBin;
+            //Console.WriteLine("gridCount=" + gridCount + " imageHt=" + imageHt + " herzInterval=" + herzInterval + " herzBin" + herzBin + " NyquistF =" + this.NyquistF);
             int[] vScale = new int[gridCount];
             for (int i = 0; i < gridCount; i++)
             {
-                vScale[i] = (1 + i) * binsPerGridBand;
+                vScale[i] = (int)((1 + i) * binsPerGridBand) + 1;  //+1 because bottom bin is DC
                 //Console.WriteLine("grid " + i + " =" + vScale[i]);
             }
             return vScale;
@@ -324,7 +332,7 @@ namespace AudioStuff
             int gridCount = this.NyquistF / herzInterval;
             double melBin = Speech.Mel(this.NyquistF) / (double)imageHt;
 
-            int binsPerGridBand = (int)(herzInterval / herzBin);
+            double binsPerGridBand = herzInterval / herzBin;
             int[] vScale = new int[gridCount];
             for (int i = 0; i < gridCount; i++)
             {
@@ -363,7 +371,6 @@ namespace AudioStuff
                         ba[x] = (byte)50;          
                     }
             }
-            //for (int x = 0; x < width; x++) Console.WriteLine(x+"   "+ba[x]);
             return ba; //byte array
         }
 
@@ -374,27 +381,30 @@ namespace AudioStuff
             int height = bmp.Height;
             byte[] hScale = CreateXaxis(width, this.recordingLength);
             Color black = Color.Black;
-            int offset = height - 1 - trackHt;
+            Color gray  = Color.Gray;
+            Color white = Color.White;
+            Color c = white;
+            int offset = height - 1 - trackHt; //offset for the lower x-axis tics
 
             for (int x = 0; x < width; x++)
             {
-                Color c = Color.White;
-                if (hScale[x] == 50) c = Color.Gray;
+                c = white;
+                if (hScale[x] == 50) c = gray;
                 else
-                if (hScale[x] == 0)  c = Color.Black;
+                if (hScale[x] == 0)  c = black;
 
                 for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, h, c);
-                bmp.SetPixel(x, scaleHt, black);
+                bmp.SetPixel(x, scaleHt-1, black);
                 for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, offset-h, c);
                 bmp.SetPixel(x, offset, black);  // top and bottom line of scale
-                bmp.SetPixel(x, offset - scaleHt, black);
+                bmp.SetPixel(x, offset - scaleHt + 1, black);  // top and bottom line of scale
             } //end of adding time grid
             return bmp;
         }
 
         public Bitmap Add1kHzLines(Bitmap bmp)
         {
-            if (this.imageType == ImageType.ceptral) return bmp; //do not add to cepstral image
+            if (this.sonogramType == SonogramType.melCepstral) return bmp; //do not add to cepstral image
 
             int width  = bmp.Width;
             int height = bmp.Height;
@@ -404,7 +414,7 @@ namespace AudioStuff
             if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
 
             int[] vScale = CreateLinearYaxis(1000, sHeight); //calculate location of 1000Hz grid lines
-            if (this.imageType == ImageType.melScale)
+            if (this.sonogramType == SonogramType.melScale)
             {
                 vScale = CreateMelYaxis(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
             }
@@ -464,45 +474,48 @@ namespace AudioStuff
         /// <param name="bmp"></param>
         /// <param name="scoreArray"></param>
         /// <returns></returns>
-        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array, int[] sigState, double minReference, double maxReference, double segmentThreshold)
+        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array)
         {
+            
             int width  = bmp.Width;
             int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
-            //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
-            //Console.WriteLine("height=" + height);
-            int offset = height - SonoImage.trackHt;
+
+            int offset = height - SonoImage.trackHt - 1; //row id offset for placing track pixels
             Color white = Color.White;
-            double range = maxReference - minReference;
+            double range = this.maxDecibelReference - this.minDecibelReference;
             //Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
             for (int x = 0; x < width; x++)
             {
-                double norm = (array[x] - minReference) / range;
+                double norm = (array[x] - this.minDecibelReference) / range;
                 int id = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * norm);
                 if (id < 0) id = 0;
                 else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
                 //paint white and leave a black vertical bar
                 for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
 
-                //put state as top two pixels
-                Color col = stateColors[sigState[x]];
-                bmp.SetPixel(x, offset, col);
-                bmp.SetPixel(x, offset + 1, col);
-                bmp.SetPixel(x, offset + 2, col);
-                bmp.SetPixel(x, offset + 3, col);
             }
 
-            //display threshold
-            double v1 = (SegmentationThreshold_k1 - minReference) / range;
-            int k1 = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v1);
-            double v2 = (SegmentationThreshold_k2 - minReference) / range;
-            int k2 = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * v2);
+            //display vocalisation state and thresholds used to determine endpoints
+            double v1 = this.SegmentationThreshold_k1 / range;
+            int k1 = SonoImage.trackHt - (int)(SonoImage.trackHt * v1);
+            double v2 = this.SegmentationThreshold_k2 / range;
+            int k2 = SonoImage.trackHt - (int)(SonoImage.trackHt * v2);
             //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
+            if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
+            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
             for (int x = 0; x < width; x++)
             {
                 bmp.SetPixel(x, offset + k1, Color.Pink);
                 bmp.SetPixel(x, offset + k2, Color.Lime);
+
+                //put state as top four pixels
+                Color col = stateColors[this.sigState[x]];
+                bmp.SetPixel(x, offset, col);
+                bmp.SetPixel(x, offset + 1, col);
+                bmp.SetPixel(x, offset + 2, col);
+                bmp.SetPixel(x, offset + 3, col);
             }
             return bmp;
         }
@@ -589,7 +602,15 @@ namespace AudioStuff
             return bmp;
         }
 
-
+        public static TrackType GetTrackType(string typeName)
+        {
+            TrackType type = TrackType.none; //the default
+            if ((typeName == null) || (typeName == "")) return TrackType.none; 
+            if (typeName.StartsWith("energy")) return TrackType.energy;
+            if (typeName.StartsWith("zeroCrossings")) return TrackType.zeroCrossings;
+            if (typeName.StartsWith("score")) return TrackType.score;
+            return type;
+        }
 
 
     }// end class SonoImage

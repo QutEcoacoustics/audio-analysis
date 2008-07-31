@@ -142,12 +142,13 @@ namespace TowseyLib
         public static double[,] MelScale(double[,] matrix, int melBandCount, double Nyquist)
         {
             int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of Hz bands
+            int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
             double[,] outData = new double[M, melBandCount];
             double linBand = Nyquist / N;
             double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
-            double min = double.PositiveInfinity; //to obtain mel min and max
-            double max = double.NegativeInfinity;
+            //Console.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
+            //double min = double.PositiveInfinity; //to obtain mel min and max
+            //double max = double.NegativeInfinity;
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < melBandCount; j++) //for all mel bands
@@ -178,6 +179,8 @@ namespace TowseyLib
                         }
                         for (int k = ai; k < bi; k++)
                         {
+                            if ((k + 1) >= melBandCount) break;//to prevent out of range index with Koala recording
+                            //Console.WriteLine(" i=" + i + " k+1=" + (k + 1));
                             sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                             //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
                         }
@@ -188,12 +191,13 @@ namespace TowseyLib
                             //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
                         }
                     }
-                    sum /= melBand; //to obtain power per mel
+                  
+                    outData[i, j] = sum / melBand; //to obtain power per mel
+                    //if (sum < min) min = sum;
+                    //if (sum > max) max = sum;
+                } //end of for all mel bands
+            //implicit end of for all spectra or time steps
 
-                    outData[i, j] = sum;
-                    if (sum < min) min = sum;
-                    if (sum > max) max = sum;
-                }
             // min;  //could return min and max via out
             // max;
             return outData;

@@ -378,7 +378,7 @@ namespace AudioStuff
         /// <returns></returns>
         public Bitmap GetImage()
         {
-            SonoImage bmps = new SonoImage(this.sonogramState, ImageType.linearScale, TrackType.none);
+            SonoImage bmps = new SonoImage(this.sonogramState, SonogramType.linearScale, TrackType.none);
             return bmps.CreateBitMapOfTemplate(Matrix);
         }
 

@@ -144,6 +144,7 @@ namespace TowseyLib
 
             // Sample Rate
             this.SampleRate = (int)BitConverter.ToUInt32(data, 24);
+            //Console.WriteLine("SampleRate=" + this.SampleRate);
 
             // Bytes Per Second
             BitConverter.ToUInt32(data, 28);
