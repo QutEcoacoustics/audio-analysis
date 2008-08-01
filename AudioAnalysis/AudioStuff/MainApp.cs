@@ -52,8 +52,8 @@ namespace AudioStuff
 
             //training file
             //string wavFileName = "sineSignal";
-            string wavFileName = "golden-whistler";
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "golden-whistler";
+            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
@@ -165,9 +165,9 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFName, wavPath);
-                        s.SetVerbose(1);
                         //double[,] m = s.Matrix;
                         double[,] m = s.Specgram;
+                        //m = ImageTools.NoiseReduction(m);
 
                         //m = ImageTools.SobelEdgeDetection(m);
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
@@ -393,9 +393,7 @@ namespace AudioStuff
                             ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
                             int[] categoryDistribution = Shape.Distribution(categoryAvShapes, Results.analysisBandCount);
 
-                            //ImageType type = ImageType.linearScale; //image is linear freq scale
-                            SonogramType type = SonogramType.melScale;    //image is mel freq scale
-                            s.SaveImage(m, syllables, col, type);
+                            s.SaveImage(m, syllables, col);
 
                             //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
                             //SignalAvMax  SignalAbsMax  syllableDistribution  categoryDistribution

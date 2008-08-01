@@ -47,7 +47,7 @@ namespace AudioStuff
 
 
 
-        public SonoImage(Sonogram sonogram, SonogramType sonogramType, TrackType trackType)
+        public SonoImage(Sonogram sonogram, TrackType trackType)
         {
             SonoConfig state = sonogram.State;
             this.sf = state.SampleRate;
@@ -58,7 +58,7 @@ namespace AudioStuff
             this.bottomScanBin = state.BottomScanBin;
             this.scoreThreshold = state.ZScoreThreshold;
 
-            this.sonogramType = sonogramType;
+            this.sonogramType = state.SonogramType;
             this.trackType = trackType;
 
             this.decibels = sonogram.Decibels;
@@ -68,6 +68,7 @@ namespace AudioStuff
             this.SegmentationThreshold_k2 = state.SegmentationThreshold_k2;
             this.zeroCrossings = sonogram.ZeroCross;
             this.sigState = sonogram.SigState;
+            //Console.WriteLine("SonoImage.sonogramType=" + this.sonogramType);
         }
 
         public SonoImage(SonoConfig state, SonogramType sonogramType, TrackType trackType)
@@ -124,7 +125,8 @@ namespace AudioStuff
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
             int binHt = 1; // 1 pixel per freq bin
-            if (this.sonogramType == SonogramType.melCepstral) binHt = 512 / sHeight; //several pixels per cepstral coefficient
+            if (this.sonogramType == SonogramType.linearCepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
+            if (this.sonogramType == SonogramType.melCepstral)    binHt = 256 / sHeight; //several pixels per cepstral coefficient
 
             int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
             double hzBin  = NyquistF / (double)sHeight;
@@ -150,8 +152,9 @@ namespace AudioStuff
             //bmp = AddSonogram(bmp, sonogram, binHt, unsafePixels);
             bmp = AddSonogram(bmp, matrix, binHt);
 
-            if (addGrid) bmp = Add1kHzLines(bmp);
-            if (addGrid) bmp = AddXaxis(bmp);
+            if (!addGrid) return bmp;
+            bmp = Add1kHzLines(bmp);
+            bmp = AddXaxis(bmp);
             if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
             else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels);
             else if (this.trackType == TrackType.zeroCrossings)
@@ -405,7 +408,9 @@ namespace AudioStuff
         public Bitmap Add1kHzLines(Bitmap bmp)
         {
             if (this.sonogramType == SonogramType.melCepstral) return bmp; //do not add to cepstral image
+            if (this.sonogramType == SonogramType.linearCepstral) return bmp; //do not add to cepstral image
 
+            const int kHz = 1000;
             int width  = bmp.Width;
             int height = bmp.Height;
 
@@ -413,10 +418,10 @@ namespace AudioStuff
             if(addGrid) sHeight -= (SonoImage.scaleHt + SonoImage.scaleHt);
             if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
 
-            int[] vScale = CreateLinearYaxis(1000, sHeight); //calculate location of 1000Hz grid lines
+            int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
             if (this.sonogramType == SonogramType.melScale)
             {
-                vScale = CreateMelYaxis(1000, sHeight); //calculate location of 1000Hz grid lines in Mel scale
+                vScale = CreateMelYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines in Mel scale
             }
 
             int gridCount = vScale.Length - 1; //used to control addition of horizontal grid lines

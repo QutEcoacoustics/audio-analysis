@@ -8,7 +8,7 @@ using TowseyLib;
 
 namespace AudioStuff
 {
-    public enum SonogramType { linearScale, melScale, linearCepstral, melCepstral, SobelEdge }
+    public enum SonogramType { linearScale, melScale, linearCepstral, melCepstral, sobelEdge }
 
 
 	public sealed class Sonogram
@@ -147,13 +147,14 @@ namespace AudioStuff
             if (state.Verbosity != 0) WriteInfo();
         }
 
-        public static SonogramType GetSonogramType(string typeName)
+        public static SonogramType SetSonogramType(string typeName)
         {
             SonogramType type = SonogramType.linearScale; //the default
             if ((typeName == null) || (typeName == "")) return SonogramType.linearScale;
             if (typeName.StartsWith("melScale")) return SonogramType.melScale;
             if (typeName.StartsWith("linearCepstral")) return SonogramType.linearCepstral;
             if (typeName.StartsWith("melCepstral")) return SonogramType.melCepstral;
+            if (typeName.StartsWith("sobelEdge")) return SonogramType.sobelEdge;
             return type;
         }
 
@@ -161,16 +162,17 @@ namespace AudioStuff
         {
             //store essential parameters for this sonogram
             if (wav.Amplitude_AbsMax == 0.0) throw new ArgumentException("Wav file has zero signal. Cannot make sonogram.");
-            this.state.WavMax         = wav.Amplitude_AbsMax;
-            this.state.WavFName       = wav.WavFileName;
-            this.state.SampleRate     = wav.SampleRate;
-            this.state.SampleCount    = wav.SampleCount;
+            this.state.WavMax        = wav.Amplitude_AbsMax;
+            this.state.WavFName      = wav.WavFileName;
+            this.state.SampleRate    = wav.SampleRate;
+            this.state.SampleCount   = wav.SampleCount;
             this.state.TimeDuration  = state.SampleCount / (double)state.SampleRate;
-            this.state.MaxFreq        = state.SampleRate / 2;
+            this.state.MaxFreq       = state.SampleRate / 2;
             this.state.FrameDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
-            this.state.FrameOffset = this.state.FrameDuration * (1 - this.state.WindowOverlap);// duration in seconds
-            this.state.FreqBinCount = this.state.WindowSize / 2; // other half is phase info
-            this.state.FBinWidth = this.state.MaxFreq / (double)this.state.FreqBinCount;
+            this.state.FrameOffset   = this.state.FrameDuration * (1 - this.state.WindowOverlap);// duration in seconds
+            this.state.FreqBinCount  = this.state.WindowSize / 2; // other half is phase info
+            this.state.MelBinCount   = this.state.FreqBinCount; // same has number of Hz bins
+            this.state.FBinWidth     = this.state.MaxFreq / (double)this.state.FreqBinCount;
             this.state.SpectrumCount = (int)(this.state.TimeDuration / this.state.FrameOffset);
             this.state.SpectraPerSecond = 1 / this.state.FrameOffset;
 
@@ -230,7 +232,9 @@ namespace AudioStuff
             else
             if (this.State.SonogramType == SonogramType.linearCepstral) this.specgram = LinearCepstrogram(this.matrix);
             else
-            if (this.State.SonogramType == SonogramType.melCepstral)    this.specgram = MelCepstrogram(this.matrix);
+            if (this.State.SonogramType == SonogramType.melCepstral) this.specgram = MelCepstrogram(this.matrix);
+            else
+            if (this.State.SonogramType == SonogramType.sobelEdge) this.specgram = SobelEdgegram(this.matrix);
         }
 
 
@@ -310,39 +314,50 @@ namespace AudioStuff
 
         public double[,] LinearSonogram(double[,] matrix)
         {
-            //m = ImageTools.NoiseReduction(m);
-            return Speech.DecibelSpectra(this.matrix);
+            double[,] m = Speech.DecibelSpectra(matrix);
+            if(this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            return m;
         }
 
         public double[,] MelSonogram(double[,] matrix)
         {
-            //m = ImageTools.NoiseReduction(m);
             double Nyquist = this.state.MaxFreq;
-            //double melBand = Speech.Mel(Nyquist) / (double)this.State.MelBinCount;  //width of mel band
             this.State.MaxMel = Speech.Mel(Nyquist);
+            double[,] m = Speech.MelConversion(matrix, this.State.MelBinCount, Nyquist); //using the Greg integral
+            m = Speech.DecibelSpectra(m);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            return m;
+        }
 
-            return Speech.MelScale(matrix, this.State.MelBinCount, Nyquist);
+        public double[,] SobelEdgegram(double[,] matrix)
+        {
+            double[,] m = Speech.DecibelSpectra(matrix);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            m = ImageTools.SobelEdgeDetection(m);
+            return m;
         }
 
 
         public double[,] LinearCepstrogram(double[,] matrix)
         {
-            //m = ImageTools.NoiseReduction(m);
             double Nyquist = this.state.MaxFreq;
-            //double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
-            this.State.MaxMel = Speech.Mel(Nyquist);
-
-            return Speech.MFCCs(matrix, this.State.MelBinCount, Nyquist, this.State.MfccCount);
+            double[,] m = Speech.LinearFilterBank(matrix, this.State.FilterbankCount, Nyquist);
+            m = Speech.DecibelSpectra(matrix);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            m = Speech.Cepstra(matrix, Nyquist, this.State.ccCount);
+            return m;
         }
 
         public double[,] MelCepstrogram(double[,] matrix)
         {
-            //m = ImageTools.NoiseReduction(m);
             double Nyquist = this.state.MaxFreq;
-            //double melBand = Speech.Mel(Nyquist) / (double)melBandCount;  //width of mel band
             this.State.MaxMel = Speech.Mel(Nyquist);
-
-            return Speech.MFCCs(matrix, this.State.MelBinCount, Nyquist, this.State.MfccCount);
+            double[,] m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist);//using the Greg integral
+            //double[,] m = Speech.MelFilterbank(matrix, this.State.FilterbankCount, Nyquist);//using the Matlab algorithm
+            m = Speech.DecibelSpectra(m);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            m = Speech.Cepstra(matrix, Nyquist, this.State.ccCount);
+            return m;
         }
 
 
@@ -524,18 +539,35 @@ namespace AudioStuff
         public void WriteInfo()
         {
             Console.WriteLine("\nSONOGRAM INFO");
-            Console.WriteLine(" Wav Sampling Rate = " + this.State.SampleRate + "\tNyquist Freq =" + this.state.MaxFreq);
-            Console.WriteLine(" SampleCount=" + this.state.SampleCount + "\t\tDuration=" + this.State.TimeDuration.ToString("F3") + "s");
-            Console.WriteLine(" Frame Size=" + this.state.WindowSize + "\t\t\tFrame Overlap=" + (int)(this.state.WindowOverlap*100)+"%");
-            Console.WriteLine(" Frame duration=" + this.state.FrameDuration.ToString("F4") + "s. \t(Offset=" + this.state.FrameOffset.ToString("F4") + "s)");
-            Console.WriteLine(" Freq Bin Width=" + (this.state.MaxFreq / (double)this.state.FreqBinCount).ToString("F3") + "hz");
-            Console.WriteLine(" Sig noise     = " + this.State.SigNoise.ToString("F4"));
-            Console.WriteLine(" S/N Ratio dB  = " + this.State.SigNoiseRatio.ToString("F3"));
+            Console.WriteLine(" Wav Sample Rate= " + this.State.SampleRate + "\t\tNyquist Freq = " + this.state.MaxFreq+" Hz");
+            Console.WriteLine(" SampleCount    = " + this.state.SampleCount + "\tDuration=" + this.State.TimeDuration.ToString("F3") + "s");
+            Console.WriteLine(" Frame Size     = " + this.state.WindowSize + "\t\tFrame Overlap = " + (int)(this.state.WindowOverlap*100)+"%");
+            Console.WriteLine(" Frame duration = " + (this.state.FrameDuration*1000).ToString("F1") + " ms. \tFrame Offset = " + (this.state.FrameOffset*1000).ToString("F1") + " ms");
+            Console.WriteLine(" Freq Bin Width = " + (this.state.MaxFreq / (double)this.state.FreqBinCount).ToString("F1") + " Hz");
+            Console.Write(" Sig noise      = " + this.State.SigNoise.ToString("F4"));
+            Console.WriteLine("\tS/N Ratio = " + this.State.SigNoiseRatio.ToString("F3")+" dB");
             //Console.WriteLine(" Min power=" + this.state.PowerMin.ToString("F3") + " Avg power=" + this.state.PowerAvg.ToString("F3") + " Max power=" + this.state.PowerMax.ToString("F3"));
             //Console.WriteLine(" Min percentile=" + this.state.MinPercentile.ToString("F2") + "  Max percentile=" + this.state.MaxPercentile.ToString("F2"));
             //Console.WriteLine(" Min cutoff=" + this.state.MinCut.ToString("F3") + "  Max cutoff=" + this.state.MaxCut.ToString("F3"));
+
+            //write out sonogram params
+            Console.WriteLine("\nSONOGRAM TYPE = " + this.State.SonogramType);
+            if ((this.state.SonogramType == SonogramType.melScale) || (this.state.SonogramType == SonogramType.melCepstral))
+            {
+                Console.WriteLine(" Mel Nyquist= " + this.State.MaxMel.ToString("F1"));
+            }
+            if (this.state.SonogramType == SonogramType.melScale)
+            {
+                Console.WriteLine(" Mel Band Count = " + this.state.MelBinCount);
+            }
+            if ((this.state.SonogramType == SonogramType.linearCepstral) || (this.state.SonogramType == SonogramType.melCepstral))
+            {
+                Console.WriteLine(" Filterbank count = " + this.State.FilterbankCount + "\t\tCepstral coeff count = " + this.state.ccCount);
+            }
+            
+            
             this.State.BmpFName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
-            Console.WriteLine(" Image in file = " + this.State.BmpFName);
+            Console.WriteLine("\n Image in file  = " + this.State.BmpFName);
         }
 
         public void WriteStatistics()
@@ -572,16 +604,11 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, double[] zscores)
         {
-            SaveImage(matrix, zscores, SonogramType.linearScale);//image is linear scale not mel scale
-        }
-
-        public void SaveImage(double[,] matrix, double[] zscores, SonogramType sonogramType)
-        {
             TrackType trackType = TrackType.score;
             if (zscores == null) trackType = TrackType.energy;
             //if (zscores == null) trackType = TrackType.zeroCrossings;
 
-            SonoImage image = new SonoImage(this, sonogramType, trackType);
+            SonoImage image = new SonoImage(this, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, zscores);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -592,21 +619,10 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col)
         {
-            SonogramType sonogramType = SonogramType.linearScale; //image is linear scale not mel scale
-            TrackType trackType       = TrackType.none;
+            this.State.SonogramType = SonogramType.linearScale; //image is linear scale not mel scale
+            TrackType trackType     = TrackType.none;
 
-            SonoImage image = new SonoImage(this, sonogramType, trackType);
-            Bitmap bmp = image.CreateBitmap(matrix, null);
-            if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
-
-            string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
-            this.state.BmpFName = fName;
-            bmp.Save(fName);
-        }
-        public void SaveImage(double[,] matrix, ArrayList shapes, Color col, SonogramType sonogramType)
-        {
-            TrackType trackType = TrackType.none;
-            SonoImage image = new SonoImage(this, sonogramType, trackType);
+            SonoImage image = new SonoImage(this, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
@@ -618,10 +634,10 @@ namespace AudioStuff
 
         public void SaveImageOfSolids(double[,] matrix, ArrayList shapes, Color col)
         {
-            SonogramType imageType = SonogramType.linearScale; //image is linear scale not mel scale
+            this.State.SonogramType = SonogramType.linearScale; //image is linear scale not mel scale
             TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this, imageType, trackType);
+            SonoImage image = new SonoImage(this, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddShapeSolids(bmp, shapes, col);
 
@@ -632,10 +648,10 @@ namespace AudioStuff
 
         public void SaveImageOfCentroids(double[,] matrix, ArrayList shapes, Color col)
         {
-            SonogramType sonogramType = SonogramType.linearScale; //image is linear scale not mel scale
+            this.State.SonogramType = SonogramType.linearScale; //image is linear scale not mel scale
             TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this, sonogramType, trackType);
+            SonoImage image = new SonoImage(this, trackType);
             Bitmap bmp = image.CreateBitmap(matrix, null);
             if (shapes != null) bmp = image.AddCentroidBoundaries(bmp, shapes, col);
 
@@ -806,30 +822,29 @@ namespace AudioStuff
         public FFT.WindowFunc WindowFnc { get; set; }
         public int NPointSmoothFFT { get; set; } //number of points to smooth FFT spectra
 
-
-        public double MinPercentile { get; set; }
-        public double MaxPercentile { get; set; }
-        public double MinCut { get; set; } //power of min percentile
-        public double MaxCut { get; set; } //power of max percentile
-
-        public int    MelBinCount { get; set; } //number of mel spectral values 
+        // MEL SCALE PARAMETERS
+        public int FilterbankCount { get; set; }
+        public int MelBinCount { get; set; } //number of mel spectral values 
         public double MinMelPower { get; set; } //min power in mel sonogram
         public double MaxMelPower { get; set; } //max power in mel sonogram
         public double MaxMel { get; set; }      //Nyquist frequency on Mel scale
 
-        public int    CepBinCount { get; set; } //number of cepstral values 
+        // MFCC parameters
+        public bool   DoNoiseReduction  { get; set; }
+        public int    ccCount { get; set; }   //number of cepstral coefficients
         public double MinCepPower { get; set; } //min value in cepstral sonogram
         public double MaxCepPower { get; set; } //max value in cepstral sonogram
 
-        // MFCC parameters
-        public bool DoNoiseReduction  { get; set; }
-        public int    FilterbankCount { get; set; }
-        public int    MfccCount { get; set; }
 
         //BITMAP IMAGE PARAMETERS 
         public bool AddGrid { get; set; }
         public SonogramType SonogramType { get; set; }
         public TrackType TrackType { get; set; }
+
+        public double MinPercentile { get; set; }
+        public double MaxPercentile { get; set; }
+        public double MinCut { get; set; } //power of min percentile
+        public double MaxCut { get; set; } //power of max percentile
 
 
         //TEMPLATE PARAMETERS
@@ -908,10 +923,10 @@ namespace AudioStuff
             // MFCC parameters
             this.DoNoiseReduction = cfg.GetBoolean("NOISE_REDUCE");
             this.FilterbankCount = cfg.GetInt("FILTERBANK_COUNT");
-            this.MfccCount = cfg.GetInt("MFCC_COUNT");
+            this.ccCount = cfg.GetInt("CC_COUNT"); //number of cepstral coefficients
 
             //sonogram image parameters
-            this.SonogramType = Sonogram.GetSonogramType(cfg.GetString("SONOGRAM_TYPE"));
+            this.SonogramType = Sonogram.SetSonogramType(cfg.GetString("SONOGRAM_TYPE"));
             this.TrackType = SonoImage.GetTrackType(cfg.GetString("TRACK_TYPE"));
             this.AddGrid = cfg.GetBoolean("ADDGRID");
 

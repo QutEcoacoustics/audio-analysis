@@ -400,6 +400,7 @@ namespace TowseyLib
       for (int i = 0; i < array.Length; i++)
           Console.WriteLine(i + "  " + array[i]);
   }
+
   public static void writeMatrix(double[,] matrix)
   {
       int rowCount = matrix.GetLength(0);//height
@@ -410,6 +411,21 @@ namespace TowseyLib
           {
               Console.Write(" " + matrix[i, j].ToString("F2"));
               if(j<colCount-1)Console.Write(",");
+          }
+          Console.WriteLine();
+      }
+  }
+
+  public static void writeMatrix2File(double[,] matrix, string fPath)
+  {
+      int rowCount = matrix.GetLength(0);//height
+      int colCount = matrix.GetLength(1);//width
+      for (int i = 0; i < rowCount; i++)
+      {
+          for (int j = 0; j < colCount; j++)
+          {
+              Console.Write(" " + matrix[i, j].ToString("F2"));
+              if (j < colCount - 1) Console.Write(",");
           }
           Console.WriteLine();
       }
