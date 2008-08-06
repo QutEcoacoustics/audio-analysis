@@ -254,6 +254,101 @@ namespace TowseyLib
         }
 
 
+        /// <summary>
+        /// Does linear filterbank conversion for sonogram for any frequency band given by minFreq and maxFreq.
+        /// </summary>
+        /// <param name="matrix">the sonogram</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
+        /// <param name="Nyquist">max frequency in original spectra</param>
+        /// <param name="minFreq">min freq in passed sonogram</param>
+        /// <param name="maxFreq">max freq in passed sonogram</param>
+        /// <returns></returns>
+        public static double[,] LinearConversion(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        {
+
+            double freqRange = maxFreq - minFreq;
+            double fraction = freqRange / Nyquist;
+            filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
+
+            int M = matrix.GetLength(0); //number of spectra or time steps
+            int N = matrix.GetLength(1); //number of bins in freq band
+            double[,] outData = new double[M, filterBankCount];
+            double linBand = freqRange / N;
+            double opBand  = freqRange / (double)filterBankCount;  //width of output band
+            Console.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
+
+            for (int i = 0; i < M; i++) //for all spectra or time steps
+                for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
+                {
+                    // find top and bottom freq bin id's corresponding to the mel interval
+                    double freqA = (j * opBand) + minFreq;
+                    double freqB = ((j + 1) * opBand) + minFreq;
+                    double a = (freqA - minFreq) / linBand;   //location of lower f in Hz bin units
+                    double b = (freqB - minFreq) / linBand;   //location of upper f in Hz bin units
+                    int ai = (int)Math.Ceiling(a);
+                    int bi = (int)Math.Floor(b);
+                    if (i < 2) Console.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
+                    double sum = 0.0;
+
+                    if (bi < ai) //a and b are in same Hz band
+                    {
+                        ai = (int)Math.Floor(a);
+                        bi = (int)Math.Ceiling(b);
+                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
+                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
+                        sum = Speech.LinearIntegral(a * linBand, b * linBand, ya, yb);
+                    }
+                    else
+                    {
+                        if (ai > 0)
+                        {
+                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
+                            //sum += Speech.LinearIntegral(a, (double)ai, ya, matrix[i, ai]);
+                            sum += Speech.LinearIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                            //sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                        }
+                        for (int k = ai; k < bi; k++)
+                        {
+                            if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
+                            //sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            sum += Speech.LinearIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            //sum += Speech.LinearIntegral(k, (k + 1), matrix[i, k], matrix[i, k + 1]);
+                        }
+                        if (bi < (N - 1))
+                        {
+                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
+                            //sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
+                            sum += Speech.LinearIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
+                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
+                        }
+                    }
+
+
+                    double width = freqB - freqA;
+                    outData[i, j] = sum / width; //to obtain power per mel
+                    //outData[i, j] = sum / opBand; //to obtain power per mel
+                    if (outData[i, j] < 0.0001) outData[i, j] = 0.0001;
+                    //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": sum=" + sum.ToString("F1"));
+                } //end of for all mel bands
+            //implicit end of for all spectra or time steps
+
+            return outData;
+        }
+
+
+
+
+
+
+        /// <summary>
+        /// Does mel conversion for passed sonogram matrix.
+        /// IMPORTANT !!!!! Assumes that min freq of sonogram = 0 Hz and maxFreq = Nyquist.
+        /// Uses Greg's MelIntegral
+        /// </summary>
+        /// <param name="matrix">the sonogram</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
+        /// <param name="Nyquist">max frequency in original spectra</param>
+        /// <returns></returns>
         public static double[,] MelConversion(double[,] matrix, int filterBankCount, double Nyquist)
         {
             int M = matrix.GetLength(0); //number of spectra or time steps
@@ -305,6 +400,92 @@ namespace TowseyLib
                         }
                     }
                   
+                    outData[i, j] = sum / melBand; //to obtain power per mel
+                } //end of for all mel bands
+            //implicit end of for all spectra or time steps
+
+            return outData;
+        }
+
+
+        /// <summary>
+        /// Does mel conversion for sonogram for any frequency band given by minFreq and maxFreq.
+        /// Uses Greg's MelIntegral
+        /// </summary>
+        /// <param name="matrix">the sonogram</param>
+        /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
+        /// <param name="Nyquist">max frequency in original spectra</param>
+        /// <param name="minFreq">min freq in passed sonogram</param>
+        /// <param name="maxFreq">max freq in passed sonogram</param>
+        /// <returns></returns>
+        public static double[,] MelConversion(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        {
+
+            double freqRange  = maxFreq - minFreq;
+            double melNyquist = Speech.Mel(Nyquist);
+            double minMel     = Speech.Mel(minFreq);
+            double maxMel     = Speech.Mel(maxFreq);
+            double melRange   = maxMel - minMel;
+            double fraction   = melRange / melNyquist; 
+            filterBankCount   = (int)Math.Ceiling(filterBankCount * fraction);
+
+            int M = matrix.GetLength(0); //number of spectra or time steps
+            int N = matrix.GetLength(1); //number of bins in freq band
+            double[,] outData = new double[M, filterBankCount];
+            double linBand = freqRange / N;
+            double melBand = melRange / (double)filterBankCount;  //width of mel band
+            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F1"));
+            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F1"));
+
+            for (int i = 0; i < M; i++) //for all spectra or time steps
+                for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
+                {
+                    // find top and bottom freq bin id's corresponding to the mel interval
+                    double melA = (j * melBand) + minMel;
+                    double melB = ((j + 1) * melBand) + minMel;
+                    double a = (Speech.InverseMel(melA) - minFreq) / linBand;   //location of lower f in Hz bin units
+                    double b = (Speech.InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
+                    int ai = (int)Math.Ceiling(a);
+                    int bi = (int)Math.Floor(b);
+                    //if (i < 2) Console.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
+                    double sum = 0.0;
+
+                    if (bi < ai) //a and b are in same Hz band
+                    {
+                        ai = (int)Math.Floor(a);
+                        bi = (int)Math.Ceiling(b);
+                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
+                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
+                        //sum = Speech.LinearIntegral(a, b, ya, yb);
+                        sum = Speech.MelIntegral(a * linBand, b * linBand, ya, yb);
+                    }
+                    else
+                    {
+                        if (ai > 0)
+                        {
+                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
+                            //sum += Speech.LinearIntegral(a, (double)ai, ya, this.Matrix[i, ai]);
+                            sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                        }
+                        for (int k = ai; k < bi; k++)
+                        {
+                            //if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
+                            //Console.WriteLine(" i=" + i + " k+1=" + (k + 1));
+                            sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
+                            //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
+                        }
+                        if (bi < (N - 1)) //this.Bands in Greg's original code
+                        {
+                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
+                            sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
+                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
+                        }
+                    }
+
+
+                    //double melAi = Speech.Mel(ai + minFreq);
+                    //double melBi = Speech.Mel(bi + minFreq);
+                    //double width = melBi - melAi;
                     outData[i, j] = sum / melBand; //to obtain power per mel
                 } //end of for all mel bands
             //implicit end of for all spectra or time steps
@@ -385,6 +566,12 @@ namespace TowseyLib
 
             return filters;
         }
+
+
+        //********************************************************************************************************************
+        //********************************************************************************************************************
+        //********************************************************************************************************************
+        //******************************* CEPTRA COEFFICIENTS USING DCT AND COSINES
 
         public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {

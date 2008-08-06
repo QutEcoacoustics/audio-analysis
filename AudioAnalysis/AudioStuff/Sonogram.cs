@@ -203,7 +203,8 @@ namespace AudioStuff
             this.state.SpectrumCount = frames.GetLength(0);
 
             //ENERGY PER FRAME
-            this.frameEnergy = DSP.SignalEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
+            bool doSpectralEnergy = false;
+            this.frameEnergy = DSP.SignalEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
             double min;
             double max;
             DataTools.MinMax(frameEnergy, out min, out max);
@@ -245,11 +246,8 @@ namespace AudioStuff
                 //ENERGY IN FFT FREQ BAND
                 this.decibels = FreqBandEnergy(this.matrix);
                 //DETERMINE ENDPOINTS OF VOCALISATIONS
-                this.State.SegmentationThreshold_k1 = (this.State.SegmentationThreshold_k1 / 2) + 1;//+1 is fiddle factor
-                this.State.SegmentationThreshold_k2 = (this.State.SegmentationThreshold_k2 / 2) + 2;//+2 is fiddle factor
-                k1 = this.State.MinDecibelReference + this.State.SegmentationThreshold_k1;
-                k2 = this.State.MinDecibelReference + this.State.SegmentationThreshold_k2;
-                //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
+                //this.State.SegmentationThreshold_k2 -= 1.5;
+                //k2 -= 1.5; //fiddle factor for better segmentation of kek-kek file
                 this.sigState = Speech.VocalizationDetection(this.decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
             }
 
@@ -299,12 +297,11 @@ namespace AudioStuff
 
         public double[] FreqBandEnergy(double[,] fftAmplitudes) 
         {
-            int freqRange = this.state.freqBand_Max - this.state.freqBand_Min;  
+            //int freqRange = this.state.freqBand_Max - this.state.freqBand_Min;  
             //double fraction = freqRange / (double)this.state.MaxFreq;
-            double minLogEnergy = (Sonogram.minLogEnergy / 2);// *fraction; //FFT energy is half signal energy
-            double maxLogEnergy = (Sonogram.maxLogEnergy / 2);// *fraction;
-            
-            double[] logEnergy = DSP.SignalEnergy(fftAmplitudes, minLogEnergy, maxLogEnergy);
+            bool doSpectralEnergy = true;
+
+            double[] logEnergy = DSP.SignalEnergy(fftAmplitudes, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
             double min;
             double max;
             DataTools.MinMax(logEnergy, out min, out max);
@@ -315,9 +312,9 @@ namespace AudioStuff
             this.State.SigNoiseRatio = max_dB - min_dB;
             //noise reduce the energy array to produce decibels array
             double Q;
-            double threshold = Sonogram.noiseThreshold / 2;// *fraction;
+            double threshold = Sonogram.noiseThreshold;
             double[] decibels = DSP.NoiseSubtract(logEnergy, min_dB, max_dB, threshold, out Q);
-            this.State.NoiseSubtracted = Q - 2; //-2 is adhoc fiddle factor to get good result for kek-kek 
+            this.State.NoiseSubtracted = Q;
             this.State.MinDecibelReference = min_dB - this.State.NoiseSubtracted;
             this.State.MaxDecibelReference = (maxLogEnergy * 10) - this.State.NoiseSubtracted;
             return decibels;
@@ -371,18 +368,57 @@ namespace AudioStuff
 
         public double[,] LinearSonogram(double[,] matrix)
         {
+            if (this.state.Verbosity > 0) Console.WriteLine(" LinearSonogram(double[,] matrix)");
+
+            double Nyquist = this.state.MaxFreq;
             double[,] m = Speech.DecibelSpectra(matrix);
-            if(this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
             return m;
         }
 
         public double[,] MelSonogram(double[,] matrix)
         {
+            if (this.state.Verbosity > 0) Console.WriteLine(" MelSonogram(double[,] matrix)");
+
+            //error check that filterBankCount < FFTbins
+            //int FFTbins = matrix.GetLength(1) - 1;  //number of Hz bands = 2^N +1. Subtract DC bin
+            //if (this.State.FilterbankCount > FFTbins)
+            //{
+            //    //throw new Exception("ERROR - Sonogram.LinearCepstrogram():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. " + this.State.FilterbankCount + ">" + FFTbins);
+            //    this.State.FilterbankCount = FFTbins;
+            //    Console.WriteLine("Change size of filter bank to size of width of freq band.");
+            //}
             double Nyquist = this.state.MaxFreq;
             this.State.MaxMel = Speech.Mel(Nyquist);
-            double[,] m = Speech.MelConversion(matrix, this.State.MelBinCount, Nyquist); //using the Greg integral
+            double[,] m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
+            //double[,] m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist);  //using the Greg integral
+            //double[,] m = Speech.MelFilterbank(matrix, this.State.FilterbankCount, Nyquist);  //using the Matlab algorithm
             m = Speech.DecibelSpectra(m);
             if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            return m;
+        }
+
+        public double[,] LinearCepstrogram(double[,] matrix)
+        {
+            if (this.state.Verbosity > 0) Console.WriteLine(" LinearCepstrogram(double[,] matrix)");
+            
+            double Nyquist = this.state.MaxFreq;
+            double[,] m = Speech.LinearConversion(matrix, this.State.FilterbankCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
+            m = Speech.DecibelSpectra(m);
+
+            double min; double max;
+            DataTools.MinMax(m, out min, out max);
+            Console.WriteLine("min=" + min + " max=" + max);
+            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            //m = Speech.Cepstra(m, this.State.ccCount);
+            return m;
+        }
+
+        public double[,] MelCepstrogram(double[,] matrix)
+        {
+            if (this.state.Verbosity > 0) Console.WriteLine(" MelCepstrogram(double[,] matrix)");
+            double[,] m = MelSonogram(matrix);
+            //m = Speech.Cepstra(m, this.State.ccCount);
             return m;
         }
 
@@ -394,46 +430,6 @@ namespace AudioStuff
             return m;
         }
 
-
-        public double[,] LinearCepstrogram(double[,] matrix)
-        {
-            if (this.state.Verbosity > 0) Console.WriteLine(" LinearCepstrogram(double[,] matrix) -- uses the Matlab algorithm");
-            
-            //error check that filterBankCount < FFTbins
-            int FFTbins = matrix.GetLength(1) - 1;  //number of Hz bands = 2^N +1. Subtract DC bin
-            if (this.State.FilterbankCount > FFTbins) 
-                throw new Exception("ERROR - Sonogram.LinearCepstrogram():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins");
-
-            double Nyquist = this.state.MaxFreq;
-            double[,] m = Speech.LinearFilterBank(matrix, this.State.FilterbankCount, Nyquist);
-            m = Speech.DecibelSpectra(m);
-            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
-            m = Speech.Cepstra(m, this.State.ccCount);
-            return m;
-        }
-
-        public double[,] MelCepstrogram(double[,] matrix)
-        {
-            if (this.state.Verbosity > 0) Console.WriteLine(" MelCepstrogram(double[,] matrix)");
-
-            //error check that filterBankCount < FFTbins
-            int FFTbins = matrix.GetLength(1) - 1;  //number of Hz bands = 2^N +1. Subtract DC bin
-            if (this.State.FilterbankCount > FFTbins)
-            {
-                //throw new Exception("ERROR - Sonogram.LinearCepstrogram():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. " + this.State.FilterbankCount + ">" + FFTbins);
-                this.State.FilterbankCount = FFTbins;
-                Console.WriteLine("Change size of filter bank to size of width of freq band.");
-            }
-
-            double Nyquist = this.state.MaxFreq;
-            this.State.MaxMel = Speech.Mel(Nyquist);
-            double[,] m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist);  //using the Greg integral
-            //double[,] m = Speech.MelFilterbank(matrix, this.State.FilterbankCount, Nyquist);//using the Matlab algorithm
-            m = Speech.DecibelSpectra(m);
-            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
-            m = Speech.Cepstra(m, this.State.ccCount);
-            return m;
-        }
 
 
         public double[,] Gradient()
