@@ -27,6 +27,8 @@ namespace AudioStuff
 
         private int sf; //sample rate or sampling frequency
         private int NyquistF = 0;  //max frequency = Nyquist freq = sf/2
+        private int minFreq;
+        private int maxFreq;
         private double recordingLength; //length in seconds 
         private double scoreThreshold;
         private bool addGrid;
@@ -52,6 +54,9 @@ namespace AudioStuff
             SonoConfig state = sonogram.State;
             this.sf = state.SampleRate;
             this.NyquistF = this.sf / 2; //max frequency
+            this.minFreq = state.FreqBand_Min;
+            this.maxFreq = state.FreqBand_Max;
+            this.bottomScanBin = state.BottomScanBin;
             this.recordingLength = state.TimeDuration;
             this.addGrid = state.AddGrid;
             this.topScanBin = state.TopScanBin;       //only used when scanning with a template
@@ -75,6 +80,8 @@ namespace AudioStuff
         {
             this.sf = state.SampleRate;
             this.NyquistF = this.sf / 2; //max frequency
+            this.minFreq = state.FreqBand_Min;
+            this.maxFreq = state.FreqBand_Max;
             this.recordingLength = state.TimeDuration;
             this.addGrid = state.AddGrid;
             this.topScanBin = state.TopScanBin;       //only used when scanning with a template
@@ -306,16 +313,21 @@ namespace AudioStuff
         /// <returns></returns>
         public int[] CreateLinearYaxis(int herzInterval, int imageHt)
         {
-            double herzBin = this.NyquistF / (double)(imageHt - 1); //-1 because have 2^n +1 bins the extra bin for DC
-            int gridCount = this.NyquistF / herzInterval;
+            int freqRange = this.maxFreq - this.minFreq + 1;
+            double pixelPerHz = imageHt / (double)freqRange; 
+            int[] vScale = new int[imageHt];
+            //Console.WriteLine("freqRange=" + freqRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerHz=" + pixelPerHz);
 
-            double binsPerGridBand = herzInterval / herzBin;
-            //Console.WriteLine("gridCount=" + gridCount + " imageHt=" + imageHt + " herzInterval=" + herzInterval + " herzBin" + herzBin + " NyquistF =" + this.NyquistF);
-            int[] vScale = new int[gridCount];
-            for (int i = 0; i < gridCount; i++)
+            for (int f = this.minFreq + 1; f < this.maxFreq; f++)
             {
-                vScale[i] = (int)((1 + i) * binsPerGridBand) + 1;  //+1 because bottom bin is DC
-                //Console.WriteLine("grid " + i + " =" + vScale[i]);
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    int hzOffset = f - this.minFreq;
+                    int pixelID = (int)(hzOffset * pixelPerHz) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //Console.WriteLine("f=" + f + " hzOffset=" + hzOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;  
+                }
             }
             return vScale;
         }
@@ -331,18 +343,25 @@ namespace AudioStuff
         /// <returns></returns>
         public int[] CreateMelYaxis(int herzInterval, int imageHt)
         {
-            double herzBin = this.NyquistF / (double)imageHt;
-            int gridCount = this.NyquistF / herzInterval;
-            double melBin = Speech.Mel(this.NyquistF) / (double)imageHt;
+            //int freqRange = this.maxFreq - this.minFreq + 1;
+            double minMel = Speech.Mel(this.minFreq);
+            int melRange = (int)(Speech.Mel(this.maxFreq) - minMel + 1);
+            //double pixelPerHz = imageHt / (double)freqRange;
+            double pixelPerMel = imageHt / (double)melRange;
+            int[] vScale = new int[imageHt];
+            //Console.WriteLine("minMel=" + minMel.ToString("F1") + " melRange=" + melRange + " herzInterval=" + herzInterval + " imageHt=" + imageHt + " pixelPerMel=" + pixelPerMel);
 
-            double binsPerGridBand = herzInterval / herzBin;
-            int[] vScale = new int[gridCount];
-            for (int i = 0; i < gridCount; i++)
+            for (int f = this.minFreq + 1; f < this.maxFreq; f++)
             {
-                double freq = (1 + i) * herzInterval; //draw grid line at this freq
-                double mel = Speech.Mel(freq);
-                vScale[i] = (int)(mel / melBin);
-                //Console.WriteLine("freq="+freq+"  mel="+mel+"   grid " + i + " =" + vScale[i]);
+                if (f % 1000 == 0)  //convert freq value to pixel id
+                {
+                    //int hzOffset  = f - this.minFreq;
+                    int melOffset = (int)(Speech.Mel(f) - minMel);
+                    int pixelID = (int)(melOffset * pixelPerMel) + 1;
+                    if (pixelID >= imageHt) pixelID = imageHt - 1;
+                    //Console.WriteLine("f=" + f + " melOffset=" + melOffset + " pixelID=" + pixelID);
+                    vScale[pixelID] = 1;
+                }
             }
             return vScale;
         }
@@ -387,7 +406,7 @@ namespace AudioStuff
             Color gray  = Color.Gray;
             Color white = Color.White;
             Color c = white;
-            int offset = height - 1 - trackHt; //offset for the lower x-axis tics
+            int offset = height -1 - trackHt; //offset for the lower x-axis tics
 
             for (int x = 0; x < width; x++)
             {
@@ -396,11 +415,13 @@ namespace AudioStuff
                 else
                 if (hScale[x] == 0)  c = black;
 
+                //top axis
                 for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, h, c);
                 bmp.SetPixel(x, scaleHt-1, black);
+                //bottom axis tick marks
                 for (int h = 0; h < scaleHt; h++) bmp.SetPixel(x, offset-h, c);
-                bmp.SetPixel(x, offset, black);  // top and bottom line of scale
-                bmp.SetPixel(x, offset - scaleHt + 1, black);  // top and bottom line of scale
+                bmp.SetPixel(x, offset, black);            // top line of scale
+                bmp.SetPixel(x, offset - scaleHt + 1, black);  // bottom line of scale
             } //end of adding time grid
             return bmp;
         }
@@ -414,23 +435,19 @@ namespace AudioStuff
             int width  = bmp.Width;
             int height = bmp.Height;
 
+            //calculate height of the sonogram
             int sHeight = height;
             if(addGrid) sHeight -= (SonoImage.scaleHt + SonoImage.scaleHt);
             if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
 
             int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
-            if (this.sonogramType == SonogramType.melScale)
-            {
-                vScale = CreateMelYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines in Mel scale
-            }
+            if (this.sonogramType == SonogramType.melScale) vScale = CreateMelYaxis(kHz, sHeight); 
 
-            int gridCount = vScale.Length - 1; //used to control addition of horizontal grid lines
             Color c = Color.LightGray;
-
-            for (int b = 0; b < vScale.Length; b++) //over grid lines
+            for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
             {
-                int y = scaleHt + sHeight - vScale[b];
-   
+                if (vScale[p]==0) continue;
+                int y = scaleHt + sHeight - p;  
                 for (int x = 0; x < width; x++) bmp.SetPixel(x, y, c);
             }
             return bmp;
@@ -485,7 +502,7 @@ namespace AudioStuff
             int width  = bmp.Width;
             int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
 
-            int offset = height - SonoImage.trackHt - 1; //row id offset for placing track pixels
+            int offset = height - SonoImage.trackHt; //row id offset for placing track pixels
             Color white = Color.White;
             double range = this.maxDecibelReference - this.minDecibelReference;
             //Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
@@ -510,10 +527,14 @@ namespace AudioStuff
             //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
             if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
             if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
+            int y1 = offset + k1;
+            if (y1 >= height) y1 = height - 1;
+            int y2 = offset + k2;
+            if (y2 >= height) y2 = height - 1;
             for (int x = 0; x < width; x++)
             {
-                bmp.SetPixel(x, offset + k1, Color.Pink);
-                bmp.SetPixel(x, offset + k2, Color.Lime);
+                bmp.SetPixel(x, y1, Color.Pink);
+                bmp.SetPixel(x, y2, Color.Lime);
 
                 //put state as top four pixels
                 Color col = stateColors[this.sigState[x]];

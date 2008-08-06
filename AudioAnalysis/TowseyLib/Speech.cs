@@ -139,60 +139,116 @@ namespace TowseyLib
         }
 
 
+        public static double[,] CreateLinearFilterBank(int filterBankCount, int FFTbins, double Nyquist)
+        {
+            double hzGap     = Nyquist / FFTbins;
+            double filterGap = Nyquist / (double)(filterBankCount);  //gap between filter centres
+            //Console.WriteLine(" Nyquist=" + Nyquist + " filterGap=" + filterGap);
+
+            double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
+            for (int i = 1; i <= filterBankCount + 1; i++) filterCentres[i] = (i * filterGap);
+            //DataTools.writeArray(filterCentres);
+
+            double[] filterBases = new double[filterBankCount + 2]; //excludes outside edges
+            for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i + 1] - filterCentres[i - 1];
+            //DataTools.writeArray(filterBases);
+
+            double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
+            for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
+            //DataTools.writeArray(filterHeights);
+
+            double[,] filters = new double[filterBankCount, FFTbins];
+            for (int i = 1; i < filterBankCount; i++)
+            {
+                int lowerIndex = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
+                int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
+                int upperIndex = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
+                //set up ascending side of triangle
+                int halfBase = centreIndex - lowerIndex;
+                for (int j = lowerIndex; j < centreIndex; j++)
+                {
+                    filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
+                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+                }
+                //set up decending side of triangle
+                halfBase = upperIndex - centreIndex;
+                for (int j = centreIndex; j < upperIndex; j++)
+                {
+                    filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
+                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+                }
+
+            }//end over all filters
+            //following two lines write matrix of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
+            //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
+
+            return filters;
+        }
+
+        /// <summary>
+        /// uses the Matlab algorithm. Slow, inefficient method that creates very sparce matrices.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="filterBankCount"></param>
+        /// <param name="Nyquist"></param>
+        /// <returns></returns>
         public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist)
         {
+            //Console.WriteLine(" LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
-            double[,] outData = new double[M, filterBankCount];
-            double linBand = Nyquist / N;
-            double melBand = Speech.Mel(Nyquist) / (double)filterBankCount;  //width of mel band
-            //Console.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
+            int FFTbins = N - 1;
+            
+            //create arrays containing the filter centre and bases etc.
+            double hzGap = Nyquist / FFTbins;
+            double filterGap = Nyquist / (double)(filterBankCount);  //gap between filter centres
+            //Console.WriteLine(" Nyquist=" + Nyquist + " filterGap=" + filterGap);
 
+            double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
+            for (int i = 1; i <= filterBankCount + 1; i++) filterCentres[i] = (i * filterGap);
+            //DataTools.writeArray(filterCentres);
+
+            double[] filterBases = new double[filterBankCount + 2]; //excludes outside edges
+            for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i + 1] - filterCentres[i - 1];
+            //DataTools.writeArray(filterBases);
+
+            double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
+            for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
+            //DataTools.writeArray(filterHeights);
+
+
+            double[,] outData = new double[M, filterBankCount];
+            //Console.WriteLine("T=" + M + "  filterBankCount=" + filterBankCount);
             for (int i = 0; i < M; i++) //for all spectra or time steps
+            {
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands
                 {
-                    double a = Speech.InverseMel(j * melBand) / linBand;       //location of lower f in Hz bin units
-                    double b = Speech.InverseMel((j + 1) * melBand) / linBand; //location of upper f in Hz bin units
-                    int ai = (int)Math.Ceiling(a);
-                    int bi = (int)Math.Floor(b);
-
+                    //set up ascending side of triangle
+                    int lowerIndex = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
+                    int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
+                    int halfBase = centreIndex - lowerIndex;
+                    //set up descending side of triangle
+                    int upperIndex = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
                     double sum = 0.0;
-
-                    if (bi < ai) //a and b are in same Hz band
+                    
+                    
+                    for (int f = lowerIndex; f < centreIndex; f++)
                     {
-                        ai = (int)Math.Floor(a);
-                        bi = (int)Math.Ceiling(b);
-                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        //sum = Speech.LinearIntegral(a, b, ya, yb);
-                        sum = Speech.MelIntegral(a * linBand, b * linBand, ya, yb);
+                        sum += (filterHeights[j] * (f - lowerIndex) / (double)halfBase);
+                        //Console.WriteLine(j + "  " + f + "  " + filters[j, f]);
                     }
-                    else
+                    //set up decending side of triangle
+                    halfBase = upperIndex - centreIndex;
+                    for (int f = centreIndex; f < upperIndex; f++)
                     {
-                        if (ai > 0)
-                        {
-                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            //sum += Speech.LinearIntegral(a, (double)ai, ya, this.Matrix[i, ai]);
-                            sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
-                        }
-                        for (int k = ai; k < bi; k++)
-                        {
-                            if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
-                            //Console.WriteLine(" i=" + i + " k+1=" + (k + 1));
-                            sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
-                            //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
-                        }
-                        if (bi < (N - 1)) //this.Bands in Greg's original code
-                        {
-                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
-                            sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
-                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
-                        }
+                        sum += (filterHeights[j] * (upperIndex - f) / (double)halfBase);
+                        //Console.WriteLine(j + "  " + f + "  " + filters[j, f]);
                     }
 
-                    outData[i, j] = sum / melBand; //to obtain power per mel
-                } //end of for all mel bands
-            //implicit end of for all spectra or time steps
+                    outData[i, j] = sum; //
+                } //end of for all freq bands
+            }//end of for all spectra or time steps
 
             return outData;
         }
@@ -259,11 +315,15 @@ namespace TowseyLib
 
         public static double[,] MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist)
         {
+            Console.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
             int FFTbins = N - 1;
-            Console.WriteLine(" KJHGKJHGKJFGKUYFGYFKUVC<JHC");
             double[,] filterBank = CreateMelFilterBank(filterBankCount, FFTbins, Nyquist);
+            //string fPath = @"C:\SensorNetworks\Sonograms\filterbank.bmp";
+            //ImageTools.DrawMatrix(filterBank, fPath);
+
+
             double[,] outData = new double[M, filterBankCount];
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
@@ -320,13 +380,13 @@ namespace TowseyLib
 
             }//end over all filters
             //following two lines write matrix of cos values for checking.
-            string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
-            FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
+            //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
+            //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
 
             return filters;
         }
 
-        public static double[,] Cepstra(double[,] spectra, double Nyquist, int coeffCount)
+        public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {
             int frameCount = spectra.GetLength(0);  //number of frames
             int binCount = spectra.GetLength(1);    // number of filters in filter bank
@@ -338,6 +398,9 @@ namespace TowseyLib
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
+            //following two lines write bmp image of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
+            //ImageTools.DrawMatrix(cosines, fPath);
 
 
             double[,] OP = new double[frameCount, coeffCount];

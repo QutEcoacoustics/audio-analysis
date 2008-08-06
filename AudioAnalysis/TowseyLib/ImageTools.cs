@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Drawing;
+using System.Drawing.Imaging;
 
 
 namespace TowseyLib
@@ -1494,6 +1495,55 @@ namespace TowseyLib
             return grayScale;
         }
 
+
+        public static void DrawMatrix(double[,] matrix, string pathName)
+        {
+            int maxYpixels = 1000;
+            int maxXpixels = 1000;
+            
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            int cellYpixels = maxYpixels / rows;
+            int cellXpixels = maxXpixels / cols;
+
+            if (cellYpixels == 0) cellYpixels = 1;
+            if (cellXpixels == 0) cellXpixels = 1;
+
+            int Ypixels = cellYpixels * rows;
+            int Xpixels = cellXpixels * cols;
+            Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+
+            Color[] grayScale = GrayScale();
+
+
+            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+
+            double[,] norm = DataTools.normalise(matrix);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    int colorId = (int)Math.Floor(norm[r, c] * 255);
+                    int xOffset = (cellXpixels * c);
+                    int yOffset = (cellYpixels * r);
+                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+
+                    for (int x = 0; x < cellXpixels; x++)
+                    {
+                        for (int y = 0; y < cellYpixels; y++)
+                        {
+                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
+                        }
+                    }
+                }//end all columns
+            }//end all rows
+
+
+            bmp.Save(pathName);
+        }
 
     }//end class
 }

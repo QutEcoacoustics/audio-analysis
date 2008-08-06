@@ -142,6 +142,60 @@ namespace TowseyLib
 
 
         /// <summary>
+        /// FFT energy is the log of the summed energy of the spectral bins.
+        /// Important: The spectra matrix consists of FFT AMPLITUDEs.
+        /// Note: Energy of the signal samples = Energy of FFT samples
+        ///     Because FFT of real signal is symmetrical, Energy of the 512 signal samples = 2*(Energy of 256 FFT samples)
+        /// Need to normalise. Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
+        /// Automatic Speech Recognition: From Theory to Practice.
+        /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
+        /// 
+        /// Calculate normalised energy of spectrum as  energy[i] = logEnergy - maxLogEnergy;
+        /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static double[] FFTEnergy(double[,] spectra, double minLogEnergy, double maxLogEnergy)
+        {
+            //double minLogEnergy = -5.0; //defined in header of Sonogram class
+            //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
+
+            int spectralCount = spectra.GetLength(0);
+            int N = spectra.GetLength(1); //number of FFT bins
+            double[] energy = new double[spectralCount];
+            for (int i = 0; i < spectralCount; i++) //foreach frame
+            {
+                double sum = 0.0;
+                for (int j = 0; j < N; j++)  //foreach sample in frame
+                {
+                    sum += (spectra[i, j] * spectra[i, j]); //sum the energy
+                }
+                double e = sum / (double)N; //normalise to frame size
+                if (e <= 0.0)
+                {
+                    System.Console.WriteLine("Warning!!! Energy < zero =" + e);
+                    energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
+                    continue;
+                }
+                double logEnergy = Math.Log10(e);
+                //calculate normalised energy of frame 
+                if (logEnergy < minLogEnergy) energy[i] = minLogEnergy - maxLogEnergy;
+                else energy[i] = logEnergy - maxLogEnergy;
+            }
+
+            //normalise to relative energy value i.e. max in the signal
+            //double maxEnergy = energy[DataTools.getMaxIndex()];
+            //for (int i = 0; i < frameCount; i++) //foreach time step
+            //{
+            //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
+            //}
+            return energy;
+        }
+
+
+
+
+        /// <summary>
         /// counts the zero crossings in each frame
         /// This info is used for determing the begin and end points for vocalisations.
         /// </summary>
@@ -177,7 +231,7 @@ namespace TowseyLib
         /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseReduce(double[] logEnergy, double min_dB, double max_dB, double noiseThreshold_dB, out double Q)
+        public static double[] NoiseSubtract(double[] logEnergy, double min_dB, double max_dB, double noiseThreshold_dB, out double Q)
         {
             int binCount = 100;
             double binWidth = noiseThreshold_dB / binCount;
