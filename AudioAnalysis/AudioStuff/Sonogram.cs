@@ -381,13 +381,13 @@ namespace AudioStuff
             if (this.state.Verbosity > 0) Console.WriteLine(" MelSonogram(double[,] matrix)");
 
             //error check that filterBankCount < FFTbins
-            //int FFTbins = matrix.GetLength(1) - 1;  //number of Hz bands = 2^N +1. Subtract DC bin
-            //if (this.State.FilterbankCount > FFTbins)
-            //{
-            //    //throw new Exception("ERROR - Sonogram.LinearCepstrogram():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. " + this.State.FilterbankCount + ">" + FFTbins);
-            //    this.State.FilterbankCount = FFTbins;
-            //    Console.WriteLine("Change size of filter bank to size of width of freq band.");
-            //}
+            int FFTbins = this.State.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            if (this.State.FilterbankCount > FFTbins)
+            {
+                //throw new Exception("ERROR - Sonogram.LinearCepstrogram():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. " + this.State.FilterbankCount + ">" + FFTbins);
+                Console.WriteLine("Change size of filter bank from " + this.State.FilterbankCount + " to " + FFTbins);
+                this.State.FilterbankCount = FFTbins;
+            }
             double Nyquist = this.state.MaxFreq;
             this.State.MaxMel = Speech.Mel(Nyquist);
             double[,] m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
@@ -406,11 +406,11 @@ namespace AudioStuff
             double[,] m = Speech.LinearConversion(matrix, this.State.FilterbankCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
             m = Speech.DecibelSpectra(m);
 
-            double min; double max;
-            DataTools.MinMax(m, out min, out max);
-            Console.WriteLine("min=" + min + " max=" + max);
+            //double min; double max;
+            //DataTools.MinMax(m, out min, out max);
+            //Console.WriteLine("min=" + min + " max=" + max);
             if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
-            //m = Speech.Cepstra(m, this.State.ccCount);
+            m = Speech.Cepstra(m, this.State.ccCount);
             return m;
         }
 
@@ -418,7 +418,7 @@ namespace AudioStuff
         {
             if (this.state.Verbosity > 0) Console.WriteLine(" MelCepstrogram(double[,] matrix)");
             double[,] m = MelSonogram(matrix);
-            //m = Speech.Cepstra(m, this.State.ccCount);
+            m = Speech.Cepstra(m, this.State.ccCount);
             return m;
         }
 

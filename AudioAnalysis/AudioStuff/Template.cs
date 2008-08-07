@@ -80,6 +80,18 @@ namespace AudioStuff
         private double minTemplatePower; // min and max power in template
         private double maxTemplatePower;
 
+        //info about NEW TEMPLATE EXTRACTION
+        int[] timeIndices;
+        private int deltaT;
+        public  int DeltaT { get { return deltaT; } set { deltaT = value; }  }
+        private bool includeDelta;
+        public  bool IncludeDelta { get { return includeDelta; } set { includeDelta = value; } }
+        private bool includeDoubleDelta;
+        public  bool IncludeDoubleDelta { get { return includeDoubleDelta; } set { includeDoubleDelta = value; } }
+        private double[] featureVector;
+        public  double[] FeatureVector { get { return featureVector; } }
+
+
         //info about TEMPLATE SCORING
         public double NoiseAv { get { return this.templateState.NoiseAv; } }
         public double NoiseSD { get { return this.templateState.NoiseSd; } }
@@ -243,12 +255,32 @@ namespace AudioStuff
         }//end ExtractTemplate
 
 
+        public void ExtractTemplateUsingTimeIndices(Sonogram s, int[] timeIndices)
+        {
+            SetSonogramInfo(s);
+            double[,] M = s.Specgram;
+            //int timeStepCount = sMatrix.GetLength(0);
+            //this.sonogramState.FreqBinCount = sMatrix.GetLength(1);
+            //this.spectrumCount = timeStepCount;
+            //this.hzBin = this.sonogramState.MaxFreq / (double)this.sonogramState.FreqBinCount;
+            
+            Console.WriteLine("timeIndex=" + timeIndices[2] + "  deltaT=" + deltaT + "  doDelta=" + IncludeDelta + "  DoDoubleDelta=" + IncludeDoubleDelta);
+            this.featureVector = Speech.GetFeatureVector(M, timeIndices[2], deltaT, includeDelta, includeDoubleDelta);
+
+        }//end ExtractTemplate
+
 
         public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
         {
             ExtractTemplateUsingImageCoordinates(s, imageCoords);
             FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
         }
+        public void ExtractTemplateFromSonogram2File(Sonogram s, int[] timeIndices)
+        {
+            ExtractTemplateUsingTimeIndices(s, timeIndices);
+            FileTools.WriteArray2File_Formatted(this.featureVector, this.TemplateDir + this.matrixFName, "F5");
+        }
+
 
 
         
