@@ -15,7 +15,7 @@ namespace AudioStuff
     /// ExtractTemplate: Extracts a call template from the sonogram 
     /// ReadTemplateAndScan: Scans the sonogram with a previously prepared template
     /// </summary>
-    enum Mode { ArtificialSignal, MakeSonogram, IdentifySyllables, CreateTemplate, CreateTemplateAndScan, 
+    enum Mode { ArtificialSignal, MakeSonogram, IdentifyAcousticEvents, CreateTemplate, CreateTemplateAndScan, 
                 ReadTemplateAndScan, ScanMultipleRecordingsWithTemplate, AnalyseMultipleRecordings, ERRONEOUS
     }
 
@@ -32,9 +32,9 @@ namespace AudioStuff
         {
             //******************** USER PARAMETERS ***************************
             //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
-            //Mode userMode = Mode.CreateTemplate;
+            Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
@@ -101,8 +101,13 @@ namespace AudioStuff
             int callID = 2;
             string callName = "Lewin's Rail Kek-kek";
             string callComment = "Template consists of a single KEK!";
-            int x1 = 662; int y1 = 284; //image coordinates
-            int x2 = 668; int y2 = 431;
+            int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            bool doMelConversion = true;
+            int deltaT = 2; // i.e. 2 frames when constructing feature vector
+            bool includeDeltaFeatures = true;
+            bool includeDoubleDeltaFeatures = true;
+
+
 
             //int callID = 3;
             //string callName = "Lewin's Rail Kek-kek";
@@ -167,9 +172,7 @@ namespace AudioStuff
                         s = new Sonogram(iniFName, wavPath);
                         //double[,] m = s.Matrix;
                         double[,] m = s.Specgram;
-                        //m = ImageTools.NoiseReduction(m);
 
-                        //m = ImageTools.SobelEdgeDetection(m);
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
                         //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
                         //m = ImageTools.Convolve(m, Kernal.HorizontalLine5);
@@ -184,7 +187,7 @@ namespace AudioStuff
                     }
                     break;
 
-                case Mode.IdentifySyllables:     //make sonogram and detect shapes
+                case Mode.IdentifyAcousticEvents:     //make sonogram and detect shapes
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
@@ -233,17 +236,21 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
+                        Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
+                        //s.SaveImage(s.Specgram, null);
 
+
+                        Console.WriteLine("\nCREATING TEMPLATE");
                         Template t = new Template(callID, callName, callComment, templateDir);
                         t.SetWavFileName(wavFileName);
-                        t.ExtractTemplateFromImage2File(s, x1, y1, x2, y2);
+                        t.ExtractTemplateFromSonogram2File(s, timeIndices);
                         t.SaveDataAndImageToFile();
                         t.WriteInfo();//writes to System.Console.
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("FAILED TO EXTRACT SONOGRAM");
+                        Console.WriteLine("FAILED TO EXTRACT CREATE TEMPLATE");
                         Console.WriteLine(e.ToString());
                     }
                     break;
@@ -255,25 +262,23 @@ namespace AudioStuff
                     {
                         Console.WriteLine("READING SONOGRAM");
                         s = new Sonogram(iniFName, wavPath);
-                        double[,] m = s.Matrix;
-                        m = Speech.DecibelSpectra(m);
-                        //m = ImageTools.NoiseReduction(m);
-
 
                         Console.WriteLine("CREATING TEMPLATE");
                         Template t = new Template(callID, callName, callComment, templateDir);
                         t.SetWavFileName(wavFileName);
-                        t.ExtractTemplateFromImage2File(s, x1, y1, x2, y2);
+                        t.ExtractTemplateFromImage2File(s, timeIndices);
                         t.SaveDataAndImageToFile();
                         t.WriteInfo();//writes to System.Console.
 
+                        Console.WriteLine("CREATING CLASSIFIER");
                         Classifier cl = new Classifier(t, s);
+                        double[,] m = s.Specgram;
                         s.SaveImage(m, cl.Zscores);
-                        cl.WriteResults();
+                        cl.WriteResults();//writes to System.Console.
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("FAILED TO EXTRACT SONOGRAM");
+                        Console.WriteLine("FAILED TO CREATE TEMPLATE AND SCAN");
                         Console.WriteLine(e.ToString());
                     }
                     break;

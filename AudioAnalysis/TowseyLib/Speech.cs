@@ -139,123 +139,11 @@ namespace TowseyLib
         }
 
 
-        public static double[,] CreateLinearFilterBank(int filterBankCount, int FFTbins, double Nyquist)
-        {
-            double hzGap     = Nyquist / FFTbins;
-            double filterGap = Nyquist / (double)(filterBankCount);  //gap between filter centres
-            //Console.WriteLine(" Nyquist=" + Nyquist + " filterGap=" + filterGap);
-
-            double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
-            for (int i = 1; i <= filterBankCount + 1; i++) filterCentres[i] = (i * filterGap);
-            //DataTools.writeArray(filterCentres);
-
-            double[] filterBases = new double[filterBankCount + 2]; //excludes outside edges
-            for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i + 1] - filterCentres[i - 1];
-            //DataTools.writeArray(filterBases);
-
-            double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
-            for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
-            //DataTools.writeArray(filterHeights);
-
-            double[,] filters = new double[filterBankCount, FFTbins];
-            for (int i = 1; i < filterBankCount; i++)
-            {
-                int lowerIndex = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
-                int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
-                int upperIndex = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
-                //set up ascending side of triangle
-                int halfBase = centreIndex - lowerIndex;
-                for (int j = lowerIndex; j < centreIndex; j++)
-                {
-                    filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
-                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
-                }
-                //set up decending side of triangle
-                halfBase = upperIndex - centreIndex;
-                for (int j = centreIndex; j < upperIndex; j++)
-                {
-                    filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
-                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
-                }
-
-            }//end over all filters
-            //following two lines write matrix of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
-            //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
-
-            return filters;
-        }
-
-        /// <summary>
-        /// uses the Matlab algorithm. Slow, inefficient method that creates very sparce matrices.
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="filterBankCount"></param>
-        /// <param name="Nyquist"></param>
-        /// <returns></returns>
-        public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist)
-        {
-            //Console.WriteLine(" LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
-            int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
-            int FFTbins = N - 1;
-            
-            //create arrays containing the filter centre and bases etc.
-            double hzGap = Nyquist / FFTbins;
-            double filterGap = Nyquist / (double)(filterBankCount);  //gap between filter centres
-            //Console.WriteLine(" Nyquist=" + Nyquist + " filterGap=" + filterGap);
-
-            double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
-            for (int i = 1; i <= filterBankCount + 1; i++) filterCentres[i] = (i * filterGap);
-            //DataTools.writeArray(filterCentres);
-
-            double[] filterBases = new double[filterBankCount + 2]; //excludes outside edges
-            for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i + 1] - filterCentres[i - 1];
-            //DataTools.writeArray(filterBases);
-
-            double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
-            for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
-            //DataTools.writeArray(filterHeights);
-
-
-            double[,] outData = new double[M, filterBankCount];
-            //Console.WriteLine("T=" + M + "  filterBankCount=" + filterBankCount);
-            for (int i = 0; i < M; i++) //for all spectra or time steps
-            {
-                for (int j = 0; j < filterBankCount; j++) //for all mel bands
-                {
-                    //set up ascending side of triangle
-                    int lowerIndex = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
-                    int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
-                    int halfBase = centreIndex - lowerIndex;
-                    //set up descending side of triangle
-                    int upperIndex = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
-                    double sum = 0.0;
-                    
-                    
-                    for (int f = lowerIndex; f < centreIndex; f++)
-                    {
-                        sum += (filterHeights[j] * (f - lowerIndex) / (double)halfBase);
-                        //Console.WriteLine(j + "  " + f + "  " + filters[j, f]);
-                    }
-                    //set up decending side of triangle
-                    halfBase = upperIndex - centreIndex;
-                    for (int f = centreIndex; f < upperIndex; f++)
-                    {
-                        sum += (filterHeights[j] * (upperIndex - f) / (double)halfBase);
-                        //Console.WriteLine(j + "  " + f + "  " + filters[j, f]);
-                    }
-
-                    outData[i, j] = sum; //
-                } //end of for all freq bands
-            }//end of for all spectra or time steps
-
-            return outData;
-        }
 
 
         /// <summary>
         /// Does linear filterbank conversion for sonogram for any frequency band given by minFreq and maxFreq.
+        /// Performs linear integral as opposed to Mel integral
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
@@ -266,65 +154,51 @@ namespace TowseyLib
         public static double[,] LinearConversion(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
         {
 
-            double freqRange = maxFreq - minFreq;
+            int freqRange = maxFreq - minFreq;
             double fraction = freqRange / Nyquist;
             filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of bins in freq band
             double[,] outData = new double[M, filterBankCount];
-            double linBand = freqRange / N;
-            double opBand  = freqRange / (double)filterBankCount;  //width of output band
-            Console.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
+            double ipBand = freqRange / (double)N;                //width of input freq band
+            double opBand = freqRange / (double)filterBankCount;  //width of output freq band
+            //Console.WriteLine(" NCount=" + N + " filterCount=" + filterBankCount + " freqRange=" + freqRange + " ipBand=" + ipBand.ToString("F1") + " opBand=" + opBand.ToString("F1"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
-                for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
+                for (int j = 0; j < filterBankCount; j++) //for all output bands in the frequency range
                 {
-                    // find top and bottom freq bin id's corresponding to the mel interval
-                    double freqA = (j * opBand) + minFreq;
-                    double freqB = ((j + 1) * opBand) + minFreq;
-                    double a = (freqA - minFreq) / linBand;   //location of lower f in Hz bin units
-                    double b = (freqB - minFreq) / linBand;   //location of upper f in Hz bin units
-                    int ai = (int)Math.Ceiling(a);
-                    int bi = (int)Math.Floor(b);
-                    if (i < 2) Console.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
+                    // find top and bottom input bin id's corresponding to the output interval
+                    double opA = (j * opBand) + minFreq;
+                    double opB = ((j + 1) * opBand) + minFreq;
+                    double ipA = (opA - minFreq) / ipBand;   //location of lower f in Hz bin units
+                    double ipB = (opB - minFreq) / ipBand;   //location of upper f in Hz bin units
+                    int ipAint = (int)Math.Ceiling(ipA);
+                    int ipBint = (int)Math.Floor(ipB);
                     double sum = 0.0;
+                    //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": ai=" + ipAint + " bi=" + ipBint + " b-a=" + (ipBint - ipAint));
 
-                    if (bi < ai) //a and b are in same Hz band
+                    if (ipAint > 0)
                     {
-                        ai = (int)Math.Floor(a);
-                        bi = (int)Math.Ceiling(b);
-                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        sum = Speech.LinearIntegral(a * linBand, b * linBand, ya, yb);
+                        double ya = Speech.LinearInterpolate((double)(ipAint - 1), (double)ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
+                        sum += Speech.LinearIntegral(ipA * ipBand, ipAint * ipBand, ya, matrix[i, ipAint]);
                     }
-                    else
-                    {
-                        if (ai > 0)
+                        for (int k = ipAint; k < ipBint; k++)
                         {
-                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            //sum += Speech.LinearIntegral(a, (double)ai, ya, matrix[i, ai]);
-                            sum += Speech.LinearIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
-                            //sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                            if ((k + 1) >= N) break;//to prevent out of range index
+                            sum += Speech.LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
                         }
-                        for (int k = ai; k < bi; k++)
+                        if (ipBint < N)
                         {
-                            if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
-                            //sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
-                            sum += Speech.LinearIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
-                            //sum += Speech.LinearIntegral(k, (k + 1), matrix[i, k], matrix[i, k + 1]);
+                            double yb = Speech.LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
+                            sum += Speech.LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
+                            //if (i < 2) Console.WriteLine("## ipBint=" + ipBint + "  SUM=" + sum);
                         }
-                        if (bi < (N - 1))
-                        {
-                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
-                            //sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
-                            sum += Speech.LinearIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
-                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
-                        }
-                    }
 
+                        //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": ai=" + ipAint + " bi=" + ipBint + " b-a=" + (ipBint - ipAint) + " sum=" + sum.ToString("F1"));
 
-                    double width = freqB - freqA;
+                    //double width = opBand;
+                    double width = ipB - ipA;
                     outData[i, j] = sum / width; //to obtain power per mel
                     //outData[i, j] = sum / opBand; //to obtain power per mel
                     if (outData[i, j] < 0.0001) outData[i, j] = 0.0001;
@@ -354,7 +228,7 @@ namespace TowseyLib
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
             double[,] outData = new double[M, filterBankCount];
-            double linBand = Nyquist / N;
+            double linBand = Nyquist / (double)N;
             double melBand = Speech.Mel(Nyquist) / (double)filterBankCount;  //width of mel band
             //Console.WriteLine(" linBand=" + linBand + " melBand=" + melBand);
 
@@ -374,7 +248,6 @@ namespace TowseyLib
                         bi = (int)Math.Ceiling(b);
                         double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
                         double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        //sum = Speech.LinearIntegral(a, b, ya, yb);
                         sum = Speech.MelIntegral(a * linBand, b * linBand, ya, yb);
                     }
                     else
@@ -382,21 +255,17 @@ namespace TowseyLib
                         if (ai > 0)
                         {
                             double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            //sum += Speech.LinearIntegral(a, (double)ai, ya, this.Matrix[i, ai]);
                             sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
                         for (int k = ai; k < bi; k++)
                         {
-                            if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
-                            //Console.WriteLine(" i=" + i + " k+1=" + (k + 1));
+                            if ((k + 1) >= N) break;//to prevent out of range index with Koala recording
                             sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
-                            //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
                         }
-                        if (bi < (N - 1)) //this.Bands in Greg's original code
+                        if (bi < N)
                         {
                             double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
                             sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
-                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
                         }
                     }
                   
@@ -443,42 +312,37 @@ namespace TowseyLib
                     // find top and bottom freq bin id's corresponding to the mel interval
                     double melA = (j * melBand) + minMel;
                     double melB = ((j + 1) * melBand) + minMel;
-                    double a = (Speech.InverseMel(melA) - minFreq) / linBand;   //location of lower f in Hz bin units
-                    double b = (Speech.InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
-                    int ai = (int)Math.Ceiling(a);
-                    int bi = (int)Math.Floor(b);
+                    double ipA = (Speech.InverseMel(melA) - minFreq) / linBand;   //location of lower f in Hz bin units
+                    double ipB = (Speech.InverseMel(melB) - minFreq) / linBand;   //location of upper f in Hz bin units
+                    int ai = (int)Math.Ceiling(ipA);
+                    int bi = (int)Math.Floor(ipB);
                     //if (i < 2) Console.WriteLine("i="+i+" j="+j+": a=" + a.ToString("F1") + " b=" + b.ToString("F1") + " ai=" + ai + " bi=" + bi);
                     double sum = 0.0;
 
                     if (bi < ai) //a and b are in same Hz band
                     {
-                        ai = (int)Math.Floor(a);
-                        bi = (int)Math.Ceiling(b);
-                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], a);
-                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], b);
-                        //sum = Speech.LinearIntegral(a, b, ya, yb);
-                        sum = Speech.MelIntegral(a * linBand, b * linBand, ya, yb);
+                        ai = (int)Math.Floor(ipA);
+                        bi = (int)Math.Ceiling(ipB);
+                        double ya = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipA);
+                        double yb = Speech.LinearInterpolate((double)ai, bi, matrix[i, ai], matrix[i, bi], ipB);
+                        sum = Speech.MelIntegral(ipA * linBand, ipB * linBand, ya, yb);
                     }
                     else
                     {
                         if (ai > 0)
                         {
-                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], a);
-                            //sum += Speech.LinearIntegral(a, (double)ai, ya, this.Matrix[i, ai]);
-                            sum += Speech.MelIntegral(a * linBand, ai * linBand, ya, matrix[i, ai]);
+                            double ya = Speech.LinearInterpolate((double)(ai - 1), (double)ai, matrix[i, ai - 1], matrix[i, ai], ipA);
+                            sum += Speech.MelIntegral(ipA * linBand, ai * linBand, ya, matrix[i, ai]);
                         }
                         for (int k = ai; k < bi; k++)
                         {
-                            //if ((k + 1) >= filterBankCount) break;//to prevent out of range index with Koala recording
-                            //Console.WriteLine(" i=" + i + " k+1=" + (k + 1));
+                            if ((k + 1) > N) break;//to prevent out of range index
                             sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
-                            //sum += Speech.LinearIntegral(k, (k + 1), this.Matrix[i, k], this.Matrix[i, k + 1]);
                         }
-                        if (bi < (N - 1)) //this.Bands in Greg's original code
+                        if (bi < (N-1))
                         {
-                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], b);
-                            sum += Speech.MelIntegral(bi * linBand, b * linBand, matrix[i, bi], yb);
-                            //sum += Speech.LinearIntegral((double)bi, b, this.Matrix[i, bi], yb);
+                            double yb = Speech.LinearInterpolate((double)bi, (double)(bi + 1), matrix[i, bi], matrix[i, bi + 1], ipB);
+                            sum += Speech.MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
                         }
                     }
 
@@ -494,78 +358,81 @@ namespace TowseyLib
         }
 
 
-        public static double[,] MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist)
-        {
-            Console.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
-            int M = matrix.GetLength(0); //number of spectra or time steps
-            int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
-            int FFTbins = N - 1;
-            double[,] filterBank = CreateMelFilterBank(filterBankCount, FFTbins, Nyquist);
-            //string fPath = @"C:\SensorNetworks\Sonograms\filterbank.bmp";
-            //ImageTools.DrawMatrix(filterBank, fPath);
+        // Following two commented methods were an attempt to emulate the MATLAB code for performing the Mel Converison
+        //In the end decided to stick with the INTEGRATION APPROACH.
+
+        //public static double[,] MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist)
+        //{
+        //    Console.WriteLine(" MelFilterbank(double[,] matrix, int filterBankCount, double Nyquist) -- uses the Matlab algorithm");
+        //    int M = matrix.GetLength(0); //number of spectra or time steps
+        //    int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
+        //    int FFTbins = N - 1;
+        //    double[,] filterBank = CreateMelFilterBank(filterBankCount, FFTbins, Nyquist);
+        //    //string fPath = @"C:\SensorNetworks\Sonograms\filterbank.bmp";
+        //    //ImageTools.DrawMatrix(filterBank, fPath);
 
 
-            double[,] outData = new double[M, filterBankCount];
+        //    double[,] outData = new double[M, filterBankCount];
 
-            for (int i = 0; i < M; i++) //for all spectra or time steps
-            {
-                double sum = 0.0;
-                for (int j = 0; j < filterBankCount; j++) //for all mel bands
-                {
-                    for (int f = 0; f < filterBankCount; f++) sum += (filterBank[j,f] * matrix[i,f]);
-                    outData[i, j] = sum; //
-                } //end of for all mel bands
-            }//end of for all spectra or time steps
+        //    for (int i = 0; i < M; i++) //for all spectra or time steps
+        //    {
+        //        double sum = 0.0;
+        //        for (int j = 0; j < filterBankCount; j++) //for all mel bands
+        //        {
+        //            for (int f = 0; f < filterBankCount; f++) sum += (filterBank[j,f] * matrix[i,f]);
+        //            outData[i, j] = sum; //
+        //        } //end of for all mel bands
+        //    }//end of for all spectra or time steps
 
-            return outData;
-        }
+        //    return outData;
+        //}
 
-        public static double[,] CreateMelFilterBank(int filterBankCount, int FFTbins, double Nyquist)
-        {
-            double hzGap = Nyquist / FFTbins;
-            double melGap = Speech.Mel(Nyquist) / (double)(filterBankCount);  //mel gap between filter centres
-            //Console.WriteLine(" melNyquist=" + Speech.Mel(Nyquist) + " melGap=" + melGap);
+        //public static double[,] CreateMelFilterBank(int filterBankCount, int FFTbins, double Nyquist)
+        //{
+        //    double hzGap = Nyquist / FFTbins;
+        //    double melGap = Speech.Mel(Nyquist) / (double)(filterBankCount);  //mel gap between filter centres
+        //    //Console.WriteLine(" melNyquist=" + Speech.Mel(Nyquist) + " melGap=" + melGap);
 
-            double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
-            for (int i = 1; i <= filterBankCount+1; i++) filterCentres[i] = Speech.InverseMel(i * melGap);
-            //DataTools.writeArray(filterCentres);
+        //    double[] filterCentres = new double[filterBankCount + 2]; //+2 for outside edges
+        //    for (int i = 1; i <= filterBankCount+1; i++) filterCentres[i] = Speech.InverseMel(i * melGap);
+        //    //DataTools.writeArray(filterCentres);
 
-            double[] filterBases   = new double[filterBankCount + 2]; //excludes outside edges
-            for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i+1] - filterCentres[i-1];
-            //DataTools.writeArray(filterBases);
+        //    double[] filterBases   = new double[filterBankCount + 2]; //excludes outside edges
+        //    for (int i = 1; i <= filterBankCount; i++) filterBases[i] = filterCentres[i+1] - filterCentres[i-1];
+        //    //DataTools.writeArray(filterBases);
 
-            double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
-            for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
-            //DataTools.writeArray(filterHeights);
+        //    double[] filterHeights = new double[filterBankCount + 2]; //excludes outside edges which have zero height
+        //    for (int i = 1; i <= filterBankCount; i++) filterHeights[i] = 2 / filterBases[i];
+        //    //DataTools.writeArray(filterHeights);
 
-            double[,] filters = new double[filterBankCount, FFTbins];
-            for (int i = 1; i < filterBankCount; i++)
-            {
-                int lowerIndex  = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
-                int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
-                int upperIndex  = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
-                //set up ascending side of triangle
-                int halfBase = centreIndex - lowerIndex;
-                for (int j = lowerIndex; j < centreIndex; j++)
-                {
-                    filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
-                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
-                }
-                //set up decending side of triangle
-                halfBase = upperIndex - centreIndex;
-                for (int j = centreIndex; j < upperIndex; j++)
-                {
-                    filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
-                    //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
-                }
+        //    double[,] filters = new double[filterBankCount, FFTbins];
+        //    for (int i = 1; i < filterBankCount; i++)
+        //    {
+        //        int lowerIndex  = (int)Math.Truncate(filterCentres[i - 1] / hzGap);
+        //        int centreIndex = (int)Math.Round(filterCentres[i] / hzGap);
+        //        int upperIndex  = (int)Math.Ceiling(filterCentres[i + 1] / hzGap);
+        //        //set up ascending side of triangle
+        //        int halfBase = centreIndex - lowerIndex;
+        //        for (int j = lowerIndex; j < centreIndex; j++)
+        //        {
+        //            filters[i, j] = filterHeights[i] * (j - lowerIndex) / (double)halfBase;
+        //            //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+        //        }
+        //        //set up decending side of triangle
+        //        halfBase = upperIndex - centreIndex;
+        //        for (int j = centreIndex; j < upperIndex; j++)
+        //        {
+        //            filters[i, j] = filterHeights[i] * (upperIndex - j) / (double)halfBase;
+        //            //Console.WriteLine(i + "  " + j + "  " + filters[i, j]);
+        //        }
 
-            }//end over all filters
-            //following two lines write matrix of cos values for checking.
-            //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
-            //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
+        //    }//end over all filters
+        //    //following two lines write matrix of cos values for checking.
+        //    //string fPath = @"C:\SensorNetworks\Sonograms\filterBank.txt";
+        //    //FileTools.WriteMatrix2File_Formatted(filters, fPath, "F3");
 
-            return filters;
-        }
+        //    return filters;
+        //}
 
 
         //********************************************************************************************************************
@@ -593,10 +460,10 @@ namespace TowseyLib
             double[,] OP = new double[frameCount, coeffCount];
             for (int i = 0; i < frameCount; i++)//foreach time step
             {
-                double[] spectrum = DataTools.GetRow(M, i); //transfer matrix row to vector
+                double[] spectrum = DataTools.GetRow(M, i); //transfer matrix row=i to vector
                 double[] cepstrum = DCT(spectrum, cosines);
 
-                for (int j = 0; j < coeffCount; j++) OP[i, j] = cepstrum[j+1]; //skip first DC value
+                for (int j = 0; j < coeffCount; j++) OP[i, j] = cepstrum[j+1]; //+1 in order to skip first DC value
             } //end of all frames
             return OP;
         }
@@ -642,6 +509,18 @@ namespace TowseyLib
             }
             return cepstrum;
         }
+
+
+        public static double[] GetFeatureVector(double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
+        {
+            
+            int dim = 10;
+            double[] fv = new double[dim];
+            return fv;
+        }
+
+
+
 
     }//end of class Speech
 }
