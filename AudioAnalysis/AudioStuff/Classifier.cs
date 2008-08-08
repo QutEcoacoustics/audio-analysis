@@ -116,11 +116,11 @@ namespace AudioStuff
         /// CONSTRUCTOR 1
         /// </summary>
         /// <param name="speciesID"></param>
-        public Classifier(int callID, string templateDir)
-        {
-            Template t = new Template(callID, templateDir);
-            TransferDataFromTemplate(t);
-        }
+        //public Classifier(int callID, string templateDir)
+        //{
+        //    Template t = new Template(callID, templateDir);
+        //    TransferDataFromTemplate(t);
+        //}
 
         /// <summary>
         /// CONSTRUCTOR 2
@@ -142,32 +142,32 @@ namespace AudioStuff
             Scan(s, this.scanType);
         }//end ScanSonogram 
 
-        /// <summary>
-        /// CONSTRUCTOR 4
-        /// </summary>
-        /// <param name="callID"></param>
-        /// <param name="templateDir"></param>
-        /// <param name="s"></param>
-        public Classifier(int callID, string templateDir, Sonogram s)
-        {
-            Template t = new Template(callID, templateDir);
-            TransferDataFromTemplate(t);
-            Scan(s, this.scanType);
-        } 
+        ///// <summary>
+        ///// CONSTRUCTOR 4
+        ///// </summary>
+        ///// <param name="callID"></param>
+        ///// <param name="templateDir"></param>
+        ///// <param name="s"></param>
+        //public Classifier(int callID, string templateDir, Sonogram s)
+        //{
+        //    Template t = new Template(callID);
+        //    TransferDataFromTemplate(t);
+        //    Scan(s, this.scanType);
+        //} 
 
 
         public void TransferDataFromTemplate(Template t)
         {
             //get data from the template
             this.TemplateID = t.CallID;
-            this.TemplateName = t.CallName;
-            this.TemplateComment = t.CallComment;
+            this.TemplateName = t.TemplateState.CallName;
+            this.TemplateComment = t.TemplateState.CallComment;
             this.Template = t.Matrix;
-            this.MidTemplateFreq = t.MidTemplateFreq;
+            this.MidTemplateFreq = t.TemplateState.MidTemplateFreq;
 
             if (t.TemplateState == null) throw new Exception("Variable TemplateState is null in method TransferDataFromTemplate()");
-            this.recordingLength = t.TemplateState.AudioDuration;
-            this.maxFreq         = t.TemplateState.MaxFreq;
+            this.recordingLength = t.TemplateState.TimeDuration;
+            this.maxFreq         = t.TemplateState.NyquistFreq;
             this.sampleRate      = t.TemplateState.SampleRate;
             this.NoiseAv         = t.TemplateState.NoiseAv;
             this.NoiseSd         = t.TemplateState.NoiseSd;
@@ -189,9 +189,9 @@ namespace AudioStuff
             this.bottomScanBin = this.topScanBin + tHeight - 1;
 
             //transfer scan track info to the sonogram for later use in producing images
-            s.State.TopScanBin = this.topScanBin;
-            s.State.MidScanBin = this.midScanBin;
-            s.State.BottomScanBin = this.bottomScanBin;
+            s.State.MaxTemplateFreq = this.topScanBin;
+            s.State.MidTemplateFreq = this.midScanBin;
+            s.State.MinTemplateFreq = this.bottomScanBin;
 
             //transfer sonogram state info to Classifier
             this.WavName = s.State.WavFName;

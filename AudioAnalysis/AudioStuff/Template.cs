@@ -15,79 +15,52 @@ namespace AudioStuff
     /// 
     /// <remarks>
     /// This class defines a template for a specific natural sound event.
-    /// This could be the single syllable of a bird or frog call or a short slice of
-    /// rain or cicada noise.
+    /// This could be the single syllable of a bird or frog call or a short slice of rain or cicada noise.
     /// </remarks>
     /// 
     public class Template
     {
-        private TemplateConfig templateState;
-        public TemplateConfig TemplateState { get { return templateState; } set { templateState = value; } }
-        private SonoConfig sonogramState;
-        public SonoConfig SonogramState { get { return sonogramState; } set { sonogramState = value; } }
-
         private const string templateStemName = "template";
         private const string callStemName = "call";
-        private const string bmpFileExt = ".bmp";
-        private const string wavFileExt = ".wav";
-        
-        private int callID;
-        public int CallID { get { return callID; } set { callID = value; } }
-        private string callName;
-        public string CallName { get { return callName; } set { callName = value; } }
-        private string callComment;
-        public string CallComment { get { return callComment; } set { callComment = value; } }
 
+        public int CallID { get; set; }
+        public bool DoMelConversion { get; set; }
+        private SonoConfig templateState;
+        public  SonoConfig TemplateState { get { return templateState; } set { templateState = value; } }
+        //private SonoConfig sonogramState;
+        //public  SonoConfig SonogramState { get { return sonogramState; } set { sonogramState = value; } }
+        private Sonogram   sonogram;
+        public  Sonogram   Sonogram { get { return sonogram; } set { sonogram = value; } }
+
+        
         //file names and directory
         private string templateDir;
         public string TemplateDir { get { return templateDir; } set { templateDir = value; } }
+        private string vectorFName;
+        public string VectorFName { get { return vectorFName; } set { vectorFName = value; } }
         private string matrixFName;
         public string MatrixFName { get { return matrixFName; } set { matrixFName = value; } }
         private string dataFName;
         public string DataFName { get { return dataFName; } set { dataFName = value; } }
-        private string sonogramImageFname;
-        public string SonogramImageFname { get { return sonogramImageFname; } set { sonogramImageFname = value; } }
+        //private string sonogramImageFname;
+        //public string SonogramImageFname { get { return sonogramImageFname; } set { sonogramImageFname = value; } }
         private string imageFName;
         public string ImageFName { get { return imageFName; } set { imageFName = value; } }
 
 
-
-        //info about original .WAV file
-        private string wavFname;
-        public string WavFname { get { return wavFname; } set { wavFname = value; } }
-        private double timeBin; //duration of non-overlapped part of one window
-
-        //info about original SONOGRAM
-        private int spectrumCount;//number of spectra in original sonogram
-        private double spectraPerSecond;
-        public double SpectraPerSecond { get { return spectraPerSecond; } set { spectraPerSecond = value; } }//sonogram sample rate
-        private double spectrumDuration;
-        private string windowFunction = "Hamming";
-        private double hzBin;
-        
-
-        //info about TEMPLATE EXTRACTION
+        //info about OLD TEMPLATE EXTRACTION
         int x1; int y1; //image coordinates for top left of selection
         int x2; int y2; //image coordinates for bottom right of selection
         int t1; int t2; //sonogram time interval selection
         int bin1; int bin2; //sonogram freq bin interval 
         double templateDuration; //duration of template in seconds
-        int templateSpectralCount; //number of spectra in template
-        int maxTemplateFreq;
-        int minTemplateFreq;
-        private int midTemplateFreq; //Hz
-        public int MidTemplateFreq { get { return midTemplateFreq; } set { midTemplateFreq = value; } }
+        int templateSpectralCount; //number of spectra in template        
         private double minTemplatePower; // min and max power in template
         private double maxTemplatePower;
 
+
         //info about NEW TEMPLATE EXTRACTION
-        int[] timeIndices;
-        private int deltaT;
-        public  int DeltaT { get { return deltaT; } set { deltaT = value; }  }
-        private bool includeDelta;
-        public  bool IncludeDelta { get { return includeDelta; } set { includeDelta = value; } }
-        private bool includeDoubleDelta;
-        public  bool IncludeDoubleDelta { get { return includeDoubleDelta; } set { includeDoubleDelta = value; } }
+        private int[] timeIndices;
         private double[] featureVector;
         public  double[] FeatureVector { get { return featureVector; } }
 
@@ -121,87 +94,78 @@ namespace AudioStuff
 
         /// <summary>
         /// CONSTRUCTOR 1
+        /// Use this constructor to read an existing template file
         /// </summary>
         /// <param name="callID"></param>
-        public Template(int callID)
+        public Template(string iniFPath, int callID)
         {
-            this.callID = callID;
+            this.templateState = new SonoConfig();
+            this.templateState.ReadConfig(iniFPath);//read the ini file for default parameters
+
+            this.CallID = callID;
         }
 
-        /// <summary>
-        /// CONSTRUCTOR 2
-        /// Reads a call template from file using CallID for identifier
-        /// </summary>
-        /// <param name="callID"></param>
-        /// <param name="templateDir"></param>
-        public Template(int callID, string templateDir)
-        {
-               this.callID = callID;
-               this.TemplateDir = templateDir;
-               this.dataFName = callStemName + "_" + callID + ".txt";
-               this.matrixFName = templateStemName + "_" + callID + ".txt";
-               this.imageFName = templateStemName + "_" + callID + ".bmp";
-
-               int status = ReadTemplateConfigFile();
-               if (status != 0) throw new System.Exception("Failed to read call info file. Exist status = " + status);
-               status = ReadTemplateFile();
-               if (status != 0) throw new System.Exception("Failed to read call matrix file. Exist status = " + status);
-           }
          
         /// <summary>
-        /// CONSTRUCTOR 3
+        /// CONSTRUCTOR 2
         /// Creates a new call template using info provided
         /// </summary>
         /// <param name="callID"></param>
         /// <param name="callName"></param>
         /// <param name="callComment"></param>
-        public Template(int callID, string callName, string callComment, string templateDir)
+        //public Template(int callID, string callName, string callComment)
+        //{
+        //    this.callID = callID;
+        //    this.callName = callName;
+        //    this.callComment = callComment;
+        //    this.templateState = new TemplateConfig();
+        //}
+
+        
+        public Template(string iniFPath, int callID, string callName, string callComment, string sourceFileStem)
         {
-            this.callID = callID;
-            this.callName = callName;
-            this.callComment = callComment;
-            this.TemplateDir = templateDir;
-            this.dataFName = callStemName + "_" + callID + ".txt";
-            this.matrixFName = templateStemName + "_" + callID + ".txt";
-            this.imageFName = templateStemName + "_" + callID + Template.bmpFileExt;
-            this.templateState = new TemplateConfig();
-        }
-
-        public void SetWavFileName(string wavFileName)
-        {
-            this.wavFname    = wavFileName+wavFileExt;
-        }
-
-        /// <summary>
-        /// this method called from first line of ExtractTemplateUsingImageCoordinates()
-        /// </summary>
-        /// <param name="s"></param>
-        public void SetSonogramInfo(Sonogram s)
-        {
-            this.sonogramState = s.State;
-            //this.templateState = s.State;
-
-            this.TemplateState.AudioDuration = s.State.TimeDuration;
-            this.templateState.MaxFreq = s.State.MaxFreq;
-            this.templateState.SampleRate = s.State.SampleRate;
-            this.templateState.WindowSize  = s.State.WindowSize;
-            this.templateState.WindowOverlap  = s.State.WindowOverlap;
-            this.templateState.WindowFncName  = s.State.WindowFncName;
-            this.templateState.SampleRate  = s.State.SampleRate;
-            this.templateState.SampleCount  = s.State.SampleCount;
-            this.templateState.MaxFreq  = s.State.MaxFreq;
-            this.templateState.WindowDuration  = s.State.FrameDuration;
-            this.templateState.NonOverlapDuration  = s.State.FrameOffset;
-            this.templateState.SpectrumCount  = s.State.SpectrumCount;
-            this.templateState.SpectraPerSecond  = s.State.SpectraPerSecond;
-            this.templateState.FreqBinCount  = s.State.FreqBinCount;
-
-            this.timeBin = this.sonogramState.TimeDuration / (double)this.sonogramState.SpectrumCount;
-            this.spectraPerSecond = this.sonogramState.SpectrumCount / (double)this.sonogramState.TimeDuration;
-            this.spectrumDuration = 1/spectraPerSecond;
+            this.templateState = new SonoConfig();
+            this.templateState.ReadConfig(iniFPath);//read the ini file for default parameters
+            this.CallID = callID;
+            this.templateState.CallID = callID;
+            this.templateState.CallName = callName;
+            this.templateState.CallComment = callComment;
+            this.templateState.SourceFStem = sourceFileStem;
+            this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
+            this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
+            this.dataFName   = this.templateState.TemplateDir + Template.callStemName + "_" + callID + ".txt";
+            this.matrixFName = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
+            Console.WriteLine("dataFName=" + dataFName);
         }
 
 
+        public void SetMfccParameters(int frameSize, double frameOverlap, int minFreq, int maxFreq, 
+                                double dynamicRange, int filterBankCount, bool doMelConversion, 
+                                int ceptralCoeffCount, int deltaT, bool includeDeltaFeatures, bool includeDoubleDeltaFeatures)
+        {
+            this.templateState.WindowSize      = frameSize;
+            this.templateState.WindowOverlap   = frameOverlap;
+            this.templateState.FreqBand_Min    = minFreq;
+            this.templateState.FreqBand_Max    = maxFreq;
+            this.templateState.MinTemplateFreq = minFreq;
+            this.templateState.MaxTemplateFreq = maxFreq;
+            this.templateState.MidTemplateFreq = minFreq + ((maxFreq - minFreq) / 2); //Hz
+
+            this.DoMelConversion = doMelConversion;
+            if (doMelConversion) this.templateState.SonogramType = SonogramType.melCepstral;
+            else                 this.templateState.SonogramType = SonogramType.linearCepstral;
+            this.templateState.DeltaT = deltaT;
+            this.templateState.IncludeDelta = includeDeltaFeatures;
+            this.templateState.IncludeDoubleDelta = includeDoubleDeltaFeatures;
+        }
+
+
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
         public void ConvertImageCoords2SonogramCoords(int freqBinCount, params int[] imageCoords)
         {
             this.x1 = imageCoords[0];
@@ -216,14 +180,14 @@ namespace AudioStuff
             this.bin2 = freqBinCount - imageCoords[1] - 1;//imageCoords[1]=y1
 
             this.templateSpectralCount=t2-t1+1; //number of spectra in template
-            this.templateDuration = templateSpectralCount*this.timeBin; //duration of template in seconds
-            this.maxTemplateFreq = (int)(bin2 * this.hzBin);
-            this.minTemplateFreq = (int)(bin1 * this.hzBin);
-            this.midTemplateFreq = minTemplateFreq + ((maxTemplateFreq - minTemplateFreq) / 2); //Hz
-
+            //double FrameOffset = duration of non-overlapped part of window/frame in seconds
+            this.templateDuration = templateSpectralCount * this.templateState.FrameOffset; // timeBin; //duration of template
+            int min = (int)(bin1 * this.templateState.FBinWidth);
+            int max = (int)(bin2 * this.templateState.FBinWidth);
+            this.templateState.MinTemplateFreq = min; 
+            this.templateState.MaxTemplateFreq = max;
+            this.templateState.MidTemplateFreq = min + ((max - min) / 2); //Hz
         }
-
-
 
         /// <summary>
         /// Extracts a template (submatrix) from the passed sonogram but 
@@ -238,47 +202,76 @@ namespace AudioStuff
         /// <returns></returns>
         public void ExtractTemplateUsingImageCoordinates(Sonogram s, params int[] imageCoords)
         {
-            SetSonogramInfo(s);
-
             //convert image coordinates to sonogram coords
             //sonogram: rows=timesteps; sonogram cols=freq bins
             double[,] sMatrix = s.Matrix;
             int timeStepCount = sMatrix.GetLength(0);
-            this.sonogramState.FreqBinCount = sMatrix.GetLength(1);
-            this.spectrumCount = timeStepCount;
-            this.hzBin = this.sonogramState.MaxFreq / (double)this.sonogramState.FreqBinCount;
+            this.sonogram.State.FreqBinCount = sMatrix.GetLength(1);
+            //this.spectrumCount = timeStepCount;
+            //this.hzBin = this.sonogram.State.NyquistFreq / (double)this.sonogram.State.FreqBinCount;
 
             this.Matrix = s.Matrix;
-            ConvertImageCoords2SonogramCoords(this.sonogramState.FreqBinCount, imageCoords);
+            ConvertImageCoords2SonogramCoords(this.sonogram.State.FreqBinCount, imageCoords);
             this.Matrix = DataTools.Submatrix(sMatrix, this.t1, this.bin1, this.t2, this.bin2);
             DataTools.MinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
         }//end ExtractTemplate
 
-
-        public void ExtractTemplateUsingTimeIndices(Sonogram s, int[] timeIndices)
-        {
-            SetSonogramInfo(s);
-            double[,] M = s.Specgram;
-            //int timeStepCount = sMatrix.GetLength(0);
-            //this.sonogramState.FreqBinCount = sMatrix.GetLength(1);
-            //this.spectrumCount = timeStepCount;
-            //this.hzBin = this.sonogramState.MaxFreq / (double)this.sonogramState.FreqBinCount;
-            
-            Console.WriteLine("timeIndex=" + timeIndices[2] + "  deltaT=" + deltaT + "  doDelta=" + IncludeDelta + "  DoDoubleDelta=" + IncludeDoubleDelta);
-            this.featureVector = Speech.GetFeatureVector(M, timeIndices[2], deltaT, includeDelta, includeDoubleDelta);
-
-        }//end ExtractTemplate
-
-
         public void ExtractTemplateFromImage2File(Sonogram s, params int[] imageCoords)
         {
             ExtractTemplateUsingImageCoordinates(s, imageCoords);
-            FileTools.WriteMatrix2File_Formatted(this.matrix, this.TemplateDir + this.matrixFName, "F5");
+            FileTools.WriteMatrix2File_Formatted(this.matrix, this.matrixFName, "F5");
         }
-        public void ExtractTemplateFromSonogram2File(Sonogram s, int[] timeIndices)
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+        //*************************************************************************************************************************
+
+
+        public void ExtractTemplateFromSonogram(int[] timeIndices)
         {
-            ExtractTemplateUsingTimeIndices(s, timeIndices);
-            FileTools.WriteArray2File_Formatted(this.featureVector, this.TemplateDir + this.matrixFName, "F5");
+            this.timeIndices = timeIndices;
+            //init Sonogram. THis also makes the sonogram.
+            this.sonogram = new Sonogram(this.templateState, this.templateState.SourceFPath);
+
+
+            //Console.WriteLine("  deltaT=" + this.templateState.DeltaT + "  doDelta=" + this.templateState.IncludeDelta + "  DoDoubleDelta=" + this.templateState.IncludeDoubleDelta);
+
+            //normalise energy between 0.0 decibels and max decibels.
+            int L = this.sonogram.Decibels.Length;
+            double[]  E = new double[L];
+            double min = this.templateState.MinDecibelReference;
+            double max = this.templateState.MaxDecibelReference;
+            double range = max - min;
+            for (int i = 0; i < L; i++) E[i] = (this.sonogram.Decibels[i] - min) / range;
+
+            //normalise the MFCC spectrogram
+            double[,] M = DataTools.normalise(this.sonogram.Specgram);
+
+            //get first acoustic vector
+            int dT = this.templateState.DeltaT; 
+            bool doD  = this.templateState.IncludeDelta; 
+            bool doDD = this.templateState.IncludeDoubleDelta;
+            double[] acousticV = Speech.GetFeatureVector(E, M, timeIndices[0], dT, doD, doDD);
+            int avL = acousticV.Length;
+            int indicesL = timeIndices.Length;
+            //Console.WriteLine(" avL=" + avL);
+
+            for(int i = 1; i < indicesL; i++)
+            {
+                double[] v = Speech.GetFeatureVector(E, M, timeIndices[i], dT, doD, doDD);
+                for (int j = 0; j < avL; j++) acousticV[j] += v[j];
+            }
+
+            //initialise feature vector for template and transfer values
+            this.featureVector = new double[avL]; 
+            //transfer average of values
+            for(int i = 0; i < avL; i++)
+            {
+                this.featureVector[i] = acousticV[i] / (double)indicesL;
+            }
+
+            //write all files
+            SaveDataAndImageToFile();
         }
 
 
@@ -290,57 +283,130 @@ namespace AudioStuff
             ArrayList data = new ArrayList();
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#\n#TEMPLATE DATA");
-            data.Add("CALL_ID=" + this.callID);
-            data.Add("CALL_NAME=" + this.callName);
-            data.Add("CALL_COMMENT=" + this.callComment);
+            data.Add("CALL_ID=" + this.templateState.CallID);
+            data.Add("CALL_NAME=" + this.templateState.CallName);
+            data.Add("CALL_COMMENT=" + this.templateState.CallComment);
             data.Add("THIS_FILE=" + this.dataFName);
 
             data.Add("#\n#INFO ABOUT ORIGINAL .WAV FILE");
-            data.Add(" WAV_FILE_NAME=" + this.wavFname);
-            data.Add(" WAV_SAMPLE_RATE=" + this.sonogramState.SampleRate);
-            data.Add(" WAV_DURATION=" + this.sonogramState.TimeDuration.ToString("F3"));
+            data.Add("WAV_FILE_NAME=" + this.templateState.SourceFName);
+            data.Add("WAV_SAMPLE_RATE=" + this.templateState.SampleRate);
+            data.Add("WAV_DURATION=" + this.templateState.TimeDuration.ToString("F3"));
+
+            data.Add("#\n#INFO ABOUT FRAMES");
+            data.Add("FRAME_SIZE=" + this.templateState.WindowSize);
+            data.Add("FRAME_OVERLAP=" + this.templateState.WindowOverlap);
+            data.Add("FRAME_DURATION_MS=" + (this.templateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("FRAME_OFFSET_MS=" + (this.templateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("NUMBER_OF_FRAMES=" + this.templateState.SpectrumCount);
+            data.Add("FRAMES_PER_SECOND=" + this.templateState.SpectraPerSecond.ToString("F3"));
+
 
             data.Add("#\n#INFO ABOUT SONOGRAM");
-            data.Add(" FFT_WINDOW_SIZE=" + this.sonogramState.WindowSize);
-            data.Add(" FFT_WINDOW_OVERLAP=" + this.sonogramState.WindowOverlap);
-            data.Add(" WINDOW_DURATION_MS=" + (this.sonogramState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
-            data.Add(" NONOVERLAP_WINDOW_DURATION_MS=" + (this.sonogramState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
-            data.Add(" NUMBER_OF_SPECTRA=" + spectrumCount);
-            data.Add(" SPECTRA_PER_SECOND=" + spectraPerSecond.ToString("F3"));
-            data.Add(" WINDOW_FUNCTION=" + windowFunction);
-            data.Add(" MAX_FREQ=" + this.sonogramState.MaxFreq);
-            data.Add(" NUMBER_OF_FREQ_BINS=" + this.sonogramState.FreqBinCount);
-            data.Add(" FREQ_BIN_WIDTH=" + hzBin.ToString("F2")+"hz");
-            data.Add(" MIN_POWER=" + this.sonogramState.PowerMin.ToString("F3"));
-            data.Add(" AVG_POWER=" + this.sonogramState.PowerAvg.ToString("F3"));
-            data.Add(" MAX_POWER=" + this.sonogramState.PowerMax.ToString("F3"));
-            data.Add(" MIN_CUTOFF=" + this.sonogramState.MinCut.ToString("F3"));
-            data.Add(" MAX_CUTOFF=" + this.sonogramState.MaxCut.ToString("F3"));
-            //data.Add(" SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
+            data.Add("WINDOW_FUNCTION=" + this.templateState.WindowFncName);
+            data.Add("NYQUIST_FREQ=" + this.templateState.NyquistFreq);
+            data.Add("NUMBER_OF_FREQ_BINS=" + this.templateState.FreqBinCount);
+            data.Add("FREQ_BIN_WIDTH=" + this.templateState.FBinWidth.ToString("F2") + "hz");
+            //data.Add("MIN_POWER=" + this.sonogram.State.PowerMin.ToString("F3"));
+            //data.Add("AVG_POWER=" + this.sonogram.State.PowerAvg.ToString("F3"));
+            //data.Add("MAX_POWER=" + this.sonogram.State.PowerMax.ToString("F3"));
+            //data.Add("MIN_CUTOFF=" + this.sonogram.State.MinCut.ToString("F3"));
+            //data.Add("MAX_CUTOFF=" + this.sonogram.State.MaxCut.ToString("F3"));
+            //data.Add("SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
+
+            data.Add("#\n#INFO ABOUT TEMPLATE");
+            data.Add("TEMPLATE_VECTOR_FILE=" + matrixFName);
+            data.Add("MIN_FREQ=" + this.templateState.MinTemplateFreq);
+            data.Add("MAX_FREQ=" + this.templateState.MaxTemplateFreq);
+            data.Add("MID_FREQ=" + this.templateState.MidTemplateFreq);
+            data.Add("DO_MEL_CONVERSION=" + this.DoMelConversion);
+            data.Add("DELTA_T=" + this.templateState.DeltaT);
+            data.Add("INCLUDE_DELTA=" + this.templateState.IncludeDelta);
+            data.Add("INCLUDE_DOUBLEDELTA=" + this.templateState.IncludeDoubleDelta);
+            data.Add("FILTERBANK_COUNT=" + this.templateState.FilterbankCount);
+            data.Add("CC_COUNT=" + this.templateState.ccCount);
+
+            data.Add("DYNAMIC_RANGE=" + this.templateState.MaxDecibelReference); //decibels above noise level #### YET TO DO THIS PROPERLY
+            //backgroundFilter= //noise reduction??
+            //maxSyllables=
+            //double maxSyllableGap = 0.25; //seconds
+            //double maxSong=
+            StringBuilder frameIDs = new StringBuilder();
+            for (int i = 0; i < timeIndices.Length; i++)
+            {
+                frameIDs.Append(this.timeIndices[i]);
+                frameIDs.Append(",");
+            }
+
+            data.Add("SELECTED_FRAMES=" + frameIDs.ToString());
+
+            //write data to file
+            FileTools.WriteTextFile(this.dataFName, data);
+
+        } // end of WriteCallData2File()
+
+
+
+        public void WriteTemplateConfigFile_OLD()
+        {
+            //write the call data to a file
+            ArrayList data = new ArrayList();
+            data.Add("DATE=" + DateTime.Now.ToString("u"));
+            data.Add("#\n#TEMPLATE DATA");
+            data.Add("CALL_ID=" + this.templateState.CallID);
+            data.Add("CALL_NAME=" + this.templateState.CallName);
+            data.Add("CALL_COMMENT=" + this.templateState.CallComment);
+            data.Add("THIS_FILE=" + this.dataFName);
+
+            data.Add("#\n#INFO ABOUT ORIGINAL .WAV FILE");
+            data.Add("WAV_FILE_NAME=" + this.templateState.SourceFName);
+            data.Add("WAV_SAMPLE_RATE=" + this.templateState.SampleRate);
+            data.Add("WAV_DURATION=" + this.templateState.TimeDuration.ToString("F3"));
+
+            data.Add("#\n#INFO ABOUT FRAMES");
+            data.Add("FRAME_SIZE=" + this.templateState.WindowSize);
+            data.Add("FRAME_OVERLAP=" + this.templateState.WindowOverlap);
+            data.Add("FRAME_DURATION_MS=" + (this.templateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("FRAME_OFFSET_MS=" + (this.templateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("NUMBER_OF_FRAMES=" + this.templateState.SpectrumCount);
+            data.Add("FRAMES_PER_SECOND=" + this.templateState.SpectraPerSecond.ToString("F3"));
+
+
+            data.Add("#\n#INFO ABOUT SONOGRAM");
+            data.Add("WINDOW_FUNCTION=" + this.templateState.WindowFncName);
+            data.Add("NYQUIST_FREQ=" + this.templateState.NyquistFreq);
+            data.Add("NUMBER_OF_FREQ_BINS=" + this.templateState.FreqBinCount);
+            data.Add("FREQ_BIN_WIDTH=" + this.templateState.FBinWidth.ToString("F2") + "hz");
+            data.Add("MIN_POWER=" + this.templateState.PowerMin.ToString("F3"));
+            data.Add("AVG_POWER=" + this.templateState.PowerAvg.ToString("F3"));
+            data.Add("MAX_POWER=" + this.templateState.PowerMax.ToString("F3"));
+            data.Add("MIN_CUTOFF=" + this.templateState.MinCut.ToString("F3"));
+            data.Add("MAX_CUTOFF=" + this.templateState.MaxCut.ToString("F3"));
+            //data.Add("SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
 
             data.Add("#\n#INFO ABOUT CALL TEMPLATE");
-            data.Add(" TEMPLATE_MATRIX_FILE=" + matrixFName);
-            data.Add(" # NOTE: Each row of the template matrix is the power spectrum for a given time step.");
-            data.Add(" #       That is, rows are time steps and columns are frequency bins.");
-            data.Add(" # IMAGE COORDINATES USED TO EXTRACT CALL");
-            data.Add(" X1=" + this.x1);
-            data.Add(" Y1=" + this.y1);
-            data.Add(" X2=" + this.x2);
-            data.Add(" Y2=" + this.y2);
-            data.Add(" # CORRESPONDING SONOGRAM COORDINATES");
-            data.Add(" TIMESTEP1=" + this.t1);
-            data.Add(" TIMESTEP2=" + this.t2);
-            data.Add(" FREQ_BIN1=" + this.bin1);
-            data.Add(" FREQ_BIN2=" + this.bin2);
-            data.Add(" TEMPLATE_IMAGE_FILE=" + this.imageFName);
-            data.Add(" TEMPLATE_DURATION=" + this.templateDuration.ToString("F3")+"s");
-            data.Add(" TEMPLATE_SPEC_COUNT=" + this.templateSpectralCount+ "(time-steps)");
-            data.Add(" TEMPLATE_FBIN_COUNT=" + (this.bin2 - this.bin1+1));
-            data.Add(" TEMPLATE_MAX_FREQ="  + this.maxTemplateFreq);
-            data.Add(" TEMPLATE_MID_FREQ="  + this.midTemplateFreq);
-            data.Add(" TEMPLATE_MIN_FREQ="  + this.minTemplateFreq);
-            data.Add(" TEMPLATE_MIN_POWER=" + this.minTemplatePower.ToString("F3"));
-            data.Add(" TEMPLATE_MAX_POWER=" + this.maxTemplatePower.ToString("F3"));
+            data.Add("TEMPLATE_MATRIX_FILE=" + matrixFName);
+            data.Add("# NOTE: Each row of the template matrix is the power spectrum for a given time step.");
+            data.Add("#       That is, rows are time steps and columns are frequency bins.");
+            data.Add("# IMAGE COORDINATES USED TO EXTRACT CALL");
+            data.Add("X1=" + this.x1);
+            data.Add("Y1=" + this.y1);
+            data.Add("X2=" + this.x2);
+            data.Add("Y2=" + this.y2);
+            data.Add("# CORRESPONDING SONOGRAM COORDINATES");
+            data.Add("TIMESTEP1=" + this.t1);
+            data.Add("TIMESTEP2=" + this.t2);
+            data.Add("FREQ_BIN1=" + this.bin1);
+            data.Add("FREQ_BIN2=" + this.bin2);
+            data.Add("TEMPLATE_IMAGE_FILE=" + this.imageFName);
+            data.Add("TEMPLATE_DURATION=" + this.templateDuration.ToString("F3") + "s");
+            data.Add("TEMPLATE_SPEC_COUNT=" + this.templateSpectralCount + "(time-steps)");
+            data.Add("TEMPLATE_FBIN_COUNT=" + (this.bin2 - this.bin1 + 1));
+            data.Add("TEMPLATE_MAX_FREQ=" + this.templateState.MaxTemplateFreq);
+            data.Add("TEMPLATE_MID_FREQ=" + this.templateState.MidTemplateFreq);
+            data.Add("TEMPLATE_MIN_FREQ=" + this.templateState.MinTemplateFreq);
+            //data.Add("TEMPLATE_MIN_POWER=" + this.minTemplatePower.ToString("F3"));
+            //data.Add("TEMPLATE_MAX_POWER=" + this.maxTemplatePower.ToString("F3"));
 
             //data.Add("#");
             //data.Add("#INFO ABOUT SCORE PROCESSING");
@@ -354,44 +420,55 @@ namespace AudioStuff
 
 
             //write data to file
-            FileTools.WriteTextFile(this.templateDir + this.dataFName, data);
+            FileTools.WriteTextFile(this.dataFName, data);
 
         } // end of WriteCallData2File()
 
 
-        public int ReadTemplateConfigFile()
-        {
-            int status = 0;
-            Console.WriteLine("\n#####  READING TEMPLATE INFO");
-            Console.WriteLine("       FILE NAME=" + dataFName);
-            Configuration cfg = new Props(TemplateDir + dataFName);
-            this.callName = cfg.GetString("CALL_NAME"); 
-            this.callComment = cfg.GetString("CALL_COMMENT");
+        //public int ReadTemplateConfigFile()
+        //{
+        //    int status = 0;
+        //    Console.WriteLine("\n#####  READING TEMPLATE INFO");
+        //    Console.WriteLine("       FILE NAME=" + dataFName);
+        //    Configuration cfg = new Props(this.templateState.TemplateDir + dataFName);
+        //    this.templateState.CallName = cfg.GetString("CALL_NAME");
+        //    this.templateState.CallComment = cfg.GetString("CALL_COMMENT");
 
-            this.templateState = new TemplateConfig();
-            this.templateState.SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
-            this.templateState.MaxFreq = cfg.GetInt("MAX_FREQ");
-            this.templateState.AudioDuration = cfg.GetDouble("WAV_DURATION");
-            this.templateState.FreqBinCount = cfg.GetInt("NUMBER_OF_FREQ_BINS");
-            this.templateState.SpectrumCount = cfg.GetInt("NUMBER_OF_SPECTRA");
-            this.templateState.SpectraPerSecond = cfg.GetDouble("SPECTRA_PER_SECOND");
+        //    this.templateState = new TemplateConfig();
+        //    this.templateState.SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
+        //    this.templateState.NyquistFreq = cfg.GetInt("MAX_FREQ");
+        //    this.templateState.AudioDuration = cfg.GetDouble("WAV_DURATION");
+        //    this.templateState.FreqBinCount = cfg.GetInt("NUMBER_OF_FREQ_BINS");
+        //    this.templateState.SpectrumCount = cfg.GetInt("NUMBER_OF_SPECTRA");
+        //    this.templateState.SpectraPerSecond = cfg.GetDouble("SPECTRA_PER_SECOND");
 
-            this.templateState.WindowSize = cfg.GetInt("FFT_WINDOW_SIZE");
-            this.templateState.WindowOverlap = cfg.GetDouble("FFT_WINDOW_OVERLAP");
-            this.templateState.WindowDuration = cfg.GetDouble("WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
-            this.templateState.NonOverlapDuration = cfg.GetDouble("NONOVERLAP_WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
+        //    this.templateState.WindowSize = cfg.GetInt("FFT_WINDOW_SIZE");
+        //    this.templateState.WindowOverlap = cfg.GetDouble("FFT_WINDOW_OVERLAP");
+        //    this.templateState.WindowDuration = cfg.GetDouble("WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
+        //    this.templateState.NonOverlapDuration = cfg.GetDouble("NONOVERLAP_WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
 
-            this.midTemplateFreq = cfg.GetInt("TEMPLATE_MID_FREQ");
-            this.templateState.NoiseAv = cfg.GetDouble("NOISE_AV");
-            this.templateState.NoiseSd = cfg.GetDouble("NOISE_SD");
-            return status;
-        } //end of ReadCallDataFile()
+        //    this.midTemplateFreq = cfg.GetInt("TEMPLATE_MID_FREQ");
+        //    this.templateState.NoiseAv = cfg.GetDouble("NOISE_AV");
+        //    this.templateState.NoiseSd = cfg.GetDouble("NOISE_SD");
+
+//                    if (doMelConversion) this.templateState.SonogramType = SonogramType.melCepstral;
+//            else this.templateState.SonogramType = SonogramType.linearCepstral;
+
+
+
+        //    return status;
+        //} //end of ReadCallDataFile()
 
 
         public void SaveDataAndImageToFile()
         {
+            FileTools.WriteArray2File_Formatted(this.featureVector, this.matrixFName, "F5");
             WriteTemplateConfigFile();
-            SaveImage();
+
+            //save the image
+            //SonoImage bmps = new SonoImage(this.templateState, SonogramType.linearScale, TrackType.none);
+            //Bitmap bmp = bmps.CreateBitMapOfTemplate(Matrix);
+            //bmp.Save(this.imageFName);
         }
 
         public int ReadTemplateFile()
@@ -403,125 +480,28 @@ namespace AudioStuff
             return status;
         } //end of ReadTemplateFile()
         
-        /// <summary>
-        /// prepare Bitmap image of Template
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public Bitmap GetImage()
-        {
-            SonoImage bmps = new SonoImage(this.sonogramState, SonogramType.linearScale, TrackType.none);
-            return bmps.CreateBitMapOfTemplate(Matrix);
-        }
 
         public void SaveImage()
         {
-            string imageFileName = TemplateDir + this.imageFName;
-            Bitmap bmp = GetImage();
-            bmp.Save(imageFileName);
+            SonoImage bmps = new SonoImage(this.templateState, SonogramType.linearScale, TrackType.none);
+            Bitmap bmp = bmps.CreateBitMapOfTemplate(Matrix);
+            bmp.Save(this.imageFName);
         }
 
-        public void WriteInfo()
+        public void WriteInfo2STDOUT()
         {
             Console.WriteLine("\nTEMPLATE INFO");
             Console.WriteLine(" Template ID: " + this.CallID);
-            Console.WriteLine(" Template name: " + this.CallName);
-            Console.WriteLine(" Comment: " + this.CallComment);
-            Console.WriteLine(" Template directory: " + this.TemplateDir);
+            Console.WriteLine(" Template name: " + this.templateState.CallName);
+            Console.WriteLine(" Comment: " + this.templateState.CallComment);
+            Console.WriteLine(" Template directory: " + this.templateState.TemplateDir);
             Console.WriteLine(" Template data  in file " + this.DataFName);
             Console.WriteLine(" Template image in file " + this.ImageFName);
             Console.WriteLine(" Template matrix in file " + this.MatrixFName);
-            Console.WriteLine(" Bottom freq=" + this.minTemplateFreq + "  Mid freq=" + this.MidTemplateFreq + " Top freq=" + this.maxTemplateFreq);
-            //Console.WriteLine(" Top scan bin=" + this.TopScanBin + "  Mid scan bin=" + s.MidScanBin + "  Bottom scan bin=" + s.BottomScanBin);
+            Console.WriteLine(" Bottom freq=" + this.templateState.MinTemplateFreq + "  Mid freq=" + this.templateState.MidTemplateFreq + " Top freq=" + this.templateState.MaxTemplateFreq);
         }
 
     }//end Class Template
-
-
-        /// <summary>
-    /// 
-    /// </summary>
-    public class TemplateConfig
-    {
-        private string wavFileExt = ".wav"; //default value
-        public string WavFileExt { get { return wavFileExt; } set { wavFileExt = value; } }
-        private string bmpFileExt = ".bmp";//default value
-        public string BmpFileExt { get { return bmpFileExt; } set { bmpFileExt = value; } }
-
-
-        //wav file info
-        public string WavFileDir { get; set; }
-        public string WavFName { get; set; }
-
-        public int WindowSize { get; set; }
-        public double WindowOverlap { get; set; }
-        public string WindowFncName { get; set; }
-        public FFT.WindowFunc WindowFnc { get; set; }
-
-        public int SampleRate { get; set; }
-        public int SampleCount { get; set; }
-        public int MaxFreq { get; set; }
-        public double AudioDuration { get; set; }
-        public double WindowDuration { get; set; }     //duration of full window in seconds
-        public double NonOverlapDuration { get; set; } //duration of non-overlapped part of window in seconds
-
-        public int SpectrumCount { get; set; }
-        public double SpectraPerSecond { get; set; }
-        public int FreqBinCount { get; set; }
-
-        public double FBinWidth { get; set; }
-        public double MinPower { get; set; }//min power in sonogram
-        public double MaxPower { get; set; }//max power in sonogram
-        public double MinPercentile { get; set; }
-        public double MaxPercentile { get; set; }
-        public double MinCut { get; set; } //power of min percentile
-        public double MaxCut { get; set; } //power of max percentile
-
-
-        //freq bins of the scanned part of sonogram
-        public int TopScanBin { get; set; }
-        public int MidScanBin { get; set; }
-        public int BottomScanBin { get; set; }
-        //     public int MidTemplateFreq { get; set; }
-
-        public string SonogramDir { get; set; }
-        public string BmpFName { get; set; }
-        public bool AddGrid { get; set; }
-        public int BlurNH { get; set; }
-        public int BlurNH_time { get; set; }
-        public int BlurNH_freq { get; set; }
-        public bool NormSonogram { get; set; }
-
-        public double NoiseAv { get; set; }
-        public double NoiseSd { get; set; }
-        public int ZscoreSmoothingWindow { get; set; }
-        public double ZScoreThreshold { get; set; }
-        public int Verbosity { get; set; }
-
-
-
-        public void CopyConfig(Configuration cfg)
-        {
-            this.wavFileExt = cfg.GetString("WAV_FILEEXT");
-            this.SonogramDir = cfg.GetString("SONOGRAM_DIR");
-            this.WindowSize = cfg.GetInt("WINDOW_SIZE");
-            this.WindowOverlap = cfg.GetDouble("WINDOW_OVERLAP");
-            this.WindowFncName = cfg.GetString("WINDOW_FUNCTION");
-            this.WindowFnc = FFT.GetWindowFunction(this.WindowFncName);
-            this.MinPercentile = cfg.GetDouble("MIN_PERCENTILE");
-            this.MaxPercentile = cfg.GetDouble("MAX_PERCENTILE");
-            this.wavFileExt = cfg.GetString("WAV_FILEEXT");
-            this.bmpFileExt = cfg.GetString("BMP_FILEEXT");
-            this.AddGrid = cfg.GetBoolean("ADDGRID");
-            this.ZscoreSmoothingWindow = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
-            this.ZScoreThreshold = cfg.GetDouble("ZSCORE_THRESHOLD");
-            this.Verbosity = cfg.GetInt("VERBOSITY");
-            this.BlurNH = cfg.GetInt("BLUR_NEIGHBOURHOOD");
-            this.BlurNH_time = cfg.GetInt("BLUR_TIME_NEIGHBOURHOOD");
-            this.BlurNH_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
-            this.NormSonogram = cfg.GetBoolean("NORMALISE_SONOGRAM");
-        }
-    }//end class TemplateConfig
 
 
 }

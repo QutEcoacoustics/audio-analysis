@@ -511,11 +511,31 @@ namespace TowseyLib
         }
 
 
-        public static double[] GetFeatureVector(double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
+        public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
         {
-            
-            int dim = 10;
+            int mfccCount = M.GetLength(1); //number of MFCCs
+            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int dim = coeffcount; //
+            if (includeDelta) dim += coeffcount;
+            if (includeDoubleDelta) dim += coeffcount;
+            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+
             double[] fv = new double[dim];
+            fv[0] = E[timeID];
+            for (int i = 0; i < mfccCount; i++) fv[1 + i] = M[timeID, i];
+            int offset = coeffcount;
+            if (includeDelta)
+            {
+                fv[offset] = E[timeID];
+                for (int i = 0; i < mfccCount; i++) fv[1 + offset + i] = M[timeID, i];
+            }
+            offset += coeffcount;
+            if (includeDoubleDelta)
+            {
+                fv[offset] = E[timeID];
+                for (int i = 0; i < mfccCount; i++) fv[1 + offset + i] = M[timeID, i];
+            }
+
             return fv;
         }
 
