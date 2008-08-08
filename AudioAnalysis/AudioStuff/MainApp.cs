@@ -42,8 +42,8 @@ namespace AudioStuff
             
 
             // directory structure
-            const string iniFName = @"C:\SensorNetworks\Templates\sonogram.ini";
-            const string templateDir = @"C:\SensorNetworks\Templates\";
+            const string iniFPath = @"C:\SensorNetworks\Templates\sonogram.ini";
+            //const string templateDir = @"C:\SensorNetworks\Templates\";
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
             const string opDirName = @"C:\SensorNetworks\Sonograms\";
@@ -102,10 +102,23 @@ namespace AudioStuff
             string callName = "Lewin's Rail Kek-kek";
             string callComment = "Template consists of a single KEK!";
             int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+            //int sampleRate; //to be determined
+            int frameSize = 512;
+            double frameOverlap = 0.5;
+            int min_Freq = 1500; //Hz
+            int max_Freq = 5500; //Hz
+            double dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
+            //backgroundFilter= //noise reduction??
+            int filterBankCount = 64;
             bool doMelConversion = true;
-            int deltaT = 2; // i.e. 2 frames when constructing feature vector
+            int ceptralCoeffCount = 13;
+            int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
             bool includeDeltaFeatures = true;
             bool includeDoubleDeltaFeatures = true;
+            //maxSyllables=
+            //double maxSyllableGap = 0.25; //seconds
+            //double maxSong=
 
 
 
@@ -145,13 +158,13 @@ namespace AudioStuff
                 case Mode.ArtificialSignal:
                     try
                     {
-                        int sampleRate = 22050;
+                        int sigSampleRate = 22050;
                         double duration = 30.245; //sig duration in seconds
                         string sigName = "artificialSignal";
                         //int[] harmonics = { 1500, 3000, 4500, 6000 };
                         int[] harmonics = { 1000, 4000 };
-                        double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
-                        s = new Sonogram(iniFName, sigName, signal, sampleRate);
+                        double[] signal = DSP.GetSignal(sigSampleRate, duration, harmonics);
+                        s = new Sonogram(iniFPath, sigName, signal, sigSampleRate);
                         s.SetVerbose(1);
                         //double[,] m = s.Matrix;
                         double[,] m = s.Specgram;
@@ -169,7 +182,7 @@ namespace AudioStuff
                     string wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        s = new Sonogram(iniFName, wavPath);
+                        s = new Sonogram(iniFPath, wavPath);
                         //double[,] m = s.Matrix;
                         double[,] m = s.Specgram;
 
@@ -191,7 +204,7 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        s = new Sonogram(iniFName, wavPath);
+                        s = new Sonogram(iniFPath, wavPath);
                         //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
 
                         double[,] m = s.Matrix;
@@ -233,24 +246,19 @@ namespace AudioStuff
 
                 case Mode.CreateTemplate:  //extract template from sonogram
 
-                    wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        Console.WriteLine("READING SONOGRAM");
-                        s = new Sonogram(iniFName, wavPath);
-                        //s.SaveImage(s.Specgram, null);
-
-
                         Console.WriteLine("\nCREATING TEMPLATE");
-                        Template t = new Template(callID, callName, callComment, templateDir);
-                        t.SetWavFileName(wavFileName);
-                        t.ExtractTemplateFromSonogram2File(s, timeIndices);
-                        t.SaveDataAndImageToFile();
-                        t.WriteInfo();//writes to System.Console.
+                        Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
+                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
+                                                         deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
+                        t.ExtractTemplateFromSonogram(timeIndices);
+                        t.WriteInfo2STDOUT();        //writes to System.Console.
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine("FAILED TO EXTRACT CREATE TEMPLATE");
+                        Console.WriteLine("FAILED TO CREATE TEMPLATE");
                         Console.WriteLine(e.ToString());
                     }
                     break;
@@ -260,20 +268,19 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        Console.WriteLine("READING SONOGRAM");
-                        s = new Sonogram(iniFName, wavPath);
-
-                        Console.WriteLine("CREATING TEMPLATE");
-                        Template t = new Template(callID, callName, callComment, templateDir);
-                        t.SetWavFileName(wavFileName);
-                        t.ExtractTemplateFromImage2File(s, timeIndices);
-                        t.SaveDataAndImageToFile();
-                        t.WriteInfo();//writes to System.Console.
+                        Console.WriteLine("\nCREATING TEMPLATE");
+                        Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
+                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, 
+                                                   dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                                                         deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
+                        t.ExtractTemplateFromSonogram(timeIndices);
+                        t.WriteInfo2STDOUT();        //writes to System.Console.
 
                         Console.WriteLine("CREATING CLASSIFIER");
-                        Classifier cl = new Classifier(t, s);
-                        double[,] m = s.Specgram;
-                        s.SaveImage(m, cl.Zscores);
+                        Classifier cl = new Classifier(t, t.Sonogram);
+                        double[,] m = t.Sonogram.Specgram;
+                        t.Sonogram.SaveImage(m, cl.Zscores);
                         cl.WriteResults();//writes to System.Console.
                     }
                     catch (Exception e)
@@ -287,17 +294,14 @@ namespace AudioStuff
 
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try{
-                        s = new Sonogram(iniFName, wavPath);
-                        double[,] m = s.Matrix;
-                        //m = s.MelScale(m, melBandCount);
-                        m = Speech.DecibelSpectra(m);
-                        //m = ImageTools.NoiseReduction(m);
+                        Console.WriteLine("\nREADING TEMPLATE");
+                        Template t = new Template(iniFPath, callID);
 
-                        Template t = new Template(callID, templateDir);
+                        
+                        s = new Sonogram(iniFPath, wavPath);
+
                         Classifier cl = new Classifier(t, s);
-                        s.SaveImage(m, cl.Zscores);
-                        //s.CalculateIndices();
-                        //s.WriteStatistics();
+                        s.SaveImage(s.Specgram, cl.Zscores);
                         //cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                         Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
@@ -320,7 +324,7 @@ namespace AudioStuff
 
                     try
                     {
-                        Template t = new Template(callID, templateDir);
+                        Template t = new Template(iniFPath, callID);
                         int count = 1;
                         foreach (FileInfo fi in files) if (fi.Extension == wavFExt)
                             {
@@ -330,7 +334,7 @@ namespace AudioStuff
                                 wavPath = testDirName + "\\" + fName;
                                 try
                                 {
-                                    s = new Sonogram(iniFName, wavPath);
+                                    s = new Sonogram(iniFPath, wavPath);
                                     Classifier cl = new Classifier(t, s);
                                     s.SaveImage(opDirName, cl.Zscores, sonogramType);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
@@ -375,7 +379,7 @@ namespace AudioStuff
                             Console.WriteLine("\n##########################################");
                             Console.WriteLine("##### " + (count++) + " File=" + fName);
                             wavPath = testDirName + "\\" + fName;
-                            s = new Sonogram(iniFName, wavPath);
+                            s = new Sonogram(iniFPath, wavPath);
                             double[,] m = s.Matrix;
                             m = s.MelSonogram(m);
                             m = ImageTools.NoiseReduction(m);

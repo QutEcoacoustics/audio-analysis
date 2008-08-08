@@ -56,11 +56,11 @@ namespace AudioStuff
             this.NyquistF = this.sf / 2; //max frequency
             this.minFreq = state.FreqBand_Min;
             this.maxFreq = state.FreqBand_Max;
-            this.bottomScanBin = state.BottomScanBin;
+            this.bottomScanBin = state.MinTemplateFreq;
             this.recordingLength = state.TimeDuration;
             this.addGrid = state.AddGrid;
-            this.topScanBin = state.TopScanBin;       //only used when scanning with a template
-            this.bottomScanBin = state.BottomScanBin;
+            this.topScanBin = state.MaxTemplateFreq;       //only used when scanning with a template
+            this.bottomScanBin = state.MinTemplateFreq;
             this.scoreThreshold = state.ZScoreThreshold;
 
             this.sonogramType = state.SonogramType;
@@ -84,8 +84,8 @@ namespace AudioStuff
             this.maxFreq = state.FreqBand_Max;
             this.recordingLength = state.TimeDuration;
             this.addGrid = state.AddGrid;
-            this.topScanBin = state.TopScanBin;       //only used when scanning with a template
-            this.bottomScanBin = state.BottomScanBin;
+            this.topScanBin = state.MaxTemplateFreq;       //only used when scanning with a template
+            this.bottomScanBin = state.MinTemplateFreq;
             this.scoreThreshold = state.ZScoreThreshold;
 
             this.sonogramType = sonogramType;
