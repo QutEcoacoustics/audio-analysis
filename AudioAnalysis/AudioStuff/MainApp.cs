@@ -35,8 +35,8 @@ namespace AudioStuff
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
-            Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.CreateTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -53,8 +53,8 @@ namespace AudioStuff
             //training file
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2

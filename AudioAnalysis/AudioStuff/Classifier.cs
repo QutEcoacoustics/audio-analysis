@@ -41,6 +41,10 @@ namespace AudioStuff
         public int WavTimeSlot { get; set; }
 
 
+        private double[] decibels; //band energy per frame
+        private double decibelThreshold;
+
+
         private double recordingLength; //total length in seconds of sonogram
         public double RecordingLength { get { return recordingLength; } set { recordingLength = value; } }
         public double SignalMax { get; set; }//max amplitude in original wav signal
@@ -119,10 +123,10 @@ namespace AudioStuff
         /// CONSTRUCTOR 1
         /// </summary>
         /// <param name="speciesID"></param>
-        public Classifier(Template t)
-        {
-            TransferDataFromTemplate(t);
-        }
+        //public Classifier(Template t)
+        //{
+        //    TransferDataFromTemplate(t);
+        //}
 
         /// <summary>
         /// CONSTRUCTOR 2
@@ -131,15 +135,19 @@ namespace AudioStuff
         /// <param name="s"></param>
         public Classifier(Template t, Sonogram s)
         {
-            TransferDataFromTemplate(t);
+            GetDataFromTemplate(t);
+            GetDataFromSonogram(s);
             //Scan(s, this.scanType); //scanType refers to use of cross-correlation with matrix template
             Scan(s); //scan using the new mfcc acoustic feature vector
         }//end ScanSonogram 
 
-
-        public void TransferDataFromTemplate(Template t)
+        /// <summary>
+        /// transfers data from the template to the classifier
+        /// </summary>
+        /// <param name="t"></param>
+        public void GetDataFromTemplate(Template t)
         {
-            //get data from the template
+            if (t.TemplateState == null) throw new Exception("TemplateState == null in Classifier.GetDataFromTemplate()");
             this.TemplateID = t.CallID;
             this.TemplateName = t.TemplateState.CallName;
             this.TemplateComment = t.TemplateState.CallComment;
@@ -147,7 +155,6 @@ namespace AudioStuff
             this.TemplateV = t.FeatureVector; //NEW method with mfccs
             this.MidTemplateFreq = t.TemplateState.MidTemplateFreq;
 
-            if (t.TemplateState == null) throw new Exception("TemplateState == null in method TransferDataFromTemplate()");
             this.recordingLength = t.TemplateState.TimeDuration;
             this.maxFreq         = t.TemplateState.NyquistFreq;
             //this.sampleRate      = t.TemplateState.SampleRate;
@@ -156,20 +163,20 @@ namespace AudioStuff
         }
 
 
-        public void ExchangeData(Sonogram s)
+        public void GetDataFromSonogram(Sonogram s)
         {
+            if (s.State == null) throw new Exception("Sonogram State == null in Classifier.GetDataFromSonogram()");
+
             //calculate ranges of templates etc
             //int tWidth = templateM.GetLength(0);
             //int tHeight = templateM.GetLength(1);
-            double[,] sonogram = s.CepstralM;
+            //double[,] sonogram = s.CepstralM;
             //int sWidth = sonogram.GetLength(0);
-            int sHeight = sonogram.GetLength(1);
-
+            //int sHeight = sonogram.GetLength(1);
             //this.fBinWidth = this.maxFreq / (double)sHeight;
             //this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
             //this.topScanBin = this.midScanBin - (tHeight / 2);
             //this.bottomScanBin = this.topScanBin + tHeight - 1;
-
             //transfer scan track info to the sonogram for later use in producing images
             //s.State.MaxTemplateFreq = this.topScanBin;
             //s.State.MidTemplateFreq = this.midScanBin;
@@ -190,13 +197,14 @@ namespace AudioStuff
             this.zScoreThreshold = s.State.ZScoreThreshold;
             this.spectraPerSecond = s.State.FrameCount / (double)s.State.TimeDuration;
             this.frameOffset = s.State.FrameOffset;
-            //Classifier.FreqBandCount = s.State.kHzBandCount;
+
+            this.decibels = s.Decibels;
+            this.decibelThreshold = s.State.SegmentationThreshold_k2;
         }
 
 
         public void Scan(Sonogram s, int scanType)
         {
-            ExchangeData(s);
             double[,] m = DataTools.normalise(s.SpectralM);
             double[] scores;
             double noiseAv;
@@ -236,13 +244,12 @@ namespace AudioStuff
         public void Scan(Sonogram s)
         {
             Console.WriteLine("Scan(Sonogram s)");
-            ExchangeData(s);
             double[,] m = s.AcousticM;
             double[] scores;
             double noiseAv;
             double noiseSd;
 
-            scores = Scan_CrossCorrelation(m, 2);
+            scores = Scan_CrossCorrelation(m, this.decibels, this.decibelThreshold);
             NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
 
             ProcessScores(scores, noiseAv, noiseSd);
@@ -387,21 +394,16 @@ namespace AudioStuff
             return scores;
         }
 
-        public double[] Scan_CrossCorrelation(double[,] acousticM, int X)
+        public double[] Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)
         {
-            Console.WriteLine("Scan_CrossCorrelation(double[,] acousticM, int X)");
+            Console.WriteLine("Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)");
             //calculate ranges of templates etc
             int tLength = this.TemplateV.Length;
             int sWidth  = acousticM.GetLength(0);
             int sHeight = acousticM.GetLength(1);
             if (tLength != sHeight) throw new Exception("WARNING!! Template Length != height of acoustic matrix. " + tLength + " != " + sHeight);
 
-            //this.fBinWidth = this.maxFreq / (double)sHeight;
-            //this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            //this.bottomScanBin = this.midScanBin - (tHeight / 2);
-            //this.topScanBin = this.topScanBin + tHeight - 1;
 
-            int edge = 4;
 
             //normalise template to difference from mean
             double[] template = DataTools.DiffFromMean(this.TemplateV);
@@ -409,19 +411,32 @@ namespace AudioStuff
 
             double[] scores = new double[sWidth];
             double avScore = 0.0;
+            //double minScore = Double.MaxValue;
+            //double dummyValue = -9999.9999;
+            //int    count = 0;
             for (int r = 0; r < sWidth; r++)//scan over sonogram
             {
+                //if (decibels[r] < decibelThreshold) //skip frames with low energy and mark for later
+                //{
+                //    scores[r] = dummyValue;
+                //    continue;
+                //}
+                //count++;
                 double[] aV = DataTools.GetRow(acousticM, r);
                 aV = DataTools.DiffFromMean(aV);
                 double ccc = DataTools.DotProduct(template, aV);  //cross-correlation coeff
                 scores[r] = ccc;
                 avScore += ccc;
+                //if (ccc < minScore) minScore = ccc;
                 //Console.WriteLine("score["+ r + "]=" + ccc);
             }//end of loop over sonogram
 
-
+            // replace dummy values by the minimum
+            //for (int r = 0; r < sWidth; r++) if(scores[r] == dummyValue) scores[r] = minScore;
             //fix up edge effects by making the first and last scores = the average score
+            //avScore /= count;
             avScore /= sWidth;
+            int edge = 4;
             for (int x = 0; x < edge; x++) scores[x] = avScore;
             for (int x = (sWidth - edge - 1); x < sWidth; x++) scores[x] = avScore;
 

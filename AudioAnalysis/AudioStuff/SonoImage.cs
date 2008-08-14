@@ -132,7 +132,8 @@ namespace AudioStuff
             this.addGrid = false;
             int fVLength = featureVector.Length;
             int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
-            int rowWidth = 2;
+            int rowWidth = 15;
+            this.sonogramType = SonogramType.acousticVectors;
 
             //create a matrix of the required image
             double[,] M = new double[rowWidth*3,avLength];
@@ -157,6 +158,7 @@ namespace AudioStuff
             int width   = matrix.GetLength(0); //number of spectra in sonogram
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
+            //Console.WriteLine("sonogramType=" + this.sonogramType);
             int binHt = 1; // 1 pixel per freq bin
             if (this.sonogramType == SonogramType.cepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
             else
