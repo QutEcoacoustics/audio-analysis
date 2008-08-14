@@ -106,44 +106,48 @@ namespace TowseyLib
         /// <param name="frames"></param>
         /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
-        /// <param name="doSpectralEnergy">indicates whether values are signal smaples or FFT samples</param>
+        /// <param name="doSpectralEnergy">indicates whether values are signal samples or FFT samples</param>
         /// <returns></returns>
-        public static double[] SignalEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy, bool doSpectralEnergy)
+        public static double[] SignalLogEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy, bool doSpectralEnergy)
         {
-            //double minLogEnergy = -5.0; //defined in header of Sonogram class
+            //double minLogEnergy is defined in header of Sonogram class
             //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
 
             int frameCount = frames.GetLength(0);
             int N = frames.GetLength(1);
-            double[] energy = new double[frameCount];
+            double[] logEnergy = new double[frameCount];
             for (int i = 0; i < frameCount; i++) //foreach frame
             {
                 double sum = 0.0;
                 for (int j = 0; j < N; j++)  //foreach sample in frame
                 {
-                    sum += (frames[i, j] * frames[i, j]); //sum the energy
+                    sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
                 }
-                if (doSpectralEnergy) sum *= 2;
+                if (doSpectralEnergy) sum *= 2; // because spectrum is symmetrical
                 double e = sum / (double)N; //normalise to frame size
-                if (e <= 0.0)
-                {
-                    System.Console.WriteLine("Warning!!! Energy < zero =" + e);
-                    energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
-                    continue;
-                }
-                double logEnergy = Math.Log10(e);
-                //calculate normalised energy of frame 
-                if (logEnergy < minLogEnergy) energy[i] = minLogEnergy - maxLogEnergy;
-                else energy[i] = logEnergy - maxLogEnergy;
+                //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
+
+                //if (e <= 0.0) //this should never happen
+                //{
+                //    System.Console.WriteLine("Warning!!! Energy < zero =" + e);
+                //    energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
+                //    continue;
+                //}
+                double logE = Math.Log10(e);
+
+                //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
+                if (logE < minLogEnergy) logEnergy[i] = minLogEnergy - maxLogEnergy;
+                else logEnergy[i] = logE - maxLogEnergy;
+                //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
             }
 
-            //normalise to relative energy value i.e. max in the signal
+            //normalise to RELATIVE energy value i.e. max in the current frame
             //double maxEnergy = energy[DataTools.getMaxIndex()];
             //for (int i = 0; i < frameCount; i++) //foreach time step
             //{
             //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
             //}
-            return energy;
+            return logEnergy;
         }
 
 
@@ -230,6 +234,7 @@ namespace TowseyLib
         /// algorithm described in Lamel et al, 1981.
         /// NOTE: noiseThreshold is passed as decibels
         /// energy array is log energy ie not yet converted to decibels.
+        /// Return energy converted to decibels i.e. multiply by 10.
         /// </summary>
         /// <param name="logEnergy"></param>
         /// <param name="min_dB"></param>
@@ -237,29 +242,40 @@ namespace TowseyLib
         /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, double min_dB, double max_dB, double noiseThreshold_dB, out double Q)
+        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double noiseThreshold_dB, out double Q)
         {
+            double min;
+            double max;
+            DataTools.MinMax(logEnergy, out min, out max);
+            min_dB = min * 10;  //multiply by 10 to convert to decibels
+            max_dB = max * 10;
+
             int binCount = 100;
             double binWidth = noiseThreshold_dB / binCount;
             int[] histo = new int[binCount];
             int L = logEnergy.Length;
+            double absThreshold = min_dB + noiseThreshold_dB;
 
             for (int i = 0; i < L; i++)
             {
                 double dB = 10 * logEnergy[i];
-                if (dB <= noiseThreshold_dB)
+                if (dB <= absThreshold)
                 {
                     int id = (int)((dB - min_dB) / binWidth);
-                    if (id >= binCount) id = binCount - 1;
+                    if (id >= binCount)
+                    {
+                        id = binCount - 1;
+                    }
                     histo[id]++;    
                 }
             }
             double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
+            //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
             int peakID = DataTools.GetMaxIndex(smoothHisto);
-            Q = min_dB + (peakID * binWidth);
-
+            Q = min_dB + ((peakID+1) * binWidth); //modal noise level
+            
             // subtract noise energy` and return relative energy as decibel values.
             double[] en = new double[L];
             for (int i = 0; i < L; i++) en[i] = (logEnergy[i]*10) - Q;

@@ -21,7 +21,7 @@ namespace AudioStuff
     public sealed class SonoImage
     {
 
-        public const double zScoreMax = 8.0; //max SDs shown in score track of image
+        public const double zScoreMax = 5.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
         public const int    trackHt   = 50;   //pixel height of the score tracks
 
@@ -37,6 +37,7 @@ namespace AudioStuff
         private int bottomScanBin; //bottom Scan Bin
 
         private SonogramType sonogramType;
+        private bool doMelScale;
         private TrackType trackType;
 
         private double[] decibels;
@@ -64,6 +65,7 @@ namespace AudioStuff
             this.scoreThreshold = state.ZScoreThreshold;
 
             this.sonogramType = state.SonogramType;
+            this.doMelScale = state.DoMelScale;
             this.trackType = trackType;
 
             this.decibels = sonogram.Decibels;
@@ -125,6 +127,30 @@ namespace AudioStuff
             return CreateBitmap(matrix, null);
         }
 
+        public Bitmap CreateBitMapOfTemplate(double[] featureVector)
+        {
+            this.addGrid = false;
+            int fVLength = featureVector.Length;
+            int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
+            int rowWidth = 2;
+
+            //create a matrix of the required image
+            double[,] M = new double[rowWidth*3,avLength];
+            for (int r = 0; r < rowWidth; r++)
+            {
+                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[c];
+            }
+            for (int r = rowWidth; r < 2*rowWidth; r++)
+            {
+                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[avLength+c];
+            }
+            for (int r = (2*rowWidth); r < (3*rowWidth); r++)
+            {
+                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[(2 * avLength)+c];
+            }
+
+            return CreateBitmap(M, null);
+        }
 
         public Bitmap CreateBitmap(double[,] matrix, double[] dataArray)
         {
@@ -132,13 +158,14 @@ namespace AudioStuff
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
             int binHt = 1; // 1 pixel per freq bin
-            if (this.sonogramType == SonogramType.linearCepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
-            if (this.sonogramType == SonogramType.melCepstral)    binHt = 256 / sHeight; //several pixels per cepstral coefficient
+            if (this.sonogramType == SonogramType.cepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
+            else
+            if (this.sonogramType == SonogramType.acousticVectors) binHt = 256 / sHeight; //several pixels per cepstral coefficient
 
             int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
             double hzBin  = NyquistF / (double)sHeight;
 
-            if (this.sonogramType == SonogramType.melScale) //do mel scale conversions
+            if (this.doMelScale) //do mel scale conversions
             {
                 double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
                 double topMel = Speech.Mel(this.topScanBin * hzBin);
@@ -428,9 +455,10 @@ namespace AudioStuff
 
         public Bitmap Add1kHzLines(Bitmap bmp)
         {
-            if (this.sonogramType == SonogramType.melCepstral) return bmp; //do not add to cepstral image
-            if (this.sonogramType == SonogramType.linearCepstral) return bmp; //do not add to cepstral image
-
+            if (this.sonogramType == SonogramType.cepstral) return bmp; //do not add to cepstral image
+            else
+            if (this.sonogramType == SonogramType.acousticVectors) return bmp; //do not add to cepstral image
+ 
             const int kHz = 1000;
             int width  = bmp.Width;
             int height = bmp.Height;
@@ -441,7 +469,7 @@ namespace AudioStuff
             if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
 
             int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
-            if (this.sonogramType == SonogramType.melScale) vScale = CreateMelYaxis(kHz, sHeight); 
+            if (this.doMelScale) vScale = CreateMelYaxis(kHz, sHeight); 
 
             Color c = Color.LightGray;
             for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
@@ -533,7 +561,7 @@ namespace AudioStuff
             if (y2 >= height) y2 = height - 1;
             for (int x = 0; x < width; x++)
             {
-                bmp.SetPixel(x, y1, Color.Pink);
+                bmp.SetPixel(x, y1, Color.Orange);
                 bmp.SetPixel(x, y2, Color.Lime);
 
                 //put state as top four pixels
