@@ -123,6 +123,26 @@ namespace TowseyLib
             WriteTextFile(fPath, list);
         }// end Append2TextFile()
 
+        /// <summary>
+        /// reads a file of doubles assuming one value per line with no punctuation
+        /// </summary>
+        /// <param name="fName"></param>
+        /// <returns></returns>
+        public static double[] ReadDoubles2Vector(string fName)
+        {
+            ArrayList lines = ReadTextFile(fName);
+            int count = lines.Count;
+
+            double[] V = new double[count];
+            for (int i = 0; i < count; i++)
+            {
+                double value = Double.Parse((string)lines[i]);
+                //Console.WriteLine("i=" + i + lines[i] + " " + value);
+                V[i] = value;
+            }
+
+            return V;
+        }
 
         public static double[,] ReadDoubles2Matrix(string fName)
         {

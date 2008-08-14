@@ -20,15 +20,14 @@ namespace AudioStuff
     /// 
     public class Template
     {
+        private const string modelStemName = "model";
         private const string templateStemName = "template";
-        private const string callStemName = "call";
+        private const string templateFExt = ".txt";
 
         public int CallID { get; set; }
         public bool DoMelConversion { get; set; }
         private SonoConfig templateState;
         public  SonoConfig TemplateState { get { return templateState; } set { templateState = value; } }
-        //private SonoConfig sonogramState;
-        //public  SonoConfig SonogramState { get { return sonogramState; } set { sonogramState = value; } }
         private Sonogram   sonogram;
         public  Sonogram   Sonogram { get { return sonogram; } set { sonogram = value; } }
 
@@ -88,6 +87,8 @@ namespace AudioStuff
         public double NoiseAv { get { return this.templateState.NoiseAv; } }
         public double NoiseSD { get { return this.templateState.NoiseSd; } }
 
+        private bool verbose = false;
+
 
 
 
@@ -96,12 +97,26 @@ namespace AudioStuff
         /// Use this constructor to read an existing template file
         /// </summary>
         /// <param name="callID"></param>
-        public Template(string iniFPath, int callID)
+        public Template(string iniFPath, int id)
         {
             this.templateState = new SonoConfig();
             this.templateState.ReadConfig(iniFPath);//read the ini file for default parameters
 
-            this.CallID = callID;
+            if (this.templateState.Verbosity > 0) this.verbose = true;
+            this.templateDir = this.templateState.TemplateDir;
+
+            this.CallID = id;
+
+            string templatePath = this.templateDir+templateStemName + "_"+id+templateFExt;
+            if (this.verbose) Console.WriteLine("\n#####  READING TEMPLATE: FILE NAME=" + templatePath);
+            int status = ReadTemplateFile(templatePath, this.templateState);//read the template configuration file
+
+
+
+            string modelPath = this.templateDir + modelStemName + "_" + id + templateFExt;
+            if (this.verbose) Console.WriteLine("\n#####  READING MODEL: FILE NAME=" + modelPath);
+            this.featureVector = FileTools.ReadDoubles2Vector(modelPath);
+            //DataTools.writeArray(this.featureVector);
         }
 
 
@@ -125,9 +140,9 @@ namespace AudioStuff
             this.templateState.SourceFStem = sourceFileStem;
             this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
-            this.dataFName   = this.templateState.TemplateDir + Template.callStemName + "_" + callID + ".txt";
-            this.matrixFName = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
-            this.imageFName  = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".bmp";
+            this.dataFName   = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
+            this.matrixFName = this.templateState.TemplateDir + Template.modelStemName + "_" + callID + ".txt";
+            this.imageFName  = this.templateState.TemplateDir + Template.modelStemName + "_" + callID + ".bmp";
             //Console.WriteLine("dataFName=" + dataFName);
         }
 
@@ -273,9 +288,9 @@ namespace AudioStuff
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#");
             data.Add("#TEMPLATE DATA");
-            data.Add("CALL_ID=" + this.templateState.CallID);
+            data.Add("TEMPLATE_ID=" + this.templateState.CallID);
             data.Add("CALL_NAME=" + this.templateState.CallName);
-            data.Add("CALL_COMMENT=" + this.templateState.CallComment);
+            data.Add("COMMENT=" + this.templateState.CallComment);
             data.Add("THIS_FILE=" + this.dataFName);
 
             data.Add("#");
@@ -298,7 +313,7 @@ namespace AudioStuff
             data.Add("WINDOW_FUNCTION=" + this.templateState.WindowFncName);
             data.Add("NYQUIST_FREQ=" + this.templateState.NyquistFreq);
             data.Add("NUMBER_OF_FREQ_BINS=" + this.templateState.FreqBinCount);
-            data.Add("FREQ_BIN_WIDTH=" + this.templateState.FBinWidth.ToString("F2") + "hz");
+            data.Add("FREQ_BIN_WIDTH=" + this.templateState.FBinWidth.ToString("F2"));
             //data.Add("MIN_POWER=" + this.sonogram.State.PowerMin.ToString("F3"));
             //data.Add("AVG_POWER=" + this.sonogram.State.PowerAvg.ToString("F3"));
             //data.Add("MAX_POWER=" + this.sonogram.State.PowerMax.ToString("F3"));
@@ -308,7 +323,7 @@ namespace AudioStuff
 
             data.Add("#");
             data.Add("#INFO ABOUT TEMPLATE");
-            data.Add("TEMPLATE_VECTOR_FILE=" + matrixFName);
+            data.Add("MODEL_FILE=" + this.matrixFName);
             data.Add("MIN_FREQ=" + this.templateState.MinTemplateFreq);
             data.Add("MAX_FREQ=" + this.templateState.MaxTemplateFreq);
             data.Add("MID_FREQ=" + this.templateState.MidTemplateFreq);
@@ -346,9 +361,9 @@ namespace AudioStuff
             ArrayList data = new ArrayList();
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#\n#TEMPLATE DATA");
-            data.Add("CALL_ID=" + this.templateState.CallID);
+            data.Add("TEMPLATE_ID=" + this.templateState.CallID);
             data.Add("CALL_NAME=" + this.templateState.CallName);
-            data.Add("CALL_COMMENT=" + this.templateState.CallComment);
+            data.Add("COMMENT=" + this.templateState.CallComment);
             data.Add("THIS_FILE=" + this.dataFName);
 
             data.Add("#\n#INFO ABOUT ORIGINAL .WAV FILE");
@@ -378,7 +393,7 @@ namespace AudioStuff
             //data.Add("SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
 
             data.Add("#\n#INFO ABOUT CALL TEMPLATE");
-            data.Add("TEMPLATE_MATRIX_FILE=" + matrixFName);
+            data.Add("MODEL_FILE=" + matrixFName);
             data.Add("# NOTE: Each row of the template matrix is the power spectrum for a given time step.");
             data.Add("#       That is, rows are time steps and columns are frequency bins.");
             data.Add("# IMAGE COORDINATES USED TO EXTRACT CALL");
@@ -417,40 +432,54 @@ namespace AudioStuff
 
         } // end of WriteCallData2File()
 
+        /// <summary>
+        /// reads the template configuration file and writes values into the template state.
+        /// These values over-write the default values read in the sono.ini file.
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="state"></param>
+        /// <returns></returns>
+        public int ReadTemplateFile(string path, SonoConfig state)
+        {
+            int status = 0;
+            Configuration cfg = new Props(path);
+            state.CallID = cfg.GetInt("TEMPLATE_ID");
+            state.CallName = cfg.GetString("CALL_NAME");
+            state.CallComment = cfg.GetString("COMMENT");
 
-        //public int ReadTemplateConfigFile()
-        //{
-        //    int status = 0;
-        //    Console.WriteLine("\n#####  READING TEMPLATE INFO");
-        //    Console.WriteLine("       FILE NAME=" + dataFName);
-        //    Configuration cfg = new Props(this.templateState.TemplateDir + dataFName);
-        //    this.templateState.CallName = cfg.GetString("CALL_NAME");
-        //    this.templateState.CallComment = cfg.GetString("CALL_COMMENT");
+            //the wav file
+            state.SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
+            state.TimeDuration = cfg.GetDouble("WAV_DURATION");
 
-        //    this.templateState = new TemplateConfig();
-        //    this.templateState.SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
-        //    this.templateState.NyquistFreq = cfg.GetInt("MAX_FREQ");
-        //    this.templateState.AudioDuration = cfg.GetDouble("WAV_DURATION");
-        //    this.templateState.FreqBinCount = cfg.GetInt("NUMBER_OF_FREQ_BINS");
-        //    this.templateState.SpectrumCount = cfg.GetInt("NUMBER_OF_SPECTRA");
-        //    this.templateState.SpectraPerSecond = cfg.GetDouble("SPECTRA_PER_SECOND");
+            //frame parameters
+            state.WindowSize = cfg.GetInt("FRAME_SIZE");
+            state.WindowOverlap = cfg.GetDouble("FRAME_OVERLAP"); //fractional overlap of frames
+            state.FrameCount = cfg.GetInt("NUMBER_OF_FRAMES");
+            state.FramesPerSecond = cfg.GetDouble("FRAMES_PER_SECOND");
+            state.FrameDuration = cfg.GetDouble("FRAME_DURATION_MS") / (double)1000; //convert ms to seconds
+            state.FrameOffset = cfg.GetDouble("FRAME_OFFSET") / (double)1000; //convert ms to seconds
+            
+            //about the sonogram
+            state.NyquistFreq = cfg.GetInt("NYQUIST_FREQ");
+            state.WindowFncName = cfg.GetString("WINDOW_FUNCTION");
+            state.WindowFnc = FFT.GetWindowFunction(state.WindowFncName);
+            state.FreqBinCount = cfg.GetInt("NUMBER_OF_FREQ_BINS");
+            state.FBinWidth = cfg.GetDouble("FREQ_BIN_WIDTH");
+            state.FreqBand_Min = cfg.GetInt("MIN_FREQ");
+            state.FreqBand_Mid = cfg.GetInt("MID_FREQ");
+            state.FreqBand_Max = cfg.GetInt("MAX_FREQ");
+            if ((state.FreqBand_Min > state.MinFreq) || (state.FreqBand_Max < state.NyquistFreq)) state.doFreqBandAnalysis = true;
+                
 
-        //    this.templateState.WindowSize = cfg.GetInt("FFT_WINDOW_SIZE");
-        //    this.templateState.WindowOverlap = cfg.GetDouble("FFT_WINDOW_OVERLAP");
-        //    this.templateState.WindowDuration = cfg.GetDouble("WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
-        //    this.templateState.NonOverlapDuration = cfg.GetDouble("NONOVERLAP_WINDOW_DURATION_MS") / (double)1000; //convert ms to seconds
+            //MFCC parameters
+            state.DoMelScale = cfg.GetBoolean("DO_MEL_CONVERSION");
+            state.ccCount = cfg.GetInt("CC_COUNT");
+            state.IncludeDelta = cfg.GetBoolean("INCLUDE_DELTA");
+            state.IncludeDoubleDelta = cfg.GetBoolean("INCLUDE_DOUBLEDELTA");
+            state.DeltaT = cfg.GetInt("DELTA_T");
 
-        //    this.midTemplateFreq = cfg.GetInt("TEMPLATE_MID_FREQ");
-        //    this.templateState.NoiseAv = cfg.GetDouble("NOISE_AV");
-        //    this.templateState.NoiseSd = cfg.GetDouble("NOISE_SD");
-
-//                    if (doMelConversion) this.templateState.SonogramType = SonogramType.melCepstral;
-//            else this.templateState.SonogramType = SonogramType.linearCepstral;
-
-
-
-        //    return status;
-        //} //end of ReadCallDataFile()
+            return status;
+        } //end of ReadTemplateFile()
 
 
         public void SaveDataAndImageToFile()
@@ -468,14 +497,13 @@ namespace AudioStuff
             //Console.WriteLine("template imageFName=" + this.imageFName);
         }
 
-        public int ReadTemplateFile()
+        public int ReadModelFile()
         {
-            Console.WriteLine("\n#####  READING TEMPLATE DATA");
-            Console.WriteLine("       FILE NAME=" + matrixFName);
+            Console.WriteLine("\n#####  READING MODEL DATA: FILE NAME=" + matrixFName);
             int status = 0;
-            this.matrix = FileTools.ReadDoubles2Matrix(TemplateDir + matrixFName); ;
+            this.matrix = FileTools.ReadDoubles2Matrix(TemplateDir + matrixFName);
             return status;
-        } //end of ReadTemplateFile()
+        } //end of ReadModelFile()
         
 
         public void SaveImage()

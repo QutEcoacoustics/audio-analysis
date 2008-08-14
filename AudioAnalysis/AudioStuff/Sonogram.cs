@@ -956,7 +956,8 @@ namespace AudioStuff
         public int freqBand_Min = -1000;              //min of the freq band to be analysed  
         public int FreqBand_Min { get { return freqBand_Min; } set { freqBand_Min = value;} }   
         public int freqBand_Max = -1000;              //max of the freq band to be analysed
-        public int FreqBand_Max { get { return freqBand_Max; } set { freqBand_Max = value; } } 
+        public int FreqBand_Max { get { return freqBand_Max; } set { freqBand_Max = value; } }
+        public int FreqBand_Mid { get; set; }
         public bool   doFreqBandAnalysis = false;
         public double PowerMin { get; set; }                //min power in sonogram
         public double PowerAvg { get; set; }                //average power in sonogram
