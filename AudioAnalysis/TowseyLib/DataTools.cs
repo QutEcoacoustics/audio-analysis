@@ -731,6 +731,33 @@ namespace TowseyLib
             return ret;
         }
 
+        /// <summary>
+        /// shift values by their mean.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[] DiffFromMean(double[] V)
+        {
+            int L = V.Length;
+            double av; double sd;
+            NormalDist.AverageAndSD(V, out av, out sd);
+
+            double[] returnV = new double[L];
+
+            for (int i = 0; i < L; i++) returnV[i] = V[i] - av;
+
+            return returnV;
+        }
+
+        public static double DotProduct(double[] v1, double[] v2)
+        {
+            //assume v1 and v2 have same dimensions
+            int L = v1.Length;
+            double sum = 0.0;
+            for (int i = 0; i < L; i++) sum += (v1[i] * v2[i]);
+            return sum;
+        }
+
 
         public static double DotProduct(double[,] m1, double[,] m2)
         {

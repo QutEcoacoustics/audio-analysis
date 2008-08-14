@@ -34,8 +34,8 @@ namespace AudioStuff
             //Mode userMode = Mode.ArtificialSignal;
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
-            Mode userMode = Mode.CreateTemplate;
-            //Mode userMode = Mode.CreateTemplateAndScan;
+            //Mode userMode = Mode.CreateTemplate;
+            Mode userMode = Mode.CreateTemplateAndScan;
             //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
@@ -102,6 +102,7 @@ namespace AudioStuff
             string callName = "Lewin's Rail Kek-kek";
             string callComment = "Template consists of a single KEK!";
             int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            //int[] timeIndices = { 1784 };
             string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
             //int sampleRate; //to be determined
             int frameSize = 512;
@@ -112,7 +113,7 @@ namespace AudioStuff
             //backgroundFilter= //noise reduction??
             int filterBankCount = 64;
             bool doMelConversion = true;
-            int ceptralCoeffCount = 13;
+            int ceptralCoeffCount = 12;
             int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
             bool includeDeltaFeatures = true;
             bool includeDoubleDeltaFeatures = true;
@@ -147,8 +148,8 @@ namespace AudioStuff
             //int x1 = 663; int y1 = 284; //image coordinates
             //int x2 = 682; int y2 = 431;
             //************** END OF USER PARAMETERS ***************************
-            
-            
+
+            Console.WriteLine("DATE AND TIME:"+DateTime.Now);
             
             Sonogram s;
 
@@ -167,7 +168,7 @@ namespace AudioStuff
                         s = new Sonogram(iniFPath, sigName, signal, sigSampleRate);
                         s.SetVerbose(1);
                         //double[,] m = s.Matrix;
-                        double[,] m = s.Specgram;
+                        double[,] m = s.SpectralM;
 
                         s.SaveImage(m, null);
                     }
@@ -183,8 +184,10 @@ namespace AudioStuff
                     try
                     {
                         s = new Sonogram(iniFPath, wavPath);
-                        //double[,] m = s.Matrix;
-                        double[,] m = s.Specgram;
+                        //double[,] m = s.AmplitudM;
+                        //double[,] m = s.SpectralM;
+                        //double[,] m = s.CepstralM;
+                        double[,] m = s.AcousticM;
 
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
                         //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines
@@ -207,7 +210,7 @@ namespace AudioStuff
                         s = new Sonogram(iniFPath, wavPath);
                         //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
 
-                        double[,] m = s.Matrix;
+                        double[,] m = s.AmplitudM;
                         m = ImageTools.NoiseReduction(m);
 
                         //extract syllables from sonogram and calculate their distribution
@@ -270,16 +273,19 @@ namespace AudioStuff
                     {
                         Console.WriteLine("\nCREATING TEMPLATE");
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
-                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, 
-                                                   dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
                         t.ExtractTemplateFromSonogram(timeIndices);
                         t.WriteInfo2STDOUT();        //writes to System.Console.
+                        //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);
 
-                        Console.WriteLine("CREATING CLASSIFIER");
+                        Console.WriteLine("\nCREATING CLASSIFIER");
                         Classifier cl = new Classifier(t, t.Sonogram);
-                        double[,] m = t.Sonogram.Specgram;
+                        //double[,] m = t.Sonogram.Matrix;
+                        double[,] m = t.Sonogram.SpectralM;
+                        //double[,] m = t.Sonogram.AcousticM;
+
                         t.Sonogram.SaveImage(m, cl.Zscores);
                         cl.WriteResults();//writes to System.Console.
                     }
@@ -300,11 +306,13 @@ namespace AudioStuff
                         
                         s = new Sonogram(iniFPath, wavPath);
 
+                        Console.WriteLine("\nCREATING CLASSIFIER");
                         Classifier cl = new Classifier(t, s);
-                        s.SaveImage(s.Specgram, cl.Zscores);
-                        //cl.WriteResults();
+                        s.SaveImage(s.SpectralM, cl.Zscores);
+                        cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
-                        Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
+                        Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod);
+                        Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
                         Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
                         Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation+" sec");
                     }
@@ -320,7 +328,7 @@ namespace AudioStuff
                     FileInfo[] files = d.GetFiles("*" + wavFExt);
                     ArrayList array = new ArrayList();
                     array.Add(Classifier.ResultsHeader());
-                    SonogramType sonogramType = SonogramType.linearScale; //image is linear freq scale
+                    SonogramType sonogramType = SonogramType.spectral; //image is linear freq scale
 
                     try
                     {
@@ -338,9 +346,9 @@ namespace AudioStuff
                                     Classifier cl = new Classifier(t, s);
                                     s.SaveImage(opDirName, cl.Zscores, sonogramType);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
-                                    Console.WriteLine("# Periodic Hits =" + cl.Results.PeriodicHits);
+                                    Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod);
+                                    Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
                                     Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
-                                    Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
                                     Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
                                 }
                                 catch (Exception e)
@@ -380,9 +388,7 @@ namespace AudioStuff
                             Console.WriteLine("##### " + (count++) + " File=" + fName);
                             wavPath = testDirName + "\\" + fName;
                             s = new Sonogram(iniFPath, wavPath);
-                            double[,] m = s.Matrix;
-                            m = s.MelSonogram(m);
-                            m = ImageTools.NoiseReduction(m);
+                            double[,] m = s.SpectralM;
 
                             //extract syllables from sonogram and calculate their distribution
                             Color col = Color.Black;

@@ -511,8 +511,100 @@ namespace TowseyLib
         }
 
 
-        public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
+
+        //********************************************************************************************************************
+        //********************************************************************************************************************
+        //********************************************************************************************************************
+        //*********************************************** GET ACOUSTIC VECTORS
+
+        /// <summary>
+        /// normalise the energy values using the passed reference decibel levels
+        /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
+        /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
+        /// </summary>
+        /// <param name="energy"></param>
+        /// <param name="minDecibels">this parameter not used</param>
+        /// <param name="maxDecibels"></param>
+        /// <returns></returns>
+        public static double[] NormaliseEnergyArray(double[] energy, double minDecibels, double maxDecibels)
         {
+            //normalise energy between 0.0 decibels and max decibels.
+            int L = energy.Length;
+            double[] E = new double[L];
+            //double range = maxDecibels - minDecibels;
+            double range = maxDecibels;
+            //Console.WriteLine(" minDecibels=" + minDecibels + " maxDecibels=" + maxDecibels + " range=" + range);
+            for (int i = 0; i < L; i++)
+            {
+                E[i] = energy[i]; 
+                if (E[i] < 0.0) E[i] = 0.0;
+//                E[i] = (energy[i] - minDecibels) / range;
+                E[i] = energy[i] / range;
+                if (E[i] > 1.0) E[i] = 1.0;
+            }
+            //DataTools.WriteMinMaxOfArray(E);
+            return E;
+        }
+
+        public static double[,] AcousticVectors(double[,] mfcc, double[] energy, bool includeDelta, bool includeDoubleDelta)
+        {
+
+            int frameCount = mfcc.GetLength(0); //number of frames
+            int mfccCount  = mfcc.GetLength(1); //number of MFCCs
+            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int dim = coeffcount; //
+            if (includeDelta) dim += coeffcount;
+            if (includeDoubleDelta) dim += coeffcount;
+            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+
+            double[,] acousticM = new double[frameCount, dim];
+            for (int t = 0; t < frameCount; t++) //for all spectra or time steps
+            {
+                double[] fv = GetFeatureVector(energy, mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+                for (int i = 0; i < dim; i++) acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
+            }
+            return acousticM;
+        } //AcousticVectors()
+
+
+        //public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
+        //{
+        //    int frameCount = M.GetLength(0); //number of frames
+        //    int mfccCount = M.GetLength(1); //number of MFCCs
+        //    int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+        //    int dim = coeffcount; //
+        //    if (includeDelta) dim += coeffcount;
+        //    if (includeDoubleDelta) dim += coeffcount;
+        //    double[] fv = new double[dim];
+        //    return fv;
+        //}
+
+        /// <summary>
+        /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients
+        /// </summary>
+        /// <param name="cepstralM"></param>
+        /// <param name="timeID"></param>
+        /// <returns></returns>
+        public static double[] GetAcousticVector(double[,] cepstralM, int timeID, int deltaT)
+        {
+            int frameCount = cepstralM.GetLength(0); //number of frames
+            int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
+            int featureCount = coeffcount * 3;
+            //Console.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
+
+            double[] fv = new double[featureCount];
+
+            for (int i = 0; i < coeffcount; i++) fv[i] = cepstralM[timeID - deltaT, i];
+            for (int i = 0; i < coeffcount; i++) fv[coeffcount+i] = cepstralM[timeID, i];
+            for (int i = 0; i < coeffcount; i++) fv[coeffcount + coeffcount+ i] = cepstralM[timeID + deltaT, i];
+
+            return fv;
+        }
+
+
+        public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
+        {
+            int frameCount = M.GetLength(0); //number of frames
             int mfccCount = M.GetLength(1); //number of MFCCs
             int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
             int dim = coeffcount; //
@@ -520,25 +612,63 @@ namespace TowseyLib
             if (includeDoubleDelta) dim += coeffcount;
             //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
 
+            //add in the CEPSTRAL coefficients
             double[] fv = new double[dim];
             fv[0] = E[timeID];
             for (int i = 0; i < mfccCount; i++) fv[1 + i] = M[timeID, i];
+
+            //add in the DELTA coefficients
             int offset = coeffcount;
             if (includeDelta)
             {
-                fv[offset] = E[timeID];
-                for (int i = 0; i < mfccCount; i++) fv[1 + offset + i] = M[timeID, i];
+                if (((timeID + 1) >= frameCount) || ((timeID - 1) < 0)) //deal with edge effects
+                {
+                    for (int i = offset; i < dim; i++) fv[i] = 0.5;
+                    return fv;
+                }
+                fv[offset] = E[timeID + 1] - E[timeID - 1];
+                for (int i = 0; i < mfccCount; i++)
+                {
+                    fv[1 + offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
+                }
+                for (int i = offset; i < offset + mfccCount + 1; i++)
+                {
+                    fv[i] = (fv[i] + 1) / 2;//normalise values that potentially range from -1 to +1
+                    //if (fv[i] < 0) Console.WriteLine("fv[i]="+fv[i]);
+                    //if (fv[i] > 1.0) Console.WriteLine("fv[i]=" + fv[i]);
+                    if (fv[i] < 0.0) fv[i] = 0.0;
+                    if (fv[i] > 1.0) fv[i] = 1.0;
+                }
             }
-            offset += coeffcount;
+
+            //add in the DOUBLE DELTA coefficients
             if (includeDoubleDelta)
             {
-                fv[offset] = E[timeID];
-                for (int i = 0; i < mfccCount; i++) fv[1 + offset + i] = M[timeID, i];
+                offset += coeffcount;
+                //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+                if (((timeID + 2) >= frameCount) || ((timeID - 2) < 0)) //deal with edge effects
+                {
+                    for (int i = offset; i < dim; i++) fv[i] = 0.5;
+                    return fv;
+                }
+                fv[offset] = (E[timeID + 2] - E[timeID]) - (E[timeID] - E[timeID - 2]);
+                //Console.WriteLine("fv[offset]=" + fv[offset]);
+                for (int i = 0; i < mfccCount; i++)
+                {
+                    fv[1 + offset + i] = (M[timeID + 2, i] - M[timeID, i]) - (M[timeID, i] - M[timeID - 2, i]);
+                }
+                for (int i = offset; i < offset + mfccCount + 1; i++)
+                {
+                    fv[i] = (fv[i] + 2) / 4;//normalise values that potentially range from -2 to +2
+                    //if (fv[i] < 0) Console.WriteLine("fv[i]="+fv[i]);
+                    //if (fv[i] > 1.0) Console.WriteLine("fv[i]=" + fv[i]);
+                    if (fv[i] < 0.0) fv[i] = 0.0;
+                    if (fv[i] > 1.0) fv[i] = 1.0;
+                }
             }
 
             return fv;
         }
-
 
 
 

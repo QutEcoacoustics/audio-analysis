@@ -62,12 +62,7 @@ namespace AudioStuff
         //info about NEW TEMPLATE EXTRACTION
         private int[] timeIndices;
         private double[] featureVector;
-        public  double[] FeatureVector { get { return featureVector; } }
-
-
-        //info about TEMPLATE SCORING
-        public double NoiseAv { get { return this.templateState.NoiseAv; } }
-        public double NoiseSD { get { return this.templateState.NoiseSd; } }
+        public double[] FeatureVector { get { return featureVector; } }
 
         
         //THE TEMPLATE MATRIX
@@ -89,6 +84,10 @@ namespace AudioStuff
             }
         }
 
+        //info about TEMPLATE SCORING
+        public double NoiseAv { get { return this.templateState.NoiseAv; } }
+        public double NoiseSD { get { return this.templateState.NoiseSd; } }
+
 
 
 
@@ -105,23 +104,16 @@ namespace AudioStuff
             this.CallID = callID;
         }
 
-         
+
         /// <summary>
         /// CONSTRUCTOR 2
-        /// Creates a new call template using info provided
+        /// Use this constructor to create a new template
         /// </summary>
+        /// <param name="iniFPath"></param>
         /// <param name="callID"></param>
         /// <param name="callName"></param>
         /// <param name="callComment"></param>
-        //public Template(int callID, string callName, string callComment)
-        //{
-        //    this.callID = callID;
-        //    this.callName = callName;
-        //    this.callComment = callComment;
-        //    this.templateState = new TemplateConfig();
-        //}
-
-        
+        /// <param name="sourceFileStem"></param>
         public Template(string iniFPath, int callID, string callName, string callComment, string sourceFileStem)
         {
             this.templateState = new SonoConfig();
@@ -135,10 +127,24 @@ namespace AudioStuff
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
             this.dataFName   = this.templateState.TemplateDir + Template.callStemName + "_" + callID + ".txt";
             this.matrixFName = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
-            Console.WriteLine("dataFName=" + dataFName);
+            this.imageFName  = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".bmp";
+            //Console.WriteLine("dataFName=" + dataFName);
         }
 
-
+        /// <summary>
+        /// NOTE: All these parameters are set for each template. Their values override the values set in the ini file.
+        /// </summary>
+        /// <param name="frameSize"></param>
+        /// <param name="frameOverlap"></param>
+        /// <param name="minFreq"></param>
+        /// <param name="maxFreq"></param>
+        /// <param name="dynamicRange"></param>
+        /// <param name="filterBankCount"></param>
+        /// <param name="doMelConversion"></param>
+        /// <param name="ceptralCoeffCount"></param>
+        /// <param name="deltaT"></param>
+        /// <param name="includeDeltaFeatures"></param>
+        /// <param name="includeDoubleDeltaFeatures"></param>
         public void SetMfccParameters(int frameSize, double frameOverlap, int minFreq, int maxFreq, 
                                 double dynamicRange, int filterBankCount, bool doMelConversion, 
                                 int ceptralCoeffCount, int deltaT, bool includeDeltaFeatures, bool includeDoubleDeltaFeatures)
@@ -151,9 +157,8 @@ namespace AudioStuff
             this.templateState.MaxTemplateFreq = maxFreq;
             this.templateState.MidTemplateFreq = minFreq + ((maxFreq - minFreq) / 2); //Hz
 
+            this.templateState.SonogramType = SonogramType.acousticVectors; //to MAKE MATRIX OF dim 3x39 ACOUSTIC VECTORS
             this.DoMelConversion = doMelConversion;
-            if (doMelConversion) this.templateState.SonogramType = SonogramType.melCepstral;
-            else                 this.templateState.SonogramType = SonogramType.linearCepstral;
             this.templateState.DeltaT = deltaT;
             this.templateState.IncludeDelta = includeDeltaFeatures;
             this.templateState.IncludeDoubleDelta = includeDoubleDeltaFeatures;
@@ -204,13 +209,13 @@ namespace AudioStuff
         {
             //convert image coordinates to sonogram coords
             //sonogram: rows=timesteps; sonogram cols=freq bins
-            double[,] sMatrix = s.Matrix;
+            double[,] sMatrix = s.AmplitudM;
             int timeStepCount = sMatrix.GetLength(0);
             this.sonogram.State.FreqBinCount = sMatrix.GetLength(1);
             //this.spectrumCount = timeStepCount;
             //this.hzBin = this.sonogram.State.NyquistFreq / (double)this.sonogram.State.FreqBinCount;
 
-            this.Matrix = s.Matrix;
+            this.Matrix = s.AmplitudM;
             ConvertImageCoords2SonogramCoords(this.sonogram.State.FreqBinCount, imageCoords);
             this.Matrix = DataTools.Submatrix(sMatrix, this.t1, this.bin1, this.t2, this.bin2);
             DataTools.MinMax(this.Matrix, out this.minTemplatePower, out this.maxTemplatePower);
@@ -229,46 +234,30 @@ namespace AudioStuff
 
         public void ExtractTemplateFromSonogram(int[] timeIndices)
         {
+            Console.WriteLine("\nEXTRACTING TEMPLATE FROM MATRIX OF ACOUSTIC VECTORS");
             this.timeIndices = timeIndices;
-            //init Sonogram. THis also makes the sonogram.
+            //init Sonogram. SonogramType already set to make matrix of acoustic vectors
             this.sonogram = new Sonogram(this.templateState, this.templateState.SourceFPath);
+            double[,] M = this.sonogram.CepstralM;
 
-
-            //Console.WriteLine("  deltaT=" + this.templateState.DeltaT + "  doDelta=" + this.templateState.IncludeDelta + "  DoDoubleDelta=" + this.templateState.IncludeDoubleDelta);
-
-            //normalise energy between 0.0 decibels and max decibels.
-            int L = this.sonogram.Decibels.Length;
-            double[]  E = new double[L];
-            double min = this.templateState.MinDecibelReference;
-            double max = this.templateState.MaxDecibelReference;
-            double range = max - min;
-            for (int i = 0; i < L; i++) E[i] = (this.sonogram.Decibels[i] - min) / range;
-
-            //normalise the MFCC spectrogram
-            double[,] M = DataTools.normalise(this.sonogram.Specgram);
-
-            //get first acoustic vector
-            int dT = this.templateState.DeltaT; 
-            bool doD  = this.templateState.IncludeDelta; 
-            bool doDD = this.templateState.IncludeDoubleDelta;
-            double[] acousticV = Speech.GetFeatureVector(E, M, timeIndices[0], dT, doD, doDD);
-            int avL = acousticV.Length;
+            int frameCount = M.GetLength(0); //number of frames
+            int coeffcount = M.GetLength(1); //number of MFCC deltas etcs
+            int featureCount = coeffcount * 3;
             int indicesL = timeIndices.Length;
-            //Console.WriteLine(" avL=" + avL);
+            int dT = this.templateState.DeltaT;
 
-            for(int i = 1; i < indicesL; i++)
-            {
-                double[] v = Speech.GetFeatureVector(E, M, timeIndices[i], dT, doD, doDD);
-                for (int j = 0; j < avL; j++) acousticV[j] += v[j];
-            }
+            //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
+            this.featureVector = new double[featureCount]; 
 
-            //initialise feature vector for template and transfer values
-            this.featureVector = new double[avL]; 
-            //transfer average of values
-            for(int i = 0; i < avL; i++)
+
+            //accumulate the acoustic vectors from multiple frames into an averaged feature vector
+            double[] acousticV = new double[featureCount];
+            for (int i = 0; i < indicesL; i++)
             {
-                this.featureVector[i] = acousticV[i] / (double)indicesL;
+                double[] v = Speech.GetAcousticVector(M, timeIndices[i], dT); //combines  frames T-dT, T and T+dT
+                for (int j = 0; j < featureCount; j++) acousticV[j] += v[j];
             }
+            for (int i = 0; i < featureCount; i++) this.featureVector[i] = acousticV[i] / (double)indicesL; //transfer average of values
 
             //write all files
             SaveDataAndImageToFile();
@@ -282,27 +271,30 @@ namespace AudioStuff
             //write the call data to a file
             ArrayList data = new ArrayList();
             data.Add("DATE=" + DateTime.Now.ToString("u"));
-            data.Add("#\n#TEMPLATE DATA");
+            data.Add("#");
+            data.Add("#TEMPLATE DATA");
             data.Add("CALL_ID=" + this.templateState.CallID);
             data.Add("CALL_NAME=" + this.templateState.CallName);
             data.Add("CALL_COMMENT=" + this.templateState.CallComment);
             data.Add("THIS_FILE=" + this.dataFName);
 
-            data.Add("#\n#INFO ABOUT ORIGINAL .WAV FILE");
+            data.Add("#");
+            data.Add("#INFO ABOUT ORIGINAL .WAV FILE");
             data.Add("WAV_FILE_NAME=" + this.templateState.SourceFName);
             data.Add("WAV_SAMPLE_RATE=" + this.templateState.SampleRate);
             data.Add("WAV_DURATION=" + this.templateState.TimeDuration.ToString("F3"));
 
-            data.Add("#\n#INFO ABOUT FRAMES");
+            data.Add("#");
+            data.Add("#INFO ABOUT FRAMES");
             data.Add("FRAME_SIZE=" + this.templateState.WindowSize);
             data.Add("FRAME_OVERLAP=" + this.templateState.WindowOverlap);
             data.Add("FRAME_DURATION_MS=" + (this.templateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
             data.Add("FRAME_OFFSET_MS=" + (this.templateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
-            data.Add("NUMBER_OF_FRAMES=" + this.templateState.SpectrumCount);
-            data.Add("FRAMES_PER_SECOND=" + this.templateState.SpectraPerSecond.ToString("F3"));
+            data.Add("NUMBER_OF_FRAMES=" + this.templateState.FrameCount);
+            data.Add("FRAMES_PER_SECOND=" + this.templateState.FramesPerSecond.ToString("F3"));
 
-
-            data.Add("#\n#INFO ABOUT SONOGRAM");
+            data.Add("#");
+            data.Add("#INFO ABOUT SONOGRAM");
             data.Add("WINDOW_FUNCTION=" + this.templateState.WindowFncName);
             data.Add("NYQUIST_FREQ=" + this.templateState.NyquistFreq);
             data.Add("NUMBER_OF_FREQ_BINS=" + this.templateState.FreqBinCount);
@@ -314,7 +306,8 @@ namespace AudioStuff
             //data.Add("MAX_CUTOFF=" + this.sonogram.State.MaxCut.ToString("F3"));
             //data.Add("SONOGRAM_IMAGE_FILE=" + this.SonogramImageFname);
 
-            data.Add("#\n#INFO ABOUT TEMPLATE");
+            data.Add("#");
+            data.Add("#INFO ABOUT TEMPLATE");
             data.Add("TEMPLATE_VECTOR_FILE=" + matrixFName);
             data.Add("MIN_FREQ=" + this.templateState.MinTemplateFreq);
             data.Add("MAX_FREQ=" + this.templateState.MaxTemplateFreq);
@@ -368,8 +361,8 @@ namespace AudioStuff
             data.Add("FRAME_OVERLAP=" + this.templateState.WindowOverlap);
             data.Add("FRAME_DURATION_MS=" + (this.templateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
             data.Add("FRAME_OFFSET_MS=" + (this.templateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
-            data.Add("NUMBER_OF_FRAMES=" + this.templateState.SpectrumCount);
-            data.Add("FRAMES_PER_SECOND=" + this.templateState.SpectraPerSecond.ToString("F3"));
+            data.Add("NUMBER_OF_FRAMES=" + this.templateState.FrameCount);
+            data.Add("FRAMES_PER_SECOND=" + this.templateState.FramesPerSecond.ToString("F3"));
 
 
             data.Add("#\n#INFO ABOUT SONOGRAM");
@@ -469,6 +462,10 @@ namespace AudioStuff
             //SonoImage bmps = new SonoImage(this.templateState, SonogramType.linearScale, TrackType.none);
             //Bitmap bmp = bmps.CreateBitMapOfTemplate(Matrix);
             //bmp.Save(this.imageFName);
+            SonoImage bmps = new SonoImage(this.templateState, SonogramType.spectral, TrackType.none);
+            Bitmap bmp = bmps.CreateBitMapOfTemplate(this.FeatureVector);
+            bmp.Save(this.imageFName);
+            //Console.WriteLine("template imageFName=" + this.imageFName);
         }
 
         public int ReadTemplateFile()
@@ -483,7 +480,7 @@ namespace AudioStuff
 
         public void SaveImage()
         {
-            SonoImage bmps = new SonoImage(this.templateState, SonogramType.linearScale, TrackType.none);
+            SonoImage bmps = new SonoImage(this.templateState, SonogramType.spectral, TrackType.none);
             Bitmap bmp = bmps.CreateBitMapOfTemplate(Matrix);
             bmp.Save(this.imageFName);
         }
