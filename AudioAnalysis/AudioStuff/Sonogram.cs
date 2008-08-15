@@ -72,24 +72,18 @@ namespace AudioStuff
         //  CONSTRUCTORS
         
 
+
         /// <summary>
         /// CONSTRUCTOR 1
+        /// Use this constructor when initialising  a sonogram from within a template
         /// </summary>
         /// <param name="props"></param>
         /// <param name="wav"></param>
-        public Sonogram(Configuration cfg, WavReader wav)
+        public Sonogram(SonoConfig state, WavReader wav)
         {
-            state.ReadConfig(cfg);
-            state.WavFileDir = wav.WavFileDir;
-            state.WavFName = wav.WavFileName;
-            if (wav.WavFileName != null)
-            {
-                state.WavFName = state.WavFName.Substring(0, state.WavFName.Length - 4);
-                state.SetDateAndTime(state.WavFName);
-            }
-
+            this.state = state;
             Make(wav);
-            if(state.Verbosity!=0) WriteInfo();
+            if(state.Verbosity > 0) WriteInfo();
         }
 
         /// <summary>
@@ -1030,14 +1024,16 @@ namespace AudioStuff
         /// <param name="FName"></param>
         public void SetDateAndTime(string fName)
         {
-            string[] parts = fName.Split('_');
-            if(parts.Length == 1)
+            if ((fName == null) || (fName.Length == 0))
             {
-                this.DeployName = fName;
-                this.Date = "000000";
-                this.Hour = 0;
-                this.Minute = 0;
-                this.TimeSlot = 0; 
+                SetDefaultDateAndTime("noName");
+                return;
+            }
+
+            string[] parts = fName.Split('_');
+            if (parts.Length == 1) 
+            {
+                SetDefaultDateAndTime(fName); 
                 return;
             }
             this.DeployName = parts[0];
@@ -1048,7 +1044,14 @@ namespace AudioStuff
             //############ WARNING!!! THE FOLLOWING LINE MUST BE CONSISTENT WITH TIMESLOT CONSTANT
             this.TimeSlot = ((this.Hour*60)+Minute)/30; //convert to half hour time slots
         }
-
+        public void SetDefaultDateAndTime(string name)
+        {
+            this.DeployName = name;
+            this.Date = "000000";
+            this.Hour = 0;
+            this.Minute = 0;
+            this.TimeSlot = 0;
+        }
         
         public void ReadConfig(string iniFName)
         {
