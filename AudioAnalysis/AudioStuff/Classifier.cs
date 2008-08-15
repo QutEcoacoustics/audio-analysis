@@ -19,114 +19,52 @@ namespace AudioStuff
     public class Classifier
     {
         //private readonly int scanType = 1; //dot product - noise totally random
-        private readonly int scanType = 2; //cross correlation
-        //private readonly int scanType = 3; //noise pre-calculated
-        //private readonly int scanType = 4; //noise noise stratified
-        //private readonly int scanType = 5; //inverse of euclidan distance
+        //private readonly int scanType = 2; //cross correlation - noise sampled from all frames
+        private readonly int scanType = 3; //cross correlation - noise sampled from subthreshold frames
 
 
         private readonly int noiseSampleCount = 10000;
 
-        private int templateID;
-        public int TemplateID { get { return templateID; } set { templateID = value; } }
-        public string TemplateName { get; set; }
-        public string TemplateComment { get; set; }
-
-        public string WavName { get; set; }
-        public double WavDuration { get; set; }
-        public string WavDate { get; set; }
-        public string Deploy { get; set; }       
-        public int WavHour { get; set; }
-        public int WavMinute { get; set; }
-        public int WavTimeSlot { get; set; }
-
-
+        private Template template; 
         private double[] decibels; //band energy per frame
         private double decibelThreshold;
 
 
-        private double recordingLength; //total length in seconds of sonogram
-        public double RecordingLength { get { return recordingLength; } set { recordingLength = value; } }
-        public double SignalMax { get; set; }//max amplitude in original wav signal
-        public double PowerMax { get; set; } //max power in sonogram
-        public double PowerAvg { get; set; }
-        public static int FreqBandCount { get; set; }
-
-
-        private int maxFreq; //max freq on Y-axis of sonogram
-
-        private double fBinWidth;
-        public double FBinWidth
-        {
-            get { return fBinWidth; }
-            private set { fBinWidth = value; }
-        }
-
-        private int midTemplateFreq;
-        public int MidTemplateFreq
-        {
-            get { return midTemplateFreq; }
-            private set { midTemplateFreq = value; }
-        }
-        private int midScanBin; //middle freq bin scanned by template
-        public int MidScanBin
-        {
-            get { return midScanBin; }
-            private set { midScanBin = value; }
-        }
-        private int topScanBin;//top freq bin scanned by template
-        public int TopScanBin
-        {
-            get { return topScanBin; }
-            private set { topScanBin = value; }
-        }
-        private int bottomScanBin;//bottom freq bin scanned by template
-        public  int BottomScanBin
-        {
-            get { return bottomScanBin; }
-            private set { bottomScanBin = value; }
-        }
         private double[] templateV; //acoustic vector
         public  double[] TemplateV
         {
             get { return templateV; }
             private set { templateV = value; }
         }
-        private double[,] templateM; //matrix version of template
-        public double[,] TemplateM
-        {
-            get { return templateM; }
-            private set { templateM = value; }
-        }
-        private int sampleRate;
-        public int SampleRate { get { return sampleRate; } set { sampleRate = value; } }
 
-        private double spectraPerSecond;
-        public double SpectraPerSecond { get { return spectraPerSecond; } set { spectraPerSecond = value; } }
-        private double frameOffset;
-
-        private int zscoreSmoothingWindow = 3;
-        public int ZscoreSmoothingWindow { get { return zscoreSmoothingWindow; } set { zscoreSmoothingWindow = value; } }
-        private double zScoreThreshold;
 
         //TEMPLATE RESULTS 
         private Results results =  new Results(); //set up a results file
         public Results Results { get { return results; } set { results = value; } }
-        public double NoiseAv { set; get; }
-        public double NoiseSd { set; get; }
-        public double[] Zscores { get { return results.Zscores; } }
+        public double[] Zscores { get { return results.Zscores; } } //want these public to display in images 
 
 
-        
 
         /// <summary>
         /// CONSTRUCTOR 1
         /// </summary>
-        /// <param name="speciesID"></param>
-        //public Classifier(Template t)
-        //{
-        //    TransferDataFromTemplate(t);
-        //}
+        /// <param name="t"></param>
+        /// <param name="s"></param>
+        public Classifier(Template t)
+        {
+            if (t == null) throw new Exception("Template == null in Classifier() CONSTRUCTOR");
+            if (t.TemplateState == null) throw new Exception("TemplateState == null in Classifier() CONSTRUCTOR");
+
+            Sonogram s = t.Sonogram;
+            if (s == null) throw new Exception("Sonogram == null in Classifier() CONSTRUCTOR");
+            if (s.State == null) throw new Exception("SonogramState == null in Classifier() CONSTRUCTOR");
+            this.template = t;
+            this.templateV = t.FeatureVector;
+
+            GetDataFromSonogram(s);
+            Scan(s); //scan using the new mfcc acoustic feature vector
+        }//end ScanSonogram 
+
 
         /// <summary>
         /// CONSTRUCTOR 2
@@ -135,268 +73,53 @@ namespace AudioStuff
         /// <param name="s"></param>
         public Classifier(Template t, Sonogram s)
         {
-            GetDataFromTemplate(t);
+            if (t == null)               throw new Exception("Template == null in Classifier() CONSTRUCTOR");
+            if (t.TemplateState == null) throw new Exception("TemplateState == null in Classifier() CONSTRUCTOR");
+            if (s == null)               throw new Exception("Sonogram == null in Classifier() CONSTRUCTOR");
+            if (s.State == null)         throw new Exception("SonogramState == null in Classifier() CONSTRUCTOR");
+            this.template = t;
+            this.templateV = t.FeatureVector;
+
             GetDataFromSonogram(s);
-            //Scan(s, this.scanType); //scanType refers to use of cross-correlation with matrix template
             Scan(s); //scan using the new mfcc acoustic feature vector
         }//end ScanSonogram 
 
-        /// <summary>
-        /// transfers data from the template to the classifier
-        /// </summary>
-        /// <param name="t"></param>
-        public void GetDataFromTemplate(Template t)
-        {
-            if (t.TemplateState == null) throw new Exception("TemplateState == null in Classifier.GetDataFromTemplate()");
-            this.TemplateID = t.CallID;
-            this.TemplateName = t.TemplateState.CallName;
-            this.TemplateComment = t.TemplateState.CallComment;
-            //this.TemplateM = t.Matrix; //OLD method
-            this.TemplateV = t.FeatureVector; //NEW method with mfccs
-            this.MidTemplateFreq = t.TemplateState.MidTemplateFreq;
-
-            this.recordingLength = t.TemplateState.TimeDuration;
-            this.maxFreq         = t.TemplateState.NyquistFreq;
-            //this.sampleRate      = t.TemplateState.SampleRate;
-            //this.NoiseAv         = t.TemplateState.NoiseAv;
-            //this.NoiseSd         = t.TemplateState.NoiseSd;
-        }
-
-
         public void GetDataFromSonogram(Sonogram s)
         {
-            if (s.State == null) throw new Exception("Sonogram State == null in Classifier.GetDataFromSonogram()");
-
-            //calculate ranges of templates etc
-            //int tWidth = templateM.GetLength(0);
-            //int tHeight = templateM.GetLength(1);
-            //double[,] sonogram = s.CepstralM;
-            //int sWidth = sonogram.GetLength(0);
-            //int sHeight = sonogram.GetLength(1);
-            //this.fBinWidth = this.maxFreq / (double)sHeight;
-            //this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            //this.topScanBin = this.midScanBin - (tHeight / 2);
-            //this.bottomScanBin = this.topScanBin + tHeight - 1;
-            //transfer scan track info to the sonogram for later use in producing images
-            //s.State.MaxTemplateFreq = this.topScanBin;
-            //s.State.MidTemplateFreq = this.midScanBin;
-            //s.State.MinTemplateFreq = this.bottomScanBin;
-
-            //transfer sonogram state info to Classifier
-            this.WavName = s.State.WavFName;
-            this.Deploy = s.State.DeployName;
-            this.WavDuration = s.State.TimeDuration;
-            this.WavDate = s.State.Date;
-            this.WavHour = s.State.Hour;
-            this.WavMinute = s.State.Minute;
-            this.WavTimeSlot = s.State.TimeSlot;
-            this.SignalMax = s.State.WavMax;
-            this.PowerAvg = s.State.PowerAvg;
-            this.PowerMax = s.State.PowerMax;
-            this.ZscoreSmoothingWindow = s.State.ZscoreSmoothingWindow;
-            this.zScoreThreshold = s.State.ZScoreThreshold;
-            this.spectraPerSecond = s.State.FrameCount / (double)s.State.TimeDuration;
-            this.frameOffset = s.State.FrameOffset;
-
             this.decibels = s.Decibels;
             this.decibelThreshold = s.State.SegmentationThreshold_k2;
         }
 
 
-        public void Scan(Sonogram s, int scanType)
-        {
-            double[,] m = DataTools.normalise(s.SpectralM);
-            double[] scores;
-            double noiseAv;
-            double noiseSd;
-
-            switch(scanType)
-            {
-                case 1:  //noise totally random
-                    scores = Scan_DotProduct(m);
-                //calculate the av/sd of template scores for noise model and store in results
-                    NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
-                break;
-
-                case 2:   //Cross Correlation
-                scores = Scan_CrossCorrelation(m);
-                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
-                break;
-
-                case 4:   //noise stratified
-                scores = Scan_DotProduct(m);
-                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
-                Console.WriteLine("noiseAv=" + noiseAv + "   noiseSd=" + noiseSd);
-                break;
-
-                case 5:   //Euclidian
-                scores = Scan_Euclidian(m);
-                NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
-                break;
-
-                default:
-                throw new System.Exception("\nWARNING: INVALID SCAN TYPE!");
-            }
-
-            ProcessScores(scores, noiseAv, noiseSd);
-        }
 
         public void Scan(Sonogram s)
         {
-            Console.WriteLine("Scan(Sonogram s)");
-            double[,] m = s.AcousticM;
+            Console.WriteLine(" Scan(Sonogram) "+s.State.WavFName);
             double[] scores;
             double noiseAv;
             double noiseSd;
+            int window = this.template.TemplateState.ZscoreSmoothingWindow;
 
-            scores = Scan_CrossCorrelation(m, this.decibels, this.decibelThreshold);
-            NoiseResponse(m, out noiseAv, out noiseSd, noiseSampleCount, scanType);
+            scores = Scan_CrossCorrelation(s.AcousticM, this.decibels, this.decibelThreshold);
+            NoiseResponse(s.AcousticM, out noiseAv, out noiseSd, noiseSampleCount, scanType);
 
-            ProcessScores(scores, noiseAv, noiseSd);
+            //now calculate z-score for each score value
+            double[] zscores = NormalDist.CalculateZscores(scores, noiseAv, noiseSd);
+            zscores = DataTools.filterMovingAverage(zscores, this.template.TemplateState.ZscoreSmoothingWindow);  //smooth the Z-scores
+            this.results.NoiseAv = noiseAv;
+            this.results.NoiseSd = noiseSd;
+            this.results.Scores = scores;
+            this.results.Zscores = zscores;
+
+            // put zscores to template state machine
+            this.results = this.template.StateMachine(zscores, this.results);
         }
 
-        public double[] Scan_DotProduct(double[,] normMatrix)
-        {
 
-            //calculate ranges of templates etc
-            int tWidth  = templateM.GetLength(0);
-            int tHeight = templateM.GetLength(1);
-            int sWidth = normMatrix.GetLength(0);
-            int sHeight = normMatrix.GetLength(1);
-
-            this.fBinWidth     = this.maxFreq/(double)sHeight;
-            this.midScanBin    = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.bottomScanBin = this.midScanBin - (tHeight / 2);
-            this.topScanBin    = this.topScanBin + tHeight - 1;
-
-            int cellCount = tWidth * tHeight;
-            int halfWidth = tWidth / 2;
-
-            //normalise template to [-1,+1]
-            //this.Template = ImageTools.Convolve(this.Template, Kernal.HorizontalLine5);
-            this.TemplateM = DataTools.Normalise(this.TemplateM, -1.0, 1.0);
-            //DataTools.writeMatrix(this.Template);
-
-
-            double[] scores = new double[sWidth];
-            double avScore = 0.0;
-            for (int x = 0; x < (sWidth - tWidth); x++)//scan over sonogram
-            {   
-                double sum = 0.0;
-                for (int i = 0; i < tWidth; i++)
-                {
-                    for (int j = 0; j < tHeight; j++)
-                    {
-                        sum += (normMatrix[x + i, this.bottomScanBin + j] * templateM[i, j]);
-                    }
-                }
-                scores[x + halfWidth] = sum / cellCount; //place score in middle of template
-                avScore += scores[x + halfWidth];
-                //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
-            }//end of loop over sonogram
-
-
-            //fix up edge effects by making the first and last scores = the average score
-            avScore /= (sWidth - tWidth);
-            for (int x = 0; x < halfWidth; x++) scores[x] = avScore;
-            for (int x = (sWidth - halfWidth - 1); x < sWidth; x++) scores[x] = avScore;
-
-            return scores;
-        }
-
-        public double[] Scan_Euclidian(double[,] normMatrix)
-        {
-            //calculate ranges of templates etc
-            int tWidth = templateM.GetLength(0);
-            int tHeight = templateM.GetLength(1);
-            int sWidth = normMatrix.GetLength(0);
-            int sHeight = normMatrix.GetLength(1);
-
-            this.fBinWidth = this.maxFreq / (double)sHeight;
-            this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.bottomScanBin = this.midScanBin - (tHeight / 2);
-            this.topScanBin    = this.topScanBin + tHeight - 1;
-
-            int cellCount = tWidth * tHeight;
-            int halfWidth = tWidth / 2;
-
-            //normalise template to [0,+1]
-            this.TemplateM = DataTools.normalise(this.TemplateM);
-
-            double[] scores = new double[sWidth];
-            double avScore = 0.0;
-            for (int x = 0; x < (sWidth - tWidth); x++)//scan over sonogram
-            {
-                double sum = 0.0;
-                for (int i = 0; i < tWidth; i++)
-                {
-                    for (int j = 0; j < tHeight; j++)
-                    {
-                        double v = normMatrix[x + i, this.bottomScanBin + j] - templateM[i, j];
-                        sum += (v*v);
-                    }
-                }
-                scores[x + halfWidth] = 1/Math.Sqrt(sum); //place score in middle of template
-                avScore += scores[x + halfWidth];
-                //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
-            }//end of loop over sonogram
-
-
-            //fix up edge effects by making the first and last scores = the average score
-            avScore /= (sWidth - tWidth);
-            for (int x = 0; x < halfWidth; x++) scores[x] = avScore;
-            for (int x = (sWidth - halfWidth - 1); x < sWidth; x++) scores[x] = avScore;
-
-            return scores;
-        }
-
-        public double[] Scan_CrossCorrelation(double[,] normMatrix)
-        {
-            //calculate ranges of templates etc
-            int tWidth = templateM.GetLength(0);
-            int tHeight = templateM.GetLength(1);
-            int sWidth = normMatrix.GetLength(0);
-            int sHeight = normMatrix.GetLength(1);
-
-            this.fBinWidth = this.maxFreq / (double)sHeight;
-            this.midScanBin = (int)(this.MidTemplateFreq / this.fBinWidth);
-            this.bottomScanBin = this.midScanBin - (tHeight / 2);
-            this.topScanBin = this.topScanBin + tHeight - 1;
-
-            int cellCount = tWidth * tHeight;
-            int halfWidth = tWidth / 2;
-
-            //normalise template to difference from mean
-            this.TemplateM = DataTools.DiffFromMean(this.TemplateM);
-            //normMatrix = ImageTools.TrimPercentiles(normMatrix);
-            normMatrix = DataTools.DiffFromMean(normMatrix);  //############################################
-
-
-            double[] scores = new double[sWidth];
-            double avScore = 0.0;
-            for (int r = 0; r < (sWidth - tWidth); r++)//scan over sonogram
-            {
-                //Console.WriteLine("r1="+r+"  c1="+bottomScanBin+"  r2="+(r + tWidth)+"  topScanBin="+topScanBin);
-                double[,] subMatrix = DataTools.Submatrix(normMatrix, r, bottomScanBin, r + tWidth, topScanBin);
-                //subMatrix = DataTools.DiffFromMean(subMatrix);  //############################################
-                double ccc = DataTools.DotProduct(this.TemplateM, subMatrix);  //cross-correlation coeff
-                scores[r + halfWidth] = ccc / cellCount; //place score in middle of template
-                avScore += scores[r + halfWidth];
-                //Console.WriteLine("score["+ x + "]=" + scores[x + halfWidth]);
-            }//end of loop over sonogram
-
-
-            //fix up edge effects by making the first and last scores = the average score
-            avScore /= (sWidth - tWidth);
-            for (int x = 0; x < halfWidth; x++) scores[x] = avScore;
-            for (int x = (sWidth - halfWidth - 1); x < sWidth; x++) scores[x] = avScore;
-
-            return scores;
-        }
 
         public double[] Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)
         {
-            Console.WriteLine("Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)");
+            Console.WriteLine(" Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)");
             //calculate ranges of templates etc
             int tLength = this.TemplateV.Length;
             int sWidth  = acousticM.GetLength(0);
@@ -444,244 +167,43 @@ namespace AudioStuff
         }
 
 
-        public void ProcessScores(double[] scores, double noiseAv, double noiseSd)
-        {
-            //now calculate z-score for each score value
-            double[] zscores = NormalDist.CalculateZscores(scores, noiseAv, noiseSd);
-            zscores = DataTools.filterMovingAverage(zscores, ZscoreSmoothingWindow);  //smooth the Z-scores
-
-            //find peaks and process them
-            bool[] peaks = DataTools.GetPeaks(zscores);
-            peaks = RemoveSubThresholdPeaks(zscores, peaks, zScoreThreshold);
-            //zscores = ReconstituteScores(zscores, peaks);
-            this.results = AnalyseHits(this.templateID, peaks, zscores, this.results); //use prior knowledge
-
-            //get the Results object from sonogram and return results.
-            this.results.NoiseAv = noiseAv;
-            this.results.NoiseSd = noiseSd;
-            this.results.Scores = scores;
-            this.results.Zscores = zscores;
-        }
-
-
-
-        /// <summary>
-        /// returns a reconstituted array of zscores.
-        /// Only gives values to score elements in vicinity of a peak.
-        /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="peaks"></param>
-        /// <param name="tHalfWidth"></param>
-        /// <returns></returns>
-        public double[] ReconstituteScores(double[] scores, bool[] peaks)
-        {   
-            int length = scores.Length;
-            double[] newScores = new double[length];
-            for (int n = 0; n < length; n++)
-            {
-                if (peaks[n]) newScores[n] = scores[n];
-            } return newScores;
-        } // end of ReconstituteScores()
-
-
-
-        public Results AnalyseHits(int callID, bool[] peaks, double[] scores, Results results)
-        {
-            int length = peaks.Length;
-            int index;
-
-            switch (callID)
-            {
-                case 1: //single CICADA CHIRP template
-                    results.Hits = CountPeaks(peaks);
-                    int[] call1Periods = GetHitPeriods(peaks, 200);
-                    results.NumberOfPeriodicHits = call1Periods[5] + call1Periods[6] + call1Periods[7];
-                    int maxIndex = 18; //modal period for this cicada
-                    int NH = maxIndex * 100; //frames neighbourhood in which to calculate score
-                    int[] cicadaScores = GetPeriodScores(peaks, maxIndex, NH);
-                    DataTools.getMaxIndex(cicadaScores, out index);
-                    results.BestCallScore = cicadaScores[index];
-                    results.BestScoreLocation = (double)index * this.frameOffset;
-                    break;
-
-                case 2: //single Kek template
-                    results.Hits = CountPeaks(peaks);
-                    int[] hitPeriods = GetHitPeriods(peaks, 200);
-                    maxIndex =0;
-                    DataTools.getMaxIndex(hitPeriods, out maxIndex);
-                    results.ModalHitPeriod = maxIndex;
-                    results.ModalHitPeriod_ms = (int)(1000 * this.frameOffset * maxIndex);
-                    results.NumberOfPeriodicHits = hitPeriods[maxIndex - 1] + hitPeriods[maxIndex] + hitPeriods[maxIndex + 1];
-
-                    NH = maxIndex * 100; //frames neighbourhood in which to calculate score
-                    int[] kkScores = GetPeriodScores(peaks, maxIndex, NH);                    
-                    DataTools.getMaxIndex(kkScores, out index);
-                    results.BestCallScore = kkScores[index];
-                    results.BestScoreLocation = (double)index * this.frameOffset;
-                    break;
-
-                default: //return the original array
-                    break;
-            }// end switch
-            return results;
-        }
-
-        public bool[] RemoveSubThresholdPeaks(double[] scores, bool[] peaks, double threshold)
-        {
-            int length = peaks.Length;
-            bool[] newPeaks = new bool[length];
-            for (int n = 0; n < length; n++)
-            {
-                newPeaks[n] = peaks[n];
-                if(scores[n]<threshold) newPeaks[n] = false;
-            }
-            return newPeaks;
-        }
-
-        public bool[] RemoveIsolatedPeaks(bool[] peaks, int period, int minPeakCount)
-        {
-            int nh = period * minPeakCount/2;
-            int length = peaks.Length;
-            bool[] newPeaks = new bool[length];
-            //copy array
-            for (int n = 0; n < length; n++)newPeaks[n] = peaks[n];
-
-            for (int n = nh; n < length - nh; n++)
-            {
-                bool isolated = true;
-                for (int i = n - nh; i < n - 3; i++) if (peaks[i]) isolated = false;
-                for (int i = n + 3; i < n + nh; i++) if (peaks[i]) isolated = false;
-                if (isolated) newPeaks[n] = false;
-            }//end for loop
-            //DataTools.writeArray(newPeaks);
-            return newPeaks;
-        }
-
-
-
-        public int CountPeaks(bool[] peaks)
-        {
-            int count = 0;
-            foreach(bool b in peaks)
-            {
-                if (b) count++;
-            }
-            return count;
-        }
-
-        /// <summary>
-        /// Calculates a histogram of the intervals between hits (trues) in the peaks array
-        /// </summary>
-        /// <param name="peaks"></param>
-        /// <param name="maxPeriod"></param>
-        /// <returns></returns>
-        public int[] GetHitPeriods(bool[] peaks, int maxPeriod)
-        {
-            int[] periods = new int[maxPeriod];
-            int length = peaks.Length;
-            int index = 0;
-
-            for (int n = 0; n < length; n++)
-            {   index = n;
-                if (peaks[n]) break;
-            }
-            if (index == length - 1) return periods; //i.e. no peaks in the array
-
-            // have located index of the first peak
-            for (int n = index+1; n < length; n++)
-            {
-                if (peaks[n])
-                {
-                    int period = n-index;
-                    if (period >= maxPeriod) period = maxPeriod - 1;
-                    periods[period]++;
-                    index = n;
-                }
-            }
-
-            //DataTools.writeArray(periods);
-            return periods;
-        }
-
-
-        public int[] GetPeriodScores(bool[] peaks, int period, int NH)
-        {
-            int L = peaks.Length;
-            int[] scores = new int[L];
-
-            //find first peak
-            int i=0;
-            while ((! peaks[i])&&(i<(L-1))) i++;
-            int prevLoc = i;
-
-            while (i<L)
-            {   
-                if(peaks[i])
-                {   int dist = i - prevLoc;
-                if ((dist == (period - 1)) || (dist == period) || (dist == (period + 1)))
-                    {   scores[prevLoc]++;
-                        scores[i]++;
-                    }
-                    prevLoc = i;
-                }
-                i++;
-            }
-            //now have an array of 0, 1 or 2
-
-            int[] scores2 = new int[L];
-            for (int n = NH; n < L-NH; n++)
-            {
-                if(! peaks[n]) continue;
-                for (int j = n - NH; j < n + NH; j++) scores2[n] += scores[j];
-            }
-
-            //DataTools.writeArray(scores2);
-            return scores2;
-        }
-
 
 
         public void NoiseResponse(double[,] M, out double av, out double sd, int sampleCount, int type)
         {   
             double[] noiseScores = new double[sampleCount];
-            //if (sampleCount == normSonogram.GetLength(0)) type = 3;
+            double[] template;
 
             switch (type)
             {
                 case 1:
                     //sample score COUNT times. 
-                    for (int n = 0; n < sampleCount; n++)
-                    {
-                        double[,] noise = GetNoise(M);
-                        noiseScores[n] = scoreMatch_DotProduct(templateM, noise);
-                    }
+                    //for (int n = 0; n < sampleCount; n++)
+                    //{
+                    //    double[,] noise = GetNoise(M);
+                    //    noiseScores[n] = scoreMatch_DotProduct(templateM, noise);
+                    //}
                     break;
 
-                case 2:  //cross-correlation
-                    double[] template = DataTools.DiffFromMean(this.TemplateV);
+                case 2:  ////cross correlation - noise sampled from all frames
+                    template = DataTools.DiffFromMean(this.TemplateV);
                     for (int n = 0; n < sampleCount; n++)
                     {
-                        //double[,] noise = GetNoise(M);
-                        //noiseScores[n] = scoreMatch_CrossCorrelation(templateM, noise);
                         double[] noise = GetNoiseVector(M);// get one sample of a noise vector
                         noise = DataTools.DiffFromMean(noise);
                         noiseScores[n] = DataTools.DotProduct(template, noise);
                     }
                     break;
 
-                case 3:
-                    for (int n = 0; n < sampleCount; n++)
-                    {
-                        double[,] noise = GetNoise(M, n);
-                        noiseScores[n] = scoreMatch_DotProduct(templateM, noise);
-                    }
-                    break;
+                case 3:  ////cross correlation - noise sampled from subthreshold frames
+                    template = DataTools.DiffFromMean(this.TemplateV);
+                    double[,] noiseMatrix = GetNoiseMatrix(M, this.decibels, this.decibelThreshold);
 
-                case 4:
                     for (int n = 0; n < sampleCount; n++)
                     {
-                        double[,] noise = GetNoise_stratified(M);
-                        noiseScores[n] = scoreMatch_DotProduct(templateM, noise);
+                        double[] noise = GetNoiseVector(noiseMatrix);// get one sample of a noise vector
+                        noise = DataTools.DiffFromMean(noise);
+                        noiseScores[n] = DataTools.DotProduct(template, noise);
                     }
                     break;
 
@@ -695,25 +217,6 @@ namespace AudioStuff
         } //end CalculateNoiseResponse
 
 
-
-        public double[,] GetNoise(double[,] matrix)
-        {
-            int tWidth  = templateM.GetLength(0);
-            int tHeight = templateM.GetLength(1);
-            int topFreqBin = this.midScanBin - (tHeight / 2);
-
-            double[,] noise = new double[tWidth, tHeight];
-            RandomNumber rn = new RandomNumber();
-            for (int i = 0; i < tWidth; i++)
-            {
-                for (int j = 0; j < tHeight; j++)
-                {
-                    int id = rn.getInt(matrix.GetLength(0));
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-            }
-            return noise;
-        } //end getNoise()
 
 
         public double[] GetNoiseVector(double[,] matrix)
@@ -732,43 +235,17 @@ namespace AudioStuff
             return noise;
         } //end getNoise()
 
-
-        public double[,] GetNoise_stratified(double[,] matrix)
+        public double[,] GetNoiseMatrix(double[,] matrix,  double[] decibels, double decibelThreshold)
         {
-            int tWidth = templateM.GetLength(0); //image width  of template ie time
-            int tHeight = templateM.GetLength(1);//image height of template ie freq
-            int topFreqBin = this.midScanBin - (tHeight / 2);
-            int tHalfHeight = tHeight / 2;
-            int tQuartHeight = tHeight / 4;
-            int t3QuartHeight = tHalfHeight + tQuartHeight;
-
-            double[,] noise = new double[tWidth, tHeight];
-            RandomNumber rn = new RandomNumber();
-            for (int i = 0; i < tWidth; i++)
-            {
-                int id = rn.getInt(matrix.GetLength(0));
-                for (int j = 0; j < tQuartHeight; j++)
-                {
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-                id = rn.getInt(matrix.GetLength(0));
-                for (int j = tQuartHeight; j < tHalfHeight; j++)
-                {
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-                id = rn.getInt(matrix.GetLength(0));
-                for (int j = tHalfHeight; j < t3QuartHeight; j++)
-                {
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-                id = rn.getInt(matrix.GetLength(0));
-                for (int j = t3QuartHeight; j < tHeight; j++)
-                {
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-            }
+            Console.WriteLine("GetNoiseMatrix(double[,] matrix, double[] decibels, double decibelThreshold)");
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            //double[,] noise = new double[rows, cols];
+            double[,] noise = matrix;
             return noise;
-        } //end getNoise()
+        }
+
+
 
         /// <summary>
         /// returns a sub matrix correspoding to position N. This will be taken as a noise sisgnal.
@@ -776,25 +253,25 @@ namespace AudioStuff
         /// <param name="matrix"></param>
         /// <param name="n"></param>
         /// <returns></returns>
-        public double[,] GetNoise(double[,] matrix, int n)
-        {
-            int tWidth = templateM.GetLength(0);
-            int tHeight = templateM.GetLength(1);
-            int topFreqBin = this.midScanBin - (tHeight / 2);
-            int sHeight = matrix.GetLength(0);
+        //public double[,] GetNoise(double[,] matrix, int n)
+        //{
+        //    int tWidth = templateM.GetLength(0);
+        //    int tHeight = templateM.GetLength(1);
+        //    int topFreqBin = this.midScanBin - (tHeight / 2);
+        //    int sHeight = matrix.GetLength(0);
 
-            double[,] noise = new double[tWidth, tHeight];
-            for (int i = 0; i < tWidth; i++)
-            {
-                for (int j = 0; j < tHeight; j++)
-                {
-                    int id = n + i;
-                    if (id >= sHeight) id -= sHeight;//wrapping window
-                    noise[i, j] = matrix[id, topFreqBin + j];
-                }
-            }
-            return noise;
-        } //end getNoise()
+        //    double[,] noise = new double[tWidth, tHeight];
+        //    for (int i = 0; i < tWidth; i++)
+        //    {
+        //        for (int j = 0; j < tHeight; j++)
+        //        {
+        //            int id = n + i;
+        //            if (id >= sHeight) id -= sHeight;//wrapping window
+        //            noise[i, j] = matrix[id, topFreqBin + j];
+        //        }
+        //    }
+        //    return noise;
+        //} //end getNoise()
 
         public double scoreMatch_DotProduct(double[,] template, double[,] signal)
         {
@@ -873,22 +350,27 @@ namespace AudioStuff
 
         public void WriteResults()
         {
-            Console.WriteLine("\nCall ID " + this.templateID + ": CLASSIFIER RESULTS");
-            Console.WriteLine(" Template Name = "+this.TemplateName);
-            Console.WriteLine(" "+this.TemplateComment);
-            //Console.WriteLine(" Z-score smoothing window = " + this.zscoreSmoothingWindow);
-            Console.WriteLine(" Z-score threshold = " + this.zScoreThreshold);
-            //Console.WriteLine(" Top scan bin=" + this.TopScanBin + ":  Mid scan bin=" + this.MidScanBin + ":  Bottom scan bin=" + this.BottomScanBin);
+            Console.WriteLine("\nCall ID " + this.template.TemplateState.CallID + ": CLASSIFIER RESULTS");
+            Console.WriteLine(" Template Name = " + this.template.TemplateState.CallName);
+            Console.WriteLine(" " + this.template.TemplateState.CallComment);
+            Console.WriteLine(" Z-score threshold = " + this.template.TemplateState.ZscoreSmoothingWindow);
             Console.WriteLine(" Av of Template Response to Noise Model=" + this.results.NoiseAv.ToString("F5") + "+/-" + this.results.NoiseSd.ToString("F5"));
             DataTools.WriteMinMaxOfArray(" Min/max of scores", this.results.Scores);
             DataTools.WriteMinMaxOfArray(" Min/max of z-scores", this.results.Zscores);
             Console.WriteLine(" Number of template hits = " + this.results.Hits);
-            int period = this.results.ModalHitPeriod;
-            Console.WriteLine(" Modal period between hits = " + period + " fames = " + this.results.ModalHitPeriod_ms + " ms");
-            Console.WriteLine(" Number of hits with period " + (period - 1) + "-" + (period + 1) + " frames = " + this.results.NumberOfPeriodicHits);
+            if (this.results.Hits > 0)
+            {
+                int period = this.results.ModalHitPeriod;
+                Console.WriteLine(" Modal period between hits = " + period + " fames = " + this.results.ModalHitPeriod_ms + " ms");
 
-            Console.WriteLine(" Template Period Score = " + this.results.BestCallScore);
-            Console.WriteLine(" Maximum Period score at " /*+ this.results.MaxFilteredScore.ToString("F1") + " at "*/ + this.results.BestScoreLocation.ToString("F1") + " s");
+                if (this.results.NumberOfPeriodicHits > 0)
+                {
+                    Console.WriteLine(" Number of hits with period " + (period - 1) + "-" + (period + 1) + " frames = " + this.results.NumberOfPeriodicHits);
+
+                    Console.WriteLine(" Template Period Score = " + this.results.BestCallScore);
+                    Console.WriteLine(" Maximum Period score at " + this.results.BestScoreLocation.ToString("F1") + " s");
+                }
+            }
         }
 
 

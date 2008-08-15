@@ -54,10 +54,10 @@ namespace AudioStuff
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
             //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
-            //string wavFileName = "dp3_20080415-195000"; //silent room recording using dopod
-            //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
+            //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
+            string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
             //string wavFileName = "BAC2_20071014-022040nightnoise"; //night with no signal in Kek-kek band.
             //string wavFileName = "BAC2_20071008-195040"; // kek-kek track completely clear
@@ -302,19 +302,18 @@ namespace AudioStuff
                     try{
                         Console.WriteLine("\nREADING TEMPLATE");
                         Template t = new Template(iniFPath, callID);
-
+                        Console.WriteLine("\nREADING WAV FILE");
+                        t.SetSonogram(wavPath);
                         
-                        s = new Sonogram(iniFPath, wavPath);
-
                         Console.WriteLine("\nCREATING CLASSIFIER");
-                        Classifier cl = new Classifier(t, s);
-                        s.SaveImage(s.SpectralM, cl.Zscores);
+                        Classifier cl = new Classifier(t);
+                        t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
                         cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
-                        Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod);
+                        Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod_ms+" ms");
                         Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
                         Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
-                        Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation+" sec");
+                        Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation.ToString("F1")+" sec");
                     }
                     catch (Exception e)
                     {
