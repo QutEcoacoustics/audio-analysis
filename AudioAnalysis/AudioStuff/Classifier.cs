@@ -19,8 +19,8 @@ namespace AudioStuff
     public class Classifier
     {
         //private readonly int scanType = 1; //dot product - noise totally random
-        //private readonly int scanType = 2; //cross correlation - noise sampled from all frames
-        private readonly int scanType = 3; //cross correlation - noise sampled from subthreshold frames
+        private readonly int scanType = 2; //cross correlation - noise sampled from all frames
+        //private readonly int scanType = 3; //cross correlation - noise sampled from subthreshold frames
 
 
         private readonly int noiseSampleCount = 10000;
@@ -87,7 +87,7 @@ namespace AudioStuff
         public void GetDataFromSonogram(Sonogram s)
         {
             this.decibels = s.Decibels;
-            this.decibelThreshold = s.State.SegmentationThreshold_k2;
+            this.decibelThreshold = s.State.MinDecibelReference;// FreqBandNoise_dB; // +s.State.SegmentationThreshold_k1;
         }
 
 
@@ -189,19 +189,19 @@ namespace AudioStuff
                     template = DataTools.DiffFromMean(this.TemplateV);
                     for (int n = 0; n < sampleCount; n++)
                     {
-                        double[] noise = GetNoiseVector(M);// get one sample of a noise vector
+                        double[] noise = GetRandomNoiseVector(M);// get one sample of a noise vector
                         noise = DataTools.DiffFromMean(noise);
                         noiseScores[n] = DataTools.DotProduct(template, noise);
                     }
                     break;
 
-                case 3:  ////cross correlation - noise sampled from subthreshold frames
+                case 3:  ////cross correlation - noise sampled from subthreshold energy frames
                     template = DataTools.DiffFromMean(this.TemplateV);
                     double[,] noiseMatrix = GetNoiseMatrix(M, this.decibels, this.decibelThreshold);
 
                     for (int n = 0; n < sampleCount; n++)
                     {
-                        double[] noise = GetNoiseVector(noiseMatrix);// get one sample of a noise vector
+                        double[] noise = GetRandomNoiseVector(noiseMatrix);// get one sample of a noise vector
                         noise = DataTools.DiffFromMean(noise);
                         noiseScores[n] = DataTools.DotProduct(template, noise);
                     }
@@ -219,7 +219,7 @@ namespace AudioStuff
 
 
 
-        public double[] GetNoiseVector(double[,] matrix)
+        public double[] GetRandomNoiseVector(double[,] matrix)
         {
             int featureCount = this.templateV.Length;
             int frameCount   = matrix.GetLength(0);
@@ -229,19 +229,48 @@ namespace AudioStuff
             for (int j = 0; j < featureCount; j++)
             {
                 int id = rn.getInt(frameCount);
+                //Console.WriteLine(id);
                 noise[j] = matrix[id, j];
             }
-            
+            //Console.ReadLine();
             return noise;
-        } //end getNoise()
+        } //end GetRandomNoiseVector()
 
         public double[,] GetNoiseMatrix(double[,] matrix,  double[] decibels, double decibelThreshold)
         {
-            Console.WriteLine("GetNoiseMatrix(double[,] matrix, double[] decibels, double decibelThreshold)");
+            //Console.WriteLine("GetNoiseMatrix(double[,] matrix, double[] decibels, double decibelThreshold="+decibelThreshold+")");
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
-            //double[,] noise = new double[rows, cols];
-            double[,] noise = matrix;
+
+            int targetCount = rows / 2; //want a minimum of 20% of frames for a noise estimate
+            double threshold = decibelThreshold + 1.0; //set min Decibel threshold for noise inclusion
+            int count = 0;
+            while (count < targetCount)
+            {
+                count = 0;
+                for (int i = 0; i < rows; i++) if (decibels[i] <= threshold) count++;
+                //Console.WriteLine("decibelThreshold=" + threshold.ToString("F1") + " count=" + count);
+                threshold += 1.0;
+            }
+            //Console.ReadLine();
+
+
+            //now transfer low energy frames to noise matrix
+            //double[,] noise = matrix;
+            double[,] noise = new double[count, cols];
+            threshold -= 1.0; //take threshold back to the proper value
+            count = 0;
+            for (int i = 0; i < rows; i++)
+            {
+                if (decibels[i] <= threshold)
+                {
+                    for (int j = 0; j < cols; j++) noise[count, j] = matrix[i, j];
+                    count++;
+                }
+            }
+            string fPath = @"C:\SensorNetworks\Sonograms\noise.bmp";
+            ImageTools.DrawMatrix(noise, fPath);
+
             return noise;
         }
 

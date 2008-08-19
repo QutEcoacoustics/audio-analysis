@@ -94,8 +94,9 @@ namespace TowseyLib
 
         /// <summary>
         /// Frame energy is the log of the summed energy of the samples.
-        /// If frame values are FFT spectra, then need to multiply by 2 because spectra are symmetrical about Nyquist.
-        /// Need to normalise the energy value. 
+        /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
+        /// BUT this method takes the AVERAGE sample energy, which therefore normalises for frame length, i.e. smaple number. 
+        /// 
         /// Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
         /// Automatic Speech Recognition: From Theory to Practice.
         /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
@@ -123,22 +124,27 @@ namespace TowseyLib
                 {
                     sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
                 }
-                if (doSpectralEnergy) sum *= 2; // because spectrum is symmetrical
-                double e = sum / (double)N; //normalise to frame size
+                //if (doSpectralEnergy) sum *= 2; // NOT REQUIRED BECAUSE OF AVERAGING IN NEXT LINE
+                double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
                 //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
 
-                //if (e <= 0.0) //this should never happen
-                //{
-                //    System.Console.WriteLine("Warning!!! Energy < zero =" + e);
-                //    energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
-                //    continue;
-                //}
+                if (e == 0.000) //to guard against log(0) but this should never happen!
+                {
+                    System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+                    logEnergy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
+                    continue;
+                }
                 double logE = Math.Log10(e);
 
                 //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
-                if (logE < minLogEnergy) logEnergy[i] = minLogEnergy - maxLogEnergy;
+                if (logE < minLogEnergy)
+                {
+                    System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i]);
+                    logEnergy[i] = minLogEnergy - maxLogEnergy;
+                }
                 else logEnergy[i] = logE - maxLogEnergy;
                 //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
+                //if (i < 20) Console.WriteLine("e="+logEnergy[i]);
             }
 
             //normalise to RELATIVE energy value i.e. max in the current frame
@@ -149,58 +155,6 @@ namespace TowseyLib
             //}
             return logEnergy;
         }
-
-
-        /// <summary>
-        /// FFT energy is the log of the summed energy of the spectral bins.
-        /// Important: The spectra matrix consists of FFT AMPLITUDEs.
-        /// Note: Energy of the signal samples = Energy of FFT samples
-        ///     Because FFT of real signal is symmetrical, Energy of the 512 signal samples = 2*(Energy of 256 FFT samples)
-        /// Need to normalise. Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
-        /// Automatic Speech Recognition: From Theory to Practice.
-        /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
-        /// 
-        /// Calculate normalised energy of spectrum as  energy[i] = logEnergy - maxLogEnergy;
-        /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
-        /// </summary>
-        /// <param name="frames"></param>
-        /// <returns></returns>
-        //public static double[] FFTEnergy(double[,] spectra, double minLogEnergy, double maxLogEnergy)
-        //{
-        //    //double minLogEnergy = -5.0; //defined in header of Sonogram class
-        //    //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
-
-        //    int spectralCount = spectra.GetLength(0);
-        //    int N = spectra.GetLength(1); //number of FFT bins
-        //    double[] energy = new double[spectralCount];
-        //    for (int i = 0; i < spectralCount; i++) //foreach frame
-        //    {
-        //        double sum = 0.0;
-        //        for (int j = 0; j < N; j++)  //foreach sample in frame
-        //        {
-        //            sum += (spectra[i, j] * spectra[i, j]); //sum the energy
-        //        }
-        //        double e = sum / (double)N; //normalise to frame size
-        //        if (e <= 0.0)
-        //        {
-        //            System.Console.WriteLine("Warning!!! Energy < zero =" + e);
-        //            energy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
-        //            continue;
-        //        }
-        //        double logEnergy = Math.Log10(e);
-        //        //calculate normalised energy of frame 
-        //        if (logEnergy < minLogEnergy) energy[i] = minLogEnergy - maxLogEnergy;
-        //        else energy[i] = logEnergy - maxLogEnergy;
-        //    }
-
-        //    //normalise to relative energy value i.e. max in the signal
-        //    //double maxEnergy = energy[DataTools.getMaxIndex()];
-        //    //for (int i = 0; i < frameCount; i++) //foreach time step
-        //    //{
-        //    //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
-        //    //}
-        //    return energy;
-        //}
 
 
 
@@ -242,11 +196,18 @@ namespace TowseyLib
         /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double noiseThreshold_dB, out double Q)
+        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minFraction, double noiseThreshold_dB, out double Q)
         {
-            double min;
-            double max;
-            DataTools.MinMax(logEnergy, out min, out max);
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+            //Console.WriteLine("minFractionEnergy = " + minFraction);
+            for (int i = 0; i < logEnergy.Length; i++)
+            {
+                if (logEnergy[i] == minFraction) continue; //ignore these values in establishing noise level
+                if (logEnergy[i] < min) min = logEnergy[i];
+                else
+                if (logEnergy[i] > max) max = logEnergy[i];
+            }
             min_dB = min * 10;  //multiply by 10 to convert to decibels
             max_dB = max * 10;
 
@@ -265,7 +226,8 @@ namespace TowseyLib
                     if (id >= binCount)
                     {
                         id = binCount - 1;
-                    }
+                    } else
+                    if (id < 0) id = 0;
                     histo[id]++;    
                 }
             }
