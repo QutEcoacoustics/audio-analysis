@@ -16,7 +16,7 @@ namespace AudioStuff
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
 
         //constants for analysing the logEnergy array for signal segmentation
-        public const double minLogEnergy = -9.0;        // typical noise value for BAC2 recordings = -4.5
+        public const double minLogEnergy = -6.0;        // typical noise value for BAC2 recordings = -4.5
         public const double maxLogEnergy = -0.60206;    // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double maxLogEnergy = -0.444;    // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
         //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
@@ -241,10 +241,11 @@ namespace AudioStuff
             this.frameEnergy = DSP.SignalLogEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
             //Console.WriteLine("FrameNoiseDecibels=" + this.State.FrameNoiseLogEnergy + "  FrameMaxDecibels=" + this.State.FrameMaxLogEnergy);
             //noise reduce the energy array to produce decibels array
+            double minFraction = Sonogram.minLogEnergy - Sonogram.maxLogEnergy;
             double Q;
             double min_dB;
             double max_dB;
-            this.decibels = DSP.NoiseSubtract(this.frameEnergy, out min_dB, out max_dB, noiseThreshold, out Q);
+            this.decibels = DSP.NoiseSubtract(this.frameEnergy, out min_dB, out max_dB, minFraction, noiseThreshold, out Q);
             this.State.NoiseSubtracted = Q;
             this.State.FrameNoise_dB = min_dB; //min decibels of all frames 
             this.State.FrameMax_dB = max_dB;
@@ -321,22 +322,24 @@ namespace AudioStuff
 
         public double[] FreqBandEnergy(double[,] fftAmplitudes) 
         {
-            //int freqRange = this.state.freqBand_Max - this.state.freqBand_Min;  
-            //double fraction = freqRange / (double)this.state.MaxFreq;
             bool doSpectralEnergy = true;
 
             //Console.WriteLine("minDefinedLogEnergy=" + Sonogram.minLogEnergy.ToString("F2") + "  maxLogEnergy=" + Sonogram.maxLogEnergy);
             double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
 
             //NOTE: FreqBand LogEnergy levels are higher than Frame levels but SNR remains same.
+            //double min; double max;
+            //DataTools.MinMax(logEnergy, out min, out max);
             //Console.WriteLine("FrameNoise_dB   =" + this.State.FrameNoise_dB    + "  FrameMax_dB   =" + this.State.FrameMax_dB    + "  SNR=" + this.State.Frame_SNR);
             //Console.WriteLine("FreqBandNoise_dB=" + this.State.FreqBandNoise_dB + "  FreqBandMax_dB=" + this.State.FreqBandMax_dB + "  SNR=" + this.State.FreqBand_SNR);
+            //Console.WriteLine("FreqBandNoise_dB=" + (min*10) + "  FreqBandMax_dB=" + (max*10) + "  SNR=" + this.State.FreqBand_SNR);
 
             //noise reduce the energy array to produce decibels array
+            double minFraction = Sonogram.minLogEnergy - Sonogram.maxLogEnergy;
             double Q;
             double min_dB;
             double max_dB;
-            double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, Sonogram.noiseThreshold, out Q);
+            double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minFraction, Sonogram.noiseThreshold, out Q);
             this.State.NoiseSubtracted = Q;
             this.State.FreqBandNoise_dB = min_dB; //min decibels of all frames 
             this.State.FreqBandMax_dB = max_dB;
@@ -1038,6 +1041,11 @@ namespace AudioStuff
             }
             this.DeployName = parts[0];
             parts = parts[1].Split('-');
+            if (parts.Length == 1)
+            {
+                SetDefaultDateAndTime(fName);
+                return;
+            }
             this.Date = parts[0];
             this.Hour = Int32.Parse(parts[1].Substring(0,2));
             this.Minute = Int32.Parse(parts[1].Substring(2, 2));

@@ -32,11 +32,11 @@ namespace AudioStuff
         {
             //******************** USER PARAMETERS ***************************
             //Mode userMode = Mode.ArtificialSignal;
-            //Mode userMode = Mode.MakeSonogram;
+            Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -44,20 +44,20 @@ namespace AudioStuff
             // directory structure
             const string iniFPath = @"C:\SensorNetworks\Templates\sonogram.ini";
             //const string templateDir = @"C:\SensorNetworks\Templates\";
-            const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
             const string opDirName = @"C:\SensorNetworks\Sonograms\";
             //const string artDirName = @"C:\SensorNetworks\ART\";
             const string wavFExt = WavReader.wavFExt;
 
-            //training file
+            //BRISBANE AIRPORT CORP
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
             //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
             //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
-            string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
+            //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
             //string wavFileName = "BAC2_20071014-022040nightnoise"; //night with no signal in Kek-kek band.
             //string wavFileName = "BAC2_20071008-195040"; // kek-kek track completely clear
@@ -65,9 +65,26 @@ namespace AudioStuff
             //string wavFileName = "BAC3_20071002-070657";
             //string wavFileName = "BAC3_20071001-203657";
             //string wavFileName = "BAC5_20080520-040000_silence";
-            //string wavFileName = "BAC7_20080608-110000";
-            //string wavFileName = "BAC6_20080608-130000";
 
+            //SAMFORD
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\Samford02\";
+            //string wavFileName = "SA0220080221-022657";
+            //string wavFileName = "SA0220080222-015657";
+            //string wavFileName = "SA0220080223-225657";
+
+            //WEBSTER
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\Webster\";
+            //string wavFileName = "BOOBOOK";
+            //string wavFileName = "CAPPRE";
+            //string wavFileName = "KINGPAR";
+
+            //JINHAI
+            const string wavDirName = @"C:\SensorNetworks\WavFiles\Jinhai\";
+            //string wavFileName = "vanellus-miles";
+            //string wavFileName = "En_spinebill";
+            //string wavFileName = "kookaburra";
+            //string wavFileName = "magpie";
+            string wavFileName = "raven";
 
             //KOALA recordings  - training files etc
             //const string wavDirName = @"C:\SensorNetworks\Koala\";
@@ -185,9 +202,9 @@ namespace AudioStuff
                     {
                         s = new Sonogram(iniFPath, wavPath);
                         //double[,] m = s.AmplitudM;
-                        //double[,] m = s.SpectralM;
+                        double[,] m = s.SpectralM;
                         //double[,] m = s.CepstralM;
-                        double[,] m = s.AcousticM;
+                        //double[,] m = s.AcousticM;
 
                         //m = ImageTools.DetectHighEnergyRegions(m, threshold); //binary matrix showing areas of high acoustic energy
                         //m = ImageTools.Shapes_lines(m); //binary matrix showing high energy lines

@@ -115,31 +115,31 @@ namespace TowseyLib
             if (!BitConverter.IsLittleEndian)
                 throw new NotSupportedException("System.BitConverter does not read little endian.");
 
-            // "RIFF"
+            // Chunk Id = 'RIFF'
             if (data[0] != 0x52 || data[1] != 0x49 || data[2] != 0x46 || data[3] != 0x46)
                 throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // Total Length Of Package To Follow
+            // Chunk Size = Total Length Of Package To Follow
             if (BitConverter.ToUInt32(data, 4) < 36u)
                 throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // "WAVE"
+            // Format = 'WAVE'
             if (data[8] != 0x57 || data[9] != 0x41 || data[10] != 0x56 || data[11] != 0x45)
                 throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // "fmt "
+            // Subchunk Id = 'fmt'
             if (data[12] != 0x66 || data[13] != 0x6D || data[14] != 0x74 || data[15] != 0x20)
                 throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // Length Of FORMAT Chunk
+            // Length Of FORMAT Subchunk
             int p = (int)BitConverter.ToUInt32(data, 16) - 16;
             if (p < 0) throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // Always 0x01
+            // AudioFormat always = 0x01 (0x0007 = (WAVE_FORMAT_MULAW))
             if (data[20] != 0x01 || data[21] != 0x00)
-                throw new InvalidOperationException("Cannot parse WAV header.");
+                throw new InvalidOperationException("Cannot parse WAV header:- AudioFormat data[20-21] NOT 0x01 OR 0x00.");
 
-            // Channel Numbers 
+            // Number of Channels 
             this.Channels = BitConverter.ToUInt16(data, 22);
 
             // Sample Rate

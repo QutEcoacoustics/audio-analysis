@@ -21,7 +21,7 @@ namespace AudioStuff
     public sealed class SonoImage
     {
 
-        public const double zScoreMax = 5.0; //max SDs shown in score track of image
+        public const double zScoreMax = 8.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
         public const int    trackHt   = 50;   //pixel height of the score tracks
 
