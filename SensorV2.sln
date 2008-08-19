@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RikMigrationsCF", "RikMigra
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\", "{F7549524-A6E5-4BEB-AEA7-77F95FCE54EB}"
 	ProjectSection(WebsiteProperties) = preProject
+		SccProjectName = "Svn"
+		SccAuxPath = "Svn"
+		SccLocalPath = "Svn"
+		SccProvider = "SubversionScc"
 		TargetFramework = "3.5"
 		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
@@ -42,6 +46,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Diag", "SensorV2Diag\SensorV2Diag.csproj", "{F49BD5E3-9A0C-4D71-A576-6B81F166DFD0}"
 EndProject
 Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = SensorV2.vsmdi
 	EndGlobalSection
