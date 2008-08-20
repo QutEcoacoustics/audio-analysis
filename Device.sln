@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Diag", "SensorV2Dia
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Updater", "SensorV2Updater\SensorV2Updater.csproj", "{80F926FE-DFA0-4718-B505-A905E49C4D5B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Nuke", "SensorV2Nuke\SensorV2Nuke.csproj", "{899731ED-61CF-426B-93CE-1CD9305730AA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2.WindowsCE", "SensorV2.WindowsCE\SensorV2.WindowsCE.csproj", "{50955F7F-5FDC-4674-849F-C1D96B86764E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -78,6 +82,30 @@ Global
 		{80F926FE-DFA0-4718-B505-A905E49C4D5B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{80F926FE-DFA0-4718-B505-A905E49C4D5B}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
 		{80F926FE-DFA0-4718-B505-A905E49C4D5B}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
+		{899731ED-61CF-426B-93CE-1CD9305730AA}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
