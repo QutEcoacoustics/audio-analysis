@@ -129,15 +129,30 @@ namespace TowseyLib
 
             // Subchunk Id = 'fmt'
             if (data[12] != 0x66 || data[13] != 0x6D || data[14] != 0x74 || data[15] != 0x20)
-                throw new InvalidOperationException("Cannot parse WAV header.");
+                throw new InvalidOperationException("Cannot parse WAV header. WRONG SUBCHUNK ID:- \n\tSubchunk (data[12-15])=" + data[12] + "," + data[13] + "," + data[14] + "," + data[15] + "," + ". Should be 0x66,0x6D,0x74,0x20.");
 
             // Length Of FORMAT Subchunk
             int p = (int)BitConverter.ToUInt32(data, 16) - 16;
             if (p < 0) throw new InvalidOperationException("Cannot parse WAV header.");
 
-            // AudioFormat always = 0x01 (0x0007 = (WAVE_FORMAT_MULAW))
+            // AudioFormat must = 0x01 i.e. PCM. This software does not parse anything else.
+            // Audio formats are defined in the header file Mmreg.h available at
+            //http://graphics.cs.uni-sb.de/NMM/dist-0.9.1/Docs/Doxygen/html/mmreg_8h.html
+            // See also
+            //ms-help://MS.VSCC.v90/MS.MSDNQTR.v90.en/multimed/htm/_win32_waveformatex_str.htm
+            // here are the first few format IDs
+            //#define  WAVE_FORMAT_UNKNOWN    0x0000 
+            //#define  WAVE_FORMAT_PCM        0x0001
+            //#define  WAVE_FORMAT_ADPCM      0x0002 
+            //#define  WAVE_FORMAT_IEEE_FLOAT 0x0003
+            //#define  WAVE_FORMAT_VSELP      0x0004 
+            //#define  WAVE_FORMAT_IBM_CVSD   0x0005 
+            //#define  WAVE_FORMAT_ALAW       0x0006 
+            //#define  WAVE_FORMAT_MULAW      0x0007 
+            //#define  WAVE_FORMAT_DTS        0x0008 
+
             if (data[20] != 0x01 || data[21] != 0x00)
-                throw new InvalidOperationException("Cannot parse WAV header:- AudioFormat data[20-21] NOT 0x01 OR 0x00.");
+                throw new InvalidOperationException("Cannot parse WAV header: WRONG AUDIO FORMAT:- \n\tAudioFormat (data[20-21])=" + data[20] + "," + data[21] + ". Should be 1,0.");
 
             // Number of Channels 
             this.Channels = BitConverter.ToUInt16(data, 22);
@@ -181,6 +196,10 @@ namespace TowseyLib
                 default:
                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
             }
+
+            //trim the samples ie check that the samples do not begin or end with zeros
+            this.Samples = TrimSamples(this.Samples);
+            this.sampleCount = this.Samples.Length;
         }
 
         public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
@@ -191,6 +210,47 @@ namespace TowseyLib
                 data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
             return new WavReader(data, sampleRate, "noName");
         }
+
+        public static double[] TrimSamples(double[] data)
+        {
+            //for(int i=0; i < 2000; i++) Console.WriteLine(i+"  "+data[i]);
+
+            int L = data.Length;
+            double threshold = 16 / (double)65536;
+            //Console.WriteLine("threshold = " + threshold);
+            int startZeros = 0;
+            double value = Math.Abs(data[0]);
+            //Console.WriteLine("value = "+value);
+            while (value < threshold)
+            {
+                startZeros++;
+                value = Math.Abs(data[startZeros]);
+            }
+
+            int endZeros = 0;
+            value = Math.Abs(data[L-1]);
+            while (value < threshold)
+            {
+                endZeros++;
+                value = Math.Abs(data[L-1-startZeros]);
+            }
+            //Console.WriteLine("startZeros=" + startZeros + "   endZeros=" + endZeros);
+            //Console.ReadLine();
+
+            if ((startZeros == 0) && (endZeros == 0)) return data; //nothing to trim
+
+            startZeros += 100; //skip some more just in case!
+            endZeros   += 100; //skip some more just in case!
+            int newL = L - startZeros - endZeros;
+
+            double[] newData = new double[newL];
+            for (int i = 0; i < newL; i++) newData[i] = data[startZeros+i];
+
+            //Console.WriteLine("start=" + newData[0] + "   end=" + newData[newL-1]);
+            //for (int i = 0; i < 400; i++) Console.WriteLine(i + "  " + newData[i]);
+            return newData;
+        }
+
 
 
         public void MaxValue(out double absMax)
