@@ -301,10 +301,10 @@ namespace TowseyLib
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of bins in freq band
             double[,] outData = new double[M, filterBankCount];
-            double linBand = freqRange / N;
+            double linBand = freqRange / (N-1); //(N-1) because have additional DC band
             double melBand = melRange / (double)filterBankCount;  //width of mel band
-            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F1"));
-            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F1"));
+            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
+            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range

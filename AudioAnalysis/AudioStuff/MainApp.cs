@@ -50,11 +50,11 @@ namespace AudioStuff
             const string wavFExt = WavReader.wavFExt;
 
             //BRISBANE AIRPORT CORP
-            //const string wavDirName = @"C:\SensorNetworks\WavFiles\";
+            const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
             //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -70,21 +70,25 @@ namespace AudioStuff
             //const string wavDirName = @"C:\SensorNetworks\WavFiles\Samford02\";
             //string wavFileName = "SA0220080221-022657";
             //string wavFileName = "SA0220080222-015657";
-            //string wavFileName = "SA0220080223-225657";
+            //string wavFileName = "SA0220080223-215657";
+
+            //AUSTRALIAN BIRD CALLS
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\VoicesOfSubtropicalRainforests\";
+            //string wavFileName = "06 Logrunner";
 
             //WEBSTER
-            //const string wavDirName = @"C:\SensorNetworks\WavFiles\Webster\";
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\Websters\";
             //string wavFileName = "BOOBOOK";
             //string wavFileName = "CAPPRE";
             //string wavFileName = "KINGPAR";
 
             //JINHAI
-            const string wavDirName = @"C:\SensorNetworks\WavFiles\Jinhai\";
+            //const string wavDirName = @"C:\SensorNetworks\WavFiles\Jinhai\";
             //string wavFileName = "vanellus-miles";
             //string wavFileName = "En_spinebill";
             //string wavFileName = "kookaburra";
             //string wavFileName = "magpie";
-            string wavFileName = "raven";
+            //string wavFileName = "raven";
 
             //KOALA recordings  - training files etc
             //const string wavDirName = @"C:\SensorNetworks\Koala\";

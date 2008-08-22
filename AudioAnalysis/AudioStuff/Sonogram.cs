@@ -414,11 +414,16 @@ namespace AudioStuff
             double[,] m = matrix;
             if (this.state.DoMelScale)
             {
-                m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
-                //m = Speech.MelConversion(matrix, this.State.FilterbankCount, Nyquist);  //using the Greg integral
-                //m = Speech.MelFilterbank(matrix, this.State.FilterbankCount, Nyquist);  //using the Matlab algorithm
+                //Console.WriteLine(" Mel Nyquist= " + this.State.MaxMel.ToString("F1"));
+                //Console.WriteLine(" Mel Band Count = " + this.state.MelBinCount + " FilterbankCount= " + this.State.FilterbankCount);
+                int bandCount = this.State.FilterbankCount; //the default
+                if (this.State.SonogramType == SonogramType.spectral) bandCount = this.State.MelBinCount;
+
+                m = Speech.MelConversion(m, bandCount, Nyquist, this.state.freqBand_Min, this.state.freqBand_Max);  //using the Greg integral
+                //m = Speech.MelConversion(m, this.State.FilterbankCount, Nyquist);  //using the Greg integral
+                //m = Speech.MelFilterbank(m, this.State.FilterbankCount, Nyquist);  //using the Matlab algorithm
             }
-            m = Speech.DecibelSpectra(matrix);
+            m = Speech.DecibelSpectra(m);
             if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
             return m;
         }
@@ -683,7 +688,7 @@ namespace AudioStuff
             if (this.state.DoMelScale)
             {
                 Console.WriteLine(" Mel Nyquist= " + this.State.MaxMel.ToString("F1"));
-                Console.WriteLine(" Mel Band Count = " + this.state.MelBinCount);
+                Console.WriteLine(" Mel Band Count = " + this.state.MelBinCount);// + " FilterbankCount= " + this.State.FilterbankCount);
             }
             if (this.state.SonogramType == SonogramType.cepstral)
             {

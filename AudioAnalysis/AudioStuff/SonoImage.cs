@@ -158,11 +158,12 @@ namespace AudioStuff
             int width   = matrix.GetLength(0); //number of spectra in sonogram
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
-            //Console.WriteLine("sonogramType=" + this.sonogramType);
+            //Console.WriteLine("sonogramType=" + this.sonogramType + " width=" + width);
             int binHt = 1; // 1 pixel per freq bin
             if (this.sonogramType == SonogramType.cepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
             else
             if (this.sonogramType == SonogramType.acousticVectors) binHt = 256 / sHeight; //several pixels per cepstral coefficient
+            if (binHt < 1) binHt = 1;
 
             int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
             double hzBin  = NyquistF / (double)sHeight;

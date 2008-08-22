@@ -126,20 +126,23 @@ namespace TowseyLib
                 }
                 //if (doSpectralEnergy) sum *= 2; // NOT REQUIRED BECAUSE OF AVERAGING IN NEXT LINE
                 double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
+                //Console.WriteLine("e=" + e);
                 //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
 
-                if (e == 0.000) //to guard against log(0) but this should never happen!
+                if (e == Double.MinValue) //to guard against log(0) but this should never happen!
+                //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
                 {
                     System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
                     continue;
                 }
                 double logE = Math.Log10(e);
+                //if(i==100) Console.ReadLine();
 
                 //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
                 if (logE < minLogEnergy)
                 {
-                    System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i]);
+                    System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
                     logEnergy[i] = minLogEnergy - maxLogEnergy;
                 }
                 else logEnergy[i] = logE - maxLogEnergy;
