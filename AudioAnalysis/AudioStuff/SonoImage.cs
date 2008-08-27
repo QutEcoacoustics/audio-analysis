@@ -21,7 +21,7 @@ namespace AudioStuff
     public sealed class SonoImage
     {
 
-        public const double zScoreMax = 8.0; //max SDs shown in score track of image
+        public const double zScoreMax = 5.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
         public const int    trackHt   = 50;   //pixel height of the score tracks
 
@@ -513,8 +513,11 @@ namespace AudioStuff
             }
 
             //add in horizontal threshold significance line
+            if (this.scoreThreshold < 0.0) this.scoreThreshold = 0.0; 
             int lineID = (int)(SonoImage.trackHt * (1 - (this.scoreThreshold / SonoImage.zScoreMax)));
-            for (int x = 0; x < width; x++) bmp.SetPixel(x, offset + lineID, gray);
+            int y = offset + lineID;
+            if (y >= height) y = height - 1;
+            for (int x = 0; x < width; x++) bmp.SetPixel(x, y, gray);
 
             return bmp;
         }

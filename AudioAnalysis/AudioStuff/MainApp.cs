@@ -32,11 +32,11 @@ namespace AudioStuff
         {
             //******************** USER PARAMETERS ***************************
             //Mode userMode = Mode.ArtificialSignal;
-            Mode userMode = Mode.MakeSonogram;
+            //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.TestTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -53,8 +53,8 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -122,8 +122,6 @@ namespace AudioStuff
             int callID = 2;
             string callName = "Lewin's Rail Kek-kek";
             string callComment = "Template consists of a single KEK!";
-            int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
-            //int[] timeIndices = { 1784 };
             string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
             //int sampleRate; //to be determined
             int frameSize = 512;
@@ -142,6 +140,8 @@ namespace AudioStuff
             //double maxSyllableGap = 0.25; //seconds
             //double maxSong=
 
+            int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            //int[] timeIndices = { 1784 };
 
 
             //int callID = 3;
@@ -303,7 +303,6 @@ namespace AudioStuff
 
                         Console.WriteLine("\nCREATING CLASSIFIER");
                         Classifier cl = new Classifier(t, t.Sonogram);
-                        //double[,] m = t.Sonogram.Matrix;
                         double[,] m = t.Sonogram.SpectralM;
                         //double[,] m = t.Sonogram.AcousticM;
 
