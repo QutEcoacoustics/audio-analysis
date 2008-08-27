@@ -695,9 +695,6 @@ namespace AudioStuff
                 Console.WriteLine(" Filterbank count = " + this.State.FilterbankCount + "\t\tCepstral coeff count = " + this.state.ccCount);
             }
             
-            
-            this.State.BmpFName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
-            Console.WriteLine("\n Image in file  = " + this.State.BmpFName);
         }
 
         public void WriteStatistics()
@@ -734,6 +731,9 @@ namespace AudioStuff
 
         public void SaveImage(double[,] matrix, double[] zscores)
         {
+            this.State.BmpFName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
+            if(this.State.Verbosity!=0)Console.WriteLine("\n Image in file  = " + this.State.BmpFName);
+
             if (matrix == null)
             {
                 throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
@@ -992,6 +992,22 @@ namespace AudioStuff
         private bool includeDoubleDelta;
         public bool IncludeDoubleDelta { get { return includeDoubleDelta; } set { includeDoubleDelta = value; } }
 
+
+
+        //FEATURE VECTOR PARAMETERS 
+        public int FeatureVectorCount { get; set; }
+        public int FeatureVectorLength { get; set; }
+        public string[] FeatureVectorPaths { get; set; }
+        public string[] TimeIndices { get; set; }
+        public string[] FVSourceFiles { get; set; }
+
+        //THE LANGUAGE MODEL
+        public int WordCount { get; set; }
+        public string[] Words { get; set; }
+
+
+
+
         //BITMAP IMAGE PARAMETERS 
         public bool AddGrid { get; set; }
         public TrackType TrackType { get; set; }
@@ -1125,9 +1141,6 @@ namespace AudioStuff
             this.BlurWindow_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
             //this.NormSonogram = cfg.GetBoolean("NORMALISE_SONOGRAM");
 
-            //classifier parameters
-            this.ZscoreSmoothingWindow = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
-            this.ZScoreThreshold = cfg.GetDouble("ZSCORE_THRESHOLD");
         }
 
 

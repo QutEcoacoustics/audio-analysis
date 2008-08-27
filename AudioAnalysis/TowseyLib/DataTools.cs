@@ -1132,7 +1132,7 @@ namespace TowseyLib
     { if(data[i] < min) min = data[i];
       if(data[i] > max) max = data[i];
     }
-    //Console.WriteLine("min="+min+" max="+max);
+    //Console.WriteLine(data.Length+"  min="+min+" max="+max);
   }
 
 //=============================================================================
