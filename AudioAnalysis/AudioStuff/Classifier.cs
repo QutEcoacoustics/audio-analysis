@@ -43,7 +43,7 @@ namespace AudioStuff
         public Results Results { get { return results; } set { results = value; } }
         public double[] Zscores { get { return results.Zscores; } } //want these public to display in images 
 
-
+        private bool Verbose = false;
 
         /// <summary>
         /// CONSTRUCTOR 1
@@ -84,74 +84,93 @@ namespace AudioStuff
             Scan(s); //scan using the new mfcc acoustic feature vector
         }//end ScanSonogram 
 
+
+
+
         public void GetDataFromSonogram(Sonogram s)
         {
-
+            if(s.State.Verbosity > 0) this.Verbose = true;
             this.decibels = s.Decibels;
             this.decibelThreshold = s.State.MinDecibelReference+s.State.SegmentationThreshold_k2;  // FreqBandNoise_dB;
         }
 
 
 
+
+
+        /// <summary>
+        /// SCANS A SONOGRAM FOR PREDEFINED WORDS OR ANIMAL CALLS
+        /// Does the main scanning of the passed sonogram using the previously passed template.
+        /// This method is called by each of the Classifier Class constructors and so happens automatically 
+        /// when the Classifier is initialised.
+        /// </summary>
+        /// <param name="s"></param>
         public void Scan(Sonogram s)
         {
-            Console.WriteLine(" Scan(Sonogram) " + s.State.WavFName);
+            if (this.Verbose) Console.WriteLine(" Scan(Sonogram) " + s.State.WavFName);
             int fvCount = this.fvs.Length;
             int window = this.template.TemplateState.ZscoreSmoothingWindow;
 
-            Console.WriteLine("     Construct Noise Feature Vector - FV[0]");
+            if (this.Verbose) Console.WriteLine("     Derive NOISE Feature Vector, FV[0], from the passed SONOGRAM");
             this.fvs[0] = GetNoiseFeatureVector(s.AcousticM, this.decibels, this.decibelThreshold);
-            string fPath = this.template.TemplateState.FeatureVectorPaths[0];
+            //if sonogram does not have sufficient noise frames read default noies FV from file
+            if (this.fvs[0] == null) this.fvs[0] = new FeatureVector(this.template.TemplateState.FeatureVectorPaths[0], this.template.TemplateState.FeatureVectorLength, 0);
+
+            //Use next two lines to write noise vector to file. It can then be used as a sample noise vector.
+            //string fPath = this.template.TemplateState.FeatureVectorPaths[0];
             //this.fvs[0].Write2File(fPath); 
 
-
-            Console.WriteLine("     Obtain noise response for each feature vector");
+            //Obtain a matrix of noise feature vectors and then set the noise response for each feature vector
+            if (this.Verbose) Console.WriteLine("     Obtain noise response for each feature vector");
             double[,] noiseM = GetRandomNoiseMatrix(s.AcousticM, this.noiseSampleCount);
+            //double[,] noiseM = GetRandomNoiseMatrix(s.AcousticM, this.noiseSampleCount, this.decibels, this.decibelThreshold);
             for (int n = 0; n < fvCount; n++) this.fvs[n].SetNoiseResponse(noiseM);
 
 
-            Console.WriteLine("     Obtain match z-scores");
+            if (this.Verbose) Console.WriteLine("     Obtain feature vector match z-scores");
             int frameCount = s.AcousticM.GetLength(0);
             double[,] zscoreMatrix = new double[frameCount, fvCount]; 
-            for (int n = 0; n < fvCount; n++)
+            for (int n = 0; n < fvCount; n++)  //for all feature vectors
             {
-                Console.WriteLine(" ... with FV "+n);
+                if (this.Verbose) Console.WriteLine(" ... with FV " + n);
 
                 //now calculate z-score for each score value
                 double[] zscores = this.fvs[n].Scan_CrossCorrelation(s.AcousticM);
                 zscores = DataTools.filterMovingAverage(zscores, window);  //smooth the Z-scores
 
-                this.results.NoiseAv = this.fvs[n].NoiseAv;
-                this.results.NoiseSd = this.fvs[n].NoiseSd;
-                //this.results.Scores = scores;
-                //this.results.Zscores = zscores;
-                for (int i = 0; i < frameCount; i++) zscoreMatrix[i, n] = zscores[i];
-
-                // put zscores to template state machine
-                this.results = this.template.StateMachine(zscores, this.results);
-            }//end for loop
-
-            
-            string symbolSequence = ExtractSymbolStream(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
-            Console.WriteLine("################## THE SYMBOL SEQUENCE");
-            Console.WriteLine(symbolSequence);
-
-            //process the symbol stream
-            double[] symbolScores = new double[frameCount];
-            for (int i = 0; i < frameCount; i++)
-            {
-                if (symbolSequence[i] == 'n') symbolScores[i] = 0.0;
-                else if (symbolSequence[i] == 'x') symbolScores[i] = SonoImage.zScoreMax/5;
-                else if (symbolSequence[i] == '9') symbolScores[i] = SonoImage.zScoreMax;
-                else symbolScores[i] = 0.0;
-
-            }
-            this.results.Zscores = symbolScores;
-
-            this.results.Zscores = CallSearch(symbolSequence, this.template.TemplateState.Words);
-        }
+                for (int i = 0; i < frameCount; i++) zscoreMatrix[i, n] = zscores[i];// transfer z-scores to matrix
+            }//end for loop over all feature vectors
 
 
+            if (this.Verbose) Console.WriteLine("################## THE SYMBOL SEQUENCE");
+            string symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
+            if (this.Verbose) Console.WriteLine(symbolSequence);
+
+
+            //search for words in the symbol stream
+            double[] wordScores = WordSearch(symbolSequence, zscoreMatrix, this.template.TemplateState.Words);
+
+
+            this.results.Zscores = wordScores;
+            // put wordScores to template state machine
+            int period = 208; //KEK-KEK ONLY
+            if (period != 0) this.results = this.template.Periodicity(wordScores, period, this.results);
+        }  // end of Scan(Sonogram s)
+
+
+
+
+        /// <summary>
+        /// Extracts all those frames passed sonogram matrix whose signal energy is below the threshold and 
+        ///                     returns an average of the feature vectors derived from those frames.
+        /// If there are not enough low energy frames, then the method returns null and caller must get
+        /// noies FV from another source.
+        /// 
+        /// </summary>
+        /// <param name="acousticM"></param>
+        /// <param name="decibels"></param>
+        /// <param name="decibelThreshold"></param>
+        /// <returns></returns>
         public FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double decibelThreshold)
         {
             int rows = acousticM.GetLength(0);
@@ -174,7 +193,7 @@ namespace AudioStuff
                 Console.WriteLine("  TOO FEW LOW ENERGY FRAMES. READ DEFAULT NOISE FEATURE VECTOR.");
                 Console.WriteLine("  " + count + " < targetCount=" + targetCount + "   @ decibelThreshold=" + decibelThreshold);
                 //READ DEFAULT FEATURE VECTOR
-                return new FeatureVector(noiseFV, id);
+                return null; // new FeatureVector(noiseFV, id);
             }
 
             //now transfer low energy frames to noise vector
@@ -196,73 +215,15 @@ namespace AudioStuff
         }
 
 
-
-        //public void NoiseResponse(int fvID, double[,] M, out double av, out double sd, int sampleCount, int type)
-        //{   
-        //    double[] noiseScores = new double[sampleCount];
-
-        //    switch (type)
-        //    {
-        //        case 1:
-        //            //sample score COUNT times. 
-        //            //for (int n = 0; n < sampleCount; n++)
-        //            //{
-        //            //    double[,] noise = GetNoise(M);
-        //            //    noiseScores[n] = scoreMatch_DotProduct(templateM, noise);
-        //            //}
-        //            break;
-
-        //        case 2:  ////cross correlation - noise sampled from all frames
-        //            //Console.WriteLine(" ... dimM[1]=" + M.GetLength(1) + " ... dim fvs[fvID]=" + fvs[fvID].FvLength);
-        //            for (int n = 0; n < sampleCount; n++)
-        //            {
-        //                double[] noise = GetRandomNoiseVector(M);// get one sample of a noise vector
-        //                noiseScores[n] = this.fvs[fvID].CrossCorrelation(noise);
-        //            }
-        //            break;
-
-        //        case 3:  ////cross correlation - noise sampled from subthreshold energy frames
-        //            double[,] noiseMatrix = GetNoiseMatrix(M, this.decibels, this.decibelThreshold);
-
-        //            for (int n = 0; n < sampleCount; n++)
-        //            {
-        //                double[] noise = GetRandomNoiseVector(noiseMatrix);// get one sample of a noise vector
-        //                noiseScores[n] = this.fvs[fvID].CrossCorrelation(noise);
-        //            }
-        //            break;
-
-
-        //        default:
-        //            throw new System.Exception("\nWARNING: INVALID NOISE ESTIMATAION MODE!");
-        //    }//end case statement
-
-        //    NormalDist.AverageAndSD(noiseScores, out av, out sd);
-
-        //} //end CalculateNoiseResponse
-
-
-
-
-        public double[] GetRandomNoiseVector(double[,] matrix)
-        {
-            int frameCount   = matrix.GetLength(0);
-            int featureCount = matrix.GetLength(1);
-            //Console.WriteLine(" ... dimM[1]=" + M.GetLength(1) + " ... dim fvs[fvID]=" + fvs[fvID].FvLength);
-
-            double[] noise = new double[featureCount];
-            RandomNumber rn = new RandomNumber();
-            for (int j = 0; j < featureCount; j++)
-            {
-                int id = rn.getInt(frameCount);
-                noise[j] = matrix[id, j];
-            }
-            //Console.ReadLine();
-            return noise;
-        } //end GetRandomNoiseVector()
-
+        /// <summary>
+        /// returns a matrix of noise vectors. Each noise vector is a random sample from the original sonogram.
+        /// </summary>
+        /// <param name="dataMatrix"></param>
+        /// <param name="noiseCount"></param>
+        /// <returns></returns>
         public double[,] GetRandomNoiseMatrix(double[,] dataMatrix, int noiseCount)
         {
-            int frameCount = dataMatrix.GetLength(0);
+            int frameCount   = dataMatrix.GetLength(0);
             int featureCount = dataMatrix.GetLength(1);
             //Console.WriteLine(" frameCount=" + frameCount + " featureCount=" + featureCount + " noiseCount=" + noiseCount);
 
@@ -283,20 +244,43 @@ namespace AudioStuff
         } //end GetRandomNoiseMatrix()
 
 
+        /// <summary>
+        /// returns a matrix of noise vectors. Each noise vector is a random sample from a matrix of low energy frames
+        /// that has been derive from the passed dataMatrix[] which is actually the original sonogram.
+        /// </summary>
+        /// <param name="dataMatrix"></param>
+        /// <param name="noiseCount"></param>
+        /// <param name="decibels"></param>
+        /// <param name="decibelThreshold"></param>
+        /// <returns></returns>
+        public double[,] GetRandomNoiseMatrix(double[,] dataMatrix, int noiseCount, double[] decibels, double decibelThreshold)
+        {
+            double[,] lowEnergyFrames = GetMatrixOfLowEnergyFrames(dataMatrix, decibels, decibelThreshold);
+            double[,] noise = GetRandomNoiseMatrix(lowEnergyFrames, noiseCount);
+            return noise;
+        } //end GetRandomNoiseMatrix()
 
-        public double[,] GetNoiseMatrix(double[,] matrix, double[] decibels, double decibelThreshold)
+
+        /// <summary>
+        /// returns a matrix of low energy frames derived from the passed dataMatrix[] which is actually the original sonogram
+        /// </summary>
+        /// <param name="dataMatrix"></param>
+        /// <param name="decibels"></param>
+        /// <param name="decibelThreshold"></param>
+        /// <returns></returns>
+        public double[,] GetMatrixOfLowEnergyFrames(double[,] dataMatrix, double[] decibels, double decibelThreshold)
         {
             //Console.WriteLine("GetNoiseMatrix(double[,] matrix, double[] decibels, double decibelThreshold="+decibelThreshold+")");
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
+            int frameCount = dataMatrix.GetLength(0);
+            int featureCount = dataMatrix.GetLength(1);
 
-            int targetCount = rows / 2; //want a minimum of 20% of frames for a noise estimate
+            int targetCount = frameCount / 5; //want a minimum of 20% of frames for a noise estimate
             double threshold = decibelThreshold + 1.0; //set min Decibel threshold for noise inclusion
             int count = 0;
             while (count < targetCount)
             {
                 count = 0;
-                for (int i = 0; i < rows; i++) if (decibels[i] <= threshold) count++;
+                for (int i = 0; i < frameCount; i++) if (decibels[i] <= threshold) count++;
                 //Console.WriteLine("decibelThreshold=" + threshold.ToString("F1") + " count=" + count);
                 threshold += 1.0;
             }
@@ -304,25 +288,60 @@ namespace AudioStuff
 
 
             //now transfer low energy frames to noise matrix
-            double[,] noise = new double[count, cols];
+            double[,] lowEnergyFrames = new double[count, featureCount];
             threshold -= 1.0; //take threshold back to the proper value
             count = 0;
-            for (int i = 0; i < rows; i++)
+            for (int i = 0; i < frameCount; i++)
             {
                 if (decibels[i] <= threshold)
                 {
-                    for (int j = 0; j < cols; j++) noise[count, j] = matrix[i, j];
+                    for (int j = 0; j < featureCount; j++) lowEnergyFrames[count, j] = dataMatrix[i, j];
                     count++;
                 }
             }
-            string fPath = @"C:\SensorNetworks\Sonograms\noise.bmp";
-            ImageTools.DrawMatrix(noise, fPath);
+            //string fPath = @"C:\SensorNetworks\Sonograms\noise.bmp";
+            //ImageTools.DrawMatrix(noise, fPath);
 
+            return lowEnergyFrames;
+        } //end GetRandomNoiseMatrix()
+
+
+
+
+
+        /// <summary>
+        /// DEPRACATED METHOD
+        /// Returns an array of doubles that simulates noise or average row from the passed sonogram matrix
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public double[] GetRandomNoiseVector(double[,] matrix)
+        {
+            int frameCount = matrix.GetLength(0);
+            int featureCount = matrix.GetLength(1);
+            //Console.WriteLine(" ... dimM[1]=" + M.GetLength(1) + " ... dim fvs[fvID]=" + fvs[fvID].FvLength);
+
+            double[] noise = new double[featureCount];
+            RandomNumber rn = new RandomNumber();
+            for (int j = 0; j < featureCount; j++)
+            {
+                int id = rn.getInt(frameCount);
+                noise[j] = matrix[id, j];
+            }
+            //Console.ReadLine();
             return noise;
-        }
+        } //end GetRandomNoiseVector()
 
 
-        public string ExtractSymbolStream(double[,] zscoreMatrix, double zScoreThreshold)
+        /// <summary>
+        /// returns a string of symbols derived from the passed z-score matrix. The z-score matrix represents the 
+        /// phonetic probability matrix in automated speech processing.
+        /// In ASR, usually take the logs of the probabilities which is related to square of z-scores.
+        /// </summary>
+        /// <param name="zscoreMatrix"></param>
+        /// <param name="zScoreThreshold"></param>
+        /// <returns></returns>
+        public string ExtractSymbolStreamFromPhonemeMatrix(double[,] zscoreMatrix, double zScoreThreshold)
         {
             int frameCount = zscoreMatrix.GetLength(0);
             int fvCount    = zscoreMatrix.GetLength(1);
@@ -336,19 +355,81 @@ namespace AudioStuff
                     continue;
                 }
                 //init the FV scores
-                double[] fvScores = new double[fvCount-1];
+                double[] fvScores = new double[fvCount-1]; //exclude the noise FV in zero position
                 for (int n = 0; n < (fvCount - 1); n++) fvScores[n] = zscoreMatrix[i, n + 1];
                 int maxIndex = DataTools.GetMaxIndex(fvScores);
-                if (zscoreMatrix[i, maxIndex + 1] >= zScoreThreshold) c = '9';
-                else c = 'n';
-//                else c = 'x';
+                if (zscoreMatrix[i, maxIndex + 1] >= zScoreThreshold) c = DataTools.Integer2Char(maxIndex+1);
+                else c = 'x';
                 sb.Append(c);
             }
             return sb.ToString();
         }
 
 
-        public double[] CallSearch(string symbolSequence, string[] words)
+        /// <summary>
+        /// scans a symbol string for the passed words and returns for each position in the string the match score of
+        /// that word which obtained the maximum score. The matchscore is derived from a zscore matrix.
+        /// NOTE: adding z-scores is similar to adding the logs of probabilities derived from Gaussian distribution.
+        ///     log(p) = -log(sd) - log(sqrt(2pi)) - (Z^2)/2  = Constant - (Z^2)/2
+        ///         I am adding Z-scores instead of the squares of Z-scores.
+        /// </summary>
+        /// <param name="symbolSequence"></param>
+        /// <param name="zscoreMatrix"></param>
+        /// <param name="words"></param>
+        /// <returns></returns>
+        public double[] WordSearch(string symbolSequence, double[,] zscoreMatrix, string[] words)
+        {
+            int symbolCount = symbolSequence.Length;
+            int wordCount = words.Length;
+            double[] wordScores = new double[symbolCount];
+            int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
+
+            for (int i = 0; i < symbolCount - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
+            {
+                if ((symbolSequence[i] == 'x') || (symbolSequence[i] == 'n'))
+                {
+                    wordScores[i] = 0.0;
+                    continue;
+                }
+                //have a possible word so check what it is
+                double[] scores = new double[wordCount];
+                for (int w = 0; w < wordCount; w++)
+                {
+                    int wordLength = words[w].Length;
+                    int[] intArray = DataTools.String2IntegerArray(words[w]);
+                    double sum = 0.0;
+                    for (int s = 0; s < wordLength; s++) sum += zscoreMatrix[i + s, intArray[s]];
+                    scores[w] = sum;
+
+                }//end of getting word scores for this position
+
+                //get the maxmum score
+                int maxIndex;
+                DataTools.getMaxIndex(scores, out maxIndex);
+                wordScores[i] = scores[maxIndex];
+                int winningWordLength = words[maxIndex].Length;
+
+                //now check that sum is more than the noise score over same frames - sum the noise scores
+                //double noise = 0.0;
+                //for (int s = 0; s < winningWordLength; s++) noise += zscoreMatrix[i + s, 0];
+
+                //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
+                //if (wordScores[i] < noise) Console.WriteLine("WINNING SCORE < NOISE");
+                i += winningWordLength; //skip over letters in word. These missed positions will have zero score
+
+            }//end of symbol string
+            return wordScores;
+        }
+
+        /// <summary>
+        /// scans a symbol string for the passed words and returns for each position in the string the match score of
+        /// that word which obtained the maximum score. The matchscore is derived from the Levenshtein edit distance.
+        /// This method did not work so well because the edit scores are discrete and too chunky for these purposes
+        /// </summary>
+        /// <param name="symbolSequence"></param>
+        /// <param name="words"></param>
+        /// <returns></returns>
+        public double[] WordSearch(string symbolSequence, string[] words)
         {
             int symbolCount = symbolSequence.Length;
             int wordCount = words.Length;
@@ -377,6 +458,12 @@ namespace AudioStuff
         }
 
 
+        /// <summary>
+        /// DEPRACATED
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public double scoreMatch_DotProduct(double[,] template, double[,] signal)
         {
             int tWidth  = template.GetLength(0);
@@ -400,6 +487,12 @@ namespace AudioStuff
             return sum / cellCount;
         } //end scoreMatch_DotProduct()
 
+        /// <summary>
+        /// DEPRACATED
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public double scoreMatch_Euclidian(double[,] template, double[,] signal)
         {
             int tWidth = template.GetLength(0);
@@ -422,8 +515,12 @@ namespace AudioStuff
             return 1 / Math.Sqrt(sum);
         } //end scoreMatch_Euclidian()
 
-
-
+        /// <summary>
+        /// DEPRACATED
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
         public double ScoreMatch_CrossCorrelation(double[,] template, double[,] signal)
         {
             int tWidth = template.GetLength(0);
@@ -447,6 +544,12 @@ namespace AudioStuff
             return sum/cellCount;
         } //end scoreMatch_CrossCorrelation()
 
+
+
+
+
+
+
         public static string ResultsHeader()
         {
             return Results.ResultsHeader();
@@ -458,9 +561,8 @@ namespace AudioStuff
             Console.WriteLine(" Template Name = " + this.template.TemplateState.CallName);
             Console.WriteLine(" " + this.template.TemplateState.CallComment);
             Console.WriteLine(" Z-score threshold = " + this.template.TemplateState.ZScoreThreshold);
-            Console.WriteLine(" Av of Template Response to Noise Model=" + this.results.NoiseAv.ToString("F5") + "+/-" + this.results.NoiseSd.ToString("F5"));
-            DataTools.WriteMinMaxOfArray(" Min/max of z-scores", this.results.Zscores);
-            Console.WriteLine(" Number of template hits = " + this.results.Hits);
+            DataTools.WriteMinMaxOfArray(" Min/max of word scores", this.results.Zscores);
+            Console.WriteLine(" Number of template hits (syllables/words found) = " + this.results.Hits);
             if (this.results.Hits > 0)
             {
                 int period = this.results.ModalHitPeriod;
@@ -474,6 +576,7 @@ namespace AudioStuff
                     Console.WriteLine(" Maximum Period score at " + this.results.BestScoreLocation.ToString("F1") + " s");
                 }
             }
+            Console.WriteLine();
         }
 
 

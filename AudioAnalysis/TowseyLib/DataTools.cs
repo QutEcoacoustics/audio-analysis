@@ -1590,8 +1590,70 @@ namespace TowseyLib
       //String str = Int32.toString(num);
       //return padString_pre(str, width);
       return "TODO: fix this method! ";
-
   }
+
+
+
+  //*************************************************************************************************************************************
+        
+        
+    /// <summary>
+    /// 
+    /// This method was designed to provide a char for a wide range of integers.
+    /// Is used by bird call recognition software - ie means of converting a 
+    /// feature vector ID (the INTEGER) into a char that can be incorporated  into
+    /// a long string.
+    /// At present the method only handles the integers 0 - 35.
+    /// Negative integers are converted to absolute value.
+    /// </summary>
+    /// <param name="num"></param>
+    /// <returns></returns>
+  static public char Integer2Char(int num)
+  {
+      int val = Math.Abs(num);
+      if (val < 10) return val.ToString()[0];
+      else
+      if (val >= 36) return '?'; //integer exceeds range of this conversion
+      string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      int n = val - 10;
+      return ALPHABET[n];
+  }
+  /// <summary>
+  /// This method is the inverse of the method above: Integer2Char(int num)
+  /// Is used by bird call recognition software - ie means of converting a 
+  /// symbolic char into a feature vector ID (the INTEGER).
+  /// </summary>
+  /// <param name="c"></param>
+  /// <returns></returns>
+  static public int Char2Integer(char c)
+  {
+      if (c == 'n') return 0;
+      //check for chars 0 - 9
+      for (int i = 0; i < 10; i++) { if (i.ToString()[0] == c) return i; }
+
+      //check for alphabetic chars
+      string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      for (int i = 0; i < 26; i++) { if (ALPHABET[i] == c) return (i+10); }
+
+      Console.WriteLine("DataTools.Char2Integer(char c): WARNING!! "+c+" is an illegitimate char for this function");
+      return 999; //not in chars 0-9 or A-Z
+  }
+  static public int[] String2IntegerArray(string s)
+  {
+      int length = s.Length;
+      if (length == 0) return null;
+      int[] array = new int[length];
+      for (int i = 0; i < length; i++) { array[i] = Char2Integer(s[i]); }
+
+      return array;
+  }
+
+  //*************************************************************************************************************************************
+
+
+
+
+
 
   /**
    * Pads a string to given length.

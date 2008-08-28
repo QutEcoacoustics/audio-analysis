@@ -489,7 +489,8 @@ namespace AudioStuff
         //***************************************************************************************************************************
         //****************************** STATE MACHINE TO DETERMINE LARGE SCALE STRUCTURE OF CALL ***********************************
 
-        public Results StateMachine(double[] zscores, Results results)
+
+        public Results Periodicity(double[] zscores, int period, Results results)
         {
             //find peaks and process them
             bool[] peaks = DataTools.GetPeaks(zscores);
@@ -510,17 +511,18 @@ namespace AudioStuff
             int periodMilliSec = (int)(1000 * this.TemplateState.FrameOffset * maxIndex);
             results.ModalHitPeriod_ms = periodMilliSec;
 
-            if ((periodMilliSec < 180) || (periodMilliSec > 230)) return results; //not a kek-kek
+            int NH = (int)Math.Ceiling(period /(double)7);
+            if ((periodMilliSec < (period - NH)) || (periodMilliSec > (period + NH))) return results; //not call of interest
 
             results.NumberOfPeriodicHits = hitPeriods[maxIndex - 1] + hitPeriods[maxIndex] + hitPeriods[maxIndex + 1];
 
             if (results.NumberOfPeriodicHits == 0) return results;
 
-            int NH = maxIndex * 100; //frames neighbourhood in which to calculate score
-            int[] kkScores = GetPeriodScores(peaks, maxIndex, NH);
+            NH = maxIndex * 20; //frames neighbourhood in which to calculate score
+            int[] periodicityScores = GetPeriodScores(peaks, maxIndex, NH);
             int index;
-            DataTools.getMaxIndex(kkScores, out index);
-            results.BestCallScore = kkScores[index];
+            DataTools.getMaxIndex(periodicityScores, out index);
+            results.BestCallScore = periodicityScores[index];
             results.BestScoreLocation = (double)index * this.TemplateState.FrameOffset;
             return results;
         }
