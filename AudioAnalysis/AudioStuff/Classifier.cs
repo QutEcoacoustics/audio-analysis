@@ -41,7 +41,7 @@ namespace AudioStuff
         //TEMPLATE RESULTS 
         private Results results =  new Results(); //set up a results file
         public Results Results { get { return results; } set { results = value; } }
-        public double[] Zscores { get { return results.Zscores; } } //want these public to display in images 
+        public double[] Zscores { get { return results.CallScores; } } //want these public to display in images 
 
         private bool Verbose = false;
 
@@ -132,29 +132,63 @@ namespace AudioStuff
             double[,] zscoreMatrix = new double[frameCount, fvCount]; 
             for (int n = 0; n < fvCount; n++)  //for all feature vectors
             {
-                if (this.Verbose) Console.WriteLine(" ... with FV " + n);
+                if (this.Verbose) Console.WriteLine("\t... with FV " + n);
 
                 //now calculate z-score for each score value
                 double[] zscores = this.fvs[n].Scan_CrossCorrelation(s.AcousticM);
                 zscores = DataTools.filterMovingAverage(zscores, window);  //smooth the Z-scores
+                //if(n==0) this.results.Zscores = zscores;
 
                 for (int i = 0; i < frameCount; i++) zscoreMatrix[i, n] = zscores[i];// transfer z-scores to matrix
             }//end for loop over all feature vectors
 
 
-            if (this.Verbose) Console.WriteLine("################## THE SYMBOL SEQUENCE");
-            string symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
-            if (this.Verbose) Console.WriteLine(symbolSequence);
+            //search for potential high scoring locations in the symbol stream
+            //either use hotspots or symbolSequence to help search for words 
+            bool useHotSpots = this.template.TemplateState.HighSensitivitySearch;
+            double[] wordScores;
+            if (useHotSpots)
+            {
+                double[] hotspots = HotSpots(zscoreMatrix, this.fvs[0].NoiseAv, this.template.TemplateState.Words);
+                wordScores = WordSearch(hotspots, zscoreMatrix, this.template.TemplateState.Words);
+                if (this.Verbose) Console.WriteLine("\tUsing HIGH SENSITIVITY / LOW SPECIFICITY SEARCH");
+            }
+            else {
+                string symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
+                wordScores = WordSearch(symbolSequence, zscoreMatrix, this.template.TemplateState.Words);
+                if (this.Verbose) Console.WriteLine("################## THE SYMBOL SEQUENCE");
+                if (this.Verbose) Console.WriteLine(symbolSequence);
+                if (this.Verbose) Console.WriteLine("\tUsing LOW SENSITIVITY / HIGH SPECIFICITY SEARCH");
+            }
 
 
-            //search for words in the symbol stream
-            double[] wordScores = WordSearch(symbolSequence, zscoreMatrix, this.template.TemplateState.Words);
+            //find peaks and process them
+            bool[] peaks = DataTools.GetPeaks(wordScores);
+            peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
+            wordScores = ReconstituteScores(wordScores, peaks);
+            results.Hits = DataTools.CountPositives(wordScores);
+            if (results.Hits <= 1) return; //cannot do anything more in this case
 
 
-            this.results.Zscores = wordScores;
             // put wordScores to template state machine
-            int period = 208; //KEK-KEK ONLY
-            if (period != 0) this.results = this.template.Periodicity(wordScores, period, this.results);
+            int period_ms = this.template.TemplateState.CallPeriodicity_ms; //set in template
+            if (period_ms != 0)
+            {
+                this.results.CallPeriodicity_ms = period_ms;
+                int period_frames = this.template.TemplateState.CallPeriodicity_frames;
+                results.CallPeriodicity_frames = period_frames;
+                int period_NH = this.template.TemplateState.CallPeriodicity_NH_frames;
+                bool[] periodPeaks = Periodicity(peaks, period_frames, period_NH);
+                results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
+                //Console.WriteLine("period_frame=" + period_frames + "+/-" + period_NH + " periodic hits=" + results.NumberOfPeriodicHits);
+                for (int i = 0; i < frameCount; i++) if (!periodPeaks[i]) wordScores[i] = 0.0;
+            } //end of periodic analysis
+
+            this.results.CallScores = wordScores;
+            int maxIndex = DataTools.GetMaxIndex(wordScores);
+            results.BestScoreLocation = (double)maxIndex * this.template.TemplateState.FrameOffset;
+
+
         }  // end of Scan(Sonogram s)
 
 
@@ -367,6 +401,45 @@ namespace AudioStuff
 
 
         /// <summary>
+        /// returns a score for each frame indicating how different it is from the average noise response.
+        /// TODO ????????????????????? Smooth the array with window=largest target word length.
+        /// TODO ????????????????????? Find the peaks and return scores only for the peaks.
+        /// </summary>
+        /// <param name="zscoreMatrix"></param>
+        /// <param name="noiseAv"></param>
+        /// <param name="words"></param>
+        /// <returns></returns>
+        public double[] HotSpots(double[,] zscoreMatrix, double noiseAv, string[] words)
+        {
+            int frameCount = zscoreMatrix.GetLength(0);
+            int fvCount = zscoreMatrix.GetLength(1); //number of feature vectors
+            int wordCount = words.Length;
+            double[] wordScores = new double[frameCount];
+            int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
+
+            double[] deltaScores = new double[frameCount];
+            for (int i = 0; i < frameCount; i++)
+            {
+                double[] scores = new double[fvCount];
+                for (int fv = 0; fv < fvCount; fv++) scores[fv] = zscoreMatrix[i, fv]; //transfer the frame scores to array
+
+                //get the maxmum score
+                int maxIndex;
+                DataTools.getMaxIndex(scores, out maxIndex);
+                if (maxIndex == 0) continue; //skip frames where noise is max
+                double delta = scores[maxIndex] - noiseAv; //get difference between max score and noise
+                if (delta < 0.0) delta = 0.0;
+                deltaScores[i] = delta; 
+
+                //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
+            }//end of symbol string
+
+            return deltaScores;
+        }
+
+
+        
+        /// <summary>
         /// scans a symbol string for the passed words and returns for each position in the string the match score of
         /// that word which obtained the maximum score. The matchscore is derived from a zscore matrix.
         /// NOTE: adding z-scores is similar to adding the logs of probabilities derived from Gaussian distribution.
@@ -420,6 +493,52 @@ namespace AudioStuff
             }//end of symbol string
             return wordScores;
         }
+
+
+
+
+        public double[] WordSearch(double[] hotSpots, double[,] zscoreMatrix, string[] words)
+        {
+            int frameCount = zscoreMatrix.GetLength(0);
+            int fvCount    = zscoreMatrix.GetLength(1); //number of feature vectors
+            int wordCount = words.Length;
+            double[] wordScores = new double[frameCount];
+            int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
+            double threshold = 0.5; //hotspot value must exceed this to be investigated
+
+            for (int i = 0; i < frameCount - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
+            {
+                if (hotSpots[i] < threshold)
+                {
+                    wordScores[i] = 0.0;
+                    continue;
+                }
+                //have a possible word so check what it is
+                double[] scores = new double[wordCount];
+                for (int w = 0; w < wordCount; w++)
+                {
+                    int wordLength = words[w].Length;
+                    int[] intArray = DataTools.String2IntegerArray(words[w]);
+                    double sum = 0.0;
+                    for (int s = 0; s < wordLength; s++) sum += zscoreMatrix[i + s, intArray[s]];
+                    scores[w] = sum;
+
+                }//end of getting word scores for this position
+
+                //get the maxmum score
+                int maxIndex;
+                DataTools.getMaxIndex(scores, out maxIndex);
+                wordScores[i] = scores[maxIndex];
+                //int winningWordLength = words[maxIndex].Length;
+                //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
+
+            }//end of all frames
+            return wordScores;
+        }
+
+        
+
+
 
         /// <summary>
         /// scans a symbol string for the passed words and returns for each position in the string the match score of
@@ -546,7 +665,141 @@ namespace AudioStuff
 
 
 
+        //***************************************************************************************************************************
+        //***************************************************************************************************************************
+        //***************************************************************************************************************************
+        //****************************** STATE MACHINE TO DETERMINE LARGE SCALE STRUCTURE OF CALL ***********************************
 
+
+        public bool[] Periodicity(bool[] peaks, int period_frame, int period_NH)
+        {
+            int L = peaks.Length;
+            bool[] hits = new bool[L];
+            int index = 0;
+
+            //find the first peak
+            for (int n = 0; n < L; n++)
+            {
+                    index = n;
+                    if (peaks[n]) break;
+            }
+            if (index == L - 1) return hits; //i.e. no peaks in the array
+
+
+            // have located index of the first peak. Now look for peaks correct distance apart
+            int minDist = period_frame - period_NH;
+            int maxDist = period_frame + period_NH;
+            for (int n = index + 1; n < L; n++)
+            {
+                if (peaks[n])
+                {
+                        int period = n - index;
+                        if ((period >= minDist) && (period <= maxDist))
+                        {
+                            hits[index] = true;
+                            hits[n] = true;
+                        }
+                        index = n; //set new position
+                }
+            }
+                //DataTools.writeArray(periods);
+
+            return hits;
+        }
+
+
+        /// <summary>
+        /// returns a reconstituted array of zscores.
+        /// Only gives values to score elements in vicinity of a peak.
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="peaks"></param>
+        /// <param name="tHalfWidth"></param>
+        /// <returns></returns>
+        public double[] ReconstituteScores(double[] scores, bool[] peaks)
+        {
+            int length = scores.Length;
+            double[] newScores = new double[length];
+            for (int n = 0; n < length; n++)
+            {
+                if (peaks[n]) newScores[n] = scores[n];
+            } return newScores;
+        } // end of ReconstituteScores()
+
+
+
+        public bool[] RemoveSubThresholdPeaks(double[] scores, bool[] peaks, double threshold)
+        {
+            int length = peaks.Length;
+            bool[] newPeaks = new bool[length];
+            for (int n = 0; n < length; n++)
+            {
+                newPeaks[n] = peaks[n];
+                if (scores[n] < threshold) newPeaks[n] = false;
+            }
+            return newPeaks;
+        }
+
+        public bool[] RemoveIsolatedPeaks(bool[] peaks, int period, int minPeakCount)
+        {
+            int nh = period * minPeakCount / 2;
+            int length = peaks.Length;
+            bool[] newPeaks = new bool[length];
+            //copy array
+            for (int n = 0; n < length; n++) newPeaks[n] = peaks[n];
+
+            for (int n = nh; n < length - nh; n++)
+            {
+                bool isolated = true;
+                for (int i = n - nh; i < n - 3; i++) if (peaks[i]) isolated = false;
+                for (int i = n + 3; i < n + nh; i++) if (peaks[i]) isolated = false;
+                if (isolated) newPeaks[n] = false;
+            }//end for loop
+            //DataTools.writeArray(newPeaks);
+            return newPeaks;
+        }
+
+        /// <summary>
+        /// Calculates a histogram of the intervals between hits (trues) in the peaks array
+        /// </summary>
+        /// <param name="peaks"></param>
+        /// <param name="maxPeriod"></param>
+        /// <returns></returns>
+        public int[] GetHitPeriods(bool[] peaks, int maxPeriod)
+        {
+            int[] periods = new int[maxPeriod];
+            int length = peaks.Length;
+            int index = 0;
+
+            for (int n = 0; n < length; n++)
+            {
+                index = n;
+                if (peaks[n]) break;
+            }
+            if (index == length - 1) return periods; //i.e. no peaks in the array
+
+            // have located index of the first peak
+            for (int n = index + 1; n < length; n++)
+            {
+                if (peaks[n])
+                {
+                    int period = n - index;
+                    if (period >= maxPeriod) period = maxPeriod - 1;
+                    periods[period]++;
+                    index = n;
+                }
+            }
+            //DataTools.writeArray(periods);
+            return periods;
+        }
+
+        //******************************************************************************************************************
+        //******************************************************************************************************************
+        //******************************************************************************************************************
+        //******************************************************************************************************************
+        //******************************************************************************************************************
+        //******************************************************************************************************************
+        //******************************************************************************************************************
 
 
 
@@ -561,21 +814,24 @@ namespace AudioStuff
             Console.WriteLine(" Template Name = " + this.template.TemplateState.CallName);
             Console.WriteLine(" " + this.template.TemplateState.CallComment);
             Console.WriteLine(" Z-score threshold = " + this.template.TemplateState.ZScoreThreshold);
-            DataTools.WriteMinMaxOfArray(" Min/max of word scores", this.results.Zscores);
+            Console.WriteLine(" HIGH SENSITIVITY SEARCH = " + this.template.TemplateState.HighSensitivitySearch);
+
+            DataTools.WriteMinMaxOfArray(" Min/max of word scores", this.results.CallScores);
             Console.WriteLine(" Number of template hits (syllables/words found) = " + this.results.Hits);
-            if (this.results.Hits > 0)
-            {
-                int period = this.results.ModalHitPeriod;
-                Console.WriteLine(" Modal period between hits = " + period + " fames = " + this.results.ModalHitPeriod_ms + " ms");
+            if (this.results.Hits < 1) { Console.WriteLine(); return; }
 
-                if (this.results.NumberOfPeriodicHits > 0)
-                {
-                    Console.WriteLine(" Number of hits with period " + (period - 1) + "-" + (period + 1) + " frames = " + this.results.NumberOfPeriodicHits);
+            Console.WriteLine(" Maximum Score at " + this.results.BestScoreLocation.ToString("F1") + " s");
 
-                    Console.WriteLine(" Template Period Score = " + this.results.BestCallScore);
-                    Console.WriteLine(" Maximum Period score at " + this.results.BestScoreLocation.ToString("F1") + " s");
-                }
-            }
+            if (this.template.TemplateState.CallPeriodicity_ms == 0) { Console.WriteLine(); return; }
+
+            //report periodicity results
+            int period = this.results.CallPeriodicity_frames;
+            int NH_frames = this.template.TemplateState.CallPeriodicity_NH_frames;
+            int NH_ms     = this.template.TemplateState.CallPeriodicity_NH_ms;
+
+            Console.WriteLine(" Required periodicity = " + period + "±" + NH_frames + " frames or " + this.results.CallPeriodicity_ms+"±" + NH_ms + " ms");
+            Console.WriteLine(" Number of hits with required periodicity = " + this.results.NumberOfPeriodicHits);
+            
             Console.WriteLine();
         }
 
@@ -594,7 +850,13 @@ namespace AudioStuff
 
 
 
-
+//**********************************************************************************************************************************
+    //**********************************************************************************************************************************
+    //**********************************************************************************************************************************
+    //**********************************************************************************************************************************
+    //**********************************************************************************************************************************
+    //**********************************************************************************************************************************
+    //*******************************************  RESULTS CLASS ***********************************************************************
 
     /// <summary>
     /// this class contains the results obtained from the Classifer.
@@ -606,11 +868,18 @@ namespace AudioStuff
         public const char spacerC   = '\t';  //used as match for splitting string
 
 
-        public double NoiseAv { get; set; }
-        public double NoiseSd { get; set; }
-        //public double[] Scores { get; set; }  // the raw scores - now relegated to each Feature Vector
-        public double[] Zscores { get; set; } // the Z-scores
-        public double[] Fscores { get; set; } // the filtered Z-scores 
+
+
+        // RESULTS FOR SPECIFIC ANIMAL CALL ANALYSIS
+        public double[] CallScores { get; set; } // array of scores for user defined call templates
+        public int Hits { get; set; } //number of hits that matches that exceed the threshold
+        public int CallPeriodicity_frames { get; set; }
+        public int CallPeriodicity_ms { get; set; }
+        public int NumberOfPeriodicHits { get; set; }
+        public int BestCallScore { get; set; }
+        public double BestScoreLocation { get; set; } //in seconds from beginning of recording
+
+        // RESULTS FOR GENERAL ACOUSTIC ANALYSIS
         public double[] PowerHisto { get; set; }
         public double[] EventHisto { get; set; }
         public double EventAverage { 
@@ -620,42 +889,7 @@ namespace AudioStuff
             }}
         public double EventEntropy { get; set; }
         public double[] ActivityHisto { get; set; }
-        public int Hits { get; set; } //number of hits that matches that exceed the threshold
-        public int ModalHitPeriod { get; set; }
-        public int ModalHitPeriod_ms { get; set; }
-        public int NumberOfPeriodicHits { get; set; }
-        public int BestCallScore { get; set; }
-        public double BestScoreLocation { get; set; } //in seconds from beginning of recording
 
-        //public void WritePowerHisto()
-        //{
-        //    Console.WriteLine("Average POWER");
-        //    for (int i = 0; i < PowerHisto.Length; i++)
-        //    {
-        //        Console.WriteLine(" Freq band " + i + "-" + (i + 1) + "kHz=\t" + PowerHisto[i].ToString("F2") + " dB");
-        //    }
-        //}
-
-        //public void WriteActivityHisto()
-        //{
-        //    Console.WriteLine("ACTIVITY");
-        //    for (int i = 0; i < ActivityHisto.Length; i++)
-        //    {
-        //        Console.WriteLine(" Freq band " + i + "-" + (i + 1) + "kHz=\t" + ActivityHisto[i].ToString("F2")+" au/sec");
-        //    }
-        //}
-        //public void WriteEventHisto()
-        //{
-        //    Console.WriteLine("EVENTS");
-        //    for (int i = 0; i < EventHisto.Length; i++)
-        //    {
-        //        Console.WriteLine(" Freq band " + i + "-" + (i + 1) + "kHz=\t" + EventHisto[i].ToString("F2") + " eu/sec");
-        //    }
-        //}
-        //public void WriteEventEntropy()
-        //{
-        //    Console.WriteLine(" Event Rel. Entropy=" + this.EventEntropy.ToString("F3"));
-        //}
 
         public static string ResultsHeader()
         {

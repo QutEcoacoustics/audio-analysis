@@ -36,8 +36,8 @@ namespace AudioStuff
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
-            //Mode userMode = Mode.TestTemplate;
+            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
 
@@ -330,10 +330,10 @@ namespace AudioStuff
                         t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
                         cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
-                        Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod_ms+" ms");
+                        Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms+" ms");
                         Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
-                        Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
-                        Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation.ToString("F1")+" sec");
+                        //Console.WriteLine("# Best Score at =" + cl.Results.BestCallScore);
+                        Console.WriteLine("# Best Score At =" + cl.Results.BestScoreLocation.ToString("F1")+" sec");
                     }
                     catch (Exception e)
                     {
@@ -347,10 +347,10 @@ namespace AudioStuff
                     FileInfo[] files = d.GetFiles("*" + wavFExt);
                     ArrayList array = new ArrayList();
                     array.Add(Classifier.ResultsHeader());
-                    SonogramType sonogramType = SonogramType.spectral; //image is linear freq scale
 
                     try
                     {
+                        Console.WriteLine("\nREADING TEMPLATE");
                         Template t = new Template(iniFPath, callID);
                         int count = 1;
                         foreach (FileInfo fi in files) if (fi.Extension == wavFExt)
@@ -361,14 +361,14 @@ namespace AudioStuff
                                 wavPath = testDirName + "\\" + fName;
                                 try
                                 {
-                                    s = new Sonogram(iniFPath, wavPath);
-                                    Classifier cl = new Classifier(t, s);
-                                    s.SaveImage(opDirName, cl.Zscores, sonogramType);
+                                    t.SetSonogram(wavPath);
+                                    Classifier cl = new Classifier(t);
+                                    t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
-                                    Console.WriteLine("Modal Hit Period=" + cl.Results.ModalHitPeriod);
+                                    Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms + " ms");
                                     Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
-                                    Console.WriteLine("Best Call Score =" + cl.Results.BestCallScore);
-                                    Console.WriteLine("Best Score At   =" + cl.Results.BestScoreLocation + " sec");
+                                    //Console.WriteLine("# Best Score at =" + cl.Results.BestCallScore);
+                                    Console.WriteLine("# Best Score At =" + cl.Results.BestScoreLocation.ToString("F1") + " sec");
                                 }
                                 catch (Exception e)
                                 {
