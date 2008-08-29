@@ -51,7 +51,7 @@ namespace AudioStuff
             FileInfo f = new FileInfo(path);
 
             this.vectorFName = f.Name;
-            Console.WriteLine("FV name=" + f.Name + "  length=" + length + "  id=" + id);
+            if (FeatureVector.Verbose) Console.WriteLine("\tFV CONSTRUCTOR: name=" + f.Name + "  length=" + length + "  id=" + id);
 
             int status = ReadFeatureVectorFile(path);
             //DataTools.writeArray(this.features);
@@ -64,7 +64,7 @@ namespace AudioStuff
             this.features = vector;
             //normalise template to difference from mean
             this.featuresNormed = DataTools.DiffFromMean(this.features);
-            Console.WriteLine("FV name=" + this.vectorFName + "  length=" + this.fvLength + "  id=" + id);
+            if (FeatureVector.Verbose) Console.WriteLine("\tFV CONSTRUCTOR: name=" + this.vectorFName + "  length=" + this.fvLength + "  id=" + id);
             //DataTools.writeArray(this.featuresNormed);
         }
 
@@ -91,7 +91,7 @@ namespace AudioStuff
 
         public void SaveDataAndImageToFile(string path)
         {
-            Console.WriteLine(" Template feature vector in file " + path);
+            if (FeatureVector.Verbose) Console.WriteLine(" Template feature vector in file " + path);
             FileTools.WriteArray2File_Formatted(this.features, path, "F5");
 
             //Console.WriteLine(" Template feature vector image in file " + this.ImageFName);
@@ -135,7 +135,7 @@ namespace AudioStuff
             NormalDist.AverageAndSD(noiseScores, out av, out sd);
             this.NoiseAv = av;
             this.NoiseSd = sd;
-            Console.WriteLine(" noiseAv=" + this.NoiseAv + "   noiseSd=" + this.NoiseSd);
+            if (FeatureVector.Verbose) Console.WriteLine("\tFV[" + this.fvID + "] Av Noise Response =" + this.NoiseAv.ToString("F3") + "\xB1" + this.NoiseSd.ToString("F3"));
 
         } //end SetNoiseResponse
 

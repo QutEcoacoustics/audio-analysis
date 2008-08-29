@@ -1002,9 +1002,15 @@ namespace AudioStuff
         public string[] FVSourceFiles { get; set; }
 
         //THE LANGUAGE MODEL
+        public bool HighSensitivitySearch; //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
         public int WordCount { get; set; }
         public string[] Words { get; set; }
 
+        //CALL PERIODICITY INFO
+        public int CallPeriodicity_ms { get; set; }
+        public int CallPeriodicity_frames { get; set; }
+        public int CallPeriodicity_NH_ms { get; set; }
+        public int CallPeriodicity_NH_frames { get; set; }
 
 
 

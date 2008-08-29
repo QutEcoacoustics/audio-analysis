@@ -71,10 +71,10 @@ namespace AudioStuff
             if (this.verbose) Console.WriteLine("\n#####  READING APPLICATION INI FILE :=" + iniFPath);
             this.templateState = new SonoConfig();
             this.templateState.ReadConfig(iniFPath);//read the ini file for default parameters
-
             if (this.templateState.Verbosity > 0) this.verbose = true;
+            else                                  this.verbose = false;
+            
             this.templateDir = this.templateState.TemplateDir;
-
             this.CallID = id;
 
             string templatePath = this.templateDir+templateStemName + "_"+id+templateFExt;
@@ -110,8 +110,12 @@ namespace AudioStuff
         /// <param name="sourceFileStem"></param>
         public Template(string iniFPath, int callID, string callName, string callComment, string sourceFileStem)
         {
+            if (this.verbose) Console.WriteLine("\n#####  READING APPLICATION INI FILE :=" + iniFPath);
             this.templateState = new SonoConfig();
             this.templateState.ReadConfig(iniFPath);//read the ini file for default parameters
+            if (this.templateState.Verbosity > 0) this.verbose = true;
+            else                                  this.verbose = false;
+
             this.CallID = callID;
             this.templateState.CallID = callID;
             this.templateState.CallName = callName;
@@ -120,7 +124,6 @@ namespace AudioStuff
             this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
             this.templatePath   = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
-            //this.matrixFName = this.templateState.TemplateDir + Template.modelStemName + "_" + callID + ".txt";
             //Console.WriteLine("dataFName=" + dataFName);
         }
 
@@ -141,8 +144,8 @@ namespace AudioStuff
             //check the sampling rate
             int sr = wav.SampleRate;
             if (sr != this.templateState.SampleRate)
-                throw new Exception("Sampling rate of wav file not equal to that of template:  wavFile(" + sr + ") != template(" + this.templateState.SampleRate+")");
-            Console.WriteLine(" Sampling rates of wav file and template are equal: " + sr + " = " + this.templateState.SampleRate);
+                throw new Exception("Template.SetSonogram(string wavPath):- Sampling rate of wav file not equal to that of template:  wavFile(" + sr + ") != template(" + this.templateState.SampleRate + ")");
+            if (this.verbose) Console.WriteLine("Template.SetSonogram(string wavPath):- Sampling rates of wav file and template are equal: " + sr + " = " + this.templateState.SampleRate);
 
             //initialise Sonogram which also makes the sonogram
             this.sonogram = new Sonogram(this.templateState, wav);
@@ -416,7 +419,7 @@ namespace AudioStuff
             state.FrameCount = cfg.GetInt("NUMBER_OF_FRAMES");
             state.FramesPerSecond = cfg.GetDouble("FRAMES_PER_SECOND");
             state.FrameDuration = cfg.GetDouble("FRAME_DURATION_MS") / (double)1000; //convert ms to seconds
-            state.FrameOffset = cfg.GetDouble("FRAME_OFFSET") / (double)1000; //convert ms to seconds
+            state.FrameOffset = cfg.GetDouble("FRAME_OFFSET_MS") / (double)1000; //convert ms to seconds
 
             //MFCC parameters
             state.NyquistFreq = cfg.GetInt("NYQUIST_FREQ");
@@ -452,19 +455,32 @@ namespace AudioStuff
             int i = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
             if (i == -Int32.MaxValue) Console.WriteLine("WARNING!! ZSCORE_SMOOTHING_WINDOW NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE");
             else state.ZscoreSmoothingWindow = i; 
+
             state.ZScoreThreshold = 1.98;  // DEFAULT zscore threshold for p=0.05
             double value = cfg.GetDouble("ZSCORE_THRESHOLD");
             if (value == -Double.MaxValue) Console.WriteLine("WARNING!! ZSCORE_THRESHOLD NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE");
             else state.ZScoreThreshold = value;
 
-
             //the Language Model
+            state.HighSensitivitySearch = cfg.GetBoolean("USE_HIGH_SENSITIVITY_SEARCH");
             int wordCount = cfg.GetInt("NUMBER_OF_WORDS");
             state.WordCount  = wordCount;
             state.Words = new string[wordCount];
             for (int n = 0; n < wordCount; n++) state.Words[n] = cfg.GetString("WORD" + (n+1));
             //Console.WriteLine("NUMBER OF WORDS=" + state.WordCount);
             //for (int n = 0; n < wordCount; n++) Console.WriteLine("WORD"+n+"="+state.Words[n]);
+
+            // PERIODICITY INFO
+            state.CallPeriodicity_ms = 0;
+            int period_ms = cfg.GetInt("CALL_PERIODICITY_MS");
+            if (period_ms == -Int32.MaxValue) Console.WriteLine("CALL_PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
+            else state.CallPeriodicity_ms = period_ms;
+
+            int period_frame = (int)Math.Round(period_ms / state.FrameOffset / (double)1000);
+            state.CallPeriodicity_frames = period_frame;
+            state.CallPeriodicity_NH_frames = (int)Math.Floor(period_frame / (double)7); //arbitrary NH
+            state.CallPeriodicity_NH_ms     = (int)Math.Floor(period_ms    / (double)7); //arbitrary NH
+            //Console.WriteLine("period_ms=" + period_ms + "  period_frame=" + period_frame + "+/-" + state.CallPeriodicity_NH);
 
             return status;
         } //end of ReadTemplateFile()
@@ -481,186 +497,6 @@ namespace AudioStuff
             Console.WriteLine(" Template ini file: " + this.TemplatePath);
             Console.WriteLine(" Bottom freq=" + this.templateState.MinTemplateFreq + "  Mid freq=" + this.templateState.MidTemplateFreq + " Top freq=" + this.templateState.MaxTemplateFreq);
         }
-
-
-
-        //***************************************************************************************************************************
-        //***************************************************************************************************************************
-        //***************************************************************************************************************************
-        //****************************** STATE MACHINE TO DETERMINE LARGE SCALE STRUCTURE OF CALL ***********************************
-
-
-        public Results Periodicity(double[] zscores, int period, Results results)
-        {
-            //find peaks and process them
-            bool[] peaks = DataTools.GetPeaks(zscores);
-            peaks = RemoveSubThresholdPeaks(zscores, peaks, this.TemplateState.ZScoreThreshold);
-            //zscores = ReconstituteScores(zscores, peaks);
-
-            results.Hits = CountPeaks(peaks);
-            if (results.Hits <= 1) return results;
-            int bins = 200;
-            int[] hitPeriods = GetHitPeriods(peaks, bins);
-            hitPeriods[0] = 0;  //do not want zero period ....
-            hitPeriods[bins - 1] = 0; // ... or max period
-            int maxIndex = 0;
-            DataTools.getMaxIndex(hitPeriods, out maxIndex);
-            results.ModalHitPeriod = maxIndex;
-            //Console.WriteLine("maxIndex=" + maxIndex + " hits=" + hitPeriods[maxIndex]);
-            if (results.ModalHitPeriod == 0) return results;
-            int periodMilliSec = (int)(1000 * this.TemplateState.FrameOffset * maxIndex);
-            results.ModalHitPeriod_ms = periodMilliSec;
-
-            int NH = (int)Math.Ceiling(period /(double)7);
-            if ((periodMilliSec < (period - NH)) || (periodMilliSec > (period + NH))) return results; //not call of interest
-
-            results.NumberOfPeriodicHits = hitPeriods[maxIndex - 1] + hitPeriods[maxIndex] + hitPeriods[maxIndex + 1];
-
-            if (results.NumberOfPeriodicHits == 0) return results;
-
-            NH = maxIndex * 20; //frames neighbourhood in which to calculate score
-            int[] periodicityScores = GetPeriodScores(peaks, maxIndex, NH);
-            int index;
-            DataTools.getMaxIndex(periodicityScores, out index);
-            results.BestCallScore = periodicityScores[index];
-            results.BestScoreLocation = (double)index * this.TemplateState.FrameOffset;
-            return results;
-        }
-
-
-        public int CountPeaks(bool[] peaks)
-        {
-            int count = 0;
-            foreach (bool b in peaks)
-            {
-                if (b) count++;
-            }
-            return count;
-        }
-
-        /// <summary>
-        /// returns a reconstituted array of zscores.
-        /// Only gives values to score elements in vicinity of a peak.
-        /// </summary>
-        /// <param name="scores"></param>
-        /// <param name="peaks"></param>
-        /// <param name="tHalfWidth"></param>
-        /// <returns></returns>
-        public double[] ReconstituteScores(double[] scores, bool[] peaks)
-        {
-            int length = scores.Length;
-            double[] newScores = new double[length];
-            for (int n = 0; n < length; n++)
-            {
-                if (peaks[n]) newScores[n] = scores[n];
-            } return newScores;
-        } // end of ReconstituteScores()
-
-
-
-        public bool[] RemoveSubThresholdPeaks(double[] scores, bool[] peaks, double threshold)
-        {
-            int length = peaks.Length;
-            bool[] newPeaks = new bool[length];
-            for (int n = 0; n < length; n++)
-            {
-                newPeaks[n] = peaks[n];
-                if (scores[n] < threshold) newPeaks[n] = false;
-            }
-            return newPeaks;
-        }
-
-        public bool[] RemoveIsolatedPeaks(bool[] peaks, int period, int minPeakCount)
-        {
-            int nh = period * minPeakCount / 2;
-            int length = peaks.Length;
-            bool[] newPeaks = new bool[length];
-            //copy array
-            for (int n = 0; n < length; n++) newPeaks[n] = peaks[n];
-
-            for (int n = nh; n < length - nh; n++)
-            {
-                bool isolated = true;
-                for (int i = n - nh; i < n - 3; i++) if (peaks[i]) isolated = false;
-                for (int i = n + 3; i < n + nh; i++) if (peaks[i]) isolated = false;
-                if (isolated) newPeaks[n] = false;
-            }//end for loop
-            //DataTools.writeArray(newPeaks);
-            return newPeaks;
-        }
-
-        /// <summary>
-        /// Calculates a histogram of the intervals between hits (trues) in the peaks array
-        /// </summary>
-        /// <param name="peaks"></param>
-        /// <param name="maxPeriod"></param>
-        /// <returns></returns>
-        public int[] GetHitPeriods(bool[] peaks, int maxPeriod)
-        {
-            int[] periods = new int[maxPeriod];
-            int length = peaks.Length;
-            int index = 0;
-
-            for (int n = 0; n < length; n++)
-            {
-                index = n;
-                if (peaks[n]) break;
-            }
-            if (index == length - 1) return periods; //i.e. no peaks in the array
-
-            // have located index of the first peak
-            for (int n = index + 1; n < length; n++)
-            {
-                if (peaks[n])
-                {
-                    int period = n - index;
-                    if (period >= maxPeriod) period = maxPeriod - 1;
-                    periods[period]++;
-                    index = n;
-                }
-            }
-            //DataTools.writeArray(periods);
-            return periods;
-        }
-
-
-        public int[] GetPeriodScores(bool[] peaks, int period, int NH)
-        {
-            int L = peaks.Length;
-            int[] scores = new int[L];
-
-            //find first peak
-            int i = 0;
-            while ((!peaks[i]) && (i < (L - 1))) i++;
-            int prevLoc = i;
-
-            while (i < L)
-            {
-                if (peaks[i])
-                {
-                    int dist = i - prevLoc;
-                    if ((dist == (period - 1)) || (dist == period) || (dist == (period + 1)))
-                    {
-                        scores[prevLoc]++;
-                        scores[i]++;
-                    }
-                    prevLoc = i;
-                }
-                i++;
-            }
-            //now have an array of 0, 1 or 2
-
-            int[] scores2 = new int[L];
-            for (int n = NH; n < L - NH; n++)
-            {
-                if (!peaks[n]) continue;
-                for (int j = n - NH; j < n + NH; j++) scores2[n] += scores[j];
-            }
-            //DataTools.writeArray(scores2);
-            return scores2;
-        }
-
-
 
 
     }//end Class Template

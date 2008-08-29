@@ -330,6 +330,35 @@ namespace TowseyLib
 
 
 //=============================================================================
+        /// <summary>
+        /// counts the positive values in an array. Called by Classifier.Scan(Sonogram s)
+        /// </summary>
+        /// <param name="values"></param>
+        /// <returns></returns>
+        public static int CountPositives(double[] values)
+        {
+            int count = 0;
+            foreach (double d in values)
+            {
+                if (d > 0.0) count++;
+            }
+            return count;
+        }
+
+
+
+
+    public static int CountTrues(bool[] peaks)
+    {
+        int count = 0;
+        foreach (bool b in peaks)
+        {
+           if (b) count++;
+        }
+        return count;
+    }
+
+
     public static double[] Bool2Binary(bool[] boolArray)
     {
         int L = boolArray.Length;
