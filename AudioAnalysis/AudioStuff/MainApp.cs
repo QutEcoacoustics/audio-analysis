@@ -36,8 +36,8 @@ namespace AudioStuff
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
-            Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
+            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
 
@@ -109,7 +109,8 @@ namespace AudioStuff
 
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
-            //************* CALL PARAMETERS ***************
+            //******************************************************************************************************************
+            //************* CALL 1 PARAMETERS ***************
 
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
@@ -119,6 +120,10 @@ namespace AudioStuff
             //int y1 = 115; int x1 = 545;
             //int y2 = 415; int x2 = 552;
 
+
+
+            //******************************************************************************************************************
+            //************* CALL 2 PARAMETERS ***************
             int callID = 2;
             string callName = "Lewin's Rail Kek-kek";
             string callComment = "Template consists of a single KEK!";
@@ -140,34 +145,46 @@ namespace AudioStuff
             //double maxSyllableGap = 0.25; //seconds
             //double maxSong=
 
-            int[] timeIndices = { 1784, 1828, 1848, 2113, 2132, 2152 };
-            //int[] timeIndices = { 1784 };
+            //FEATURE VECTOR PREPARATION DETAILS
+            FV_Source fvSource = FV_Source.SELECTED_FRAMES;
+            int[] selectedFrames = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            //FV_Source fvSource = FV_Source.MARQUEE;
+            //int marqueeStart = 999;
+            //int marqueeEnd   = 999;
+
+            FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;
+            //FV_Extraction fv_Extraction = FV_Extraction.AT_FIXED_INTERVALS;
+            //int fvExtractionIntervals = 200; //milliseconds
+            bool doFvAveraging = true;
+            string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+            // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+            int zScoreSmoothingWindow = 3;
+            double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+
+            //LANGUAGE MODEL
+            int numberOfWords = 3; //number of defined song variations 
+            string[] words = { "111", "11", "1" };
+            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+            bool doHighSensitivitySaerch = true;
+
+            // SCORING PROTOCOL
+            ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            int callPeriodicity = 208;
 
 
-            //int callID = 3;
-            //string callName = "Lewin's Rail Kek-kek";
-            //string callComment = "Template consists of two KEKs!";
-            //int x1 = 663; int y1 = 284; //image coordinates
-            //int x2 = 675; int y2 = 431;
-
-            //int callID = 4;
-            //string callName = "Cicada";
-            //string callComment = "2 Broadband Chirps Repeated @ 5Hz";
-            //int y1 = 115; int x1 = 545;
-            //int y2 = 415; int x2 = 560;
-
-            //int callID = 5;
-            //string callName = "Cicada";
-            //string callComment = "Noisy Cicada with 5 hz white noise chirp";
-            //int x1 = 249; int y1 = 0; //image coordinates
-            //int x2 = 255; int y2 = 511;
+            //******************************************************************************************************************
+            //************* CALL 2 PARAMETERS ***************
 
 
-            //int callID = 6;
-            //string callName = "Lewin's Rail Kek-kek";
-            //string callComment = "Template consists of three KEK-KEKs!";
-            //int x1 = 663; int y1 = 284; //image coordinates
-            //int x2 = 682; int y2 = 431;
+
+
+
+
+
+
+
+
             //************** END OF USER PARAMETERS ***************************
 
             Console.WriteLine("DATE AND TIME:"+DateTime.Now);
@@ -277,7 +294,7 @@ namespace AudioStuff
                         t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
-                        t.ExtractTemplateFromSonogram(timeIndices);
+                        t.ExtractTemplateFromSonogram(selectedFrames);
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                     }
                     catch (Exception e)
@@ -297,7 +314,7 @@ namespace AudioStuff
                         t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
-                        t.ExtractTemplateFromSonogram(timeIndices);
+                        t.ExtractTemplateFromSonogram(selectedFrames);
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                         //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);
 

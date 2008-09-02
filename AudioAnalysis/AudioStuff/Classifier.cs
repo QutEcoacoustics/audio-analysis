@@ -12,6 +12,9 @@ namespace AudioStuff
     /// </summary>
 
 
+    public enum ScoringProtocol { HOTSPOTS, WORDMATCH, PERIODICITY }
+
+
 
     /// <summary>
     /// this class scans a sonogram using a template.
@@ -172,8 +175,8 @@ namespace AudioStuff
 
             // put wordScores to template state machine
             int period_ms = this.template.TemplateState.CallPeriodicity_ms; //set in template
-            if (period_ms != 0)
-            {
+            if ((this.template.TemplateState.ScoringProtocol == ScoringProtocol.PERIODICITY)&&(period_ms != 0))
+            {            
                 this.results.CallPeriodicity_ms = period_ms;
                 int period_frames = this.template.TemplateState.CallPeriodicity_frames;
                 results.CallPeriodicity_frames = period_frames;

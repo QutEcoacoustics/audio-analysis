@@ -10,6 +10,14 @@ using Props = TowseyLib.Configuration;
 
 namespace AudioStuff
 {
+
+    public enum FV_Source { SELECTED_FRAMES, MARQUEE}
+    public enum FV_Extraction { AT_ENERGY_PEAKS, AT_FIXED_INTERVALS }
+
+
+
+
+
     /// <summary>
     /// Defines a single sound event in a sonogram
     /// </summary>
@@ -438,6 +446,10 @@ namespace AudioStuff
             state.DeltaT = cfg.GetInt("DELTA_T");
 
             //FEATURE VECTORS
+            GetFVSource("FV_SOURCE", cfg, state);
+            GetFVExtraction("FV_EXTRACTION", cfg, state);
+            state.FeatureVector_DoAveraging = cfg.GetBoolean("FV_DO_AVERAGING");
+
             int fvCount = cfg.GetInt("NUMBER_OF_FEATURE_VECTORS");
             state.FeatureVectorCount  = fvCount;
             state.FeatureVectorLength = cfg.GetInt("FEATURE_VECTOR_LENGTH");
@@ -470,7 +482,11 @@ namespace AudioStuff
             //Console.WriteLine("NUMBER OF WORDS=" + state.WordCount);
             //for (int n = 0; n < wordCount; n++) Console.WriteLine("WORD"+n+"="+state.Words[n]);
 
-            // PERIODICITY INFO
+            // SCORING PROTOCOL
+            state.ScoringProtocol = ScoringProtocol.WORDMATCH;  //the default
+            string protocol = cfg.GetString("SCORING_PROTOCOL");
+            if (protocol.StartsWith("HOTSPOTS"))         state.ScoringProtocol = ScoringProtocol.HOTSPOTS;
+            else if (protocol.StartsWith("PERIODICITY")) state.ScoringProtocol = ScoringProtocol.PERIODICITY;
             state.CallPeriodicity_ms = 0;
             int period_ms = cfg.GetInt("CALL_PERIODICITY_MS");
             if (period_ms == -Int32.MaxValue) Console.WriteLine("CALL_PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
@@ -484,6 +500,85 @@ namespace AudioStuff
 
             return status;
         } //end of ReadTemplateFile()
+
+        public void GetFVSource(string key, Configuration cfg, SonoConfig state)
+        {
+            bool keyExists = cfg.ContainsKey(key);
+            if (!keyExists) 
+            {   Console.WriteLine("Template.GetFVSource():- WARNING! NO SOURCE FOR FEATURE VECTORS IS DEFINED!");
+                Console.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+                state.FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+            return;
+            }
+            string value = cfg.GetString(key);
+
+            if (value.StartsWith("MARQUEE"))
+            {
+                state.FeatureVectorSource = FV_Source.MARQUEE;
+                state.MarqueeStart = cfg.GetInt("MARQUEE_START");
+                state.MarqueeEnd   = cfg.GetInt("MARQUEE_END");
+            }
+            else
+                if (value.StartsWith("SELECTED_FRAMES")) state.FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+                else
+                {
+                    Console.WriteLine("Template.GetFVSource():- WARNING! INVALID SOURCE FOR FEATURE VECTORS IS DEFINED! " + value);
+                    Console.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+                    state.FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+                    return;
+                }
+            
+            //now read other parameters relevant to the Feature Vector source
+            //TODO ###########################################################################
+        }//end GetFVSource
+
+
+
+        //    public enum FV_Extraction { AT_ENERGY_PEAKS, AT_INTERVALS_OF_}
+        //#FV_EXTRACTION=AT_ENERGY_PEAKS
+        //#FV_EXTRACTION=AT_INTERVALS_OF_200_MS
+
+        public void GetFVExtraction(string key, Configuration cfg, SonoConfig state)
+        {
+            bool keyExists = cfg.ContainsKey(key);
+            if (!keyExists)
+            {
+                Console.WriteLine("Template.GetFVExtraction():- WARNING! NO EXTRACTION PROCESS IS DEFINED FOR FEATURE VECTORS!");
+                Console.WriteLine("                             SET THE DEFAULT:- FV_Extraction = AT_ENERGY_PEAKS");
+                state.FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+                return;
+            }
+            string value = cfg.GetString(key);
+
+            if (value.StartsWith("AT_ENERGY_PEAKS")) state.FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+            else
+                if (value.StartsWith("AT_INTERVALS_OF_"))
+                {
+                    state.FeatureVectorExtraction = FV_Extraction.AT_FIXED_INTERVALS;
+                    string[] words = value.Split('_');
+                    int int32;
+                    try
+                    {
+                        int32 = Int32.Parse(words[3]);
+                    }
+                    catch (System.FormatException ex)
+                    {
+                        System.Console.WriteLine("Template.GetFVExtraction():- WARNING! INVALID INTEGER:- " + words[3]);
+                        System.Console.WriteLine(ex);
+                        int32 = 0;
+                    }
+                    state.FeatureVectorExtractionInterval = int32;
+                }
+                else
+                {
+                    Console.WriteLine("Template.GetFVExtraction():- WARNING! INVALID EXTRACTION VALUE IS DEFINED FOR FEATURE VECTORS! " + value);
+                    Console.WriteLine("                             SET THE DEFAULT:- FV_Extraction = AT_ENERGY_PEAKS");
+                    state.FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+                    return;
+                }
+            //now read other parameters relevant to the Feature Vector Extraction
+            //TODO ###########################################################################
+        }//end GetFVExtraction
 
 
 
