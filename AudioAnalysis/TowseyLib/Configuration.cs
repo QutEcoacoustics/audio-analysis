@@ -21,6 +21,11 @@ namespace TowseyLib
             this.table = FileTools.ReadPropertiesFile(fName);
         }
 
+        public bool ContainsKey(string key)
+        {
+            return this.table.ContainsKey(key);
+        }
+
         public string GetString(string key)
         {
             bool keyExists = this.table.ContainsKey(key);
@@ -88,6 +93,7 @@ namespace TowseyLib
             }
             return b;
         }//end getBoolean
+
 
 
     }  // end of class Configuration

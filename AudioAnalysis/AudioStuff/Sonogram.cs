@@ -995,16 +995,27 @@ namespace AudioStuff
 
 
         //FEATURE VECTOR PARAMETERS 
+        public FV_Source FeatureVectorSource { get; set; }
+        public string[] TimeIndices { get; set; }
+        public int MarqueeStart { get; set; }
+        public int MarqueeEnd { get; set; }
+        public FV_Extraction FeatureVectorExtraction { get; set; }
+        public int FeatureVectorExtractionInterval { get; set; }
+        public bool FeatureVector_DoAveraging { get; set; }
+
         public int FeatureVectorCount { get; set; }
         public int FeatureVectorLength { get; set; }
         public string[] FeatureVectorPaths { get; set; }
-        public string[] TimeIndices { get; set; }
         public string[] FVSourceFiles { get; set; }
 
         //THE LANGUAGE MODEL
         public bool HighSensitivitySearch; //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
         public int WordCount { get; set; }
         public string[] Words { get; set; }
+
+
+        // SCORING PROTOCOL
+        public ScoringProtocol ScoringProtocol { get; set; }
 
         //CALL PERIODICITY INFO
         public int CallPeriodicity_ms { get; set; }
