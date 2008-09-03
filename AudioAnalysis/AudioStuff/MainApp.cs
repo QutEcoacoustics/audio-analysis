@@ -34,9 +34,9 @@ namespace AudioStuff
             //Mode userMode = Mode.ArtificialSignal;
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
-            //Mode userMode = Mode.CreateTemplate;
+            Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -95,7 +95,6 @@ namespace AudioStuff
             //const string opDirName  = @"C:\SensorNetworks\Koala\";
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
 
-    
             //test wav files
             const string testDirName = @"C:\SensorNetworks\TestWavFiles\";
             //const string testDirName = @"C:\SensorNetworks\WavDownloads\BAC2\";
@@ -110,8 +109,170 @@ namespace AudioStuff
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //******************************************************************************************************************
-            //************* CALL 1 PARAMETERS ***************
+            int callID = 1;
 
+            //****************** DEFAULT CALL PARAMETERS
+            string callName = "NO NAME";
+            string callComment = "DEFAULT VALUE";
+            string sourceFile = "NO_NAME"; 
+
+            //ENERGY AND NOISE PARAMETERS
+            double dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
+            //backgroundFilter= //noise reduction??
+
+            //MFCC PARAMETERS
+            int sampleRate; //determined by source WAV file
+            int frameSize = 512;
+            double frameOverlap = 0.5;
+            int filterBankCount = 64;
+            bool doMelConversion = true;
+            int ceptralCoeffCount = 12;
+            int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+            bool includeDeltaFeatures = true;
+            bool includeDoubleDeltaFeatures = true;
+
+            //FEATURE VECTOR EXTRACTION PARAMETERS
+            FV_Source fv_Source = FV_Source.SELECTED_FRAMES;  //FV_Source.MARQUEE;
+            string selectedFrames = "0";
+            int min_Freq     = 0; //Hz
+            int max_Freq     = 9999; //Hz
+            int marqueeStart = 999;
+            int marqueeEnd   = 999;
+
+            FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;  //AT_FIXED_INTERVALS
+            int fvExtractionInterval = 999; //milliseconds
+            bool doFvAveraging = false;
+            string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+            // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+            int zScoreSmoothingWindow = 3;
+            double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+
+            //LANGUAGE MODEL
+            int numberOfWords = 0; //number of defined song variations 
+            string[] words = { "999" };
+            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+            bool doHighSensitivitySearch = true;
+            //maxSyllables=
+            //double maxSyllableGap = 0.25; //seconds
+            //double maxSong=
+
+            // SCORING PROTOCOL
+            ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            int callPeriodicity = 208;
+
+
+
+
+            //************* CALL 1 PARAMETERS ***************
+            if (callID == 1)
+            {
+                callName = "Lewin's Rail Kek-kek";
+                callComment = "Template consists of a single KEK!";
+                sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+
+                //ENERGY AND NOISE PARAMETERS
+                dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
+                //backgroundFilter= //noise reduction??
+
+                //MFCC PARAMETERS
+                //int sampleRate; //determined by source WAV file
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = true;
+                ceptralCoeffCount = 12;
+                deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.SELECTED_FRAMES; //FV_Source.MARQUEE;
+                selectedFrames = "1784,1828,1848,2113,2132,2152";
+                min_Freq = 1500; //Hz
+                max_Freq = 5500; //Hz
+                //marqueeStart = 999;
+                //marqueeEnd   = 999;
+
+                //fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
+                //fvExtractionInterval = 200; //milliseconds
+                doFvAveraging = true;
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+
+                //LANGUAGE MODEL
+                numberOfWords = 3; //number of defined song variations
+                words = new string[numberOfWords];
+                words[0] = "111"; words[1] = "111"; words[2] = "111"; 
+                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+                doHighSensitivitySearch = true;
+                //maxSyllables=
+                //double maxSyllableGap = 0.25; //seconds
+                //double maxSong=
+
+
+                // SCORING PARAMETERS PROTOCOL
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreSmoothingWindow = 3;
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+                callPeriodicity = 208;
+            }
+
+            //******************************************************************************************************************
+            //************* CALL 2 PARAMETERS ***************
+            //int callID = 2;
+            //string callName = "Lewin's Rail Kek-kek";
+            //string callComment = "Template consists of a single KEK!";
+            //string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+            ////int sampleRate; //to be determined
+            //int frameSize = 512;
+            //double frameOverlap = 0.5;
+            //int min_Freq = 1500; //Hz
+            //int max_Freq = 5500; //Hz
+            //double dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
+            ////backgroundFilter= //noise reduction??
+            //int filterBankCount = 64;
+            //bool doMelConversion = true;
+            //int ceptralCoeffCount = 12;
+            //int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+            //bool includeDeltaFeatures = true;
+            //bool includeDoubleDeltaFeatures = true;
+            ////maxSyllables=
+            ////double maxSyllableGap = 0.25; //seconds
+            ////double maxSong=
+
+            ////FEATURE VECTOR PREPARATION DETAILS
+            //FV_Source fvSource = FV_Source.SELECTED_FRAMES;
+            //int[] selectedFrames = { 1784, 1828, 1848, 2113, 2132, 2152 };
+            ////FV_Source fvSource = FV_Source.MARQUEE;
+            ////int marqueeStart = 999;
+            ////int marqueeEnd   = 999;
+
+            //FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;
+            ////FV_Extraction fv_Extraction = FV_Extraction.AT_FIXED_INTERVALS;
+            ////int fvExtractionIntervals = 200; //milliseconds
+            //bool doFvAveraging = true;
+            //string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+            //// THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+            //int zScoreSmoothingWindow = 3;
+            //double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+
+            ////LANGUAGE MODEL
+            //int numberOfWords = 3; //number of defined song variations 
+            //string[] words = { "111", "11", "1" };
+            ////if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+            //bool doHighSensitivitySaerch = true;
+
+            //// SCORING PROTOCOL
+            //ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            //int callPeriodicity = 208;
+
+
+            //******************************************************************************************************************
+            //************* CALL 3 PARAMETERS ***************
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
             //int callID = 1;
@@ -120,61 +281,6 @@ namespace AudioStuff
             //int y1 = 115; int x1 = 545;
             //int y2 = 415; int x2 = 552;
 
-
-
-            //******************************************************************************************************************
-            //************* CALL 2 PARAMETERS ***************
-            int callID = 2;
-            string callName = "Lewin's Rail Kek-kek";
-            string callComment = "Template consists of a single KEK!";
-            string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
-            //int sampleRate; //to be determined
-            int frameSize = 512;
-            double frameOverlap = 0.5;
-            int min_Freq = 1500; //Hz
-            int max_Freq = 5500; //Hz
-            double dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
-            //backgroundFilter= //noise reduction??
-            int filterBankCount = 64;
-            bool doMelConversion = true;
-            int ceptralCoeffCount = 12;
-            int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
-            bool includeDeltaFeatures = true;
-            bool includeDoubleDeltaFeatures = true;
-            //maxSyllables=
-            //double maxSyllableGap = 0.25; //seconds
-            //double maxSong=
-
-            //FEATURE VECTOR PREPARATION DETAILS
-            FV_Source fvSource = FV_Source.SELECTED_FRAMES;
-            int[] selectedFrames = { 1784, 1828, 1848, 2113, 2132, 2152 };
-            //FV_Source fvSource = FV_Source.MARQUEE;
-            //int marqueeStart = 999;
-            //int marqueeEnd   = 999;
-
-            FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;
-            //FV_Extraction fv_Extraction = FV_Extraction.AT_FIXED_INTERVALS;
-            //int fvExtractionIntervals = 200; //milliseconds
-            bool doFvAveraging = true;
-            string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
-
-            // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-            int zScoreSmoothingWindow = 3;
-            double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-
-            //LANGUAGE MODEL
-            int numberOfWords = 3; //number of defined song variations 
-            string[] words = { "111", "11", "1" };
-            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-            bool doHighSensitivitySaerch = true;
-
-            // SCORING PROTOCOL
-            ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
-            int callPeriodicity = 208;
-
-
-            //******************************************************************************************************************
-            //************* CALL 2 PARAMETERS ***************
 
 
 
@@ -291,10 +397,23 @@ namespace AudioStuff
                     {
                         Console.WriteLine("\nCREATING TEMPLATE");
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
-                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
+                        t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging);
+                        if (fv_Source == FV_Source.SELECTED_FRAMES)
+                        {
+                            t.SetSelectedFrames(selectedFrames);
+                            t.SetFrequencyBounds(min_Freq, max_Freq);
+                        }else
+                        if (fv_Source == FV_Source.MARQUEE)
+                        {
+                            t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
+                        }
+                        if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
-                        t.ExtractTemplateFromSonogram(selectedFrames);
+                        t.SetLanguageModel(words, doHighSensitivitySearch);
+                        t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                     }
                     catch (Exception e)
@@ -311,10 +430,16 @@ namespace AudioStuff
                     {
                         Console.WriteLine("\nCREATING TEMPLATE");
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
-                        t.SetMfccParameters(frameSize, frameOverlap, min_Freq, max_Freq, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                        t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging);
+                        if (fv_Source == FV_Source.SELECTED_FRAMES) t.SetSelectedFrames(selectedFrames);
+                        //t.SetFrequencyBounds(min_Freq, max_Freq);
+                        t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
-                        t.ExtractTemplateFromSonogram(selectedFrames);
+                        t.SetLanguageModel(words, doHighSensitivitySearch);
+                        t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                         //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);
 

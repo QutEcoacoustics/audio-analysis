@@ -31,6 +31,8 @@ namespace AudioStuff
     {
         private const string templateStemName = "template";
         private const string templateFExt = ".ini";
+        private const string fvectorFExt = ".txt";
+        
 
         public int CallID { get; set; }
         public bool DoMelConversion { get; set; }
@@ -56,8 +58,8 @@ namespace AudioStuff
         int x2; int y2; //image coordinates for bottom right of selection
         int t1; int t2; //sonogram time interval selection
         int bin1; int bin2; //sonogram freq bin interval 
-        double templateDuration; //duration of template in seconds
-        int templateSpectralCount; //number of spectra in template        
+        //double templateDuration; //duration of template in seconds
+        //int templateSpectralCount; //number of spectra in template        
 
 
         //info about TEMPLATE SCORING
@@ -99,10 +101,8 @@ namespace AudioStuff
                 string path = this.templateState.FeatureVectorPaths[n];
                 int fvLength = this.templateState.FeatureVectorLength;
                 this.featureVectors[n] = new FeatureVector(path, fvLength, n);
-                string str = this.templateState.TimeIndices[n];
-                this.featureVectors[n].SetTimeIndices(str);
-                str = this.templateState.FVSourceFiles[n];
-                this.featureVectors[n].SourceFile = str;
+                this.featureVectors[n].FrameIndices = FeatureVector.ConvertFrameIndices(this.templateState.FeatureVector_SelectedFrames[n]);
+                this.featureVectors[n].SourceFile = this.templateState.FVSourceFiles[n];
             }
         }
 
@@ -131,8 +131,8 @@ namespace AudioStuff
             this.templateState.SourceFStem = sourceFileStem;
             this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
-            this.templatePath   = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + ".txt";
-            //Console.WriteLine("dataFName=" + dataFName);
+            this.templatePath = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + templateFExt;
+            if (this.verbose) Console.WriteLine("templatePath=" + templatePath);
         }
 
 
@@ -159,6 +159,47 @@ namespace AudioStuff
             this.sonogram = new Sonogram(this.templateState, wav);
         }
 
+        public void SetExtractionParameters(FV_Source fvSource, FV_Extraction fvExtraction, bool doFvAveraging)
+        {
+            this.templateState.FeatureVectorSource = fvSource;
+            this.templateState.FeatureVectorExtraction = fvExtraction;
+            this.templateState.FeatureVector_DoAveraging = doFvAveraging;
+        }
+
+
+        public void SetFrequencyBounds(int minFreq, int maxFreq)
+        {
+            this.templateState.FreqBand_Min    = minFreq;
+            this.templateState.FreqBand_Max    = maxFreq;
+            this.templateState.MinTemplateFreq = minFreq;
+            this.templateState.MaxTemplateFreq = maxFreq;
+            this.templateState.MidTemplateFreq = minFreq + ((maxFreq - minFreq) / 2); //Hz
+        }
+
+        public void SetMarqueeBounds(int minFreq, int maxFreq, int marqueeStart, int marqueeEnd)
+        {
+            SetFrequencyBounds(minFreq, maxFreq);
+            this.templateState.MarqueeStart = marqueeStart;
+            this.templateState.MarqueeEnd   = marqueeEnd;
+        }
+
+
+        public void SetLanguageModel(string[] words, bool highSensitivitySearch)
+        {
+            this.templateState.Words = words;
+            this.templateState.WordCount =  words.Length;
+            //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
+            this.templateState.HighSensitivitySearch = highSensitivitySearch; 
+        }
+
+        public void SetScoringParameters(ScoringProtocol sp, int zw, double zThreshold, int period)
+        {
+            this.templateState.ScoringProtocol = sp;//three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            this.templateState.ZscoreSmoothingWindow = 3;
+            this.templateState.ZScoreThreshold = zThreshold; //options are 1.98, 2.33, 2.56, 3.1
+            this.templateState.CallPeriodicity_ms = period;
+        }
+
 
 
         /// <summary>
@@ -166,8 +207,6 @@ namespace AudioStuff
         /// </summary>
         /// <param name="frameSize"></param>
         /// <param name="frameOverlap"></param>
-        /// <param name="minFreq"></param>
-        /// <param name="maxFreq"></param>
         /// <param name="dynamicRange"></param>
         /// <param name="filterBankCount"></param>
         /// <param name="doMelConversion"></param>
@@ -175,18 +214,11 @@ namespace AudioStuff
         /// <param name="deltaT"></param>
         /// <param name="includeDeltaFeatures"></param>
         /// <param name="includeDoubleDeltaFeatures"></param>
-        public void SetMfccParameters(int frameSize, double frameOverlap, int minFreq, int maxFreq, 
-                                double dynamicRange, int filterBankCount, bool doMelConversion, 
+        public void SetMfccParameters(int frameSize, double frameOverlap, double dynamicRange, int filterBankCount, bool doMelConversion, 
                                 int ceptralCoeffCount, int deltaT, bool includeDeltaFeatures, bool includeDoubleDeltaFeatures)
         {
             this.templateState.WindowSize      = frameSize;
             this.templateState.WindowOverlap   = frameOverlap;
-            this.templateState.FreqBand_Min    = minFreq;
-            this.templateState.FreqBand_Max    = maxFreq;
-            this.templateState.MinTemplateFreq = minFreq;
-            this.templateState.MaxTemplateFreq = maxFreq;
-            this.templateState.MidTemplateFreq = minFreq + ((maxFreq - minFreq) / 2); //Hz
-
             this.templateState.SonogramType = SonogramType.acousticVectors; //to MAKE MATRIX OF dim 3x39 ACOUSTIC VECTORS
             this.DoMelConversion = doMelConversion;
             this.templateState.DeltaT = deltaT;
@@ -194,39 +226,132 @@ namespace AudioStuff
             this.templateState.IncludeDoubleDelta = includeDoubleDeltaFeatures;
         }
 
-
-        public void ExtractTemplateFromSonogram(int[] timeIndices)
+        public void SetExtractionInterval(int fvExtractionInterval)
         {
-            Console.WriteLine("\nEXTRACTING TEMPLATE FROM MATRIX OF ACOUSTIC VECTORS");
-            //this.timeIndices = timeIndices;
-            ////init Sonogram. SonogramType already set to make matrix of acoustic vectors
-            //this.sonogram = new Sonogram(this.templateState, this.templateState.SourceFPath);
-            //double[,] M = this.sonogram.CepstralM;
-
-            //int frameCount = M.GetLength(0); //number of frames
-            //int coeffcount = M.GetLength(1); //number of MFCC deltas etcs
-            //int featureCount = coeffcount * 3;
-            //int indicesL = timeIndices.Length;
-            //int dT = this.templateState.DeltaT;
-
-            //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
-            //this.features = new double[featureCount];
-
-
-            ////accumulate the acoustic vectors from multiple frames into an averaged feature vector
-            //double[] acousticV = new double[featureCount];
-            //for (int i = 0; i < indicesL; i++)
-            //{
-            //    double[] v = Speech.GetAcousticVector(M, timeIndices[i], dT); //combines  frames T-dT, T and T+dT
-            //    for (int j = 0; j < featureCount; j++) acousticV[j] += v[j];
-            //}
-            //for (int i = 0; i < featureCount; i++) this.features[i] = acousticV[i] / (double)indicesL; //transfer average of values
-
-            ////write all files
-            //SaveDataAndImageToFile();
-            WriteTemplateConfigFile();
+            this.templateState.FeatureVectorExtractionInterval = fvExtractionInterval;
         }
 
+        public void SetSelectedFrames(string selectedFrames)
+        {
+            this.templateState.FeatureVector_SelectedFrames = new string[1];
+            this.templateState.FeatureVector_SelectedFrames[0] = selectedFrames;
+        }
+
+        public void ExtractTemplateFromSonogram()
+        {
+            Console.WriteLine("\nEXTRACTING TEMPLATE USING SUPPLIED PARAMETERS");
+            FeatureVector.Verbose = this.verbose;
+             
+            if (this.templateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
+            {
+                this.featureVectors = GetFeatureVectorsFromFrames();
+            }else
+            if (this.templateState.FeatureVectorSource == FV_Source.MARQUEE)
+            {
+                if (this.templateState.FeatureVectorExtraction == FV_Extraction.AT_ENERGY_PEAKS)
+                {
+                    this.featureVectors = GetFeatureVectorsFromMarquee();
+                }else
+                if (this.templateState.FeatureVectorExtraction == FV_Extraction.AT_FIXED_INTERVALS)
+                {
+                    this.featureVectors = GetFeatureVectorsFromMarquee();
+                }else
+                {
+                    Console.WriteLine("Template.ExtractTemplateFromSonogram(: WARNING!! INVALID FV EXTRACTION OPTION!)");
+                }
+            }else
+            {
+                Console.WriteLine("Template.ExtractTemplateFromSonogram(: WARNING!! INVALID FV SOURCE OPTION!)");
+            }
+
+
+            if (this.verbose) Console.WriteLine("SAVING TEMPLATE FILES");
+            //accumulate the acoustic vectors from multiple frames into an averaged feature vector
+            FeatureVector avFV = null;
+            if (this.templateState.FeatureVector_DoAveraging)
+            {
+                if (this.verbose) Console.WriteLine("   Do Template Averaging");
+                int id = 1;
+                avFV = FeatureVector.AverageFeatureVectors(featureVectors, id);
+                //write all files
+                string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV1"+ fvectorFExt;
+                if (avFV != null) avFV.SaveDataAndImageToFile(path, this.templateState);
+                WriteTemplateIniFile();
+            }
+            else
+            {
+                for (int i = 0; i < featureVectors.Length; i++)
+                {
+                    string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV" + i + fvectorFExt;
+                    featureVectors[i].SaveDataAndImageToFile(path, this.templateState);
+                }
+                WriteTemplateIniFile();
+            }
+
+        } // end ExtractTemplateFromSonogram()   
+
+
+
+        public FeatureVector[] GetFeatureVectorsFromFrames()
+        {
+            //init Sonogram. SonogramType already set to make matrix of acoustic vectors
+            this.sonogram = new Sonogram(this.templateState, this.templateState.SourceFPath);
+            double[,] M = this.sonogram.CepstralM;
+
+            if (this.verbose) Console.WriteLine("\nEXTRACTING FEATURE VECTORS FROM FRAMES:- method Template.GetFeatureVectorsFromFrames()");
+            //Get frame indices. Assume, when extracting a FeatureVector, that there is only one supplied string of integers
+            string istr = this.templateState.FeatureVector_SelectedFrames[0];
+            int[] frameIndices = FeatureVector.ConvertFrameIndices(istr);
+
+            //initialise feature vectors for template. Each frame provides one vector in three parts
+            int coeffcount = M.GetLength(1);  //number of MFCC deltas etcs
+            int featureCount = coeffcount * 3;
+            int indicesL = frameIndices.Length;
+            int dT = this.templateState.DeltaT;
+            FeatureVector[] fvs = new FeatureVector[indicesL];
+            for (int i = 0; i < indicesL; i++)
+            {
+                if (this.verbose) Console.WriteLine("   Init FeatureVector[" + i + "] from frame " + frameIndices[i]);
+                //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
+                double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
+                fvs[i] = new FeatureVector(acousticV, i);
+                fvs[i].SourceFile = this.templateState.SourceFName; //assume all FVs have same source file
+                fvs[i].SetFrameIndices(this.templateState.FeatureVector_SelectedFrames[0]);
+            }
+            return fvs;
+        }
+
+
+
+
+
+        public FeatureVector[] GetFeatureVectorsFromMarquee()
+        {
+            //init Sonogram. SonogramType already set to make matrix of acoustic vectors
+            this.sonogram = new Sonogram(this.templateState, this.templateState.SourceFPath);
+            double[,] M = this.sonogram.CepstralM;
+
+            int start = this.templateState.MarqueeStart;
+            int end   = this.templateState.MarqueeEnd;
+            int interval = this.TemplateState.FeatureVectorExtractionInterval;
+
+            //initialise feature vectors for template. Each frame provides one vector in three parts
+            int coeffcount = M.GetLength(1);  //number of MFCC deltas etcs
+            int featureCount = coeffcount * 3;
+
+            int[] frameIndices = FeatureVector.GetFrameIndices(start, end, interval);
+            DataTools.writeArray(frameIndices);
+            int indicesL = frameIndices.Length;
+            int dT = this.templateState.DeltaT;
+            FeatureVector[] fvs = new FeatureVector[indicesL];
+            for (int i = 0; i < indicesL; i++)
+            {
+                //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
+                double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
+                this.featureVectors[i] = new FeatureVector(acousticV, i);
+            }
+            return fvs;
+        }
 
 
 
@@ -300,7 +425,7 @@ namespace AudioStuff
 
 
         
-        public void WriteTemplateConfigFile()
+        public void WriteTemplateIniFile()
         {
             //write the call data to a file
             ArrayList data = new ArrayList();
@@ -343,34 +468,96 @@ namespace AudioStuff
             data.Add("FILTERBANK_COUNT=" + this.templateState.FilterbankCount);
             data.Add("CC_COUNT=" + this.templateState.ccCount);
             data.Add("DYNAMIC_RANGE=" + this.templateState.MaxDecibelReference); //decibels above noise level #### YET TO DO THIS PROPERLY
-            StringBuilder frameIDs = new StringBuilder();
-            //for (int i = 0; i < timeIndices.Length; i++)
-            //{
-            //    frameIDs.Append(this.timeIndices[i]);
-            //    frameIDs.Append(",");
-            //}
             data.Add("#");
+
+
+            data.Add("#**************** FV EXTRACTION OPTIONS **************************");
+            data.Add("FV_SOURCE="+FV_Source.SELECTED_FRAMES.ToString());
+            if (this.templateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
+            {
+                data.Add("FV_SELECTED_FRAMES=" + this.templateState.FeatureVector_SelectedFrames[0]);
+            } else
+            if (this.templateState.FeatureVectorSource == FV_Source.MARQUEE)
+            {
+                data.Add("FV_SELECTED_FRAMES=" + this.templateState.FeatureVector_SelectedFrames[0]);
+                data.Add("MARQUEE_START="+this.templateState.MarqueeStart);
+                data.Add("MARQUEE_END=" + this.templateState.MarqueeEnd);
+                if (this.templateState.FeatureVectorExtraction == FV_Extraction.AT_ENERGY_PEAKS)
+                {
+                    data.Add("FV_EXTRACTION=AT_ENERGY_PEAKS");
+                } else
+                if (this.templateState.FeatureVectorExtraction == FV_Extraction.AT_FIXED_INTERVALS)
+                {
+                    data.Add("FV_EXTRACTION=AT_FIXED_INTERVALS");
+                    data.Add("FV_EXTRACTION=AT_INTERVALS_OF_" + this.templateState.FeatureVectorExtractionInterval + "_MS");
+                } 
+            }
+            data.Add("FV_DO_AVERAGING="+this.templateState.FeatureVector_DoAveraging);
             data.Add("#");
-            data.Add("#INFO ABOUT TEMPLATE");
-            int fvCount = this.templateState.FeatureVectorCount;
+
+
+            data.Add("#**************** INFO ABOUT FEATURE VECTORS - THE ACOUSTIC MODEL ***************");
+            int fvCount = this.featureVectors.Length;
+            data.Add("FEATURE_VECTOR_LENGTH=" + this.featureVectors[0].FvLength); //117
             data.Add("NUMBER_OF_FEATURE_VECTORS="+fvCount);
             for (int n = 0; n < fvCount; n++) 
             {
                 data.Add("FV1_FILE="+this.templateState.FeatureVectorPaths[n]);
-                data.Add("FV1_SELECTED_FRAMES=" + frameIDs.ToString());
+                //data.Add("FV1_SELECTED_FRAMES=" + frameIDs.ToString());
+                //FV1_FILE=C:\SensorNetworks\Templates\template_2_FV1.txt
+                //FV1_SELECTED_FRAMES=1784,1828,1848,2113,2132,2152,
+                //FV1_SOURCE_FILE=C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav
             }
+            data.Add(@"FV_DEFAULT_NOISE_FILE=C:\SensorNetworks\Templates\template_2_DefaultNoise.txt");
+            data.Add("#");
+            data.Add("#");
+
+            data.Add("#************* THRESHOLDS FOR THE ACOUSTIC MODELS ***************");
+            //ZSCORE_SMOOTHING_WINDOW=3
+            //##zscore threshold for p=0.001
+            //#ZSCORE_THRESHOLD=3.1
+            //##zscore threshold for p=0.005
+            //#ZSCORE_THRESHOLD=2.58
+            //##zscore threshold for p=0.01
+            //#ZSCORE_THRESHOLD=2.33
+            //##zscore threshold for p=0.03
+            //#ZSCORE_THRESHOLD=2.15
+            //##zscore threshold for p=0.05
+            //ZSCORE_THRESHOLD=1.98
+            //#ZSCORE_THRESHOLD=1.5
 
             data.Add("#");
             data.Add("#");
+
+
             data.Add("#INFO ABOUT LANGUAGE MODEL");
-            //backgroundFilter= //noise reduction??
+            //#
+            //#*****************LANGUAGE MODEL
+            //NUMBER_OF_WORDS=3
+            //WORD1=111
+            //WORD2=11
+            //WORD3=1
+            //#if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+            //USE_HIGH_SENSITIVITY_SEARCH=true
+            //#
+            data.Add("#**************** SCORING PROTOCOL");
+            //#Three choices (1)hot spots (2)sequence (3)periodicity
+            //#SCORING_PROTOCOL=HOTSPOTS
+            //#SCORING_PROTOCOL=WORDMATCH
+            //SCORING_PROTOCOL=PERIODICITY
+            //CALL_PERIODICITY_MS=208
+            data.Add("#");
+            data.Add("#");
+
             //maxSyllables=
             //double maxSyllableGap = 0.25; //seconds
             //double maxSong=
 
-            //write template config data to file
+            //write template to file
             FileTools.WriteTextFile(this.templatePath, data);
         } // end of WriteTemplateConfigFile()
+
+
 
 
 
@@ -457,10 +644,12 @@ namespace AudioStuff
             state.FeatureVectorPaths = new string[fvCount];
             state.FeatureVectorPaths[0] = cfg.GetString("FV_DEFAULT_NOISE_FILE");
             for (int n = 1; n < fvCount; n++) state.FeatureVectorPaths[n] = cfg.GetString("FV" + n + "_FILE");
-            state.TimeIndices = new string[fvCount];
-            for (int n = 1; n < fvCount; n++) state.TimeIndices[n]        = cfg.GetString("FV" + n + "_SELECTED_FRAMES");
+            state.FeatureVector_SelectedFrames = new string[fvCount];
+            for (int n = 1; n < fvCount; n++) state.FeatureVector_SelectedFrames[n] = cfg.GetString("FV" + n + "_SELECTED_FRAMES");
             state.FVSourceFiles = new string[fvCount];
-            for (int n = 1; n < fvCount; n++) state.FVSourceFiles[n]      = cfg.GetString("FV" + n + "_SOURCE_FILE");
+            for (int n = 1; n < fvCount; n++) state.FVSourceFiles[n] = cfg.GetString("FV" + n + "_SOURCE_FILE");
+
+
 
             //classifier parameters
             state.ZscoreSmoothingWindow = 3;  // DEFAULT zscore SmoothingWindow

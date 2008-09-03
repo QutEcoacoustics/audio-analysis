@@ -95,7 +95,7 @@ namespace TowseyLib
         /// <summary>
         /// Frame energy is the log of the summed energy of the samples.
         /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
-        /// BUT this method takes the AVERAGE sample energy, which therefore normalises for frame length, i.e. smaple number. 
+        /// BUT this method returns the AVERAGE sample energy, which therefore normalises for frame length / sample number. 
         /// 
         /// Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
         /// Automatic Speech Recognition: From Theory to Practice.
@@ -109,10 +109,12 @@ namespace TowseyLib
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
         /// <param name="doSpectralEnergy">indicates whether values are signal samples or FFT samples</param>
         /// <returns></returns>
-        public static double[] SignalLogEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy, bool doSpectralEnergy)
+        public static double[] SignalLogEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy)
         {
             //double minLogEnergy is defined in header of Sonogram class
             //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
+            double minEnergyRatio = minLogEnergy - maxLogEnergy;
+
 
             int frameCount = frames.GetLength(0);
             int N = frames.GetLength(1);
@@ -124,7 +126,6 @@ namespace TowseyLib
                 {
                     sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
                 }
-                //if (doSpectralEnergy) sum *= 2; // NOT REQUIRED BECAUSE OF AVERAGING IN NEXT LINE
                 double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
                 //Console.WriteLine("e=" + e);
                 //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
@@ -133,7 +134,7 @@ namespace TowseyLib
                 //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
                 {
                     System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = minLogEnergy - maxLogEnergy; //normalise to absolute scale
+                    logEnergy[i] = minEnergyRatio; //normalise to absolute scale
                     continue;
                 }
                 double logE = Math.Log10(e);
@@ -143,7 +144,7 @@ namespace TowseyLib
                 if (logE < minLogEnergy)
                 {
                     System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
-                    logEnergy[i] = minLogEnergy - maxLogEnergy;
+                    logEnergy[i] = minEnergyRatio;
                 }
                 else logEnergy[i] = logE - maxLogEnergy;
                 //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
@@ -199,14 +200,18 @@ namespace TowseyLib
         /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minFraction, double noiseThreshold_dB, out double Q)
+        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minEnergyRatio, double noiseThreshold_dB, out double Q)
         {
+            //ignore first N and last N frames when calculating background noise level because sometimes these frames
+            // have atypically low signal values
+            int buffer = 20; //ignore first N and last N frames when calculating background noise level
+
             double min = Double.MaxValue;
             double max = -Double.MaxValue;
             //Console.WriteLine("minFractionEnergy = " + minFraction);
-            for (int i = 0; i < logEnergy.Length; i++)
+            for (int i = buffer; i < logEnergy.Length-buffer; i++)
             {
-                if (logEnergy[i] == minFraction) continue; //ignore these values in establishing noise level
+                if (logEnergy[i] == minEnergyRatio) continue; //ignore lowest values in establishing noise level
                 if (logEnergy[i] < min) min = logEnergy[i];
                 else
                 if (logEnergy[i] > max) max = logEnergy[i];

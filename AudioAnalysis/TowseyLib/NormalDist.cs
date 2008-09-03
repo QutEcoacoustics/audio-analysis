@@ -445,12 +445,12 @@ namespace TowseyLib
                 if (r < 9) sb.Append(" ");
                 sb.Append((r + 1) + "\t");
                 if (bins[r,0] >= 0.0) sb.Append("+");
-                sb.Append(DataTools.formatDouble(bins[r,0], 2, 2) + "\t");
+                sb.Append(bins[r,0].ToString("F2.2") + "\t");
                 if (bins[r,1] >= 0.0) sb.Append("+");
-                sb.Append(DataTools.formatDouble(bins[r,1], 2, 2) + "\t");
-                sb.Append(DataTools.formatDouble(bins[r,2], 0) + "\t\t");
-                sb.Append(DataTools.formatDouble(bins[r,3], 3) + "\t\t");
-                sb.Append(DataTools.formatDouble(bins[r,4], 3) + "\n");
+                sb.Append(bins[r,1].ToString("F2.2") + "\t");
+                sb.Append(bins[r,2].ToString("F0") + "\t\t");
+                sb.Append(bins[r,3].ToString("F3") + "\t\t");
+                sb.Append(bins[r,4].ToString("F3") + "\n");
             }
             return sb.ToString();
         }
@@ -541,9 +541,9 @@ namespace TowseyLib
         public static String formatAvAndSD(double[] avsd, int places)
         {
             StringBuilder sb = new StringBuilder();
-            sb.Append(DataTools.formatDouble(avsd[0], places));
+            sb.Append((avsd[0]).ToString("F4"));
             sb.Append("+/-");
-            sb.Append(DataTools.formatDouble(avsd[1], places));
+            sb.Append(avsd[1].ToString("F4"));
             return sb.ToString();
         }
 
@@ -553,8 +553,8 @@ namespace TowseyLib
             double t = tStatistic(m1, sd1, count1, m2, sd2, count2);
             int df = count1 + count2 - 2;
             double p = tStatisticAlpha(t, df);
-            StringBuilder sb = new StringBuilder("t=" + DataTools.formatDouble(t, 3));
-            sb.Append(" p=" + DataTools.formatDouble(p, 4));
+            StringBuilder sb = new StringBuilder("t=" + t.ToString("F3"));
+            sb.Append(" p=" + p.ToString("F4"));
             if (p == 0.050) sb.Append("*");
             if (p == 0.025) sb.Append("*");
             if (p == 0.010) sb.Append("**");

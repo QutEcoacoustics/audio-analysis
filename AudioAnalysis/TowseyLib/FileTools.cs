@@ -75,7 +75,48 @@ namespace TowseyLib
         } //end MAIN
 
 
+        public static FileInfo[] GetFilesInDirectory(string dirPath)
+        {
+            DirectoryInfo d = new DirectoryInfo(dirPath);
+            FileInfo[] files = d.GetFiles(); //gets all files
+            return files;
+        }
 
+        public static FileInfo[] GetFilesInDirectory(string dirPath, string ext)
+        {
+            DirectoryInfo d = new DirectoryInfo(dirPath);
+            FileInfo[] files = d.GetFiles("*" + ext); //gets all files with required extention
+            return files;
+        }
+
+        public static string GetFileExt(string path)
+        {
+            FileInfo f = new FileInfo(path);
+            return f.Extension;
+        }
+
+        public static string[] SplitFileName(string path)
+        {
+            FileInfo f = new FileInfo(path);
+            string dir = f.DirectoryName;
+            string stem = f.Name;
+            string ext = f.Extension;
+            string[] split = new string[3];
+            int nameLength = stem.Length - ext.Length;
+            split[0] = dir+@"\";
+            split[1] = stem.Substring(0,nameLength);
+            split[2] = ext;
+            //Console.WriteLine("SPLIT FILE NAME = " + dir + "   " + split[1] + "    " + ext);
+            return split;
+        }
+
+        public static string ChangeFileExtention(string path, string newExt)
+        {
+            string[] split = SplitFileName(path);
+            string newName = split[0] + split[1] + newExt;
+            //Console.WriteLine("NEW NAME = " + newName);
+            return newName;
+        }
 
         public static ArrayList ReadTextFile(string fName)
         {

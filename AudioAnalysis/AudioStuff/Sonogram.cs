@@ -24,7 +24,7 @@ namespace AudioStuff
 
         //Following const used to normalise the logEnergy values to the background noise.
         //Has the effect of setting bcakground noise level to 0 dB. Value of 10dB is in Lamel et al, 1981 
-        //Lamel et al call it "Adaptive Level equalisatsion".
+        //Lamel et al call it "Adaptive Level Equalisatsion".
         public const double noiseThreshold = 10.0; //dB
         
 
@@ -237,15 +237,15 @@ namespace AudioStuff
             this.state.FrameCount = frames.GetLength(0);
 
             //ENERGY PER FRAME
-            bool doSpectralEnergy = false;
-            this.frameEnergy = DSP.SignalLogEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
+            this.frameEnergy = DSP.SignalLogEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
             //Console.WriteLine("FrameNoiseDecibels=" + this.State.FrameNoiseLogEnergy + "  FrameMaxDecibels=" + this.State.FrameMaxLogEnergy);
-            //noise reduce the energy array to produce decibels array
-            double minFraction = Sonogram.minLogEnergy - Sonogram.maxLogEnergy;
+            
+            //NOISE SUBTRACTION: subtract background noise to produce decibels array in which zero dB = average noise
+            double minEnergyRatio = Sonogram.minLogEnergy - Sonogram.maxLogEnergy;
             double Q;
             double min_dB;
             double max_dB;
-            this.decibels = DSP.NoiseSubtract(this.frameEnergy, out min_dB, out max_dB, minFraction, noiseThreshold, out Q);
+            this.decibels = DSP.NoiseSubtract(this.frameEnergy, out min_dB, out max_dB, minEnergyRatio, Sonogram.noiseThreshold, out Q);
             this.State.NoiseSubtracted = Q;
             this.State.FrameNoise_dB = min_dB; //min decibels of all frames 
             this.State.FrameMax_dB = max_dB;
@@ -322,10 +322,8 @@ namespace AudioStuff
 
         public double[] FreqBandEnergy(double[,] fftAmplitudes) 
         {
-            bool doSpectralEnergy = true;
-
             //Console.WriteLine("minDefinedLogEnergy=" + Sonogram.minLogEnergy.ToString("F2") + "  maxLogEnergy=" + Sonogram.maxLogEnergy);
-            double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes, Sonogram.minLogEnergy, Sonogram.maxLogEnergy, doSpectralEnergy);
+            double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
 
             //NOTE: FreqBand LogEnergy levels are higher than Frame levels but SNR remains same.
             //double min; double max;
@@ -996,7 +994,7 @@ namespace AudioStuff
 
         //FEATURE VECTOR PARAMETERS 
         public FV_Source FeatureVectorSource { get; set; }
-        public string[] TimeIndices { get; set; }
+        public string[] FeatureVector_SelectedFrames { get; set; } //store frames as strings for flexibility
         public int MarqueeStart { get; set; }
         public int MarqueeEnd { get; set; }
         public FV_Extraction FeatureVectorExtraction { get; set; }
