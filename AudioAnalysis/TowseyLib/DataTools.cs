@@ -1558,67 +1558,20 @@ namespace TowseyLib
   //=============================================================================
 
 
-  /**
-   * Formats a double as a string.
-   * @param d the double value
-   * @param places - maximum number of decimal places
-   * @return formatted string.
-   */
-  static public String formatDouble(double d, int places)
+  public static int String2Int(string str)
   {
-      //NumberFormat form = NumberFormat.getInstance(Locale.ENGLISH);
-      //form.setMinimumIntegerDigits(1);
-      //form.setMinimumFractionDigits(places);
-      //form.setMaximumFractionDigits(places);
-      ////System.out.println("N="+form.format(d));
-      //return form.format(d);
-      return "TODO: fix this method! ";
-  }
-
-  /**
-   * Formats a double as a string.
-   * @param d the double value
-   * @param intPlaces - minimum number of integer places
-   * @param decPlaces - maximum number of decimal places
-   * @return formatted string.
-   */
-  static public String formatDouble(double d, int intPlaces, int decPlaces)
-  {
-      //NumberFormat form = NumberFormat.getInstance(Locale.ENGLISH);
-      //form.setMinimumIntegerDigits(intPlaces);
-      //form.setMinimumFractionDigits(decPlaces);
-      //form.setMaximumFractionDigits(decPlaces);
-      ////System.out.println("N="+form.format(d));
-      return "TODO: fix this method! ";
-      //return form.format(d);
-  }
-
-  /**
-   * Formats an integer as a string.
-   * @param num the integer value
-   * @return formatted string.
-   */
-  static public String formatInteger(int num)
-  {
-      //String str = Integer.toString(num);
-      //if (num >= 10000) return str;
-      //if (num >= 1000) return " " + str;
-      //if (num >= 100) return "  " + str;
-      //if (num >= 10) return "   " + str;
-      //if (num >= 0) return "    " + str;
-      //return str;
-      return "TODO: fix this method! ";
-  }
-  /**
-   * Formats an integer as a string.
-   * @param num the integer value
-   * @return formatted string.
-   */
-  static public String formatInteger(int num, int width)
-  {
-      //String str = Int32.toString(num);
-      //return padString_pre(str, width);
-      return "TODO: fix this method! ";
+      int int32 = 0;
+      try
+      {
+          int32 = Int32.Parse(str);
+      }
+      catch (System.FormatException ex)
+      {
+          System.Console.WriteLine("Template.GetFVExtraction():- DataTools.String2Int(string str): WARNING! INVALID INTEGER:- " + str);
+          System.Console.WriteLine(ex);
+          int32 = 0;
+      }
+      return int32;
   }
 
 

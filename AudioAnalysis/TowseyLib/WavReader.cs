@@ -197,8 +197,15 @@ namespace TowseyLib
                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
             }
 
-            //trim the samples ie check that the samples do not begin or end with zeros
-            this.Samples = TrimSamples(this.Samples);
+            // ############################ WARNING
+            // Some of our wav files begin with a thousand or so very low values. One option is to remove these
+            // samples altogether using the method TrimSamples(this.Samples);
+            // However this means that the file length is different and likewise frame indices and time points are changed,
+            // so cannot use other programs such as RAVEN to analyse the files.
+            // The main problem with low sample values over several frames is that it stuffs up energy and noise calculations.
+            // In end decide simply to estimate noise aftger skipping the first 10 or so frames!
+
+            //this.Samples = TrimSamples(this.Samples); //trim the samples ie check that the samples do not begin or end with zeros
             this.sampleCount = this.Samples.Length;
         }
 

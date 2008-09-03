@@ -20,8 +20,8 @@ namespace AudioStuff
         private string vectorFPath;
         public  string VectorFPath { get { return vectorFPath; } }
 
-        private string imageFName;
-        public string ImageFName { get { return imageFName; } set { imageFName = value; } }
+        private string imageFPath;
+        public string ImageFPath { get { return imageFPath; } set { imageFPath = value; } }
 
 
         private double[] features;
@@ -30,7 +30,7 @@ namespace AudioStuff
         public double[] FeaturesNormed { get { return featuresNormed; } }
 
         public string SourceFile { get; set; }
-        private int[] TimeIndices { get; set; }
+        public int[] FrameIndices { get; set; }
 
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
@@ -79,37 +79,32 @@ namespace AudioStuff
             return status;
         } //end of ReadFeatureVectorFile()
 
-        /// <summary>
-        /// TO DO  #################################################
-        /// </summary>
-        /// <param name="indices"></param>
-        public void SetTimeIndices(string indices)
+        public void SetFrameIndices(string indicesAsString)
         {
-            int count = 5;
-            this.TimeIndices = new int[count];
-        } //SetTimeIndices
+            string[] words = indicesAsString.Split(',');
+            int count = words.Length;
+            int[] indices = new int[count];
+            for (int i = 0; i < count; i++) indices[i] = DataTools.String2Int(words[i]);
+            this.FrameIndices = indices;
+        } //end SetFrameIndices()
 
-        public void SaveDataAndImageToFile(string path)
+
+        public void SaveDataAndImageToFile(string path, SonoConfig templateState)
         {
             if (FeatureVector.Verbose) Console.WriteLine(" Template feature vector in file " + path);
+            this.vectorFPath = path;
+            this.imageFPath = FileTools.ChangeFileExtention(path, ".bmp");
             FileTools.WriteArray2File_Formatted(this.features, path, "F5");
 
-            //Console.WriteLine(" Template feature vector image in file " + this.ImageFName);
-
-            //save the image
-            //SonoImage bmps = new SonoImage(this.templateState, SonogramType.linearScale, TrackType.none);
-            //SonoImage bmps = new SonoImage(this.templateState, SonogramType.spectral, TrackType.none);
-            //Bitmap bmp = bmps.CreateBitMapOfTemplate(this.features);
-            //bmp.Save(this.imageFName);
+            Console.WriteLine(" Template feature vector image in file " + this.ImageFPath);
+            SaveImage(templateState);        
         }
 
-        public void SaveImage()
+        public void SaveImage(SonoConfig templateState)
         {
-
-  //          this.imageFName = path + ".bmp";
-  //          SonoImage bmps = new SonoImage(this.templateState, SonogramType.spectral, TrackType.none);
-  //          Bitmap bmp = bmps.CreateBitMapOfTemplate(Matrix);
-  //          bmp.Save(this.imageFName);
+            SonoImage bmps = new SonoImage(templateState, SonogramType.acousticVectors, TrackType.none);
+            Bitmap bmp = bmps.CreateBitMapOfTemplate(this.features);
+            bmp.Save(this.imageFPath);
         }
 
 
@@ -224,6 +219,81 @@ namespace AudioStuff
         {
             FileTools.WriteArray2File_Formatted(this.features, fPath, "F5");
         }
+
+
+
+
+
+        //*****************************************************************************************************************************
+        //*****************************************************************************************************************************
+        //*****************************************************************************************************************************
+        //*****************************************************************************************************************************
+        //*****************************************************************************************************************************
+        //*****************************************************************************************************************************
+        // *********************************************  STATIC METHODS  *************************************************************
+
+
+        /// <summary>
+        /// takes a string of comma separated integers, which has been read in from an ini file,
+        /// and converts them to an array of integer
+        /// </summary>
+        /// <param name="indicesAsString"></param>
+        /// <returns></returns>
+        public static int[] ConvertFrameIndices(string indicesAsString)
+        {
+            string[] words = indicesAsString.Split(',');
+            int count = words.Length;
+            int[] indices = new int[count];
+            for (int i = 0; i < count; i++) indices[i] = DataTools.String2Int(words[i]);
+            return indices;
+        } //end ConvertFrameIndices()
+
+        /// <summary>
+        /// calculates the fixed interval indices between a start and end index. 
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="interval"></param>
+        /// <returns></returns>
+        public static int[] GetFrameIndices(int start, int end, int interval)
+        {
+            int range = end - start;
+            if (range <= 0) //i.e. the indices are the wrong way round
+            {
+                range = Math.Abs(range);
+                start = end;
+                end = start+ range;
+            }
+            int indexCount = range / interval;
+            int[] indices = new int[indexCount];
+            for (int i = 0; i < indexCount; i++) indices[i] = start + (i * interval);
+            return indices;
+        }//end GetFrameIndices()
+
+
+        public static FeatureVector AverageFeatureVectors(FeatureVector[] fvs, int newID)
+        {
+            int fvCount  = fvs.Length;
+            int featureCount = fvs[0].FvLength;
+
+            //accumulate the acoustic vectors from multiple frames into an averaged feature vector
+            double[] avVector = new double[featureCount];
+            for (int i = 0; i < fvCount; i++)
+            {
+                for (int j = 0; j < featureCount; j++) avVector[j] += fvs[i].Features[j]; //sum the feature values
+            }
+            for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)fvCount; //average feature values
+
+            FeatureVector newFV = new FeatureVector(avVector, newID);
+            newFV.SourceFile = fvs[0].SourceFile; //assume all FVs have same source file
+            //construct an array of frame indices
+            int[] indices = new int[fvCount];
+            for (int i = 0; i < fvCount; i++) indices[i] = fvs[i].FrameIndices[0]; //assume all FVs originate from single frame
+            newFV.FrameIndices = indices;
+
+            return newFV;
+        }
+
 
     }//end of class
 }
