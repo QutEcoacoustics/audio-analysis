@@ -75,10 +75,13 @@ namespace AudioStuff
             this.features = FileTools.ReadDoubles2Vector(path);
             //normalise template to difference from mean
             this.featuresNormed = DataTools.DiffFromMean(this.features);
-
+            //Console.WriteLine("\t\tFinished Feature vector");
             return status;
         } //end of ReadFeatureVectorFile()
 
+
+        //******************************************************************************************************************
+        // three methods to set frame indices
         public void SetFrameIndices(string indicesAsString)
         {
             string[] words = indicesAsString.Split(',');
@@ -87,6 +90,27 @@ namespace AudioStuff
             for (int i = 0; i < count; i++) indices[i] = DataTools.String2Int(words[i]);
             this.FrameIndices = indices;
         } //end SetFrameIndices()
+
+        public void SetFrameIndices(int[] indicesArray)
+        {
+            this.FrameIndices = indicesArray;
+        } //end SetFrameIndices()
+        public void SetFrameIndices(int index)
+        {
+            int[] indices = new int[1];
+            indices[0] = index;
+            this.FrameIndices = indices;
+        } //end SetFrameIndices()
+        // end of three methods to set frame indices
+        public string FrameIndices2String()
+        {
+            int count = this.FrameIndices.Length;
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < count; i++) sb.Append(this.FrameIndices[i] + ",");
+            return sb.ToString();
+        } //end FrameIndices2String()
+        //******************************************************************************************************************
+
 
 
         public void SaveDataAndImageToFile(string path, SonoConfig templateState)
@@ -241,6 +265,7 @@ namespace AudioStuff
         /// <returns></returns>
         public static int[] ConvertFrameIndices(string indicesAsString)
         {
+            //Console.WriteLine("indicesAsString=" + indicesAsString);
             string[] words = indicesAsString.Split(',');
             int count = words.Length;
             int[] indices = new int[count];
@@ -281,6 +306,7 @@ namespace AudioStuff
             for (int i = 0; i < fvCount; i++)
             {
                 for (int j = 0; j < featureCount; j++) avVector[j] += fvs[i].Features[j]; //sum the feature values
+                //Console.WriteLine("fv" + i + "  FrameIndices=" + fvs[i].FrameIndices[0]+"  path="+fvs[i].SourceFile);
             }
             for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)fvCount; //average feature values
 

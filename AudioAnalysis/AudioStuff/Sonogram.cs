@@ -1000,6 +1000,7 @@ namespace AudioStuff
         public FV_Extraction FeatureVectorExtraction { get; set; }
         public int FeatureVectorExtractionInterval { get; set; }
         public bool FeatureVector_DoAveraging { get; set; }
+        public string FeatureVector_DefaultNoiseFile { get; set; }
 
         public int FeatureVectorCount { get; set; }
         public int FeatureVectorLength { get; set; }
