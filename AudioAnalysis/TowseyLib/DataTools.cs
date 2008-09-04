@@ -1567,7 +1567,7 @@ namespace TowseyLib
       }
       catch (System.FormatException ex)
       {
-          System.Console.WriteLine("Template.GetFVExtraction():- DataTools.String2Int(string str): WARNING! INVALID INTEGER:- " + str);
+          System.Console.WriteLine("DataTools.String2Int(string str): WARNING! INVALID INTEGER=" + str);
           System.Console.WriteLine(ex);
           int32 = 0;
       }

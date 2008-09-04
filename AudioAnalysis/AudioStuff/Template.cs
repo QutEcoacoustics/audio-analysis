@@ -45,12 +45,12 @@ namespace AudioStuff
         //file names and directory
         private string templateDir;
         public  string TemplateDir  { get { return templateDir; }  set { templateDir = value; } }
-        private string templatePath;
-        public  string TemplatePath { get { return templatePath; } set { templatePath = value; } }
+        private string templateIniPath;
+        public  string TemplateIniPath { get { return templateIniPath; } set { templateIniPath = value; } }
 
         //the FEATURE VECTORS
         private FeatureVector[] featureVectors;
-        public  FeatureVector[] FeatureVectors { get { return featureVectors; } set { featureVectors = value; } }
+        public  FeatureVector[] FeatureVectors { get { return featureVectors; }/* set { featureVectors = value; }*/ }
 
 
         //info about OLD TEMPLATE EXTRACTION
@@ -93,6 +93,7 @@ namespace AudioStuff
 
 
             //INITIALIZE FEATURE VECTORS
+            if (this.verbose) Console.WriteLine("\n#####  INITIALIZE FEATURE VECTORS");
             FeatureVector.Verbose = this.verbose;
             int fvCount = this.templateState.FeatureVectorCount + 1; //+1 so can put noise feature vector in position zero
             this.featureVectors = new FeatureVector[fvCount]; 
@@ -131,8 +132,8 @@ namespace AudioStuff
             this.templateState.SourceFStem = sourceFileStem;
             this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
-            this.templatePath = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + templateFExt;
-            if (this.verbose) Console.WriteLine("templatePath=" + templatePath);
+            this.templateIniPath = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + templateFExt;
+            if (this.verbose) Console.WriteLine("templatePath=" + templateIniPath);
         }
 
 
@@ -159,11 +160,12 @@ namespace AudioStuff
             this.sonogram = new Sonogram(this.templateState, wav);
         }
 
-        public void SetExtractionParameters(FV_Source fvSource, FV_Extraction fvExtraction, bool doFvAveraging)
+        public void SetExtractionParameters(FV_Source fvSource, FV_Extraction fvExtraction, bool doFvAveraging, string defaultNoiseFile)
         {
             this.templateState.FeatureVectorSource = fvSource;
             this.templateState.FeatureVectorExtraction = fvExtraction;
             this.templateState.FeatureVector_DoAveraging = doFvAveraging;
+            this.templateState.FeatureVector_DefaultNoiseFile = defaultNoiseFile;
         }
 
 
@@ -237,6 +239,10 @@ namespace AudioStuff
             this.templateState.FeatureVector_SelectedFrames[0] = selectedFrames;
         }
 
+
+        /// <summary>
+        /// LOGIC FOR EXTRACTION OF FEATURE VECTORS FROM SONOGRAM ****************************************************************
+        /// </summary>
         public void ExtractTemplateFromSonogram()
         {
             Console.WriteLine("\nEXTRACTING TEMPLATE USING SUPPLIED PARAMETERS");
@@ -264,26 +270,32 @@ namespace AudioStuff
                 Console.WriteLine("Template.ExtractTemplateFromSonogram(: WARNING!! INVALID FV SOURCE OPTION!)");
             }
 
+            int fvCount  = featureVectors.Length;
 
-            if (this.verbose) Console.WriteLine("SAVING TEMPLATE FILES");
             //accumulate the acoustic vectors from multiple frames into an averaged feature vector
-            FeatureVector avFV = null;
             if (this.templateState.FeatureVector_DoAveraging)
             {
-                if (this.verbose) Console.WriteLine("   Do Template Averaging");
+                if (this.verbose) Console.WriteLine("\nSAVING SINGLE TEMPLATE: as average of " + fvCount + " FEATURE VECTORS");
                 int id = 1;
-                avFV = FeatureVector.AverageFeatureVectors(featureVectors, id);
-                //write all files
+                FeatureVector avFV = FeatureVector.AverageFeatureVectors(this.featureVectors, id);
                 string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV1"+ fvectorFExt;
                 if (avFV != null) avFV.SaveDataAndImageToFile(path, this.templateState);
+                //save av fv in place of originals
+                this.featureVectors = new FeatureVector[1];
+                this.featureVectors[0] = avFV;
+                this.templateState.FeatureVectorCount = 1;
+                this.templateState.FeatureVectorLength = avFV.FvLength;
                 WriteTemplateIniFile();
             }
             else
             {
-                for (int i = 0; i < featureVectors.Length; i++)
+                if (this.verbose) Console.WriteLine("SAVING " + fvCount + " SEPARATE TEMPLATE FILES");
+                for (int i = 0; i < fvCount; i++)
                 {
                     string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV" + i + fvectorFExt;
                     featureVectors[i].SaveDataAndImageToFile(path, this.templateState);
+                    this.templateState.FeatureVectorCount = featureVectors.Length;
+                    this.templateState.FeatureVectorLength = featureVectors[0].FvLength;
                 }
                 WriteTemplateIniFile();
             }
@@ -314,9 +326,9 @@ namespace AudioStuff
                 if (this.verbose) Console.WriteLine("   Init FeatureVector[" + i + "] from frame " + frameIndices[i]);
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
-                fvs[i] = new FeatureVector(acousticV, i);
+                fvs[i] = new FeatureVector(acousticV, i+1); //avoid FV id = 0. Reserve this for noise vector
                 fvs[i].SourceFile = this.templateState.SourceFName; //assume all FVs have same source file
-                fvs[i].SetFrameIndices(this.templateState.FeatureVector_SelectedFrames[0]);
+                fvs[i].SetFrameIndices(frameIndices[i]);
             }
             return fvs;
         }
@@ -435,7 +447,7 @@ namespace AudioStuff
             data.Add("TEMPLATE_ID=" + this.templateState.CallID);
             data.Add("CALL_NAME=" + this.templateState.CallName);
             data.Add("COMMENT=" + this.templateState.CallComment);
-            data.Add("THIS_FILE=" + this.templatePath);
+            data.Add("THIS_FILE=" + this.templateIniPath);
 
             data.Add("#");
             data.Add("#INFO ABOUT ORIGINAL .WAV FILE");
@@ -502,51 +514,34 @@ namespace AudioStuff
             data.Add("NUMBER_OF_FEATURE_VECTORS="+fvCount);
             for (int n = 0; n < fvCount; n++) 
             {
-                data.Add("FV1_FILE="+this.templateState.FeatureVectorPaths[n]);
-                //data.Add("FV1_SELECTED_FRAMES=" + frameIDs.ToString());
-                //FV1_FILE=C:\SensorNetworks\Templates\template_2_FV1.txt
-                //FV1_SELECTED_FRAMES=1784,1828,1848,2113,2132,2152,
-                //FV1_SOURCE_FILE=C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav
+                FeatureVector fv = this.featureVectors[n];
+                data.Add("FV" + (n + 1) + "_FILE="+fv.VectorFPath);
+                data.Add("FV" + (n + 1) + "_SELECTED_FRAMES=" + fv.FrameIndices2String());
+                data.Add("FV" + (n + 1) + "_SOURCE_FILE=" + fv.SourceFile);
             }
-            data.Add(@"FV_DEFAULT_NOISE_FILE=C:\SensorNetworks\Templates\template_2_DefaultNoise.txt");
-            data.Add("#");
+            data.Add(@"FV_DEFAULT_NOISE_FILE=" + this.templateState.FeatureVector_DefaultNoiseFile);
             data.Add("#");
 
             data.Add("#************* THRESHOLDS FOR THE ACOUSTIC MODELS ***************");
-            //ZSCORE_SMOOTHING_WINDOW=3
-            //##zscore threshold for p=0.001
-            //#ZSCORE_THRESHOLD=3.1
-            //##zscore threshold for p=0.005
-            //#ZSCORE_THRESHOLD=2.58
-            //##zscore threshold for p=0.01
-            //#ZSCORE_THRESHOLD=2.33
-            //##zscore threshold for p=0.03
-            //#ZSCORE_THRESHOLD=2.15
-            //##zscore threshold for p=0.05
-            //ZSCORE_THRESHOLD=1.98
-            //#ZSCORE_THRESHOLD=1.5
-
+            data.Add("ZSCORE_SMOOTHING_WINDOW"+this.templateState.ZscoreSmoothingWindow);
+            data.Add("#THRESHOLD OPTIONS: 3.1(p=0.001), 2.58(p=0.005), 2.33(p=0.01), 2.15(p=0.03), 1.98(p=0.05),");
+            data.Add("ZSCORE_THRESHOLD=" + this.templateState.ZScoreThreshold);
             data.Add("#");
-            data.Add("#");
-
 
             data.Add("#INFO ABOUT LANGUAGE MODEL");
-            //#
-            //#*****************LANGUAGE MODEL
-            //NUMBER_OF_WORDS=3
-            //WORD1=111
-            //WORD2=11
-            //WORD3=1
-            //#if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-            //USE_HIGH_SENSITIVITY_SEARCH=true
-            //#
-            data.Add("#**************** SCORING PROTOCOL");
-            //#Three choices (1)hot spots (2)sequence (3)periodicity
-            //#SCORING_PROTOCOL=HOTSPOTS
-            //#SCORING_PROTOCOL=WORDMATCH
-            //SCORING_PROTOCOL=PERIODICITY
-            //CALL_PERIODICITY_MS=208
+            data.Add("NUMBER_OF_WORDS="+this.templateState.WordCount);
+            for (int n = 0; n < this.templateState.WordCount; n++)
+            {
+                data.Add("WORD" + (n + 1) + "=" + this.templateState.Words[n]);
+            }
+            data.Add("#If you select a high sensitivity search, then specificity will be reduced.");
+            data.Add("#    That is, higher sensitivity produces a greater number of false positives");
+            data.Add("USE_HIGH_SENSITIVITY_SEARCH=" + this.templateState.HighSensitivitySearch);
             data.Add("#");
+            data.Add("#**************** SCORING PROTOCOL");
+            data.Add("#Three choices (1)HOTSPOTS (2)WORDMATCH (3)PERIODICITY");
+            data.Add("SCORING_PROTOCOL=" + this.templateState.ScoringProtocol);
+            data.Add("CALL_PERIODICITY_MS=" + this.templateState.CallPeriodicity_ms);
             data.Add("#");
 
             //maxSyllables=
@@ -554,7 +549,7 @@ namespace AudioStuff
             //double maxSong=
 
             //write template to file
-            FileTools.WriteTextFile(this.templatePath, data);
+            FileTools.WriteTextFile(this.templateIniPath, data);
         } // end of WriteTemplateConfigFile()
 
 
@@ -634,7 +629,7 @@ namespace AudioStuff
 
             //FEATURE VECTORS
             GetFVSource("FV_SOURCE", cfg, state);
-            GetFVExtraction("FV_EXTRACTION", cfg, state);
+            if (state.FeatureVectorSource != FV_Source.SELECTED_FRAMES) GetFVExtraction("FV_EXTRACTION", cfg, state);
             state.FeatureVector_DoAveraging = cfg.GetBoolean("FV_DO_AVERAGING");
 
             int fvCount = cfg.GetInt("NUMBER_OF_FEATURE_VECTORS");
@@ -778,9 +773,17 @@ namespace AudioStuff
             Console.WriteLine(" Template name: " + this.templateState.CallName);
             Console.WriteLine(" Comment: " + this.templateState.CallComment);
             Console.WriteLine(" Template dir     : " + this.templateState.TemplateDir);
-            Console.WriteLine(" Template ini file: " + this.TemplatePath);
+            Console.WriteLine(" Template ini file: " + this.TemplateIniPath);
             Console.WriteLine(" Bottom freq=" + this.templateState.MinTemplateFreq + "  Mid freq=" + this.templateState.MidTemplateFreq + " Top freq=" + this.templateState.MaxTemplateFreq);
-        }
+
+            Console.WriteLine(" NUMBER_OF_FEATURE_VECTORS="+this.templateState.FeatureVectorCount);
+            Console.WriteLine(" FEATURE_VECTOR_LENGTH=" + this.templateState.FeatureVectorLength);
+            Console.WriteLine(" Feature Vector Source Method = "+ this.templateState.FeatureVectorSource);
+            if (this.templateState.FeatureVectorSource != FV_Source.SELECTED_FRAMES)
+                Console.WriteLine("     Feature Vector Extraction Method = " + this.templateState.FeatureVectorExtraction);
+            Console.WriteLine(" NUMBER_OF_WORDS=" + this.templateState.WordCount);
+            Console.WriteLine(" Scoring Protocol = " + this.templateState.ScoringProtocol);
+       }
 
 
     }//end Class Template

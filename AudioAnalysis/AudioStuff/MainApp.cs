@@ -34,9 +34,9 @@ namespace AudioStuff
             //Mode userMode = Mode.ArtificialSignal;
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
-            Mode userMode = Mode.CreateTemplate;
+            //Mode userMode = Mode.CreateTemplate;
             //Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -109,7 +109,7 @@ namespace AudioStuff
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //******************************************************************************************************************
-            int callID = 1;
+            int callID = 2;
 
             //****************** DEFAULT CALL PARAMETERS
             string callName = "NO NAME";
@@ -176,7 +176,6 @@ namespace AudioStuff
                 //backgroundFilter= //noise reduction??
 
                 //MFCC PARAMETERS
-                //int sampleRate; //determined by source WAV file
                 frameSize = 512;
                 frameOverlap = 0.5;
                 filterBankCount = 64;
@@ -188,7 +187,7 @@ namespace AudioStuff
 
 
                 //FEATURE VECTOR EXTRACTION PARAMETERS
-                fv_Source = FV_Source.SELECTED_FRAMES; //FV_Source.MARQUEE;
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
                 selectedFrames = "1784,1828,1848,2113,2132,2152";
                 min_Freq = 1500; //Hz
                 max_Freq = 5500; //Hz
@@ -204,7 +203,7 @@ namespace AudioStuff
                 //LANGUAGE MODEL
                 numberOfWords = 3; //number of defined song variations
                 words = new string[numberOfWords];
-                words[0] = "111"; words[1] = "111"; words[2] = "111"; 
+                words[0] = "111"; words[1] = "11"; words[2] = "1"; 
                 //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
                 doHighSensitivitySearch = true;
                 //maxSyllables=
@@ -218,69 +217,59 @@ namespace AudioStuff
                 zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
                 scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
                 callPeriodicity = 208;
-            }
+            } //end of if (callID == 1)
 
             //******************************************************************************************************************
             //************* CALL 2 PARAMETERS ***************
-            //int callID = 2;
-            //string callName = "Lewin's Rail Kek-kek";
-            //string callComment = "Template consists of a single KEK!";
-            //string sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
-            ////int sampleRate; //to be determined
-            //int frameSize = 512;
-            //double frameOverlap = 0.5;
-            //int min_Freq = 1500; //Hz
-            //int max_Freq = 5500; //Hz
-            //double dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
-            ////backgroundFilter= //noise reduction??
-            //int filterBankCount = 64;
-            //bool doMelConversion = true;
-            //int ceptralCoeffCount = 12;
-            //int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
-            //bool includeDeltaFeatures = true;
-            //bool includeDoubleDeltaFeatures = true;
-            ////maxSyllables=
-            ////double maxSyllableGap = 0.25; //seconds
-            ////double maxSong=
+            if (callID == 2)
+            {
+                callName = "Lewin's Rail Kek-kek";
+                callComment = "Template consists of a single KEK!";
+                sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+                frameSize = 512;
+                frameOverlap = 0.5;
+                min_Freq = 1500; //Hz
+                max_Freq = 5500; //Hz
+                dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
+                //backgroundFilter= //noise reduction??
+                filterBankCount = 64;
+                doMelConversion = true;
+                ceptralCoeffCount = 12;
+                deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
 
-            ////FEATURE VECTOR PREPARATION DETAILS
-            //FV_Source fvSource = FV_Source.SELECTED_FRAMES;
-            //int[] selectedFrames = { 1784, 1828, 1848, 2113, 2132, 2152 };
-            ////FV_Source fvSource = FV_Source.MARQUEE;
-            ////int marqueeStart = 999;
-            ////int marqueeEnd   = 999;
+                //FEATURE VECTOR PREPARATION DETAILS
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+                selectedFrames = "1784,1828,1848,2113,2132,2152";
 
-            //FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;
-            ////FV_Extraction fv_Extraction = FV_Extraction.AT_FIXED_INTERVALS;
-            ////int fvExtractionIntervals = 200; //milliseconds
-            //bool doFvAveraging = true;
-            //string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreSmoothingWindow = 3;
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
 
-            //// THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-            //int zScoreSmoothingWindow = 3;
-            //double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                //LANGUAGE MODEL
+                numberOfWords = 3; //number of defined song variations 
+                words = new string[numberOfWords];
+                words[0] = "111"; words[1] = "11"; words[2] = "1";
+                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+                doHighSensitivitySearch = true;
 
-            ////LANGUAGE MODEL
-            //int numberOfWords = 3; //number of defined song variations 
-            //string[] words = { "111", "11", "1" };
-            ////if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-            //bool doHighSensitivitySaerch = true;
-
-            //// SCORING PROTOCOL
-            //ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
-            //int callPeriodicity = 208;
-
+                // SCORING PROTOCOL
+                scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+                callPeriodicity = 208;
+            }//end of if (callID == 2)
 
             //******************************************************************************************************************
             //************* CALL 3 PARAMETERS ***************
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
-            //int callID = 1;
-            //string callName = "Cicada";
-            //string callComment = "Broadband Chirp Repeated @ 5Hz";
-            //int y1 = 115; int x1 = 545;
-            //int y2 = 415; int x2 = 552;
-
+            if (callID == 3)
+            {
+                callName = "Cicada";
+                callComment = "Broadband Chirp Repeated @ 5Hz";
+                int y1 = 115; int x1 = 545;
+                int y2 = 415; int x2 = 552;
+            }//end of if (callID == 3)
 
 
 
@@ -399,7 +388,7 @@ namespace AudioStuff
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
                         t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
-                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging);
+                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
                         if (fv_Source == FV_Source.SELECTED_FRAMES)
                         {
                             t.SetSelectedFrames(selectedFrames);
@@ -408,8 +397,8 @@ namespace AudioStuff
                         if (fv_Source == FV_Source.MARQUEE)
                         {
                             t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
+                            if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                         }
-                        if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                         //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
                         t.SetLanguageModel(words, doHighSensitivitySearch);
                         t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
@@ -432,7 +421,7 @@ namespace AudioStuff
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
                         t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
-                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging);
+                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
                         if (fv_Source == FV_Source.SELECTED_FRAMES) t.SetSelectedFrames(selectedFrames);
                         //t.SetFrequencyBounds(min_Freq, max_Freq);
                         t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
@@ -444,12 +433,18 @@ namespace AudioStuff
                         //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);
 
                         Console.WriteLine("\nCREATING CLASSIFIER");
-                        Classifier cl = new Classifier(t, t.Sonogram);
-                        double[,] m = t.Sonogram.SpectralM;
-                        //double[,] m = t.Sonogram.AcousticM;
+                        //Classifier cl = new Classifier(t, t.Sonogram);
+                        //double[,] m = t.Sonogram.SpectralM;
+                        ////double[,] m = t.Sonogram.AcousticM;
 
-                        t.Sonogram.SaveImage(m, cl.Zscores);
-                        cl.WriteResults();//writes to System.Console.
+                        //t.Sonogram.SaveImage(m, cl.Zscores);
+                        Classifier cl = new Classifier(t);
+                        t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
+                        cl.WriteResults();
+                        Console.WriteLine("# Template Hits =" + cl.Results.Hits);
+                        Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms + " ms");
+                        Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
+                        Console.WriteLine("# Best Score At =" + cl.Results.BestScoreLocation.ToString("F1") + " sec");
                     }
                     catch (Exception e)
                     {
@@ -474,7 +469,6 @@ namespace AudioStuff
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                         Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms+" ms");
                         Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);
-                        //Console.WriteLine("# Best Score at =" + cl.Results.BestCallScore);
                         Console.WriteLine("# Best Score At =" + cl.Results.BestScoreLocation.ToString("F1")+" sec");
                     }
                     catch (Exception e)
