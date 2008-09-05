@@ -21,10 +21,6 @@ namespace AudioStuff
     /// </summary>
     public class Classifier
     {
-        //private readonly int scanType = 1; //dot product - noise totally random
-        private readonly int scanType = 2; //cross correlation - noise sampled from all frames
-        //private readonly int scanType = 3; //cross correlation - noise sampled from subthreshold frames
-
 
         private readonly int noiseSampleCount = 10000;
 
@@ -55,14 +51,14 @@ namespace AudioStuff
         /// <param name="s"></param>
         public Classifier(Template t)
         {
-            if (t == null) throw new Exception("Template == null in Classifier() CONSTRUCTOR");
+            if (t == null)               throw new Exception("Template == null in Classifier() CONSTRUCTOR");
             if (t.TemplateState == null) throw new Exception("TemplateState == null in Classifier() CONSTRUCTOR");
 
             Sonogram s = t.Sonogram;
-            if (s == null) throw new Exception("Sonogram == null in Classifier() CONSTRUCTOR");
-            if (s.State == null) throw new Exception("SonogramState == null in Classifier() CONSTRUCTOR");
+            if (s == null)               throw new Exception("Sonogram == null in Classifier() CONSTRUCTOR");
+            if (s.State == null)         throw new Exception("SonogramState == null in Classifier() CONSTRUCTOR");
             this.template = t;
-            this.fvs = t.FeatureVectors;
+            this.fvs = SetFeatureVectors(t.FeatureVectors);
 
             GetDataFromSonogram(s);
             Scan(s); //scan using the new mfcc acoustic feature vector
@@ -81,7 +77,7 @@ namespace AudioStuff
             if (s == null)               throw new Exception("Sonogram == null in Classifier() CONSTRUCTOR");
             if (s.State == null)         throw new Exception("SonogramState == null in Classifier() CONSTRUCTOR");
             this.template = t;
-            this.fvs = t.FeatureVectors;
+            this.fvs = SetFeatureVectors(t.FeatureVectors);
 
             GetDataFromSonogram(s);
             Scan(s); //scan using the new mfcc acoustic feature vector
@@ -97,7 +93,51 @@ namespace AudioStuff
             this.decibelThreshold = s.State.MinDecibelReference+s.State.SegmentationThreshold_k2;  // FreqBandNoise_dB;
         }
 
+        /// <summary>
+        /// transfers feature vectors from the template to the classifier.
+        /// Need to insert an additional NOISE feature vector in the zero index
+        /// The noise fv will later be used to assess the statistical significance of the template scores
+        /// </summary>
+        /// <param name="featureVectors"></param>
+        /// <returns></returns>
+        public FeatureVector[] SetFeatureVectors(FeatureVector[] featureVectors)
+        {
+            int fvCount = featureVectors.Length + 1;
+            FeatureVector[] v = new FeatureVector[fvCount];
+            for (int n = 1; n < fvCount; n++) //skip zero position where noise FV will be placed
+            {
+                v[n] = featureVectors[n - 1];
+                v[n].FvID = n;
+            }
 
+            SonoConfig cfg = template.TemplateState;
+            //reset the path strings to the FV files
+            if (cfg.FeatureVectorPaths != null) //there are no file paths if template just created
+            {
+                string[] paths = new string[fvCount];
+                paths[0] = cfg.DefaultNoiseFVFile;
+                for (int n = 1; n < fvCount; n++) paths[n] = cfg.FeatureVectorPaths[n - 1];
+                cfg.FeatureVectorPaths = paths;
+            }
+
+            //reset the selected frames to the FV files
+            if (cfg.FeatureVector_SelectedFrames != null)
+            {
+                string[] frames = new string[fvCount];
+                for (int n = 1; n < fvCount; n++) frames[n] = cfg.FeatureVector_SelectedFrames[n - 1];
+                cfg.FeatureVector_SelectedFrames = frames;
+            }
+
+            //reset the source files to the FVs
+            if (cfg.FVSourceFiles != null)
+            {
+                string[] sourceFs = new string[fvCount];
+                for (int n = 1; n < fvCount; n++) sourceFs[n] = cfg.FVSourceFiles[n - 1];
+                cfg.FVSourceFiles = sourceFs;
+            }
+
+            return v;
+        }
 
 
 
@@ -123,11 +163,14 @@ namespace AudioStuff
             //string fPath = this.template.TemplateState.FeatureVectorPaths[0];
             //this.fvs[0].Write2File(fPath); 
 
-            //Obtain a matrix of noise feature vectors and then set the noise response for each feature vector
+
+            //Obtain a matrix of NOISE feature vectors and then set the noise response for each feature vector
             if (this.Verbose) Console.WriteLine("     Obtain noise response for each feature vector");
             double[,] noiseM = GetRandomNoiseMatrix(s.AcousticM, this.noiseSampleCount);
+            //following alternative to above method only gets noise estimate from low energy frames
             //double[,] noiseM = GetRandomNoiseMatrix(s.AcousticM, this.noiseSampleCount, this.decibels, this.decibelThreshold);
             for (int n = 0; n < fvCount; n++) this.fvs[n].SetNoiseResponse(noiseM);
+
 
 
             if (this.Verbose) Console.WriteLine("     Obtain feature vector match z-scores");
@@ -149,7 +192,12 @@ namespace AudioStuff
             //search for potential high scoring locations in the symbol stream
             //either use hotspots or symbolSequence to help search for words 
             bool useHotSpots = this.template.TemplateState.HighSensitivitySearch;
-            double[] wordScores;
+            double[] wordScores=null;
+            string symbolSequence=null;
+            bool[] peaks = null; ;
+
+
+
             if (useHotSpots)
             {
                 double[] hotspots = HotSpots(zscoreMatrix, this.fvs[0].NoiseAv, this.template.TemplateState.Words);
@@ -157,7 +205,7 @@ namespace AudioStuff
                 if (this.Verbose) Console.WriteLine("\tUsing HIGH SENSITIVITY / LOW SPECIFICITY SEARCH");
             }
             else {
-                string symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
+                symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
                 wordScores = WordSearch(symbolSequence, zscoreMatrix, this.template.TemplateState.Words);
                 if (this.Verbose) Console.WriteLine("################## THE SYMBOL SEQUENCE");
                 if (this.Verbose) Console.WriteLine(symbolSequence);
@@ -165,33 +213,42 @@ namespace AudioStuff
             }
 
 
-            //find peaks and process them
-            bool[] peaks = DataTools.GetPeaks(wordScores);
-            peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
-            wordScores = ReconstituteScores(wordScores, peaks);
-            results.Hits = DataTools.CountPositives(wordScores);
+
+            //SCORE USING HOTSPOTS
+            if (this.template.TemplateState.ScoringProtocol == ScoringProtocol.HOTSPOTS)
+            {
+                wordScores = ScoreHotSpots(wordScores, symbolSequence, this.template.TemplateState.TypicalSongDuration);
+            }
+            else
+            {
+                //find peaks and process them
+                peaks = DataTools.GetPeaks(wordScores);
+                peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
+                wordScores = ReconstituteScores(wordScores, peaks);
+            }
+            this.results.Hits = DataTools.CountPositives(wordScores);
+            this.results.CallScores = wordScores;
             if (results.Hits <= 1) return; //cannot do anything more in this case
 
 
-            // put wordScores to template state machine
+
+            // check for periodicity in the wordScores
             int period_ms = this.template.TemplateState.CallPeriodicity_ms; //set in template
             if ((this.template.TemplateState.ScoringProtocol == ScoringProtocol.PERIODICITY)&&(period_ms != 0))
             {            
                 this.results.CallPeriodicity_ms = period_ms;
                 int period_frames = this.template.TemplateState.CallPeriodicity_frames;
-                results.CallPeriodicity_frames = period_frames;
+                this.results.CallPeriodicity_frames = period_frames;
                 int period_NH = this.template.TemplateState.CallPeriodicity_NH_frames;
                 bool[] periodPeaks = Periodicity(peaks, period_frames, period_NH);
-                results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
+                this.results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
                 //Console.WriteLine("period_frame=" + period_frames + "+/-" + period_NH + " periodic hits=" + results.NumberOfPeriodicHits);
                 for (int i = 0; i < frameCount; i++) if (!periodPeaks[i]) wordScores[i] = 0.0;
             } //end of periodic analysis
 
             this.results.CallScores = wordScores;
             int maxIndex = DataTools.GetMaxIndex(wordScores);
-            results.BestScoreLocation = (double)maxIndex * this.template.TemplateState.FrameOffset;
-
-
+            this.results.BestScoreLocation = (double)maxIndex * this.template.TemplateState.FrameOffset;
         }  // end of Scan(Sonogram s)
 
 
@@ -229,7 +286,7 @@ namespace AudioStuff
             {
                 Console.WriteLine("  TOO FEW LOW ENERGY FRAMES. READ DEFAULT NOISE FEATURE VECTOR.");
                 Console.WriteLine("  " + count + " < targetCount=" + targetCount + "   @ decibelThreshold=" + decibelThreshold);
-                //READ DEFAULT FEATURE VECTOR
+                //READ DEFAULT NOISE FEATURE VECTOR
                 return null; // new FeatureVector(noiseFV, id);
             }
 
@@ -577,6 +634,27 @@ namespace AudioStuff
                 //if (editScore[i] != 5) Console.WriteLine(i +"  "+editScore[i]);
             }
             return editScore;
+        }
+
+
+        public double[] ScoreHotSpots(double[] scores, string symbolSequence, double songDuration)
+        {
+            //DataTools.writeArray(scores);
+            int songLength = (int)Math.Floor(songDuration * this.template.TemplateState.FramesPerSecond);
+            Console.WriteLine("songDuration=" + songDuration + "s.  Frames/s=" + this.template.TemplateState.FramesPerSecond + "   SongLength=" + songLength);
+
+            int frameCount = scores.Length;
+            for (int i = 0; i < frameCount; i++) if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) scores[i] = 0.0;
+            //for (int i = 0; i < frameCount; i++) if ((symbolSequence[i] != 'n') && (symbolSequence[i] != 'x')) scores[i] = DataTools.Char2Integer(symbolSequence[i]);
+            
+            //double[] averageScore = DataTools.filterMovingAverage(scores, songLength);
+
+
+           // bool[] peaks = DataTools.GetPeaks(scores);
+           // peaks = RemoveSubThresholdPeaks(scores, peaks, this.template.TemplateState.ZScoreThreshold);
+           // scores = ReconstituteScores(scores, peaks);
+            results.Hits = DataTools.CountPositives(scores);
+            return scores;
         }
 
 

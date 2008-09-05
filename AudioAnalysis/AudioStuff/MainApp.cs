@@ -35,8 +35,8 @@ namespace AudioStuff
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
-            //Mode userMode = Mode.CreateTemplateAndScan;
-            Mode userMode = Mode.ReadTemplateAndScan;
+            Mode userMode = Mode.CreateTemplateAndScan;
+            //Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -53,8 +53,8 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -106,10 +106,20 @@ namespace AudioStuff
 
 
 
+
+
+
+
+
+
             Console.WriteLine("\nMODE=" + Mode.GetName(typeof(Mode), userMode));
 
             //******************************************************************************************************************
-            int callID = 2;
+            //******************************************************************************************************************
+            //SET TEMPLATE HERE  ***********************************************************************************************
+            int callID = 3;
+            //******************************************************************************************************************
+            //******************************************************************************************************************
 
             //****************** DEFAULT CALL PARAMETERS
             string callName = "NO NAME";
@@ -153,13 +163,13 @@ namespace AudioStuff
             string[] words = { "999" };
             //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
             bool doHighSensitivitySearch = true;
-            //maxSyllables=
-            //double maxSyllableGap = 0.25; //seconds
-            //double maxSong=
+            int maxSyllables = 1;  //NOT YET USED
+            double maxSyllableGap = 0.25; //seconds  NOT YET USED
+            double typicalSongDuration = 1.000; //seconds USED WHEN SCORING FOR HOTSPOTS
 
             // SCORING PROTOCOL
             ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
-            int callPeriodicity = 208;
+            int callPeriodicity = 999;
 
 
 
@@ -205,7 +215,7 @@ namespace AudioStuff
                 words = new string[numberOfWords];
                 words[0] = "111"; words[1] = "11"; words[2] = "1"; 
                 //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = true;
+                doHighSensitivitySearch = false;
                 //maxSyllables=
                 //double maxSyllableGap = 0.25; //seconds
                 //double maxSong=
@@ -218,6 +228,7 @@ namespace AudioStuff
                 scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
                 callPeriodicity = 208;
             } //end of if (callID == 1)
+
 
             //******************************************************************************************************************
             //************* CALL 2 PARAMETERS ***************
@@ -259,17 +270,71 @@ namespace AudioStuff
                 callPeriodicity = 208;
             }//end of if (callID == 2)
 
+
             //******************************************************************************************************************
             //************* CALL 3 PARAMETERS ***************
+            if (callID == 3)
+            {
+                callName = "Soulful-tuneful";
+                callComment = "Unknown species in faint kek-kek file!";
+                sourceFile = "BAC1_20071008-084607"; 
+
+                //ENERGY AND NOISE PARAMETERS
+                dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
+                //backgroundFilter= //noise reduction??
+
+                //MFCC PARAMETERS
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = true;
+                ceptralCoeffCount = 12;
+                deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.MARQUEE;  //options are SELECTED_FRAMES or MARQUEE
+                min_Freq = 600; //Hz
+                max_Freq = 3700; //Hz
+                marqueeStart = 4760;  //frame id
+                marqueeEnd   = 4870;
+
+                fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
+                //fvExtractionInterval = 200; //milliseconds
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+
+                //LANGUAGE MODEL = automated for HOTSPOT scoring
+                //numberOfWords = 3; //number of defined song variations
+                //words = new string[numberOfWords];
+                //words[0] = "1"; words[1] = "2"; words[2] = "3";
+                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+                doHighSensitivitySearch = false;
+                //maxSyllables=
+                //double maxSyllableGap = 0.25; //seconds
+                typicalSongDuration = 2.000; //seconds
+
+                // SCORING PARAMETERS PROTOCOL
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreSmoothingWindow = 3;
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                scoringProtocol = ScoringProtocol.HOTSPOTS; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            } //end of if (callID == 3)
+
+
+            //******************************************************************************************************************
+            //************* CALL 4 PARAMETERS ***************
             //coordinates to extract template using bitmap image of sonogram
             //image coordinates: rows=freqBins; cols=timeSteps
-            if (callID == 3)
+            if (callID == 4)
             {
                 callName = "Cicada";
                 callComment = "Broadband Chirp Repeated @ 5Hz";
                 int y1 = 115; int x1 = 545;
                 int y2 = 415; int x2 = 552;
-            }//end of if (callID == 3)
+            }//end of if (callID == 4)
 
 
 
@@ -384,11 +449,8 @@ namespace AudioStuff
 
                     try
                     {
-                        Console.WriteLine("\nCREATING TEMPLATE");
+                        Console.WriteLine("\nCREATING TEMPLATE "+ callID);
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
-                        t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount, 
-                                                         deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
-                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
                         if (fv_Source == FV_Source.SELECTED_FRAMES)
                         {
                             t.SetSelectedFrames(selectedFrames);
@@ -399,7 +461,10 @@ namespace AudioStuff
                             t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
                             if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                         }
-                        //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
+                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                                                         deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
+                        t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
                         t.SetLanguageModel(words, doHighSensitivitySearch);
                         t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
@@ -417,15 +482,23 @@ namespace AudioStuff
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try
                     {
-                        Console.WriteLine("\nCREATING TEMPLATE");
+                        Console.WriteLine("\nCREATING TEMPLATE " + callID);
                         Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
-                        t.SetMfccParameters(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                        if (fv_Source == FV_Source.SELECTED_FRAMES)
+                        {
+                            t.SetSelectedFrames(selectedFrames);
+                            t.SetFrequencyBounds(min_Freq, max_Freq);
+                        }
+                        else
+                            if (fv_Source == FV_Source.MARQUEE)
+                            {
+                                t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
+                                if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
+                            }
+                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
-                        if (fv_Source == FV_Source.SELECTED_FRAMES) t.SetSelectedFrames(selectedFrames);
-                        //t.SetFrequencyBounds(min_Freq, max_Freq);
-                        t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
-                        //t.SetSongParameters(maxSyllables, maxSyllableGap, maxSong);
+                        t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
                         t.SetLanguageModel(words, doHighSensitivitySearch);
                         t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
@@ -457,7 +530,7 @@ namespace AudioStuff
 
                     wavPath = wavDirName + "\\" + wavFileName + wavFExt;
                     try{
-                        Console.WriteLine("\nREADING TEMPLATE");
+                        Console.WriteLine("\nREADING TEMPLATE " + callID);
                         Template t = new Template(iniFPath, callID);
                         Console.WriteLine("\nREADING WAV FILE");
                         t.SetSonogram(wavPath);

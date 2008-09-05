@@ -12,7 +12,7 @@ namespace AudioStuff
     {
 
         private int fvID;
-        public  int FvID { get { return fvID; } }
+        public int FvID { get { return fvID; } set { fvID = value; } }
         private int fvLength;
         public  int FvLength { get { return fvLength; } }
         private string vectorFName;
@@ -106,7 +106,11 @@ namespace AudioStuff
         {
             int count = this.FrameIndices.Length;
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < count; i++) sb.Append(this.FrameIndices[i] + ",");
+            for (int i = 0; i < count; i++)
+            {
+                sb.Append(this.FrameIndices[i]);
+                if(i < (count-1))sb.Append(",");
+            }
             return sb.ToString();
         } //end FrameIndices2String()
         //******************************************************************************************************************
@@ -115,12 +119,12 @@ namespace AudioStuff
 
         public void SaveDataAndImageToFile(string path, SonoConfig templateState)
         {
-            if (FeatureVector.Verbose) Console.WriteLine(" Template feature vector in file " + path);
+            if (FeatureVector.Verbose) Console.WriteLine("\tTemplate feature vector in file " + path);
             this.vectorFPath = path;
             this.imageFPath = FileTools.ChangeFileExtention(path, ".bmp");
             FileTools.WriteArray2File_Formatted(this.features, path, "F5");
 
-            Console.WriteLine(" Template feature vector image in file " + this.ImageFPath);
+            Console.WriteLine("\tTemplate feature vector image in file " + this.ImageFPath);
             SaveImage(templateState);        
         }
 
@@ -294,6 +298,39 @@ namespace AudioStuff
             for (int i = 0; i < indexCount; i++) indices[i] = start + (i * interval);
             return indices;
         }//end GetFrameIndices()
+
+        /// <summary>
+        /// returns the frame indices where frame energy within the interval [start,end] is at a local maximum AND over threshold
+        /// </summary>
+        /// <param name="start"></param>
+        /// <param name="end"></param>
+        /// <param name="frameEnergy"></param>
+        /// <param name="energyThreshold"></param>
+        /// <returns></returns>
+        public static int[] GetFrameIndices(int start, int end, double[] frameEnergy, double energyThreshold)
+        {
+            double[] smoothEn = DataTools.filterMovingAverage(frameEnergy, 5);
+            //find minimum frame energy in the given interval
+            double min = Double.MaxValue;
+            for (int i = start; i < end; i++) if (min > frameEnergy[i]) min = frameEnergy[i];
+            double threshold = min + energyThreshold;
+
+            bool[] peaks = DataTools.GetPeaks(smoothEn);
+            int peakCount = 0;
+            for (int i = start; i < end; i++) if ((peaks[i]) && (frameEnergy[i] > threshold)) peakCount++;
+            int[] indices = new int[peakCount];
+
+            peakCount = 0;
+            for (int i = start; i < end; i++)
+            {
+                if ((peaks[i]) && (frameEnergy[i] > threshold))
+                {
+                    indices[peakCount] = i;
+                    peakCount++;
+                }
+            }
+            return indices;
+        }
 
 
         public static FeatureVector AverageFeatureVectors(FeatureVector[] fvs, int newID)

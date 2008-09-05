@@ -419,6 +419,12 @@ namespace TowseyLib
       for (int i = 0; i < array.Length; i++)
           Console.WriteLine(i + "  " + array[i]);
   }
+  public static string writeArray2String(int[] array)
+  {
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < array.Length; i++) sb.Append("  "+array[i]);
+      return sb.ToString();
+  }
   public static void writeArray(double[] array)
   {
       for (int i = 0; i < array.Length; i++)
