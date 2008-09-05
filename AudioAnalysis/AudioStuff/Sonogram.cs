@@ -1006,11 +1006,15 @@ namespace AudioStuff
         public int FeatureVectorLength { get; set; }
         public string[] FeatureVectorPaths { get; set; }
         public string[] FVSourceFiles { get; set; }
+        public string DefaultNoiseFVFile { get; set; }
 
         //THE LANGUAGE MODEL
         public bool HighSensitivitySearch; //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
         public int WordCount { get; set; }
         public string[] Words { get; set; }
+
+        //SONG PARAMETERS
+        public double TypicalSongDuration { get; set; }
 
 
         // SCORING PROTOCOL
