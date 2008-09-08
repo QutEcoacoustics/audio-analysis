@@ -833,7 +833,6 @@ namespace TowseyLib
 
             int height = matrix.GetLength(0);
             int width = matrix.GetLength(1);
-            if(bandWidth > width) bandWidth = width;
             int halfWidth = bandWidth / 2;
             int bandCount = width / ncbbc;
             int bandID = 0;
@@ -842,7 +841,7 @@ namespace TowseyLib
             matrix = DataTools.normalise(matrix);
 
             //init matrix from which histogram and transfer fnc derived
-            double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth-1);
+            double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, height - 1, bandWidth);
             double[,] tmpM = new double[height, ncbbc];  //matrix to which transfer function is applied
             double[,] outM = new double[height, width];
 
