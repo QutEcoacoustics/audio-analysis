@@ -158,12 +158,11 @@ namespace AudioStuff
             int width   = matrix.GetLength(0); //number of spectra in sonogram
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
 
-            //Console.WriteLine("sonogramType=" + this.sonogramType + " width=" + width);
+            //Console.WriteLine("sonogramType=" + this.sonogramType);
             int binHt = 1; // 1 pixel per freq bin
             if (this.sonogramType == SonogramType.cepstral) binHt = 256 / sHeight; //several pixels per cepstral coefficient
             else
             if (this.sonogramType == SonogramType.acousticVectors) binHt = 256 / sHeight; //several pixels per cepstral coefficient
-            if (binHt < 1) binHt = 1;
 
             int imageHt   = sHeight * binHt;     //image ht = sonogram ht. Later include grid and score scales
             double hzBin  = NyquistF / (double)sHeight;
@@ -513,11 +512,8 @@ namespace AudioStuff
             }
 
             //add in horizontal threshold significance line
-            if (this.scoreThreshold < 0.0) this.scoreThreshold = 0.0; 
             int lineID = (int)(SonoImage.trackHt * (1 - (this.scoreThreshold / SonoImage.zScoreMax)));
-            int y = offset + lineID;
-            if (y >= height) y = height - 1;
-            for (int x = 0; x < width; x++) bmp.SetPixel(x, y, gray);
+            for (int x = 0; x < width; x++) bmp.SetPixel(x, offset + lineID, gray);
 
             return bmp;
         }
