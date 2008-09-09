@@ -301,13 +301,13 @@ namespace LocalDataStore
 		{
 			switch (ext.ToLower())
 			{
-				case "asf":
+				case ".asf":
 					return AsfMimeType;
-				case "wav":
+				case ".wav":
 					return WavMimeType;
-				case "mp3":
+				case ".mp3":
 					return Mp3MimeType;
-				case "wv":
+				case ".wv":
 					return WavpackMimeType;
 				default:
 					return BinMimeType;
@@ -346,7 +346,8 @@ namespace LocalDataStore
 
 			var url = new StringBuilder();
 			//url.AppendFormat("{0}/rest/data/{1}?More={2}", Settings.ServerUrlBase, audioReadingID, more);
-			url.AppendFormat("{0}/RestInterface/DataUpload.ashx?AudioReadingID={1}&More={2}", "http://www.mquter.qut.edu.au/sensor/demo", audioReadingID, more);
+			//url.AppendFormat("{0}/RestInterface/DataUpload.ashx?AudioReadingID={1}&More={2}", "http://www.mquter.qut.edu.au/sensor/demo", audioReadingID, more);
+			url.AppendFormat("{0}/RestInterface/DataUpload.ashx?AudioReadingID={1}&More={2}", "http://localhost:4040/WebFrontend", audioReadingID, more);
 			if (deviceID != null) url.AppendFormat("&DeviceID={0}", deviceID);
 			if (mimeType != null) url.AppendFormat("&MimeType={0}", mimeType);
 			if (time.HasValue) url.AppendFormat("&Time={0:yyyy-MM-ddTHHmmss}", time.Value);
