@@ -244,5 +244,146 @@ namespace LocalDataStore
 		{
 			txtDataFolder.ForeColor = Directory.Exists(txtDataFolder.Text) ? Color.Black : Color.Red;
 		}
+
+		private void cmdUploadBrowse_Click(object sender, EventArgs e)
+		{
+			using (OpenFileDialog dia = new OpenFileDialog())
+			{
+				if (dia.ShowDialog(this) == DialogResult.OK)
+					txtUploadPath.Text = dia.FileName;
+			}
+		}
+
+		public int MaxChunkSize
+		{
+			get { return (int)updChunkSize.Value; }
+		}
+
+		private void cmdSoapUpload_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		static readonly string DeviceID = "Virtual Sensor";
+
+		private void cmdRestUpload_Click(object sender, EventArgs e)
+		{
+			var f = new FileInfo(txtUploadPath.Text);
+
+			using (var fs = f.OpenRead())
+			{
+				int numChunks = (int)((f.Length + MaxChunkSize - 1) / MaxChunkSize);
+
+				bool more = MaxChunkSize < f.Length;
+				Guid serverID = AddAudioReadingFirstREST(DeviceID, f.CreationTime, GetMimeTypeFromExtension(f.Extension), fs, more);
+				long position = fs.Position;
+				if (!more)
+					SetStatus(string.Format("Uploaded '{0}' - {1}", txtUploadPath.Text, serverID), 1.0);
+				else
+					SetStatus(string.Format("Uploaded '{0}' (1 of {1}) - {2}", txtUploadPath.Text, numChunks, serverID), 1.0 / numChunks);
+
+				while (position < f.Length)
+				{
+					int chunk = (int)(position / MaxChunkSize) + 1;
+					AddAudioReadingNextREST(serverID, fs, position, position + MaxChunkSize < f.Length);
+					position = fs.Position;
+					SetStatus(string.Format("Uploaded '{0}' ({1} of {2}) - {3}", txtUploadPath.Text, chunk, numChunks, serverID), chunk / (double)numChunks);
+				}
+			}
+		}
+
+		public const string AsfMimeType = "video/x-ms-asf";
+		public const string WavMimeType = "audio/x-wav";
+		public const string Mp3MimeType = "audio/mpeg";
+		public const string BinMimeType = "application/octet-stream";
+		public const string WavpackMimeType = "audio/x-wv";
+		public static string GetMimeTypeFromExtension(string ext)
+		{
+			switch (ext.ToLower())
+			{
+				case "asf":
+					return AsfMimeType;
+				case "wav":
+					return WavMimeType;
+				case "mp3":
+					return Mp3MimeType;
+				case "wv":
+					return WavpackMimeType;
+				default:
+					return BinMimeType;
+			}
+		}
+
+		private Guid AddAudioReadingFirstREST(string deviceID, DateTime time, string mimeType, FileStream stream, bool more)
+		{
+			Guid audioReadingID = Guid.Empty;
+			AddAudioReadingREST(
+				deviceID,
+				mimeType,
+				time,
+				more,
+				null,
+				ref audioReadingID,
+				stream);
+			return audioReadingID;
+		}
+
+		private void AddAudioReadingNextREST(Guid audioReadingID, FileStream stream, long offset, bool more)
+		{
+			AddAudioReadingREST(
+				null,
+				null,
+				null,
+				more,
+				offset,
+				ref audioReadingID,
+				stream);
+		}
+
+		private void AddAudioReadingREST(string deviceID, string mimeType, DateTime? time, bool more, long? offset, ref Guid audioReadingID, FileStream fileStream)
+		{
+			var remaining = Math.Min(MaxChunkSize, fileStream.Length - fileStream.Position);
+
+			var url = new StringBuilder();
+			//url.AppendFormat("{0}/rest/data/{1}?More={2}", Settings.ServerUrlBase, audioReadingID, more);
+			url.AppendFormat("{0}/RestInterface/DataUpload.ashx?AudioReadingID={1}&More={2}", "http://www.mquter.qut.edu.au/sensor/demo", audioReadingID, more);
+			if (deviceID != null) url.AppendFormat("&DeviceID={0}", deviceID);
+			if (mimeType != null) url.AppendFormat("&MimeType={0}", mimeType);
+			if (time.HasValue) url.AppendFormat("&Time={0:yyyy-MM-ddTHHmmss}", time.Value);
+			if (offset.HasValue) url.AppendFormat("&Offset={0}", offset.Value);
+
+			System.Net.ServicePointManager.Expect100Continue = false;
+			var req = (HttpWebRequest)WebRequest.Create(url.ToString());
+			req.Method = "PUT";
+			req.ContentType = "application/octet-stream"; ;
+			req.ContentLength = remaining;
+			req.AllowWriteStreamBuffering = false;
+			req.Pipelined = false;
+			//req.ReadWriteTimeout = (int)Settings.WebServiceTimeout.TotalMilliseconds;
+			//req.Timeout = (int)Settings.WebServiceTimeout.TotalMilliseconds;
+
+			var buffer = new byte[4096];
+			using (Stream reqStream = req.GetRequestStream())
+			{
+				while (remaining > 0)
+				{
+					int br = fileStream.Read(buffer, 0, (int)Math.Min(buffer.Length, remaining));
+					reqStream.Write(buffer, 0, br);
+					remaining -= br;
+				}
+				reqStream.Close();
+			}
+
+			var response = (HttpWebResponse)req.GetResponse();
+			if (response.StatusCode == HttpStatusCode.OK)
+			{
+				string audioReadingIdString;
+				using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+					audioReadingIdString = reader.ReadToEnd();
+				if (!string.IsNullOrEmpty(audioReadingIdString))
+					audioReadingID = new Guid(audioReadingIdString);
+			}
+			else throw new WebException(null, null, WebExceptionStatus.ProtocolError, response);
+		}
 	}
 }
