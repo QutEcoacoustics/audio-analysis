@@ -374,16 +374,27 @@ namespace LocalDataStore
 				reqStream.Close();
 			}
 
-			var response = (HttpWebResponse)req.GetResponse();
-			if (response.StatusCode == HttpStatusCode.OK)
+			try
 			{
-				string audioReadingIdString;
-				using (StreamReader reader = new StreamReader(response.GetResponseStream()))
-					audioReadingIdString = reader.ReadToEnd();
-				if (!string.IsNullOrEmpty(audioReadingIdString))
-					audioReadingID = new Guid(audioReadingIdString);
+				var response = (HttpWebResponse)req.GetResponse();
+				if (response.StatusCode == HttpStatusCode.OK)
+				{
+					string audioReadingIdString;
+					using (StreamReader reader = new StreamReader(response.GetResponseStream()))
+						audioReadingIdString = reader.ReadToEnd();
+					if (!string.IsNullOrEmpty(audioReadingIdString))
+						audioReadingID = new Guid(audioReadingIdString);
+				}
+				else throw new WebException(null, null, WebExceptionStatus.ProtocolError, response);
 			}
-			else throw new WebException(null, null, WebExceptionStatus.ProtocolError, response);
+			catch (WebException e)
+			{
+				string details;
+				using (StreamReader reader = new StreamReader(e.Response.GetResponseStream()))
+					details = reader.ReadToEnd();
+				MessageBox.Show(details);
+				throw;
+			}
 		}
 	}
 }
