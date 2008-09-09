@@ -344,6 +344,16 @@ namespace TowseyLib
             }
             return count;
         }
+        public static int CountPositives(int[] values)
+        {
+            int count = 0;
+            foreach (int v in values)
+            {
+                if (v > 0) count++;
+            }
+            return count;
+        }
+
 
 
 

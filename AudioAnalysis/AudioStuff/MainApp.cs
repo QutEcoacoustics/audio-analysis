@@ -35,8 +35,8 @@ namespace AudioStuff
             //Mode userMode = Mode.MakeSonogram;
             //Mode userMode = Mode.IdentifySyllables;
             //Mode userMode = Mode.CreateTemplate;
-            Mode userMode = Mode.CreateTemplateAndScan;
-            //Mode userMode = Mode.ReadTemplateAndScan;
+            //Mode userMode = Mode.CreateTemplateAndScan;
+            Mode userMode = Mode.ReadTemplateAndScan;
             //Mode userMode = Mode.ScanMultipleRecordingsWithTemplate;
             //Mode userMode = Mode.AnalyseMultipleRecordings;
             
@@ -53,8 +53,8 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -117,7 +117,7 @@ namespace AudioStuff
             //******************************************************************************************************************
             //******************************************************************************************************************
             //SET TEMPLATE HERE  ***********************************************************************************************
-            int callID = 3;
+            int callID = 2;
             //******************************************************************************************************************
             //******************************************************************************************************************
 
@@ -157,18 +157,16 @@ namespace AudioStuff
             // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
             int zScoreSmoothingWindow = 3;
             double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+            bool doHighSensitivitySearch = true;
 
             //LANGUAGE MODEL
             int numberOfWords = 0; //number of defined song variations 
             string[] words = { "999" };
-            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-            bool doHighSensitivitySearch = true;
             int maxSyllables = 1;  //NOT YET USED
             double maxSyllableGap = 0.25; //seconds  NOT YET USED
             double typicalSongDuration = 1.000; //seconds USED WHEN SCORING FOR HOTSPOTS
-
-            // SCORING PROTOCOL
-            ScoringProtocol scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            TheGrammar grammar = TheGrammar.WORDS_PERIODIC; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
             int callPeriodicity = 999;
 
 
@@ -195,7 +193,6 @@ namespace AudioStuff
                 includeDeltaFeatures = true;
                 includeDoubleDeltaFeatures = true;
 
-
                 //FEATURE VECTOR EXTRACTION PARAMETERS
                 fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
                 selectedFrames = "1784,1828,1848,2113,2132,2152";
@@ -209,23 +206,21 @@ namespace AudioStuff
                 doFvAveraging = true;
                 fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+                doHighSensitivitySearch = false;
+                zScoreSmoothingWindow = 3;
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+
 
                 //LANGUAGE MODEL
                 numberOfWords = 3; //number of defined song variations
                 words = new string[numberOfWords];
                 words[0] = "111"; words[1] = "11"; words[2] = "1"; 
-                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = false;
                 //maxSyllables=
                 //double maxSyllableGap = 0.25; //seconds
                 //double maxSong=
-
-
-                // SCORING PARAMETERS PROTOCOL
-                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                zScoreSmoothingWindow = 3;
-                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+                grammar = TheGrammar.WORDS_PERIODIC; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
                 callPeriodicity = 208;
             } //end of if (callID == 1)
 
@@ -257,16 +252,14 @@ namespace AudioStuff
                 // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                 zScoreSmoothingWindow = 3;
                 zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
+                doHighSensitivitySearch = true;
 
                 //LANGUAGE MODEL
                 numberOfWords = 3; //number of defined song variations 
                 words = new string[numberOfWords];
                 words[0] = "111"; words[1] = "11"; words[2] = "1";
-                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = true;
-
-                // SCORING PROTOCOL
-                scoringProtocol = ScoringProtocol.PERIODICITY; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+                grammar = TheGrammar.WORDS_PERIODIC; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
                 callPeriodicity = 208;
             }//end of if (callID == 2)
 
@@ -319,8 +312,8 @@ namespace AudioStuff
                 // SCORING PARAMETERS PROTOCOL
                 // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                 zScoreSmoothingWindow = 3;
-                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                scoringProtocol = ScoringProtocol.HOTSPOTS; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
+                zScoreThreshold = 3.1; //options are 1.98, 2.33, 2.56, 3.1
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
             } //end of if (callID == 3)
 
 
@@ -466,7 +459,7 @@ namespace AudioStuff
                         t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
                         t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
                         t.SetLanguageModel(words, doHighSensitivitySearch);
-                        t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        t.SetScoringParameters(grammar, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                     }
@@ -500,7 +493,7 @@ namespace AudioStuff
                         t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
                         t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
                         t.SetLanguageModel(words, doHighSensitivitySearch);
-                        t.SetScoringParameters(scoringProtocol, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        t.SetScoringParameters(grammar, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                         //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);

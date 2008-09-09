@@ -1012,20 +1012,12 @@ namespace AudioStuff
         public bool HighSensitivitySearch; //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
         public int WordCount { get; set; }
         public string[] Words { get; set; }
-
-        //SONG PARAMETERS
+        public TheGrammar GrammarModel { get; set; }
         public double TypicalSongDuration { get; set; }
-
-
-        // SCORING PROTOCOL
-        public ScoringProtocol ScoringProtocol { get; set; }
-
-        //CALL PERIODICITY INFO
-        public int CallPeriodicity_ms { get; set; }
-        public int CallPeriodicity_frames { get; set; }
-        public int CallPeriodicity_NH_ms { get; set; }
-        public int CallPeriodicity_NH_frames { get; set; }
-
+        public int WordPeriodicity_ms { get; set; }
+        public int WordPeriodicity_frames { get; set; }
+        public int WordPeriodicity_NH_ms { get; set; }
+        public int WordPeriodicity_NH_frames { get; set; }
 
 
         //BITMAP IMAGE PARAMETERS 
