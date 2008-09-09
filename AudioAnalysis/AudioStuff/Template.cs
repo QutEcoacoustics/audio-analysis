@@ -13,6 +13,7 @@ namespace AudioStuff
 
     public enum FV_Source { SELECTED_FRAMES, MARQUEE}
     public enum FV_Extraction { AT_ENERGY_PEAKS, AT_FIXED_INTERVALS }
+    public enum TheGrammar { WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC }
 
 
 
@@ -31,7 +32,7 @@ namespace AudioStuff
     {
         private const string templateStemName = "template";
         private const string templateFExt = ".ini";
-        private const string fvectorFExt = ".txt";
+        private const string fvectorFExt  = ".txt";
         private static double fractionalNH = 0.15; //arbitrary neighbourhood around user defined periodicity
 
         public int CallID { get; set; }
@@ -200,16 +201,16 @@ namespace AudioStuff
             this.templateState.HighSensitivitySearch = highSensitivitySearch; 
         }
 
-        public void SetScoringParameters(ScoringProtocol sp, int zw, double zThreshold, int period_ms)
+        public void SetScoringParameters(TheGrammar sp, int zw, double zThreshold, int period_ms)
         {
-            this.templateState.ScoringProtocol = sp;//three options are HOTSPOTS, WORDMATCH, PERIODICITY
+            this.templateState.GrammarModel = sp;//three options are HOTSPOTS, WORDMATCH, PERIODICITY
             this.templateState.ZscoreSmoothingWindow = 3;
             this.templateState.ZScoreThreshold = zThreshold; //options are 1.98, 2.33, 2.56, 3.1
-            this.templateState.CallPeriodicity_ms = period_ms;
+            this.templateState.WordPeriodicity_ms = period_ms;
             int period_frame = (int)Math.Round(period_ms / this.templateState.FrameOffset / (double)1000);
-            this.templateState.CallPeriodicity_frames = period_frame;
-            this.templateState.CallPeriodicity_NH_frames = (int)Math.Floor(period_frame * Template.fractionalNH); //arbitrary NH
-            this.templateState.CallPeriodicity_NH_ms     = (int)Math.Floor(period_ms    * Template.fractionalNH); //arbitrary NH
+            this.templateState.WordPeriodicity_frames = period_frame;
+            this.templateState.WordPeriodicity_NH_frames = (int)Math.Floor(period_frame * Template.fractionalNH); //arbitrary NH
+            this.templateState.WordPeriodicity_NH_ms     = (int)Math.Floor(period_ms    * Template.fractionalNH); //arbitrary NH
             //Console.WriteLine("period_ms="    + period_ms    + "+/-" + this.templateState.CallPeriodicity_NH_ms);
             //Console.WriteLine("period_frame=" + period_frame + "+/-" + this.templateState.CallPeriodicity_NH_frames);
         }
@@ -488,20 +489,20 @@ namespace AudioStuff
             ArrayList data = new ArrayList();
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#");
-            data.Add("#TEMPLATE DATA");
+            data.Add("#**************** TEMPLATE DATA");
             data.Add("TEMPLATE_ID=" + this.templateState.CallID);
             data.Add("CALL_NAME=" + this.templateState.CallName);
             data.Add("COMMENT=" + this.templateState.CallComment);
             data.Add("THIS_FILE=" + this.templateIniPath);
 
             data.Add("#");
-            data.Add("#INFO ABOUT ORIGINAL .WAV FILE");
+            data.Add("#**************** INFO ABOUT ORIGINAL .WAV FILE");
             data.Add("WAV_FILE_NAME=" + this.templateState.SourceFName);
             data.Add("WAV_SAMPLE_RATE=" + this.templateState.SampleRate);
             data.Add("WAV_DURATION=" + this.templateState.TimeDuration.ToString("F3"));
 
             data.Add("#");
-            data.Add("#INFO ABOUT FRAMES");
+            data.Add("#**************** INFO ABOUT FRAMES");
             data.Add("FRAME_SIZE=" + this.templateState.WindowSize);
             data.Add("FRAME_OVERLAP=" + this.templateState.WindowOverlap);
             data.Add("FRAME_DURATION_MS=" + (this.templateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
@@ -510,7 +511,7 @@ namespace AudioStuff
             data.Add("FRAMES_PER_SECOND=" + this.templateState.FramesPerSecond.ToString("F3"));
 
             data.Add("#");
-            data.Add("#INFO ABOUT FEATURE EXTRACTION");
+            data.Add("#**************** INFO ABOUT FEATURE EXTRACTION");
             data.Add("NYQUIST_FREQ=" + this.templateState.NyquistFreq);
             data.Add("WINDOW_FUNCTION=" + this.templateState.WindowFncName);
             data.Add("NUMBER_OF_FREQ_BINS=" + this.templateState.FreqBinCount);
@@ -566,18 +567,21 @@ namespace AudioStuff
             data.Add(@"FV_DEFAULT_NOISE_FILE=" + this.templateState.FeatureVector_DefaultNoiseFile);
             data.Add("#");
 
-            data.Add("#************* THRESHOLDS FOR THE ACOUSTIC MODELS ***************");
+            data.Add("#THRESHOLDS FOR THE ACOUSTIC MODEL");
             data.Add("ZSCORE_SMOOTHING_WINDOW="+this.templateState.ZscoreSmoothingWindow);
             data.Add("#THRESHOLD OPTIONS: 3.1(p=0.001), 2.58(p=0.005), 2.33(p=0.01), 2.15(p=0.03), 1.98(p=0.05),");
             data.Add("ZSCORE_THRESHOLD=" + this.templateState.ZScoreThreshold);
+            data.Add("#If you select a high sensitivity search, then specificity will be reduced.");
+            data.Add("#    That is, higher sensitivity produces a greater number of false positives");
+            data.Add("USE_HIGH_SENSITIVITY_SEARCH=" + this.templateState.HighSensitivitySearch);
             data.Add("#");
 
-            data.Add("#INFO ABOUT LANGUAGE MODEL");
+            data.Add("#**************** INFO ABOUT LANGUAGE MODEL");
 
-            if (this.templateState.ScoringProtocol == ScoringProtocol.HOTSPOTS)
+            if (this.templateState.GrammarModel == TheGrammar.WORD_ORDER_RANDOM)
             {
                 this.templateState.WordCount = fvCount;
-                data.Add("    When scoring protocol = HOTSPOTS, there is automatically one syllable/word per feature vector");
+                data.Add("    When the LANGUAGE MODEL == WORD_ORDER_RANDOM, there is automatically one syllable/word per feature vector");
                 data.Add("NUMBER_OF_WORDS=" + fvCount);
                 for (int n = 0; n < fvCount; n++) data.Add("WORD" + (n + 1) + "=" + (n + 1));
             }
@@ -590,19 +594,13 @@ namespace AudioStuff
                 }
             }
 
-
-            data.Add("#If you select a high sensitivity search, then specificity will be reduced.");
-            data.Add("#    That is, higher sensitivity produces a greater number of false positives");
-            data.Add("USE_HIGH_SENSITIVITY_SEARCH=" + this.templateState.HighSensitivitySearch);
-            data.Add("#");
-            data.Add("#**************** SCORING PROTOCOL");
-            data.Add("#Three choices (1)HOTSPOTS (2)WORDMATCH (3)PERIODICITY");
-            data.Add("SCORING_PROTOCOL=" + this.templateState.ScoringProtocol);
-            if (this.templateState.ScoringProtocol == ScoringProtocol.PERIODICITY)
+            data.Add("#There are three choices of grammar(1)WORD_ORDER_RANDOM (2)WORD_ORDER_FIXED (3)WORDS_PERIODIC");
+            data.Add("GRAMMAR=" + this.templateState.GrammarModel);
+            if (this.templateState.GrammarModel == TheGrammar.WORDS_PERIODIC)
             {
-                data.Add("CALL_PERIODICITY_MS=" + this.templateState.CallPeriodicity_ms);
+                data.Add("WORD_PERIODICITY_MS=" + this.templateState.WordPeriodicity_ms);
             }else
-            if (this.templateState.ScoringProtocol == ScoringProtocol.HOTSPOTS)
+            if (this.templateState.GrammarModel == TheGrammar.WORD_ORDER_RANDOM)
             {
                 data.Add("TYPICAL_SONG_DURATION=" + this.templateState.TypicalSongDuration.ToString("F3"));
             }
@@ -708,11 +706,12 @@ namespace AudioStuff
             state.DefaultNoiseFVFile = cfg.GetString("FV_DEFAULT_NOISE_FILE");
 
 
-            //classifier parameters
+            //ACOUSTIC MODEL
             state.ZscoreSmoothingWindow = 3;  // DEFAULT zscore SmoothingWindow
             int i = cfg.GetInt("ZSCORE_SMOOTHING_WINDOW");
             if (i == -Int32.MaxValue) Console.WriteLine("WARNING!! ZSCORE_SMOOTHING_WINDOW NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE");
-            else state.ZscoreSmoothingWindow = i; 
+            else state.ZscoreSmoothingWindow = i;
+            state.HighSensitivitySearch = cfg.GetBoolean("USE_HIGH_SENSITIVITY_SEARCH");
 
             state.ZScoreThreshold = 1.98;  // DEFAULT zscore threshold for p=0.05
             double value = cfg.GetDouble("ZSCORE_THRESHOLD");
@@ -720,7 +719,6 @@ namespace AudioStuff
             else state.ZScoreThreshold = value;
 
             //the Language Model
-            state.HighSensitivitySearch = cfg.GetBoolean("USE_HIGH_SENSITIVITY_SEARCH");
             int wordCount = cfg.GetInt("NUMBER_OF_WORDS");
             state.WordCount = wordCount;
             state.Words = new string[wordCount];
@@ -728,21 +726,23 @@ namespace AudioStuff
             //Console.WriteLine("NUMBER OF WORDS=" + state.WordCount);
             //for (int n = 0; n < wordCount; n++) Console.WriteLine("WORD"+n+"="+state.Words[n]);
 
-            // SCORING PROTOCOL
-            state.ScoringProtocol = ScoringProtocol.WORDMATCH;  //the default
-            string protocol = cfg.GetString("SCORING_PROTOCOL");
-            if (protocol.StartsWith("HOTSPOTS"))         state.ScoringProtocol = ScoringProtocol.HOTSPOTS;
-            else if (protocol.StartsWith("PERIODICITY")) state.ScoringProtocol = ScoringProtocol.PERIODICITY;
-            state.CallPeriodicity_ms = 0;
-            int period_ms = cfg.GetInt("CALL_PERIODICITY_MS");
-            if (period_ms == -Int32.MaxValue) Console.WriteLine("CALL_PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
-            else state.CallPeriodicity_ms = period_ms;
+            // THE GRAMMAR MODEL
+            state.GrammarModel = TheGrammar.WORD_ORDER_FIXED;  //the default
+            string grammar = cfg.GetString("GRAMMAR");
+            if (grammar.StartsWith("WORD_ORDER_RANDOM")) state.GrammarModel = TheGrammar.WORD_ORDER_RANDOM;
+            else if (grammar.StartsWith("WORDS_PERIODIC")) state.GrammarModel = TheGrammar.WORDS_PERIODIC;
+            state.WordPeriodicity_ms = 0;
+            int period_ms = cfg.GetInt("WORD_PERIODICITY_MS");
+            if (period_ms == -Int32.MaxValue) Console.WriteLine("PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
+            else state.WordPeriodicity_ms = period_ms;
 
             int period_frame = (int)Math.Round(period_ms / state.FrameOffset / (double)1000);
-            state.CallPeriodicity_frames = period_frame;
-            state.CallPeriodicity_NH_frames = (int)Math.Floor(period_frame * Template.fractionalNH); //arbitrary NH for periodicity
-            state.CallPeriodicity_NH_ms     = (int)Math.Floor(period_ms    * Template.fractionalNH); //arbitrary NH
+            state.WordPeriodicity_frames = period_frame;
+            state.WordPeriodicity_NH_frames = (int)Math.Floor(period_frame * Template.fractionalNH); //arbitrary NH for periodicity
+            state.WordPeriodicity_NH_ms     = (int)Math.Floor(period_ms    * Template.fractionalNH); //arbitrary NH
             //Console.WriteLine("period_ms=" + period_ms + "  period_frame=" + period_frame + "+/-" + state.CallPeriodicity_NH);
+            state.TypicalSongDuration = cfg.GetDouble("TYPICAL_SONG_DURATION");
+
 
             return status;
         } //end of ReadTemplateFile()
@@ -844,7 +844,7 @@ namespace AudioStuff
             if (this.templateState.FeatureVectorSource != FV_Source.SELECTED_FRAMES)
                 Console.WriteLine("     Feature Vector Extraction Method = " + this.templateState.FeatureVectorExtraction);
             Console.WriteLine(" NUMBER_OF_WORDS=" + this.templateState.WordCount);
-            Console.WriteLine(" Scoring Protocol = " + this.templateState.ScoringProtocol);
+            Console.WriteLine(" Scoring Protocol = " + this.templateState.GrammarModel);
        }
 
 

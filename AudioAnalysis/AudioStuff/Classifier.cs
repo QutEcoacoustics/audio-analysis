@@ -12,10 +12,6 @@ namespace AudioStuff
     /// </summary>
 
 
-    public enum ScoringProtocol { HOTSPOTS, WORDMATCH, PERIODICITY }
-
-
-
     /// <summary>
     /// this class scans a sonogram using a template.
     /// </summary>
@@ -214,10 +210,10 @@ namespace AudioStuff
 
 
 
-            //SCORE USING HOTSPOTS
-            if (this.template.TemplateState.ScoringProtocol == ScoringProtocol.HOTSPOTS)
+            //GRAMMAR MODEL == WORD_ORDER_RANDOM
+            if (this.template.TemplateState.GrammarModel == TheGrammar.WORD_ORDER_RANDOM)
             {
-                wordScores = ScoreHotSpots(wordScores, symbolSequence, this.template.TemplateState.TypicalSongDuration);
+                wordScores = Grammar_WordOrderRandom(wordScores, symbolSequence, this.template.TemplateState.TypicalSongDuration);
             }
             else
             {
@@ -225,21 +221,21 @@ namespace AudioStuff
                 peaks = DataTools.GetPeaks(wordScores);
                 peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
                 wordScores = ReconstituteScores(wordScores, peaks);
+                this.results.Hits = DataTools.CountPositives(wordScores);
             }
-            this.results.Hits = DataTools.CountPositives(wordScores);
             this.results.CallScores = wordScores;
             if (results.Hits <= 1) return; //cannot do anything more in this case
 
 
 
             // check for periodicity in the wordScores
-            int period_ms = this.template.TemplateState.CallPeriodicity_ms; //set in template
-            if ((this.template.TemplateState.ScoringProtocol == ScoringProtocol.PERIODICITY)&&(period_ms != 0))
+            int period_ms = this.template.TemplateState.WordPeriodicity_ms; //set in template
+            if ((this.template.TemplateState.GrammarModel == TheGrammar.WORDS_PERIODIC)&&(period_ms != 0))
             {            
                 this.results.CallPeriodicity_ms = period_ms;
-                int period_frames = this.template.TemplateState.CallPeriodicity_frames;
+                int period_frames = this.template.TemplateState.WordPeriodicity_frames;
                 this.results.CallPeriodicity_frames = period_frames;
-                int period_NH = this.template.TemplateState.CallPeriodicity_NH_frames;
+                int period_NH = this.template.TemplateState.WordPeriodicity_NH_frames;
                 bool[] periodPeaks = Periodicity(peaks, period_frames, period_NH);
                 this.results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
                 //Console.WriteLine("period_frame=" + period_frames + "+/-" + period_NH + " periodic hits=" + results.NumberOfPeriodicHits);
@@ -637,24 +633,65 @@ namespace AudioStuff
         }
 
 
-        public double[] ScoreHotSpots(double[] scores, string symbolSequence, double songDuration)
+        public double[] Grammar_WordOrderRandom(double[] scores, string symbolSequence, double songDuration)
         {
             //DataTools.writeArray(scores);
             int songLength = (int)Math.Floor(songDuration * this.template.TemplateState.FramesPerSecond);
-            Console.WriteLine("songDuration=" + songDuration + "s.  Frames/s=" + this.template.TemplateState.FramesPerSecond + "   SongLength=" + songLength);
+            //Console.WriteLine("Song Duration = " + songDuration + " seconds = " + songLength+" frames. (Frames/s=" + this.template.TemplateState.FramesPerSecond.ToString("F2") + ")");
 
             int frameCount = scores.Length;
-            for (int i = 0; i < frameCount; i++) if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) scores[i] = 0.0;
-            //for (int i = 0; i < frameCount; i++) if ((symbolSequence[i] != 'n') && (symbolSequence[i] != 'x')) scores[i] = DataTools.Char2Integer(symbolSequence[i]);
-            
-            //double[] averageScore = DataTools.filterMovingAverage(scores, songLength);
+
+            //NEXT 3 LINES FOR DEBUG
+            //for (int i = 0; i < frameCount; i++) 
+            //    if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) scores[i] = 0.0;
+            //    else                                                          scores[i] = DataTools.Char2Integer(symbolSequence[i]);
+            //if(true)return scores;
+
+            int[] hits = new int[frameCount];
+            for (int i = 0; i < frameCount; i++) 
+                if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) hits[i] = 0;
+                else                                                          hits[i] = 1;
+            int hitCount = DataTools.CountPositives(hits);
+
+            double expectedHits = hitCount * songLength / frameCount;
+            double sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
+            double thresholdZ = this.template.TemplateState.ZScoreThreshold;
+
+            int thresholdSum = songLength / 8; //A true song must have a syllable in 1/8 of frames
+            //Console.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
+            int offset = songLength / 2;
+            int sum = 0;
+            for (int i = 0; i < songLength; i++) if (hits[i] == 1) sum++;  //set up the song window
 
 
-           // bool[] peaks = DataTools.GetPeaks(scores);
-           // peaks = RemoveSubThresholdPeaks(scores, peaks, this.template.TemplateState.ZScoreThreshold);
-           // scores = ReconstituteScores(scores, peaks);
-            results.Hits = DataTools.CountPositives(scores);
-            return scores;
+            //now calculate z-scores for the number of syllable hits in a songwindow
+            double[] zScores = new double[frameCount];
+            for (int i = songLength; i < frameCount; i++)
+            {
+                if (sum < thresholdSum)
+                {
+                    zScores[i - offset] = 0.0;  //not enough hits to constitute a song
+                    sum = sum - hits[i - songLength] + hits[i]; //move the songwindow
+                    continue;
+                }
+
+                zScores[i - offset] = (sum - expectedHits) / sd;
+                if (zScores[i - offset] < thresholdZ) zScores[i - offset] = 0.0;
+                sum = sum - hits[i - songLength] + hits[i]; //move the songwindow
+                //Console.WriteLine(zScores[i - offset] + " sum=" + sum);
+            }
+
+            //count the hits
+            int songCount = 0;
+            for (int i = 1; i < frameCount; i++)
+            {
+                bool lo2hi = ((zScores[i - 1] <  thresholdZ) && (zScores[i] >= thresholdZ));
+                bool hi2lo = ((zScores[i - 1] >= thresholdZ) && (zScores[i] <  thresholdZ));
+                if (lo2hi || hi2lo) songCount++;  //count number of times score goes above or below threshold
+            }
+            results.Hits = songCount / 2;
+            //Console.WriteLine(" songCount=" + songCount / 2);
+            return zScores;
         }
 
 
@@ -898,21 +935,23 @@ namespace AudioStuff
             Console.WriteLine(" HIGH SENSITIVITY SEARCH = " + this.template.TemplateState.HighSensitivitySearch);
 
             DataTools.WriteMinMaxOfArray(" Min/max of word scores", this.results.CallScores);
-            Console.WriteLine(" Number of template hits (syllables/words found) = " + this.results.Hits);
+            Console.WriteLine(" Number of vocalisation events found = " + this.results.Hits);
             if (this.results.Hits < 1) { Console.WriteLine(); return; }
 
             Console.WriteLine(" Maximum Score at " + this.results.BestScoreLocation.ToString("F1") + " s");
 
-            if (this.template.TemplateState.CallPeriodicity_ms == 0) { Console.WriteLine(); return; }
+            if (this.template.TemplateState.WordPeriodicity_ms == 0) { Console.WriteLine(); return; }
 
-            //report periodicity results
+            //report periodicity results - if required
             int period = this.results.CallPeriodicity_frames;
-            int NH_frames = this.template.TemplateState.CallPeriodicity_NH_frames;
-            int NH_ms     = this.template.TemplateState.CallPeriodicity_NH_ms;
+            if(period > 1)
+            {
+                int NH_frames = this.template.TemplateState.WordPeriodicity_NH_frames;
+                int NH_ms     = this.template.TemplateState.WordPeriodicity_NH_ms;
+                Console.WriteLine(" Required periodicity = " + period + "±" + NH_frames + " frames or " + this.results.CallPeriodicity_ms+"±" + NH_ms + " ms");
+                Console.WriteLine(" Number of hits with required periodicity = " + this.results.NumberOfPeriodicHits);
+            }
 
-            Console.WriteLine(" Required periodicity = " + period + "±" + NH_frames + " frames or " + this.results.CallPeriodicity_ms+"±" + NH_ms + " ms");
-            Console.WriteLine(" Number of hits with required periodicity = " + this.results.NumberOfPeriodicHits);
-            
             Console.WriteLine();
         }
 
