@@ -804,14 +804,51 @@ namespace TowseyLib
         }
 
 
+
+
+        /// <summary>
+        /// returns EUCLIDIAN DISTANCE BETWEEN two matrices
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="signal"></param>
+        /// <returns></returns>
+        public double EuclidianDistance(double[,] m1, double[,] m2)
+        {
+            //check m1 and m2 have same dimensions
+            int rows1 = m1.GetLength(0);
+            int cols1 = m1.GetLength(1);
+            int rows2 = m2.GetLength(0);
+            int cols2 = m2.GetLength(1);
+            if (rows1 != rows2) throw new System.Exception("Matrices have unequal row numbers.");
+            if (cols1 != cols2) throw new System.Exception("Matrices have unequal column numbers.");
+
+            //calculate euclidian distance
+            double sum = 0.0;
+            for (int i = 0; i < rows1; i++)
+            {
+                for (int j = 0; j < cols1; j++)
+                {
+                    double v = m1[i, j] - m2[i, j];
+                    sum += (v * v);
+                }
+            }
+            return Math.Sqrt(sum);
+        } //end
+
+
+
         public static double DotProduct(double[,] m1, double[,] m2)
         {
-            //assume m1 and m2 have same dimensions
-            int rows = m1.GetLength(0);
-            int cols = m1.GetLength(1);
+            //check m1 and m2 have same dimensions
+            int rows1 = m1.GetLength(0);
+            int cols1 = m1.GetLength(1);
+            int rows2 = m2.GetLength(0);
+            int cols2 = m2.GetLength(1);
+            if (rows1 != rows2) throw new System.Exception("Matrices have unequal row numbers.");
+            if (cols1 != cols2) throw new System.Exception("Matrices have unequal column numbers.");
             double sum = 0.0;
-            for (int i = 0; i < rows; i++)
-                for (int j = 0; j < cols; j++)
+            for (int i = 0; i < rows1; i++)
+                for (int j = 0; j < cols1; j++)
                     sum += (m1[i, j] * m2[i, j]);
             return sum;
         }
