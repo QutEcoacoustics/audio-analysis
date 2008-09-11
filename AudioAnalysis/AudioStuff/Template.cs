@@ -30,6 +30,7 @@ namespace AudioStuff
     /// 
     public class Template
     {
+        private const string templateDirName = "Template";
         private const string templateStemName = "template";
         private const string templateFExt = ".ini";
         private const string fvectorFExt  = ".txt";
@@ -85,10 +86,10 @@ namespace AudioStuff
             if (this.templateState.Verbosity > 0) this.verbose = true;
             else                                  this.verbose = false;
             
-            this.templateDir = this.templateState.TemplateDir;
+            this.templateDir = this.templateState.TemplatesDir;
             this.CallID = id;
 
-            string templatePath = this.templateDir+templateStemName + "_"+id+templateFExt;
+            string templatePath = this.templateDir+templateDirName+"_"+id+"\\"+templateStemName + "_"+id+templateFExt;
             if (this.verbose) Console.WriteLine("\n#####  READING TEMPLATE INI FILE :=" + templatePath);
             int status = ReadTemplateFile(templatePath, this.templateState);//read the template configuration file
 
@@ -134,7 +135,7 @@ namespace AudioStuff
             this.templateState.SourceFStem = sourceFileStem;
             this.templateState.SourceFName = sourceFileStem + this.templateState.WavFileExt;
             this.templateState.SourceFPath = this.templateState.WavFileDir + "\\" + this.templateState.SourceFName;
-            this.templateIniPath = this.templateState.TemplateDir + Template.templateStemName + "_" + callID + templateFExt;
+            this.templateIniPath = this.templateState.TemplatesDir + templateDirName + "_" + callID + "\\" + Template.templateStemName + "_" + callID + templateFExt;
             if (this.verbose) Console.WriteLine("\ttemplatePath=" + templateIniPath);
         }
 
@@ -310,7 +311,7 @@ namespace AudioStuff
                 if (this.verbose) Console.WriteLine("\nSAVING SINGLE TEMPLATE: as average of " + fvCount + " FEATURE VECTORS");
                 int id = 1;
                 FeatureVector avFV = FeatureVector.AverageFeatureVectors(this.featureVectors, id);
-                string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV1"+ fvectorFExt;
+                string path = this.templateState.TemplatesDir + templateDirName + "_" + id + "\\" + templateStemName + "_" + this.CallID + "_FV1" + fvectorFExt;
                 if (avFV != null) avFV.SaveDataAndImageToFile(path, this.templateState);
                 //save av fv in place of originals
                 this.featureVectors = new FeatureVector[1];
@@ -324,7 +325,7 @@ namespace AudioStuff
                 if (this.verbose) Console.WriteLine("SAVING " + fvCount + " SEPARATE TEMPLATE FILES");
                 for (int i = 0; i < fvCount; i++)
                 {
-                    string path = this.templateState.TemplateDir + templateStemName + "_" + this.CallID + "_FV" + (i+1) + fvectorFExt;
+                    string path = this.templateState.TemplatesDir + templateDirName + "_" + this.CallID + "\\" + templateStemName + "_" + this.CallID + "_FV" + (i + 1) + fvectorFExt;
                     featureVectors[i].SaveDataAndImageToFile(path, this.templateState);
                     this.templateState.FeatureVectorCount = featureVectors.Length;
                     this.templateState.FeatureVectorLength = featureVectors[0].FvLength;
@@ -733,7 +734,7 @@ namespace AudioStuff
             else if (grammar.StartsWith("WORDS_PERIODIC")) state.GrammarModel = TheGrammar.WORDS_PERIODIC;
             state.WordPeriodicity_ms = 0;
             int period_ms = cfg.GetInt("WORD_PERIODICITY_MS");
-            if (period_ms == -Int32.MaxValue) Console.WriteLine("PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
+            if (period_ms == -Int32.MaxValue) Console.WriteLine("  PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
             else state.WordPeriodicity_ms = period_ms;
 
             int period_frame = (int)Math.Round(period_ms / state.FrameOffset / (double)1000);
@@ -834,7 +835,7 @@ namespace AudioStuff
             Console.WriteLine(" Template ID: " + this.CallID);
             Console.WriteLine(" Template name: " + this.templateState.CallName);
             Console.WriteLine(" Comment: " + this.templateState.CallComment);
-            Console.WriteLine(" Template dir     : " + this.templateState.TemplateDir);
+            Console.WriteLine(" Template dir     : " + this.templateState.TemplatesDir);
             Console.WriteLine(" Template ini file: " + this.TemplateIniPath);
             Console.WriteLine(" Bottom freq=" + this.templateState.MinTemplateFreq + "  Mid freq=" + this.templateState.MidTemplateFreq + " Top freq=" + this.templateState.MaxTemplateFreq);
 

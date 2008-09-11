@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.IO;
 using TowseyLib;
+using NeuralNets;
 
 
 namespace AudioStuff
@@ -53,8 +54,8 @@ namespace AudioStuff
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            //string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
+            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
+            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
             //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
             //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
             //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
@@ -117,7 +118,7 @@ namespace AudioStuff
             //******************************************************************************************************************
             //******************************************************************************************************************
             //SET TEMPLATE HERE  ***********************************************************************************************
-            int callID = 2;
+            int callID = 4;
             //******************************************************************************************************************
             //******************************************************************************************************************
 
@@ -299,7 +300,7 @@ namespace AudioStuff
                 fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
 
-                //LANGUAGE MODEL = automated for HOTSPOT scoring
+                //LANGUAGE MODEL = automated when TheGrammar == WORD_ORDER_RANDOM
                 //numberOfWords = 3; //number of defined song variations
                 //words = new string[numberOfWords];
                 //words[0] = "1"; words[1] = "2"; words[2] = "3";
@@ -323,11 +324,26 @@ namespace AudioStuff
             //image coordinates: rows=freqBins; cols=timeSteps
             if (callID == 4)
             {
+
+                if ((userMode == Mode.CreateTemplate) || (userMode == Mode.CreateTemplateAndScan))
+                {
+                    Console.WriteLine("DATE AND TIME:" + DateTime.Now);
+                    Console.WriteLine("ABORT!!  CAN ONLY READ TEMPLATE 4! CANNOT CREATE IT.");
+                    Console.WriteLine("\t\tPRESS ANY KEY TO EXIT");
+                    Console.ReadLine();
+                    System.Environment.Exit(999);
+                }
+            }
+
+
+            if (callID == 5)
+            {
+
                 callName = "Cicada";
                 callComment = "Broadband Chirp Repeated @ 5Hz";
                 int y1 = 115; int x1 = 545;
                 int y2 = 415; int x2 = 552;
-            }//end of if (callID == 4)
+            }//end of if (callID == 5)
 
 
 
@@ -416,7 +432,7 @@ namespace AudioStuff
                         //cluster the shapes using FuzzyART
                         int categoryCount;
                         double[,] data = Shape.FeatureMatrix(syllables); //derive data set from syllables
-                        int[] categories = Shape.ClusterShapesWithFuzzyART(data, out categoryCount);
+                        int[] categories = FuzzyART.ClusterWithFuzzyART(data, out categoryCount);
                         Console.WriteLine("Number of categories = " + categoryCount);
                         syllables = Shape.AssignCategories(syllables, categories);
 
@@ -621,7 +637,7 @@ namespace AudioStuff
                             int categoryCount = 0;
                             double[,] data = Shape.FeatureMatrix(syllables); //derive data set from syllables
 
-                            int[] categories = Shape.ClusterShapesWithFuzzyART(data, out categoryCount);
+                            int[] categories = FuzzyART.ClusterWithFuzzyART(data, out categoryCount);
                             Console.WriteLine("Number of categories = " + categoryCount);
                             syllables = Shape.AssignCategories(syllables, categories);
 

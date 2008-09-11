@@ -89,6 +89,8 @@ namespace AudioStuff
             this.decibelThreshold = s.State.MinDecibelReference+s.State.SegmentationThreshold_k2;  // FreqBandNoise_dB;
         }
 
+
+
         /// <summary>
         /// transfers feature vectors from the template to the classifier.
         /// Need to insert an additional NOISE feature vector in the zero index
@@ -155,6 +157,8 @@ namespace AudioStuff
             //if sonogram does not have sufficient noise frames read default noies FV from file
             if (this.fvs[0] == null) this.fvs[0] = new FeatureVector(this.template.TemplateState.FeatureVectorPaths[0], this.template.TemplateState.FeatureVectorLength, 0);
 
+
+            //##################### PREPARE A PRE-COMPUTED NOISE FILE
             //Use next two lines to write noise vector to file. It can then be used as a sample noise vector.
             //string fPath = this.template.TemplateState.FeatureVectorPaths[0];
             //this.fvs[0].Write2File(fPath); 
@@ -169,9 +173,10 @@ namespace AudioStuff
 
 
 
-            if (this.Verbose) Console.WriteLine("     Obtain feature vector match z-scores");
+            //##################### DERIVE ACOUSTIC MATRIX OF SYLLABLE Z-SCORES
+            if (this.Verbose) Console.WriteLine("     Obtain ACOUSTIC MATRIX of syllable z-scores");
             int frameCount = s.AcousticM.GetLength(0);
-            double[,] zscoreMatrix = new double[frameCount, fvCount]; 
+            double[,] acousticMatrix = new double[frameCount, fvCount]; 
             for (int n = 0; n < fvCount; n++)  //for all feature vectors
             {
                 if (this.Verbose) Console.WriteLine("\t... with FV " + n);
@@ -181,67 +186,95 @@ namespace AudioStuff
                 zscores = DataTools.filterMovingAverage(zscores, window);  //smooth the Z-scores
                 //if(n==0) this.results.Zscores = zscores;
 
-                for (int i = 0; i < frameCount; i++) zscoreMatrix[i, n] = zscores[i];// transfer z-scores to matrix
+                for (int i = 0; i < frameCount; i++) acousticMatrix[i, n] = zscores[i];// transfer z-scores to matrix
             }//end for loop over all feature vectors
 
 
-            //search for potential high scoring locations in the symbol stream
-            //either use hotspots or symbolSequence to help search for words 
-            bool useHotSpots = this.template.TemplateState.HighSensitivitySearch;
+
+
+            //##################### DERIVE SYMBOL SEQUENCE FROM THE ACOUSTIC MATRIX
+            //either use hotspots HighSensitivitySearch or use symbolSequence to search for words ;
             double[] wordScores=null;
             string symbolSequence=null;
-            bool[] peaks = null; ;
-
-
-
-            if (useHotSpots)
+            if (this.Verbose) Console.Write("     Convert ACOUSTIC MATRIX >> SYMBOL SEQUENCE");
+            if (this.template.TemplateState.HighSensitivitySearch)
             {
-                double[] hotspots = HotSpots(zscoreMatrix, this.fvs[0].NoiseAv, this.template.TemplateState.Words);
-                wordScores = WordSearch(hotspots, zscoreMatrix, this.template.TemplateState.Words);
-                if (this.Verbose) Console.WriteLine("\tUsing HIGH SENSITIVITY / LOW SPECIFICITY SEARCH");
+                if (this.Verbose) Console.WriteLine(" using HIGH SENSITIVITY / LOW SPECIFICITY SEARCH");
+                double deltaThreshold = 0.5;
+                symbolSequence = ExtractSymbolStream_HiSensitivity(acousticMatrix, this.fvs[0].NoiseAv, deltaThreshold);
             }
-            else {
-                symbolSequence = ExtractSymbolStreamFromPhonemeMatrix(zscoreMatrix, this.template.TemplateState.ZScoreThreshold);
-                wordScores = WordSearch(symbolSequence, zscoreMatrix, this.template.TemplateState.Words);
-                if (this.Verbose) Console.WriteLine("################## THE SYMBOL SEQUENCE");
-                if (this.Verbose) Console.WriteLine(symbolSequence);
-                if (this.Verbose) Console.WriteLine("\tUsing LOW SENSITIVITY / HIGH SPECIFICITY SEARCH");
+            else //Low sensitivity symbol extraction
+            { 
+                if (this.Verbose) Console.WriteLine(" using LOW SENSITIVITY / HIGH SPECIFICITY SEARCH");
+                symbolSequence = ExtractSymbolStream_LoSensitivity(acousticMatrix, this.template.TemplateState.ZScoreThreshold);
             }
+            if (this.Verbose) Console.WriteLine("\n################## THE SYMBOL SEQUENCE\n" + symbolSequence);
 
 
 
-            //GRAMMAR MODEL == WORD_ORDER_RANDOM
-            if (this.template.TemplateState.GrammarModel == TheGrammar.WORD_ORDER_RANDOM)
+
+            //##################### PARSE SYMBOL STREAM USING ONE OF THREE PRE-DEFINED GRAMMARS
+            double songLength = this.template.TemplateState.TypicalSongDuration;
+            int songFrames = (int)Math.Floor(songLength * this.template.TemplateState.FramesPerSecond);
+            int countThreshold = songFrames / 10;   // A true song must have a syllable in 1/10 of frames
+            double zThreshold = this.template.TemplateState.ZScoreThreshold;
+            TheGrammar grammar = this.template.TemplateState.GrammarModel;
+            if (this.Verbose) Console.WriteLine("\n################## GRAMMAR == " + grammar);
+            
+            if (grammar == TheGrammar.WORD_ORDER_RANDOM)
             {
-                wordScores = Grammar_WordOrderRandom(wordScores, symbolSequence, this.template.TemplateState.TypicalSongDuration);
+                int[] wordHits = Parse_WordOrderRandom(symbolSequence);
+                wordScores = Statistics.AnalyseClustersOfHits(wordHits, songFrames, zThreshold, countThreshold);
+                this.results.Hits = CountClusters(wordScores, zThreshold);
             }
             else
+            if (grammar == TheGrammar.WORD_ORDER_FIXED)
             {
-                //find peaks and process them
-                peaks = DataTools.GetPeaks(wordScores);
-                peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
-                wordScores = ReconstituteScores(wordScores, peaks);
-                this.results.Hits = DataTools.CountPositives(wordScores);
+                int[] wordHits = Parse_WordOrderFixed(symbolSequence, acousticMatrix, this.template.TemplateState.Words);
+                wordScores = Statistics.AnalyseClustersOfHits(wordHits, songFrames, zThreshold, countThreshold);
+                this.results.Hits = CountClusters(wordScores, this.template.TemplateState.ZScoreThreshold);
             }
-            this.results.CallScores = wordScores;
-            if (results.Hits <= 1) return; //cannot do anything more in this case
+            else
+            if (grammar == TheGrammar.WORDS_PERIODIC)
+            {
+                int period_ms = this.template.TemplateState.WordPeriodicity_ms; //set in template
+                if (period_ms <= 0)
+                {
+                    Console.WriteLine("################## period_ms=" + period_ms);
+                    Console.WriteLine("PERIODICITY CANNOT BE ANALYSED.");
+                }
+                else
+                {
+                    wordScores = WordSearch(symbolSequence, acousticMatrix, this.template.TemplateState.Words);
+                    this.results.CallScores = wordScores;
+                    this.results.Hits = DataTools.CountPositives(wordScores);
+                    if (this.results.Hits <= 1) return; //cannot do anything more in this case
 
-
-
-            // check for periodicity in the wordScores
-            int period_ms = this.template.TemplateState.WordPeriodicity_ms; //set in template
-            if ((this.template.TemplateState.GrammarModel == TheGrammar.WORDS_PERIODIC)&&(period_ms != 0))
-            {            
-                this.results.CallPeriodicity_ms = period_ms;
-                int period_frames = this.template.TemplateState.WordPeriodicity_frames;
-                this.results.CallPeriodicity_frames = period_frames;
-                int period_NH = this.template.TemplateState.WordPeriodicity_NH_frames;
-                bool[] periodPeaks = Periodicity(peaks, period_frames, period_NH);
-                this.results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
-                //Console.WriteLine("period_frame=" + period_frames + "+/-" + period_NH + " periodic hits=" + results.NumberOfPeriodicHits);
-                for (int i = 0; i < frameCount; i++) if (!periodPeaks[i]) wordScores[i] = 0.0;
+                    //find peaks and process them
+                    bool[] peaks = DataTools.GetPeaks(wordScores);
+                    peaks = RemoveSubThresholdPeaks(wordScores, peaks, this.template.TemplateState.ZScoreThreshold);
+                    wordScores = ReconstituteScores(wordScores, peaks);
+                    this.results.Hits = DataTools.CountPositives(wordScores);
+                    if (this.results.Hits > 1)
+                    {
+                        this.results.CallPeriodicity_ms = period_ms;
+                        int period_frames = this.template.TemplateState.WordPeriodicity_frames;
+                        this.results.CallPeriodicity_frames = period_frames;
+                        int period_NH = this.template.TemplateState.WordPeriodicity_NH_frames;
+                        bool[] periodPeaks = Periodicity(peaks, period_frames, period_NH);
+                        this.results.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
+                        //Console.WriteLine("period_frame=" + period_frames + "+/-" + period_NH + " periodic hits=" + results.NumberOfPeriodicHits);
+                        for (int i = 0; i < frameCount; i++) if (!periodPeaks[i]) wordScores[i] = 0.0;
+                    }
+                }
             } //end of periodic analysis
+            else
+            {
+                throw new Exception("### Classifier.Scan(Sonogram s):- WARNING!!!!!! UNKNOWN GRAMMAR. ABORT ANALYSIS!");
+            }
 
+
+            // ************* FINALLY
             this.results.CallScores = wordScores;
             int maxIndex = DataTools.GetMaxIndex(wordScores);
             this.results.BestScoreLocation = (double)maxIndex * this.template.TemplateState.FrameOffset;
@@ -254,7 +287,7 @@ namespace AudioStuff
         /// Extracts all those frames passed sonogram matrix whose signal energy is below the threshold and 
         ///                     returns an average of the feature vectors derived from those frames.
         /// If there are not enough low energy frames, then the method returns null and caller must get
-        /// noies FV from another source.
+        /// noise FV from another source.
         /// 
         /// </summary>
         /// <param name="acousticM"></param>
@@ -334,6 +367,8 @@ namespace AudioStuff
         } //end GetRandomNoiseMatrix()
 
 
+
+
         /// <summary>
         /// returns a matrix of noise vectors. Each noise vector is a random sample from a matrix of low energy frames
         /// that has been derive from the passed dataMatrix[] which is actually the original sonogram.
@@ -349,6 +384,7 @@ namespace AudioStuff
             double[,] noise = GetRandomNoiseMatrix(lowEnergyFrames, noiseCount);
             return noise;
         } //end GetRandomNoiseMatrix()
+
 
 
         /// <summary>
@@ -431,74 +467,162 @@ namespace AudioStuff
         /// <param name="zscoreMatrix"></param>
         /// <param name="zScoreThreshold"></param>
         /// <returns></returns>
-        public string ExtractSymbolStreamFromPhonemeMatrix(double[,] zscoreMatrix, double zScoreThreshold)
+        public string ExtractSymbolStream_LoSensitivity(double[,] acousticMatrix, double zScoreThreshold)
         {
-            int frameCount = zscoreMatrix.GetLength(0);
-            int fvCount    = zscoreMatrix.GetLength(1);
+            int frameCount = acousticMatrix.GetLength(0);
+            int fvCount    = acousticMatrix.GetLength(1);  //number of feature vectors or syllables types
+
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < frameCount; i++)
             {
-                char c = 'n';
-                if (Math.Abs(zscoreMatrix[i, 0]) < zScoreThreshold) //this frame is noise
+                if (Math.Abs(acousticMatrix[i, 0]) < zScoreThreshold) //this frame is noise
                 {   
-                    sb.Append(c);
+                    sb.Append('n');
                     continue;
                 }
-                //init the FV scores
-                double[] fvScores = new double[fvCount-1]; //exclude the noise FV in zero position
-                for (int n = 0; n < (fvCount - 1); n++) fvScores[n] = zscoreMatrix[i, n + 1];
+
+                double[] fvScores = new double[fvCount]; //init the FV scores
+                for (int n = 0; n < fvCount; n++) fvScores[n] = acousticMatrix[i, n]; //transfer the frame scores to array
+                
+                fvScores[0] = -Double.MaxValue;  //exclude the noise FV in zero position
                 int maxIndex = DataTools.GetMaxIndex(fvScores);
-                if (zscoreMatrix[i, maxIndex + 1] >= zScoreThreshold) c = DataTools.Integer2Char(maxIndex+1);
-                else c = 'x';
+                char c = 'x';
+                if (acousticMatrix[i, maxIndex] >= zScoreThreshold) c = DataTools.Integer2Char(maxIndex);
                 sb.Append(c);
-            }
+            }//end of frames
+            return sb.ToString();
+        }
+
+        
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="acousticMatrix"></param>
+        /// <param name="noiseAv"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        public string ExtractSymbolStream_HiSensitivity(double[,] acousticMatrix, double noiseAv, double threshold)
+        {
+            int frameCount = acousticMatrix.GetLength(0);
+            int fvCount    = acousticMatrix.GetLength(1);  //number of feature vectors or syllables types
+
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < frameCount; i++)
+            {
+                double[] fvScores = new double[fvCount];//init the FV scores
+                for (int n = 0; n < fvCount; n++) fvScores[n] = acousticMatrix[i, n]; //transfer the frame scores to array
+
+                //get the maximum score
+                int maxIndex;
+                DataTools.getMaxIndex(fvScores, out maxIndex);
+                if (maxIndex == 0) //this frame is noise
+                {
+                    sb.Append('n');
+                    continue; 
+                }
+                double delta = fvScores[maxIndex] - noiseAv; //get difference between max score and noise
+                //if (delta < 0.0) delta = 0.0;
+                //deltaScores[i] = delta;        #####################REQUIRE MARGIN OF 0.5
+                char c = 'x';
+                if (delta >= threshold) c = DataTools.Integer2Char(maxIndex);
+                sb.Append(c);
+            }//end of frames
+
             return sb.ToString();
         }
 
 
+        public int[] Parse_WordOrderRandom(string symbolSequence)
+        {
+            int frameCount = symbolSequence.Length;
+
+            //NEXT 3 LINES FOR DEBUG
+            //for (int i = 0; i < frameCount; i++) 
+            //    if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) scores[i] = 0.0;
+            //    else                                                          scores[i] = DataTools.Char2Integer(symbolSequence[i]);
+            //if(true)return scores;
+
+            //CONVERT SYMBOL STREAM TO BINARY ARRAY OF HITS
+            int[] hits = new int[frameCount];
+            for (int i = 0; i < frameCount; i++)
+                if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) hits[i] = 0;
+                else hits[i] = 1;
+
+            return hits;
+        }
+
+
+
         /// <summary>
-        /// returns a score for each frame indicating how different it is from the average noise response.
-        /// TODO ????????????????????? Smooth the array with window=largest target word length.
-        /// TODO ????????????????????? Find the peaks and return scores only for the peaks.
         /// </summary>
+        /// <param name="symbolSequence"></param>
         /// <param name="zscoreMatrix"></param>
-        /// <param name="noiseAv"></param>
         /// <param name="words"></param>
         /// <returns></returns>
-        public double[] HotSpots(double[,] zscoreMatrix, double noiseAv, string[] words)
+        public int[] Parse_WordOrderFixed(string symbolSequence, double[,] zscoreMatrix, string[] words)
         {
-            int frameCount = zscoreMatrix.GetLength(0);
-            int fvCount = zscoreMatrix.GetLength(1); //number of feature vectors
+            int sequenceLength = symbolSequence.Length;
+            int symbolCount = zscoreMatrix.GetLength(1);
             int wordCount = words.Length;
-            double[] wordScores = new double[frameCount];
+            int[] wordHits = new int[sequenceLength];
             int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
+            //Console.WriteLine("maxWordLength=" + maxWordLength + "  wordCount=" + wordCount);
+            //Console.WriteLine("zscoreMatrix dim =" + zscoreMatrix.GetLength(0) + ", " + zscoreMatrix.GetLength(1));
 
-            double[] deltaScores = new double[frameCount];
-            for (int i = 0; i < frameCount; i++)
+            for (int i = 0; i < sequenceLength - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
             {
-                double[] scores = new double[fvCount];
-                for (int fv = 0; fv < fvCount; fv++) scores[fv] = zscoreMatrix[i, fv]; //transfer the frame scores to array
+                if ((symbolSequence[i] == 'x') || (symbolSequence[i] == 'n'))
+                {
+                    wordHits[i] = 0;
+                    continue;
+                }
+
+                //have a possible word so check what it is
+                double[] scores = new double[wordCount];
+                for (int w = 0; w < wordCount; w++)
+                {
+                    int wordLength = words[w].Length;
+                    int[] intArray = DataTools.String2IntegerArray(words[w]);
+                    //Console.Write(i + "  wordCount=" + wordCount + "  arrayLength=" + intArray.Length + "  " + words[w]);
+                    double sum = 0.0;
+                    for (int s = 0; s < wordLength; s++)
+                    {
+                        //Console.WriteLine("s=" + s + "    " + intArray[s]);
+                        if (intArray[s] >= symbolCount)
+                        {
+                            throw new Exception("WORD <" + words[w] + "> IN GRAMMAR CONTAINS ILLEGAL SYMBOL.");
+                        }
+                        sum += zscoreMatrix[i + s, intArray[s]];
+                    }
+                    scores[w] = sum;
+
+                }//end of getting word scores for this position
 
                 //get the maxmum score
                 int maxIndex;
                 DataTools.getMaxIndex(scores, out maxIndex);
-                if (maxIndex == 0) continue; //skip frames where noise is max
-                double delta = scores[maxIndex] - noiseAv; //get difference between max score and noise
-                if (delta < 0.0) delta = 0.0;
-                deltaScores[i] = delta; 
+                //wordScores[i] = scores[maxIndex];
+                wordHits[i] = maxIndex;
 
+                //now check that sum is more than the noise score over same frames - sum the noise scores
+                //int winningWordLength = words[maxIndex].Length;
+                //double noise = 0.0;
+                //for (int s = 0; s < winningWordLength; s++) noise += zscoreMatrix[i + s, 0];
                 //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
-            }//end of symbol string
+                //if (wordScores[i] < noise) Console.WriteLine("WINNING SCORE < NOISE");
 
-            return deltaScores;
+
+            }//end of symbol string
+            return wordHits;
         }
+
 
 
         
         /// <summary>
         /// scans a symbol string for the passed words and returns for each position in the string the match score of
         /// that word which obtained the maximum score. The matchscore is derived from a zscore matrix.
-        /// NOTE: adding z-scores is similar to adding the logs of probabilities derived from Gaussian distribution.
+        /// NOTE: adding z-scores is similar to adding the logs of probabilities derived from a Gaussian distribution.
         ///     log(p) = -log(sd) - log(sqrt(2pi)) - (Z^2)/2  = Constant - (Z^2)/2
         ///         I am adding Z-scores instead of the squares of Z-scores.
         /// </summary>
@@ -508,12 +632,15 @@ namespace AudioStuff
         /// <returns></returns>
         public double[] WordSearch(string symbolSequence, double[,] zscoreMatrix, string[] words)
         {
-            int symbolCount = symbolSequence.Length;
+            int sequenceLength = symbolSequence.Length;
+            int symbolCount = zscoreMatrix.GetLength(1);
             int wordCount = words.Length;
-            double[] wordScores = new double[symbolCount];
+            double[] wordScores = new double[sequenceLength];
             int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
+            //Console.WriteLine("maxWordLength=" + maxWordLength + "  wordCount=" + wordCount);
+            //Console.WriteLine("zscoreMatrix dim =" + zscoreMatrix.GetLength(0) + ", " + zscoreMatrix.GetLength(1));
 
-            for (int i = 0; i < symbolCount - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
+            for (int i = 0; i < sequenceLength - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
             {
                 if ((symbolSequence[i] == 'x') || (symbolSequence[i] == 'n'))
                 {
@@ -526,8 +653,17 @@ namespace AudioStuff
                 {
                     int wordLength = words[w].Length;
                     int[] intArray = DataTools.String2IntegerArray(words[w]);
+                    //Console.Write(i + "  wordCount=" + wordCount + "  arrayLength=" + intArray.Length + "  " + words[w]);
                     double sum = 0.0;
-                    for (int s = 0; s < wordLength; s++) sum += zscoreMatrix[i + s, intArray[s]];
+                    for (int s = 0; s < wordLength; s++)
+                    {
+                        //Console.WriteLine("s=" + s + "    " + intArray[s]);
+                        if (intArray[s] >= symbolCount) 
+                        {
+                            throw new Exception("WORD <" + words[w] + "> IN GRAMMAR CONTAINS ILLEGAL SYMBOL."); 
+                        }
+                        sum += zscoreMatrix[i + s, intArray[s]];
+                    }
                     scores[w] = sum;
 
                 }//end of getting word scores for this position
@@ -541,58 +677,15 @@ namespace AudioStuff
                 //now check that sum is more than the noise score over same frames - sum the noise scores
                 //double noise = 0.0;
                 //for (int s = 0; s < winningWordLength; s++) noise += zscoreMatrix[i + s, 0];
-
                 //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
                 //if (wordScores[i] < noise) Console.WriteLine("WINNING SCORE < NOISE");
-                i += winningWordLength; //skip over letters in word. These missed positions will have zero score
+
+                //i++; //skip next position if have a hit. Missed positions will have zero score
 
             }//end of symbol string
             return wordScores;
         }
 
-
-
-
-        public double[] WordSearch(double[] hotSpots, double[,] zscoreMatrix, string[] words)
-        {
-            int frameCount = zscoreMatrix.GetLength(0);
-            int fvCount    = zscoreMatrix.GetLength(1); //number of feature vectors
-            int wordCount = words.Length;
-            double[] wordScores = new double[frameCount];
-            int maxWordLength = words[0].Length; //user must place longest word first in the list !!!
-            double threshold = 0.5; //hotspot value must exceed this to be investigated
-
-            for (int i = 0; i < frameCount - maxWordLength; i++) //WARNING: user must place longest word first in the list !!!
-            {
-                if (hotSpots[i] < threshold)
-                {
-                    wordScores[i] = 0.0;
-                    continue;
-                }
-                //have a possible word so check what it is
-                double[] scores = new double[wordCount];
-                for (int w = 0; w < wordCount; w++)
-                {
-                    int wordLength = words[w].Length;
-                    int[] intArray = DataTools.String2IntegerArray(words[w]);
-                    double sum = 0.0;
-                    for (int s = 0; s < wordLength; s++) sum += zscoreMatrix[i + s, intArray[s]];
-                    scores[w] = sum;
-
-                }//end of getting word scores for this position
-
-                //get the maxmum score
-                int maxIndex;
-                DataTools.getMaxIndex(scores, out maxIndex);
-                wordScores[i] = scores[maxIndex];
-                //int winningWordLength = words[maxIndex].Length;
-                //Console.WriteLine("maxIndex=" + maxIndex + "  wordscore[" + i + "]=" + scores[maxIndex] + "  noise=" + noise);
-
-            }//end of all frames
-            return wordScores;
-        }
-
-        
 
 
 
@@ -633,153 +726,21 @@ namespace AudioStuff
         }
 
 
-        public double[] Grammar_WordOrderRandom(double[] scores, string symbolSequence, double songDuration)
+
+
+        public int CountClusters(double[] zScores, double thresholdZ)
         {
-            //DataTools.writeArray(scores);
-            int songLength = (int)Math.Floor(songDuration * this.template.TemplateState.FramesPerSecond);
-            //Console.WriteLine("Song Duration = " + songDuration + " seconds = " + songLength+" frames. (Frames/s=" + this.template.TemplateState.FramesPerSecond.ToString("F2") + ")");
-
-            int frameCount = scores.Length;
-
-            //NEXT 3 LINES FOR DEBUG
-            //for (int i = 0; i < frameCount; i++) 
-            //    if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) scores[i] = 0.0;
-            //    else                                                          scores[i] = DataTools.Char2Integer(symbolSequence[i]);
-            //if(true)return scores;
-
-            int[] hits = new int[frameCount];
-            for (int i = 0; i < frameCount; i++) 
-                if ((symbolSequence[i] == 'n') || (symbolSequence[i] == 'x')) hits[i] = 0;
-                else                                                          hits[i] = 1;
-            int hitCount = DataTools.CountPositives(hits);
-
-            double expectedHits = hitCount * songLength / frameCount;
-            double sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
-            double thresholdZ = this.template.TemplateState.ZScoreThreshold;
-
-            int thresholdSum = songLength / 8; //A true song must have a syllable in 1/8 of frames
-            //Console.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
-            int offset = songLength / 2;
-            int sum = 0;
-            for (int i = 0; i < songLength; i++) if (hits[i] == 1) sum++;  //set up the song window
-
-
-            //now calculate z-scores for the number of syllable hits in a songwindow
-            double[] zScores = new double[frameCount];
-            for (int i = songLength; i < frameCount; i++)
-            {
-                if (sum < thresholdSum)
-                {
-                    zScores[i - offset] = 0.0;  //not enough hits to constitute a song
-                    sum = sum - hits[i - songLength] + hits[i]; //move the songwindow
-                    continue;
-                }
-
-                zScores[i - offset] = (sum - expectedHits) / sd;
-                if (zScores[i - offset] < thresholdZ) zScores[i - offset] = 0.0;
-                sum = sum - hits[i - songLength] + hits[i]; //move the songwindow
-                //Console.WriteLine(zScores[i - offset] + " sum=" + sum);
-            }
-
-            //count the hits
-            int songCount = 0;
+            int frameCount = zScores.Length;
+            int clusterCount = 0;
             for (int i = 1; i < frameCount; i++)
             {
                 bool lo2hi = ((zScores[i - 1] <  thresholdZ) && (zScores[i] >= thresholdZ));
                 bool hi2lo = ((zScores[i - 1] >= thresholdZ) && (zScores[i] <  thresholdZ));
-                if (lo2hi || hi2lo) songCount++;  //count number of times score goes above or below threshold
+                if (lo2hi || hi2lo) clusterCount++;  //count number of times score goes above or below threshold
             }
-            results.Hits = songCount / 2;
-            //Console.WriteLine(" songCount=" + songCount / 2);
-            return zScores;
+            return (clusterCount / 2);
         }
 
-
-        /// <summary>
-        /// DEPRACATED
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public double scoreMatch_DotProduct(double[,] template, double[,] signal)
-        {
-            int tWidth  = template.GetLength(0);
-            int tHeight = template.GetLength(1);
-            int nWidth  = signal.GetLength(0);
-            int nHeight = signal.GetLength(1);
-            if (tWidth != nWidth)   throw new System.Exception("Template and Noise matrices have unequal widths.");
-            if (tHeight != nHeight) throw new System.Exception("Template and Noise matrices have unequal heights.");
-
-            //do multiplication
-            double sum = 0.0;
-            for (int i = 0; i < tWidth; i++)
-            {
-                for (int j = 0; j < tHeight; j++)
-                {
-                    sum += (template[i, j] * signal[i, j]);
-                }
-            }
-            int cellCount = tWidth * tHeight;
-
-            return sum / cellCount;
-        } //end scoreMatch_DotProduct()
-
-        /// <summary>
-        /// DEPRACATED
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public double scoreMatch_Euclidian(double[,] template, double[,] signal)
-        {
-            int tWidth = template.GetLength(0);
-            int tHeight = template.GetLength(1);
-            int nWidth = signal.GetLength(0);
-            int nHeight = signal.GetLength(1);
-            if (tWidth != nWidth) throw new System.Exception("Template and Noise matrices have unequal widths.");
-            if (tHeight != nHeight) throw new System.Exception("Template and Noise matrices have unequal heights.");
-
-            //calculate euclidian distance
-            double sum = 0.0;
-            for (int i = 0; i < tWidth; i++)
-            {
-                for (int j = 0; j < tHeight; j++)
-                {
-                    double v = template[i, j] - signal[i, j];
-                    sum += (v*v);
-                }
-            }
-            return 1 / Math.Sqrt(sum);
-        } //end scoreMatch_Euclidian()
-
-        /// <summary>
-        /// DEPRACATED
-        /// </summary>
-        /// <param name="template"></param>
-        /// <param name="signal"></param>
-        /// <returns></returns>
-        public double ScoreMatch_CrossCorrelation(double[,] template, double[,] signal)
-        {
-            int tWidth = template.GetLength(0);
-            int tHeight = template.GetLength(1);
-            int nWidth = signal.GetLength(0);
-            int nHeight = signal.GetLength(1);
-            if (tWidth != nWidth) throw new System.Exception("Template and Noise matrices have unequal widths.");
-            if (tHeight != nHeight) throw new System.Exception("Template and Noise matrices have unequal heights.");
-
-            //do multiplication
-            double sum = 0.0;
-            for (int i = 0; i < tWidth; i++)
-            {
-                for (int j = 0; j < tHeight; j++)
-                {
-                    sum += template[i, j] * signal[i, j];
-                }
-            }
-            int cellCount = tWidth * tHeight;
-            //return sum;
-            return sum/cellCount;
-        } //end scoreMatch_CrossCorrelation()
 
 
 
