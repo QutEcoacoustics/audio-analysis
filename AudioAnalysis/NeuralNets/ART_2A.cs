@@ -513,6 +513,13 @@ namespace NeuralNets
         return count;
     }
 
+
+
+
+
+
+
+
     public static int[] RandomizeNumberOrder (int n) // var randomArray:array of word);
     {
 
@@ -534,6 +541,85 @@ namespace NeuralNets
         }
         return randomArray;
     } //end of RandomizeNumberOrder()
+
+
+
+
+    public static int[] ClusterShapes(string dataFname)
+    {
+        double[,] trainingData = FileTools.ReadDoubles2Matrix(dataFname);
+        return ClusterWithART2a(trainingData);
+    }
+
+    public static int[] ClusterWithART2a(double[,] trainingData)
+    {
+
+        //DataTools.WriteMinMaxOfFeatures(trainingData);
+        //if (true) Console.ReadLine();
+
+
+        //string paramsFpath = @"C:\etc";
+        int trnSetSize = trainingData.GetLength(0);
+        int F1Size = trainingData.GetLength(1);
+        int F2Size = trnSetSize;
+        int numberOfRepeats = 1;
+        int maxIterations = 100;
+        if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
+        bool[] uncommittedJ = new bool[F2Size];               // : PtrToArrayOfBool;
+        int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2Neta units}
+        int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
+
+        int code = 0;        //        : word; {used for getting error messages}
+
+
+        //{************************** INITIALISE VALUES *************************}
+
+
+        //double[,] parameters = ART.ReadParameterValues(paramsFpath);
+        //int simulationsCount = parameters.GetLength(0);
+        //int paramCount = parameters.GetLength(1);
+        int simulationsCount = 1;
+        double alpha = 0.4;  //increasing alpha proliferates categories - 0.57 is good value
+        double beta = 0.5;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+        double rho = 0.99;   //vigilance parameter - increasing rho proliferates categories
+        double theta = 0.05; //threshold for contrast enhancing
+
+        ART_2A art2a = new ART_2A(F1Size, F2Size);
+
+        //{********** DO SIMULATIONS WITH DIFFERENT PARAMETER VALUES ***********}
+        for (int simul = 0; simul < simulationsCount; simul++)
+        {
+            //pass the eight params for this run of ART2A - alpha, beta, c, d, rho, theta, add1, rhoStar
+            art2a.SetParameterValues(alpha, beta, rho, theta);
+            art2a.WriteParameters();
+            //art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3],);
+            //Console.ReadLine();
+
+            //{********** DO REPEATS ***********}
+            for (int rep = 0; rep < numberOfRepeats; rep++)
+            {
+                //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
+                art2a.InitialiseArrays();
+                code = 0;
+                art2a.TrainNet(trainingData, maxIterations, simul, rep, code);
+
+                if (code != 0) break;
+                noOfCommittedF2[rep] = art2a.CountCommittedF2Nodes();
+                //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
+                //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
+                //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                if (Shape.Verbose) Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+            } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
+
+        }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
+
+        int[] keepScore = art2a.inputCategory;
+        return keepScore;
+    } //END of ClusterShapes.
+
+
+
 
 
     }//end Class

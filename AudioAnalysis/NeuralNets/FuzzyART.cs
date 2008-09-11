@@ -480,6 +480,14 @@ namespace NeuralNets
     }
 
 
+
+    //***************************************************************************************************************************************
+    //***************************************************************************************************************************************
+    //*****************************************   STATIC METHODS    **********************************************************************************************
+    //***************************************************************************************************************************************
+    //***************************************************************************************************************************************
+
+
     // {fuzzyAND or fuzzy intersection is defined as   x^y = min(x, y)    }
     public static double[] FuzzyAND(double[] vect1, double[] vect2)
     {
@@ -506,6 +514,87 @@ namespace NeuralNets
         for (int i= 0; i<n; i++) X += vector[i];
         return X;
     }
+
+
+
+    public static int[] ClusterWithFuzzyART(double[,] trainingData, out int committedNodeCount)
+    {
+        FuzzyART.Verbose = Shape.Verbose;
+        if (trainingData == null)
+        {
+            Console.WriteLine("WARNING: ClusterWithFuzzyART() PASSED NULL TRAINING DATA!");
+            committedNodeCount = 0;
+            return null;
+        }
+        //DataTools.WriteMinMaxOfFeatures(trainingData);
+        //if (true) Console.ReadLine();
+
+
+        //string paramsFpath = @"C:\etc";
+        int trnSetSize = trainingData.GetLength(0);
+        int IPSize = trainingData.GetLength(1);
+        int F2Size = trnSetSize;
+        int numberOfRepeats = 1;
+        int maxIterations = 100;
+        if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
+        int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
+
+        int code = 0;        //        : word; {used for getting error messages}
+
+
+        //{************************** INITIALISE VALUES *************************}
+
+
+        //double[,] parameters = ART.ReadParameterValues(paramsFpath);
+        //int simulationsCount = parameters.GetLength(0);
+        //int paramCount = parameters.GetLength(1);
+        int simulationsCount = 1;
+        //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
+        //double beta = 0.5;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+        //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        //double theta = 0.05; //threshold for contrast enhancing
+
+        double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
+        double beta = 0.1;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+        double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        double theta = 0.0; //threshold for contrast enhancing
+
+        FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size);
+
+        //{********** DO SIMULATIONS WITH DIFFERENT PARAMETER VALUES ***********}
+        for (int simul = 0; simul < simulationsCount; simul++)
+        {
+            //pass the eight params for this run of ART2A - alpha, beta, c, d, rho, theta, add1, rhoStar
+            fuzzyART.SetParameterValues(alpha, beta, rho, theta);
+            if (FuzzyART.Verbose) fuzzyART.WriteParameters();
+            //art2a.SetParameterValues(parameters[simul, 0], parameters[simul, 1], parameters[simul, 2], parameters[simul, 3],);
+            //Console.ReadLine();
+
+            //{********** DO REPEATS ***********}
+            for (int rep = 0; rep < numberOfRepeats; rep++)
+            {
+                //{********* RUN NET for ONE SET OF PARAMETERS for ALL ITERATIONS *********}
+                fuzzyART.InitialiseArrays();
+                code = 0;
+                fuzzyART.TrainNet(trainingData, maxIterations, simul, rep, code);
+
+                if (code != 0) break;
+                noOfCommittedF2[rep] = fuzzyART.CountCommittedF2Nodes();
+                //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
+                //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
+                //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
+                //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
+                //Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+            } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
+
+        }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}
+
+        committedNodeCount = noOfCommittedF2[0];
+        int[] keepScore = fuzzyART.inputCategory;
+        return keepScore;
+
+    } //END of ClusterShapesWithFuzzyART.
 
 
     }//end class
