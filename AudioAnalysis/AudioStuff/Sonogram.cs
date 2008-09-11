@@ -895,7 +895,7 @@ namespace AudioStuff
         public int Verbosity { get; set; }
 
         //files and directories
-        public string TemplateDir { get; set; }
+        public string TemplatesDir { get; set; }
         public string WavFName { get; set; }
         public string WavFileDir { get; set; }
         public string WavFileExt { get; set; }
@@ -1106,7 +1106,7 @@ namespace AudioStuff
             this.Verbosity = cfg.GetInt("VERBOSITY");
 
             //directory and file structure
-            this.TemplateDir = cfg.GetString("TEMPLATE_DIR");
+            this.TemplatesDir = cfg.GetString("TEMPLATE_DIR");
             this.WavFileDir = cfg.GetString("WAV_DIR");
             this.SonogramDir = cfg.GetString("SONOGRAM_DIR");
             this.OutputDir = cfg.GetString("OP_DIR");
