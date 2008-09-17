@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Nuke", "SensorV2Nuk
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2.WindowsCE", "SensorV2.WindowsCE\SensorV2.WindowsCE.csproj", "{50955F7F-5FDC-4674-849F-C1D96B86764E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2VoiceRecorder", "SensorV2VoiceRecorder\SensorV2VoiceRecorder.csproj", "{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -106,6 +108,20 @@ Global
 		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{50955F7F-5FDC-4674-849F-C1D96B86764E}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Mixed Platforms.Deploy.0 = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Debug|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Debug|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Any CPU.Deploy.0 = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Mixed Platforms.Deploy.0 = Release|Any CPU
+		{0D54EB83-B134-4327-BCFF-F5F098A5EB4A}.Release|Windows Mobile 6 Professional SDK (ARMV4I).ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
