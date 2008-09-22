@@ -1,0 +1,137 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<!-- saved from url=(0014)about:internet -->
+<head>
+    <title>Silverlight Project Test Page </title>
+
+    <script type="text/javascript" src="Silverlight.js"></script>
+    
+    <style type="text/css">
+    html, body {
+	    height: 100%;
+	    overflow: auto;
+    }
+    body {
+	    padding: 0;
+	    margin: 0;
+    }
+    #silverlightControlHost {
+	    height: 100%;
+    }
+    </style>
+    
+    <script type="text/javascript">
+        function onSilverlightError(sender, args) {
+        
+            var appSource = "";
+            if (sender != null && sender != 0) {
+                appSource = sender.getHost().Source;
+            } 
+            var errorType = args.ErrorType;
+            var iErrorCode = args.ErrorCode;
+            
+            var errMsg = "Unhandled Error in Silverlight 2 Application " +  appSource + "\n" ;
+
+            errMsg += "Code: "+ iErrorCode + "    \n";
+            errMsg += "Category: " + errorType + "       \n";
+            errMsg += "Message: " + args.ErrorMessage + "     \n";
+
+            if (errorType == "ParserError")
+            {
+                errMsg += "File: " + args.xamlFile + "     \n";
+                errMsg += "Line: " + args.lineNumber + "     \n";
+                errMsg += "Position: " + args.charPosition + "     \n";
+            }
+            else if (errorType == "RuntimeError")
+            {           
+                if (args.lineNumber != 0)
+                {
+                    errMsg += "Line: " + args.lineNumber + "     \n";
+                    errMsg += "Position: " +  args.charPosition + "     \n";
+                }
+                errMsg += "MethodName: " + args.methodName + "     \n";
+            }
+
+            throw new Error(errMsg);
+        }
+    </script>
+    
+        <script type="text/javascript">
+    
+function createSilverlight()
+{
+	Silverlight.createObjectEx({
+		source: "ClientBin/SilverlightApplication1.xap",
+		parentElement: document.getElementById("silverlightControlHost"),
+		id: "SilverlightControl",
+		properties: {
+			width: "100%",
+			height: "100%",
+			version: "2.0",
+			enableHtmlAccess: "true"
+		},
+		events: {onLoad:onSilverlightLoad}
+	});
+	
+//	    Silverlight.createObject(
+//        "package.xap",                  // Source property value.
+//        parentElement,                  // DOM reference to hosting DIV tag.
+//        name,                           // Unique plug-in ID value, a variable set before each page call.
+//        {                               // Plug-in properties.
+//            width:'600',                // Width of rectangular region of plug-in, in pixels.
+//            height:'200',               // Height of rectangular region of plug-in, in pixels.
+//            version:'2.0'               // Plug-in version to use.
+//        },
+//        {
+//            onError:null,               // Use default error handler.
+//            onLoad:onLoad               // OnLoad event handler that can be used for multiple instances.
+//        },
+//        null,                           // InitParams property value set to null.  
+//        context); 
+	
+	   
+	// Give the keyboard focus to the Silverlight control by default
+    document.body.onload = function() {
+      var silverlightControl = document.getElementById('SilverlightControl');
+      if (silverlightControl)
+      silverlightControl.focus();
+    }
+
+}
+
+function onSilverlightLoad(sender, context, source)
+{
+ 
+    mediaControl = sender.Content.mediaControl;
+    if (mediaControl != null)
+    {
+        mediaControl.Volume = 0.85;
+        //mediaControl.ImageSource = "Sample.jpg";
+    }
+}
+    </script>
+</head>
+
+<body onload="createSilverlight()">
+    <!-- Runtime errors from Silverlight will be displayed here.
+	This will contain debugging information and should be removed or hidden when debugging is completed -->
+	<div id='errorLocation' style="font-size: small;color: Gray;"></div>
+
+    <div id="silverlightControlHost" style="width:500px; height:500px">
+<!--		<object data="data:application/x-silverlight," type="application/x-silverlight-2-b2" width="100%" height="100%">
+			<param name="source" value="ClientBin/SilverlightApplication1.xap"/>
+			<param name="onerror" value="onSilverlightError" />
+			<param name="background" value="white" />
+			
+			<a href="http://go.microsoft.com/fwlink/?LinkID=115261" style="text-decoration: none;">
+     			<img src="http://go.microsoft.com/fwlink/?LinkId=108181" alt="Get Microsoft Silverlight" style="border-style: none"/>
+			</a>
+		</object>-->
+		<iframe style='visibility:hidden;height:0;width:0;border:0px'></iframe>
+    </div>
+    
+    
+
+    
+</body>
+</html>
