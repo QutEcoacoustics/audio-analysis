@@ -32,6 +32,19 @@ namespace TowseyLib
         }
 
 
+        public static double FractionHighEnergyFrames(double[] decibels, double dbThreshold)
+        {
+            int L = decibels.Length;
+            int count = 0;
+            for (int i = 0; i < L; i++) //foreach time step
+            {
+                if (decibels[i] > dbThreshold) count++;
+            }
+            return (count/(double)L);
+        }
+
+
+
 
         public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableDelay, int minPulse, int[] zeroCrossings)
         {
@@ -301,10 +314,10 @@ namespace TowseyLib
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of bins in freq band
             double[,] outData = new double[M, filterBankCount];
-            double linBand = freqRange / N;
+            double linBand = freqRange / (N-1); //(N-1) because have additional DC band
             double melBand = melRange / (double)filterBankCount;  //width of mel band
-            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F1"));
-            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F1"));
+            //Console.WriteLine(" N     Count=" + N + " freqRange=" + freqRange.ToString("F1") + " linBand=" + linBand.ToString("F3"));
+            //Console.WriteLine(" filterCount=" + filterBankCount + " melRange=" + melRange.ToString("F1") + " melBand=" + melBand.ToString("F3"));
 
             for (int i = 0; i < M; i++) //for all spectra or time steps
                 for (int j = 0; j < filterBankCount; j++) //for all mel bands in the frequency range
@@ -336,6 +349,7 @@ namespace TowseyLib
                         }
                         for (int k = ai; k < bi; k++)
                         {
+                            //if ((k + 1) >= N) Console.WriteLine("k=" + k + "  N=" + N);
                             if ((k + 1) > N) break;//to prevent out of range index
                             sum += Speech.MelIntegral(k * linBand, (k + 1) * linBand, matrix[i, k], matrix[i, k + 1]);
                         }

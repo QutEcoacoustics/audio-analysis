@@ -143,7 +143,7 @@ namespace TowseyLib
                 //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
                 if (logE < minLogEnergy)
                 {
-                    System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
+                    //System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
                     logEnergy[i] = minEnergyRatio;
                 }
                 else logEnergy[i] = logE - maxLogEnergy;

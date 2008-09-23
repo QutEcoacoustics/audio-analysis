@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FeatureVector.cs" />
     <Compile Include="SonoImage.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="Classifier.cs" />

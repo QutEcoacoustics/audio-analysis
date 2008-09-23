@@ -51,17 +51,17 @@ namespace AudioStuff
             const string wavFExt = WavReader.wavFExt;
 
             //BRISBANE AIRPORT CORP
-            const string wavDirName = @"C:\SensorNetworks\WavFiles\";
+            //string wavDirName = @"C:\SensorNetworks\WavFiles\";
             //string wavFileName = "sineSignal";
             //string wavFileName = "golden-whistler";
-            //string wavFileName = "BAC2_20071008-085040";  //Lewin's rail kek keks used for obtaining kek-kek template.
-            string wavFileName = "BAC1_20071008-084607";  //faint kek-kek call
-            //string wavFileName = "BAC2_20071011-182040_cicada";  //repeated cicada chirp 5 hz bursts of white noise
-            //string wavFileName = "dp3_20080415-195000"; //ZERO SIGNAL silent room recording using dopod
-            //string wavFileName = "BAC2_20071010-042040_rain";  //contains rain and was giving spurious results with call template 2
+            //string wavFileName = "BAC2_20071008-085040";           //Lewin's rail kek keks used for obtaining kek-kek template.
+            //string wavFileName = "BAC1_20071008-084607";             //faint kek-kek call
+            //string wavFileName = "BAC2_20071011-182040_cicada";    //repeated cicada chirp 5 hz bursts of white noise
+            //string wavFileName = "dp3_20080415-195000";            //ZERO SIGNAL silent room recording using dopod
+            //string wavFileName = "BAC2_20071010-042040_rain";      //contains rain and was giving spurious results with call template 2
             //string wavFileName = "BAC2_20071018-143516_speech";
             //string wavFileName = "BAC2_20071014-022040nightnoise"; //night with no signal in Kek-kek band.
-            //string wavFileName = "BAC2_20071008-195040"; // kek-kek track completely clear
+            //string wavFileName = "BAC2_20071008-195040";           //kek-kek track completely clear
             //string wavFileName = "BAC3_20070924-153657_wind";
             //string wavFileName = "BAC3_20071002-070657";
             //string wavFileName = "BAC3_20071001-203657";
@@ -96,6 +96,24 @@ namespace AudioStuff
             //const string opDirName  = @"C:\SensorNetworks\Koala\";
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
 
+            //ST BEES
+            string wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            //string wavFileName = "West_Knoll_-_St_Bees_KoalaBellow20080919-073000"; //source file for template
+            //string wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
+            //string wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
+            //string wavFileName = "West_Knoll_St_Bees_FarDistantKoala_20080919-000000";
+            //string wavFileName = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
+            //string wavFileName = "West_Knoll_St_Bees_KoalaBellowFaint_20080919-010000";
+            //string wavFileName = "West_Knoll_St_Bees_FlyBirdCicada_20080917-170000";
+            //string wavFileName = "West_Knoll_St_Bees_Currawong1_20080923-120000";
+            string wavFileName = "West_Knoll_St_Bees_Currawong2_20080921-053000";
+            //string wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000";
+
+
+
+
+
+
             //test wav files
             const string testDirName = @"C:\SensorNetworks\TestWavFiles\";
             //const string testDirName = @"C:\SensorNetworks\WavDownloads\BAC2\";
@@ -118,29 +136,32 @@ namespace AudioStuff
             //******************************************************************************************************************
             //******************************************************************************************************************
             //SET TEMPLATE HERE  ***********************************************************************************************
-            int callID = 4;
+            int callID = 8;
             //******************************************************************************************************************
             //******************************************************************************************************************
 
             //****************** DEFAULT CALL PARAMETERS
             string callName = "NO NAME";
-            string callComment = "DEFAULT VALUE";
-            string sourceFile = "NO_NAME"; 
+            string callComment = "DEFAULT COMMENT";
+            string destinationFileDescriptor = "Descriptor"; //should be short ie < 10 chars
+            string sourcePath = "NO_PATH";
+            string sourceFile = "NO_NAME";
 
             //ENERGY AND NOISE PARAMETERS
             double dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
             //backgroundFilter= //noise reduction??
 
             //MFCC PARAMETERS
-            int sampleRate; //determined by source WAV file
+            //int sampleRate; //determined by source WAV file
             int frameSize = 512;
             double frameOverlap = 0.5;
             int filterBankCount = 64;
             bool doMelConversion = true;
+            bool doNoiseReduction = false;
             int ceptralCoeffCount = 12;
-            int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
             bool includeDeltaFeatures = true;
             bool includeDoubleDeltaFeatures = true;
+            int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
 
             //FEATURE VECTOR EXTRACTION PARAMETERS
             FV_Source fv_Source = FV_Source.SELECTED_FRAMES;  //FV_Source.MARQUEE;
@@ -150,23 +171,19 @@ namespace AudioStuff
             int marqueeStart = 999;
             int marqueeEnd   = 999;
 
+            // PARAMETERS FOR THE ACOUSTIC MODELS ***************
             FV_Extraction fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS;  //AT_FIXED_INTERVALS
             int fvExtractionInterval = 999; //milliseconds
             bool doFvAveraging = false;
             string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
-
-            // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-            int zScoreSmoothingWindow = 3;
             double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-            //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-            bool doHighSensitivitySearch = true;
 
             //LANGUAGE MODEL
             int numberOfWords = 0; //number of defined song variations 
             string[] words = { "999" };
             int maxSyllables = 1;  //NOT YET USED
             double maxSyllableGap = 0.25; //seconds  NOT YET USED
-            double typicalSongDuration = 1.000; //seconds USED WHEN SCORING FOR HOTSPOTS
+            double SongWindow = 1.000; //seconds USED TO CALCULATE SONG POISSON STATISTICS
             TheGrammar grammar = TheGrammar.WORDS_PERIODIC; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
             int callPeriodicity = 999;
 
@@ -174,11 +191,14 @@ namespace AudioStuff
 
 
             //************* CALL 1 PARAMETERS ***************
-            if (callID == 1)
+            if ((userMode == Mode.CreateTemplateAndScan)&&(callID == 1))
             {
                 callName = "Lewin's Rail Kek-kek";
                 callComment = "Template consists of a single KEK!";
+                destinationFileDescriptor = "Descriptor"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\";
                 sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
 
                 //ENERGY AND NOISE PARAMETERS
                 dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
@@ -189,6 +209,7 @@ namespace AudioStuff
                 frameOverlap = 0.5;
                 filterBankCount = 64;
                 doMelConversion = true;
+                doNoiseReduction = false;
                 ceptralCoeffCount = 12;
                 deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                 includeDeltaFeatures = true;
@@ -207,10 +228,7 @@ namespace AudioStuff
                 doFvAveraging = true;
                 fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
-                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = false;
-                zScoreSmoothingWindow = 3;
+                // PARAMETERS FOR THE ACOUSTIC MODELS ***************
                 zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
 
 
@@ -228,11 +246,15 @@ namespace AudioStuff
 
             //******************************************************************************************************************
             //************* CALL 2 PARAMETERS ***************
-            if (callID == 2)
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 2))
             {
                 callName = "Lewin's Rail Kek-kek";
                 callComment = "Template consists of a single KEK!";
+                destinationFileDescriptor = "Descriptor"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\";
                 sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
+
                 frameSize = 512;
                 frameOverlap = 0.5;
                 min_Freq = 1500; //Hz
@@ -241,6 +263,7 @@ namespace AudioStuff
                 //backgroundFilter= //noise reduction??
                 filterBankCount = 64;
                 doMelConversion = true;
+                doNoiseReduction = false;
                 ceptralCoeffCount = 12;
                 deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                 includeDeltaFeatures = true;
@@ -250,11 +273,8 @@ namespace AudioStuff
                 fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
                 selectedFrames = "1784,1828,1848,2113,2132,2152";
 
-                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                zScoreSmoothingWindow = 3;
+                // PARAMETERS FOR THE ACOUSTIC MODELS ***************
                 zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = true;
 
                 //LANGUAGE MODEL
                 numberOfWords = 3; //number of defined song variations 
@@ -267,11 +287,14 @@ namespace AudioStuff
 
             //******************************************************************************************************************
             //************* CALL 3 PARAMETERS ***************
-            if (callID == 3)
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 3))
             {
                 callName = "Soulful-tuneful";
                 callComment = "Unknown species in faint kek-kek file!";
-                sourceFile = "BAC1_20071008-084607"; 
+                destinationFileDescriptor = "syll5Av"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\";
+                sourceFile = "BAC1_20071008-084607";
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
 
                 //ENERGY AND NOISE PARAMETERS
                 dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
@@ -282,6 +305,72 @@ namespace AudioStuff
                 frameOverlap = 0.5;
                 filterBankCount = 64;
                 doMelConversion = true;
+                doNoiseReduction = false;
+                ceptralCoeffCount = 12;
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+                deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
+
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+//                selectedFrames = "337,376,413,1161,1197,2110,3288,3331,4767"; //syllable 1 frames
+//                selectedFrames = "433,437,446,450,1217,1222,1229,1234,3355,3359,3372"; //syllable 2 frames
+                selectedFrames = "496,1281,2196,3418,4852"; //syllable 5 frames
+                min_Freq = 600; //Hz
+                max_Freq = 3700; //Hz
+                //fv_Source = FV_Source.MARQUEE;  //options are SELECTED_FRAMES or MARQUEE
+                //marqueeStart = 4760;  //frame id
+                //marqueeEnd   = 4870;
+                doFvAveraging = true;
+
+                //fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+
+                //LANGUAGE MODEL = automated when TheGrammar == WORD_ORDER_RANDOM
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
+            } //end of if (callID == 3)
+
+
+            //******************************************************************************************************************
+            //************* CALL 4 PARAMETERS ***************
+            //coordinates to extract template using bitmap image of sonogram
+            //image coordinates: rows=freqBins; cols=timeSteps
+            if (((userMode == Mode.CreateTemplate) || (userMode == Mode.CreateTemplateAndScan)) && (callID == 4))
+            {
+                    Console.WriteLine("DATE AND TIME:" + DateTime.Now);
+                    Console.WriteLine("ABORT!!  CAN ONLY READ TEMPLATE 4! CANNOT CREATE IT.");
+                    Console.WriteLine("\t\tPRESS ANY KEY TO EXIT");
+                    Console.ReadLine();
+                    System.Environment.Exit(999);
+            }
+
+
+            //******************************************************************************************************************
+            //************* CALL 5 PARAMETERS ***************
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 5))
+            {
+
+                callName = "Cricket";
+                callComment = "High freq warble";
+                destinationFileDescriptor = "Descriptor"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\";
+                sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
+
+                //ENERGY AND NOISE PARAMETERS
+                dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
+                //backgroundFilter= //noise reduction??
+
+                //MFCC PARAMETERS
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = false;
+                doNoiseReduction = false;
                 ceptralCoeffCount = 12;
                 deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                 includeDeltaFeatures = true;
@@ -290,13 +379,13 @@ namespace AudioStuff
 
                 //FEATURE VECTOR EXTRACTION PARAMETERS
                 fv_Source = FV_Source.MARQUEE;  //options are SELECTED_FRAMES or MARQUEE
-                min_Freq = 600; //Hz
-                max_Freq = 3700; //Hz
-                marqueeStart = 4760;  //frame id
-                marqueeEnd   = 4870;
+                min_Freq = 7000; //Hz
+                max_Freq = 9000; //Hz
+                marqueeStart = 1555;  //frame id
+                marqueeEnd = 1667;
 
-                fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
-                //fvExtractionInterval = 200; //milliseconds
+                fv_Extraction = FV_Extraction.AT_FIXED_INTERVALS;  //AT_ENERGY_PEAKS or AT_FIXED_INTERVALS
+                fvExtractionInterval = 200; //milliseconds
                 fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
 
@@ -304,57 +393,164 @@ namespace AudioStuff
                 //numberOfWords = 3; //number of defined song variations
                 //words = new string[numberOfWords];
                 //words[0] = "1"; words[1] = "2"; words[2] = "3";
-                //if select high sensitivity search, then specificity reduced i.e. produces a greater number of false positives 
-                doHighSensitivitySearch = false;
                 //maxSyllables=
                 //double maxSyllableGap = 0.25; //seconds
-                typicalSongDuration = 2.000; //seconds
 
                 // SCORING PARAMETERS PROTOCOL
                 // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                zScoreSmoothingWindow = 3;
-                zScoreThreshold = 3.1; //options are 1.98, 2.33, 2.56, 3.1
-                grammar = TheGrammar.WORD_ORDER_RANDOM; //three options are HOTSPOTS, WORDMATCH, PERIODICITY
-            } //end of if (callID == 3)
-
-
-            //******************************************************************************************************************
-            //************* CALL 4 PARAMETERS ***************
-            //coordinates to extract template using bitmap image of sonogram
-            //image coordinates: rows=freqBins; cols=timeSteps
-            if (callID == 4)
-            {
-
-                if ((userMode == Mode.CreateTemplate) || (userMode == Mode.CreateTemplateAndScan))
-                {
-                    Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-                    Console.WriteLine("ABORT!!  CAN ONLY READ TEMPLATE 4! CANNOT CREATE IT.");
-                    Console.WriteLine("\t\tPRESS ANY KEY TO EXIT");
-                    Console.ReadLine();
-                    System.Environment.Exit(999);
-                }
-            }
-
-
-            if (callID == 5)
-            {
-
-                callName = "Cicada";
-                callComment = "Broadband Chirp Repeated @ 5Hz";
-                int y1 = 115; int x1 = 545;
-                int y2 = 415; int x2 = 552;
+                zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
             }//end of if (callID == 5)
 
 
+            //******************************************************************************************************************
+            //******************************************************************************************************************
+            //************* CALL 6 PARAMETERS ***************
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 6))
+            {
+                callName = "Koala Bellow";
+                //callComment = "Presumed exhalation snort of a koala bellow!";
+                //callComment = "Presumed inhalation/huff of a koala bellow!";
+                callComment = "Additional bellow syllable 3!";
+                destinationFileDescriptor = "syl3"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+                sourceFile = "West_Knoll_-_St_Bees_KoalaBellow20080919-073000";  //Koala Bellows
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
+
+                //MFCC PARAMETERS
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = true;
+                doNoiseReduction = false;
+                ceptralCoeffCount = 12;
+                deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+                //selectedFrames = "826,994,1140,1156,1469,1915,2103,2287,2676,3137,4314,4604";  //frames for PUFF
+                //selectedFrames = "595,640,752,897,957,1092,1691,1840,2061,2241,2604,4247";   //frames for HUFF
+                selectedFrames = "39,51,66,80,93,134,294";  //frames for SYLLABLE3
+                //selectedFrames = "10051,10092,10106,10080";  //frames for DISTANT BELLOW
+                min_Freq = 200; //Hz
+                max_Freq = 3000; //Hz
+                doFvAveraging = true;
+
+                // THE ACOUSTIC MODEL ***************
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                zScoreThreshold = 1.4; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
+
+                //LANGUAGE MODEL
+                //numberOfWords = 3; //number of defined song variations
+                //words = new string[numberOfWords];
+                //words[0] = "111"; words[1] = "11"; words[2] = "1";
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
+            } //end of if (callID == 6)
+
+
+
+            //******************************************************************************************************************
+            //******************************************************************************************************************
+            //************* CALL 7 PARAMETERS ***************
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 7))
+            {
+                callName = "Fruit bat";
+                callComment = "Single fruit bat chirps";
+                destinationFileDescriptor = "bat1"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+                sourceFile = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
+
+                //MFCC PARAMETERS
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = true;
+                doNoiseReduction = false;
+                ceptralCoeffCount = 12;
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+                deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
+
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+                selectedFrames = "1112,1134,1148,1167,1172,1180,1184,1188,1196"; //
+                min_Freq = 1000; //Hz
+                max_Freq = 7000; //Hz
+                //fv_Source = FV_Source.MARQUEE;  //options are SELECTED_FRAMES or MARQUEE
+                //marqueeStart = 4760;  //frame id
+                //marqueeEnd   = 4870;
+                //doFvAveraging = true;
+
+                //fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreThreshold = 4.0; //options are 1.98, 2.33, 2.56, 3.1, 3.3
+
+                //LANGUAGE MODEL = automated when TheGrammar == WORD_ORDER_RANDOM
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
+                SongWindow = 2.0; //seconds
+            } //end of if (callID == 7)
+
+            //******************************************************************************************************************
+            //************* CALL 8 PARAMETERS ***************
+            if ((userMode == Mode.CreateTemplateAndScan) && (callID == 8))
+            {
+                callName = "Currawong";
+                callComment = "From St Bees";
+                destinationFileDescriptor = "syll4"; //should be short ie < 10 chars
+                wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+                sourceFile = "West_Knoll_St_Bees_Currawong3_20080919-060000";
+                sourcePath = wavDirName + sourceFile + WavReader.wavFExt;
+
+                //MFCC PARAMETERS
+                frameSize = 512;
+                frameOverlap = 0.5;
+                filterBankCount = 64;
+                doMelConversion = true;
+                doNoiseReduction = false;
+                ceptralCoeffCount = 12;
+                includeDeltaFeatures = true;
+                includeDoubleDeltaFeatures = true;
+                deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
+
+
+                //FEATURE VECTOR EXTRACTION PARAMETERS
+                fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+                //selectedFrames = "4753,5403,6029,6172,6650,6701,6866,9027";          //syllable 1 frames
+                //selectedFrames = "4758,5408,6034,6175,6655,6704,6871,9030"; //syllable 2 frames
+                //selectedFrames = "4762,5412,6039,6178,6659,6707,6875,9033"; //syllable 3 frames
+                selectedFrames = "4766,5416,6043,6183,6664,6712,6880,9037"; //syllable 4 frames
+                min_Freq = 1000; //Hz
+                max_Freq = 8000; //Hz
+                doFvAveraging = true;
+
+                //fv_Extraction = FV_Extraction.AT_ENERGY_PEAKS; // AT_FIXED_INTERVALS;
+                fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+
+                // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                zScoreThreshold = 8.0; //options are 1.98, 2.33, 2.56, 3.1
+
+                //LANGUAGE MODEL = automated when TheGrammar == WORD_ORDER_RANDOM
+                grammar = TheGrammar.WORD_ORDER_RANDOM; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
+                SongWindow = 0.8; //seconds
+            } //end of if (callID == 8)
+
+            //******************************************************************************************************************
+            //******************************************************************************************************************
 
 
 
 
-
-
-
-
-            //************** END OF USER PARAMETERS ***************************
+            //*********************************************** END OF USER PARAMETERS *************************************************
+            //*********************************************** END OF USER PARAMETERS *************************************************
+            //*********************************************** END OF USER PARAMETERS *************************************************
+            //*********************************************** END OF USER PARAMETERS *************************************************
+            //*********************************************** END OF USER PARAMETERS *************************************************
 
             Console.WriteLine("DATE AND TIME:"+DateTime.Now);
             
@@ -459,7 +655,7 @@ namespace AudioStuff
                     try
                     {
                         Console.WriteLine("\nCREATING TEMPLATE "+ callID);
-                        Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
+                        Template t = new Template(iniFPath, callID, callName, callComment, sourcePath, destinationFileDescriptor);
                         if (fv_Source == FV_Source.SELECTED_FRAMES)
                         {
                             t.SetSelectedFrames(selectedFrames);
@@ -470,12 +666,12 @@ namespace AudioStuff
                             t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
                             if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                         }
-                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
+                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, doNoiseReduction, ceptralCoeffCount,
                                                          deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
-                        t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
-                        t.SetLanguageModel(words, doHighSensitivitySearch);
-                        t.SetScoringParameters(grammar, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        //t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
+                        t.SetLanguageModel(words, grammar);
+                        t.SetScoringParameters(zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                     }
@@ -488,11 +684,11 @@ namespace AudioStuff
 
                 case Mode.CreateTemplateAndScan:
 
-                    wavPath = wavDirName + "\\" + wavFileName + wavFExt;
+                    wavPath = wavDirName + wavFileName + wavFExt;
                     try
                     {
                         Console.WriteLine("\nCREATING TEMPLATE " + callID);
-                        Template t = new Template(iniFPath, callID, callName, callComment, sourceFile);
+                        Template t = new Template(iniFPath, callID, callName, callComment, sourcePath, destinationFileDescriptor);
                         if (fv_Source == FV_Source.SELECTED_FRAMES)
                         {
                             t.SetSelectedFrames(selectedFrames);
@@ -504,24 +700,24 @@ namespace AudioStuff
                                 t.SetMarqueeBounds(min_Freq, max_Freq, marqueeStart, marqueeEnd);
                                 if (fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(fvExtractionInterval);
                             }
-                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount, doMelConversion, ceptralCoeffCount,
-                                                         deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
+                        t.SetSonogram(frameSize, frameOverlap, dynamicRange, filterBankCount,
+                                                        doMelConversion, doNoiseReduction, ceptralCoeffCount,
+                                                        deltaT, includeDeltaFeatures, includeDoubleDeltaFeatures);
                         t.SetExtractionParameters(fv_Source, fv_Extraction, doFvAveraging, fvDefaultNoiseFile);
-                        t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
-                        t.SetLanguageModel(words, doHighSensitivitySearch);
-                        t.SetScoringParameters(grammar, zScoreSmoothingWindow, zScoreThreshold, callPeriodicity);
+                        t.SetSongParameters(maxSyllables, maxSyllableGap, SongWindow);
+                        t.SetLanguageModel(words, grammar);
+                        t.SetScoringParameters(zScoreThreshold, callPeriodicity);
                         t.ExtractTemplateFromSonogram();
                         t.WriteInfo2STDOUT();        //writes to System.Console.
                         //t.Sonogram.SaveImage(t.Sonogram.AcousticM, null);
 
                         Console.WriteLine("\nCREATING CLASSIFIER");
                         //Classifier cl = new Classifier(t, t.Sonogram);
-                        //double[,] m = t.Sonogram.SpectralM;
-                        ////double[,] m = t.Sonogram.AcousticM;
-
-                        //t.Sonogram.SaveImage(m, cl.Zscores);
                         Classifier cl = new Classifier(t);
-                        t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
+                        cl.DisplaySymbolSequence();
+                        double[,] m = t.Sonogram.SpectralM;
+                        //double[,] m = t.Sonogram.AcousticM;
+                        t.Sonogram.SaveImage(m, cl.CallHits, cl.CallScores);
                         cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                         Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms + " ms");
@@ -537,7 +733,8 @@ namespace AudioStuff
 
                 case Mode.ReadTemplateAndScan:
 
-                    wavPath = wavDirName + "\\" + wavFileName + wavFExt;
+                    wavPath = wavDirName + wavFileName + wavFExt;
+                    Console.WriteLine("wavPath=" + wavPath);
                     try{
                         Console.WriteLine("\nREADING TEMPLATE " + callID);
                         Template t = new Template(iniFPath, callID);
@@ -546,7 +743,8 @@ namespace AudioStuff
                         
                         Console.WriteLine("\nCREATING CLASSIFIER");
                         Classifier cl = new Classifier(t);
-                        t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
+                        cl.DisplaySymbolSequence();
+                        t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.CallHits, cl.CallScores);
                         cl.WriteResults();
                         Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                         Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms+" ms");
@@ -581,7 +779,7 @@ namespace AudioStuff
                                 {
                                     t.SetSonogram(wavPath);
                                     Classifier cl = new Classifier(t);
-                                    t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.Zscores);
+                                    t.Sonogram.SaveImage(t.Sonogram.SpectralM, cl.CallScores);
                                     Console.WriteLine("# Template Hits =" + cl.Results.Hits);
                                     Console.WriteLine("# Periodicity   =" + cl.Results.CallPeriodicity_ms + " ms");
                                     Console.WriteLine("# Periodic Hits =" + cl.Results.NumberOfPeriodicHits);

@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 
@@ -424,6 +425,38 @@ namespace TowseyLib
 //=============================================================================
 
 
+  
+  public static Hashtable WordsHisto(ArrayList list)
+  {
+      Hashtable ht = new Hashtable();
+      for (int i = 0; i < list.Count; i++)
+      {
+          if( ! ht.ContainsKey(list[i])) ht.Add(list[i], 1);
+          else 
+          {
+              int value = (int)ht[list[i]];
+              value++;
+              ht[list[i]] = value;
+          }
+      }
+      return ht;
+  }
+
+
+  public static void WriteArrayList(ArrayList list)
+  {
+      for (int i = 0; i < list.Count; i++)
+      {
+          Console.WriteLine(i + "  " + (string)list[i]);
+      }
+  }
+  public static void writeArray(string[] array)
+  {
+      for (int i = 0; i < array.Length; i++)
+      {
+          Console.WriteLine(i + "  " + array[i]);
+      }
+  }
   public static void writeArray(int[] array)
   {
       for (int i = 0; i < array.Length; i++)
@@ -438,7 +471,7 @@ namespace TowseyLib
   public static void writeArray(double[] array)
   {
       for (int i = 0; i < array.Length; i++)
-          Console.WriteLine(i+"  "+array[i]);
+          Console.WriteLine(i+"  "+array[i].ToString("F6"));
   }
   public static void writeArray(bool[] array)
   {
@@ -613,6 +646,45 @@ namespace TowseyLib
   }
 
 
+  static public int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
+  {
+      int rows = data.GetLength(0);
+      int cols = data.GetLength(1);
+      int[] histo = new int[binCount];
+
+      for (int i = 0; i < rows; i++)
+          for (int j = 0; j < cols; j++)
+          {
+              int bin = (int)((data[i, j] - min) / binWidth);
+              if (bin >= binCount) bin = binCount - 1;
+              if (bin < 0) bin = 0;
+              histo[bin]++;
+          }
+
+      return histo;
+  }
+
+
+  static public int[] Histo_addition(double[,] data, int[] histo, double min, double max, double binWidth)
+  {
+      int rows = data.GetLength(0);
+      int cols = data.GetLength(1);
+      int binCount = histo.Length;
+
+      for (int i = 0; i < rows; i++)
+          for (int j = 0; j < cols; j++)
+          {
+              int bin = (int)((data[i, j] - min) / binWidth);
+              if (bin >= binCount) bin = binCount - 1;
+              if (bin < 0) bin = 0;
+              histo[bin]++;
+          }
+
+      return histo;
+  }
+
+
+
   /// <summary>
   /// Subtrace matrix m2 from matrix m1
   /// </summary>
@@ -722,6 +794,22 @@ namespace TowseyLib
 
             return (ret);
   }
+
+
+  /// <summary>
+  /// returns an array of double initialised with passed value
+  /// </summary>
+  /// <param name="length"></param>
+  /// <param name="iniValue"></param>
+  /// <returns></returns>
+  public static double[] GetInitialisedArray(int length, double iniValue)
+  {
+      double[] array = new double[length];
+      for (int i = 0; i < length; i++) array[i] = iniValue;
+      return (array);
+  }
+
+
 
         /// <summary>
         /// normalised matrix of real values to [0,1].
