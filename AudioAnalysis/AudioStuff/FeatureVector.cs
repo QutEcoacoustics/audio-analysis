@@ -10,6 +10,7 @@ namespace AudioStuff
 
     public class FeatureVector
     {
+        public const string alphabet= "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
         private int fvID;
         public int FvID { get { return fvID; } set { fvID = value; } }
@@ -30,7 +31,7 @@ namespace AudioStuff
         public double[] FeaturesNormed { get { return featuresNormed; } }
 
         public string SourceFile { get; set; }
-        public int[] FrameIndices { get; set; }
+        public string FrameIndices { get; set; }
 
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
@@ -82,37 +83,37 @@ namespace AudioStuff
 
         //******************************************************************************************************************
         // three methods to set frame indices
-        public void SetFrameIndices(string indicesAsString)
-        {
-            string[] words = indicesAsString.Split(',');
-            int count = words.Length;
-            int[] indices = new int[count];
-            for (int i = 0; i < count; i++) indices[i] = DataTools.String2Int(words[i]);
-            this.FrameIndices = indices;
-        } //end SetFrameIndices()
+        //public void SetFrameIndices(string indicesAsString)
+        //{
+        //    string[] words = indicesAsString.Split(',');
+        //    int count = words.Length;
+        //    int[] indices = new int[count];
+        //    for (int i = 0; i < count; i++) indices[i] = DataTools.String2Int(words[i]);
+        //    this.FrameIndices = indices;
+        //} //end SetFrameIndices()
 
-        public void SetFrameIndices(int[] indicesArray)
+        //public void SetFrameIndices(int[] indicesArray)
+        //{
+        //    this.FrameIndices = indicesArray;
+        //} //end SetFrameIndices()
+
+        public void SetFrameIndex(int id)
         {
-            this.FrameIndices = indicesArray;
-        } //end SetFrameIndices()
-        public void SetFrameIndices(int index)
-        {
-            int[] indices = new int[1];
-            indices[0] = index;
-            this.FrameIndices = indices;
-        } //end SetFrameIndices()
-        // end of three methods to set frame indices
-        public string FrameIndices2String()
-        {
-            int count = this.FrameIndices.Length;
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < count; i++)
-            {
-                sb.Append(this.FrameIndices[i]);
-                if(i < (count-1))sb.Append(",");
-            }
-            return sb.ToString();
-        } //end FrameIndices2String()
+            this.FrameIndices = id.ToString();
+        } //end SetFrameIndex()
+
+        //// end of three methods to set frame indices
+        //public string FrameIndices2String()
+        //{
+        //    int count = this.FrameIndices.Length;
+        //    StringBuilder sb = new StringBuilder();
+        //    for (int i = 0; i < count; i++)
+        //    {
+        //        sb.Append(this.FrameIndices[i]);
+        //        if(i < (count-1))sb.Append(",");
+        //    }
+        //    return sb.ToString();
+        //} //end FrameIndices2String()
         //******************************************************************************************************************
 
 
@@ -130,7 +131,7 @@ namespace AudioStuff
 
         public void SaveImage(SonoConfig templateState)
         {
-            SonoImage bmps = new SonoImage(templateState, SonogramType.acousticVectors, TrackType.none);
+            SonoImage bmps = new SonoImage(templateState, SonogramType.acousticVectors);
             Bitmap bmp = bmps.CreateBitMapOfTemplate(this.features);
             bmp.Save(this.imageFPath);
         }
@@ -167,25 +168,25 @@ namespace AudioStuff
             //Console.WriteLine(" Scan_CrossCorrelation(double[,] acousticM)");
             //calculate ranges of templates etc
             int fLength = this.features.Length;
-            int sWidth = acousticM.GetLength(0);
-            int sHeight = acousticM.GetLength(1);
-            if (fLength != sHeight) throw new Exception("WARNING!! FV Length != height of acoustic matrix. " + fLength + " != " + sHeight);
+            int rows = acousticM.GetLength(0);
+            int cols = acousticM.GetLength(1);
+            if (fLength != cols) throw new Exception("WARNING!! FV Length != height of acoustic matrix. " + fLength + " != " + cols);
 
 
-            double[] scores = new double[sWidth];
-            double avScore = 0.0;
-            for (int r = 0; r < sWidth; r++)//scan over sonogram
+            double[] scores = new double[rows];
+        //    double avScore = 0.0;
+            for (int r = 0; r < rows; r++)//scan over sonogram
             {
-                double[] aV = DataTools.GetRow(acousticM, r);
-                double ccc = CrossCorrelation(aV);  //cross-correlation coeff
+                double[] acousticVector = DataTools.GetRow(acousticM, r);
+                double ccc = CrossCorrelation(acousticVector);  //cross-correlation coeff
                 scores[r] = ccc;
-                avScore += ccc;
+        //        avScore += ccc;
             }//end of loop over sonogram
 
-            avScore /= sWidth;
-            int edge = 4;
-            for (int x = 0; x < edge; x++) scores[x] = avScore;
-            for (int x = (sWidth - edge - 1); x < sWidth; x++) scores[x] = avScore;
+        //    avScore /= rows;
+        //    int edge = 4;
+        //    for (int x = 0; x < edge; x++) scores[x] = avScore;
+        //    for (int x = (rows - edge - 1); x < rows; x++) scores[x] = avScore;
             //DataTools.WriteMinMaxOfArray(" Min/max of scores", scores);
 
             double[] zscores = NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);
@@ -294,6 +295,8 @@ namespace AudioStuff
                 end = start+ range;
             }
             int indexCount = range / interval;
+            Console.WriteLine("\tstart=" + start + ",  End=" + end + ",  Duration= " + range + "frames");
+            Console.WriteLine("indexCount=" + indexCount);
             int[] indices = new int[indexCount];
             for (int i = 0; i < indexCount; i++) indices[i] = start + (i * interval);
             return indices;
@@ -349,9 +352,9 @@ namespace AudioStuff
 
             FeatureVector newFV = new FeatureVector(avVector, newID);
             newFV.SourceFile = fvs[0].SourceFile; //assume all FVs have same source file
-            //construct an array of frame indices
-            int[] indices = new int[fvCount];
-            for (int i = 0; i < fvCount; i++) indices[i] = fvs[i].FrameIndices[0]; //assume all FVs originate from single frame
+            //combine the original frame indices into comma separated integers
+            string indices = fvs[0].FrameIndices;
+            for (int i = 1; i < fvCount; i++) indices = indices + ","+fvs[i].FrameIndices; //assume all FVs originate from single frame
             newFV.FrameIndices = indices;
 
             return newFV;

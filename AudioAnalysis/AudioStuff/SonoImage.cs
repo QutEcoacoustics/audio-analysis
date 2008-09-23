@@ -14,16 +14,13 @@ namespace AudioStuff
 {
 
 
-    public enum TrackType { none, energy, zeroCrossings, score }
+    public enum TrackType { none, energy, zeroCrossings, score, hits }
 
 
 
     public sealed class SonoImage
     {
-
-        public const double zScoreMax = 8.0; //max SDs shown in score track of image
         public const int    scaleHt   = 10;   //pixel height of the top and bottom time scales
-        public const int    trackHt   = 50;   //pixel height of the score tracks
 
         private int sf; //sample rate or sampling frequency
         private int NyquistF = 0;  //max frequency = Nyquist freq = sf/2
@@ -32,25 +29,44 @@ namespace AudioStuff
         private double recordingLength; //length in seconds 
         private double scoreThreshold;
         private bool addGrid;
-
         private int topScanBin;  //top Scan Bin i.e. the index of the bin
         private int bottomScanBin; //bottom Scan Bin
 
         private SonogramType sonogramType;
         private bool doMelScale;
-        private TrackType trackType;
+        private ArrayList tracks;
+        public static bool Verbose = false;
+        //colors for tracks
+        public static Color[] TrackColors = {Color.White, Color.Red, Color.Orange, Color.Cyan, Color.OrangeRed, Color.Pink, Color.Salmon, Color.Tomato, Color.DarkRed, Color.Purple, 
+                                          /*Color.AliceBlue,*/ /*Color.Aqua, Color.Aquamarine, Color.Azure, Color.Bisque,*/
+                             Color.Blue, Color.BlueViolet, /*Color.Brown, Color.BurlyWood,*/ Color.CadetBlue, /*Color.Chartreuse,*/ 
+                             Color.Chocolate, /*Color.Coral,*/ /*Color.CornflowerBlue,*/ /*Color.Cornsilk,*/ Color.Crimson, Color.DarkBlue, 
+                             Color.DarkCyan, Color.DarkGoldenrod, Color.DarkGray, Color.DarkGreen, Color.DarkKhaki, Color.DarkMagenta, 
+                             Color.DarkOliveGreen, Color.DarkOrange, Color.DarkOrchid, Color.DarkSalmon, Color.DarkSeaGreen, 
+                             Color.DarkSlateBlue, Color.DarkSlateGray, Color.DarkTurquoise, Color.DarkViolet, Color.DeepPink, Color.DeepSkyBlue, 
+                             Color.DimGray, Color.DodgerBlue, Color.Firebrick, Color.ForestGreen, Color.Fuchsia, 
+                             Color.Gainsboro, Color.Gold, Color.Goldenrod, /*Color.Gray,*/ Color.Green, /*Color.GreenYellow,*/ 
+                             Color.Honeydew, Color.HotPink, Color.IndianRed, Color.Indigo, /*Color.Khaki,*/ Color.Lavender, 
+                             /*Color.LavenderBlush,*/ Color.LawnGreen, /*Color.LemonChiffon,*/ Color.Lime, 
+                             Color.LimeGreen, /*Color.Linen,*/ Color.Magenta, Color.Maroon, Color.MediumAquamarine, Color.MediumBlue, 
+                             /*Color.MediumOrchid,*/ Color.MediumPurple, /*Color.MediumSeaGreen,*/ Color.MediumSlateBlue, Color.MediumSpringGreen, 
+                             Color.MediumTurquoise, Color.MediumVioletRed, Color.MidnightBlue, /*Color.MistyRose,*/ /*Color.Moccasin,*/ 
+                             Color.Navy, /*Color.OldLace,*/ Color.Olive, /*Color.OliveDrab,*/ 
+                             /*Color.Orchid, Color.PaleVioletRed, Color.PapayaWhip, */
+                             /*Color.PeachPuff,*/ /*Color.Peru,*/ Color.Plum, /*Color.PowderBlue,*/ Color.RosyBrown, 
+                             Color.RoyalBlue, Color.SaddleBrown, /*Color.SandyBrown,*/ Color.SeaGreen, /*Color.Sienna,*/ 
+                             /*Color.Silver,*/ Color.SkyBlue, Color.SlateBlue, /*Color.SlateGray,*/ Color.SpringGreen, Color.SteelBlue, 
+                             /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Turquoise, Color.Violet, /*Color.Wheat,*/ 
+                             /*Color.Yellow,*/ Color.YellowGreen,  Color.Black};
 
-        private double[] decibels;
-        private double minDecibelReference;
-        private double maxDecibelReference;
-        private double SegmentationThreshold_k1;
-        private double SegmentationThreshold_k2;
-        private int[] zeroCrossings;
-        private int[] sigState;
 
 
 
-        public SonoImage(Sonogram sonogram, TrackType trackType)
+        /// <summary>
+        /// CONSTRUCTOR 1
+        /// </summary>
+        /// <param name="sonogram"></param>
+        public SonoImage(Sonogram sonogram)
         {
             SonoConfig state = sonogram.State;
             this.sf = state.SampleRate;
@@ -66,19 +82,14 @@ namespace AudioStuff
 
             this.sonogramType = state.SonogramType;
             this.doMelScale = state.DoMelScale;
-            this.trackType = trackType;
-
-            this.decibels = sonogram.Decibels;
-            this.minDecibelReference = state.MinDecibelReference;
-            this.maxDecibelReference = state.MaxDecibelReference;
-            this.SegmentationThreshold_k1 = state.SegmentationThreshold_k1;
-            this.SegmentationThreshold_k2 = state.SegmentationThreshold_k2;
-            this.zeroCrossings = sonogram.ZeroCross;
-            this.sigState = sonogram.SigState;
-            //Console.WriteLine("SonoImage.sonogramType=" + this.sonogramType);
+            SonoImage.Verbose = (state.Verbosity>0);
         }
-
-        public SonoImage(SonoConfig state, SonogramType sonogramType, TrackType trackType)
+        /// <summary>
+        /// CONSTRUCTOR 2
+        /// </summary>
+        /// <param name="state"></param>
+        /// <param name="sonogramType"></param>
+        public SonoImage(SonoConfig state, SonogramType sonogramType)
         {
             this.sf = state.SampleRate;
             this.NyquistF = this.sf / 2; //max frequency
@@ -91,7 +102,13 @@ namespace AudioStuff
             this.scoreThreshold = state.ZScoreThreshold;
 
             this.sonogramType = sonogramType;
-            this.trackType = trackType;
+            SonoImage.Verbose = (state.Verbosity > 0);
+        }
+
+        public void AddTrack(Track track)
+        {
+            if (tracks == null) tracks = new ArrayList();
+            this.tracks.Add(track);
         }
 
 
@@ -124,7 +141,7 @@ namespace AudioStuff
         public Bitmap CreateBitMapOfTemplate(double[,] matrix)
         {
             this.addGrid = false;
-            return CreateBitmap(matrix, null);
+            return CreateBitmap(matrix);
         }
 
         public Bitmap CreateBitMapOfTemplate(double[] featureVector)
@@ -150,10 +167,10 @@ namespace AudioStuff
                 for (int c = 0; c < avLength; c++) M[r, c] = featureVector[(2 * avLength)+c];
             }
 
-            return CreateBitmap(M, null);
+            return CreateBitmap(M);
         }
 
-        public Bitmap CreateBitmap(double[,] matrix, double[] dataArray)
+        public Bitmap CreateBitmap(double[,] matrix)
         {
             int width   = matrix.GetLength(0); //number of spectra in sonogram
             int sHeight = matrix.GetLength(1); //number of freq bins in sonogram
@@ -178,11 +195,10 @@ namespace AudioStuff
 
             //calculate total height of the bmp
             int totalHt = imageHt;
-            if (this.addGrid)
-            {
-                totalHt = scaleHt + imageHt + scaleHt;
-                if (this.trackType != TrackType.none) totalHt += trackHt;
-            }
+            if (this.addGrid) totalHt = scaleHt + imageHt + scaleHt;
+            if (this.tracks != null) foreach (Track track in this.tracks) totalHt += track.Height;
+
+
 
             Bitmap bmp = new Bitmap(width, totalHt, PixelFormat.Format24bppRgb);
             //bmp = AddSonogram(bmp, sonogram, binHt, unsafePixels);
@@ -191,14 +207,8 @@ namespace AudioStuff
             if (!addGrid) return bmp;
             bmp = Add1kHzLines(bmp);
             bmp = AddXaxis(bmp);
-            if (this.trackType == TrackType.score) AddScoreTrack(bmp, dataArray);  //add a score track
-            else if (this.trackType == TrackType.energy) AddDecibelTrack(bmp, this.decibels);
-            else if (this.trackType == TrackType.zeroCrossings)
-            {
-                double[] zxs = DataTools.normalise(this.zeroCrossings);
-                zxs = DataTools.Normalise(zxs, this.minDecibelReference, this.maxDecibelReference);
-                AddDecibelTrack(bmp, zxs);
-            }
+            if (SonoImage.Verbose) Console.WriteLine("\tNumber of tracks=" + this.tracks.Count);
+            if (this.tracks != null) foreach (Track track in this.tracks) track.DrawTrack(bmp);
             return bmp;
         }
 
@@ -435,7 +445,7 @@ namespace AudioStuff
             Color gray  = Color.Gray;
             Color white = Color.White;
             Color c = white;
-            int offset = height -1 - trackHt; //offset for the lower x-axis tics
+            int offset = height -1 - Track.DefaultHeight; //offset for the lower x-axis tics
 
             for (int x = 0; x < width; x++)
             {
@@ -468,7 +478,7 @@ namespace AudioStuff
             //calculate height of the sonogram
             int sHeight = height;
             if(addGrid) sHeight -= (SonoImage.scaleHt + SonoImage.scaleHt);
-            if (this.trackType != TrackType.none) sHeight -= (SonoImage.trackHt);
+            if (this.tracks.Count != 0) sHeight -= (Track.DefaultHeight);
 
             int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
             if (this.doMelScale) vScale = CreateMelYaxis(kHz, sHeight); 
@@ -484,97 +494,6 @@ namespace AudioStuff
         }//end method Add1kHzLines()
 
 
-
-        /// <summary>
-        /// This method assumes that the passed array is of zScores, min=0.0, max = approx 8-16.
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="scoreArray"></param>
-        /// <returns></returns>
-        public Bitmap AddScoreTrack(Bitmap bmp, double[] scoreArray)
-        {
-            int width  = bmp.Width;
-            int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
-            //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
-            //Console.WriteLine("height=" + height);
-            int offset = height - SonoImage.trackHt;
-            Color gray = Color.Gray;
-            Color white = Color.White;
-
-
-            for (int x = 0; x < width; x++)
-            {
-                int id = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * scoreArray[x] / SonoImage.zScoreMax);
-                if (id < 0) id = 0;
-                else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
-                //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
-            }
-
-            //add in horizontal threshold significance line
-            int lineID = (int)(SonoImage.trackHt * (1 - (this.scoreThreshold / SonoImage.zScoreMax)));
-            for (int x = 0; x < width; x++) bmp.SetPixel(x, offset + lineID, gray);
-
-            return bmp;
-        }
-
-
-        /// <summary>
-        /// This method assumes that the passed decibel array has zero minimum bounds determined by constants
-        /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
-        /// </summary>
-        /// <param name="bmp"></param>
-        /// <param name="scoreArray"></param>
-        /// <returns></returns>
-        public Bitmap AddDecibelTrack(Bitmap bmp, double[] array)
-        {
-            
-            int width  = bmp.Width;
-            int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
-
-            int offset = height - SonoImage.trackHt; //row id offset for placing track pixels
-            Color white = Color.White;
-            double range = this.maxDecibelReference - this.minDecibelReference;
-            //Console.WriteLine("range=" + range + "  minReference=" + minReference + "  maxReference=" + maxReference);
-            Color[] stateColors = { Color.White, Color.Green, Color.Red };
-
-            for (int x = 0; x < width; x++)
-            {
-                double norm = (array[x] - this.minDecibelReference) / range;
-                int id = SonoImage.trackHt - 1 - (int)(SonoImage.trackHt * norm);
-                if (id < 0) id = 0;
-                else if (id > SonoImage.trackHt) id = SonoImage.trackHt;
-                //paint white and leave a black vertical bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
-
-            }
-
-            //display vocalisation state and thresholds used to determine endpoints
-            double v1 = this.SegmentationThreshold_k1 / range;
-            int k1 = SonoImage.trackHt - (int)(SonoImage.trackHt * v1);
-            double v2 = this.SegmentationThreshold_k2 / range;
-            int k2 = SonoImage.trackHt - (int)(SonoImage.trackHt * v2);
-            //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
-            if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
-            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
-            int y1 = offset + k1;
-            if (y1 >= height) y1 = height - 1;
-            int y2 = offset + k2;
-            if (y2 >= height) y2 = height - 1;
-            for (int x = 0; x < width; x++)
-            {
-                bmp.SetPixel(x, y1, Color.Orange);
-                bmp.SetPixel(x, y2, Color.Lime);
-
-                //put state as top four pixels
-                Color col = stateColors[this.sigState[x]];
-                bmp.SetPixel(x, offset, col);
-                bmp.SetPixel(x, offset + 1, col);
-                bmp.SetPixel(x, offset + 2, col);
-                bmp.SetPixel(x, offset + 3, col);
-            }
-            return bmp;
-        }
 
 
 
@@ -658,10 +577,166 @@ namespace AudioStuff
             return bmp;
         }
 
+
+    }// end class SonoImage
+
+
+
+    public sealed class Track
+    {
+        public const double zScoreMax = 8.0; //max SDs shown in score track of image
+        public const int DefaultHeight = 50;   //pixel height of a track
+
+
+
+        private int height = DefaultHeight;
+        public int Height { get { return height; } set { height = value; } }
+        private TrackType trackType;
+        public TrackType TrackType { get { return trackType; } set { trackType = value; } }
+        private int[] intData = null;
+        private double[] doubleData = null;
+
+        public double MinDecibelReference { set; get; }
+        public double MaxDecibelReference { set; get; }
+        public double SegmentationThreshold_k1 { set; get; }
+        public double SegmentationThreshold_k2 { set; get; }
+
+        public double ScoreThreshold { set; get; }
+
+
+
+
+        public Track(TrackType type, int[] data)
+        {
+            this.trackType = type;
+            this.intData = data;
+            if(SonoImage.Verbose)Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
+        }
+        public Track(TrackType type, double[] data)
+        {
+            this.trackType = type;
+            this.doubleData = data;
+            if (SonoImage.Verbose) Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
+        }
+
+        public void SetIntArray(int[] data)
+        {
+            this.intData = data;
+        }
+
+        public void DrawTrack(Bitmap bmp)
+        {
+            if (SonoImage.Verbose) Console.WriteLine("\tDrawing track type =" + this.trackType);
+            if (this.TrackType == TrackType.score) AddScoreTrack(bmp);  //add a score track
+            else if (this.TrackType == TrackType.energy) AddDecibelTrack(bmp);
+        }
+
+        /// <summary>
+        /// This method assumes that the passed data array is of zScores, min=0.0, max = approx 8-16.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        public Bitmap AddScoreTrack(Bitmap bmp)
+        {
+            int bmpWidth = bmp.Width;
+            int bmpHt = bmp.Height;
+            //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
+            //Console.WriteLine("height=" + height);
+            int offset  = bmpHt - Track.DefaultHeight;
+            Color gray  = Color.Gray;
+            Color white = Color.White;
+            Color red   = Color.Red;
+            bool intDataExists = ((intData != null) && (intData.Length != 0));
+            if ((!intDataExists)) Console.WriteLine("#####WARNING!! AddScoreTrack(Bitmap bmp):- Integer data does not exists!");
+
+
+            for (int x = 0; x < bmpWidth; x++)
+            {
+                int id = this.Height - 1 - (int)(this.Height * doubleData[x] / Track.zScoreMax);
+                if (id < 0) id = 0;
+                else if (id > this.Height) id = this.Height;
+                //paint white and leave a black vertical histogram bar
+                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
+                //paint in the symbol colour derived from symbol ID
+                if ((intDataExists) && (intData[x] != 0))
+                {
+                    for (int z = 0; z < 8; z++) bmp.SetPixel(x, offset + z, SonoImage.TrackColors[intData[x]]);  //add in hits
+                }
+            }
+
+            
+            //add in horizontal threshold significance line
+            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / Track.zScoreMax)));
+            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, offset + lineID, gray);
+
+            return bmp;
+        }
+
+        /// <summary>
+        /// This method assumes that the passed decibel array has zero minimum bounds determined by constants
+        /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <param name="scoreArray"></param>
+        /// <returns></returns>
+        public Bitmap AddDecibelTrack(Bitmap bmp)
+        {
+
+            int width = bmp.Width;
+            int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
+
+            int offset = height - Track.DefaultHeight; //row id offset for placing track pixels
+            Color white = Color.White;
+            double range = this.MaxDecibelReference - this.MinDecibelReference;
+            //Console.WriteLine("range=" + range + "  minRef=" + this.MinDecibelReference + "  maxRef=" + this.MaxDecibelReference);
+
+            Color[] stateColors = { Color.White, Color.Green, Color.Red };
+
+            for (int x = 0; x < width; x++)
+            {
+                double norm = (doubleData[x] - this.MinDecibelReference) / range;
+                int id = Track.DefaultHeight - 1 - (int)(Track.DefaultHeight * norm);
+                if (id < 0) id = 0;
+                else if (id > Track.DefaultHeight) id = Track.DefaultHeight;
+                //paint white and leave a black vertical bar
+                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
+
+            }
+
+            //display vocalisation state and thresholds used to determine endpoints
+            double v1 = this.SegmentationThreshold_k1 / range;
+            int k1 = Track.DefaultHeight - (int)(Track.DefaultHeight * v1);
+            double v2 = this.SegmentationThreshold_k2 / range;
+            int k2 = Track.DefaultHeight - (int)(Track.DefaultHeight * v2);
+            //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
+            if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
+            if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
+            int y1 = offset + k1;
+            if (y1 >= height) y1 = height - 1;
+            int y2 = offset + k2;
+            if (y2 >= height) y2 = height - 1;
+            for (int x = 0; x < width; x++)
+            {
+                bmp.SetPixel(x, y1, Color.Orange);
+                bmp.SetPixel(x, y2, Color.Lime);
+
+                //put state as top four pixels
+                Color col = stateColors[this.intData[x]];
+                bmp.SetPixel(x, offset, col);
+                bmp.SetPixel(x, offset + 1, col);
+                bmp.SetPixel(x, offset + 2, col);
+                bmp.SetPixel(x, offset + 3, col);
+            }
+            return bmp;
+        }
+
+
+
+
         public static TrackType GetTrackType(string typeName)
         {
             TrackType type = TrackType.none; //the default
-            if ((typeName == null) || (typeName == "")) return TrackType.none; 
+            if ((typeName == null) || (typeName == "")) return TrackType.none;
             if (typeName.StartsWith("energy")) return TrackType.energy;
             if (typeName.StartsWith("zeroCrossings")) return TrackType.zeroCrossings;
             if (typeName.StartsWith("score")) return TrackType.score;
@@ -669,6 +744,7 @@ namespace AudioStuff
         }
 
 
-    }// end class SonoImage
+    
+    }//end class Track
 
 }

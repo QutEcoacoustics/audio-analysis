@@ -24,38 +24,37 @@ namespace TowseyLib
         /// <param name="hits"></param>
         /// <param name="window"></param>
         /// <param name="thresholdZ"></param>
+        /// <param name="thresholdCount"></param>
         /// <returns></returns>
-        public static double[] AnalyseClustersOfHits(int[] hits, int window, double thresholdZ, int thresholdCount)
+        public static void AnalyseClustersOfHits(int[] hits, int window, double thresholdZ, int thresholdCount,
+                                                out double[] zScores, out double expectedHits, out double sd)
         {
             int frameCount = hits.Length;
             int hitCount = DataTools.CountPositives(hits);
 
-            double expectedHits = hitCount * window / frameCount;
-            double sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
+            expectedHits = (double)hitCount * window / (double)frameCount;
+            sd = Math.Sqrt(expectedHits); //assume Poisson Distribution
 
             //Console.WriteLine("hitCount="+hitCount+"  expectedHits = " + expectedHits + "+/-" + sd+"  thresholdSum="+thresholdSum);
-            int offset = window / 2;
+            int offset = (int)(window * 0.5); //assign score to position in window
             int sum = 0;
-            for (int i = 0; i < window; i++) if (hits[i] == 1) sum++;  //set up the song window
+            for (int i = 0; i < window; i++) if (hits[i] > 0) sum++;  //set up the song window
 
 
-            //now calculate z-scores for the number of syllable hits in a songwindow
-            double[] zScores = new double[frameCount];
+            //now calculate z-scores for the number of syllable hits in a window
+            zScores = new double[frameCount];
             for (int i = window; i < frameCount; i++)
             {
                 if (sum < thresholdCount)
                 {
-                    zScores[i - offset] = 0.0;  //not enough hits to constitute a song
-                    sum = sum - hits[i - window] + hits[i]; //move the songwindow
-                    continue;
+                    zScores[i - offset] = -10.0;  //not enough hits to constitute a cluster - set ascore to neg value
                 }
-
-                zScores[i - offset] = (sum - expectedHits) / sd;
-                if (zScores[i - offset] < thresholdZ) zScores[i - offset] = 0.0;
+                else
+                {
+                    zScores[i - offset] = (sum - expectedHits) / sd;
+                }
                 sum = sum - hits[i - window] + hits[i]; //move the songwindow
-                //Console.WriteLine(zScores[i - offset] + " sum=" + sum);
             }
-            return zScores;
         }
 
 

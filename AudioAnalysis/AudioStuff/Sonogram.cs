@@ -16,7 +16,7 @@ namespace AudioStuff
         public const int binWidth = 1000; //1 kHz bands for calculating acoustic indices 
 
         //constants for analysing the logEnergy array for signal segmentation
-        public const double minLogEnergy = -6.0;        // typical noise value for BAC2 recordings = -4.5
+        public const double minLogEnergy = -7.0;        // typical noise value for BAC2 recordings = -4.5
         public const double maxLogEnergy = -0.60206;    // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double maxLogEnergy = -0.444;    // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
         //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
@@ -264,6 +264,14 @@ namespace AudioStuff
             int minPulse = (int)(this.State.minPulseDuration / this.State.FrameOffset); //=2 frames is min vocal length
             //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
             this.sigState = Speech.VocalizationDetection(this.decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+            this.State.FractionOfHighEnergyFrames = Speech.FractionHighEnergyFrames(this.decibels, k2);
+            if (this.State.FractionOfHighEnergyFrames > 0.8)
+            {
+                Console.WriteLine("\n\t################### Sonogram.Make(WavReader wav): WARNING ##########################################");
+                Console.WriteLine("\t################### This is a high energy recording. The fraction of high energy frames = "
+                                                                + this.State.FractionOfHighEnergyFrames.ToString("F2") + " > 80%");
+                Console.WriteLine("\t################### Noise reduction algorithm may not work well in this instance!\n");
+            }
 
             //generate the spectra of FFT AMPLITUDES
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
@@ -422,7 +430,11 @@ namespace AudioStuff
                 //m = Speech.MelFilterbank(m, this.State.FilterbankCount, Nyquist);  //using the Matlab algorithm
             }
             m = Speech.DecibelSpectra(m);
-            if (this.State.DoNoiseReduction) m = ImageTools.NoiseReduction(m);
+            if (this.State.DoNoiseReduction)
+            {
+                if (this.state.Verbosity > 0) Console.WriteLine("\t... doing noise reduction.");
+                m = ImageTools.NoiseReduction(m); //Mel scale conversion should be done before noise reduction
+            }
             return m;
         }
 
@@ -670,6 +682,7 @@ namespace AudioStuff
             Console.WriteLine(" Freq Bin Width  = " + (this.state.NyquistFreq / (double)this.state.FreqBinCount).ToString("F1") + " Hz");
             Console.Write(    " Min Frame Noise = " + this.State.FrameNoise_dB.ToString("F2")+" dB");
             Console.WriteLine("\tS/N Ratio = " + this.State.Frame_SNR.ToString("F2") + " dB (maxFrameLogEn-minFrameLogEn)");
+            Console.WriteLine(" Fraction of high energy frames (above k2 threshold) = " + this.state.FractionOfHighEnergyFrames.ToString("F2"));
             if (this.state.doFreqBandAnalysis)
             {
                 Console.Write(" Min FBand Noise = " + this.State.FreqBandNoise_dB.ToString("F2") + " dB");
@@ -736,12 +749,54 @@ namespace AudioStuff
             {
                 throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
             }
-            TrackType trackType = TrackType.score;
-            if (zscores == null) trackType = TrackType.energy;
-            //if (zscores == null) trackType = TrackType.zeroCrossings;
 
-            SonoImage image = new SonoImage(this, trackType);
-            Bitmap bmp = image.CreateBitmap(matrix, zscores);
+            SonoImage image = new SonoImage(this);
+
+            if (zscores == null)
+            {
+                Track track = new Track(TrackType.energy, this.Decibels);
+                track.MinDecibelReference = state.MinDecibelReference;
+                track.MaxDecibelReference = state.MaxDecibelReference;
+                track.SegmentationThreshold_k1 = state.SegmentationThreshold_k1;
+                track.SegmentationThreshold_k2 = state.SegmentationThreshold_k2;
+                track.SetIntArray(this.SigState);
+                image.AddTrack(track);
+            }
+            else
+            {
+                Track track = new Track(TrackType.score, zscores);
+                track.ScoreThreshold = state.ZScoreThreshold;
+                image.AddTrack(track);
+            }
+
+            Bitmap bmp = image.CreateBitmap(matrix);
+
+            string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
+            this.state.BmpFName = fName;
+            bmp.Save(fName);
+        }
+
+
+        public void SaveImage(double[,] matrix, int[] hits, double[] zscores)
+        {
+            if(hits==null) SaveImage(matrix, zscores);
+            if (matrix == null)
+            {
+                throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
+            }
+
+
+            this.State.BmpFName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
+            if(this.State.Verbosity!=0)Console.WriteLine("\n Image in file  = " + this.State.BmpFName);
+
+            SonoImage image = new SonoImage(this);
+
+                Track track = new Track(TrackType.score, zscores);
+                track.ScoreThreshold = state.ZScoreThreshold;
+                track.SetIntArray(hits);
+                image.AddTrack(track);
+
+            Bitmap bmp = image.CreateBitmap(matrix);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
@@ -752,10 +807,9 @@ namespace AudioStuff
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col)
         {
             this.State.SonogramType = SonogramType.spectral; //image is linear scale not mel scale
-            TrackType trackType     = TrackType.none;
 
-            SonoImage image = new SonoImage(this, trackType);
-            Bitmap bmp = image.CreateBitmap(matrix, null);
+            SonoImage image = new SonoImage(this);
+            Bitmap bmp = image.CreateBitmap(matrix);
             if (shapes != null) bmp = image.AddShapeBoundaries(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -767,10 +821,9 @@ namespace AudioStuff
         public void SaveImageOfSolids(double[,] matrix, ArrayList shapes, Color col)
         {
             this.State.SonogramType = SonogramType.spectral; //image is linear scale not mel scale
-            TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this, trackType);
-            Bitmap bmp = image.CreateBitmap(matrix, null);
+            SonoImage image = new SonoImage(this);
+            Bitmap bmp = image.CreateBitmap(matrix);
             if (shapes != null) bmp = image.AddShapeSolids(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -781,10 +834,9 @@ namespace AudioStuff
         public void SaveImageOfCentroids(double[,] matrix, ArrayList shapes, Color col)
         {
             this.State.SonogramType = SonogramType.spectral; //image is linear scale not mel scale
-            TrackType trackType = TrackType.none;
 
-            SonoImage image = new SonoImage(this, trackType);
-            Bitmap bmp = image.CreateBitmap(matrix, null);
+            SonoImage image = new SonoImage(this);
+            Bitmap bmp = image.CreateBitmap(matrix);
             if (shapes != null) bmp = image.AddCentroidBoundaries(bmp, shapes, col);
 
             string fName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
@@ -795,9 +847,9 @@ namespace AudioStuff
 
         public void SaveImage(string opDir, double[] zscores, SonogramType sonogramType)
         {
-            TrackType trackType = TrackType.none;
-            SonoImage image = new SonoImage(state, sonogramType, trackType);
-            Bitmap bmp = image.CreateBitmap(this.amplitudM, zscores);
+            SonoImage image = new SonoImage(state, sonogramType);
+            Track track = new Track(TrackType.score, zscores);
+            Bitmap bmp = image.CreateBitmap(this.amplitudM);
 
             string fName = opDir + "//" + this.state.WavFName + this.state.BmpFileExt;
             this.state.BmpFName = fName;
@@ -895,7 +947,8 @@ namespace AudioStuff
         public int Verbosity { get; set; }
 
         //files and directories
-        public string TemplatesDir { get; set; }
+        public string TemplateParentDir { get; set; } //parent directory for all templates
+        public string TemplateDir { get; set; }       //contains a single template for specific call ID
         public string WavFName { get; set; }
         public string WavFileDir { get; set; }
         public string WavFileExt { get; set; }
@@ -937,7 +990,8 @@ namespace AudioStuff
         public double SegmentationThreshold_k2 { get; set; }//dB threshold for recognition of vocalisations
         public double k1_k2Latency { get; set; }            //seconds delay between signal reaching k1 and k2 thresholds
         public double vocalDelay { get; set; }              //seconds delay required to separate vocalisations 
-        public double minPulseDuration { get; set; }        //minimum length of energy pulse - do not use this - 
+        public double minPulseDuration { get; set; }        //minimum length of energy pulse - do not use this
+        public double FractionOfHighEnergyFrames { get; set; }//fraction of frames with energy above SegmentationThreshold_k2
 
         //SPECTRAL ENERGY AND SEGMENTATION PARAMETERS
         public double FreqBandMax_dB { get; set; }
@@ -994,7 +1048,7 @@ namespace AudioStuff
 
         //FEATURE VECTOR PARAMETERS 
         public FV_Source FeatureVectorSource { get; set; }
-        public string[] FeatureVector_SelectedFrames { get; set; } //store frames as strings for flexibility
+        public string[] FeatureVector_SelectedFrames { get; set; } //store frame IDs as string array
         public int MarqueeStart { get; set; }
         public int MarqueeEnd { get; set; }
         public FV_Extraction FeatureVectorExtraction { get; set; }
@@ -1007,13 +1061,14 @@ namespace AudioStuff
         public string[] FeatureVectorPaths { get; set; }
         public string[] FVSourceFiles { get; set; }
         public string DefaultNoiseFVFile { get; set; }
+        public int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER
+
 
         //THE LANGUAGE MODEL
-        public bool HighSensitivitySearch; //USE_HIGH_SENSITIVITY_SEARCH will increase false positives i.e. reduce specificity
         public int WordCount { get; set; }
         public string[] Words { get; set; }
         public TheGrammar GrammarModel { get; set; }
-        public double TypicalSongDuration { get; set; }
+        public double SongWindow { get; set; } //window duration in seconds - used to calculate statistics
         public int WordPeriodicity_ms { get; set; }
         public int WordPeriodicity_frames { get; set; }
         public int WordPeriodicity_NH_ms { get; set; }
@@ -1034,6 +1089,7 @@ namespace AudioStuff
         public int CallID { get; set; }
         public string CallName { get; set; }
         public string CallComment { get; set; }
+        public string FileDescriptor { get; set; }
         public string SourceFStem { get; set; }
         public string SourceFName { get; set; }
         public string SourceFPath { get; set; }
@@ -1047,7 +1103,7 @@ namespace AudioStuff
         public int BlurWindow_time { get; set; }
         public int BlurWindow_freq { get; set; }
         //public bool NormSonogram { get; set; }
-        public int ZscoreSmoothingWindow { get; set; }
+
         public double ZScoreThreshold { get; set; }
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
@@ -1106,7 +1162,7 @@ namespace AudioStuff
             this.Verbosity = cfg.GetInt("VERBOSITY");
 
             //directory and file structure
-            this.TemplatesDir = cfg.GetString("TEMPLATE_DIR");
+            this.TemplateParentDir = cfg.GetString("TEMPLATE_DIR");
             this.WavFileDir = cfg.GetString("WAV_DIR");
             this.SonogramDir = cfg.GetString("SONOGRAM_DIR");
             this.OutputDir = cfg.GetString("OP_DIR");
@@ -1143,7 +1199,7 @@ namespace AudioStuff
             this.DeltaT = cfg.GetInt("DELTA_T"); //frames between acoustic vectors
 
             //sonogram image parameters
-            this.TrackType = SonoImage.GetTrackType(cfg.GetString("TRACK_TYPE"));
+            this.TrackType = Track.GetTrackType(cfg.GetString("TRACK_TYPE"));
             this.AddGrid = cfg.GetBoolean("ADDGRID");
 
             this.MinPercentile = cfg.GetDouble("MIN_PERCENTILE");
