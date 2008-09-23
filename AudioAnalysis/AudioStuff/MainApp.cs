@@ -43,10 +43,10 @@ namespace AudioStuff
             
 
             // directory structure
-            const string iniFPath = @"C:\SensorNetworks\Templates\sonogram.ini";
+            const string iniFPath = @"C:\Users\masonr\Desktop\Templates\sonogram.ini";
             //const string templateDir = @"C:\SensorNetworks\Templates\";
             //const string opDirName = @"C:\SensorNetworks\TestOutput_Exp6\";
-            const string opDirName = @"C:\SensorNetworks\Sonograms\";
+            const string opDirName = @"C:\Users\masonr\Desktop\Sonograms";
             //const string artDirName = @"C:\SensorNetworks\ART\";
             const string wavFExt = WavReader.wavFExt;
 
