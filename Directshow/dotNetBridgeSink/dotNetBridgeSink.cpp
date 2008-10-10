@@ -217,7 +217,7 @@ STDMETHODIMP CdotNetBridgeSinkInputPin::ReceiveCanBlock()
 //
 STDMETHODIMP CdotNetBridgeSinkInputPin::Receive(IMediaSample *pSample)
 {
-	printf(".");
+	//printf(".");
     CheckPointer(pSample,E_POINTER);
 
     CAutoLock lock(m_pReceiveLock);
@@ -226,7 +226,7 @@ STDMETHODIMP CdotNetBridgeSinkInputPin::Receive(IMediaSample *pSample)
     // Has the filter been stopped yet?
     if (!m_pTarget)
 	{
-		printf("f");
+		//printf("f");
 		return NOERROR;
 	}
 
@@ -246,13 +246,13 @@ STDMETHODIMP CdotNetBridgeSinkInputPin::Receive(IMediaSample *pSample)
     if (FAILED(hr))
 		return hr;
 
-	if (pbData[0] == 0x52 && pbData[1] == 0x49)
-		printf("RIFF");
+	/*if (pbData[0] == 0x52 && pbData[1] == 0x49)
+		printf("RIFF");*/
 
 	if (pSample->IsDiscontinuity() == S_OK)
 	{
 		//pSample->GetMediaTime()
-		printf("DISCONT! - %s, %s", (LPCTSTR) CDisp(tStart), (LPCTSTR) CDisp(tStop));
+		//printf("DISCONT! - %s, %s", (LPCTSTR) CDisp(tStart), (LPCTSTR) CDisp(tStop));
 	}
 	//printf("%d\n", pSample->GetActualDataLength());
 	//m_pTarget->Receive(pSample->GetActualDataLength(), pbData);
