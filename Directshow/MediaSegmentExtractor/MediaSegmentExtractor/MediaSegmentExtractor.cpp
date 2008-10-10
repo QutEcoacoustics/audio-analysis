@@ -62,6 +62,8 @@ HRESULT CMediaSegmentExtractor::Receive(IMediaSample *pSample)
                 m_bQualityChanged = TRUE;
             }
 			// S_FALSE + 1 indicates we've finished and can stop the graph
+			if (hr == (S_FALSE + 1))
+				NotifyEvent(EC_USERABORT, S_OK, NULL);
 			return ((S_FALSE + 1) == hr) ? S_FALSE : NOERROR;
         }
     }
@@ -73,6 +75,7 @@ HRESULT CMediaSegmentExtractor::Receive(IMediaSample *pSample)
 
     return hr;
 }
+#include <stdio.h>
 
 HRESULT CMediaSegmentExtractor::Transform(IMediaSample *pSample)
 {
@@ -80,12 +83,13 @@ HRESULT CMediaSegmentExtractor::Transform(IMediaSample *pSample)
 	LONGLONG sampleEndTime = 0;
 	pSample->GetTime(&sampleStartTime, &sampleEndTime);
 
-	// Summary time, for which the sample have to be moved
-	LONGLONG totalDelta = 0;
 	if (sampleEndTime < startTime)
 		return S_FALSE;
 	else if (sampleEndTime > endTime)
+	{
+		m_pOutput->EndOfStream();
 		return S_FALSE + 1;
+	}
 	else if (!startedSending)
 	{
 		startedSending = true;
