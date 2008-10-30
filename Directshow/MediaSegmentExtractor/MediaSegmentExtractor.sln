@@ -4,6 +4,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MediaSegmentExtractor", "Me
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{BC68710E-3C30-4C68-BBE9-4EA05CA7C9AC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioTools", "..\..\AudioTools\AudioTools.csproj", "{6A03A803-AD91-4E12-967E-39DCDB2BB030}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,6 +36,16 @@ Global
 		{BC68710E-3C30-4C68-BBE9-4EA05CA7C9AC}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BC68710E-3C30-4C68-BBE9-4EA05CA7C9AC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{BC68710E-3C30-4C68-BBE9-4EA05CA7C9AC}.Release|Win32.ActiveCfg = Release|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -16,7 +16,8 @@ namespace Test
 		[MTAThread]
 		static void Main(string[] args)
 		{
-			using (target = new FileStream(@"C:\Users\masonr\Desktop\Joe.mp3", FileMode.Create, FileAccess.Write))
+
+			/*using (target = new FileStream(@"C:\Users\masonr\Desktop\Joe.mp3", FileMode.Create, FileAccess.Write))
 			using (var stream = AudioTools.DShowConverter.ToMp3(@"C:\Users\masonr\Desktop\BAC10_20081009-045000.wv", MimeTypes.WavpackMimeType, 
 			//using (var stream = AudioTools.DShowConverter.ToMp3(@"C:\Users\masonr\Desktop\Top_Knoll_-_St_Bees_20081007-163000.wv", MimeTypes.WavpackMimeType, 
 				500000, 600000))
@@ -41,7 +42,9 @@ namespace Test
 
 			GC.Collect();
 			Console.WriteLine("Done");
-			Console.ReadLine();
+			Console.ReadLine();*/
+
+			DShowConverter.GetAudioInfo(@"C:\Users\masonr\Desktop\Top_Knoll_-_St_Bees_20081029-173000.mp3", MimeTypes.Mp3MimeType);
 		}
 
 		static int count;
