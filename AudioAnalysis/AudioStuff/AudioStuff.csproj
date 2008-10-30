@@ -15,13 +15,14 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>2.0</OldToolsVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;LOGTOCONSOLE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -30,13 +31,16 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;LOGTOCONSOLE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
@@ -45,6 +49,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FeatureVector.cs" />
+    <Compile Include="Log.cs" />
+    <Compile Include="ParameterClasses.cs" />
     <Compile Include="SonoImage.cs" />
     <Compile Include="Template.cs" />
     <Compile Include="Classifier.cs" />
@@ -71,8 +77,13 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Sonogram.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
+      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
+      <Name>AudioTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NeuralNets\NeuralNets.csproj">
       <Project>{3453DB43-46DA-45E6-AD22-48BC081BC738}</Project>
       <Name>NeuralNets</Name>

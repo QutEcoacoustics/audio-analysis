@@ -4,7 +4,6 @@ using System.Text;
 
 namespace TowseyLib
 {
-
     /// <summary>
     /// digital signal processing methods
     /// </summary>
@@ -12,23 +11,15 @@ namespace TowseyLib
     {
         public const double pi = Math.PI;
 
-
-
-
         /// <summary>
         /// Breaks a long audio signal into frames with given step
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="windowSize"></param>
-        /// <param name="step"></param>
-        /// <returns></returns>
         public static double[,] Frames(double[] data, int windowSize, int step)
         {
             if (step < 1)
                 throw new ArgumentException("Frame Step must be at least 1");
             if (step > windowSize)
                 throw new ArgumentException("Frame Step must be <=" + windowSize);
-
 
             int framecount = (data.Length - windowSize) / step; //this truncates residual samples
             if (framecount < 2) throw new ArgumentException("Sonogram width must be at least 2");
@@ -46,10 +37,6 @@ namespace TowseyLib
             } //end matrix
             return frames;
         }
-
-
-
-
 
         public static double[] GetSignal(int sampleRate, double duration, int[] freq)
         {

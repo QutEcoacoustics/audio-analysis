@@ -18,60 +18,92 @@ namespace TowseyLib
         public Configuration(string fName)
         {
             this.fName = fName;
-            this.table = FileTools.ReadPropertiesFile(fName);
+            table = FileTools.ReadPropertiesFile(fName);
         }
 
         public bool ContainsKey(string key)
         {
-            return this.table.ContainsKey(key);
+            return table.ContainsKey(key);
         }
 
         public string GetString(string key)
         {
-            bool keyExists = this.table.ContainsKey(key);
-            if (keyExists) return this.table[key].ToString();
-            else return null;
+            if (table.ContainsKey(key))
+				return table[key].ToString();
+			return null;
         }
+
         public int GetInt(string key)
         {
-            bool keyExists = this.table.ContainsKey(key);
-            if (!keyExists) return -Int32.MaxValue;
+            if (!table.ContainsKey(key))
+				return -Int32.MaxValue;
+
             string value = this.table[key].ToString();
-            if (value == null) return -Int32.MaxValue;
+            if (value == null)
+				return -Int32.MaxValue;
+
             int int32;
-            try
-            {
-                int32 = Int32.Parse(value);
-            }
-            catch(System.FormatException ex)
-            {
-                System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID VALUE=" + value);
-                System.Console.WriteLine(ex);
-                return Int32.MaxValue;
-            }
-                return int32;
+			if (int.TryParse(value, out int32))
+				return int32;
+
+			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
+			System.Console.WriteLine("INVALID VALUE=" + value);
+			return -Int32.MaxValue;
         }
+
+		public int? GetIntNullable(string key)
+		{
+			if (!table.ContainsKey(key))
+				return null;
+
+			string value = this.table[key].ToString();
+			if (value == null)
+				return null;
+
+			int int32;
+			if (int.TryParse(value, out int32))
+				return int32;
+
+			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
+			System.Console.WriteLine("INVALID VALUE=" + value);
+			return null;
+		}
+
         public double GetDouble(string key)
         {
-            bool keyExists = this.table.ContainsKey(key);
-            if (!keyExists) return -Double.MaxValue;
-            string value = this.table[key].ToString();
-            if (value == null) return -Double.MaxValue;
+            if (!table.ContainsKey(key))
+				return -Double.MaxValue;
+
+            string value = table[key].ToString();
+            if (value == null)
+				return -Double.MaxValue;
+
             double d;
-            try
-            {
-                d = Double.Parse(value);
-            }
-            catch (System.FormatException ex)
-            {
-                System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID VALUE=" + value);
-                System.Console.WriteLine(ex);
-                return Double.MaxValue;
-            }
-            return d;
+			if (double.TryParse(value, out d))
+				return d;
+
+			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
+			System.Console.WriteLine("INVALID VALUE=" + value);
+			return -Double.MaxValue;
         }
+
+		public double? GetDoubleNullable(string key)
+		{
+			if (!table.ContainsKey(key))
+				return null;
+
+			string value = table[key].ToString();
+			if (value == null)
+				return null;
+
+			double d;
+			if (double.TryParse(value, out d))
+				return d;
+
+			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
+			System.Console.WriteLine("INVALID VALUE=" + value);
+			return null;
+		}
 
         public bool GetBoolean(string key)
         {

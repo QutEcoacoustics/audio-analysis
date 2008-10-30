@@ -77,14 +77,19 @@ namespace AudioStuff
         /// CONSTRUCTOR 1
         /// Use this constructor when initialising  a sonogram from within a template
         /// </summary>
-        /// <param name="props"></param>
-        /// <param name="wav"></param>
         public Sonogram(SonoConfig state, WavReader wav)
         {
             this.state = state;
             Make(wav);
             if(state.Verbosity > 0) WriteInfo();
         }
+
+		public Sonogram(SonoConfig state, AudioTools.StreamedWavReader wav)
+		{
+			this.state = state;
+			Make(wav);
+			if (state.Verbosity > 0) WriteInfo();
+		}
 
         /// <summary>
         /// CONSTRUCTOR 2
@@ -93,7 +98,7 @@ namespace AudioStuff
         /// <param name="wavFName"></param>
         public Sonogram(string iniFName)
         {
-            state.ReadConfig(iniFName);
+            state.ReadDefaultConfig(iniFName);
         }
 
         /// <summary>
@@ -103,7 +108,7 @@ namespace AudioStuff
         /// <param name="wavFName"></param>
         public Sonogram(string iniFName, string wavPath)
         {
-            state.ReadConfig(iniFName);
+            state.ReadDefaultConfig(iniFName);
             Make(wavPath);
         }
 
@@ -129,7 +134,7 @@ namespace AudioStuff
         /// <returns></returns>
         public Sonogram(string iniFName, string wavPath, byte[] wavBytes)
         {
-            state.ReadConfig(iniFName);
+            state.ReadDefaultConfig(iniFName);
 
             FileInfo fi = new FileInfo(wavPath);
             state.WavFileDir = fi.DirectoryName;
@@ -152,7 +157,7 @@ namespace AudioStuff
         /// <param name="sampleRate"></param>
         public Sonogram(string iniFName, string sigName, double[] rawData, int sampleRate)
         {
-            state.ReadConfig(iniFName);
+            state.ReadDefaultConfig(iniFName);
             state.WavFName = sigName;
             state.WavFileExt = WavReader.wavFExt;
             //state.WavFileExt = "sig";
@@ -298,6 +303,93 @@ namespace AudioStuff
             else
             if (this.State.SonogramType == SonogramType.sobelEdge) this.spectralM = SobelEdgegram(this.amplitudM);
         }
+
+		private void Make(AudioTools.StreamedWavReader wav)
+		{
+			this.state.MinFreq = 0;                     //the default minimum freq (Hz)
+			this.state.NyquistFreq = state.SampleRate / 2;  //Nyquist
+			if (this.state.FreqBand_Min <= 0)
+				this.state.FreqBand_Min = this.state.MinFreq;    //default min of the freq band to be analysed  
+			if (this.state.FreqBand_Max <= 0)
+				this.state.FreqBand_Max = this.state.NyquistFreq;    //default max of the freq band to be analysed
+			if ((this.state.FreqBand_Min > 0) || (this.state.FreqBand_Max < this.state.NyquistFreq))
+				this.state.doFreqBandAnalysis = true;
+
+			this.state.FrameDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
+			this.state.FrameOffset = this.state.FrameDuration * (1 - this.state.WindowOverlap);// duration in seconds
+			this.state.FreqBinCount = this.state.WindowSize / 2; // other half is phase info
+			this.state.MelBinCount = this.state.FreqBinCount; // same has number of Hz bins
+			this.state.FBinWidth = this.state.NyquistFreq / (double)this.state.FreqBinCount;
+			this.state.FrameCount = (int)(this.state.TimeDuration / this.state.FrameOffset);
+			this.state.FramesPerSecond = 1 / this.state.FrameOffset;
+
+			//FRAME WINDOWING
+			int step = (int)(this.state.WindowSize * (1 - this.state.WindowOverlap));
+			double[,] frames = DSP.Frames(wav.GetAllSamples(), this.state.WindowSize, step);
+			this.state.FrameCount = frames.GetLength(0);
+
+			//ENERGY PER FRAME
+			this.frameEnergy = DSP.SignalLogEnergy(frames, Sonogram.minLogEnergy, Sonogram.maxLogEnergy);
+			//Console.WriteLine("FrameNoiseDecibels=" + this.State.FrameNoiseLogEnergy + "  FrameMaxDecibels=" + this.State.FrameMaxLogEnergy);
+
+			//NOISE SUBTRACTION: subtract background noise to produce decibels array in which zero dB = average noise
+			double minEnergyRatio = Sonogram.minLogEnergy - Sonogram.maxLogEnergy;
+			double Q;
+			double min_dB;
+			double max_dB;
+			this.decibels = DSP.NoiseSubtract(this.frameEnergy, out min_dB, out max_dB, minEnergyRatio, Sonogram.noiseThreshold, out Q);
+			this.State.NoiseSubtracted = Q;
+			this.State.FrameNoise_dB = min_dB; //min decibels of all frames 
+			this.State.FrameMax_dB = max_dB;
+			this.State.Frame_SNR = max_dB - min_dB;
+			this.State.MinDecibelReference = min_dB - Q;
+			this.State.MaxDecibelReference = (Sonogram.maxLogEnergy * 10) - Q;
+
+			// ZERO CROSSINGS
+			//this.zeroCross = DSP.ZeroCrossings(frames);
+
+			//DETERMINE ENDPOINTS OF VOCALISATIONS
+			double k1 = this.State.MinDecibelReference + this.State.SegmentationThreshold_k1;
+			double k2 = this.State.MinDecibelReference + this.State.SegmentationThreshold_k2;
+			int k1_k2delay = (int)(this.State.k1_k2Latency / this.State.FrameOffset); //=5  frames delay between signal reaching k1 and k2 thresholds
+			int syllableDelay = (int)(this.State.vocalDelay / this.State.FrameOffset); //=10 frames delay required to separate vocalisations 
+			int minPulse = (int)(this.State.minPulseDuration / this.State.FrameOffset); //=2 frames is min vocal length
+			//Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
+			this.sigState = Speech.VocalizationDetection(this.decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+			this.State.FractionOfHighEnergyFrames = Speech.FractionHighEnergyFrames(this.decibels, k2);
+			if (this.State.FractionOfHighEnergyFrames > 0.8)
+			{
+				Console.WriteLine("\n\t################### Sonogram.Make(WavReader wav): WARNING ##########################################");
+				Console.WriteLine("\t################### This is a high energy recording. The fraction of high energy frames = "
+																+ this.State.FractionOfHighEnergyFrames.ToString("F2") + " > 80%");
+				Console.WriteLine("\t################### Noise reduction algorithm may not work well in this instance!\n");
+			}
+
+			//generate the spectra of FFT AMPLITUDES
+			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
+			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+			this.amplitudM = GenerateAmplitudeSpectra(frames, this.state.WindowFnc, epsilon);
+
+			if (this.state.doFreqBandAnalysis)
+			{
+				int c1 = (int)(this.state.freqBand_Min / this.state.FBinWidth);
+				int c2 = (int)(this.state.freqBand_Max / this.state.FBinWidth);
+				this.amplitudM = DataTools.Submatrix(this.AmplitudM, 0, c1, this.amplitudM.GetLength(0) - 1, c2);
+				//DETERMINE ENERGY IN FFT FREQ BAND
+				this.decibels = FreqBandEnergy(this.amplitudM);
+				//DETERMINE ENDPOINTS OF VOCALISATIONS
+				this.sigState = Speech.VocalizationDetection(this.decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+			}
+
+			//POST-PROCESS to final SPECTROGRAM
+			if (this.State.SonogramType == SonogramType.spectral) this.spectralM = MakeSpectrogram(this.amplitudM);
+			else
+				if (this.State.SonogramType == SonogramType.cepstral) this.cepstralM = MakeCepstrogram(this.amplitudM, this.decibels, this.state.IncludeDelta, this.state.IncludeDoubleDelta);
+				else
+					if (this.State.SonogramType == SonogramType.acousticVectors) this.acousticM = MakeAcousticVectors(this.amplitudM, this.decibels, this.state.IncludeDelta, this.state.IncludeDoubleDelta, this.state.DeltaT);
+					else
+						if (this.State.SonogramType == SonogramType.sobelEdge) this.spectralM = SobelEdgegram(this.amplitudM);
+		}
 
         public double[,] GenerateAmplitudeSpectra(double[,] frames, FFT.WindowFunc w, double epsilon)
         {
@@ -776,6 +868,32 @@ namespace AudioStuff
             bmp.Save(fName);
         }
 
+		public Image GetImage(double[,] matrix, double[] zscores)
+		{
+			if (matrix == null)
+				throw new ArgumentNullException("matrix");
+
+			SonoImage image = new SonoImage(this);
+
+			if (zscores == null)
+			{
+				Track track = new Track(TrackType.energy, this.Decibels);
+				track.MinDecibelReference = state.MinDecibelReference;
+				track.MaxDecibelReference = state.MaxDecibelReference;
+				track.SegmentationThreshold_k1 = state.SegmentationThreshold_k1;
+				track.SegmentationThreshold_k2 = state.SegmentationThreshold_k2;
+				track.SetIntArray(this.SigState);
+				image.AddTrack(track);
+			}
+			else
+			{
+				Track track = new Track(TrackType.score, zscores);
+				track.ScoreThreshold = state.ZScoreThreshold;
+				image.AddTrack(track);
+			}
+
+			return image.CreateBitmap(matrix);
+		}
 
         public void SaveImage(double[,] matrix, int[] hits, double[] zscores)
         {
@@ -803,6 +921,22 @@ namespace AudioStuff
             bmp.Save(fName);
         }
 
+		public Image GetImage(double[,] matrix, int[] hits, double[] zscores)
+		{
+			if (hits == null)
+				return GetImage(matrix, zscores);
+			if (matrix == null)
+				throw new ArgumentNullException("matrix");
+
+			SonoImage image = new SonoImage(this);
+
+			Track track = new Track(TrackType.score, zscores);
+			track.ScoreThreshold = state.ZScoreThreshold;
+			track.SetIntArray(hits);
+			image.AddTrack(track);
+
+			return image.CreateBitmap(matrix);
+		}
 
         public void SaveImage(double[,] matrix, ArrayList shapes, Color col)
         {
@@ -872,11 +1006,11 @@ namespace AudioStuff
             sb.Append(id + Results.spacer); //CALLID
             //sb.Append(DateTime.Now.ToString("u") + spacer); //DATE
             sb.Append(this.State.WavFName.ToString() + Results.spacer); //sonogram FNAME
-            sb.Append(this.State.Date.ToString() + Results.spacer); //sonogram date
+            sb.Append(this.State.Time.ToString("yyyyMMdd") + Results.spacer); //sonogram date
             sb.Append(this.State.DeployName + Results.spacer); //Deployment name
             sb.Append(this.State.TimeDuration.ToString("F2") + Results.spacer); //length of recording
-            sb.Append(this.State.Hour + Results.spacer); //hour when recording made
-            sb.Append(this.State.Minute + Results.spacer); //hour when recording made
+            sb.Append(this.State.Time.Hour + Results.spacer); //hour when recording made
+			sb.Append(this.State.Time.Minute + Results.spacer); //hour when recording made
             sb.Append(this.State.TimeSlot + Results.spacer); //half hour when recording made
 
             sb.Append(this.State.WavMax.ToString("F4") + Results.spacer);
@@ -938,12 +1072,9 @@ namespace AudioStuff
     //***********************************************************************************
     //***********************************************************************************
 
-
-
-    
     public class SonoConfig
     {
-        //GENRAL
+        //GENERAL
         public int Verbosity { get; set; }
 
         //files and directories
@@ -957,12 +1088,9 @@ namespace AudioStuff
         public string BmpFName { get; set; }
         public string BmpFileExt { get; set; }
 
-
         //wav file info
         public string DeployName { get; set; }
-        public string Date { get; set; }
-        public int    Hour { get; set; }
-        public int    Minute { get; set; }
+		public DateTime Time { get; protected set; }
         public int    TimeSlot { get; set; }
         public double WavMax { get; set; }
 
@@ -1044,8 +1172,6 @@ namespace AudioStuff
         private bool includeDoubleDelta;
         public bool IncludeDoubleDelta { get { return includeDoubleDelta; } set { includeDoubleDelta = value; } }
 
-
-
         //FEATURE VECTOR PARAMETERS 
         public FV_Source FeatureVectorSource { get; set; }
         public string[] FeatureVector_SelectedFrames { get; set; } //store frame IDs as string array
@@ -1063,7 +1189,6 @@ namespace AudioStuff
         public string DefaultNoiseFVFile { get; set; }
         public int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER
 
-
         //THE LANGUAGE MODEL
         public int WordCount { get; set; }
         public string[] Words { get; set; }
@@ -1074,7 +1199,6 @@ namespace AudioStuff
         public int WordPeriodicity_NH_ms { get; set; }
         public int WordPeriodicity_NH_frames { get; set; }
 
-
         //BITMAP IMAGE PARAMETERS 
         public bool AddGrid { get; set; }
         public TrackType TrackType { get; set; }
@@ -1083,7 +1207,6 @@ namespace AudioStuff
         public double MaxPercentile { get; set; }
         public double MinCut { get; set; } //power of min percentile
         public double MaxCut { get; set; } //power of max percentile
-
 
         //TEMPLATE PARAMETERS
         public int CallID { get; set; }
@@ -1108,55 +1231,43 @@ namespace AudioStuff
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
 
-
         /// <summary>
         /// converts wave file names into component info 
         /// wave file name have following format: "BAC1_20071008-081607"
         /// </summary>
-        /// <param name="FName"></param>
         public void SetDateAndTime(string fName)
         {
-            if ((fName == null) || (fName.Length == 0))
-            {
-                SetDefaultDateAndTime("noName");
-                return;
-            }
-
-            string[] parts = fName.Split('_');
-            if (parts.Length == 1) 
-            {
-                SetDefaultDateAndTime(fName); 
-                return;
-            }
-            this.DeployName = parts[0];
-            parts = parts[1].Split('-');
-            if (parts.Length == 1)
-            {
-                SetDefaultDateAndTime(fName);
-                return;
-            }
-            this.Date = parts[0];
-            this.Hour = Int32.Parse(parts[1].Substring(0,2));
-            this.Minute = Int32.Parse(parts[1].Substring(2, 2));
-            //############ WARNING!!! THE FOLLOWING LINE MUST BE CONSISTENT WITH TIMESLOT CONSTANT
-            this.TimeSlot = ((this.Hour*60)+Minute)/30; //convert to half hour time slots
+			if (string.IsNullOrEmpty(fName))
+				SetDefaultDateAndTime("noName");
+			else
+			{
+				DateTime value;
+				var s = fName.Substring(fName.LastIndexOf('_') + 1);
+				if (!DateTime.TryParseExact(s, "yyyyMMdd-HHmmss", System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat, System.Globalization.DateTimeStyles.None,
+					out value))
+					SetDefaultDateAndTime(fName);
+				else
+				{
+					Time = value;
+					TimeSlot = ((value.Hour * 60) + value.Minute) / 30; //convert to half hour time slots
+				}
+			}
         }
+
         public void SetDefaultDateAndTime(string name)
         {
-            this.DeployName = name;
-            this.Date = "000000";
-            this.Hour = 0;
-            this.Minute = 0;
-            this.TimeSlot = 0;
+            DeployName = name;
+			Time = default(DateTime);
+            TimeSlot = 0;
         }
         
-        public void ReadConfig(string iniFName)
+        public void ReadDefaultConfig(string iniFName)
         {
             Configuration cfg = new Configuration(iniFName);
-            ReadConfig(cfg);
+            ReadDefaultConfig(cfg);
         }
 
-        public void ReadConfig(Configuration cfg)
+        public void ReadDefaultConfig(Configuration cfg)
         {
             //general parameters
             this.Verbosity = cfg.GetInt("VERBOSITY");
@@ -1208,10 +1319,189 @@ namespace AudioStuff
             this.BlurWindow_time = cfg.GetInt("BLUR_TIME_NEIGHBOURHOOD");
             this.BlurWindow_freq = cfg.GetInt("BLUR_FREQ_NEIGHBOURHOOD");
             //this.NormSonogram = cfg.GetBoolean("NORMALISE_SONOGRAM");
-
         }
 
+		/// <summary>
+		/// Reads the template configuration file and writes values into the state of configuration.
+		/// These values over-write the default values read in the sono.ini file.
+		/// </summary>
+		public int ReadTemplateFile(string path)
+		{
+			int status = 0;
+			Configuration cfg = new Configuration(path);
+			CallID = cfg.GetInt("TEMPLATE_ID");
+			CallName = cfg.GetString("CALL_NAME");
+			CallComment = cfg.GetString("COMMENT");
 
+			//the wav file
+			SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
+			TimeDuration = cfg.GetDouble("WAV_DURATION");
+
+			//frame parameters
+			WindowSize = cfg.GetInt("FRAME_SIZE");
+			WindowOverlap = cfg.GetDouble("FRAME_OVERLAP"); //fractional overlap of frames
+			FrameCount = cfg.GetInt("NUMBER_OF_FRAMES");
+			FramesPerSecond = cfg.GetDouble("FRAMES_PER_SECOND");
+			FrameDuration = cfg.GetDouble("FRAME_DURATION_MS") / (double)1000; //convert ms to seconds
+			FrameOffset = cfg.GetDouble("FRAME_OFFSET_MS") / (double)1000; //convert ms to seconds
+
+			//MFCC parameters
+			NyquistFreq = cfg.GetInt("NYQUIST_FREQ");
+			WindowFncName = cfg.GetString("WINDOW_FUNCTION");
+			WindowFnc = FFT.GetWindowFunction(WindowFncName);
+			FreqBinCount = cfg.GetInt("NUMBER_OF_FREQ_BINS");
+			FBinWidth = cfg.GetDouble("FREQ_BIN_WIDTH");
+			FreqBand_Min = cfg.GetInt("MIN_FREQ");
+			FreqBand_Mid = cfg.GetInt("MID_FREQ");
+			FreqBand_Max = cfg.GetInt("MAX_FREQ");
+			doFreqBandAnalysis = (FreqBand_Min > MinFreq) || (FreqBand_Max < NyquistFreq);
+			DoMelScale = cfg.GetBoolean("DO_MEL_CONVERSION");
+			DoNoiseReduction = cfg.GetBoolean("DO_NOISE_REDUCTION");
+
+			ccCount = cfg.GetInt("CC_COUNT");
+			IncludeDelta = cfg.GetBoolean("INCLUDE_DELTA");
+			IncludeDoubleDelta = cfg.GetBoolean("INCLUDE_DOUBLEDELTA");
+			DeltaT = cfg.GetInt("DELTA_T");
+
+			//FEATURE VECTORS
+			GetFVSource("FV_SOURCE", cfg);
+			if (FeatureVectorSource != FV_Source.SELECTED_FRAMES)
+				GetFVExtraction("FV_EXTRACTION", cfg);
+			FeatureVector_DoAveraging = cfg.GetBoolean("FV_DO_AVERAGING");
+
+			int fvCount = cfg.GetInt("NUMBER_OF_FEATURE_VECTORS");
+			FeatureVectorCount = fvCount;
+			FeatureVectorLength = cfg.GetInt("FEATURE_VECTOR_LENGTH");
+			FeatureVectorPaths = new string[fvCount];
+			for (int n = 0; n < fvCount; n++)
+				FeatureVectorPaths[n] = ResolvePath(cfg.GetString("FV" + (n + 1) + "_FILE"), path);
+			FeatureVector_SelectedFrames = new string[fvCount];
+			for (int n = 0; n < fvCount; n++)
+				FeatureVector_SelectedFrames[n] = cfg.GetString("FV" + (n + 1) + "_SELECTED_FRAMES");
+			FVSourceFiles = new string[fvCount];
+			for (int n = 0; n < fvCount; n++)
+				FVSourceFiles[n] = ResolvePath(cfg.GetString("FV" + (n + 1) + "_SOURCE_FILE"), path);
+			DefaultNoiseFVFile = ResolvePath(cfg.GetString("FV_DEFAULT_NOISE_FILE"), path);
+
+			//ACOUSTIC MODEL
+			ZscoreSmoothingWindow = 3;  // DEFAULT zscore SmoothingWindow
+			ZScoreThreshold = 1.98;  // DEFAULT zscore threshold for p=0.05
+			double? value = cfg.GetDoubleNullable("ZSCORE_THRESHOLD");
+			if (value == null)
+				Log.WriteLine("WARNING!! ZSCORE_THRESHOLD NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE=" + ZScoreThreshold);
+			else
+				ZScoreThreshold = value.Value;
+
+			//the Language Model
+			int wordCount = cfg.GetInt("NUMBER_OF_WORDS");
+			WordCount = wordCount;
+			Words = new string[wordCount];
+			for (int n = 0; n < wordCount; n++)
+				Words[n] = cfg.GetString("WORD" + (n + 1));
+
+			// THE GRAMMAR MODEL
+			GrammarModel = TheGrammar.WORD_ORDER_FIXED;  //the default
+			string grammar = cfg.GetString("GRAMMAR");
+			if (grammar.StartsWith("WORD_ORDER_RANDOM"))
+				GrammarModel = TheGrammar.WORD_ORDER_RANDOM;
+			else if (grammar.StartsWith("WORDS_PERIODIC"))
+				GrammarModel = TheGrammar.WORDS_PERIODIC;
+			WordPeriodicity_ms = 0;
+			int? period_ms = cfg.GetIntNullable("WORD_PERIODICITY_MS");
+			if (period_ms == null)
+				Log.WriteLine("  PERIODICITY WILL NOT BE ANALYSED. NO ENTRY IN TEMPLATE INI FILE.");
+			else
+				WordPeriodicity_ms = period_ms.Value;
+
+			int period_frame = (int)Math.Round(WordPeriodicity_ms / FrameOffset / (double)1000);
+			WordPeriodicity_frames = period_frame;
+			WordPeriodicity_NH_frames = (int)Math.Floor(period_frame * Template.FractionalNH); //arbitrary NH for periodicity
+			WordPeriodicity_NH_ms = (int)Math.Floor(WordPeriodicity_ms * Template.FractionalNH); //arbitrary NH
+			//Log.WriteLine("period_ms=" + period_ms + "  period_frame=" + period_frame + "+/-" + state.CallPeriodicity_NH);
+			SongWindow = cfg.GetDoubleNullable("SONG_WINDOW") ?? 1.0;
+
+			return status;
+		} //end of ReadTemplateFile()
+
+		private string ResolvePath(string path, string filePath)
+		{
+			if (!Path.IsPathRooted(path))
+				return Path.Combine(Path.GetDirectoryName(filePath), path);
+			return path;
+		}
+
+		public void GetFVSource(string key, Configuration cfg)
+		{
+			bool keyExists = cfg.ContainsKey(key);
+			if (!keyExists)
+			{
+				Log.WriteLine("Template.GetFVSource():- WARNING! NO SOURCE FOR FEATURE VECTORS IS DEFINED!");
+				Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+				FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+				return;
+			}
+			string value = cfg.GetString(key);
+
+			if (value.StartsWith("MARQUEE"))
+			{
+				FeatureVectorSource = FV_Source.MARQUEE;
+				MarqueeStart = cfg.GetInt("MARQUEE_START");
+				MarqueeEnd = cfg.GetInt("MARQUEE_END");
+			}
+			else
+				if (value.StartsWith("SELECTED_FRAMES")) FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+				else
+				{
+					Log.WriteLine("Template.GetFVSource():- WARNING! INVALID SOURCE FOR FEATURE VECTORS IS DEFINED! " + value);
+					Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+					FeatureVectorSource = FV_Source.SELECTED_FRAMES;
+					return;
+				}
+
+			//now read other parameters relevant to the Feature Vector source
+			//TODO ###########################################################################
+		}//end GetFVSource
+
+		public void GetFVExtraction(string key, Configuration cfg)
+		{
+			bool keyExists = cfg.ContainsKey(key);
+			if (!keyExists)
+			{
+				Log.WriteLine("Template.GetFVExtraction():- WARNING! NO EXTRACTION PROCESS IS DEFINED FOR FEATURE VECTORS!");
+				Log.WriteLine("                             SET THE DEFAULT:- FV_Extraction = AT_ENERGY_PEAKS");
+				FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+				return;
+			}
+			string value = cfg.GetString(key);
+
+			if (value.StartsWith("AT_ENERGY_PEAKS")) FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+			else
+				if (value.StartsWith("AT_FIXED_INTERVALS_OF_"))
+				{
+					FeatureVectorExtraction = FV_Extraction.AT_FIXED_INTERVALS;
+					string[] words = value.Split('_');
+					int int32;
+					try
+					{
+						int32 = Int32.Parse(words[3]);
+					}
+					catch (System.FormatException ex)
+					{
+						Log.WriteLine("Template.GetFVExtraction():- WARNING! INVALID INTEGER:- " + words[3]);
+						Log.WriteLine(ex);
+						int32 = 0;
+					}
+					FeatureVectorExtractionInterval = int32;
+				}
+				else
+				{
+					Log.WriteLine("Template.GetFVExtraction():- WARNING! INVALID EXTRACTION VALUE IS DEFINED FOR FEATURE VECTORS! " + value);
+					Log.WriteLine("                             SET THE DEFAULT:- FV_Extraction = AT_ENERGY_PEAKS");
+					FeatureVectorExtraction = FV_Extraction.AT_ENERGY_PEAKS;
+					return;
+				}
+			//now read other parameters relevant to the Feature Vector Extraction
+			//TODO ###########################################################################
+		}//end GetFVExtraction
     } //end class SonoConfig
-
 }

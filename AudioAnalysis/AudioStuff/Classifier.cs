@@ -789,14 +789,18 @@ namespace AudioStuff
 
         private bool IsSyllable(char c)
         {
-            bool b = true;
-            if ((c == 'n') || (c == 'x')) b = false;
-            return b;
+			return c != 'n' && c != 'x';
         }
+
         private bool ContainsSyllable(string str)
         {
             bool b = false;
-            for (int i = 0; i < str.Length; i++) { if ((str[i] != 'n') && (str[i] != 'x')) b = true; break; }
+            for (int i = 0; i < str.Length; i++)
+			{
+				if ((str[i] != 'n') && (str[i] != 'x'))
+					b = true;
+				break;
+			}
             return b;
         }
 
