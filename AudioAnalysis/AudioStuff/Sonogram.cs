@@ -903,16 +903,15 @@ namespace AudioStuff
                 throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
             }
 
-
             this.State.BmpFName = this.state.SonogramDir + this.state.WavFName + this.state.BmpFileExt;
             if(this.State.Verbosity!=0)Console.WriteLine("\n Image in file  = " + this.State.BmpFName);
 
             SonoImage image = new SonoImage(this);
 
-                Track track = new Track(TrackType.score, zscores);
-                track.ScoreThreshold = state.ZScoreThreshold;
-                track.SetIntArray(hits);
-                image.AddTrack(track);
+            Track track = new Track(TrackType.score, zscores);
+            track.ScoreThreshold = state.ZScoreThreshold;
+            track.SetIntArray(hits);
+            image.AddTrack(track);
 
             Bitmap bmp = image.CreateBitmap(matrix);
 

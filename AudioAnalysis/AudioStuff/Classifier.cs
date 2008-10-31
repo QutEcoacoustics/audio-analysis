@@ -170,7 +170,7 @@ namespace AudioStuff
                 string name = "template"+this.template.TemplateState.CallID+"_NoiseFV.txt";
                 string fPath = this.template.TemplateState.TemplateDir + name;
                 if (this.Verbose) Console.WriteLine("     Writing noise template to file:- " + fPath);
-                this.fvs[0].Write2File(fPath);
+                //this.fvs[0].Write2File(fPath);
             }
 
 
