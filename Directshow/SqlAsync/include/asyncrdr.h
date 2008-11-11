@@ -1,15 +1,5 @@
-//------------------------------------------------------------------------------
-// File: AsyncRdr.h
-//
-// Desc: DirectShow sample code - base library for I/O functionality.
-//
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-//------------------------------------------------------------------------------
-
-
 #ifndef __ASYNCRDR_H__
 #define __ASYNCRDR_H__
-
 
 //
 // AsyncRdr
@@ -24,10 +14,8 @@
 // all the work.
 //
 
-
 // the filter class (defined below)
 class CAsyncReader;
-
 
 // the output pin class
 class CAsyncOutputPin

@@ -65,9 +65,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				RegisterOutput="false"
 				AdditionalDependencies="..\BaseClasses\Debug\strmbasd.lib winmm.lib msvcrtd.lib x86\sqlncli10.lib"
+				OutputFile="$(OutDir)\$(ProjectName).ax"
 				LinkIncremental="2"
-				IgnoreAllDefaultLibraries="true"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="Filter\asyncflt.def"
 				GenerateDebugInformation="true"
@@ -142,10 +144,10 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="..\BaseClasses\Release\strmbase.lib winmm.lib msvcrt.lib x86/sqlncli10.lib"
+				AdditionalDependencies="..\BaseClasses\Release\strmbase.lib winmm.lib msvcrt.lib x86/sqlncli10.lib strmiids.lib"
 				OutputFile="$(OutDir)\$(ProjectName).ax"
 				LinkIncremental="1"
-				IgnoreAllDefaultLibraries="true"
+				IgnoreAllDefaultLibraries="false"
 				IgnoreDefaultLibraryNames=""
 				ModuleDefinitionFile="Filter\asyncflt.def"
 				GenerateDebugInformation="true"
@@ -352,23 +354,23 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Filter\asyncflt.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\Filter\asyncflt.def"
 				>
 			</File>
 			<File
-				RelativePath=".\Base\asyncio.cpp"
+				RelativePath=".\DllFunctions.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\Base\asyncrdr.cpp"
+				RelativePath=".\ReadRequest.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\MemFile\memfile.cpp"
+				RelativePath=".\SqlAsyncFilter.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\SqlAsyncOutputPin.cpp"
 				>
 			</File>
 		</Filter>
@@ -378,23 +380,19 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Include\asyncio.h"
-				>
-			</File>
-			<File
-				RelativePath=".\Include\asyncrdr.h"
-				>
-			</File>
-			<File
 				RelativePath=".\ISqlFileSource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\MemFile\memfile.h"
+				RelativePath=".\ReadRequest.h"
 				>
 			</File>
 			<File
-				RelativePath=".\Filter\sqlasyncflt.h"
+				RelativePath=".\SqlAsyncFilter.h"
+				>
+			</File>
+			<File
+				RelativePath=".\SqlAsyncOutputPin.h"
 				>
 			</File>
 		</Filter>

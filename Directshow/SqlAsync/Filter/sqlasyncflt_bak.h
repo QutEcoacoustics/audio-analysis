@@ -1,19 +1,8 @@
-//------------------------------------------------------------------------------
-// File: AsyncFlt.h
-//
-// Desc: DirectShow sample code - header file for async filter.
-//
-// Copyright (c) Microsoft Corporation.  All rights reserved.
-//------------------------------------------------------------------------------
-
 #include <strsafe.h>
 
 // {0C14D74A-64DD-4b7d-A1E9-B54FDDB54C54}
 DEFINE_GUID(CLSID_SqlAsync,
-0xc14d74a, 0x64dd, 0x4b7d, 0xa1, 0xe9, 0xb5, 0x4f, 0xdd, 0xb5, 0x4c, 0x54);
-
-
-//  NOTE:  This filter does NOT support AVI format
+			0xc14d74a, 0x64dd, 0x4b7d, 0xa1, 0xe9, 0xb5, 0x4f, 0xdd, 0xb5, 0x4c, 0x54);
 
 //
 //  Define an internal filter that wraps the base CBaseReader stuff
