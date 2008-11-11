@@ -26,8 +26,8 @@ namespace BridgeTest
 			var audioReadingID = new Guid("AE88D25B-B86C-4130-89B1-10202045E5F9");
 			using (var file = new SqlFilestreamHandle("AudioReadings", "Data", "AudioReadingID = @0", audioReadingID))
 			{
-				//ToWavFile(file, MimeTypes.WavpackMimeType, @"C:\Users\masonr\Desktop\Joe.wav");
-				ToMp3File(file, MimeTypes.WavpackMimeType, @"C:\Users\masonr\Desktop\Joe2.mp3");
+				ToWavFile(file, MimeTypes.WavpackMimeType, @"C:\Users\masonr\Desktop\Joe.wav");
+				//ToMp3File(file, MimeTypes.WavpackMimeType, @"C:\Users\masonr\Desktop\Joe2.mp3");
 				//ToWmaFile(file, MimeTypes.WavpackMimeType, @"C:\Users\masonr\Desktop\Joe.wma");
 				Console.WriteLine("DONE");
 			}
@@ -81,6 +81,7 @@ namespace BridgeTest
 			IMediaEvent events = graphBuilder as IMediaEvent;
 			EventCode evCode;
 			DsError.ThrowExceptionForHR(events.WaitForCompletion(-1, out evCode));
+			mediacontrol.StopWhenReady();
 			FilterGraphTools.DisconnectAllPins(graphBuilder);
 			FilterGraphTools.RemoveAllFilters(graphBuilder);
 		}
