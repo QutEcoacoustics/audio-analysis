@@ -74,6 +74,37 @@ namespace TowseyLib
 
         } //end MAIN
 
+        public static bool DirectoryExists(string path)
+        {
+            DirectoryInfo di = new DirectoryInfo(path);
+            if (di.Exists) return true;
+            return false;
+        }
+
+
+        public static bool FileExists(string path)
+        {
+            FileInfo fi = new FileInfo(path);
+            if (fi.Exists) return true;
+            return false;
+        }
+
+
+        public static bool CopyFile(string path)
+        {
+            Console.WriteLine("COPYING FILE:- "+path);
+            try
+            {
+                string[] split = SplitFileName(path);
+                string newPath = split[0] + "copy_of_" + split[1] + split[2];
+                FileInfo fi = new FileInfo(path);
+                fi.CopyTo(newPath, true); //overwrite = true
+                Console.WriteLine("FILE COPIED TO:- " + newPath);
+                return true;
+            }
+            catch { return false; }
+        }
+
 
         public static FileInfo[] GetFilesInDirectory(string dirPath)
         {
@@ -87,12 +118,6 @@ namespace TowseyLib
             DirectoryInfo d = new DirectoryInfo(dirPath);
             FileInfo[] files = d.GetFiles("*" + ext); //gets all files with required extention
             return files;
-        }
-
-        public static string GetFileExt(string path)
-        {
-            FileInfo f = new FileInfo(path);
-            return f.Extension;
         }
 
         public static string[] SplitFileName(string path)
@@ -143,6 +168,14 @@ namespace TowseyLib
                 {
                     writer.WriteLine(line);
                 }
+            }//end using
+        }// end WriteTextFile()
+
+        public static void WriteTextFile(string fPath, string line)
+        {
+            using (TextWriter writer = new StreamWriter(fPath))
+            {
+                    writer.WriteLine(line);
             }//end using
         }// end WriteTextFile()
 

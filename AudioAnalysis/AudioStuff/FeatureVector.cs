@@ -36,9 +36,6 @@ namespace AudioStuff
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
 
-        public static bool Verbose { get; set; }
-
-
         /// <summary>
         /// CONSTRUCTOR 1
         /// </summary>
@@ -50,35 +47,34 @@ namespace AudioStuff
             this.fvLength = length;
 
             FileInfo f = new FileInfo(path);
-
             this.vectorFName = f.Name;
-            if (FeatureVector.Verbose) Console.WriteLine("\tFV CONSTRUCTOR: name=" + f.Name + "  length=" + length + "  id=" + id);
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 1: name=" + this.vectorFName + "  length=" + length + "  id=" + id);
 
-            int status = ReadFeatureVectorFile(path);
+            this.features = FileTools.ReadDoubles2Vector(path);
+            this.featuresNormed = DataTools.DiffFromMean(this.features);//normalise template to difference from mean
+            //this.featuresNormed = DataTools.Vector2Zscores(this.features);//normalise template to difference from mean
+            
+            //Console.WriteLine("\t\tFinished Feature vector");
             //DataTools.writeArray(this.features);
         }
 
+        /// <summary>
+        /// CONSTRUCTOR 2
+        /// </summary>
+        /// <param name="vector"></param>
+        /// <param name="id"></param>
         public FeatureVector(double[] vector, int id)
         {
             this.fvID = id;
             this.fvLength = vector.Length;
             this.features = vector;
-            //normalise template to difference from mean
-            this.featuresNormed = DataTools.DiffFromMean(this.features);
-            if (FeatureVector.Verbose) Console.WriteLine("\tFV CONSTRUCTOR: name=" + this.vectorFName + "  length=" + this.fvLength + "  id=" + id);
+            this.featuresNormed = DataTools.DiffFromMean(this.features);//normalise template to difference from mean
+            //this.featuresNormed = DataTools.Vector2Zscores(this.features);//normalise template to difference from mean
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 2: name=NULL  length=" + this.fvLength + "  id=" + id);
             //DataTools.writeArray(this.featuresNormed);
+            //Console.WriteLine("\tFEATURE SUM=" + DataTools.Sum(this.features));
         }
 
-        public int ReadFeatureVectorFile(string path)
-        {
-            if (FeatureVector.Verbose) Console.WriteLine("\t\t\tReading feature vector " + this.fvID);
-            int status = 0;
-            this.features = FileTools.ReadDoubles2Vector(path);
-            //normalise template to difference from mean
-            this.featuresNormed = DataTools.DiffFromMean(this.features);
-            //Console.WriteLine("\t\tFinished Feature vector");
-            return status;
-        } //end of ReadFeatureVectorFile()
 
 
         //******************************************************************************************************************
@@ -120,12 +116,12 @@ namespace AudioStuff
 
         public void SaveDataAndImageToFile(string path, SonoConfig templateState)
         {
-            if (FeatureVector.Verbose) Console.WriteLine("\tTemplate feature vector in file " + path);
+            Log.WriteIfVerbose("\tTemplate feature vector in file " + path);
             this.vectorFPath = path;
             this.imageFPath = FileTools.ChangeFileExtention(path, ".bmp");
             FileTools.WriteArray2File_Formatted(this.features, path, "F5");
 
-            Console.WriteLine("\tTemplate feature vector image in file " + this.ImageFPath);
+			Log.WriteIfVerbose("\tTemplate feature vector image in file " + this.ImageFPath);
             SaveImage(templateState);        
         }
 
@@ -143,7 +139,16 @@ namespace AudioStuff
 
             int sampleCount = noiseM.GetLength(0);
             int featureCount = noiseM.GetLength(1);
-            //Console.WriteLine(" sampleCount=" + sampleCount + "   featureCount=" + featureCount);
+            if (featureCount != this.fvLength)
+            {
+                Console.WriteLine("\n\n\n");
+                Console.WriteLine("###### WARNING from FeatureVector.SetNoiseResponse():");
+                Console.WriteLine("######  There is a mismatch between the dimension of feature vector and dimension of noise vectors.");
+                Console.WriteLine("######  Dim of feature vector = " + this.fvLength);
+                Console.WriteLine("######  Dim of noise vectors  = " + featureCount);
+                Console.WriteLine("######  Check for template consistency of cepstral coeff count and delta coefficients with feature vector.");
+                throw new Exception("###### FATAL ERROR!");
+            }
 
             double[] noiseScores = new double[sampleCount];
 
@@ -151,7 +156,7 @@ namespace AudioStuff
             {
                 double[] noiseV = DataTools.GetRow(noiseM, n);  // get one sample of a noise vector
                 noiseScores[n] = this.CrossCorrelation(noiseV);
-                //Console.WriteLine(" noiseScores[n]=" + noiseScores[n]);
+                //if (n < 100) Console.WriteLine("n sum="+DataTools.Sum(noiseV)+"    fv sum="+DataTools.Sum(this.Features));
             }
  
             double av;
@@ -159,9 +164,12 @@ namespace AudioStuff
             NormalDist.AverageAndSD(noiseScores, out av, out sd);
             this.NoiseAv = av;
             this.NoiseSd = sd;
-            if (FeatureVector.Verbose) Console.WriteLine("\tFV[" + this.fvID + "] Av Noise Response =" + this.NoiseAv.ToString("F3") + "\xB1" + this.NoiseSd.ToString("F3"));
+			Log.WriteIfVerbose("\tFV[" + this.fvID + "] Av Noise Response =" + this.NoiseAv.ToString("F3") + "\xB1" + this.NoiseSd.ToString("F3"));
 
         } //end SetNoiseResponse
+
+
+
 
         public double[] Scan_CrossCorrelation(double[,] acousticM)
         {
