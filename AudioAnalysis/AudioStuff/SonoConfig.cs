@@ -17,8 +17,6 @@ namespace AudioStuff
 		}
 
         //files and directories
-        public string TemplateParentDir { get; set; } //parent directory for all templates
-        public string TemplateDir { get; set; }       //contains a single template for specific call ID
 		public string WavFilePath {get; set;} // The path to the 'current' wav file
         public string OutputDir { get; set; }
         public string BmpFName { get; set; }
@@ -139,13 +137,6 @@ namespace AudioStuff
         public double MinCut { get; set; } //power of min percentile
         public double MaxCut { get; set; } //power of max percentile
 
-        //TEMPLATE PARAMETERS
-        public int CallID { get; set; }
-        public string CallName { get; set; }
-        public string CallComment { get; set; }
-        public string FileDescriptor { get; set; }
-		public string SourceFilePath { get; set; } // The path to the wav file used to create the template
-
         //freq bins of the scanned part of sonogram
         public int MaxTemplateFreq { get; set; }
         public int MidTemplateFreq { get; set; }
@@ -213,16 +204,7 @@ namespace AudioStuff
             Log.Verbosity = cfg.GetInt("VERBOSITY");
 
             //directory and file structure
-            string dir = cfg.GetString("TEMPLATE_DIR");
-            if (dir == null)
-            {
-                throw new Exception("###### FATAL ERROR! Could not read TEMPLATE directory from .ini file.");
-            }
-            this.TemplateParentDir = Path.Combine(basePath, dir);
-            /*if (!FileTools.DirectoryExists(this.TemplateParentDir))
-                throw new Exception("###### FATAL ERROR! Template directory <" + this.TemplateParentDir + "> does not exist.");*/
-
-            dir = cfg.GetString("OP_DIR");
+            string dir = cfg.GetString("OP_DIR");
             if (dir == null)
                 throw new Exception("###### FATAL ERROR! Could not read OUTPUT directory from .ini file.");
 			this.OutputDir = Path.Combine(basePath, dir);

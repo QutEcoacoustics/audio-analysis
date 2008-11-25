@@ -41,10 +41,20 @@ namespace AudioStuff
 		}
 		#endregion
 
+		#region Properties
+		public string FileName { get; private set; } // The ini file the template was loaded from
 		public SonoConfig TemplateState { get; private set; }
 		public Sonogram Sonogram { get; private set; }
 
 		public FeatureVector[] FeatureVectors { get; private set; }
+
+		//TEMPLATE PARAMETERS
+		public int CallID { get; set; }
+		public string CallName { get; set; }
+		public string CallComment { get; set; }
+		public string FileDescriptor { get; set; }
+		public string SourceFilePath { get; set; } // The path to the wav file used to create the template
+		#endregion
 
 		#region Constructors
 		/// <summary>
@@ -54,6 +64,7 @@ namespace AudioStuff
 		public Template(SonoConfig config, string templateFile)
 		{
 			TemplateState = config;
+			FileName = templateFile;
 			ReadTemplateFile(templateFile);
 		}
 
@@ -61,25 +72,18 @@ namespace AudioStuff
 		/// CONSTRUCTOR 2
 		/// Use this constructor to create a NEW template
 		/// </summary>
-		public Template(string iniFPath, int callID, string callName, string callComment, string sourcePath, string destinationFileDescriptor)
+		public Template(string appIniPath, int callID, string callName, string callComment, string sourcePath, string destinationFileDescriptor)
 		{
-			Log.WriteIfVerbose("\n#####  READING APPLICATION INI FILE :=" + iniFPath);
+			Log.WriteIfVerbose("\n#####  READING APPLICATION INI FILE :=" + appIniPath);
 			TemplateState = new SonoConfig();
-			TemplateState.ReadConfig(iniFPath);//read the ini file for default parameters
+			TemplateState.ReadConfig(appIniPath);//read the ini file for default parameters
 
-			TemplateState.CallID = callID;
-			TemplateState.CallName = callName;
-			TemplateState.CallComment = callComment;
-			TemplateState.FileDescriptor = destinationFileDescriptor;
+			CallID = callID;
+			CallName = callName;
+			CallComment = callComment;
+			FileDescriptor = destinationFileDescriptor;
 
-			FileInfo fi = new FileInfo(sourcePath);
-			TemplateState.SourceFilePath = sourcePath;
-			//string[] splitName = FileTools.SplitFileName(sourcePath);
-			//TemplateState.WavFileDir = splitName[0];
-			//TemplateState.WavFileExt = splitName[2];
-			/*TemplateState.SourceFName = splitName[1] + splitName[2];
-			TemplateState.SourceFStem = splitName[1];
-			TemplateState.SourceFPath = this.TemplateState.WavFileDir + this.TemplateState.SourceFName;*/
+			SourceFilePath = sourcePath;
 
 			Log.WriteIfVerbose("\tsourcePath  =" + TemplateState.WavFilePath);
 		} 
@@ -94,7 +98,7 @@ namespace AudioStuff
 			Log.WriteIfVerbose("\n#####  INITIALIZE FEATURE VECTORS");
 			int fvCount = TemplateState.FeatureVectorCount;
 			Log.WriteIfVerbose("        fvCount=" + fvCount);
-			this.FeatureVectors = new FeatureVector[fvCount];
+			FeatureVectors = new FeatureVector[fvCount];
 			for (int n = 0; n < fvCount; n++)
 			{
 				string path = TemplateState.FeatureVectorPaths[n];
@@ -106,7 +110,7 @@ namespace AudioStuff
 		}
 
         public void SetExtractionParameters(FV_Source fvSource, FV_Extraction fvExtraction, bool doFvAveraging, 
-                                                                                        string defaultNoiseFile, double zThreshold)
+                                            string defaultNoiseFile, double zThreshold)
         {
             TemplateState.FeatureVectorSource = fvSource;
             TemplateState.FeatureVectorExtraction = fvExtraction;
@@ -228,7 +232,6 @@ namespace AudioStuff
             //SAVE FEATURE VECTORS TO DISK
             int fvCount  = FeatureVectors.Length;
 			string dirPath = Path.GetDirectoryName(templatePath);
-            this.TemplateState.TemplateDir = dirPath;
 			Directory.CreateDirectory(dirPath);
 
             //accumulate the acoustic vectors from multiple frames into an averaged feature vector
@@ -237,7 +240,7 @@ namespace AudioStuff
                 Log.WriteIfVerbose("\nSAVING SINGLE TEMPLATE: as average of " + fvCount + " FEATURE VECTORS");
                 int id = 1;
                 FeatureVector avFV = FeatureVector.AverageFeatureVectors(this.FeatureVectors, id);
-				string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV1{3}", templateStemName, TemplateState.CallID, TemplateState.FileDescriptor, fvectorFExt));
+				string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV1{3}", templateStemName, CallID, FileDescriptor, fvectorFExt));
                 if (avFV != null) avFV.SaveDataAndImageToFile(path, TemplateState);
                 //save av fv in place of originals
                 FeatureVectors = new FeatureVector[] { avFV };
@@ -250,14 +253,14 @@ namespace AudioStuff
                 Log.WriteIfVerbose("SAVING " + fvCount + " SEPARATE TEMPLATE FILES");
                 for (int i = 0; i < fvCount; i++)
                 {
-					string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV{3}{4}", templateStemName, TemplateState.CallID, TemplateState.FileDescriptor, (i + 1), fvectorFExt));
+					string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV{3}{4}", templateStemName, CallID, FileDescriptor, (i + 1), fvectorFExt));
                     FeatureVectors[i].SaveDataAndImageToFile(path, TemplateState);
                     TemplateState.FeatureVectorCount = FeatureVectors.Length;
                     TemplateState.FeatureVectorLength = FeatureVectors[0].FvLength;
                 }
 				WriteTemplateIniFile(templatePath);
             }
-        } // end ExtractTemplateFromSonogram()   
+        } // end ExtractTemplateFromSonogram()
 
         public FeatureVector[] GetFeatureVectorsFromFrames()
         {
@@ -296,13 +299,13 @@ namespace AudioStuff
 			switch (TemplateState.FeatureVectorExtraction)
 			{
 				case FV_Extraction.AT_FIXED_INTERVALS:
-					int interval = (int)(this.TemplateState.FeatureVectorExtractionInterval / this.TemplateState.FrameDuration /(double)1000);
+					int interval = (int)(TemplateState.FeatureVectorExtractionInterval / TemplateState.FrameDuration /(double)1000);
 					Log.WriteIfVerbose("\tFrame interval="+interval+"ms");
 					frameIndices = FeatureVector.GetFrameIndices(start, end, interval);
 					break;
 				case FV_Extraction.AT_ENERGY_PEAKS:
-					double[] frameEnergy = this.Sonogram.Decibels;
-					double energyThreshold = this.TemplateState.SegmentationThreshold_k1;
+					double[] frameEnergy = Sonogram.Decibels;
+					double energyThreshold = TemplateState.SegmentationThreshold_k1;
 					frameIndices = FeatureVector.GetFrameIndices(start, end, frameEnergy, energyThreshold);
 					Log.WriteIfVerbose("\tEnergy threshold=" + energyThreshold.ToString("F2"));
 					break;
@@ -407,46 +410,46 @@ namespace AudioStuff
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#");
             data.Add("#**************** TEMPLATE DATA");
-            data.Add("TEMPLATE_ID=" + this.TemplateState.CallID);
-            data.Add("CALL_NAME=" + this.TemplateState.CallName);
-            data.Add("COMMENT=" + this.TemplateState.CallComment);
+            data.Add("TEMPLATE_ID=" + CallID);
+            data.Add("CALL_NAME=" + CallName);
+            data.Add("COMMENT=" + CallComment);
             data.Add("THIS_FILE=" + path);
 
             data.Add("#");
             data.Add("#**************** INFO ABOUT ORIGINAL .WAV FILE");
             data.Add("WAV_FILE_PATH="  + TemplateState.WavFilePath);
             data.Add("WAV_FILE_NAME=" + Path.GetFileNameWithoutExtension(TemplateState.WavFilePath));
-            data.Add("WAV_SAMPLE_RATE=" + this.TemplateState.SampleRate);
-            data.Add("WAV_DURATION=" + this.TemplateState.TimeDuration.ToString("F3"));
+            data.Add("WAV_SAMPLE_RATE=" + TemplateState.SampleRate);
+            data.Add("WAV_DURATION=" + TemplateState.TimeDuration.ToString("F3"));
 
             data.Add("#");
             data.Add("#**************** INFO ABOUT FRAMES");
-            data.Add("FRAME_SIZE=" + this.TemplateState.WindowSize);
-            data.Add("FRAME_OVERLAP=" + this.TemplateState.WindowOverlap);
-            data.Add("FRAME_DURATION_MS=" + (this.TemplateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
-            data.Add("FRAME_OFFSET_MS=" + (this.TemplateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
-            data.Add("NUMBER_OF_FRAMES=" + this.TemplateState.FrameCount);
-            data.Add("FRAMES_PER_SECOND=" + this.TemplateState.FramesPerSecond.ToString("F3"));
-            data.Add("DYNAMIC_RANGE=" + this.TemplateState.MaxDecibelReference); //decibels above noise level #### YET TO DO THIS PROPERLY
+            data.Add("FRAME_SIZE=" + TemplateState.WindowSize);
+            data.Add("FRAME_OVERLAP=" + TemplateState.WindowOverlap);
+            data.Add("FRAME_DURATION_MS=" + (TemplateState.FrameDuration * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("FRAME_OFFSET_MS=" + (TemplateState.FrameOffset * 1000).ToString("F3"));//convert to milliseconds
+            data.Add("NUMBER_OF_FRAMES=" + TemplateState.FrameCount);
+            data.Add("FRAMES_PER_SECOND=" + TemplateState.FramesPerSecond.ToString("F3"));
+            data.Add("DYNAMIC_RANGE=" + TemplateState.MaxDecibelReference); //decibels above noise level #### YET TO DO THIS PROPERLY
             data.Add("#Dynamic range = the dB difference between min av and max frame energy.");
 
             data.Add("#");
             data.Add("#**************** INFO ABOUT FEATURE EXTRACTION");
-            data.Add("NYQUIST_FREQ=" + this.TemplateState.NyquistFreq);
-            data.Add("WINDOW_FUNCTION=" + this.TemplateState.WindowFncName);
-            data.Add("NUMBER_OF_FREQ_BINS=" + this.TemplateState.FreqBinCount);
-            data.Add("FREQ_BIN_WIDTH=" + this.TemplateState.FBinWidth.ToString("F2"));
-            data.Add("MIN_FREQ=" + this.TemplateState.MinTemplateFreq);
-            data.Add("MAX_FREQ=" + this.TemplateState.MaxTemplateFreq);
-            data.Add("MID_FREQ=" + this.TemplateState.MidTemplateFreq);
-            data.Add("DO_MEL_CONVERSION=" + this.TemplateState.DoMelScale);
-            data.Add("DO_NOISE_REDUCTION=" + this.TemplateState.DoNoiseReduction);
-            data.Add("FILTERBANK_COUNT=" + this.TemplateState.FilterbankCount);
-            data.Add("CC_COUNT=" + this.TemplateState.ccCount);
+            data.Add("NYQUIST_FREQ=" + TemplateState.NyquistFreq);
+            data.Add("WINDOW_FUNCTION=" + TemplateState.WindowFncName);
+            data.Add("NUMBER_OF_FREQ_BINS=" + TemplateState.FreqBinCount);
+            data.Add("FREQ_BIN_WIDTH=" + TemplateState.FBinWidth.ToString("F2"));
+            data.Add("MIN_FREQ=" + TemplateState.MinTemplateFreq);
+            data.Add("MAX_FREQ=" + TemplateState.MaxTemplateFreq);
+            data.Add("MID_FREQ=" + TemplateState.MidTemplateFreq);
+            data.Add("DO_MEL_CONVERSION=" + TemplateState.DoMelScale);
+            data.Add("DO_NOISE_REDUCTION=" + TemplateState.DoNoiseReduction);
+            data.Add("FILTERBANK_COUNT=" + TemplateState.FilterbankCount);
+            data.Add("CC_COUNT=" + TemplateState.ccCount);
 
-            data.Add("INCLUDE_DELTA=" + this.TemplateState.IncludeDelta);
-            data.Add("INCLUDE_DOUBLEDELTA=" + this.TemplateState.IncludeDoubleDelta);
-            data.Add("DELTA_T=" + this.TemplateState.DeltaT);
+            data.Add("INCLUDE_DELTA=" + TemplateState.IncludeDelta);
+            data.Add("INCLUDE_DOUBLEDELTA=" + TemplateState.IncludeDoubleDelta);
+            data.Add("DELTA_T=" + TemplateState.DeltaT);
             data.Add("#");
 
 
@@ -463,23 +466,23 @@ namespace AudioStuff
             }
 			else if (TemplateState.FeatureVectorSource == FV_Source.MARQUEE)
             {
-                data.Add("MARQUEE_START="+this.TemplateState.MarqueeStart);
-                data.Add("MARQUEE_END=" + this.TemplateState.MarqueeEnd);
+                data.Add("MARQUEE_START="+ TemplateState.MarqueeStart);
+                data.Add("MARQUEE_END=" + TemplateState.MarqueeEnd);
                 if (this.TemplateState.FeatureVectorExtraction == FV_Extraction.AT_ENERGY_PEAKS)
                     data.Add("FV_EXTRACTION=AT_ENERGY_PEAKS");
 				else if (TemplateState.FeatureVectorExtraction == FV_Extraction.AT_FIXED_INTERVALS)
-                    data.Add("FV_EXTRACTION=AT_FIXED_INTERVALS_OF_" + this.TemplateState.FeatureVectorExtractionInterval + "_MS");
+                    data.Add("FV_EXTRACTION=AT_FIXED_INTERVALS_OF_" + TemplateState.FeatureVectorExtractionInterval + "_MS");
             }
-            data.Add("FV_DO_AVERAGING="+this.TemplateState.FeatureVector_DoAveraging);
+            data.Add("FV_DO_AVERAGING="+ TemplateState.FeatureVector_DoAveraging);
             data.Add("#");
 
             data.Add("#**************** INFO ABOUT FEATURE VECTORS - THE ACOUSTIC MODEL ***************");
             int fvCount = FeatureVectors.Length;
-            data.Add("FEATURE_VECTOR_LENGTH=" + this.FeatureVectors[0].FvLength); //117
+            data.Add("FEATURE_VECTOR_LENGTH=" + FeatureVectors[0].FvLength); //117
             data.Add("NUMBER_OF_FEATURE_VECTORS="+fvCount);
             for (int n = 0; n < fvCount; n++) 
             {
-                FeatureVector fv = this.FeatureVectors[n];
+                FeatureVector fv = FeatureVectors[n];
                 data.Add("FV" + (n + 1) + "_FILE="+fv.VectorFPath);
                 data.Add("FV" + (n + 1) + "_SELECTED_FRAMES=" + fv.FrameIndices);
                 data.Add("FV" + (n + 1) + "_SOURCE_FILE=" + fv.SourceFile);
@@ -512,7 +515,7 @@ namespace AudioStuff
             data.Add("#WORD2_EXAMPLE2=222");
 
             //add additional parameters
-            data.Add("#SONG_WINDOW=" + this.TemplateState.SongWindow.ToString("F1"));
+            data.Add("#SONG_WINDOW=" + TemplateState.SongWindow.ToString("F1"));
             data.Add("#WORD_PERIODICITY_MS=???");
             data.Add("#");
 
@@ -527,7 +530,7 @@ namespace AudioStuff
             //write template to file
 			FileTools.WriteTextFile(path, data);
             //write template a second time as copy which will not be overwritten
-            string secondPath = Path.Combine(Path.GetDirectoryName(path), templateStemName + TemplateState.CallID + "_" + this.TemplateState.FileDescriptor + templateFExt);
+            string secondPath = Path.Combine(Path.GetDirectoryName(path), templateStemName + CallID + "_" + FileDescriptor + templateFExt);
             FileTools.WriteTextFile(secondPath, data);
         } // end of WriteTemplateConfigFile()
 
@@ -539,11 +542,11 @@ namespace AudioStuff
         {
             int status = 0;
             Configuration cfg = new Props(path);
-            state.CallID = cfg.GetInt("TEMPLATE_ID");
-            state.CallName = cfg.GetString("CALL_NAME");
-            state.CallComment = cfg.GetString("COMMENT");
+            CallID = cfg.GetInt("TEMPLATE_ID");
+            CallName = cfg.GetString("CALL_NAME");
+            CallComment = cfg.GetString("COMMENT");
             //set up the template dir. Parent dir is read from the app.ini file
-            string templateDir = state.TemplateDir = Path.GetDirectoryName(path);
+            string templateDir = Path.GetDirectoryName(path);
             //state.SourceFName = cfg.GetString("WAV_FILE_NAME");
             state.WavFilePath = cfg.GetString("WAV_FILE_PATH");
 
@@ -765,11 +768,10 @@ namespace AudioStuff
         public void WriteInfo2STDOUT()
         {
             Console.WriteLine("\nTEMPLATE INFO");
-			Console.WriteLine(" Template ID: " + TemplateState.CallID);
-            Console.WriteLine(" Template name: " + TemplateState.CallName);
-            Console.WriteLine(" Comment: " + TemplateState.CallComment);
-            Console.WriteLine(" Template dir     : " + TemplateState.TemplateParentDir);
-            Console.WriteLine(" Template ini file: "/* + FileName*/);
+			Console.WriteLine(" Template ID: " + CallID);
+            Console.WriteLine(" Template name: " + CallName);
+            Console.WriteLine(" Comment: " + CallComment);
+            Console.WriteLine(" Template ini file: " + FileName);
             Console.WriteLine(" Bottom freq=" + TemplateState.MinTemplateFreq + "  Mid freq=" + this.TemplateState.MidTemplateFreq + " Top freq=" + this.TemplateState.MaxTemplateFreq);
 
             Console.WriteLine(" NUMBER_OF_FEATURE_VECTORS="+this.TemplateState.FeatureVectorCount);

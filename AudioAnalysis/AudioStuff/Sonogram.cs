@@ -46,7 +46,8 @@ namespace AudioStuff
 
 		#region Properties
 		public SonoConfig State { get; set; } //class containing state of all application parameters
-		
+
+		public double MaxAmplitude { get; private set; }
 		public double[] FrameEnergy { get; private set; } // energy per signal frame
 		public double[] Decibels { get; private set; } // normalised decibels per signal frame
 		public int[] ZeroCross { get; private set; } // number of zero crossings per frame
@@ -157,6 +158,8 @@ namespace AudioStuff
         {
             if (State.SubSample > 1)
 				wav.SubSample(State.SubSample);
+
+			MaxAmplitude = wav.CalculateMaximumAmplitude();
 
             //store essential parameters for this sonogram
 			Log.WriteIfVerbose("\nCALCULATING SONOGRAM");
@@ -916,15 +919,14 @@ namespace AudioStuff
 				sb.Append(Results.spacer + Results.spacer);
             sb.Append(State.TimeSlot + Results.spacer); //half hour when recording made
 
-			// Removed WavMax calculation for performance reasons
-			sb.Append(Results.spacer);//sb.Append(State.WavMax.ToString("F4") + Results.spacer);
+			sb.Append(MaxAmplitude.ToString("F4") + Results.spacer);
             sb.Append(State.FrameNoise_dB.ToString("F4") + Results.spacer);
             sb.Append(State.Frame_SNR.ToString("F4") + Results.spacer);
             sb.Append(State.PowerMax.ToString("F3") + Results.spacer);
             sb.Append(State.PowerAvg.ToString("F3") + Results.spacer);
 
             //syllable distribution
-            if ((categoryCount == 0) || (syllableDistribution==null))
+            if (categoryCount == 0 || syllableDistribution == null)
                 for (int f = 0; f < Results.analysisBandCount; f++) sb.Append("0  " + Results.spacer);
             else
                 for (int f = 0; f < Results.analysisBandCount; f++) sb.Append(syllableDistribution[f].ToString() + Results.spacer);

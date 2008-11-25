@@ -45,7 +45,7 @@ namespace AudioStuff
         {
             if (t == null) throw new ArgumentNullException("t", "Template == null in Classifier()");
 			if (t.TemplateState == null) throw new ArgumentNullException("t.TemplateState", "TemplateState == null in Classifier()");
-            this.templates.Add(t);
+            templates.Add(t);
         }
 
         public void GenerateSymbolSequence()
@@ -53,21 +53,22 @@ namespace AudioStuff
 			Log.WriteIfVerbose("\n########################### Recogniser.GenerateSymbolSequence()");
 
             Results results = new Results(); //set up results class for this template 
-            this.templateConfig = templates[0].TemplateState;
-            this.currentSonogram = templates[0].Sonogram;
+			Template currentTemplate = templates[0];
+			templateConfig = currentTemplate.TemplateState;
+			currentSonogram = currentTemplate.Sonogram;
             if (currentSonogram == null)
             {
 				Log.WriteLine("wavPath=" + templateConfig.WavFilePath);
 				currentSonogram = PrepareSonogram(templateConfig.WavFilePath, templateConfig);
             }
 
-            if (this.currentSonogram == null)
+            if (currentSonogram == null)
                 throw new Exception("##### FATAL ERROR!!!! Cannot find wav file used to create the template!");
-            
-            this.FVs = SetFeatureVectors(templates[0].FeatureVectors);
-            results.AcousticMatrix = GenerateAcousticMatrix(this.currentSonogram);
+
+			FVs = SetFeatureVectors(currentTemplate.FeatureVectors);
+			results.AcousticMatrix = GenerateAcousticMatrix(currentSonogram, GetNoiseFVPath(currentTemplate));
             AcousticMatrix2SymbolSequence(results);
-            this.resultsList.Add(results);
+            resultsList.Add(results);
         }
 
         public void GenerateSymbolSequence(string wavPath)
@@ -77,25 +78,35 @@ namespace AudioStuff
 
             //scan sonogram with default template
             Results results = new Results(); //set up results class for this template 
-            this.templateConfig = templates[0].TemplateState;
-			this.FVs = SetFeatureVectors(templates[0].FeatureVectors);
-            this.currentSonogram = PrepareSonogram(wavPath, this.templateConfig);
+			var template = templates[0];
+            templateConfig = template.TemplateState;
+			FVs = SetFeatureVectors(template.FeatureVectors);
+            currentSonogram = PrepareSonogram(wavPath, templateConfig);
 
-			results.AcousticMatrix = GenerateAcousticMatrix(this.currentSonogram);
+			results.AcousticMatrix = GenerateAcousticMatrix(currentSonogram, GetNoiseFVPath(template));
             AcousticMatrix2SymbolSequence(results);
-            this.resultsList.Add(results);
+            resultsList.Add(results);
         }
+
+		private string GetNoiseFVPath(Template t)
+		{
+			if (t.FileName == null)
+				return null;
+			var noiseFVPath = Path.Combine(Path.GetDirectoryName(t.FileName), "template" + t.CallID + "_NoiseFV.txt");
+			return noiseFVPath;
+		}
 
         public List<Results> ScanAudioFileWithTemplates(string wavPath)
         {
             Log.WriteIfVerbose("  Sonogram prepared from WAV file: " + wavPath);
 
-			List<Results> retVal = new List<Results>();
+			var retVal = new List<Results>();
             // scan sonogram with all templates
             for (int i = 0; i < templates.Count; i++) // for each template
             {
                 Log.WriteIfVerbose("\n########################### SCANNING SONOGRAM WITH TEMPLATE " + (i + 1));
-                this.templateConfig = templates[i].TemplateState;
+				var currentTemplate = templates[i];
+				templateConfig = currentTemplate.TemplateState;
                 // check the MM is valid
                 MarkovModel mm = this.templateConfig.WordModel;
                 if (mm == null || mm.GraphType == HMMType.UNDEFINED)
@@ -104,11 +115,11 @@ namespace AudioStuff
                     continue;
                 }
 
-				FVs = SetFeatureVectors(templates[i].FeatureVectors);
-                this.currentSonogram = PrepareSonogram(wavPath, this.templateConfig); // each template requires different feature extraction
+				FVs = SetFeatureVectors(currentTemplate.FeatureVectors);
+                this.currentSonogram = PrepareSonogram(wavPath, templateConfig); // each template requires different feature extraction
 
                 var currentResult = new Results(this.templateConfig); // set up results class for this scan of the template 
-				currentResult.AcousticMatrix = GenerateAcousticMatrix(this.currentSonogram);
+				currentResult.AcousticMatrix = GenerateAcousticMatrix(currentSonogram, GetNoiseFVPath(currentTemplate));
 				AcousticMatrix2SymbolSequence(currentResult);
 				ScanSymbolSequenceWithMM(currentResult);
 
@@ -128,7 +139,8 @@ namespace AudioStuff
 			for (int i = 0; i < templates.Count; i++) // for each template
 			{
 				Log.WriteIfVerbose("\n########################### SCANNING SONOGRAM WITH TEMPLATE " + (i + 1));
-				this.templateConfig = templates[i].TemplateState;
+				var currentTemplate = templates[i];
+				templateConfig = currentTemplate.TemplateState;
 
 				// check the MM is valid
 				MarkovModel mm = this.templateConfig.WordModel;
@@ -138,11 +150,11 @@ namespace AudioStuff
 					continue;
 				}
 
-				FVs = SetFeatureVectors(templates[i].FeatureVectors);
+				FVs = SetFeatureVectors(currentTemplate.FeatureVectors);
 				currentSonogram = PrepareSonogram(wav, templateConfig); // each template requires different feature extraction
 
 				var currentResult = new Results(templateConfig); // set up results class for this scan of the template 
-				currentResult.AcousticMatrix = GenerateAcousticMatrix(currentSonogram);
+				currentResult.AcousticMatrix = GenerateAcousticMatrix(currentSonogram, GetNoiseFVPath(currentTemplate));
 				AcousticMatrix2SymbolSequence(currentResult);
 				ScanSymbolSequenceWithMM(currentResult);
 
@@ -244,8 +256,7 @@ namespace AudioStuff
         /// SCANS A SONOGRAM WITH PREDEFINED FEATURE VECTORS
         /// using a previously loaded template.
         /// </summary>
-        /// <param name="s"></param>
-		public double[,] GenerateAcousticMatrix(Sonogram s)
+		public double[,] GenerateAcousticMatrix(Sonogram s, string noiseFVPath)
         {
             Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE");
             //##################### DERIVE NOISE FEATURE VECTOR OR READ PRE-COMPUTED NOISE FILE
@@ -254,22 +265,22 @@ namespace AudioStuff
 
             int count;
             double dbThreshold = s.State.MinDecibelReference + s.State.SegmentationThreshold_k2;  // FreqBandNoise_dB;
-			this.FVs[0] = GetNoiseFeatureVector(s.AcousticM, s.Decibels, dbThreshold, out count);
+			FVs[0] = GetNoiseFeatureVector(s.AcousticM, s.Decibels, dbThreshold, out count);
             //if sonogram does not have sufficient noise frames read default noise FV from file
-			if (this.FVs[0] == null)
+			if (FVs[0] == null)
             {
-                Log.WriteIfVerbose("\tDerive NOISE Feature Vector from file: " + this.templateConfig.FeatureVectorPaths[0]);
-				this.FVs[0] = new FeatureVector(this.templateConfig.FeatureVectorPaths[0], this.templateConfig.FeatureVectorLength, 0);
+                Log.WriteIfVerbose("\tDerive NOISE Feature Vector from file: " + templateConfig.FeatureVectorPaths[0]);
+				FVs[0] = new FeatureVector(templateConfig.FeatureVectorPaths[0], templateConfig.FeatureVectorLength, 0);
             }
-            else   //Write noise vector to file. It can then be used as a sample noise vector.
+            else if (noiseFVPath != null)   //Write noise vector to file. It can then be used as a sample noise vector.
             {
-                string name = "template" + this.templateConfig.CallID + "_NoiseFV.txt";
-                string fPath = Path.Combine(templateConfig.TemplateDir, name);
-                Log.WriteIfVerbose("\tWriting noise template to file:- " + fPath);
+                /*string name = "template" + templateConfig.CallID + "_NoiseFV.txt";
+                string fPath = Path.Combine(templateConfig.TemplateDir, name);*/
+				Log.WriteIfVerbose("\tWriting noise template to file:- " + noiseFVPath);
                 //this.fvs[0].Write2File(fPath);
 
                 //string fPath = dirPath + templateStemName + "_" + this.CallID + "_" + this.templateState.FileDescriptor + "_FV" + (i + 1) + fvectorFExt;
-				this.FVs[0].SaveDataAndImageToFile(fPath, this.templateConfig);
+				FVs[0].SaveDataAndImageToFile(noiseFVPath, templateConfig);
             }
 
             //##################### PREPARE MATRIX OF NOISE VECTORS AND THEN SET NOISE RESPONSE FOR EACH feature vector
@@ -1066,10 +1077,14 @@ namespace AudioStuff
                 Console.WriteLine("\t##### WARNING! RECOGNISER.WriteResults2Console(): NO RESULTS ARE AVAILABLE TO PRINT!");
                 return;
             }
-
+			
             Console.WriteLine("\n===========================================================================================");
-            Console.Write("Call ID " + this.templateConfig.CallID + ": RESULTS FOR " + resultsList.Count + " RECOGNISER");
-            if (resultsList.Count > 1) Console.WriteLine("S"); else Console.WriteLine();
+			// Which CallID? There could be multiple templates
+            Console.Write(/*"Call ID " + CallID + */": RESULTS FOR " + resultsList.Count + " RECOGNISER");
+            if (resultsList.Count > 1)
+				Console.WriteLine("S");
+			else
+				Console.WriteLine();
             for (int i = 0; i < resultsList.Count; i++)
             {
                 Console.WriteLine(GetRecognitionResultsAsString(i));
@@ -1081,27 +1096,31 @@ namespace AudioStuff
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append("\nCall ID " + this.templateConfig.CallID + ": RESULTS FOR RECOGNISER " + (templateID + 1) + "\n");
-            sb.Append(" Template Name = " + this.templateConfig.CallName + "\n");
-            sb.Append(" " + this.templateConfig.CallComment + "\n");
-            sb.Append(" Z-score threshold = " + this.templateConfig.ZScoreThreshold + "\n");
+			var template = templates[templateID];
+			sb.Append("\nCall ID " + template.CallID + ": RESULTS FOR RECOGNISER " + (templateID + 1) + "\n");
+			sb.Append(" Template Name = " + template.CallName + "\n");
+			sb.Append(" " + template.CallComment + "\n");
+            sb.Append(" Z-score threshold = " + templateConfig.ZScoreThreshold + "\n");
 
+			var result = resultsList[templateID];
             //DataTools.WriteMinMaxOfArray(" Min/max of word scores", this.results.HitScores);
-            sb.Append(" Number of vocalisation events found = " + this.resultsList[templateID].VocalCount + "\n");
-            if (this.resultsList[templateID].VocalCount < 1) { return sb.ToString(); }
+			sb.Append(" Number of vocalisation events found = " + result.VocalCount + "\n");
+            if (result.VocalCount < 1)
+				return sb.ToString();
 
-            sb.Append(" Maximum Score = " + this.resultsList[templateID].VocalBest.ToString("F1") + " at " + this.resultsList[templateID].VocalBestLocation.ToString("F1") + " sec\n");
+			sb.Append(" Maximum Score = " + result.VocalBest.ToString("F1") + " at " + result.VocalBestLocation.ToString("F1") + " sec\n");
 
-            if (this.templateConfig.WordModel.Periodicity_ms == 0) { return sb.ToString(); }
+            if (templateConfig.WordModel.Periodicity_ms == 0)
+				return sb.ToString();
 
             //report periodicity results - if required
-            int period = this.resultsList[templateID].CallPeriodicity_frames;
-            if(period > 1)
+			int period = result.CallPeriodicity_frames;
+            if (period > 1)
             {
-                int NH_frames = this.templateConfig.WordModel.Periodicity_NH_frames;
-                int NH_ms = this.templateConfig.WordModel.Periodicity_NH_ms;
-                sb.Append(" Required periodicity = " + period + "±" + NH_frames + " frames or " + this.resultsList[templateID].CallPeriodicity_ms + "±" + NH_ms + " ms\n");
-                sb.Append(" Number of hits with required periodicity = " + this.resultsList[templateID].NumberOfPeriodicHits + "\n");
+                int NH_frames = templateConfig.WordModel.Periodicity_NH_frames;
+                int NH_ms = templateConfig.WordModel.Periodicity_NH_ms;
+				sb.Append(" Required periodicity = " + period + "±" + NH_frames + " frames or " + result.CallPeriodicity_ms + "±" + NH_ms + " ms\n");
+				sb.Append(" Number of hits with required periodicity = " + result.NumberOfPeriodicHits + "\n");
             }
             return sb.ToString();
         }
@@ -1139,7 +1158,7 @@ namespace AudioStuff
             //sb.Append(templateConfig.PowerMax.ToString("F3") + Results.spacer);
             //sb.Append(templateConfig.PowerAvg.ToString("F3") + Results.spacer);
             //sb.Append(Result.VocalCount + Results.spacer);
-            sb.Append(templateConfig.CallID + Results.spacer);
+            sb.Append(templates[0].CallID + Results.spacer); // Richard - Not sure if this is the correct callid since there could be multiple templates
 			if (Result != null)
 			{
 				sb.Append(Result.NumberOfPeriodicHits + Results.spacer);
