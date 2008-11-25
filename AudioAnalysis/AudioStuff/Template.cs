@@ -20,62 +20,72 @@ namespace AudioStuff
     /// This class defines a template for a specific natural sound event.
     /// This could be the single syllable of a bird or frog call or a short slice of rain or cicada noise.
     /// </remarks>
-    /// 
     public class Template
-    {
-        private const string templateDirName = "Template";
+	{
+		#region Statics
+		private const string templateDirName = "Template";
         private const string templateStemName = "template";
         private const string templateFExt = ".ini"; //.tmpl
         private const string fvectorFExt  = ".txt";
 
-        public int CallID { get; set; }
-		public SonoConfig TemplateState { get; set; }
-		public Sonogram Sonogram { get; set; }
+		public static string GetTemplatePathByCallID(string basePath, int callID)
+		{
+			string templateDir = Path.Combine(basePath, Template.templateDirName + "_" + callID);
+			return Path.Combine(templateDir, templateStemName + "_" + callID + templateFExt);
+		}
 
-        //file names and directory
-		public string TemplateDir { get; set; }
-		public string TemplateIniPath { get; set; }
+		public static Template LoadTemplateByCallID(string appIniPath, int callID)
+		{
+			var config = SonoConfig.Load(appIniPath);
+			return new Template(config, Template.GetTemplatePathByCallID(Path.GetDirectoryName(appIniPath), callID));
+		}
+		#endregion
 
-        //the FEATURE VECTORS
+		public SonoConfig TemplateState { get; private set; }
+		public Sonogram Sonogram { get; private set; }
+
 		public FeatureVector[] FeatureVectors { get; private set; }
 
-        //info about OLD TEMPLATE EXTRACTION
-        //int x1; int y1; //image coordinates for top left of selection
-        //int x2; int y2; //image coordinates for bottom right of selection
-        //int t1; int t2; //sonogram time interval selection
-        //int bin1; int bin2; //sonogram freq bin interval 
-        //double templateDuration; //duration of template in seconds
-        //int templateSpectralCount; //number of spectra in template
-
-        //info about TEMPLATE SCORING
-        /*public double NoiseAv { get { return TemplateState.NoiseAv; } }
-        public double NoiseSD { get { return TemplateState.NoiseSd; } }*/
-
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// Use this constructor to read an EXISTING template
-        /// </summary>
-        public Template(string iniFPath, int id)
-        {
-            this.CallID = id;
-            this.TemplateState = new SonoConfig();
-
-            Log.WriteIfVerbose("\n##### TEMPLATE CONSTRUCTOR 1: READING APPLICATION INI FILE :=" + iniFPath);
-            this.TemplateState.ReadConfig(iniFPath); //read the ini file for default parameters
-
-            this.TemplateDir = Path.Combine(Path.GetDirectoryName(iniFPath), Template.templateDirName + "_" + id);
-            string templatePath = Path.Combine(TemplateDir, templateStemName + "_" + id + templateFExt);
-
-			ReadTemplateFile(templatePath);
-        }
-
+		#region Constructors
+		/// <summary>
+		/// CONSTRUCTOR 1
+		/// Use this constructor to read an EXISTING template
+		/// </summary>
 		public Template(SonoConfig config, string templateFile)
 		{
 			TemplateState = config;
 			ReadTemplateFile(templateFile);
 		}
 
-		private void ReadTemplateFile(string templatePath)
+		/// <summary>
+		/// CONSTRUCTOR 2
+		/// Use this constructor to create a NEW template
+		/// </summary>
+		public Template(string iniFPath, int callID, string callName, string callComment, string sourcePath, string destinationFileDescriptor)
+		{
+			Log.WriteIfVerbose("\n#####  READING APPLICATION INI FILE :=" + iniFPath);
+			TemplateState = new SonoConfig();
+			TemplateState.ReadConfig(iniFPath);//read the ini file for default parameters
+
+			TemplateState.CallID = callID;
+			TemplateState.CallName = callName;
+			TemplateState.CallComment = callComment;
+			TemplateState.FileDescriptor = destinationFileDescriptor;
+
+			FileInfo fi = new FileInfo(sourcePath);
+			TemplateState.SourceFilePath = sourcePath;
+			//string[] splitName = FileTools.SplitFileName(sourcePath);
+			//TemplateState.WavFileDir = splitName[0];
+			//TemplateState.WavFileExt = splitName[2];
+			/*TemplateState.SourceFName = splitName[1] + splitName[2];
+			TemplateState.SourceFStem = splitName[1];
+			TemplateState.SourceFPath = this.TemplateState.WavFileDir + this.TemplateState.SourceFName;*/
+
+			Log.WriteIfVerbose("\tsourcePath  =" + TemplateState.WavFilePath);
+		} 
+		#endregion
+
+		void ReadTemplateFile(string templatePath)
 		{
 			Log.WriteIfVerbose("\n#####  READING TEMPLATE INI FILE :=" + templatePath);
 			int status = ReadTemplateFile(templatePath, this.TemplateState);//read the template configuration file
@@ -94,38 +104,6 @@ namespace AudioStuff
 				FeatureVectors[n].SourceFile = TemplateState.FVSourceFiles[n];
 			}
 		}
-
-        /// <summary>
-        /// CONSTRUCTOR 2
-        /// Use this constructor to create a NEW template
-        /// </summary>
-        public Template(string iniFPath, int callID, string callName, string callComment, string sourcePath, string destinationFileDescriptor)
-        {
-            Log.WriteIfVerbose("\n#####  READING APPLICATION INI FILE :=" + iniFPath);
-            TemplateState = new SonoConfig();
-            TemplateState.ReadConfig(iniFPath);//read the ini file for default parameters
-
-            CallID = callID;
-            TemplateState.CallID = callID;
-            TemplateState.CallName = callName;
-            TemplateState.CallComment = callComment;
-            TemplateState.FileDescriptor = destinationFileDescriptor;
-
-            FileInfo fi = new FileInfo(sourcePath);
-            string[] splitName = FileTools.SplitFileName(sourcePath);
-            TemplateState.WavFileDir  = splitName[0];
-            TemplateState.SourceFStem = splitName[1];
-            TemplateState.WavFileExt  = splitName[2];
-            TemplateState.SourceFName = splitName[1] + splitName[2];
-            TemplateState.SourceFStem = splitName[1];
-            TemplateState.SourceFPath = this.TemplateState.WavFileDir + this.TemplateState.SourceFName;
-
-            TemplateDir = Path.Combine(Path.GetDirectoryName(iniFPath), Template.templateDirName + "_" + callID);
-            TemplateIniPath = this.TemplateDir + Template.templateStemName + "_" + callID + templateFExt;
-
-            Log.WriteIfVerbose("\ttemplatePath=" + TemplateIniPath);
-            Log.WriteIfVerbose("\tsourcePath  =" + this.TemplateState.SourceFPath);
-        }
 
         public void SetExtractionParameters(FV_Source fvSource, FV_Extraction fvExtraction, bool doFvAveraging, 
                                                                                         string defaultNoiseFile, double zThreshold)
@@ -183,7 +161,7 @@ namespace AudioStuff
 
             //initialise sonogram. First set SonogramType to make matrix of acoustic vectors
             TemplateState.SonogramType = SonogramType.acousticVectors; //to MAKE MATRIX OF dim 3x39 ACOUSTIC VECTORS
-            Sonogram = new Sonogram(TemplateState, TemplateState.SourceFPath);
+            Sonogram = new Sonogram(TemplateState, TemplateState.WavFilePath);
 
             //state.FrameDuration = state.WindowSize / (double)state.SampleRate; // window duration in seconds
             //state.FrameOffset   = this.state.FrameDuration * (1 - this.state.WindowOverlap);// duration in seconds
@@ -196,21 +174,21 @@ namespace AudioStuff
 
         public void SetExtractionInterval(int fvExtractionInterval)
         {
-            this.TemplateState.FeatureVectorExtractionInterval = fvExtractionInterval;
+            TemplateState.FeatureVectorExtractionInterval = fvExtractionInterval;
         }
 
         /// <summary>
         /// this method is called from the user interface.
         /// It expects a comma separate list of one or more integers
         /// </summary>
-        /// <param name="selectedFrames"></param>
         public void SetSelectedFrames(string selectedFrames)
         {
             string[] IDs = selectedFrames.Split(',');
             int count = IDs.Length;
             string[] indices = new string[count];
-            for (int i = 0; i < count; i++) indices[i] = IDs[i];
-            this.TemplateState.FeatureVector_SelectedFrames = IDs;
+            for (int i = 0; i < count; i++)
+				indices[i] = IDs[i];
+            TemplateState.FeatureVector_SelectedFrames = IDs;
         }
 
         public void SetSongParameters(int maxSyllables, double maxSyllableGap, double songWindow)
@@ -221,23 +199,23 @@ namespace AudioStuff
         /// <summary>
         /// LOGIC FOR EXTRACTION OF FEATURE VECTORS FROM SONOGRAM ****************************************************************
         /// </summary>
-        public void ExtractTemplateFromSonogram()
+        public void ExtractTemplateFromSonogram(string templatePath)
         {
 			Log.WriteLine("\nEXTRACTING TEMPLATE USING SUPPLIED PARAMETERS");
 			Log.WriteLine("\tTemplate.ExtractTemplateFromSonogram()");
 			Log.WriteLine("\tSource of feature vectors = " + this.TemplateState.FeatureVectorSource);
              
-            if (this.TemplateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
-                this.FeatureVectors = GetFeatureVectorsFromFrames();
+            if (TemplateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
+                FeatureVectors = GetFeatureVectorsFromFrames();
 			else if (this.TemplateState.FeatureVectorSource == FV_Source.MARQUEE)
             {
 				switch (TemplateState.FeatureVectorExtraction)
 				{
 					case FV_Extraction.AT_ENERGY_PEAKS:
-						this.FeatureVectors = GetFeatureVectorsFromMarquee();
+						FeatureVectors = GetFeatureVectorsFromMarquee();
 						break;
 					case FV_Extraction.AT_FIXED_INTERVALS:
-						this.FeatureVectors = GetFeatureVectorsFromMarquee();
+						FeatureVectors = GetFeatureVectorsFromMarquee();
 						break;
 					default:
 						Log.WriteLine("Template.ExtractTemplateFromSonogram(: WARNING!! INVALID FV EXTRACTION OPTION!)");
@@ -249,39 +227,36 @@ namespace AudioStuff
 
             //SAVE FEATURE VECTORS TO DISK
             int fvCount  = FeatureVectors.Length;
-            string dirPath = this.TemplateState.TemplateParentDir + templateDirName + "_" + this.CallID+"\\";
-            this.TemplateState.TemplateDir = dirPath; 
-            DirectoryInfo dir = new DirectoryInfo(dirPath);
-            dir.Create();
+			string dirPath = Path.GetDirectoryName(templatePath);
+            this.TemplateState.TemplateDir = dirPath;
+			Directory.CreateDirectory(dirPath);
 
             //accumulate the acoustic vectors from multiple frames into an averaged feature vector
-            if (this.TemplateState.FeatureVector_DoAveraging)
+            if (TemplateState.FeatureVector_DoAveraging)
             {
                 Log.WriteIfVerbose("\nSAVING SINGLE TEMPLATE: as average of " + fvCount + " FEATURE VECTORS");
                 int id = 1;
                 FeatureVector avFV = FeatureVector.AverageFeatureVectors(this.FeatureVectors, id);
-                string path = dirPath + templateStemName + "_" + this.CallID + "_" +this.TemplateState.FileDescriptor+"_FV1" + fvectorFExt;
-                if (avFV != null) avFV.SaveDataAndImageToFile(path, this.TemplateState);
+				string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV1{3}", templateStemName, TemplateState.CallID, TemplateState.FileDescriptor, fvectorFExt));
+                if (avFV != null) avFV.SaveDataAndImageToFile(path, TemplateState);
                 //save av fv in place of originals
-                FeatureVectors = new FeatureVector[1];
-                FeatureVectors[0] = avFV;
+                FeatureVectors = new FeatureVector[] { avFV };
                 TemplateState.FeatureVectorCount = 1;
                 TemplateState.FeatureVectorLength = avFV.FvLength;
-                WriteTemplateIniFile();
+                WriteTemplateIniFile(templatePath);
             }
             else //save the feature vectors separately
             {
                 Log.WriteIfVerbose("SAVING " + fvCount + " SEPARATE TEMPLATE FILES");
                 for (int i = 0; i < fvCount; i++)
                 {
-                    string path = dirPath + templateStemName + "_" + this.CallID + "_" + this.TemplateState.FileDescriptor + "_FV" + (i + 1) + fvectorFExt;
-                    FeatureVectors[i].SaveDataAndImageToFile(path, this.TemplateState);
+					string path = Path.Combine(dirPath, string.Format("{0}_{1}_{2}_FV{3}{4}", templateStemName, TemplateState.CallID, TemplateState.FileDescriptor, (i + 1), fvectorFExt));
+                    FeatureVectors[i].SaveDataAndImageToFile(path, TemplateState);
                     TemplateState.FeatureVectorCount = FeatureVectors.Length;
                     TemplateState.FeatureVectorLength = FeatureVectors[0].FvLength;
                 }
-                WriteTemplateIniFile();
+				WriteTemplateIniFile(templatePath);
             }
-
         } // end ExtractTemplateFromSonogram()   
 
         public FeatureVector[] GetFeatureVectorsFromFrames()
@@ -303,7 +278,7 @@ namespace AudioStuff
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, id, dT); //combines  frames T-dT, T and T+dT
                 fvs[i] = new FeatureVector(acousticV, i+1); //avoid FV id = 0. Reserve this for noise vector
-                fvs[i].SourceFile = this.TemplateState.SourceFName; //assume all FVs have same source file
+                fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
                 fvs[i].FrameIndices = IDs[i];
             }
             return fvs;
@@ -311,8 +286,8 @@ namespace AudioStuff
 
         public FeatureVector[] GetFeatureVectorsFromMarquee()
         {
-            int start = this.TemplateState.MarqueeStart;
-            int end   = this.TemplateState.MarqueeEnd;
+            int start = TemplateState.MarqueeStart;
+            int end   = TemplateState.MarqueeEnd;
             int marqueeFrames = end - start + 1;
             double marqueeDuration = marqueeFrames * this.TemplateState.FrameDuration;
             Log.WriteIfVerbose("\tMarquee start=" + start + ",  End=" + end + ",  Duration= " + marqueeFrames + "frames =" + marqueeDuration.ToString("F2")+"s");
@@ -353,7 +328,7 @@ namespace AudioStuff
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
                 fvs[i] = new FeatureVector(acousticV, i + 1); //avoid FV id = 0. Reserve this for noise vector
-                fvs[i].SourceFile = this.TemplateState.SourceFName; //assume all FVs have same source file
+                fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
                 fvs[i].SetFrameIndex(frameIndices[i]);
             }
             return fvs;
@@ -425,22 +400,22 @@ namespace AudioStuff
         //*************************************************************************************************************************
         //*************************************************************************************************************************
 
-        public void WriteTemplateIniFile()
+        public void WriteTemplateIniFile(string path)
         {
             //write the call data to a file
-            ArrayList data = new ArrayList();
+			var data = new List<string>();
             data.Add("DATE=" + DateTime.Now.ToString("u"));
             data.Add("#");
             data.Add("#**************** TEMPLATE DATA");
             data.Add("TEMPLATE_ID=" + this.TemplateState.CallID);
             data.Add("CALL_NAME=" + this.TemplateState.CallName);
             data.Add("COMMENT=" + this.TemplateState.CallComment);
-            data.Add("THIS_FILE=" + this.TemplateIniPath);
+            data.Add("THIS_FILE=" + path);
 
             data.Add("#");
             data.Add("#**************** INFO ABOUT ORIGINAL .WAV FILE");
-            data.Add("WAV_FILE_PATH="  + this.TemplateState.SourceFPath);
-            data.Add("WAV_FILE_NAME=" + this.TemplateState.SourceFStem);
+            data.Add("WAV_FILE_PATH="  + TemplateState.WavFilePath);
+            data.Add("WAV_FILE_NAME=" + Path.GetFileNameWithoutExtension(TemplateState.WavFilePath));
             data.Add("WAV_SAMPLE_RATE=" + this.TemplateState.SampleRate);
             data.Add("WAV_DURATION=" + this.TemplateState.TimeDuration.ToString("F3"));
 
@@ -478,31 +453,28 @@ namespace AudioStuff
             data.Add("#**************** FV EXTRACTION OPTIONS **************************");
             StringBuilder sb;
             data.Add("FV_SOURCE="+FV_Source.SELECTED_FRAMES.ToString());
-            if (this.TemplateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
+            if (TemplateState.FeatureVectorSource == FV_Source.SELECTED_FRAMES)
             {
                 sb = new StringBuilder("FV_SELECTED_FRAMES=");
                 int L = this.TemplateState.FeatureVector_SelectedFrames.Length;
-                for (int i = 0; i < L; i++) sb.Append(this.TemplateState.FeatureVector_SelectedFrames[i]+",");
+                for (int i = 0; i < L; i++)
+					sb.Append(TemplateState.FeatureVector_SelectedFrames[i]+",");
                 data.Add(sb.ToString());
-            } else
-            if (this.TemplateState.FeatureVectorSource == FV_Source.MARQUEE)
+            }
+			else if (TemplateState.FeatureVectorSource == FV_Source.MARQUEE)
             {
                 data.Add("MARQUEE_START="+this.TemplateState.MarqueeStart);
                 data.Add("MARQUEE_END=" + this.TemplateState.MarqueeEnd);
                 if (this.TemplateState.FeatureVectorExtraction == FV_Extraction.AT_ENERGY_PEAKS)
-                {
                     data.Add("FV_EXTRACTION=AT_ENERGY_PEAKS");
-                } else
-                if (this.TemplateState.FeatureVectorExtraction == FV_Extraction.AT_FIXED_INTERVALS)
-                {
+				else if (TemplateState.FeatureVectorExtraction == FV_Extraction.AT_FIXED_INTERVALS)
                     data.Add("FV_EXTRACTION=AT_FIXED_INTERVALS_OF_" + this.TemplateState.FeatureVectorExtractionInterval + "_MS");
-                } 
             }
             data.Add("FV_DO_AVERAGING="+this.TemplateState.FeatureVector_DoAveraging);
             data.Add("#");
 
             data.Add("#**************** INFO ABOUT FEATURE VECTORS - THE ACOUSTIC MODEL ***************");
-            int fvCount = this.FeatureVectors.Length;
+            int fvCount = FeatureVectors.Length;
             data.Add("FEATURE_VECTOR_LENGTH=" + this.FeatureVectors[0].FvLength); //117
             data.Add("NUMBER_OF_FEATURE_VECTORS="+fvCount);
             for (int n = 0; n < fvCount; n++) 
@@ -512,12 +484,12 @@ namespace AudioStuff
                 data.Add("FV" + (n + 1) + "_SELECTED_FRAMES=" + fv.FrameIndices);
                 data.Add("FV" + (n + 1) + "_SOURCE_FILE=" + fv.SourceFile);
             }
-            data.Add("FV_DEFAULT_NOISE_FILE=" + this.TemplateState.FeatureVector_DefaultNoiseFile);
+            data.Add("FV_DEFAULT_NOISE_FILE=" + TemplateState.FeatureVector_DefaultNoiseFile);
             data.Add("#");
 
             data.Add("#THRESHOLDS FOR THE ACOUSTIC MODEL");
             data.Add("#THRESHOLD OPTIONS: 3.1(p=0.001), 2.58(p=0.005), 2.33(p=0.01), 2.15(p=0.03), 1.98(p=0.05),");
-            data.Add("ZSCORE_THRESHOLD=" + this.TemplateState.ZScoreThreshold);
+            data.Add("ZSCORE_THRESHOLD=" + TemplateState.ZScoreThreshold);
             data.Add("#");
 
             data.Add("#**************** INFO ABOUT LANGUAGE MODEL");
@@ -525,7 +497,8 @@ namespace AudioStuff
             Type type = typeof(HMMType);
             string[] names = Enum.GetNames(type);
             sb = new StringBuilder("#There are " + names.Length + " choices of HMM:");
-            for (int n = 0; n < names.Length; n++) sb.Append(" (" + (n + 1) + ")" + names[n]);
+            for (int n = 0; n < names.Length; n++)
+				sb.Append(" (" + (n + 1) + ")" + names[n]);
             data.Add(sb.ToString());
 
             data.Add("MM_TYPE=" + this.TemplateState.HmmType);
@@ -548,12 +521,13 @@ namespace AudioStuff
             //double maxSong=
 
             //check if a file already exists and if so make a copy
-			if (FileTools.FileExists(this.TemplateIniPath)) FileTools.CopyFile(this.TemplateIniPath);
+			if (File.Exists(path))
+				FileTools.BackupFile(path);
 
             //write template to file
-			FileTools.WriteTextFile(this.TemplateIniPath, data);
+			FileTools.WriteTextFile(path, data);
             //write template a second time as copy which will not be overwritten
-            string secondPath = this.TemplateDir + Template.templateStemName + this.CallID + "_" + this.TemplateState.FileDescriptor +templateFExt;
+            string secondPath = Path.Combine(Path.GetDirectoryName(path), templateStemName + TemplateState.CallID + "_" + this.TemplateState.FileDescriptor + templateFExt);
             FileTools.WriteTextFile(secondPath, data);
         } // end of WriteTemplateConfigFile()
 
@@ -561,9 +535,6 @@ namespace AudioStuff
         /// reads the template configuration file and writes values into the state of configuration.
         /// These values over-write the default values read in the sono.ini file.
         /// </summary>
-        /// <param name="path"></param>
-        /// <param name="state"></param>
-        /// <returns></returns>
         public int ReadTemplateFile(string path, SonoConfig state)
         {
             int status = 0;
@@ -572,9 +543,9 @@ namespace AudioStuff
             state.CallName = cfg.GetString("CALL_NAME");
             state.CallComment = cfg.GetString("COMMENT");
             //set up the template dir. Parent dir is read from the app.ini file
-            TemplateDir = state.TemplateDir = Path.GetDirectoryName(path);
-            state.SourceFName = cfg.GetString("WAV_FILE_NAME");
-            state.SourceFPath = cfg.GetString("WAV_FILE_PATH");
+            string templateDir = state.TemplateDir = Path.GetDirectoryName(path);
+            //state.SourceFName = cfg.GetString("WAV_FILE_NAME");
+            state.WavFilePath = cfg.GetString("WAV_FILE_PATH");
 
             //the wav file
             state.SampleRate = cfg.GetInt("WAV_SAMPLE_RATE");
@@ -609,26 +580,32 @@ namespace AudioStuff
 
             //FEATURE VECTORS
             GetFVSource("FV_SOURCE", cfg, state);
-            if (state.FeatureVectorSource != FV_Source.SELECTED_FRAMES) GetFVExtraction("FV_EXTRACTION", cfg, state);
+            if (state.FeatureVectorSource != FV_Source.SELECTED_FRAMES)
+				GetFVExtraction("FV_EXTRACTION", cfg, state);
             state.FeatureVector_DoAveraging = cfg.GetBoolean("FV_DO_AVERAGING");
 
             int fvCount = cfg.GetInt("NUMBER_OF_FEATURE_VECTORS");
             state.FeatureVectorCount  = fvCount;
             state.FeatureVectorLength = cfg.GetInt("FEATURE_VECTOR_LENGTH");
             state.FeatureVectorPaths = new string[fvCount];
-            for (int n = 0; n < fvCount; n++) state.FeatureVectorPaths[n] = ResolvePath(cfg.GetString("FV" + (n+1) + "_FILE"));
+			for (int n = 0; n < fvCount; n++)
+				state.FeatureVectorPaths[n] = Utilities.ResolvePath(templateDir, cfg.GetString("FV" + (n + 1) + "_FILE"));
             state.FeatureVector_SelectedFrames = new string[fvCount];
-            for (int n = 0; n < fvCount; n++) state.FeatureVector_SelectedFrames[n] = cfg.GetString("FV" + (n + 1) + "_SELECTED_FRAMES");
+            for (int n = 0; n < fvCount; n++)
+				state.FeatureVector_SelectedFrames[n] = cfg.GetString("FV" + (n + 1) + "_SELECTED_FRAMES");
             state.FVSourceFiles = new string[fvCount];
-            for (int n = 0; n < fvCount; n++) state.FVSourceFiles[n] = cfg.GetString("FV" + (n + 1) + "_SOURCE_FILE");
-			state.DefaultNoiseFVFile = ResolvePath(cfg.GetString("FV_DEFAULT_NOISE_FILE"));
+            for (int n = 0; n < fvCount; n++)
+				state.FVSourceFiles[n] = cfg.GetString("FV" + (n + 1) + "_SOURCE_FILE");
+			state.DefaultNoiseFVFile = Utilities.ResolvePath(templateDir, cfg.GetString("FV_DEFAULT_NOISE_FILE"));
 
             //ACOUSTIC MODEL
             state.ZscoreSmoothingWindow = 3;  // DEFAULT zscore SmoothingWindow
             state.ZScoreThreshold = 1.98;  // DEFAULT zscore threshold for p=0.05
             double value = cfg.GetDouble("ZSCORE_THRESHOLD");
-			if (value == -Double.MaxValue) Log.WriteLine("WARNING!! ZSCORE_THRESHOLD NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE=" + state.ZScoreThreshold);
-            else state.ZScoreThreshold = value;
+			if (value == -Double.MaxValue)
+				Log.WriteLine("WARNING!! ZSCORE_THRESHOLD NOT SET IN TEMPLATE INI FILE. USING DEFAULT VALUE=" + state.ZScoreThreshold);
+            else
+				state.ZScoreThreshold = value;
 
             // THE LANGUAGE MODEL
             MarkovModel mm = null;
@@ -644,7 +621,6 @@ namespace AudioStuff
 
             string mmName = cfg.GetString("MM_NAME");
             int numberOfStates = fvCount + 2; //because need extra for noise and for garbage
-
 
             // READ TRAINING SEQUENCES
             int wordCount = cfg.GetInt("NUMBER_OF_WORDS");
@@ -662,7 +638,8 @@ namespace AudioStuff
                 for (int w = 0; w < 100; w++) //do not allow more than 100 examples
                 {
                     string word = cfg.GetString("WORD" + (n + 1) + "_EXAMPLE" + (w + 1));
-                    if (word == null) break;
+                    if (word == null)
+						break;
                     ts.AddSequence(name, word);
                 }
 
@@ -705,18 +682,11 @@ namespace AudioStuff
             //end setting up markov model
 
             state.SongWindow = cfg.GetDouble("SONG_WINDOW");
-            if (state.SongWindow == -Double.MaxValue) state.SongWindow = 1.0; //the DEFAULT VALUE in seconds
-
+            if (state.SongWindow == -Double.MaxValue)
+				state.SongWindow = 1.0; //the DEFAULT VALUE in seconds
 
             return status;
         }
-
-		private string ResolvePath(string path)
-		{
-			if (!Path.IsPathRooted(path))
-				return Path.Combine(TemplateDir, path);
-			return path;
-		}
 
         public void GetFVSource(string key, Configuration cfg, SonoConfig state)
         {
@@ -795,12 +765,12 @@ namespace AudioStuff
         public void WriteInfo2STDOUT()
         {
             Console.WriteLine("\nTEMPLATE INFO");
-            Console.WriteLine(" Template ID: " + this.CallID);
-            Console.WriteLine(" Template name: " + this.TemplateState.CallName);
-            Console.WriteLine(" Comment: " + this.TemplateState.CallComment);
-            Console.WriteLine(" Template dir     : " + this.TemplateState.TemplateParentDir);
-            Console.WriteLine(" Template ini file: " + this.TemplateIniPath);
-            Console.WriteLine(" Bottom freq=" + this.TemplateState.MinTemplateFreq + "  Mid freq=" + this.TemplateState.MidTemplateFreq + " Top freq=" + this.TemplateState.MaxTemplateFreq);
+			Console.WriteLine(" Template ID: " + TemplateState.CallID);
+            Console.WriteLine(" Template name: " + TemplateState.CallName);
+            Console.WriteLine(" Comment: " + TemplateState.CallComment);
+            Console.WriteLine(" Template dir     : " + TemplateState.TemplateParentDir);
+            Console.WriteLine(" Template ini file: "/* + FileName*/);
+            Console.WriteLine(" Bottom freq=" + TemplateState.MinTemplateFreq + "  Mid freq=" + this.TemplateState.MidTemplateFreq + " Top freq=" + this.TemplateState.MaxTemplateFreq);
 
             Console.WriteLine(" NUMBER_OF_FEATURE_VECTORS="+this.TemplateState.FeatureVectorCount);
             Console.WriteLine(" FEATURE_VECTOR_LENGTH=" + this.TemplateState.FeatureVectorLength);

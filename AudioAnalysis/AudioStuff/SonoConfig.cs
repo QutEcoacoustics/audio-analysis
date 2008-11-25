@@ -9,21 +9,24 @@ namespace AudioStuff
 {
     public class SonoConfig
     {
+		public static SonoConfig Load(string path)
+		{
+			var retVal = new SonoConfig();
+			retVal.ReadConfig(path);
+			return retVal;
+		}
+
         //files and directories
         public string TemplateParentDir { get; set; } //parent directory for all templates
         public string TemplateDir { get; set; }       //contains a single template for specific call ID
-        public string WavFName { get; set; }
-        public string WavFileDir { get; set; }
-		public string WavFileExt { get; set; }
+		public string WavFilePath {get; set;} // The path to the 'current' wav file
         public string OutputDir { get; set; }
         public string BmpFName { get; set; }
         public string BmpFileExt { get; set; }
 
         //wav file info
-        public string DeployName { get; set; }
-        public string Date { get; set; }
-        public int Hour { get; set; }
-        public int Minute { get; set; }
+        public string DeploymentName { get; set; }
+        public DateTime? Time { get; set; }
         public int TimeSlot { get; set; }
         //public double WavMax { get; set; }
 
@@ -141,9 +144,7 @@ namespace AudioStuff
         public string CallName { get; set; }
         public string CallComment { get; set; }
         public string FileDescriptor { get; set; }
-        public string SourceFStem { get; set; }
-        public string SourceFName { get; set; }
-        public string SourceFPath { get; set; }
+		public string SourceFilePath { get; set; } // The path to the wav file used to create the template
 
         //freq bins of the scanned part of sonogram
         public int MaxTemplateFreq { get; set; }
@@ -185,26 +186,22 @@ namespace AudioStuff
 			string deployment; DateTime time;
 			if (string.IsNullOrEmpty(fName) || !ParseFileName(fName, out deployment, out time))
 			{
-				this.DeployName = fName ?? "noName";
+				this.DeploymentName = fName ?? "noName";
 				SetDefaultDateAndTime();
 			}
 			else
 			{
-				DeployName = deployment;
-				Date = time.Date.ToString("yyyyMMdd");
-				Hour = time.Hour;
-				Minute = time.Minute;
+				DeploymentName = deployment;
+				Time = time;
 				//############ WARNING!!! THE FOLLOWING LINE MUST BE CONSISTENT WITH TIMESLOT CONSTANT
-				TimeSlot = ((Hour * 60) + Minute) / 30; //convert to half hour time slots
+				TimeSlot = ((time.Hour * 60) + time.Minute) / 30; //convert to half hour time slots
 			}
         }
 
         public void SetDefaultDateAndTime()
         {
-            this.Date = "000000";
-            this.Hour = 0;
-            this.Minute = 0;
-            this.TimeSlot = 0;
+			Time = null;
+            TimeSlot = 0;
         }
 
         public void ReadConfig(string iniFName)
@@ -236,11 +233,11 @@ namespace AudioStuff
             dir = cfg.GetString("WAV_DIR");
             if (dir == null)
                 throw new Exception("###### FATAL ERROR! Could not read WAV directory from .ini file.");
-			this.WavFileDir = Path.Combine(basePath, dir);
+			//this.WavFileDir = Path.Combine(basePath, dir);
             /*if (!FileTools.DirectoryExists(this.WavFileDir))
                 throw new Exception("###### FATAL ERROR! WAV directory <" + this.WavFileDir + "> does not exist.");*/
 
-            this.WavFileExt = cfg.GetString("WAV_FILEEXT");
+            //this.WavFileExt = cfg.GetString("WAV_FILEEXT");
             this.BmpFileExt = cfg.GetString("BMP_FILEEXT");
 
             //FRAMING PARAMETERS

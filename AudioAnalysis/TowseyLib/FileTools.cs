@@ -9,26 +9,23 @@ namespace TowseyLib
     public class FileTools
     {
         private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\"; 
-        
-        
+
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
-
+            Log.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
 
             if (false) //test ReadTextFile(string fName)
             {
                 string fName = testDir + "testTextFile.txt";
-                ArrayList array = ReadTextFile(fName);
-                foreach(string line in array)
-                {    Console.WriteLine(line);
-                }
+                var array = ReadTextFile(fName);
+                foreach (string line in array)
+					Console.WriteLine(line);
             }//end test ReadTextFile(string fName)
 
             if (false) //test WriteTextFile(string fName)
             {
                 string fName = testDir + "testOfWritingATextFile.txt";
-                ArrayList array = new ArrayList();
+                var array = new List<string>();
                 array.Add("string1");
                 array.Add("string2");
                 array.Add("string3");
@@ -36,7 +33,6 @@ namespace TowseyLib
                 array.Add("string5");
                 WriteTextFile(fName, array);
             }//end test WriteTextFile(string fName)
-
             
             if (false) //test ReadDoubles2Matrix(string fName)
             {
@@ -59,52 +55,30 @@ namespace TowseyLib
                 Console.WriteLine("Wrote following matrix to file " + fName);
                 DataTools.writeMatrix(matrix);
             }//end test Method(string fName)
-            
-
 
             //COPY THIS TEST TEMPLATE
             if (false) //test Method(parameters)
             {
             }//end test Method(string fName)
 
-
-
-            Console.WriteLine("\nFINISHED"); //end
-            Console.WriteLine("CLOSE CONSOLE"); //end
-
+            Log.WriteLine("\nFINISHED"); //end
+			Log.WriteLine("CLOSE CONSOLE"); //end
         } //end MAIN
 
-        public static bool DirectoryExists(string path)
+        public static bool BackupFile(string path)
         {
-            DirectoryInfo di = new DirectoryInfo(path);
-            if (di.Exists) return true;
-            return false;
-        }
-
-
-        public static bool FileExists(string path)
-        {
-            FileInfo fi = new FileInfo(path);
-            if (fi.Exists) return true;
-            return false;
-        }
-
-
-        public static bool CopyFile(string path)
-        {
-            Console.WriteLine("COPYING FILE:- "+path);
+			Log.WriteLine("COPYING FILE:- " + path);
             try
             {
                 string[] split = SplitFileName(path);
                 string newPath = split[0] + "copy_of_" + split[1] + split[2];
                 FileInfo fi = new FileInfo(path);
                 fi.CopyTo(newPath, true); //overwrite = true
-                Console.WriteLine("FILE COPIED TO:- " + newPath);
+                Log.WriteLine("FILE COPIED TO:- " + newPath);
                 return true;
             }
             catch { return false; }
         }
-
 
         public static FileInfo[] GetFilesInDirectory(string dirPath)
         {
@@ -143,9 +117,9 @@ namespace TowseyLib
             return newName;
         }
 
-        public static ArrayList ReadTextFile(string fName)
+		public static List<string> ReadTextFile(string fName)
         {
-            ArrayList lines = new ArrayList();
+            var lines = new List<string>();
             using (TextReader reader = new StreamReader(fName))
             {
                 string line;
@@ -159,16 +133,12 @@ namespace TowseyLib
         }// end ReadtextFile()
 
 
-        public static void WriteTextFile(string fName, ArrayList array)
+        public static void WriteTextFile(string fName, List<string> array)
         {
             int count = array.Count;
             using (TextWriter writer = new StreamWriter(fName))
-            {
                 foreach (string line in array)
-                {
                     writer.WriteLine(line);
-                }
-            }//end using
         }// end WriteTextFile()
 
         public static void WriteTextFile(string fPath, string line)
@@ -182,29 +152,24 @@ namespace TowseyLib
 
         public static void Append2TextFile(string fPath, string line)
         {
-            ArrayList list;
-            if (File.Exists(fPath)) list = ReadTextFile(fPath);
-            else                    list = new ArrayList();
+			var list = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             list.Add(line);
             WriteTextFile(fPath, list);
         }// end Append2TextFile()
 
-        public static void Append2TextFile(string fPath, ArrayList list)
+        public static void Append2TextFile(string fPath, List<string> list)
         {
-            ArrayList oldList = new ArrayList();
-            if (File.Exists(fPath)) oldList = ReadTextFile(fPath);
-            oldList.Add(list);
+			var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
+            oldList.AddRange(list);
             WriteTextFile(fPath, list);
         }// end Append2TextFile()
 
         /// <summary>
         /// reads a file of doubles assuming one value per line with no punctuation
         /// </summary>
-        /// <param name="fName"></param>
-        /// <returns></returns>
         public static double[] ReadDoubles2Vector(string fName)
         {
-            ArrayList lines = ReadTextFile(fName);
+            var lines = ReadTextFile(fName);
             int count = lines.Count;
 
             double[] V = new double[count];
@@ -220,7 +185,7 @@ namespace TowseyLib
 
         public static double[,] ReadDoubles2Matrix(string fName)
         {
-            ArrayList lines = ReadTextFile(fName);
+            var lines = ReadTextFile(fName);
             string line = (string)lines[0];
             String[] words = line.Split(',');
             int rowCount = lines.Count;
@@ -247,7 +212,7 @@ namespace TowseyLib
             int rowCount = matrix.GetLength(0);//height
             int colCount = matrix.GetLength(1);//width
 
-            ArrayList lines = new ArrayList();
+            var lines = new List<string>();
 
             for (int i = 0; i < rowCount; i++)
             {
@@ -268,7 +233,7 @@ namespace TowseyLib
             int rowCount = matrix.GetLength(0);//height
             int colCount = matrix.GetLength(1);//width
 
-            ArrayList lines = new ArrayList();
+            var lines = new List<string>();
 
             for (int i = 0; i < rowCount; i++)
             {
@@ -288,7 +253,7 @@ namespace TowseyLib
         {
             int length = array.Length;
 
-            ArrayList lines = new ArrayList();
+			var lines = new List<string>();
             for (int i = 0; i < length; i++)
             {
                 string line = array[i].ToString(formatString);
@@ -302,7 +267,7 @@ namespace TowseyLib
         {
             int length = array.Length;
 
-            ArrayList lines = new ArrayList();
+			var lines = new List<string>();
             for (int i = 0; i < length; i++)
             {
                 string line = array[i].ToString(formatString);
@@ -311,10 +276,6 @@ namespace TowseyLib
             WriteTextFile(fName, lines); //write matrix to file
 
         } //end of WriteArray2File_Formatted
-
-
-
-
 
         public static Hashtable ReadPropertiesFile(string fName)
         {
@@ -337,7 +298,5 @@ namespace TowseyLib
             }//end using
             return table;
         }// end ReadPropertiesFile()
-
-
     }// end class
 }

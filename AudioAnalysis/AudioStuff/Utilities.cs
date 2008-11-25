@@ -6,7 +6,7 @@ using System.IO;
 
 namespace AudioStuff
 {
-	public class Utilities
+	public static class Utilities
 	{
 		public static string PathCombine(params string[] paths)
 		{
@@ -27,6 +27,13 @@ namespace AudioStuff
 					return a + "/" + b;
 				}
 			});
+		}
+
+		public static string ResolvePath(string folder, string path)
+		{
+			if (!Path.IsPathRooted(path))
+				return Path.Combine(folder, path);
+			return path;
 		}
 	}
 }

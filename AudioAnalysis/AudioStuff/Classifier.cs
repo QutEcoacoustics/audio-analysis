@@ -55,12 +55,10 @@ namespace AudioStuff
             Results results = new Results(); //set up results class for this template 
             this.templateConfig = templates[0].TemplateState;
             this.currentSonogram = templates[0].Sonogram;
-            if(this.currentSonogram == null)
+            if (currentSonogram == null)
             {
-                string wavPath = this.templateConfig.SourceFPath;
-
-                Log.WriteLine("wavPath=" + wavPath);
-                this.currentSonogram = PrepareSonogram(wavPath, this.templateConfig);
+				Log.WriteLine("wavPath=" + templateConfig.WavFilePath);
+				currentSonogram = PrepareSonogram(templateConfig.WavFilePath, templateConfig);
             }
 
             if (this.currentSonogram == null)
@@ -205,13 +203,13 @@ namespace AudioStuff
             return v;
         }
 
-        private Sonogram PrepareSonogram(string wavPath, SonoConfig cfg)
+        Sonogram PrepareSonogram(string wavPath, SonoConfig cfg)
         {
+			if (string.IsNullOrEmpty(wavPath))
+				throw new ArgumentNullException("wavPath");
             //set up the config file for this run
-            FileInfo fi = new FileInfo(wavPath);
-            cfg.WavFileDir = fi.DirectoryName;
-            cfg.WavFName = Path.GetFileNameWithoutExtension(fi.Name);
-            if (cfg.WavFName != null) cfg.SetDateAndTime(cfg.WavFName);
+			cfg.WavFilePath = wavPath;
+            cfg.SetDateAndTime(Path.GetFileNameWithoutExtension(wavPath));
             cfg.SonogramType = SonogramType.acousticVectors; //to MAKE MATRIX OF dim = 117 = 13x3x3 ACOUSTIC VECTORS
 
             //read the .WAV file
@@ -1123,40 +1121,34 @@ namespace AudioStuff
             //#	Name                	Date    	Dploy	Durat	Hour	Min 	TSlot	Hits 	MaxScr	MaxLoc	
             sb.Append(scanID + Results.spacer); //CALLID
             //sb.Append(DateTime.Now.ToString("u") + spacer); //DATE
-            sb.Append(this.templateConfig.WavFName + Results.spacer); //sonogram FNAME
-			sb.Append(this.templateConfig.Date); //sonogram date
+            sb.Append(Path.GetFileNameWithoutExtension(templateConfig.WavFilePath) + Results.spacer); //sonogram FNAME
+			sb.Append(templateConfig.Time); //sonogram date
 			sb.Append(Results.spacer);
-            sb.Append(this.templateConfig.DeployName + Results.spacer); //Deployment name
-            sb.Append(this.templateConfig.TimeDuration.ToString("F2") + Results.spacer); //length of recording
-            sb.Append(this.templateConfig.Hour + Results.spacer); //hour when recording made
-            sb.Append(this.templateConfig.Minute + Results.spacer); //hour when recording made
-            sb.Append(this.templateConfig.TimeSlot + Results.spacer); //half hour when recording made
-            //sb.Append(this.templateConfig.FrameNoise_dB.ToString("F4") + Results.spacer);
-            //sb.Append(this.templateConfig.Frame_SNR.ToString("F4") + Results.spacer);
-            //sb.Append(this.templateConfig.PowerMax.ToString("F3") + Results.spacer);
-            //sb.Append(this.templateConfig.PowerAvg.ToString("F3") + Results.spacer);
-            //sb.Append(this.Result.VocalCount + Results.spacer);
-            sb.Append(this.templateConfig.CallID + Results.spacer);
+            sb.Append(templateConfig.DeploymentName + Results.spacer); //Deployment name
+            sb.Append(templateConfig.TimeDuration.ToString("F2") + Results.spacer); //length of recording
+			if (templateConfig.Time != null)
+			{
+				sb.Append(templateConfig.Time.Value.TimeOfDay.Hours + Results.spacer); //hour when recording made
+				sb.Append(templateConfig.Time.Value.TimeOfDay.Minutes + Results.spacer); //hour when recording made
+			}
+			else
+				sb.Append(Results.spacer + Results.spacer);
+            sb.Append(templateConfig.TimeSlot + Results.spacer); //half hour when recording made
+            //sb.Append(templateConfig.FrameNoise_dB.ToString("F4") + Results.spacer);
+            //sb.Append(templateConfig.Frame_SNR.ToString("F4") + Results.spacer);
+            //sb.Append(templateConfig.PowerMax.ToString("F3") + Results.spacer);
+            //sb.Append(templateConfig.PowerAvg.ToString("F3") + Results.spacer);
+            //sb.Append(Result.VocalCount + Results.spacer);
+            sb.Append(templateConfig.CallID + Results.spacer);
 			if (Result != null)
 			{
-				sb.Append(this.Result.NumberOfPeriodicHits + Results.spacer);
-				sb.Append(this.Result.VocalBest.ToString("F1") + Results.spacer);
-				sb.Append(this.Result.VocalBestLocation.ToString("F1") + Results.spacer);
+				sb.Append(Result.NumberOfPeriodicHits + Results.spacer);
+				sb.Append(Result.VocalBest.ToString("F1") + Results.spacer);
+				sb.Append(Result.VocalBestLocation.ToString("F1") + Results.spacer);
 			}
 			else
 				sb.Append(Results.spacer + Results.spacer + Results.spacer);
             return sb.ToString();
-        }
-
-        public void SaveImage()
-        {
-            if (resultsList == null || resultsList.Count == 0)
-            {
-				Log.WriteLine("\t##### WARNING! RECOGNISER.SaveImage(): NO RESULTS TO ACCOMPANY IMAGE");
-                return;
-            }
-            var tracks = Results.Results2VocalisationTracks(resultsList);
-            currentSonogram.SaveImage(SonogramType.spectral, tracks);
         }
 
 		public Image GetImage()
@@ -1167,21 +1159,21 @@ namespace AudioStuff
 			return currentSonogram.GetImage(SonogramType.spectral, tracks);
 		}
 
-        public void SaveImage(string fName)
+        public void SaveImage(string path)
         {
 			var image = GetImage();
-			image.Save(fName);
+			image.Save(path);
         }
 
-        public void SaveImage(TrackType type)
+        public void SaveImage(string path, TrackType type)
         {
             if ((this.resultsList == null) || (this.resultsList.Count == 0))
             {
 				Log.WriteLine("\t##### WARNING! RECOGNISER.SaveImage(): NO RESULTS TO ACCOMPANY IMAGE");
                 return;
             }
-            if (TrackType.syllables == type) 
-                currentSonogram.SaveImage(SonogramType.spectral, type, resultsList[0].SyllableIDs);
+            if (TrackType.syllables == type)
+				currentSonogram.SaveImage(path, SonogramType.spectral, type, resultsList[0].SyllableIDs);
         }
     }// end of class RECOGNISER
 
@@ -1197,14 +1189,146 @@ namespace AudioStuff
     /// this class contains the results obtained from the Classifer.
     /// </summary>
     public class Results
-    {
-        public const string spacer = ",";  //used when writing data arrays to file
+	{
+		#region Statics
+		public const string spacer = ",";  //used when writing data arrays to file
         public const char spacerC   = ',';  //used as match for splitting string
         public const int analysisBandCount = 11;   //number of bands in which to divide freq columns of sonogram for analysis
 
-		public string Name { get; private set; }
-        private double zScoreThreshold;
-        //public  string ZScoreThreshold { get { return zScoreThreshold; } }
+		public static List<Track> Results2VocalisationTracks(List<Results> results)
+		{
+			if ((results == null) || (results.Count == 0))
+			{
+				//throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
+				Console.WriteLine("WARNING!!!!  Results.Results2VocalTracks(): Results==null CANNOT EXTRACT DATA TRACKS FOR IMAGE!");
+				return null;
+			}
+
+			var tracks = new List<Track>();
+			foreach (var result in results)
+				tracks.AddRange(result.GetVocalTracks());
+			return tracks;
+		}
+
+		public static string ResultsHeader()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append("Scan ID" + spacer);
+			sb.Append("Wav File Name" + spacer);
+			sb.Append("Date" + spacer);
+			sb.Append("Deployment" + spacer);
+			sb.Append("Duration" + spacer);
+			sb.Append("Hour" + spacer);
+			sb.Append("Min " + spacer);
+			sb.Append("24hr ID" + spacer);
+
+			sb.Append("Template ID" + spacer);
+			sb.Append("Hits" + spacer);
+			sb.Append("Max Score" + spacer);
+			sb.Append("Location (sec)" + spacer);
+			return sb.ToString();
+		}
+
+		public static string AnalysisHeader()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append("#" + spacer);
+			sb.Append("Name                " + spacer);
+			sb.Append("Date    " + spacer);
+			sb.Append("Dploy" + spacer);
+			sb.Append("Durat" + spacer);
+			sb.Append("Hour" + spacer);
+			sb.Append("Min " + spacer);
+			sb.Append("TSlot" + spacer);
+
+			sb.Append("SgMaxi" + spacer);
+			sb.Append("SgAvMx" + spacer);
+			sb.Append("SgRati" + spacer);
+			sb.Append("PwrMax" + spacer);
+			sb.Append("PowrAvg" + spacer);
+
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
+			sb.Append("Sylls" + spacer);
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
+			sb.Append("Catgs" + spacer);
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Monot" + f + spacer);
+			sb.Append("Monotny" + spacer);
+			sb.Append("Name" + spacer);
+
+			return sb.ToString();
+		}
+
+		public static string Analysis24HourHeader()
+		{
+			StringBuilder sb = new StringBuilder();
+			sb.Append("Time" + spacer);
+
+			sb.Append("SgMaxi" + spacer);
+			sb.Append("SgAvMx" + spacer);
+			sb.Append("SgRati" + spacer);
+			sb.Append("PwrMax" + spacer);
+			sb.Append("PowrAvg" + spacer);
+
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
+			sb.Append("Sylls" + spacer);
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
+			sb.Append("Catgs" + spacer);
+			for (int f = 0; f < analysisBandCount; f++) sb.Append("Mon" + f + spacer);
+			sb.Append("Mntny" + spacer);
+
+
+			// element content
+			//7 Time    48 timeslots in 24 hours
+			//8 SigMax
+			//9 SgAvMx
+			//10 SgRati
+			//11 PwrMax
+			//12 PwrAvg
+
+			//13 FrBnd0 syllables in freq band
+			//14 FrBnd1
+			//15 FrBnd2
+			//16 FrBnd3
+			//17 FrBnd4
+			//18 FrBnd5
+			//19 FrBnd6
+			//20 FrBnd7
+			//21 FrBnd8
+			//22 FrBnd9
+			//23 FrBnd10
+			//24 Sylls  syllable total over all freq bands of sonogram
+
+			//25 FrBnd0 clusters in freq band 
+			//26 FrBnd1
+			//27 FrBnd2
+			//28 FrBnd3
+			//29 FrBnd4
+			//30 FrBnd5
+			//31 FrBnd6
+			//32 FrBnd7
+			//33 FrBnd8
+			//34 FrBnd9
+			//35 FrBnd10
+			//36 Catgs  cluster total over all freq bands of sonogram
+
+			//37 FrBnd0 monotony in freq band
+			//38 FrBnd1
+			//39 FrBnd2
+			//40 FrBnd3
+			//41 FrBnd4
+			//42 FrBnd5
+			//43 FrBnd6
+			//44 FrBnd7
+			//45 FrBnd8
+			//46 FrBnd9
+			//47 FrBnd10
+			//48 Av monotony over all freq bands of sonogram
+
+			return sb.ToString();
+		}
+		#endregion
+
+		private double zScoreThreshold;
         private int garbageID;
 
         // RESULTS FOR SPECIFIC ANIMAL CALL ANALYSIS
@@ -1223,30 +1347,34 @@ namespace AudioStuff
         // RESULTS FOR GENERAL ACOUSTIC ANALYSIS
         public double[] PowerHisto { get; set; }
         public double[] EventHisto { get; set; }
-        public double EventAverage { 
-            get{ double sum = 0.0;
-            for (int i = 0; i < Results.analysisBandCount; i++) sum += EventHisto[i];
-            return sum / (double)Results.analysisBandCount;
-            }}
+        public double EventAverage
+		{ 
+            get
+			{
+				double sum = 0.0;
+				for (int i = 0; i < Results.analysisBandCount; i++)
+					sum += EventHisto[i];
+				return sum / (double)Results.analysisBandCount;
+            }
+		}
         public double EventEntropy { get; set; }
         public double[] ActivityHisto { get; set; }
 
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// </summary>
-        public Results()
-        {
-        }
-        /// <summary>
-        /// CONSTRUCTOR 2
-        /// </summary>
-        /// <param name="config"></param>
-        public Results(SonoConfig config)
-        {
-            this.Name = config.WavFName;
-            this.zScoreThreshold = config.ZScoreThreshold;
-            this.garbageID = config.FeatureVectorCount + 2 - 1;
-        }
+		#region Constructors
+		/// <summary>
+		/// CONSTRUCTOR 1
+		/// </summary>
+		public Results() { }
+
+		/// <summary>
+		/// CONSTRUCTOR 2
+		/// </summary>
+		public Results(SonoConfig config)
+		{
+			this.zScoreThreshold = config.ZScoreThreshold;
+			this.garbageID = config.FeatureVectorCount + 2 - 1;
+		}
+		#endregion
 
 		public List<Track> GetVocalTracks()
         {
@@ -1263,162 +1391,8 @@ namespace AudioStuff
             return tracks;
         }
 
-        public static List<Track> Results2VocalisationTracks(List<Results> results)
-        {
-            if ((results == null) || (results.Count == 0))
-            {
-                //throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
-                Console.WriteLine("WARNING!!!!  Results.Results2VocalTracks(): Results==null CANNOT EXTRACT DATA TRACKS FOR IMAGE!");
-                return null;
-            }
-
-			var tracks = new List<Track>();
-			foreach (var result in results)
-                tracks.AddRange(result.GetVocalTracks());
-            return tracks;
-        }
-
-		public static List<Track> Results2VocalisationTracks(List<Results> results, string name)
-        {
-            if (results == null || results.Count == 0)
-            {
-                //throw new Exception("WARNING!!!!  matrix==null CANNOT SAVE THE SONOGRAM AS IMAGE!");
-                Log.WriteLine("WARNING!!!!  Results.Results2VocalTracks(): Results==null CANNOT EXTRACT DATA TRACKS FOR IMAGE!");
-                return null;
-            }
-
-            var tracks = new List<Track>();
-			foreach (var result in results)
-				if (name.StartsWith(result.Name))
-					tracks.AddRange(result.GetVocalTracks());
-            return tracks;
-        }
-
-        public static string ResultsHeader()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Scan ID" + spacer);
-            sb.Append("Wav File Name" + spacer);
-            sb.Append("Date" + spacer);
-            sb.Append("Deployment" + spacer);
-            sb.Append("Duration" + spacer);
-            sb.Append("Hour"  + spacer);
-            sb.Append("Min "  + spacer);
-            sb.Append("24hr ID" + spacer);
-
-            sb.Append("Template ID" + spacer);
-            sb.Append("Hits" + spacer);
-            sb.Append("Max Score" + spacer);
-            sb.Append("Location (sec)" + spacer);
-            return sb.ToString();
-        }
-
-        public static string AnalysisHeader()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("#" + spacer);
-            sb.Append("Name                " + spacer);
-            sb.Append("Date    " + spacer);
-            sb.Append("Dploy" + spacer);
-            sb.Append("Durat" + spacer);
-            sb.Append("Hour" + spacer);
-            sb.Append("Min " + spacer);
-            sb.Append("TSlot" + spacer);
-
-            sb.Append("SgMaxi" + spacer);
-            sb.Append("SgAvMx" + spacer);
-            sb.Append("SgRati" + spacer);
-            sb.Append("PwrMax" + spacer);
-            sb.Append("PowrAvg" + spacer);
-
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
-            sb.Append("Sylls" + spacer);
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
-            sb.Append("Catgs" + spacer);
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Monot" + f + spacer);
-            sb.Append("Monotny" + spacer);
-            sb.Append("Name" + spacer);
-
-            return sb.ToString();
-        }
-
-        public static string Analysis24HourHeader()
-        {
-            StringBuilder sb = new StringBuilder();
-            sb.Append("Time" + spacer);
-
-            sb.Append("SgMaxi" + spacer);
-            sb.Append("SgAvMx" + spacer);
-            sb.Append("SgRati" + spacer);
-            sb.Append("PwrMax" + spacer);
-            sb.Append("PowrAvg" + spacer);
-
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Syl" + f + spacer);
-            sb.Append("Sylls" + spacer);
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Cat" + f + spacer);
-            sb.Append("Catgs" + spacer);
-            for (int f = 0; f < analysisBandCount; f++) sb.Append("Mon" + f + spacer);
-            sb.Append("Mntny" + spacer);
-
-
-            // element content
-            //7 Time    48 timeslots in 24 hours
-            //8 SigMax
-            //9 SgAvMx
-            //10 SgRati
-            //11 PwrMax
-            //12 PwrAvg
-
-            //13 FrBnd0 syllables in freq band
-            //14 FrBnd1
-            //15 FrBnd2
-            //16 FrBnd3
-            //17 FrBnd4
-            //18 FrBnd5
-            //19 FrBnd6
-            //20 FrBnd7
-            //21 FrBnd8
-            //22 FrBnd9
-            //23 FrBnd10
-            //24 Sylls  syllable total over all freq bands of sonogram
-
-            //25 FrBnd0 clusters in freq band 
-            //26 FrBnd1
-            //27 FrBnd2
-            //28 FrBnd3
-            //29 FrBnd4
-            //30 FrBnd5
-            //31 FrBnd6
-            //32 FrBnd7
-            //33 FrBnd8
-            //34 FrBnd9
-            //35 FrBnd10
-            //36 Catgs  cluster total over all freq bands of sonogram
-
-            //37 FrBnd0 monotony in freq band
-            //38 FrBnd1
-            //39 FrBnd2
-            //40 FrBnd3
-            //41 FrBnd4
-            //42 FrBnd5
-            //43 FrBnd6
-            //44 FrBnd7
-            //45 FrBnd8
-            //46 FrBnd9
-            //47 FrBnd10
-            //48 Av monotony over all freq bands of sonogram
-
-            return sb.ToString();
-        }
-
-        //**************************************************************************************************************************
-        //**************************************************************************************************************************
-        //**************************************************************************************************************************
-        //**************************************************************************************************************************
-        //**************************************************************************************************************************
-        //**************************************************************************************************************************
-
-        /// <summary>
+		#region Main Method
+		/// <summary>
         /// main method in class RESULTS
         /// </summary>
         static void Main()
@@ -1433,7 +1407,7 @@ namespace AudioStuff
             const string opFile = "Exp7_24hrCycle.txt";
             string opPath = testDirName + opFile;
 
-            Console.WriteLine("START ANALYSIS. \n  output to: " + opPath);
+            Log.WriteLine("START ANALYSIS. \n  output to: " + opPath);
 
             //set up arrays to contain TimeSlot info
             int[] counts = new int[timeSlotCount]; //require counts in each time slot for averages
@@ -1483,7 +1457,7 @@ namespace AudioStuff
                 }//end while
             }//end using
 
-            ArrayList opLines = new ArrayList();
+            var opLines = new List<string>();
             opLines.Add(Results.Analysis24HourHeader());
             for (int i = 0; i < timeSlotCount; i++)
             {
@@ -1510,9 +1484,7 @@ namespace AudioStuff
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
-
         } //end of Main
-    }//end class Results
-
-	
+		#endregion
+	}//end class Results
 }
