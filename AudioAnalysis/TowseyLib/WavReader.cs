@@ -5,91 +5,58 @@ using System.Text;
 
 namespace TowseyLib
 {
-
-
-    public sealed class WavReader
+    public sealed class TowseyWavReader
     {
-
         public const string wavFExt = ".wav";
-
         
         //declare variables, getters and setters
-        private int channels;
-        public int Channels { get { return channels; } private set { channels = value; } }
-        private int sampleRate;
-        public int SampleRate { get { return sampleRate; } private set { sampleRate = value; } }
-        private int sampleCount;
-        public int SampleCount { get { return sampleCount; } private set { sampleCount = value; } }
-        private int bitsPerSample;
-        public int BitsPerSample { get { return bitsPerSample; } private set { bitsPerSample = value; } }
-        private double[] samples;
-        public double[] Samples { get { return samples; } private set { samples = value; } }
-        private double amplitude_AbsMax;
-        public double Amplitude_AbsMax { get { return amplitude_AbsMax; } }
+		public int Channels { get; private set; }
+		public int SampleRate { get; private set; }
+		public int SampleCount { get; private set; }
+		public int BitsPerSample { get; private set; }
+		public double[] Samples { get; private set; }
+		//public double Amplitude_AbsMax { get; private set; }
 
-        private string wavFileDir;
-        public string WavFileDir { get { return wavFileDir; } private set { wavFileDir = value; } }
-        private string wavFileName;
-        public string WavFileName { get { return wavFileName; } private set { wavFileName = value; } }
-
+		public string WavFileDir { get; private set; }
+		public string WavFileName { get; private set; }
 
         public TimeSpan Time
         {
             get { return TimeSpan.FromSeconds(((double)Samples.Length) / SampleRate); }
         }
 
-
-
         /// <summary>
         /// CONSTRUCTOR 1
+        /// signal passed as file name
         /// </summary>
-        /// <param name="waveFileDir"></param>
-        /// <param name="wavFileName"></param>
-        public WavReader(string wavFileDir, string wavFileName, string wavFileExt)
+        public TowseyWavReader(string wavPath)
         {
-            this.wavFileDir = wavFileDir;
-            this.wavFileName = wavFileName;
-            string path = wavFileDir + wavFileName + wavFileExt;
-            ParseData(File.ReadAllBytes(path));
-            MaxValue(out this.amplitude_AbsMax);
+            FileInfo fi = new FileInfo(wavPath);
+            this.WavFileDir = fi.DirectoryName;
+			this.WavFileName = fi.Name.Substring(0, fi.Name.Length - 4);
+            ParseData(File.ReadAllBytes(wavPath));
+            CalculateMaxValue();
         }
 
         /// <summary>
         /// CONSTRUCTOR 2
+        /// signal passed as an array of bytes
         /// </summary>
-        /// <param name="waveFileDir"></param>
-        /// <param name="wavFileName"></param>
-        public WavReader(string wavPath)
-        {
-            FileInfo fi = new FileInfo(wavPath);
-            this.wavFileDir = fi.DirectoryName;
-            this.wavFileName = fi.Name;
-            this.wavFileName = wavFileName.Substring(0, wavFileName.Length - 4);
-            ParseData(File.ReadAllBytes(wavPath));
-            MaxValue(out this.amplitude_AbsMax);
-        }
-
-        /// <summary>
-        /// CONSTRUCTOR 3
-        /// </summary>
-        /// <param name="wavData"></param>
-        public WavReader(byte[] wavData)
+        public TowseyWavReader(byte[] wavData)
         {
             ParseData(wavData);
-            MaxValue(out this.amplitude_AbsMax);
+			CalculateMaxValue();
         }
 
         /// <summary>
         /// CONSTRUCTOR 3
         /// signal passed as an array of bytes
         /// </summary>
-        /// <param name="wavBytes"></param>
-        /// <param name="wavFName"></param>
-        public WavReader(byte[] wavBytes, string wavFName)
+        public TowseyWavReader(byte[] wavBytes, string wavFName)
         {
-            this.wavFileName = wavFName;
+            WavFileName = wavFName;
             ParseData(wavBytes);
-            MaxValue(out this.amplitude_AbsMax);
+			CalculateMaxValue();
         }
         /// <summary>
         /// CONSTRUCTOR 4
@@ -97,15 +64,15 @@ namespace TowseyLib
         /// </summary>
         /// <param name="rawData"></param>
         /// <param name="sampleRate"></param>
-        public WavReader(double[] rawData, int sampleRate, string sigName)
+		public TowseyWavReader(double[] rawData, int sampleRate, string sigName)
         {
-            this.Samples = rawData;
-            this.SampleRate = sampleRate;
-            this.SampleCount = rawData.Length;
-            this.wavFileName = sigName;
-            this.Channels = 1;
-            this.BitsPerSample = 16;
-            MaxValue(out this.amplitude_AbsMax);
+            Samples = rawData;
+            SampleRate = sampleRate;
+            SampleCount = rawData.Length;
+            WavFileName = sigName;
+            Channels = 1;
+            BitsPerSample = 16;
+			CalculateMaxValue();
         }
 
         private void ParseData(byte[] data)
@@ -181,17 +148,17 @@ namespace TowseyLib
                 dataLength = data.Length - headerLength;
 
             this.SampleCount = dataLength / bytesPerSample;
-            this.Samples = new double[sampleCount];
+            this.Samples = new double[SampleCount];
 
             switch (this.BitsPerSample)
             {
                 case 8:
-                    for (int i = 0, offset = headerLength; i < sampleCount; i++, offset += bytesPerSample)
-                        this.Samples[i] = data[offset] / 128.0;
+					for (int i = 0, offset = headerLength; i < SampleCount; i++, offset += bytesPerSample)
+                        Samples[i] = data[offset] / 128.0;
                     break;
                 case 16:
-                    for (int i = 0, offset = headerLength; i < sampleCount; i++, offset += bytesPerSample)
-                        this.Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
+					for (int i = 0, offset = headerLength; i < SampleCount; i++, offset += bytesPerSample)
+                        Samples[i] = BitConverter.ToInt16(data, offset) / 32768.0;
                     break;
                 default:
                     throw new NotSupportedException("Bits per sample other than 8 and 16.");
@@ -206,16 +173,16 @@ namespace TowseyLib
             // In end decide simply to estimate noise aftger skipping the first 10 or so frames!
 
             //this.Samples = TrimSamples(this.Samples); //trim the samples ie check that the samples do not begin or end with zeros
-            this.sampleCount = this.Samples.Length;
+            SampleCount = Samples.Length;
         }
 
-        public static WavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
+        public static TowseyWavReader SineWave(double freq, double amp, double phase, TimeSpan length, int sampleRate)
         {
             int n = (int)Math.Floor(length.TotalSeconds * sampleRate);
             double[] data = new double[n];
             for (int i = 0; i < n; i++)
                 data[i] = amp * Math.Sin(phase + 2.0 * Math.PI * freq * i / sampleRate);
-            return new WavReader(data, sampleRate, "noName");
+			return new TowseyWavReader(data, sampleRate, "noName");
         }
 
         public static double[] TrimSamples(double[] data)
@@ -258,28 +225,26 @@ namespace TowseyLib
             return newData;
         }
 
-
-
-        public void MaxValue(out double absMax)
+        void CalculateMaxValue()
         {
-            //avMax = 0.0;
-            //absMax = -Double.MaxValue;
-            //int duration = this.SampleCount / this.SampleRate; //duration in seconds
-            //for (int t = 0; t < duration; t++) //over time in seconds
-            //{
-            //    //double localMax = -Double.MaxValue;
-            //    for (int s = 0; s < this.SampleRate; s++)
-            //    {
-            //        double value = this.samples[(t*this.SampleRate)+s];
-            //        if ( value > absMax) absMax = value;
-            //        if (value > localMax) localMax = value;
-            //    }
-            //    avMax += localMax;
-            //}
-            ////avMax /= (double)duration;
-            absMax = this.samples[DataTools.GetMaxIndex(this.samples)];
+            //Amplitude_AbsMax = Samples[DataTools.GetMaxIndex(Samples)];
         }
 
-
+        public void SubSample(int interval)
+        {
+            if (interval <= 1) return; //do not change anything!
+            Console.WriteLine("\tSUBSAMPLING the signal - interval = " + interval);
+            int L = SampleCount;
+            int newL = L / interval; // the new length
+            double[] newSamples = new double[newL];
+            L = newL * interval; //want L to be exact mulitple of interval
+            for (int i = 0; i < newL; i++) 
+            {
+                newSamples[i] = Samples[i*interval];
+            }
+            Samples = newSamples;
+            SampleRate /= interval;
+            SampleCount = newL;
+        }
     }// end of class WavReader 
 }

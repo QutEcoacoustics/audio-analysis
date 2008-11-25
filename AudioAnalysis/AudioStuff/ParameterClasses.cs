@@ -48,7 +48,6 @@
 		public int maxSyllables = 1;  //NOT YET USED
 		public double maxSyllableGap = 0.25; //seconds  NOT YET USED
 		public double SongWindow = 1.000; //seconds USED TO CALCULATE SONG POISSON STATISTICS
-		public TheGrammar grammar = TheGrammar.WORDS_PERIODIC; //three grammar options are WORD_ORDER_RANDOM, WORD_ORDER_FIXED, WORDS_PERIODIC
 		public int callPeriodicity = 999;
 	}
 }

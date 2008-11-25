@@ -71,6 +71,39 @@ namespace TowseyLib
         //***************************************************************************
         //***************************************************************************
 
+
+        public static double AntiLogBase10(double value)
+        {
+            return Math.Exp(value * Math.Log(10));
+        }
+
+        public static double AntiLog(double value, double logBase)
+        {
+            return Math.Exp(value * Math.Log(logBase));
+        }
+
+
+
+
+        public static int[] Subarray(int[] A, int start, int length)
+        {
+            int end = start + length - 1;
+            if(end >= A.Length)
+            {
+                Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                return null;
+            }
+            int[] sa = new int[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                sa[i] = A[start+i];
+            }
+            return sa;
+        }
+
+
+
         /// <summary>
         /// Returns the submatrix of passed matrix.
         /// Assume that r1<r2, c1<c2. 
@@ -420,36 +453,28 @@ namespace TowseyLib
 
   	return rf;
   }
-
-        
+   
 //=============================================================================
 
+	public static Dictionary<string, int> WordsHisto(List<string> list)
+	{
+		var ht = new Dictionary<string, int>();
+		foreach (var item in list)
+		{
+			if (!ht.ContainsKey(item))
+				ht.Add(item, 1);
+			else
+				ht[item] = ht[item] + 1;
+		}
+		return ht;
+	}
 
-  
-  public static Hashtable WordsHisto(ArrayList list)
-  {
-      Hashtable ht = new Hashtable();
-      for (int i = 0; i < list.Count; i++)
-      {
-          if( ! ht.ContainsKey(list[i])) ht.Add(list[i], 1);
-          else 
-          {
-              int value = (int)ht[list[i]];
-              value++;
-              ht[list[i]] = value;
-          }
-      }
-      return ht;
-  }
-
-
-  public static void WriteArrayList(ArrayList list)
+  public static void WriteArrayList(List<string> list)
   {
       for (int i = 0; i < list.Count; i++)
-      {
-          Console.WriteLine(i + "  " + (string)list[i]);
-      }
+          Console.WriteLine(i + "  " + list[i]);
   }
+
   public static void writeArray(string[] array)
   {
       for (int i = 0; i < array.Length; i++)
@@ -470,8 +495,13 @@ namespace TowseyLib
   }
   public static void writeArray(double[] array)
   {
+      string format = "F3";
+      writeArray(array, format);
+  }
+  public static void writeArray(double[] array, string format)
+  {
       for (int i = 0; i < array.Length; i++)
-          Console.WriteLine(i+"  "+array[i].ToString("F6"));
+          Console.WriteLine(i + "  " + array[i].ToString(format));
   }
   public static void writeArray(bool[] array)
   {
@@ -479,7 +509,17 @@ namespace TowseyLib
           Console.WriteLine(i + "  " + array[i]);
   }
 
-  public static void writeMatrix(double[,] matrix)
+  public static void WriteArrayInLine(double[] array, string format)
+  {
+      int count = array.Length;//dimension
+      for (int i = 0; i < count; i++)
+      {
+          Console.Write(" " + array[i].ToString(format));
+      }
+      Console.WriteLine();
+  }
+
+  public static void writeMatrix(double[,] matrix, string format)
   {
       int rowCount = matrix.GetLength(0);//height
       int colCount = matrix.GetLength(1);//width
@@ -487,8 +527,27 @@ namespace TowseyLib
       {
           for (int j = 0; j < colCount; j++)
           {
-              Console.Write(" " + matrix[i, j].ToString("F2"));
+              Console.Write(" " + matrix[i, j].ToString(format));
               if(j<colCount-1)Console.Write(",");
+          }
+          Console.WriteLine();
+      }
+  }
+  public static void writeMatrix(double[,] matrix)
+  {  
+      writeMatrix(matrix, "F2");
+  }
+
+  public static void writeMatrix(int[,] matrix)
+  {
+      int rowCount = matrix.GetLength(0);//height
+      int colCount = matrix.GetLength(1);//width
+      for (int i = 0; i < rowCount; i++)
+      {
+          for (int j = 0; j < colCount; j++)
+          {
+              Console.Write(" " + matrix[i, j]);
+              if (j < colCount - 1) Console.Write(",");
           }
           Console.WriteLine();
       }
@@ -744,6 +803,14 @@ namespace TowseyLib
       return column;
   }
 
+  public static int SumColumn(int[,] m, int colID)
+  {
+      int rows = m.GetLength(0);
+      int sum = 0;
+      for (int i = 0; i < rows; i++) sum += m[i,colID];
+      return sum;
+  }
+
   public static double[] GetRow(double[,] m, int rowID)
   {
       int cols = m.GetLength(1);
@@ -751,6 +818,37 @@ namespace TowseyLib
       for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
       return row;
   }
+
+  public static int SumRow(int[,] m, int rowID)
+  {
+      int cols = m.GetLength(1);
+      int sum = 0;
+      for (int i = 0; i < cols; i++) sum += m[rowID, i];
+      return sum;
+  }
+
+  public static double[] SumColumns(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      double sum = 0.0;
+      double[] colSums = new double[cols];
+      for (int j = 0; j < cols; j++)
+      {
+          sum = 0.0;
+          for (int i = 0; i < rows; i++)
+          {
+              sum += m[i, j];
+          }
+          colSums[j] = sum;
+      }
+      sum = 0.0;
+      for (int j = 0; j < cols; j++) sum += colSums[j];
+      //Console.WriteLine("sum="+sum.ToString("F5"));
+      return colSums;
+  }
+
+
 
 
         //copy first n values of vector1 into vector 2}
@@ -881,6 +979,24 @@ namespace TowseyLib
 
             return returnV;
         }
+        /// <summary>
+        /// shift values by their mean.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[] Vector2Zscores(double[] V)
+        {
+            int L = V.Length;
+            double av; double sd;
+            NormalDist.AverageAndSD(V, out av, out sd);
+
+            double[] returnV = new double[L];
+
+            for (int i = 0; i < L; i++) returnV[i] = (V[i] - av)/sd;
+
+            return returnV;
+        }
+
 
         public static double DotProduct(double[] v1, double[] v2)
         {
@@ -1197,6 +1313,13 @@ namespace TowseyLib
       for (int i = 0; i < data.Length; i++) sum += data[i];
       return sum;
   }
+  public static double Sum(double[] data)
+  {
+      if (data == null) return 0;
+      double sum = 0;
+      for (int i = 0; i < data.Length; i++) sum += data[i];
+      return sum;
+  }
 
 
 
@@ -1216,7 +1339,7 @@ namespace TowseyLib
 
       double sum = 0;
       for (int i = 0; i < length; i++) sum += data[i];
-
+      if(sum == 0.0) return probs;
       for (int i = 0; i < length; i++)
       {
           probs[i] = data[i] / sum;
@@ -1733,10 +1856,12 @@ namespace TowseyLib
     /// <returns></returns>
   static public char Integer2Char(int num)
   {
-      int val = Math.Abs(num);
+      int val = Math.Abs(num); //convert negative numbers!!!
+      if (val == Int32.MaxValue) return 'x';
+      if (val == 0)              return 'n';
       if (val < 10) return val.ToString()[0];
-      else
       if (val >= 36) return '?'; //integer exceeds range of this conversion
+
       string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
       int n = val - 10;
       return ALPHABET[n];
@@ -1748,11 +1873,12 @@ namespace TowseyLib
   /// </summary>
   /// <param name="c"></param>
   /// <returns></returns>
-  static public int Char2Integer(char c)
+  public static int Char2Integer(char c)
   {
       if (c == 'n') return 0;
+      if (c == 'x') return Int32.MaxValue; // use max integer as substitute for garbage symbol.
       //check for chars 0 - 9
-      for (int i = 0; i < 10; i++) { if (i.ToString()[0] == c) return i; }
+      for (int i = 1; i < 10; i++) { if (i.ToString()[0] == c) return i; }
 
       //check for alphabetic chars
       string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -1761,15 +1887,14 @@ namespace TowseyLib
       Console.WriteLine("DataTools.Char2Integer(char c): WARNING!! "+c+" is an illegitimate char for this function");
       return 999; //not in chars 0-9 or A-Z
   }
-  static public int[] String2IntegerArray(string s)
+  
+  public static int Char2Integer(char c, int stateCount)
   {
-      int length = s.Length;
-      if (length == 0) return null;
-      int[] array = new int[length];
-      for (int i = 0; i < length; i++) { array[i] = Char2Integer(s[i]); }
-
-      return array;
+      int i = Char2Integer(c);
+      if (i == Int32.MaxValue) i = stateCount - 1; // the garbage symbol
+      return i;
   }
+
 
   //*************************************************************************************************************************************
 

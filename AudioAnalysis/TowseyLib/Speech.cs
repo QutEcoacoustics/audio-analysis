@@ -21,8 +21,7 @@ namespace TowseyLib
                 for (int j = 0; j < binCount; j++) //foreach freq bin
                 {
                     double amplitude = spectra[i, j];
-                    double power = amplitude * amplitude; //convert amplitude to power
-                    power = 10 * Math.Log10(power);    //convert to decibels
+                    double power = 10 * Math.Log10(amplitude * amplitude);    //convert amplitude to decibels
                     ////NOTE: the decibels calculation should be a ratio. 
                     //// Here the ratio is implied ie relative to the power in the normalised wav signal
                     SPEC[i, j] = power;
@@ -157,14 +156,15 @@ namespace TowseyLib
         /// <summary>
         /// Does linear filterbank conversion for sonogram for any frequency band given by minFreq and maxFreq.
         /// Performs linear integral as opposed to Mel integral
+        /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
         /// <param name="Nyquist">max frequency in original spectra</param>
-        /// <param name="minFreq">min freq in passed sonogram</param>
-        /// <param name="maxFreq">max freq in passed sonogram</param>
+        /// <param name="minFreq">min freq in passed sonogram matrix</param>
+        /// <param name="maxFreq">max freq in passed sonogram matrix</param>
         /// <returns></returns>
-        public static double[,] LinearConversion(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        public static double[,] LinearFilterBank(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
         {
 
             int freqRange = maxFreq - minFreq;
@@ -196,27 +196,23 @@ namespace TowseyLib
                         double ya = Speech.LinearInterpolate((double)(ipAint - 1), (double)ipAint, matrix[i, ipAint - 1], matrix[i, ipAint], ipA);
                         sum += Speech.LinearIntegral(ipA * ipBand, ipAint * ipBand, ya, matrix[i, ipAint]);
                     }
-                        for (int k = ipAint; k < ipBint; k++)
-                        {
-                            if ((k + 1) >= N) break;//to prevent out of range index
-                            sum += Speech.LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
-                        }
-                        if (ipBint < N)
-                        {
-                            double yb = Speech.LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
-                            sum += Speech.LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
-                            //if (i < 2) Console.WriteLine("## ipBint=" + ipBint + "  SUM=" + sum);
-                        }
 
-                        //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": ai=" + ipAint + " bi=" + ipBint + " b-a=" + (ipBint - ipAint) + " sum=" + sum.ToString("F1"));
+                    for (int k = ipAint; k < ipBint; k++)
+                    {
+                        if ((k + 1) >= N) break;  //to prevent out of range index
+                        sum += Speech.LinearIntegral(k * ipBand, (k + 1) * ipBand, matrix[i, k], matrix[i, k + 1]);
+                    }
 
-                    //double width = opBand;
+                    if (ipBint < N)
+                    {
+                        double yb = Speech.LinearInterpolate((double)ipBint, (double)(ipBint + 1), matrix[i, ipBint], matrix[i, ipBint + 1], ipB);
+                        sum += Speech.LinearIntegral(ipBint * ipBand, ipB * ipBand, matrix[i, ipBint], yb);
+                    }
+
                     double width = ipB - ipA;
-                    outData[i, j] = sum / width; //to obtain power per mel
-                    //outData[i, j] = sum / opBand; //to obtain power per mel
+                    outData[i, j] = sum / width; //to obtain power per Hz
                     if (outData[i, j] < 0.0001) outData[i, j] = 0.0001;
-                    //if (i < 2) Console.WriteLine("i=" + i + " j=" + j + ": sum=" + sum.ToString("F1"));
-                } //end of for all mel bands
+                } //end of for all freq bands
             //implicit end of for all spectra or time steps
 
             return outData;
@@ -228,15 +224,15 @@ namespace TowseyLib
 
 
         /// <summary>
-        /// Does mel conversion for passed sonogram matrix.
-        /// IMPORTANT !!!!! Assumes that min freq of sonogram = 0 Hz and maxFreq = Nyquist.
+        /// Does MelFilterBank for passed sonogram matrix.
+        /// IMPORTANT !!!!! Assumes that min freq of passed sonogram matrix = 0 Hz and maxFreq = Nyquist.
         /// Uses Greg's MelIntegral
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
         /// <param name="Nyquist">max frequency in original spectra</param>
         /// <returns></returns>
-        public static double[,] MelConversion(double[,] matrix, int filterBankCount, double Nyquist)
+        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double Nyquist)
         {
             int M = matrix.GetLength(0); //number of spectra or time steps
             int N = matrix.GetLength(1); //number of Hz bands = 2^N +1
@@ -293,14 +289,15 @@ namespace TowseyLib
         /// <summary>
         /// Does mel conversion for sonogram for any frequency band given by minFreq and maxFreq.
         /// Uses Greg's MelIntegral
+        /// The first step is to calculate the number of filters for the required frequency sub-band.
         /// </summary>
         /// <param name="matrix">the sonogram</param>
         /// <param name="filterBankCount">number of filters over full freq range 0 Hz - Nyquist</param>
         /// <param name="Nyquist">max frequency in original spectra</param>
-        /// <param name="minFreq">min freq in passed sonogram</param>
-        /// <param name="maxFreq">max freq in passed sonogram</param>
+        /// <param name="minFreq">min freq in the passed sonogram matrix</param>
+        /// <param name="maxFreq">max freq in the passed sonogram matrix</param>
         /// <returns></returns>
-        public static double[,] MelConversion(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
+        public static double[,] MelFilterBank(double[,] matrix, int filterBankCount, double Nyquist, int minFreq, int maxFreq)
         {
 
             double freqRange  = maxFreq - minFreq;
@@ -359,7 +356,6 @@ namespace TowseyLib
                             sum += Speech.MelIntegral(bi * linBand, ipB * linBand, matrix[i, bi], yb);
                         }
                     }
-
 
                     //double melAi = Speech.Mel(ai + minFreq);
                     //double melBi = Speech.Mel(bi + minFreq);
