@@ -117,11 +117,6 @@ namespace AudioStuff
         } //end Main
         //#####################################################################################
 
-
-
-
-
-
         private static void AnalyseArtificialSignal(string appIniPath)
         {
             Sonogram s;
@@ -138,7 +133,8 @@ namespace AudioStuff
                 //double[,] m = s.Matrix;
                 double[,] m = s.SpectralM;
 
-                s.SaveImage(m, TrackType.energy, s.Decibels);
+				var imagePath = Path.Combine(s.State.OutputDir, Path.GetFileNameWithoutExtension(s.State.WavFilePath) + s.State.BmpFileExt);
+                s.SaveImage(imagePath, m, TrackType.energy, s.Decibels);
             }
             catch (Exception e)
             {
@@ -179,7 +175,8 @@ namespace AudioStuff
 
                 //Console.WriteLine("Syllable count=" + DataTools.Sum(syllableDistribution) + "  Category count=" + DataTools.Sum(categoryDistribution));
 
-                s.SaveImage(m, syllables, col);
+				string fName = s.State.OutputDir + Path.GetFileNameWithoutExtension(s.State.WavFilePath) + s.State.BmpFileExt;
+                s.SaveImage(fName, m, syllables, col);
                 //s.SaveImageOfSolids(m, syllables, col);
                 //s.SaveImage(m, categoryAvShapes, col);
                 //s.SaveImageOfCentroids(m, categoryAvShapes, col);
@@ -195,7 +192,7 @@ namespace AudioStuff
         {
             DirectoryInfo d = new DirectoryInfo(wavDir);
             FileInfo[] files = d.GetFiles("*" + WavReader.WavFileExtension);  //FileInfo[] 
-            ArrayList lines = new ArrayList();
+			var lines = new List<string>();
             lines.Add(Results.AnalysisHeader());
 
             try
@@ -228,7 +225,8 @@ namespace AudioStuff
                         ArrayList categoryAvShapes = Shape.CategoryShapes(syllables, categories, categoryCount);
                         int[] categoryDistribution = Shape.Distribution(categoryAvShapes, Results.analysisBandCount);
 
-                        s.SaveImage(m, syllables, col);
+						string imagePath = s.State.OutputDir + Path.GetFileNameWithoutExtension(s.State.WavFilePath) + s.State.BmpFileExt;
+						s.SaveImage(imagePath, m, syllables, col);
 
                         //Console.WriteLine("sigAbsMax=" + s.State.SignalAbsMax + "  sigAvMax=" + s.State.SignalAvMax);
                         //SignalAvMax  SignalAbsMax  syllableDistribution  categoryDistribution
@@ -252,17 +250,17 @@ namespace AudioStuff
 
         private static void ScanMultipleRecordingsWithTemplate(string appIniPath, string wavDir, string opDirName, int callID)
         {
-            Console.WriteLine("SCANNING MULTIPLE RECORDINGS " + callID);
+            Log.WriteLine("SCANNING MULTIPLE RECORDINGS " + callID);
 
             DirectoryInfo d = new DirectoryInfo(wavDir);
             FileInfo[] files = d.GetFiles("*" + WavReader.WavFileExtension);
-            ArrayList lines = new ArrayList(); //to store results one line for each recording
+			var lines = new List<string>(); //to store results one line for each recording
             lines.Add(Recogniser.ResultsHeader());
 
             try
             {
-                Console.WriteLine("\nREADING TEMPLATE");
-                Template t = new Template(appIniPath, callID);
+				Log.WriteLine("\nREADING TEMPLATE");
+				Template t = Template.LoadTemplateByCallID(appIniPath, callID);
                 t.TemplateState.OutputDir = opDirName;
                 Recogniser cl = new Recogniser(t);
 				Log.Verbosity = 0;
@@ -270,31 +268,31 @@ namespace AudioStuff
                 int count = 0;
                 foreach (FileInfo fi in files) if (fi.Extension == WavReader.WavFileExtension)
                     {
-                        Console.WriteLine("\n##########################################");
-                        Console.WriteLine("##### " + (count++) + " File=" + fi.Name);
+						Log.WriteLine("\n##########################################");
+						Log.WriteLine("##### " + (count++) + " File=" + fi.Name);
                         string wavPath = wavDir + fi.Name;
                         try
                         {
                             cl.ScanAudioFileWithTemplates(wavPath);
                             cl.SaveImage(fi.Name);
                             lines.Add(cl.OneLineResult(count));
-                            Console.WriteLine("# Template Hits =" + cl.Result.VocalCount);
-                            Console.Write("# Best Score    =" + cl.Result.VocalBest.ToString("F1") + " at ");
-                            Console.WriteLine(cl.Result.VocalBestLocation.ToString("F1") + " sec");
-                            Console.WriteLine("# Periodicity   =" + cl.Result.CallPeriodicity_ms + " ms");
-                            Console.WriteLine("# Periodic Hits =" + cl.Result.NumberOfPeriodicHits);
+							Log.WriteLine("# Template Hits =" + cl.Result.VocalCount);
+							Log.Write("# Best Score    =" + cl.Result.VocalBest.ToString("F1") + " at ");
+							Log.WriteLine(cl.Result.VocalBestLocation.ToString("F1") + " sec");
+							Log.WriteLine("# Periodicity   =" + cl.Result.CallPeriodicity_ms + " ms");
+							Log.WriteLine("# Periodic Hits =" + cl.Result.NumberOfPeriodicHits);
                         }
                         catch (Exception e)
                         {
-                            Console.WriteLine("FAILED TO EXTRACT SONOGRAM");
-                            Console.WriteLine(e.ToString());
+							Log.WriteLine("FAILED TO EXTRACT SONOGRAM");
+							Log.WriteLine(e.ToString());
                         }
                     }//end all wav files
             }//end try
             catch (Exception e)
             {
-                Console.WriteLine("UNCAUGHT ERROR!!");
-                Console.WriteLine(e.ToString());
+				Log.WriteLine("UNCAUGHT ERROR!!");
+				Log.WriteLine(e.ToString());
             }
             finally
             {
@@ -306,35 +304,38 @@ namespace AudioStuff
 
         private static void ReadAndRecognise(string appIniPath, int callID, string wavPath)
         {
-            Console.WriteLine("\nSCAN WAV FILE WITH TEMPLATE(S)");
-            Console.WriteLine("wavPath=" + wavPath);
-            Console.WriteLine("\nREADING TEMPLATE " + callID);
-            Console.WriteLine("... AND CREATING CLASSIFIER");
+            Log.WriteLine("\nSCAN WAV FILE WITH TEMPLATE(S)");
+            Log.WriteLine("wavPath=" + wavPath);
+            Log.WriteLine("\nREADING TEMPLATE " + callID);
+			Log.WriteLine("... AND CREATING CLASSIFIER");
             try
             {
-                Template t1 = new Template(appIniPath, callID);
+				var templatePath = Template.GetTemplatePathByCallID(Path.GetDirectoryName(appIniPath), callID);
+				var config = SonoConfig.Load(appIniPath);
+				Template t1 = new Template(config, templatePath);
                 //Template t2 = new Template(appIniPath, 8);
 
                 Recogniser cl = new Recogniser(t1);
                 // cl.AddTemplate(t2);
                 cl.ScanAudioFileWithTemplates(wavPath);
 
-                cl.SaveSymbolSequences(t1.TemplateDir + "symbolSequences.txt", true);
-                cl.SaveImage();
+				cl.SaveSymbolSequences(Path.Combine(Path.GetDirectoryName(templatePath), "symbolSequences.txt"), true);
+				string imagePath = Path.Combine(config.OutputDir, Path.GetFileNameWithoutExtension(wavPath) + config.BmpFileExt);
+				cl.SaveImage(imagePath);
                 cl.WriteRecognitionResults2Console();
                 if (cl.ResultsList.Count > 0)
                 {
-                    Console.WriteLine("# Template Hits =" + cl.ResultsList[0].VocalCount);
-                    Console.Write("# Best Score    =" + cl.ResultsList[0].VocalBest.ToString("F1") + " at ");
-                    Console.WriteLine(cl.ResultsList[0].VocalBestLocation.ToString("F1") + " sec");
-                    Console.WriteLine("# Periodicity   =" + cl.ResultsList[0].CallPeriodicity_ms + " ms");
-                    Console.WriteLine("# Periodic Hits =" + cl.ResultsList[0].NumberOfPeriodicHits);
+					Log.WriteLine("# Template Hits =" + cl.ResultsList[0].VocalCount);
+					Log.Write("# Best Score    =" + cl.ResultsList[0].VocalBest.ToString("F1") + " at ");
+					Log.WriteLine(cl.ResultsList[0].VocalBestLocation.ToString("F1") + " sec");
+					Log.WriteLine("# Periodicity   =" + cl.ResultsList[0].CallPeriodicity_ms + " ms");
+					Log.WriteLine("# Periodic Hits =" + cl.ResultsList[0].NumberOfPeriodicHits);
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine("FAILED TO EXTRACT SONOGRAM");
-                Console.WriteLine(e.ToString());
+				Log.WriteLine("FAILED TO EXTRACT SONOGRAM");
+				Log.WriteLine(e.ToString());
             }
         }
 
@@ -343,12 +344,15 @@ namespace AudioStuff
             Console.WriteLine("\nREADING TEMPLATE" + callID + " TO PRODUCE SYMBOL SEQUENCE");
             try
             {
-                Template t = new Template(appIniPath, callID);
+				var templatePath = Template.GetTemplatePathByCallID(Path.GetDirectoryName(appIniPath), callID);
+				var config = SonoConfig.Load(appIniPath);
+				Template t = new Template(config, templatePath);
                 Console.WriteLine("\nCREATING RECOGNISER");
                 Recogniser cl = new Recogniser(t);
                 cl.GenerateSymbolSequence();
-                cl.SaveSymbolSequences(t.TemplateDir + "symbolSequences.txt", false);
-                cl.SaveImage(TrackType.syllables);
+                cl.SaveSymbolSequences(Path.Combine(Path.GetDirectoryName(templatePath), "symbolSequences.txt"), false);
+				var imagePath = Path.Combine(config.OutputDir, Path.GetFileNameWithoutExtension(config.WavFilePath) + config.BmpFileExt);
+                cl.SaveImage(imagePath, TrackType.syllables);
             }
             catch (Exception e)
             {
@@ -362,6 +366,7 @@ namespace AudioStuff
             Console.WriteLine("\nCREATING TEMPLATE " + callID);
             try
             {
+				var templatePath = Template.GetTemplatePathByCallID(Path.GetDirectoryName(appIniPath), callID);
                 Template t = new Template(appIniPath, callID, gui.CallName, gui.CallComment, gui.SourcePath, gui.DestinationFileDescriptor);
                 if (gui.Fv_Source == FV_Source.SELECTED_FRAMES)
                 {
@@ -381,16 +386,16 @@ namespace AudioStuff
                                                                                     gui.FvDefaultNoiseFile, gui.ZScoreThreshold);
                 //t.SetSongParameters(maxSyllables, maxSyllableGap, typicalSongDuration);
                 t.SetLanguageModel(gui.HmmType, gui.HmmName);
-                t.ExtractTemplateFromSonogram();
+				t.ExtractTemplateFromSonogram(templatePath);
                 t.WriteInfo2STDOUT();        //writes to System.Console.
 
 
                 Console.WriteLine("\nCREATING RECOGNISER");
                 Recogniser cl = new Recogniser(t);
                 cl.GenerateSymbolSequence();
-                cl.SaveSymbolSequences(t.TemplateDir + "symbolSequences.txt", false);
-                cl.SaveImage(TrackType.syllables);
-
+				cl.SaveSymbolSequences(Path.Combine(Path.GetDirectoryName(templatePath), "symbolSequences.txt"), false);
+				var imagePath = Path.Combine(t.TemplateState.OutputDir, Path.GetFileNameWithoutExtension(t.TemplateState.WavFilePath) + t.TemplateState.BmpFileExt);
+                cl.SaveImage(imagePath, TrackType.syllables);
             }
             catch (Exception e)
             {
@@ -413,7 +418,8 @@ namespace AudioStuff
                 //m = ImageTools.Convolve(m, Kernal.HorizontalLine5);
                 //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.DiagLine2);
                 //double[,] m = ImageTools.Convolve(s.Matrix, Kernal.Laplace4);
-                s.SaveImage(m, TrackType.none, null);
+				string imagePath = Path.Combine(s.State.OutputDir, Path.GetFileNameWithoutExtension(wavPath) + s.State.BmpFileExt);
+				s.SaveImage(imagePath, m, TrackType.none, null);
                 //s.SaveImage(m, TrackType.energy, s.Decibels);
             }
             catch (Exception e)

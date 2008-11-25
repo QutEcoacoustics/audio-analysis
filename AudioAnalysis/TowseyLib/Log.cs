@@ -8,6 +8,12 @@ namespace TowseyLib
 	{
 		public static int Verbosity = 0;
 
+		public static void Write(string format, params object[] args)
+		{
+#if LOGTOCONSOLE
+			Console.Write(format, args);
+#endif
+		}
 		public static void WriteLine(string format, params object[] args)
 		{
 #if LOGTOCONSOLE
