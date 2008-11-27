@@ -7,17 +7,15 @@ namespace TowseyLib
 {
     public class Configuration
     {
-        private string fName;
-        Hashtable table;
+        Dictionary<string, string> table;
 
         public Configuration()
         {
-            this.table = new Hashtable();
+			table = new Dictionary<string, string>();
         }
 
         public Configuration(string fName)
         {
-            this.fName = fName;
             table = FileTools.ReadPropertiesFile(fName);
         }
 
@@ -28,9 +26,8 @@ namespace TowseyLib
 
         public string GetString(string key)
         {
-            if (table.ContainsKey(key))
-				return table[key].ToString();
-			return null;
+			string value;
+			return table.TryGetValue(key, out value) ? value : null;
         }
 
         public int GetInt(string key)
@@ -124,9 +121,6 @@ namespace TowseyLib
                 return false;
             }
             return b;
-        }//end getBoolean
-
-
-
-    }  // end of class Configuration
+        } //end getBoolean
+    } // end of class Configuration
 }

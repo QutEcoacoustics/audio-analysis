@@ -29,11 +29,13 @@ namespace AudioStuff
         //public double WavMax { get; set; }
 
         //SIGNAL PARAMETERS
+		// MOVED TO TemplateParameters
         public int SampleRate { get; set; }
         //public int SampleCount { get; set; }
         public double TimeDuration { get; set; }
 
         // FRAMING or WINDOWING
+		// MOVED TO MMTemplate
         public int SubSample { get; set; }         //use this to reduce sampling rate esp if SR > 22 kHz
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; }  //percent overlap of frames
@@ -81,11 +83,13 @@ namespace AudioStuff
         public double PowerMax { get; set; }                //max power in sonogram
 
         //FFT parameters
+		// MOVED TO FftConfiguration
         public string WindowFncName { get; set; }
         public FFT.WindowFunc WindowFnc { get; set; }
         public int NPointSmoothFFT { get; set; }      //number of points to smooth FFT spectra
 
         // MEL SCALE PARAMETERS
+		// Moved to MfccConfiguration
         public int FilterbankCount { get; set; }
         public int MelBinCount { get; set; }    //number of mel spectral values 
         public double MinMelPower { get; set; } //min power in mel sonogram
@@ -94,6 +98,8 @@ namespace AudioStuff
 
         // MFCC parameters
         public SonogramType SonogramType { get; set; }
+
+		// MOVED TO MMTemplate
         public bool DoMelScale { get; set; }
         public bool DoNoiseReduction { get; set; }
         public int ccCount { get; set; }     //number of cepstral coefficients
@@ -104,6 +110,7 @@ namespace AudioStuff
 		public bool IncludeDoubleDelta { get; set; }
 
         //FEATURE VECTOR PARAMETERS 
+		// MOVED TO MMTemplate
         public FV_Source FeatureVectorSource { get; set; }
         public string[] FeatureVector_SelectedFrames { get; set; } //store frame IDs as string array
         public int MarqueeStart { get; set; }
@@ -121,6 +128,7 @@ namespace AudioStuff
         public int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER
 
         //THE LANGUAGE MODEL
+		// MOVED TO MMTemplate
         public int WordCount { get; set; }
         public string[] Words { get; set; }
         public MarkovModel WordModel { get; set; }
