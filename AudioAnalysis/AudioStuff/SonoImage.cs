@@ -711,7 +711,7 @@ namespace AudioStuff
 
             //Console.WriteLine("offset=" + this.offset);
             int bottom = this.offset + this.height - 1;
-            for (int x = 0; x < bmpWidth; x++)
+            for (int x = 0; x < Math.Min(bmp.Width, intData.Length); x++)
             {
                 Color col = SonoImage.TrackColors[intData[x]];
                 if (intData[x] == 0) col = white;
@@ -741,7 +741,7 @@ namespace AudioStuff
 
             int bmpWidth = bmp.Width;
             int bmpHt = bmp.Height;
-            for (int x = 0; x < bmpWidth; x++)
+			for (int x = 0; x < Math.Min(bmp.Width, doubleData.Length); x++)
             {
                 int id = this.Height - 1 - (int)(this.Height * doubleData[x] / Track.ScoreMax);
                 if (id < 0) id = 0;

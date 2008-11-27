@@ -199,7 +199,6 @@ namespace TowseyLib
         };
         #endregion
 
-
         public static FFT.WindowFunc GetWindowFunction(string name)
         {
             //FFT.WindowFunc windowFnc;

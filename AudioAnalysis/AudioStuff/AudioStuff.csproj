@@ -48,9 +48,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssortedConfigurationClasses.cs" />
+    <Compile Include="AudioRecording.cs" />
+    <Compile Include="BaseClassifier.cs" />
+    <Compile Include="BaseClassifierParameters.cs" />
+    <Compile Include="BaseResult.cs" />
     <Compile Include="FeatureVector.cs" />
+    <Compile Include="MMTemplate.cs" />
+    <Compile Include="NewMain.cs" />
+    <Compile Include="NewSonogram.cs" />
     <Compile Include="ParameterClasses.cs" />
     <Compile Include="GUI.cs" />
+    <Compile Include="BaseSonogramConfig.cs" />
+    <Compile Include="Settings.cs" />
     <Compile Include="SonoConfig.cs" />
     <Compile Include="SonoImage.cs" />
     <Compile Include="Template.cs" />
@@ -67,7 +77,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

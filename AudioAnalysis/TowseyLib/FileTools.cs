@@ -277,9 +277,9 @@ namespace TowseyLib
 
         } //end of WriteArray2File_Formatted
 
-        public static Hashtable ReadPropertiesFile(string fName)
+        public static Dictionary<string, string> ReadPropertiesFile(string fName)
         {
-            Hashtable table = new Hashtable();
+			var table = new Dictionary<string, string>();
             using (TextReader reader = new StreamReader(fName))
             {
                 string line;

@@ -22,7 +22,7 @@ namespace AudioStuff
         private readonly int noiseSampleCount = 5000;
 
         private List<Template> templates = new List<Template>(); //an array of class Template
-        private SonoConfig templateConfig;
+        public SonoConfig templateConfig;
         private Sonogram currentSonogram;
 
 		public FeatureVector[] FVs { get; private set; }
@@ -1141,7 +1141,8 @@ namespace AudioStuff
             sb.Append(scanID + Results.spacer); //CALLID
             //sb.Append(DateTime.Now.ToString("u") + spacer); //DATE
             sb.Append(Path.GetFileNameWithoutExtension(templateConfig.WavFilePath) + Results.spacer); //sonogram FNAME
-			sb.Append(templateConfig.Time); //sonogram date
+			if (templateConfig.Time != null)
+				sb.Append(templateConfig.Time.Value.ToString("yyyyMMdd")); //sonogram date
 			sb.Append(Results.spacer);
             sb.Append(templateConfig.DeploymentName + Results.spacer); //Deployment name
             sb.Append(templateConfig.TimeDuration.ToString("F2") + Results.spacer); //length of recording
