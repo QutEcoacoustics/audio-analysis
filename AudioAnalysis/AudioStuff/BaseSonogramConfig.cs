@@ -17,46 +17,51 @@ namespace AudioStuff
 		public BaseSonogramConfig(Configuration config)
 		{
 			FftConfiguration = new FftConfiguration(config);
+			EndpointDetectionConfiguration = new EndpointDetectionConfiguration(config);
+
+			WindowSize = config.GetInt("WINDOW_SIZE");
+			WindowOverlap = config.GetDouble("WINDOW_OVERLAP");
+			DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
+
+			MinFreqBand = config.GetIntNullable("MIN_FREQ");
+			MaxFreqBand = config.GetIntNullable("MAX_FREQ");
 		}
 
 		#region Properties
 		public FftConfiguration FftConfiguration { get; private set; }
 
 		public int WindowSize { get; set; }
-		public double WindowOverlap { get; set; }  // Percent overlap of frames
+		public double WindowOverlap { get; set; } // Percent overlap of frames
+		public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
+		public bool DoPreemphasis { get; set; }
+		public bool DoFreqBandAnalysis { get; set; }
+		public bool DoNoiseReduction { get; set; }
 
-		int? minFreqBand;
-		public int? MinFreqBand
-		{
-			get { return minFreqBand; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("MinFreqBand must be >= 0");
-				minFreqBand = value;
-			}
-		}
+		public EndpointDetectionConfiguration EndpointDetectionConfiguration { get; private set; }
 
-		int? maxFreqBand;
-		public int? MaxFreqBand
-		{
-			get { return maxFreqBand; }
-			set
-			{
-				if (value < 0)
-					throw new ArgumentOutOfRangeException("MaxFreqBand must be >= 0");
-				maxFreqBand = value;
-			}
-		}
+		public int? MinFreqBand { get; private set; }
+		public int? MaxFreqBand { get; private set; }
 		#endregion
 	}
 
-	public class FeatureSonogramConfig : BaseSonogramConfig
+	public class CepstralSonogramConfig : BaseSonogramConfig
 	{
-		public FeatureSonogramConfig(Configuration config) : base(config)
+		public CepstralSonogramConfig(Configuration config) : base(config)
 		{
+			MfccConfiguration = new MfccConfiguration(config);
 		}
 
 		public MfccConfiguration MfccConfiguration { get; set; }
+	}
+
+	public class AcousticVectorsSonogramConfig : CepstralSonogramConfig
+	{
+		public AcousticVectorsSonogramConfig(Configuration config)
+			: base(config)
+		{
+			DeltaT = config.GetInt("DELTA_T"); //frames between acoustic vectors
+		}
+
+		public int DeltaT { get; set; }
 	}
 }

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioStuff</RootNamespace>
     <AssemblyName>AudioStuff</AssemblyName>
-    <StartupObject>AudioStuff.MainApp</StartupObject>
+    <StartupObject>AudioStuff.NewMain</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -56,7 +56,7 @@
     <Compile Include="FeatureVector.cs" />
     <Compile Include="MMTemplate.cs" />
     <Compile Include="NewMain.cs" />
-    <Compile Include="NewSonogram.cs" />
+    <Compile Include="BaseSonogram.cs" />
     <Compile Include="ParameterClasses.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="BaseSonogramConfig.cs" />

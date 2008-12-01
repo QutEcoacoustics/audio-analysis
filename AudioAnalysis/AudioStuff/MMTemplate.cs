@@ -9,22 +9,11 @@ namespace AudioStuff
 	public class MMTemplate : TemplateParameters
 	{
 		#region Properties
-		public FeatureSonogramConfig SonogramConfiguration { get; set; }
-
-		
-		public double FrameOffset { get; set; }    // Duration of non-overlapped part of window/frame in seconds
-		public int FrameCount { get; set; }        // Number of frames
-		public double FramesPerSecond { get; set; }
+		public CepstralSonogramConfig SonogramConfiguration { get; set; }
 
 		// MFCC parameters
-		public bool DoMelScale { get; set; }
-		public bool DoNoiseReduction { get; set; }
-		public int ccCount { get; set; }     //number of cepstral coefficients
 		public double MinCepPower { get; set; } //min value in cepstral sonogram
 		public double MaxCepPower { get; set; } //max value in cepstral sonogram
-		public int DeltaT { get; set; }
-		public bool IncludeDelta { get; set; }
-		public bool IncludeDoubleDelta { get; set; }
 
 		//FEATURE VECTOR PARAMETERS 
 		public FV_Source FeatureVectorSource { get; set; }
