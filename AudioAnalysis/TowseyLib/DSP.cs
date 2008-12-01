@@ -30,9 +30,7 @@ namespace TowseyLib
             for (int i = 0; i < framecount; i++) //foreach frame
             {
                 for (int j = 0; j < windowSize; j++) //foreach sample
-                {
                     frames[i, j] = data[offset + j];
-                }
                 offset += step;
             } //end matrix
             return frames;

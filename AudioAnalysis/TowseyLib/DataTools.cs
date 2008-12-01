@@ -891,61 +891,50 @@ namespace TowseyLib
                 ret[i] = (v[i] - min) / (max - min);
 
             return (ret);
-  }
+		}
 
+		/// <summary>
+		/// returns an array of double initialised with passed value
+		/// </summary>
+		public static double[] GetInitialisedArray(int length, double iniValue)
+		{
+		  double[] array = new double[length];
+		  for (int i = 0; i < length; i++) array[i] = iniValue;
+		  return (array);
+		}
 
-  /// <summary>
-  /// returns an array of double initialised with passed value
-  /// </summary>
-  /// <param name="length"></param>
-  /// <param name="iniValue"></param>
-  /// <returns></returns>
-  public static double[] GetInitialisedArray(int length, double iniValue)
-  {
-      double[] array = new double[length];
-      for (int i = 0; i < length; i++) array[i] = iniValue;
-      return (array);
-  }
+		/// <summary>
+		/// normalised matrix of real values to [0,1].
+		/// </summary>
+		public static double[,] normalise(double[,] m)
+		{
+			double min = Double.MaxValue;
+			double max = -Double.MaxValue;
 
+			int rows = m.GetLength(0);
+			int cols = m.GetLength(1);
+			double[,] ret = new double[rows,cols];
 
+			for (int i = 0; i < rows; i++)
+			for (int j = 0; j < cols; j++)
+			{
+				if (m[i,j] > max)
+					max = m[i,j];
+				if (m[i,j] < min)
+					min = m[i,j];
+			}
+			double range = max - min;
 
-        /// <summary>
-        /// normalised matrix of real values to [0,1].
-        /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
-        public static double[,] normalise(double[,] m)
-        {
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
+			for (int i = 0; i < rows; i++)
+			for (int j = 0; j < cols; j++)
+				ret[i, j] = (m[i, j] - min) / range;
 
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
-            double[,] ret = new double[rows,cols];
-
-            for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-            {
-                if (m[i,j] > max)
-                    max = m[i,j];
-                if (m[i,j] < min)
-                    min = m[i,j];
-            }
-            double range = max - min;
-
-            for (int i = 0; i < rows; i++)
-            for (int j = 0; j < cols; j++)
-                ret[i, j] = (m[i, j] - min) / range;
-
-            return (ret);
-        }
-
+			return (ret);
+		}
 
         /// <summary>
         /// shift values by their mean.
         /// </summary>
-        /// <param name="m"></param>
-        /// <returns></returns>
         public static double[,] DiffFromMean(double[,] m)
         {
             int rows = m.GetLength(0);
@@ -1471,9 +1460,6 @@ namespace TowseyLib
         /// <summary>
         /// returns the min and max values in a matrix of doubles
         /// </summary>
-        /// <param name="data"></param>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
         static public void MinMax(double[,] data, out double min, out double max)
         {
             int rows = data.GetLength(0);
@@ -1484,16 +1470,11 @@ namespace TowseyLib
             for (int j = 1; j < cols; j++)
             {
                 if (data[i,j] < min)
-                {
                     min = data[i,j];
-                }else
-                if (data[i,j] > max)
-                {
+				else if (data[i,j] > max)
                     max = data[i,j];
-                }
             }//end double loop
         }
-
 
         /**
          * returns the min and max of an array of doubles
