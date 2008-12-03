@@ -8,7 +8,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		SccLocalPath = ""
 		SccProvider = ""
 		TargetFramework = "3.5"
-		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;"
+		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}|QutSensors.Processor.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
 		Debug.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
@@ -23,7 +23,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "43493"
+		VWDPort = "45610"
 		VWDDynamicPort = "true"
 	EndProjectSection
 EndProject
@@ -36,6 +36,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "AudioAnalysis\NeuralNets\NeuralNets.csproj", "{3453DB43-46DA-45E6-AD22-48BC081BC738}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowseyLib", "AudioAnalysis\TowseyLib\TowseyLib.csproj", "{7E0D2209-A416-4784-B350-83778D20A64B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Processor", "QutSensors.Processor\QutSensors.Processor.csproj", "{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -107,6 +109,16 @@ Global
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Release|.NET.ActiveCfg = Release|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B570DFC8-DB18-4F85-B4B3-1BEB0169C8E7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
