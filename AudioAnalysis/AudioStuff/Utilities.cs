@@ -28,12 +28,5 @@ namespace AudioStuff
 				}
 			});
 		}
-
-		public static string ResolvePath(string folder, string path)
-		{
-			if (!Path.IsPathRooted(path))
-				return Path.Combine(folder, path);
-			return path;
-		}
 	}
 }

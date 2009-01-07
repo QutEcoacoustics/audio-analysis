@@ -223,8 +223,10 @@ namespace AudioStuff
 						// normalise and bound the value - use min bound, max and 255 image intensity range
 						double value = (data[x, y] - min) / (double)range;
 						int c = 255 - (int)Math.Floor(255.0 * value); //original version
-						if (c < 0) c = 0;
-						else if (c >= 256) c = 255;
+						if (c < 0)
+							c = 0;
+						else if (c >= 256)
+							c = 255;
 
 						int g = c + 40; // green tinge used in the template scan band 
 						if (g >= 256) g = 255;
@@ -247,6 +249,10 @@ namespace AudioStuff
 
 	public class SpectralSonogram : BaseSonogram
 	{
+		public SpectralSonogram(string configFile, WavReader wav)
+			: this (BaseSonogramConfig.Load(configFile), wav)
+		{ }
+
 		public SpectralSonogram(BaseSonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
@@ -276,6 +282,10 @@ namespace AudioStuff
 
 	public class CepstralSonogram : BaseSonogram
 	{
+		public CepstralSonogram(string configFile, WavReader wav)
+			: this(CepstralSonogramConfig.Load(configFile), wav)
+		{ }
+
 		public CepstralSonogram(CepstralSonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
@@ -366,6 +376,10 @@ namespace AudioStuff
 
 	public class AcousticVectorsSonogram : CepstralSonogram
 	{
+		public AcousticVectorsSonogram(string configFile, WavReader wav)
+			: base(AcousticVectorsSonogramConfig.Load(configFile), wav)
+		{ }
+
 		public AcousticVectorsSonogram(AcousticVectorsSonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
@@ -406,10 +420,13 @@ namespace AudioStuff
 
 	public class SobelEdgeSonogram : BaseSonogram
 	{
+		public SobelEdgeSonogram(string configFile, WavReader wav)
+			: base(BaseSonogramConfig.Load(configFile), wav)
+		{ }
+
 		public SobelEdgeSonogram(BaseSonogramConfig config, WavReader wav)
 			: base(config, wav)
-		{
-		}
+		{ }
 
 		protected override void Make(double[,] amplitudeM)
 		{

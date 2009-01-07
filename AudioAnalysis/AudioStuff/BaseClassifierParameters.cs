@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using TowseyLib;
 
 namespace AudioStuff
 {
@@ -11,6 +9,15 @@ namespace AudioStuff
 
 	public class TemplateParameters : BaseClassifierParameters
 	{
+		public TemplateParameters(Configuration config)
+		{
+			SourcePath = config.GetString("WAV_FILE_PATH");
+			var duration = config.GetDoubleNullable("WAV_DURATION");
+			if (duration != null)
+				SourceDuration = TimeSpan.FromSeconds(duration.Value);
+			SampleRate = config.GetInt("WAV_SAMPLE_RATE");
+		}
+
 		#region Properties
 		public string SourcePath { get; set; } // Path to original audio recording used to generate the template
 		public TimeSpan SourceDuration { get; set; }

@@ -373,12 +373,12 @@ namespace AudioStuff
                     t.SetSelectedFrames(gui.SelectedFrames);
                     t.SetFrequencyBounds(gui.Min_Freq, gui.Max_Freq);
                 }
-                else
-                    if (gui.Fv_Source == FV_Source.MARQUEE)
-                    {
-                        t.SetMarqueeBounds(gui.Min_Freq, gui.Max_Freq, gui.MarqueeStart, gui.MarqueeEnd);
-                        if (gui.Fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS) t.SetExtractionInterval(gui.FvExtractionInterval);
-                    }
+                else if (gui.Fv_Source == FV_Source.MARQUEE)
+                {
+                    t.SetMarqueeBounds(gui.Min_Freq, gui.Max_Freq, gui.MarqueeStart, gui.MarqueeEnd);
+                    if (gui.Fv_Extraction == FV_Extraction.AT_FIXED_INTERVALS)
+						t.SetExtractionInterval(gui.FvExtractionInterval);
+                }
                 t.SetSonogram(gui.FrameSize, gui.FrameOverlap, gui.DynamicRange, gui.FilterBankCount,
                                 gui.DoMelConversion, gui.DoNoiseReduction, gui.CeptralCoeffCount,
                                    gui.DeltaT, gui.IncludeDeltaFeatures, gui.IncludeDoubleDeltaFeatures);

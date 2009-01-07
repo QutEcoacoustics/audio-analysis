@@ -365,8 +365,8 @@ namespace TowseyLib
             RandomNumber rn = new RandomNumber();
             for (int r = 0; r < kRows; r++)
             {
-                int randomRow = rn.getInt(mHeight - kRows);
-                int randomCol = rn.getInt(mWidth - kCols);
+                int randomRow = rn.GetInt(mHeight - kRows);
+                int randomCol = rn.GetInt(mWidth - kCols);
                 for (int c = 0; c < kCols; c++)
                     noise[r, c] = m[randomRow, randomCol+c];
             }

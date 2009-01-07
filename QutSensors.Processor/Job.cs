@@ -20,7 +20,7 @@ namespace QutSensors.Processor
 				var job = new Processor_Jobs() { Filter = Filter.SaveAsString(), Owner = Owner, Classifier = Classifier.FullName, Parameters = Parameters };
 				db.Processor_Jobs.InsertOnSubmit(job);
 				db.SubmitChanges();
-				JobID = JobID = job.JobID;
+				JobID = job.JobID;
 			}
 		}
 

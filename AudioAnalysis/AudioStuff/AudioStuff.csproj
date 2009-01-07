@@ -54,7 +54,10 @@
     <Compile Include="BaseClassifierParameters.cs" />
     <Compile Include="BaseResult.cs" />
     <Compile Include="FeatureVector.cs" />
+    <Compile Include="MMRecogniser.cs" />
+    <Compile Include="MMResult.cs" />
     <Compile Include="MMTemplate.cs" />
+    <Compile Include="MultiTrackImage.cs" />
     <Compile Include="NewMain.cs" />
     <Compile Include="BaseSonogram.cs" />
     <Compile Include="ParameterClasses.cs" />
