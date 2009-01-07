@@ -7,6 +7,13 @@ namespace AudioStuff
 {
 	public abstract class BaseClassifier
 	{
-		public abstract BaseResult Analyse(BaseClassifierParameters parameters, AudioRecording recording);
+		public static BaseClassifier Create(BaseClassifierParameters parameters)
+		{
+			if (parameters is MMTemplate)
+				return new MMRecogniser(parameters as MMTemplate);
+			throw new ArgumentException("Unrecognised classifier type.");
+		}
+
+		public abstract BaseResult Analyse(AudioRecording recording);
 	}
 }

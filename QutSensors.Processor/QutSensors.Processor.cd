@@ -3,7 +3,7 @@
   <Class Name="QutSensors.Processor.Job">
     <Position X="3" Y="2.75" Width="1.75" />
     <TypeIdentifier>
-      <HashCode>AAAAAACAAAAAEAAAAAAAAABAABABAAAAAIAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAACAAAAAEAAAAAAAAABAgBABAAAAAIAAAAAAAAA=</HashCode>
       <FileName>Job.cs</FileName>
     </TypeIdentifier>
   </Class>
@@ -22,20 +22,19 @@
     </TypeIdentifier>
   </Class>
   <Class Name="QutSensors.Processor.JobItem">
-    <Position X="6.25" Y="1.75" Width="2" />
+    <Position X="6.25" Y="1.25" Width="2" />
     <TypeIdentifier>
-      <HashCode>AAAAQAAEAAAAAAAAAAAAAAQIIAACAAAAAAAAAAAQAAI=</HashCode>
+      <HashCode>AAAAQAAEAAAAAAAAAAAAAAAIIAACAAAAAEAAAAAQAAI=</HashCode>
       <FileName>JobItem.cs</FileName>
     </TypeIdentifier>
     <ShowAsAssociation>
-      <Property Name="Result" />
       <Property Name="Status" />
     </ShowAsAssociation>
   </Class>
   <Class Name="QutSensors.Processor.JobManager">
-    <Position X="0.5" Y="2.25" Width="1.5" />
+    <Position X="0.5" Y="2" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>AAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
+      <HashCode>AAIAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAQAAAAAAAA=</HashCode>
       <FileName>JobManager.cs</FileName>
     </TypeIdentifier>
   </Class>

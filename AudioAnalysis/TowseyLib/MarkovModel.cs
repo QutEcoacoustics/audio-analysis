@@ -2,13 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace TowseyLib
 {
-
     public enum HMMType { UNDEFINED, ERGODIC, TWO_STATE_PERIODIC, OLD_PERIODIC }
     public enum ScoreType { UNDEFINED, STANDARD, DURATION }
-
 
     public class MarkovModel
     {
@@ -84,10 +83,6 @@ namespace TowseyLib
         /// CONSTRUCTOR 3
         /// use this constructor to initialise a TWO STATE PERIODIC MARKOV MODEL
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="type"></param>
-        /// <param name="interval_ms"></param>
-        /// <param name="deltaT"></param>
         public MarkovModel(string name, HMMType type, int interval_ms, double deltaT)
         {
             this.name = name;
@@ -984,94 +979,45 @@ namespace TowseyLib
 
     public class TrainingSequences
     {
-        //private int count;
-        public  int Count { get { return sequences.Count; } }
-        private Hashtable tagList = null;
-        private ArrayList sequences = null;
+        public int Count { get { return sequences.Count; } }
 
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// </summary>
+        private Hashtable tagList = null;
+        private List<string[]> sequences;
+
         public TrainingSequences()
         {
         }
 
-        /// <summary>
-        /// CONSTRUCTOR 2
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="list"></param>
-        public TrainingSequences(string tag, ArrayList list)
-        {
-            AddSequences(tag, sequences);
-        }
-
         public void AddSequence(string tag, string sequence)
         {
-            if (sequences == null) sequences = new ArrayList();
+			if (sequences == null) sequences = new List<string[]>();
             if (tagList == null) tagList = new Hashtable();
 
-            string[] data = new string[2];
-            data[0] = tag;
-            data[1] = sequence;
-            this.sequences.Add(data);
-            if(! tagList.ContainsKey(tag)) tagList.Add(tag, 1);
+			string[] data = new string[] { tag, sequence };
+            sequences.Add(data);
+            if (!tagList.ContainsKey(tag))
+				tagList.Add(tag, 1);
         }
 
         public void AddSequences(string tag, string[] sequences)
         {
             for (int i = 0; i < sequences.Length; i++)
-            {
                 AddSequence(tag, sequences[i]);
-            }
-        }
-
-        public void AddSequences(string tag, ArrayList list)
-        {
-            for (int i = 0; i < list.Count; i++)
-            {
-                AddSequence(tag, (string)list[i]);
-            }
         }
 
         public string[] GetSequences(string label)
         {
-            int count = this.sequences.Count;
-            ArrayList list = new ArrayList();
-            for (int i = 0; i < count; i++)
-            {
-                string[] data = (string[])this.sequences[i];
-                string tag = data[0];
-                if(tag.Equals(label)) list.Add(data[1]);
-            }
-            string[] array = new string[list.Count];
-            for (int i = 0; i < list.Count; i++) array[i] = (string)list[i];
-            return array;
+			return sequences.Where(d => d[0] == label).Select(d => d[1]).ToArray();
         }
 
         public int GetSequenceCount(string label)
         {
-            int count = 0;
-            for (int i = 0; i < this.sequences.Count; i++)
-            {
-                string[] data = (string[])this.sequences[i];
-                string tag = data[0];
-                if (tag.Equals(label)) count++;
-            }
-            return count;
+			return sequences.Where(d => d[0] == label).Count();
         }
-
 
         public string[] GetSequences()
         {
-            int count = this.sequences.Count;
-            string[] list = new string[count];
-            for (int i = 0; i < count; i++)
-            {
-                string[] data = (string[])this.sequences[i];
-                list[i] = data[1];
-            }
-            return list;
+			return sequences.Select(d => d[1]).ToArray();
         }
 
         public void WriteComposition()
@@ -1085,8 +1031,6 @@ namespace TowseyLib
                 string[] words = GetSequences(tag);
                 for (int i = 0; i < words.Length; i++) Console.WriteLine("\t  "+words[i]);                          
             }
-            
         }
-
     }//class TrainingSequences
 }//end Namespace

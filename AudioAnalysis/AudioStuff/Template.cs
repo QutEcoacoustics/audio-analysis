@@ -103,7 +103,7 @@ namespace AudioStuff
 			{
 				string path = TemplateState.FeatureVectorPaths[n];
 				int fvLength = TemplateState.FeatureVectorLength;
-				FeatureVectors[n] = new FeatureVector(path, fvLength, n + 1);
+				FeatureVectors[n] = new FeatureVector(path, fvLength);
 				FeatureVectors[n].FrameIndices = TemplateState.FeatureVector_SelectedFrames[n];
 				FeatureVectors[n].SourceFile = TemplateState.FVSourceFiles[n];
 			}
@@ -280,7 +280,7 @@ namespace AudioStuff
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from frame " + id);
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, id, dT); //combines  frames T-dT, T and T+dT
-                fvs[i] = new FeatureVector(acousticV, i+1); //avoid FV id = 0. Reserve this for noise vector
+                fvs[i] = new FeatureVector(acousticV);
                 fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
                 fvs[i].FrameIndices = IDs[i];
             }
@@ -330,7 +330,7 @@ namespace AudioStuff
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from frame " + frameIndices[i]);
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
-                fvs[i] = new FeatureVector(acousticV, i + 1); //avoid FV id = 0. Reserve this for noise vector
+                fvs[i] = new FeatureVector(acousticV);
                 fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
                 fvs[i].SetFrameIndex(frameIndices[i]);
             }
@@ -592,14 +592,14 @@ namespace AudioStuff
             state.FeatureVectorLength = cfg.GetInt("FEATURE_VECTOR_LENGTH");
             state.FeatureVectorPaths = new string[fvCount];
 			for (int n = 0; n < fvCount; n++)
-				state.FeatureVectorPaths[n] = Utilities.ResolvePath(templateDir, cfg.GetString("FV" + (n + 1) + "_FILE"));
+				state.FeatureVectorPaths[n] = cfg.GetPath("FV" + (n + 1) + "_FILE");
             state.FeatureVector_SelectedFrames = new string[fvCount];
             for (int n = 0; n < fvCount; n++)
 				state.FeatureVector_SelectedFrames[n] = cfg.GetString("FV" + (n + 1) + "_SELECTED_FRAMES");
             state.FVSourceFiles = new string[fvCount];
             for (int n = 0; n < fvCount; n++)
 				state.FVSourceFiles[n] = cfg.GetString("FV" + (n + 1) + "_SOURCE_FILE");
-			state.DefaultNoiseFVFile = Utilities.ResolvePath(templateDir, cfg.GetString("FV_DEFAULT_NOISE_FILE"));
+			state.DefaultNoiseFVFile = cfg.GetPath("FV_DEFAULT_NOISE_FILE");
 
             //ACOUSTIC MODEL
             state.ZscoreSmoothingWindow = 3;  // DEFAULT zscore SmoothingWindow

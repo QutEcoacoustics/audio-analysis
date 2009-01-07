@@ -534,7 +534,7 @@ namespace NeuralNets
 
         for (int k = n-1; k >=0; k--)
         {
-            r                 = rn.getInt(k);       //a random integer between 0 and k
+            r                 = rn.GetInt(k);       //a random integer between 0 and k
             dummy             = randomArray[k];
             randomArray[k]    = randomArray[r];
             randomArray[r]    = dummy;

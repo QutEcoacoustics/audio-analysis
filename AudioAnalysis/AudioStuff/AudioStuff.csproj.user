@@ -3,6 +3,6 @@
     <ProjectView>ProjectFiles</ProjectView>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>"C:\Users\masonr\Sensors\trunk\WebFrontend\Templates\sonogram.ini" "C:\Temp\Data\BAC10\BAC10_20081123-072000.wav" "C:\Temp\Data\Joe.png"</StartArguments>
+    <StartArguments>"C:\Users\masonr\Sensors\trunk\WebFrontend\Templates\sonogram.ini" "C:\Temp\BAC2_20071008-085040.wav" "C:\Temp\Test"</StartArguments>
   </PropertyGroup>
 </Project>

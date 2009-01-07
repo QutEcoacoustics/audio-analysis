@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using TowseyLib;
+using System.IO;
 
 namespace AudioStuff
 {
@@ -12,6 +13,12 @@ namespace AudioStuff
 		{
 			WindowFunction = config.GetString("WINDOW_FUNCTION");
 			NPointSmoothFFT = config.GetIntNullable("N_POINT_SMOOTH_FFT") ?? 0;
+		}
+
+		public void Save(TextWriter writer)
+		{
+			Configuration.WriteValue(writer, "WINDOW_FUNCTION", WindowFunction);
+			Configuration.WriteValue(writer, "N_POINT_SMOOTH_FFT", NPointSmoothFFT);
 		}
 
 		#region Properties
@@ -29,6 +36,15 @@ namespace AudioStuff
 			CcCount = config.GetInt("CC_COUNT"); //number of cepstral coefficients
 			IncludeDelta = config.GetBoolean("INCLUDE_DELTA");
 			IncludeDoubleDelta = config.GetBoolean("INCLUDE_DOUBLE_DELTA");
+		}
+
+		public void Save(TextWriter writer)
+		{
+			Configuration.WriteValue(writer, "FILTERBANK_COUNT", FilterbankCount);
+			Configuration.WriteValue(writer, "DO_MELSCALE", DoMelScale);
+			Configuration.WriteValue(writer, "CC_COUNT", CcCount);
+			Configuration.WriteValue(writer, "INCLUDE_DELTA", IncludeDelta);
+			Configuration.WriteValue(writer, "INCLUDE_DOUBLE_DELTA", IncludeDoubleDelta);
 		}
 
 		#region Properties
@@ -49,6 +65,15 @@ namespace AudioStuff
 			K1K2Latency = config.GetDouble("K1_K2_LATENCY");						//seconds delay between signal reaching k1 and k2 thresholds
 			VocalDelay = config.GetDouble("VOCAL_DELAY");             //seconds delay required to separate vocalisations 
 			MinPulseDuration = config.GetDouble("MIN_VOCAL_DURATION");      //minimum length of energy pulse - do not use this - 
+		}
+
+		public void Save(TextWriter writer)
+		{
+			Configuration.WriteValue(writer, "SEGMENTATION_THRESHOLD_K1", SegmentationThresholdK1);
+			Configuration.WriteValue(writer, "SEGMENTATION_THRESHOLD_K2", SegmentationThresholdK2);
+			Configuration.WriteValue(writer, "K1_K2_LATENCY", K1K2Latency);
+			Configuration.WriteValue(writer, "VOCAL_DELAY", VocalDelay);
+			Configuration.WriteValue(writer, "MIN_VOCAL_DURATION", MinPulseDuration);
 		}
 
 		#region Properties

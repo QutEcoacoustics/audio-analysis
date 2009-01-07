@@ -45,12 +45,14 @@ namespace QutSensors.Processor
 			AudioReadingID = item.AudioReadingID;
 		}
 
+		#region Properties
 		public Job Job { get; private set; }
 		public int JobItemID { get; private set; }
 		public TimeSpan? StartTime { get; private set; }
 		public TimeSpan? StopTime { get; private set; }
 		public JobStatus Status { get; private set; }
 		public Guid AudioReadingID { get; private set; }
+		#endregion
 
 		public Result GetResult()
 		{

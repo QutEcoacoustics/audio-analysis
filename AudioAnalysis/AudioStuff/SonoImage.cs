@@ -53,11 +53,7 @@ namespace AudioStuff
                              /*Color.Tan,*/ Color.Teal, Color.Thistle, Color.Turquoise, Color.Violet, /*Color.Wheat,*/ 
                              /*Color.Yellow,*/ Color.YellowGreen,  Color.Black};
 
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// </summary>
-        /// <param name="sonogram"></param>
-        public SonoImage(Sonogram sonogram)
+		public SonoImage(Sonogram sonogram)
         {
             Log.WriteIfVerbose("\n\nCREATING SONOGRAM IMAGE.");
             SonoConfig state = sonogram.State;
@@ -76,11 +72,8 @@ namespace AudioStuff
             this.doMelScale = state.DoMelScale;
         }
         /// <summary>
-        /// CONSTRUCTOR 2
         /// This constructor called when drawing images of feature vectors
         /// </summary>
-        /// <param name="state"></param>
-        /// <param name="sonogramType"></param>
         public SonoImage(SonoConfig state, SonogramType sonogramType)
         {
             this.sf = state.SampleRate;
@@ -134,31 +127,34 @@ namespace AudioStuff
             return CreateBitmap(matrix);
         }
 
-        public Bitmap CreateBitMapOfTemplate(double[] featureVector)
-        {
-            this.addGrid = false;
-            int fVLength = featureVector.Length;
-            int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
-            int rowWidth = 15;
-            this.sonogramType = SonogramType.acousticVectors;
+		public Bitmap CreateBitMapOfTemplate(double[] featureVector)
+		{
+			this.addGrid = false;
+			int fVLength = featureVector.Length;
+			int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
+			int rowWidth = 15;
+			this.sonogramType = SonogramType.acousticVectors;
 
-            //create a matrix of the required image
-            double[,] M = new double[rowWidth*3,avLength];
-            for (int r = 0; r < rowWidth; r++)
-            {
-                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[c];
-            }
-            for (int r = rowWidth; r < 2*rowWidth; r++)
-            {
-                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[avLength+c];
-            }
-            for (int r = (2*rowWidth); r < (3*rowWidth); r++)
-            {
-                for (int c = 0; c < avLength; c++) M[r, c] = featureVector[(2 * avLength)+c];
-            }
+			//create a matrix of the required image
+			double[,] M = new double[rowWidth * 3, avLength];
+			for (int r = 0; r < rowWidth; r++)
+			{
+				for (int c = 0; c < avLength; c++)
+					M[r, c] = featureVector[c];
+			}
+			for (int r = rowWidth; r < 2 * rowWidth; r++)
+			{
+				for (int c = 0; c < avLength; c++)
+					M[r, c] = featureVector[avLength + c];
+			}
+			for (int r = (2 * rowWidth); r < (3 * rowWidth); r++)
+			{
+				for (int c = 0; c < avLength; c++)
+					M[r, c] = featureVector[(2 * avLength) + c];
+			}
 
-            return CreateBitmap(M);
-        }
+			return CreateBitmap(M);
+		}
 
         public Bitmap CreateBitmap(double[,] matrix)
         {
@@ -180,7 +176,7 @@ namespace AudioStuff
             int imageHt = sHeight * binHeight; // image ht = sonogram ht. Later include grid and score scales
             double hzBin = NyquistF / (double)sHeight;
 
-            if (this.doMelScale) //do mel scale conversions
+            if (doMelScale) //do mel scale conversions
             {
                 double melBin = Speech.Mel(this.NyquistF) / (double)sHeight;
                 double topMel = Speech.Mel(this.topScanBin * hzBin);
@@ -197,8 +193,7 @@ namespace AudioStuff
 					totalHt += track.Height;
 
             Bitmap bmp = new Bitmap(width, totalHt, PixelFormat.Format24bppRgb);
-            //bmp = AddSonogram(bmp, sonogram, binHt, unsafePixels);
-            bmp = AddSonogram(bmp, matrix, binHeight);
+            AddSonogram(bmp, matrix, binHeight, addGrid, topScanBin, bottomScanBin);
 
             int offset = scaleHt + imageHt;
             if (addGrid) bmp = Add1kHzLines(bmp);
@@ -292,7 +287,7 @@ namespace AudioStuff
             return bmp;
         }
 
-        public Bitmap AddSonogram(Bitmap bmp, double[,] sonogram, int binHt)
+        public static void AddSonogram(Bitmap bmp, double[,] sonogram, int binHt, bool addGrid, int topScanBin, int bottomScanBin)
         {
             int width = sonogram.GetLength(0);
             int sHeight = sonogram.GetLength(1);
@@ -330,7 +325,7 @@ namespace AudioStuff
                         if (g >= 256) g = 255;
                         //Color col = Color.FromArgb(c,c,c);
                         Color col = grayScale[c];
-                        if ((y > this.topScanBin) && (y < this.bottomScanBin))col = Color.FromArgb(c,g,c);
+                        if ((y > topScanBin) && (y < bottomScanBin))col = Color.FromArgb(c,g,c);
                         //int row = sOffset - y;
                         bmp.SetPixel(x, yOffset-1, col);
                     }//for all pixels in line
@@ -338,7 +333,6 @@ namespace AudioStuff
                     yOffset--;
                 } //end repeats over one track
             }//end over all freq bins
-            return bmp;
         }
 
         public int[] CreateLinearYaxis(int herzInterval, int imageHt)

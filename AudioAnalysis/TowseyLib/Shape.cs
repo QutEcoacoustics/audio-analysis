@@ -369,7 +369,7 @@ namespace TowseyLib
                     int col1 = x - dnDist + 1;
                     int colWidth = upDist + dnDist - 2;
                     Shape shape = new Shape(y, col1, y + rowWidth - 1, col1 + colWidth -1);
-                    shape.RandomNumber = random.getInt(200); //set random number for id and color purposes
+                    shape.RandomNumber = random.GetInt(200); //set random number for id and color purposes
 
                     int[] centroid = shape.Centroid();
                     //Console.WriteLine("Centroid=" + centroid[0] + ", " + centroid[1]);

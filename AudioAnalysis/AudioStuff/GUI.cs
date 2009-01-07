@@ -6,7 +6,7 @@ using AudioTools;
 
 namespace AudioStuff
 {
-    class GUI
+	public class GUI
     {
 
         //****************** DEFAULT CALL PARAMETERS
@@ -94,20 +94,11 @@ namespace AudioStuff
         private int callPeriodicity = 999;
         public int CallPeriodicity { get { return callPeriodicity; } }
 
-
-
-
-
-        /// <summary>
-        /// THE CONSTRUCTOR
-        /// </summary>
-        /// <param name="callID"></param>
         public GUI(int callID, string wavDirName)
         {
-
             this.WavDirName = wavDirName;
                 //************* CALL 1 PARAMETERS ***************
-                if ( callID == 1)
+                if (callID == 1)
                 {
                     callName = "Lewin's Rail Kek-kek";
                     callComment = "Template consists of a single KEK!";
