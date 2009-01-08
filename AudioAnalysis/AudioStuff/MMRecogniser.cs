@@ -67,7 +67,7 @@ namespace AudioStuff
 			int fvCount = FVs.Length;
 
 			int count;
-			double dbThreshold = s.MinDecibelReference + Template.SegmentationThreshold_k2;  // FreqBandNoise_dB;
+			double dbThreshold = s.MinDecibelReference + Template.SonogramConfiguration.EndpointDetectionConfiguration.SegmentationThresholdK2;  // FreqBandNoise_dB;
 			FVs[0] = GetNoiseFeatureVector(s.Data, s.Decibels, dbThreshold, out count);
 
 			if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file

@@ -110,7 +110,7 @@ namespace AudioStuff
 			Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
-			if (config.DoFreqBandAnalysis)
+			if (doFreqBandAnalysis)
 			{
 				int c1 = (int)(minFreqBand / FBinWidth);
 				int c2 = (int)(maxFreqBand / FBinWidth);
