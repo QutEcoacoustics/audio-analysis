@@ -122,8 +122,6 @@ namespace AudioStuff
 		public LanguageModel LanguageModel { get; set; }
 		private double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
 		public double ZScoreThreshold { get { return zScoreThreshold; } }
-		public double SegmentationThreshold_k1 { get; set; }
-		public double SegmentationThreshold_k2 { get; set; }
 		public int MinTemplateFreq { get; set; }
 		public int MaxTemplateFreq { get; set; }
 		public string NoiseFVPath { get; private set; }
@@ -222,7 +220,7 @@ namespace AudioStuff
 					break;
 				case FV_Extraction.AT_ENERGY_PEAKS:
 					double[] frameEnergy = sonogram.Decibels;
-					double energyThreshold = SegmentationThreshold_k1;
+					double energyThreshold = SonogramConfiguration.EndpointDetectionConfiguration.SegmentationThresholdK1;
 					frameIndices = FeatureVector.GetFrameIndices(start, end, frameEnergy, energyThreshold);
 					Log.WriteIfVerbose("\tEnergy threshold=" + energyThreshold.ToString("F2"));
 					break;

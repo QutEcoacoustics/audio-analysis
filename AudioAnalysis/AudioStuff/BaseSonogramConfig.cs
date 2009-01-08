@@ -46,7 +46,6 @@ namespace AudioStuff
 		public double WindowOverlap { get; set; } // Percent overlap of frames
 		public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
 		public bool DoPreemphasis { get; set; }
-		public bool DoFreqBandAnalysis { get; set; }
 		public bool DoNoiseReduction { get; set; }
 
 		public EndpointDetectionConfiguration EndpointDetectionConfiguration { get; private set; }

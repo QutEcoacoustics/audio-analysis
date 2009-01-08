@@ -216,18 +216,15 @@ namespace TowseyLib
             //WriteInfo(true);
         }//end TrainModel()
 
-
         /// <summary>
         /// calculate state duration statistics
         /// </summary>
-        /// <param name="exampleWords"></param>
         public void CalculateStateDurationProbs(string[] exampleWords)
         {
             Log.WriteIfVerbose("\tCalculating two-state MM state duration statistics.");
 
             double framesPerSecond = 1 / this.DeltaT;
             int maxDuration = (int)(MarkovModel.stateDurationMax * framesPerSecond); //max state duration in frames
-            //Console.WriteLine("framesPerSecond=" + framesPerSecond.ToString("F2") + "  stateDuration=" + MarkovModel.stateDurationMax + "sec.");
             int[,] stateDurationCounts = new int[this.numberOfStates, maxDuration];
 
             int examplecount = exampleWords.Length;
@@ -235,7 +232,6 @@ namespace TowseyLib
             {
                 string word = exampleWords[w];
                 int L = word.Length;
-                //Console.WriteLine(word);
                 int currentDuration = 1; //must count duration of first symbol
                 for (int i = 1; i < L; i++) //for length of the symbol sequence extract bigrams.
                 {

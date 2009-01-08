@@ -14,7 +14,42 @@ namespace AudioStuff
 		{
 			//MakeSonogram(args[0], args[1], args[2]);
 			//ReadTemplateAndVerify(args[0], args[1], args[2]);
-			CreateTemplate(args[0], args[1], new GUI(1, @"C:\Temp"), args[2]);
+			//CreateTemplate(args[0], args[1], new GUI(1, @"C:\Temp"), args[2]);
+
+			string wavPath = @"C:\Temp\Data\BAC10\BAC10_20081123-072000.wav";
+			var oldSono = CreateOldSonogram(wavPath, SonogramType.acousticVectors);
+			var sono = new AcousticVectorsSonogram(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini", new WavReader(wavPath));
+
+			AssertAreEqual(oldSono.AcousticM, sono.Data);
+			AssertAreEqual(oldSono.Decibels, sono.Decibels);
+		}
+
+		private static void AssertAreEqual(double[,] a, double[,] b)
+		{
+			if (a.GetLength(0) != b.GetLength(0))
+				throw new Exception("First dimension is not equal");
+			if (a.GetLength(1) != b.GetLength(1))
+				throw new Exception("Second dimension is not equal");
+			for (int i = 0; i < a.GetLength(0); i++)
+				for (int j = 0; j < a.GetLength(1); j++)
+					if (a[i, j] != b[i, j])
+						throw new Exception("Not equal: " + i + "," + j);
+		}
+
+		private static void AssertAreEqual(double[] a, double[] b)
+		{
+			if (a.GetLength(0) != b.GetLength(0))
+				throw new Exception("First dimension is not equal");
+			for (int i = 0; i < a.GetLength(0); i++)
+				if (a[i] != b[i])
+					throw new Exception("Not equal: " + i);
+		}
+
+		static Sonogram CreateOldSonogram(string wavPath, SonogramType type)
+		{
+			var sonoConfig = SonoConfig.Load(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini");
+			sonoConfig.SonogramType = type;
+			return new Sonogram(sonoConfig, wavPath);
 		}
 
 		public static void MakeSonogram(string sonogramConfigPath, string wavPath, string targetPath)

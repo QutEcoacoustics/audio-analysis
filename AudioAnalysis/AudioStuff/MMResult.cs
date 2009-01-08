@@ -226,7 +226,7 @@ namespace AudioStuff
 
 		public string GetOneLineSummary()
 		{
-			return string.Format("{0},{1},{2},{3:F1},{4:F1}", ID, NumberOfPeriodicHits, VocalBest, VocalBestLocation);
+			return string.Format("{0},{1},{2:F1},{3:F1}", ID, NumberOfPeriodicHits, VocalBest, VocalBestLocation);
 		}
 		#endregion
 	}
