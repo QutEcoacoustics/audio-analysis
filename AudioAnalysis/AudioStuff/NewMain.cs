@@ -12,16 +12,21 @@ namespace AudioStuff
 	{
 		public static void Main(string[] args)
 		{
+			var newTemplatePath = @"C:\Temp\NewTemplates\Template2.txt";
+			TowseyLib.Configuration config = new TowseyLib.Configuration(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini", @"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\Template_2\template_2.ini");
+			var template = new MMTemplate(config);
+			template.Save(newTemplatePath);
+
 			//MakeSonogram(args[0], args[1], args[2]);
 			//ReadTemplateAndVerify(args[0], args[1], args[2]);
 			//CreateTemplate(args[0], args[1], new GUI(1, @"C:\Temp"), args[2]);
 
-			string wavPath = @"C:\Temp\Data\BAC10\BAC10_20081123-072000.wav";
+			/*string wavPath = @"C:\Temp\Data\BAC10\BAC10_20081123-072000.wav";
 			var oldSono = CreateOldSonogram(wavPath, SonogramType.acousticVectors);
 			var sono = new AcousticVectorsSonogram(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini", new WavReader(wavPath));
 
 			AssertAreEqual(oldSono.AcousticM, sono.Data);
-			AssertAreEqual(oldSono.Decibels, sono.Decibels);
+			AssertAreEqual(oldSono.Decibels, sono.Decibels);*/
 		}
 
 		private static void AssertAreEqual(double[,] a, double[,] b)
