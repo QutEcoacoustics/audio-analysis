@@ -32,11 +32,11 @@ namespace AudioStuff
 		{
 			FftConfiguration.Save(writer);
 			EndpointDetectionConfiguration.Save(writer);
-			Configuration.WriteValue(writer, "WINDOW_SIZE", WindowSize);
-			Configuration.WriteValue(writer, "WINDOW_OVERLAP", WindowOverlap);
-			Configuration.WriteValue(writer, "NOISE_REDUCE", DoNoiseReduction);
-			Configuration.WriteValue(writer, "MIN_FREQ", MinFreqBand);
-			Configuration.WriteValue(writer, "MAX_FREQ", MaxFreqBand);
+			writer.WriteConfigValue("WINDOW_SIZE", WindowSize);
+			writer.WriteConfigValue("WINDOW_OVERLAP", WindowOverlap);
+			writer.WriteConfigValue("NOISE_REDUCE", DoNoiseReduction);
+			writer.WriteConfigValue("MIN_FREQ", MinFreqBand);
+			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
 		}
 
 		#region Properties
@@ -99,7 +99,7 @@ namespace AudioStuff
 		public override void Save(TextWriter writer)
 		{
 			base.Save(writer);
-			Configuration.WriteValue(writer, "DELTA_T", DeltaT);
+			writer.WriteConfigValue("DELTA_T", DeltaT);
 		}
 
 		public int DeltaT { get; set; }

@@ -32,10 +32,17 @@ namespace AudioStuff
 		{
 			using (var file = new StreamWriter(targetPath))
 			{
+				base.Save(file);
+
 				SonogramConfiguration.Save(file);
-				FeatureVectorParameters.Save(file, Path.GetDirectoryName(targetPath));
+				FeatureVectorParameters.Save(file, targetPath);
 				LanguageModel.Save(file);
 			}
+		}
+
+		public override void Save(TextWriter writer)
+		{
+			throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
 		}
 
 		public void SetParameters(GUI gui)
@@ -158,18 +165,14 @@ namespace AudioStuff
 			// Accumulate the acoustic vectors from multiple frames into an averaged feature vector
 			if (FeatureVectorParameters.FeatureVector_DoAveraging)
 			{
-				featureVectors = new FeatureVector[] { FeatureVector.AverageFeatureVectors(featureVectors, 1) };
-				FeatureVectorParameters.FeatureVectorCount = 1;
+				FeatureVectorParameters.FeatureVectors = new FeatureVector[] { FeatureVector.AverageFeatureVectors(featureVectors, 1) };
 				FeatureVectorParameters.FeatureVectorLength = featureVectors[0].FvLength;
 			}
 			else //save the feature vectors separately
 			{
-				FeatureVectorParameters.FeatureVectorCount = featureVectors.Length;
+				FeatureVectorParameters.FeatureVectors = featureVectors;
 				FeatureVectorParameters.FeatureVectorLength = featureVectors[0].FvLength;
-			}
-
-			// Save Feature Vectors to disk
-			FeatureVectorParameters.FeatureVectors = featureVectors;
+			}		
 		} // end ExtractTemplateFromSonogram()
 
 		FeatureVector[] GetFeatureVectorsFromFrames(WavReader wav)
@@ -281,7 +284,7 @@ namespace AudioStuff
 					string word = config.GetString("WORD" + (n + 1) + "_EXAMPLE" + (w + 1));
 					if (word == null)
 						break;
-					ts.AddSequence(name, word);
+					ts.AddSequence(name ?? "WORD" + (n + 1), word);
 				}
 
 			} // end for loop over all words
@@ -320,19 +323,19 @@ namespace AudioStuff
 
 		public void Save(TextWriter writer)
 		{
-			Configuration.WriteValue(writer, "MM_TYPE", HmmType);
+			writer.WriteConfigValue("MM_TYPE", HmmType);
 			if (WordModel != null)
 			{
-				Configuration.WriteValue(writer, "MM_NAME", WordModel.Name);
-				Configuration.WriteValue(writer, "PERIODICITY_MS", WordModel.Periodicity_ms);
-				Configuration.WriteValue(writer, "GAP_MS", WordModel.Gap_ms);
+				writer.WriteConfigValue("MM_NAME", WordModel.Name);
+				writer.WriteConfigValue("PERIODICITY_MS", WordModel.Periodicity_ms);
+				writer.WriteConfigValue("GAP_MS", WordModel.Gap_ms);
 			}
-			Configuration.WriteValue(writer, "NUMBER_OF_WORDS", WordCount);
+			writer.WriteConfigValue("NUMBER_OF_WORDS", WordCount);
 			// Although when read in the Words are split into different tags with multiple examples this information
 			// is not stored (or used) so we can not persist it back. Instead we just write as if each word
 			// is separate with 1 example each
-			Configuration.WriteArray(writer, "WORD{0}_EXAMPLE1", Words);
-			Configuration.WriteValue(writer, "SONG_WINDOW", SongWindow);
+			writer.WriteConfigArray("WORD{0}_EXAMPLE1", Words);
+			writer.WriteConfigValue("SONG_WINDOW", SongWindow);
 		}
 
 		private double GetFrameOffset(Configuration config, BaseSonogramConfig sonogramConfig, int sampleRate)
@@ -387,19 +390,21 @@ namespace AudioStuff
 			DefaultNoiseFVFile = config.GetPath("FV_DEFAULT_NOISE_FILE");
 		}
 
-		public void Save(TextWriter writer, string featureVectorFolder)
+		public void Save(TextWriter writer, string templateFilePath)
 		{
-			Configuration.WriteValue(writer, "MARQUEE_START", MarqueeStart);
-			Configuration.WriteValue(writer, "MARQUEE_END", MarqueeEnd);
-			Configuration.WriteValue(writer, "FV_DO_AVERAGING", FeatureVector_DoAveraging);
-			Configuration.WriteValue(writer, "NUMBER_OF_FEATURE_VECTORS", FeatureVectorCount);
-			Configuration.WriteValue(writer, "FEATURE_VECTOR_LENGTH", FeatureVectorLength);
+			writer.WriteConfigValue("MARQUEE_START", MarqueeStart);
+			writer.WriteConfigValue("MARQUEE_END", MarqueeEnd);
+			writer.WriteConfigValue("FV_DO_AVERAGING", FeatureVector_DoAveraging);
+			writer.WriteConfigValue("NUMBER_OF_FEATURE_VECTORS", FeatureVectorCount);
+			writer.WriteConfigValue("FEATURE_VECTOR_LENGTH", FeatureVectorLength);
 
-			Configuration.WriteArray(writer, "FV{0}_FILE", FeatureVectorPaths);
-			Configuration.WriteArray(writer, "FV{0}_SELECTED_FRAMES", FeatureVector_SelectedFrames);
-			Configuration.WriteArray(writer, "FV{0}_SOURCE_FILE", FVSourceFiles);
-
-			SaveFeatureVectors(featureVectorFolder, "FV{0}.txt");
+			var templateName = Path.GetFileNameWithoutExtension(templateFilePath);
+			// Ensure to save feature vectors first so paths are correctly set.
+			SaveFeatureVectors(Path.GetDirectoryName(templateFilePath), templateName + "_FV{0}.txt");
+			
+			writer.WriteConfigPathArray(Path.GetDirectoryName(templateFilePath), "FV{0}_FILE", FeatureVectorPaths);
+			writer.WriteConfigArray("FV{0}_SELECTED_FRAMES", FeatureVector_SelectedFrames);
+			writer.WriteConfigArray("FV{0}_SOURCE_FILE", FVSourceFiles);
 		}
 
 		#region Properties
@@ -412,12 +417,29 @@ namespace AudioStuff
 		public bool FeatureVector_DoAveraging { get; set; }
 		public string FeatureVector_DefaultNoiseFile { get; set; }
 
-		public int FeatureVectorCount { get; set; }
+		public int FeatureVectorCount { get; private set; }
 		public int FeatureVectorLength { get; set; }
 		public string[] FeatureVectorPaths { get; set; }
 		public string[] FVSourceFiles { get; set; }
 		public string DefaultNoiseFVFile { get; set; }
 		public int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER 
+
+		FeatureVector[] featureVectors;
+		public FeatureVector[] FeatureVectors
+		{
+			get
+			{
+				if (featureVectors == null)
+					featureVectors = LoadFeatureVectors();
+				return featureVectors;
+			}
+			set
+			{
+				featureVectors = value;
+				FeatureVectorPaths = null;
+				FeatureVectorCount = value.Length;
+			}
+		}
 		#endregion
 
 		#region Feature Vector Parameter Reading
@@ -482,22 +504,6 @@ namespace AudioStuff
 		}
 		#endregion
 
-		FeatureVector[] featureVectors;
-		public FeatureVector[] FeatureVectors
-		{
-			get
-			{
-				if (featureVectors == null)
-					featureVectors = LoadFeatureVectors();
-				return featureVectors;
-			}
-			set
-			{
-				featureVectors = value;
-				FeatureVectorPaths = null;
-			}
-		}
-
 		FeatureVector[] LoadFeatureVectors()
 		{
 			var retVal = new FeatureVector[FeatureVectorCount];
@@ -516,17 +522,16 @@ namespace AudioStuff
 		public void SaveFeatureVectors(string folder, string pattern)
 		{
 			Validation.Begin()
-						.IsStateNotNull(featureVectors, "No feature vectors available to save.")
 						.IsNotNull(folder, "Target folder must be supplied")
 						.IsNotNull(pattern, "A pattern for feature vector filenames must be provided")
 						.Check();
 
-			FeatureVectorPaths = new string[featureVectors.Length];
+			FeatureVectorPaths = new string[FeatureVectors.Length];
 
-			for (int i = 0; i < featureVectors.Length; i++)
+			for (int i = 0; i < FeatureVectors.Length; i++)
 			{
 				var path = Path.Combine(folder, string.Format(pattern, i));
-				featureVectors[i].SaveDataToFile(path);
+				FeatureVectors[i].SaveDataToFile(path);
 				FeatureVectorPaths[i] = path;
 			}
 		}

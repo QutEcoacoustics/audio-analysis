@@ -1,5 +1,6 @@
 ﻿using System;
 using TowseyLib;
+using System.IO;
 
 namespace AudioStuff
 {
@@ -16,6 +17,13 @@ namespace AudioStuff
 			if (duration != null)
 				SourceDuration = TimeSpan.FromSeconds(duration.Value);
 			SampleRate = config.GetInt("WAV_SAMPLE_RATE");
+		}
+
+		public virtual void Save(TextWriter writer)
+		{
+			writer.WriteConfigValue("WAV_FILE_PATH", SourcePath);
+			writer.WriteConfigValue("WAV_DURATION", SourceDuration.TotalSeconds);
+			writer.WriteConfigValue("WAV_SAMPLE_RATE", SampleRate);
 		}
 
 		#region Properties

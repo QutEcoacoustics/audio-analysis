@@ -17,8 +17,8 @@ namespace AudioStuff
 
 		public void Save(TextWriter writer)
 		{
-			Configuration.WriteValue(writer, "WINDOW_FUNCTION", WindowFunction);
-			Configuration.WriteValue(writer, "N_POINT_SMOOTH_FFT", NPointSmoothFFT);
+			writer.WriteConfigValue("WINDOW_FUNCTION", WindowFunction);
+			writer.WriteConfigValue("N_POINT_SMOOTH_FFT", NPointSmoothFFT);
 		}
 
 		#region Properties
@@ -40,11 +40,11 @@ namespace AudioStuff
 
 		public void Save(TextWriter writer)
 		{
-			Configuration.WriteValue(writer, "FILTERBANK_COUNT", FilterbankCount);
-			Configuration.WriteValue(writer, "DO_MELSCALE", DoMelScale);
-			Configuration.WriteValue(writer, "CC_COUNT", CcCount);
-			Configuration.WriteValue(writer, "INCLUDE_DELTA", IncludeDelta);
-			Configuration.WriteValue(writer, "INCLUDE_DOUBLE_DELTA", IncludeDoubleDelta);
+			writer.WriteConfigValue("FILTERBANK_COUNT", FilterbankCount);
+			writer.WriteConfigValue("DO_MELSCALE", DoMelScale);
+			writer.WriteConfigValue("CC_COUNT", CcCount);
+			writer.WriteConfigValue("INCLUDE_DELTA", IncludeDelta);
+			writer.WriteConfigValue("INCLUDE_DOUBLE_DELTA", IncludeDoubleDelta);
 		}
 
 		#region Properties
@@ -69,11 +69,11 @@ namespace AudioStuff
 
 		public void Save(TextWriter writer)
 		{
-			Configuration.WriteValue(writer, "SEGMENTATION_THRESHOLD_K1", SegmentationThresholdK1);
-			Configuration.WriteValue(writer, "SEGMENTATION_THRESHOLD_K2", SegmentationThresholdK2);
-			Configuration.WriteValue(writer, "K1_K2_LATENCY", K1K2Latency);
-			Configuration.WriteValue(writer, "VOCAL_DELAY", VocalDelay);
-			Configuration.WriteValue(writer, "MIN_VOCAL_DURATION", MinPulseDuration);
+			writer.WriteConfigValue("SEGMENTATION_THRESHOLD_K1", SegmentationThresholdK1);
+			writer.WriteConfigValue("SEGMENTATION_THRESHOLD_K2", SegmentationThresholdK2);
+			writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
+			writer.WriteConfigValue("VOCAL_DELAY", VocalDelay);
+			writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
 		}
 
 		#region Properties
