@@ -14,16 +14,11 @@ namespace TowseyLib
         const double minProb = 0.001;
         const double minLog  = -3.0;
         const double stateDurationMax = 1.0; //seconds
-        private static double fractionalNH = 0.30; //arbitrary neighbourhood around user defined periodicity
+		const double fractionalNH = 0.30; //arbitrary neighbourhood around user defined periodicity
 
-
-        private string name;
-        public  string Name { get { return name; } set { name = value; } }
-        private HMMType graphType;
-        public  HMMType GraphType { get { return graphType; } set { graphType = value; } }
-        private ScoreType scoreType;
-        public  ScoreType ScoreType { get { return scoreType; } set { scoreType = value; } }
-
+		public string Name { get; set; }
+		public HMMType GraphType { get; set; }
+		public ScoreType ScoreType { get; set; }
 
         //state initial and transition probabilities
         double[] initialStateProbs;  //PI array in Rabiner notation
@@ -38,7 +33,7 @@ namespace TowseyLib
         double[,] stateDurationProbs;
         double[,] stateDurationLogProbs;
 
-        int numberOfStates;  //number of symbols including noise and garbage symbols.
+        public int numberOfStates;  //number of symbols including noise and garbage symbols.
         int numberOfWords;   // ie number of vocalisations
         double avWordLength; //average length (number of frames) of a vocalisation.
 
@@ -73,10 +68,12 @@ namespace TowseyLib
         /// <param name="stateCount">number of states</param>
         public MarkovModel(string name, HMMType type, int stateCount)
         {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = stateCount;
-            if (this.graphType == HMMType.TWO_STATE_PERIODIC) this.numberOfStates = 2;
+            Name = name;
+            GraphType = type;
+            if (GraphType == HMMType.TWO_STATE_PERIODIC)
+				numberOfStates = 2;
+			else
+				numberOfStates = stateCount;
         }
 
         /// <summary>
@@ -85,13 +82,14 @@ namespace TowseyLib
         /// </summary>
         public MarkovModel(string name, HMMType type, int interval_ms, double deltaT)
         {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = 2;
-            this.DeltaT = deltaT;
-            if (type == HMMType.TWO_STATE_PERIODIC) SetGapParameters(interval_ms);
-            else
-            if (type == HMMType.OLD_PERIODIC) SetPeriodicityParameters(interval_ms);
+            Name = name;
+            GraphType = type;
+            numberOfStates = 2;
+            DeltaT = deltaT;
+            if (type == HMMType.TWO_STATE_PERIODIC)
+				SetGapParameters(interval_ms);
+            else if (type == HMMType.OLD_PERIODIC)
+				SetPeriodicityParameters(interval_ms);
         }
 
 
@@ -100,14 +98,11 @@ namespace TowseyLib
         /// Initialise Markov Model with set of symbol sequences derived from example vocalisations
         /// All the vocalisations are of one type or class.
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="stateCount"></param>
-        /// <param name="exampleWords"></param>
         public MarkovModel(string name, HMMType type, int stateCount, string[] sequences)
         {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = stateCount;
+            Name = name;
+            GraphType = type;
+            numberOfStates = stateCount;
             TrainModel(sequences);
         }
 
@@ -140,8 +135,10 @@ namespace TowseyLib
                 data.WriteComposition();
             }
             string[] sequences = data.GetSequences();
-            if (this.graphType == HMMType.TWO_STATE_PERIODIC) TrainTwoStateModel(sequences);
-            else TrainModel(sequences);
+            if (GraphType == HMMType.TWO_STATE_PERIODIC)
+				TrainTwoStateModel(sequences);
+            else
+				TrainModel(sequences);
         }
 
         public void TrainModel(string[] sequences)
@@ -669,27 +666,27 @@ namespace TowseyLib
 
         public void WriteInfo(bool writeLogMatrices)
         {
-            Console.WriteLine("\n  MARKOV MODEL Name = " + this.name);
-            Console.WriteLine("  Model Type = " + this.graphType);
+            Console.WriteLine("\n  MARKOV MODEL Name = " + Name);
+            Console.WriteLine("  Model Type = " + GraphType);
             Console.WriteLine("  Number of Vocalisations used to construct HMM = " + numberOfWords);
             Console.WriteLine("  Av length of vocalisation = " + this.avWordLength.ToString("F1"));
             Console.WriteLine();
 
-            Console.WriteLine("\t" + this.name + " - Initial State Probs = unigram probabilities");
+			Console.WriteLine("\t" + Name + " - Initial State Probs = unigram probabilities");
             DataTools.WriteArrayInLine(this.initialStateProbs, "F3");
-            if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - LOG Initial State Probs");
+			if (writeLogMatrices) Console.WriteLine("\t" + Name + " - LOG Initial State Probs");
             if (writeLogMatrices) DataTools.writeArray(this.logInitialStateProbs, "F3");
-            Console.WriteLine("\t" + this.name + " - Transition Matrix of Markov Model");
+			Console.WriteLine("\t" + Name + " - Transition Matrix of Markov Model");
             DataTools.writeMatrix(this.transitionMatrix_MM, "F3");
-            if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - Log Transition Matrix");
+			if (writeLogMatrices) Console.WriteLine("\t" + Name + " - Log Transition Matrix");
             if (writeLogMatrices) DataTools.writeMatrix(this.logMatrix_MM, "F3");
-            Console.WriteLine("\t" + this.name + " - State Duration Matrix of Markov Model");
+			Console.WriteLine("\t" + Name + " - State Duration Matrix of Markov Model");
             DataTools.writeMatrix(this.stateDurationProbs, "F3");
-            if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - State Duration Matrix of Markov Model");
+			if (writeLogMatrices) Console.WriteLine("\t" + Name + " - State Duration Matrix of Markov Model");
             if (writeLogMatrices) DataTools.writeMatrix(this.stateDurationLogProbs, "F3");
-            if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - Transition Matrix of NULL Model");
+			if (writeLogMatrices) Console.WriteLine("\t" + Name + " - Transition Matrix of NULL Model");
             if (writeLogMatrices) DataTools.writeMatrix(this.transitionMatrix_NullM, "F3");
-            if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - Transition Matrix of NULL Model");
+			if (writeLogMatrices) Console.WriteLine("\t" + Name + " - Transition Matrix of NULL Model");
             if (writeLogMatrices) DataTools.writeMatrix(this.logMatrix_NullM, "F3");
             Console.WriteLine("");
             Console.WriteLine("  Prob Of Data (av per symbol) Given Markov Model = " + this.avProbOfDataGivenMarkovModel.ToString("F3"));

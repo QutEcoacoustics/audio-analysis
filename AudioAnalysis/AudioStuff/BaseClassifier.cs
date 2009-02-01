@@ -15,5 +15,6 @@ namespace AudioStuff
 		}
 
 		public abstract BaseResult Analyse(AudioRecording recording);
+		public abstract BaseResult Analyse(AudioRecording recording, out BaseSonogram sonogram);
 	}
 }
