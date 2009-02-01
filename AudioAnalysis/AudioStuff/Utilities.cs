@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace AudioStuff
 {
@@ -28,5 +29,24 @@ namespace AudioStuff
 				}
 			});
 		}
+
+		public static byte[] BinarySerialize(this object o)
+		{
+			var formatter = new BinaryFormatter();
+			using (var stream = new MemoryStream())
+			{
+				formatter.Serialize(stream, o);
+				return stream.ToArray();
+			}
+		}
+	}
+
+	[AttributeUsage(AttributeTargets.Class)]
+	public class NameAttribute : Attribute
+	{
+		public NameAttribute() { }
+		public NameAttribute(string name) { Name = name; }
+
+		public string Name { get; set; }
 	}
 }

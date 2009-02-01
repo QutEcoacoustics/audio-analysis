@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using QutSensors;
 using TowseyLib;
 using AudioTools;
 
@@ -23,14 +22,16 @@ namespace AudioStuff
 
 		public override BaseResult Analyse(AudioRecording recording)
 		{
-			AcousticVectorsSonogram sonogram;
+			BaseSonogram sonogram;
 			return Analyse(recording, out sonogram);
 		}
 
-		public MMResult Analyse(AudioRecording recording, out AcousticVectorsSonogram sonogram)
+		public override BaseResult Analyse(AudioRecording recording, out BaseSonogram sonogram)
 		{
-			var result = GenerateSymbolSequence(recording, out sonogram);
-			ScanSymbolSequenceWithMM(result, sonogram.FrameOffset);
+			AcousticVectorsSonogram avSonogram;
+			var result = GenerateSymbolSequence(recording, out avSonogram);
+			ScanSymbolSequenceWithMM(result, avSonogram.FrameOffset);
+			sonogram = avSonogram;
 			return result;
 		}
 

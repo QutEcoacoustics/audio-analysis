@@ -5,6 +5,7 @@ using System.Text;
 using AudioTools;
 using System.IO;
 using TowseyLib;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace AudioStuff
 {
@@ -17,44 +18,16 @@ namespace AudioStuff
 			var template = new MMTemplate(config);
 			template.Save(newTemplatePath);
 
+			File.WriteAllBytes(@"C:\Temp\NewTemplates\Template2.bin", template.Serialize());
+			var t2 = BaseClassifierParameters.Deserialize(File.Open(@"C:\Temp\NewTemplates\Template2.bin", FileMode.Open));
+			File.WriteAllBytes(@"C:\Temp\NewTemplates\Template2_2.bin", t2.Serialize());
+			/*var formatter = new BinaryFormatter();
+			using (var stream = File.OpenWrite(@"C:\Temp\NewTemplates\Template2.bin"))
+				formatter.Serialize(stream, template);*/
+
 			//MakeSonogram(args[0], args[1], args[2]);
 			//ReadTemplateAndVerify(args[0], args[1], args[2]);
 			//CreateTemplate(args[0], args[1], new GUI(1, @"C:\Temp"), args[2]);
-
-			/*string wavPath = @"C:\Temp\Data\BAC10\BAC10_20081123-072000.wav";
-			var oldSono = CreateOldSonogram(wavPath, SonogramType.acousticVectors);
-			var sono = new AcousticVectorsSonogram(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini", new WavReader(wavPath));
-
-			AssertAreEqual(oldSono.AcousticM, sono.Data);
-			AssertAreEqual(oldSono.Decibels, sono.Decibels);*/
-		}
-
-		private static void AssertAreEqual(double[,] a, double[,] b)
-		{
-			if (a.GetLength(0) != b.GetLength(0))
-				throw new Exception("First dimension is not equal");
-			if (a.GetLength(1) != b.GetLength(1))
-				throw new Exception("Second dimension is not equal");
-			for (int i = 0; i < a.GetLength(0); i++)
-				for (int j = 0; j < a.GetLength(1); j++)
-					if (a[i, j] != b[i, j])
-						throw new Exception("Not equal: " + i + "," + j);
-		}
-
-		private static void AssertAreEqual(double[] a, double[] b)
-		{
-			if (a.GetLength(0) != b.GetLength(0))
-				throw new Exception("First dimension is not equal");
-			for (int i = 0; i < a.GetLength(0); i++)
-				if (a[i] != b[i])
-					throw new Exception("Not equal: " + i);
-		}
-
-		static Sonogram CreateOldSonogram(string wavPath, SonogramType type)
-		{
-			var sonoConfig = SonoConfig.Load(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini");
-			sonoConfig.SonogramType = type;
-			return new Sonogram(sonoConfig, wavPath);
 		}
 
 		public static void MakeSonogram(string sonogramConfigPath, string wavPath, string targetPath)
@@ -103,8 +76,8 @@ namespace AudioStuff
 		{
 			var template = MMTemplate.Load(templatePath);
 			var recording = new AudioRecording() { FileName = template.SourcePath };
-			var recogniser = new MMRecogniser(template);
-			AcousticVectorsSonogram sonogram;
+			var recogniser = BaseClassifier.Create(template) as MMRecogniser;
+			BaseSonogram sonogram;
 			var result = recogniser.Analyse(recording, out sonogram) as MMResult;
 
 			result.SaveSymbolSequences(Path.Combine(Path.GetDirectoryName(templatePath), "symbolSequences.txt"), true);
@@ -137,12 +110,12 @@ namespace AudioStuff
 				FileInfo[] files = new DirectoryInfo(wavFolder).GetFiles("*" + WavReader.WavFileExtension);
 				foreach (var file in files)
 				{
-					AcousticVectorsSonogram sonogram;
+					BaseSonogram sonogram;
 					var recording = new AudioRecording() { FileName = file.FullName };
-					var result = recogniser.Analyse(recording, out sonogram);
+					var result = recogniser.Analyse(recording, out sonogram) as MMResult;
 					result.ID = file.Name;
 					var imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-					SaveSyllablesImage(result, sonogram, imagePath);
+					SaveSyllablesImage(result, sonogram as AcousticVectorsSonogram, imagePath);
 
 					writer.WriteLine(result.GetOneLineSummary());
 				}

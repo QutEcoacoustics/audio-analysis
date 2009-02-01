@@ -5,7 +5,8 @@ using System.Text;
 
 namespace AudioStuff
 {
-	public class BaseResult
+	[Serializable]
+	public abstract class BaseResult
 	{
 	}
 }

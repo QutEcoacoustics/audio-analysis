@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using QutSensors;
 using TowseyLib;
 using System.IO;
 
 namespace AudioStuff
 {
+	[Serializable]
 	public class MMResult : BaseResult
 	{
 		public MMResult(MMTemplate template)

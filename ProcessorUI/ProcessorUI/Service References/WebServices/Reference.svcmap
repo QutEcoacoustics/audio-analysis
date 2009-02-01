@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="1c4a811a-bbd7-4252-8f25-a3dfff818d83" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>true</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:45610/WebFrontend/Processor/Processor.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="Processor.wsdl" MetadataType="Wsdl" ID="f5d313c4-b8d2-4de4-a9f4-8235449b3fc7" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?wsdl" />
+    <MetadataFile FileName="Processor.disco" MetadataType="Disco" ID="b1316d60-3b73-4dd8-8b49-4053a54175e6" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?disco" />
+    <MetadataFile FileName="Processor.xsd" MetadataType="Schema" ID="a27d3295-3c9d-4b99-93b3-fdf44357894b" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd1" />
+    <MetadataFile FileName="Processor1.xsd" MetadataType="Schema" ID="1ccfd851-c01f-495e-8bae-38c6090a33cd" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd2" />
+    <MetadataFile FileName="Processor1.wsdl" MetadataType="Wsdl" ID="b1e1f4a4-9359-41a8-9fb5-3a25daebd4cf" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="Processor2.xsd" MetadataType="Schema" ID="088ce9e6-ce0a-49a1-802f-3216cc7644cd" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd0" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

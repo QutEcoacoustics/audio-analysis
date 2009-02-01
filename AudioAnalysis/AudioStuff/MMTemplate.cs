@@ -5,16 +5,26 @@ using System.Text;
 using TowseyLib;
 using System.IO;
 using AudioTools;
-using QutSensors;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace AudioStuff
 {
+	[Serializable,
+		Name("Markov Model Template")]
 	public class MMTemplate : TemplateParameters
 	{
 		#region Statics
 		public static MMTemplate Load(string configFile)
 		{
 			return new MMTemplate(new Configuration(configFile));
+		}
+
+		public static MMTemplate Deserialize(string templatePath)
+		{
+			var formatter = new BinaryFormatter();
+			using (var stream = File.OpenRead(templatePath))
+				return formatter.Deserialize(stream) as MMTemplate;
 		}
 		#endregion
 
@@ -257,7 +267,8 @@ namespace AudioStuff
 		}
 	}
 
-	public class LanguageModel
+	[Serializable]
+	public class LanguageModel : ISerializable
 	{
 		public LanguageModel(Configuration config, int fvCount, BaseSonogramConfig sonogramConfig, int sampleRate)
 		{
@@ -353,8 +364,76 @@ namespace AudioStuff
 		public double FrameOffset { get; private set; }
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }		
 		#endregion
+
+		#region ISerializable Members
+		public LanguageModel(SerializationInfo info, StreamingContext context)
+		{
+			FrameOffset = info.GetDouble("FrameOffset");
+
+			// THE LANGUAGE MODEL
+			HmmType = (HMMType)info.GetValue("MM_TYPE", typeof(HMMType));
+			if (HmmType == HMMType.UNDEFINED)
+				throw new ArgumentException("Configuration file is invalid - HmmType unrecognised");
+
+			string mmName = info.GetString("MM_NAME");
+
+			// READ TRAINING SEQUENCES
+			WordCount = info.GetInt32("NUMBER_OF_WORDS");
+			if (WordCount < 1)
+				throw new ArgumentException("Configuration file is invalid - No words defined in language model.");
+
+			Words = (string[])info.GetValue("WORDS", typeof(string[]));;
+
+			MarkovModel mm;
+			if (HmmType == HMMType.OLD_PERIODIC)
+			{
+				int period_ms = info.GetInt32("PERIODICITY_MS");
+				if (period_ms == -Int32.MaxValue)
+					throw new ArgumentException("Configuration file is invalid - no periodicity specified..");
+
+				mm = new MarkovModel(mmName, HmmType, period_ms, FrameOffset); //special constructor for two state periodic MM 
+				mm.TrainModel(Words);
+			}
+			else if (HmmType == HMMType.TWO_STATE_PERIODIC)
+			{
+				int? gap_ms = (int?)info.GetValue("GAP_MS", typeof(int?));
+				if (gap_ms == null)
+					throw new ArgumentException("Configuration file is invalid - two state MM cannot be defined because gap duration is not definied in configuration.");
+				mm = new MarkovModel(mmName, HmmType, gap_ms.Value, FrameOffset); //special constructor for two state periodic MM 
+				mm.TrainTwoStateModel(Words);
+			}
+			else
+			{
+				int numberOfStates = info.GetInt32("NumStates") + 2; //because need extra for noise and for garbage
+				mm = new MarkovModel(mmName, HmmType, numberOfStates);
+				mm.DeltaT = FrameOffset; //the sequence time step
+				mm.TrainModel(Words);
+			}
+			WordModel = mm; //one markov model per template
+			//end setting up markov model
+
+			SongWindow = info.GetDouble("SONG_WINDOW");
+		}
+
+		public void GetObjectData(SerializationInfo info, StreamingContext context)
+		{
+			info.AddValue("MM_TYPE", HmmType);
+			info.AddValue("FrameOffset", FrameOffset);
+			if (WordModel != null)
+			{
+				info.AddValue("MM_NAME", WordModel.Name);
+				info.AddValue("PERIODICITY_MS", WordModel.Periodicity_ms);
+				info.AddValue("GAP_MS", WordModel.Gap_ms);
+				info.AddValue("NumStates", WordModel.numberOfStates);
+			}
+			info.AddValue("NUMBER_OF_WORDS", WordCount);
+			info.AddValue("WORDS", Words);
+			info.AddValue("SONG_WINDOW", SongWindow);
+		}
+		#endregion
 	}
 
+	[Serializable]
 	public class FeatureVectorParameters
 	{
 		public FeatureVectorParameters(Configuration config)
@@ -424,6 +503,7 @@ namespace AudioStuff
 		public string DefaultNoiseFVFile { get; set; }
 		public int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER 
 
+		[NonSerialized]
 		FeatureVector[] featureVectors;
 		public FeatureVector[] FeatureVectors
 		{

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="Processor.JobItemDescription">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AudioReadingUrl" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Job" nillable="true" type="tns:Processor.JobDescription" />
+      <xs:element minOccurs="0" name="JobItemID" type="xs:int" />
+      <xs:element minOccurs="0" name="MimeType" nillable="true" type="xs:string" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Processor.JobItemDescription" nillable="true" type="tns:Processor.JobItemDescription" />
+  <xs:complexType name="Processor.JobDescription">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="JobID" type="xs:int" />
+      <xs:element minOccurs="0" name="Name" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="Parameters" nillable="true" type="xs:base64Binary" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Processor.JobDescription" nillable="true" type="tns:Processor.JobDescription" />
+  <xs:complexType name="ArrayOfProcessor.JobItemResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="Processor.JobItemResult" nillable="true" type="tns:Processor.JobItemResult" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfProcessor.JobItemResult" nillable="true" type="tns:ArrayOfProcessor.JobItemResult" />
+  <xs:complexType name="Processor.JobItemResult">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="BestScore" nillable="true" type="xs:double" />
+      <xs:element minOccurs="0" name="BestScoreLocation" nillable="true" type="xs:double" />
+      <xs:element minOccurs="0" name="NumberOfHits" type="xs:int" />
+      <xs:element minOccurs="0" name="Start" nillable="true" type="xs:int" />
+      <xs:element minOccurs="0" name="Stop" nillable="true" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="Processor.JobItemResult" nillable="true" type="tns:Processor.JobItemResult" />
+</xs:schema>

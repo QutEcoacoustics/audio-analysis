@@ -7,6 +7,7 @@ using System.IO;
 
 namespace AudioStuff
 {
+	[Serializable]
 	public class FftConfiguration
 	{
 		public FftConfiguration(Configuration config)
@@ -27,6 +28,7 @@ namespace AudioStuff
 		#endregion
 	}
 
+	[Serializable]
 	public class MfccConfiguration
 	{
 		public MfccConfiguration(Configuration config)
@@ -56,6 +58,7 @@ namespace AudioStuff
 		#endregion
 	}
 
+	[Serializable]
 	public class EndpointDetectionConfiguration
 	{
 		public EndpointDetectionConfiguration(Configuration config)
