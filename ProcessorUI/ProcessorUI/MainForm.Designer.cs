@@ -32,6 +32,7 @@
 			this.txtLog = new System.Windows.Forms.TextBox();
 			this.txtWorker = new System.Windows.Forms.TextBox();
 			this.lblWorker = new System.Windows.Forms.Label();
+			this.cmdOptions = new System.Windows.Forms.Button();
 			this.SuspendLayout();
 			// 
 			// cmdStart
@@ -64,7 +65,7 @@
 						| System.Windows.Forms.AnchorStyles.Right)));
 			this.txtWorker.Location = new System.Drawing.Point(70, 12);
 			this.txtWorker.Name = "txtWorker";
-			this.txtWorker.Size = new System.Drawing.Size(315, 20);
+			this.txtWorker.Size = new System.Drawing.Size(234, 20);
 			this.txtWorker.TabIndex = 2;
 			this.txtWorker.TextChanged += new System.EventHandler(this.txtWorker_TextChanged);
 			// 
@@ -77,11 +78,22 @@
 			this.lblWorker.TabIndex = 3;
 			this.lblWorker.Text = "My Name:";
 			// 
+			// cmdOptions
+			// 
+			this.cmdOptions.Location = new System.Drawing.Point(310, 10);
+			this.cmdOptions.Name = "cmdOptions";
+			this.cmdOptions.Size = new System.Drawing.Size(75, 23);
+			this.cmdOptions.TabIndex = 4;
+			this.cmdOptions.Text = "Options";
+			this.cmdOptions.UseVisualStyleBackColor = true;
+			this.cmdOptions.Click += new System.EventHandler(this.cmdOptions_Click);
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.ClientSize = new System.Drawing.Size(397, 330);
+			this.Controls.Add(this.cmdOptions);
 			this.Controls.Add(this.lblWorker);
 			this.Controls.Add(this.txtWorker);
 			this.Controls.Add(this.txtLog);
@@ -99,6 +111,7 @@
 		private System.Windows.Forms.TextBox txtLog;
 		private System.Windows.Forms.TextBox txtWorker;
 		private System.Windows.Forms.Label lblWorker;
+		private System.Windows.Forms.Button cmdOptions;
 	}
 }
 
