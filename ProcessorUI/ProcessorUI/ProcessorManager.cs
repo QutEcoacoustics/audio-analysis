@@ -75,6 +75,7 @@ namespace ProcessorUI
 					catch (Exception e)
 					{
 						OnLog("Error in web service call - " + e.ToString());
+						OnLog("Sleeping...");
 						Thread.Sleep(5000);
 						GetNextJob();
 						return;
@@ -101,14 +102,19 @@ namespace ProcessorUI
 					finally
 					{
 						if (!processed && item != null)
+						{
 							ws.ReturnJob(Settings.WorkerName, item.JobItemID);
+						}
 					}
 					
 				}
 				catch (Exception e)
 				{
 					OnLog("ERROR! " + e.ToString());
-					OnStopped();
+					OnLog("Sleeping...");
+					Thread.Sleep(5000);
+					GetNextJob();
+					//OnStopped();
 				}
 			}
 		}

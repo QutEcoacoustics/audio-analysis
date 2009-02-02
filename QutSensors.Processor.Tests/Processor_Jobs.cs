@@ -127,6 +127,17 @@ namespace QutSensors.Processor.Tests
 			Assert.IsNull(item.WorkerAcceptedTimeUTC);
 		}
 
+		[TestMethod]
+		public void FailJobItems()
+		{
+			ReserveJobItem();
+			JobManager.FailAnyIncompleteJobs(db, "TEST WORKER");
+			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, db.Processor_JobItems);
+			var c = db.ExecuteQuery<int>("SELECT COUNT(*) FROM Processor_JobItems WHERE Worker = 'TEST WORKER'").First();
+			Assert.AreEqual(0, c);
+			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER").Count());
+		}
+
 		#region Utilities
 		System.Web.Security.MembershipUser CreateAudioReading()
 		{
@@ -148,7 +159,7 @@ namespace QutSensors.Processor.Tests
 				Hardware = hardware,
 				Deployments = deployment,
 				Time = DateTime.Now,
-				MimeType = "application\test",
+				MimeType = "application\\test",
 				Data = new byte[0]
 			};
 			db.AudioReadings.InsertOnSubmit(reading);
