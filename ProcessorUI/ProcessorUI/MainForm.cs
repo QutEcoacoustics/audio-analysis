@@ -78,7 +78,7 @@ namespace ProcessorUI
 				BeginInvoke((EventHandler)delegate { Log(sender, log); });
 			else
 			{
-				txtLog.Text = log + "\r\n" + txtLog.Text;
+				txtLog.Text = DateTime.Now.ToString("HH:mm:ss") + ":" + log + "\r\n" + txtLog.Text;
 				if (txtLog.Text.Length > 10000)
 					txtLog.Text = txtLog.Text.Substring(0, 8000);
 			}

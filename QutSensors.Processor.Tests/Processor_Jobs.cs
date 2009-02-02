@@ -131,11 +131,10 @@ namespace QutSensors.Processor.Tests
 		public void FailJobItems()
 		{
 			ReserveJobItem();
+			Assert.AreEqual(1, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER" && i.Status == JobStatus.Running).Count());
 			JobManager.FailAnyIncompleteJobs(db, "TEST WORKER");
 			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, db.Processor_JobItems);
-			var c = db.ExecuteQuery<int>("SELECT COUNT(*) FROM Processor_JobItems WHERE Worker = 'TEST WORKER'").First();
-			Assert.AreEqual(0, c);
-			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER").Count());
+			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER" && i.Status == JobStatus.Running).Count());
 		}
 
 		#region Utilities

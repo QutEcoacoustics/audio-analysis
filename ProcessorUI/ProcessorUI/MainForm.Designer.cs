@@ -80,6 +80,7 @@
 			// 
 			// cmdOptions
 			// 
+			this.cmdOptions.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdOptions.Location = new System.Drawing.Point(310, 10);
 			this.cmdOptions.Name = "cmdOptions";
 			this.cmdOptions.Size = new System.Drawing.Size(75, 23);
