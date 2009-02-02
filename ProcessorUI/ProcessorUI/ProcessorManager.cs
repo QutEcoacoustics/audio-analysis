@@ -41,7 +41,7 @@ namespace ProcessorUI
 
 			if (stopped == null)
 				stopped = new AutoResetEvent(false);
-			State = ProcessorState.Stopping;
+			Stop();
 			stopped.WaitOne();
 			stopped = null;
 		}
@@ -92,6 +92,7 @@ namespace ProcessorUI
 						if (!processed && item != null)
 							ws.ReturnJob(Settings.WorkerName, item.JobItemID);
 					}
+					
 				}
 				catch (Exception e)
 				{
@@ -114,6 +115,8 @@ namespace ProcessorUI
 				{
 					OnLog("Analysing {0}", item.AudioReadingUrl);
 					var results = AnalyseFile(tempFile, item.MimeType, classifier);
+
+					
 
 					if (results != null)
 					{
@@ -142,6 +145,12 @@ namespace ProcessorUI
 				using (var converted = DShowConverter.ToWav(file.FileName, mimeType, i, i + 60000))
 				{
 					var result = classifier.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as MMResult;
+
+					// Added this call because it looked like there was a memory leak and we'd eventually get an OutOfMemoryException
+					// But this appears to prevent it, which would suggest there's no actual leak. Perhaps some big arrays are just getting through a couple of GC generations.
+					// It makes the system allocator work overtime, but should keep the app running.
+					Utilities.MinimizeMemory();
+
 					OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBest, result.VocalBestLocation);
 					retVal.Add(new ProcessorJobItemResult()
 					{
