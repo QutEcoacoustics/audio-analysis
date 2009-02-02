@@ -67,7 +67,18 @@ namespace ProcessorUI
 			{
 				try
 				{
-					var item = ws.EndGetJobItem(ar);
+					ProcessorJobItemDescription item;
+					try
+					{
+						item = ws.EndGetJobItem(ar);
+					}
+					catch (Exception e)
+					{
+						OnLog("Error in web service call - " + e.ToString());
+						Thread.Sleep(5000);
+						GetNextJob();
+						return;
+					}
 					bool processed = false;
 					try
 					{
@@ -145,11 +156,6 @@ namespace ProcessorUI
 				using (var converted = DShowConverter.ToWav(file.FileName, mimeType, i, i + 60000))
 				{
 					var result = classifier.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as MMResult;
-
-					// Added this call because it looked like there was a memory leak and we'd eventually get an OutOfMemoryException
-					// But this appears to prevent it, which would suggest there's no actual leak. Perhaps some big arrays are just getting through a couple of GC generations.
-					// It makes the system allocator work overtime, but should keep the app running.
-					Utilities.MinimizeMemory();
 
 					OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBest, result.VocalBestLocation);
 					retVal.Add(new ProcessorJobItemResult()

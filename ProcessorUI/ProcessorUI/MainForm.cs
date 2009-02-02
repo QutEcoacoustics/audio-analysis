@@ -83,5 +83,13 @@ namespace ProcessorUI
 					txtLog.Text = txtLog.Text.Substring(0, 8000);
 			}
 		}
+
+		private void cmdOptions_Click(object sender, EventArgs e)
+		{
+			using (var dia = new OptionsForm())
+			{
+				dia.ShowDialog(this);
+			}
+		}
 	}
 }
