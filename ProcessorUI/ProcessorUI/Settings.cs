@@ -22,7 +22,7 @@ namespace ProcessorUI
 
 		public static string Server
 		{
-			get { return Load("Server", "http://127.0.0.1:45610/WebFrontend/Processor/Processor.svc"); }
+			get { return Load("Server", "http://sensor.mquter.qut.edu.au/Processor/Processor.svc"); }
 			set { Save("Server", value); }
 		}
 

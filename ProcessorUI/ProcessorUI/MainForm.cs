@@ -63,6 +63,7 @@ namespace ProcessorUI
 			{
 				cmdStart.Text = "&Start";
 				cmdStart.Enabled = true;
+				Utilities.MinimizeMemory();
 			}
 		}
 
