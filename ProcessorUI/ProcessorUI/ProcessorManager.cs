@@ -52,6 +52,7 @@ namespace ProcessorUI
 
 		void GetNextJob()
 		{
+			OnLog("Requesting jobs...");
 			ws = new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
 			ws.BeginGetJobItem(Settings.WorkerName, null, OnGotJob, null);
 		}
