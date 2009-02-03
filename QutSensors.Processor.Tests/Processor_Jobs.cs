@@ -31,11 +31,7 @@ namespace QutSensors.Processor.Tests
 		[ClassInitialize()]
 		public static void MyClassInitialize(TestContext testContext)
 		{
-			var connectionString = ConfigurationManager.ConnectionStrings["LocalSqlServer"].ConnectionString;
-			QutSensors.DB.ConnectionString = connectionString;
-
-			RikMigrations.DbProvider.DefaultConnectionString = connectionString;
-			RikMigrations.MigrationManager.UpgradeMax(typeof(QutSensors.DB).Assembly);
+			Utilities.InitialiseDB();
 		}
 		//
 		// Use ClassCleanup to run code after all tests in a class have run

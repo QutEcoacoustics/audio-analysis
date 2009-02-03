@@ -4,15 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace QutSensors.Processor.Tests
+namespace QutSensors.Data.Tests
 {
+	/// <summary>
+	/// Summary description for Validation
+	/// </summary>
 	[TestClass]
-	public class Processor_Results
+	public class ValidationTests
 	{
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
 		public TestContext TestContext { get; set; }
 
 		#region Additional test attributes
@@ -36,5 +35,21 @@ namespace QutSensors.Processor.Tests
 		// public void MyTestCleanup() { }
 		//
 		#endregion
+
+		[TestMethod, ExpectedException(typeof(MultiException))]
+		public void DoesntContainFail()
+		{
+			Validation.Begin()
+						.DoesntContain("Joe", 'e', "TEST")
+						.Check();
+		}
+
+		[TestMethod]
+		public void DoesntContainPass()
+		{
+			Validation.Begin()
+						.DoesntContain("Joe", 'c', "TEST")
+						.Check();
+		}
 	}
 }
