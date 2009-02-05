@@ -64,7 +64,7 @@ namespace QutSensors.Processor.Tests
 			var template = JobManager.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
 
 			// Create job
-			var filter = new ReadingsFilter() { FromDate = DateTime.Today };
+			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
 			var job = JobManager.Add(db, filter, "TEST JOB", user.UserName, template);
 
 			Assert.AreEqual(job.Filter.GetAudioReadings(db).Count(), db.Processor_JobItems.Where(i => i.JobID == job.JobID).Count());
@@ -92,7 +92,7 @@ namespace QutSensors.Processor.Tests
 			var template = JobManager.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
 
 			// Create job
-			var filter = new ReadingsFilter() { FromDate = DateTime.Today };
+			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
 			var job = JobManager.Add(db, filter, "TEST JOB", user.UserName, template);
 
 			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER").Count());
@@ -148,17 +148,7 @@ namespace QutSensors.Processor.Tests
 			var deployment = hardware.AddDeployment(db, "TEST DEPLOYMENT", DateTime.UtcNow, user);
 
 			// Create some audio readings
-			var reading = new QutSensors.Data.Linq.AudioReadings
-			{
-				AudioReadingID = Guid.NewGuid(),
-				Hardware = hardware,
-				Deployments = deployment,
-				Time = DateTime.Now,
-				MimeType = "application\\test",
-				Data = new byte[0]
-			};
-			db.AudioReadings.InsertOnSubmit(reading);
-			db.SubmitChanges();
+			hardware.AddAudioReading(db, DateTime.Now, new byte[0], "test", true);
 			return user;
 		}
 		#endregion

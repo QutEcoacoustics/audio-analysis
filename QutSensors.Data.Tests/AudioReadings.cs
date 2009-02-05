@@ -11,25 +11,13 @@ namespace QutSensors.Data.Tests
 	[TestClass]
 	public class AudioReadingsTests : DatabaseTest
 	{
-		const string TestUserName = "USER";
-
 		[TestMethod]
 		public void AddAudioReading()
 		{
 			Hardware hardware;
 			var deployment = CreateTestDeployment(out hardware);
 			// Create some audio readings
-			var reading = new QutSensors.Data.Linq.AudioReadings
-			{
-				AudioReadingID = Guid.NewGuid(),
-				Hardware = hardware,
-				Deployments = deployment,
-				Time = DateTime.Now,
-				MimeType = "application\\test",
-				Data = new byte[0]
-			};
-			db.AudioReadings.InsertOnSubmit(reading);
-			db.SubmitChanges();
+			hardware.AddAudioReading(db, DateTime.UtcNow, new byte[0], "test", true);
 		}
 
 		[TestMethod]
