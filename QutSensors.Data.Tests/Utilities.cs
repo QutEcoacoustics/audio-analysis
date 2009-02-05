@@ -18,6 +18,8 @@ namespace QutSensors.Data.Tests
 
 	public class DatabaseTest
 	{
+		public const string TestUserName = "TEST USER";
+
 		protected TransactionScope transaction;
 		protected QutSensors.Data.Linq.QutSensors db;
 
