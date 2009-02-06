@@ -51,13 +51,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioReadings.cs" />
+    <Compile Include="DatabaseTest.cs" />
     <Compile Include="Deployments.cs" />
     <Compile Include="Hardware.cs" />
+    <Compile Include="Processor_Jobs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Validation.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AudioAnalysis\AudioStuff\AudioStuff.csproj">
+      <Project>{EE624932-920B-4380-94D5-A1B8993C5F14}</Project>
+      <Name>AudioStuff</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>

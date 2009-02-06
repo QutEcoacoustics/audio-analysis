@@ -48,8 +48,7 @@ namespace QutSensors.Data.Tests
 
 		Deployments CreateTestDeployment(out Hardware hardware)
 		{
-			// Create user
-			var user = System.Web.Security.Membership.CreateUser(TestUserName, "TEST123", "test@test.com");
+			var user = CreateUser();
 
 			// Create hardware
 			hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now, CreatedBy = user.UserName };

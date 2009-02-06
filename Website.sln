@@ -37,8 +37,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "AudioAnalysis
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowseyLib", "AudioAnalysis\TowseyLib\TowseyLib.csproj", "{7E0D2209-A416-4784-B350-83778D20A64B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Processor.Tests", "QutSensors.Processor.Tests\QutSensors.Processor.Tests.csproj", "{078E0E24-7C14-46F0-8513-EE671676ACCD}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AB65DE93-90BB-4AC1-AF20-99CD18C69C0A}"
 	ProjectSection(SolutionItems) = preProject
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
@@ -120,16 +118,6 @@ Global
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Release|.NET.ActiveCfg = Release|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{078E0E24-7C14-46F0-8513-EE671676ACCD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Any CPU.Build.0 = Debug|Any CPU

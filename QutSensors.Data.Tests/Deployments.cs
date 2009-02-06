@@ -13,28 +13,19 @@ namespace QutSensors.Data.Tests
 		[TestMethod]
 		public void AddDeployment()
 		{
-			// Create user
-			var user = System.Web.Security.Membership.CreateUser(TestUserName, "TEST123", "test@test.com");
-
-			var hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now, CreatedBy = user.UserName };
-			db.Hardware.InsertOnSubmit(hardware);
-			db.SubmitChanges();
-
-			hardware.AddDeployment(db, "TEST DEPLOYMENT", DateTime.Now, TestUserName);
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			CreateDeployment(user, hardware);
 		}
 
 		[TestMethod]
 		public void AddingDeploymentUpdatesReadingsDeploymentIDs()
 		{
-			// Create user
-			var user = System.Web.Security.Membership.CreateUser(TestUserName, "TEST123", "test@test.com");
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
 
-			var hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now, CreatedBy = user.UserName };
-			db.Hardware.InsertOnSubmit(hardware);
-			db.SubmitChanges();
-
-			var reading1 = hardware.AddAudioReading(db, DateTime.UtcNow.AddHours(-4), new byte[0], "test", true);
-			var reading2 = hardware.AddAudioReading(db, DateTime.UtcNow.AddHours(-2), new byte[0], "test", true);
+			var reading1 = AddAudioReading(hardware, DateTime.UtcNow.AddHours(-4));
+			var reading2 = AddAudioReading(hardware, DateTime.UtcNow.AddHours(-2));
 
 			Assert.AreEqual(0, db.AudioReadings.Count(r => r.DeploymentID != null));
 			Assert.AreEqual(2, db.AudioReadings.Count(r => r.DeploymentID == null));

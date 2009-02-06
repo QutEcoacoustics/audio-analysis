@@ -9,56 +9,18 @@ using QutSensors.Data.Linq;
 using AudioStuff;
 using QutSensors.Data;
 
-namespace QutSensors.Processor.Tests
+namespace QutSensors.Data.Tests
 {
 	[TestClass]
-	public class Processor_Jobs
+	public class Processor_Jobs : DatabaseTest
 	{
-		QutSensors.Data.Linq.QutSensors db;
-		TransactionScope transaction;
-
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
-		public TestContext TestContext { get; set; }
-
-		#region Additional test attributes
-		//
-		// You can use the following additional attributes as you write your tests:
-		//
-		// Use ClassInitialize to run code before running the first test in the class
-		[ClassInitialize()]
-		public static void MyClassInitialize(TestContext testContext)
-		{
-			Utilities.InitialiseDB();
-		}
-		//
-		// Use ClassCleanup to run code after all tests in a class have run
-		// [ClassCleanup()]
-		// public static void MyClassCleanup() { }
-		//
-		// Use TestInitialize to run code before running each test 
-		[TestInitialize()]
-		public void MyTestInitialize()
-		{
-			transaction = new TransactionScope();
-			db = new QutSensors.Data.Linq.QutSensors();
-		}
-		//
-		// Use TestCleanup to run code after each test has run
-		[TestCleanup()]
-		public void MyTestCleanup()
-		{
-			db.Dispose();
-			transaction.Dispose();
-		}
-		#endregion
-
 		[TestMethod]
-		public void CreateJobItems()
+		public void CreateJob()
 		{
-			var user = CreateAudioReading();
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment = CreateDeployment(user, hardware);
+			AddAudioReading(hardware, DateTime.Now);
 
 			// Create template
 			var template = JobManager.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
@@ -66,6 +28,13 @@ namespace QutSensors.Processor.Tests
 			// Create job
 			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
 			var job = JobManager.Add(db, filter, "TEST JOB", user.UserName, template);
+		}
+
+		[TestMethod]
+		public void CreateJobItems()
+		{
+			CreateJob();
+			var job = db.Processor_Jobs.First();
 
 			Assert.AreEqual(job.Filter.GetAudioReadings(db).Count(), db.Processor_JobItems.Where(i => i.JobID == job.JobID).Count());
 			var recordsAffected = job.CreateJobItems(db);
@@ -76,7 +45,7 @@ namespace QutSensors.Processor.Tests
 		[TestMethod]
 		public void GetJobItem()
 		{
-			CreateJobItems();
+			CreateJob();
 			var item = JobManager.GetJobItem(db, "TEST WORKER", null);
 			Assert.IsNotNull(item);
 			Assert.AreNotEqual(0, db.Processor_JobItems.Count(i => i.Worker != null));
@@ -86,14 +55,8 @@ namespace QutSensors.Processor.Tests
 		[TestMethod]
 		public void ReserveJobItem()
 		{
-			var user = CreateAudioReading();
-
-			// Create template
-			var template = JobManager.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
-
-			// Create job
-			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
-			var job = JobManager.Add(db, filter, "TEST JOB", user.UserName, template);
+			CreateJob();
+			var job = db.Processor_Jobs.First();
 
 			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER").Count());
 			var item = db.Processor_JobItems.Where(i => i.JobID == job.JobID).FirstOrDefault();
@@ -133,25 +96,16 @@ namespace QutSensors.Processor.Tests
 			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER" && i.Status == JobStatus.Running).Count());
 		}
 
-		#region Utilities
-		System.Web.Security.MembershipUser CreateAudioReading()
+		[TestMethod]
+		public void GetOwnersJobs()
 		{
-			// Create user
-			var user = System.Web.Security.Membership.CreateUser("TEST", "TEST123", "test@test.com");
+			CreateJob();
+			var job = db.Processor_Jobs.First();
 
-			// Create hardware
-			var hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now/*, CreatedBy = user.UserName*/ };
-			db.Hardware.InsertOnSubmit(hardware);
-			db.SubmitChanges();
-
-			// Create deployment
-			var deployment = hardware.AddDeployment(db, "TEST DEPLOYMENT", DateTime.UtcNow, user);
-
-			// Create some audio readings
-			hardware.AddAudioReading(db, DateTime.Now, new byte[0], "test", true);
-			return user;
+			Assert.AreEqual(1, JobManager.GetOwnersJobs(db, TestUserName).Count());
+			var job2 = JobManager.GetOwnersJobs(db, TestUserName).First();
+			Assert.AreEqual(job.Name, job2.Name);
 		}
-		#endregion
 
 		[Serializable]
 		class DummyTemplateParameters : BaseClassifierParameters
