@@ -10,8 +10,7 @@ namespace QutSensors.Data.Tests
 		[TestMethod]
 		public void AddHardware()
 		{
-			// Create user
-			var user = System.Web.Security.Membership.CreateUser(TestUserName, "TEST123", "test@test.com");
+			var user = CreateUser();
 
 			var hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now, CreatedBy = user.UserName };
 			db.Hardware.InsertOnSubmit(hardware);
