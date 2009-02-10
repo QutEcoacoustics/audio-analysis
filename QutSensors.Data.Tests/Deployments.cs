@@ -43,6 +43,32 @@ namespace QutSensors.Data.Tests
 		}
 
 		[TestMethod]
+		public void AddingDeploymentUpdatesReadingsDeploymentIDsForUnfinishedUploads()
+		{
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+
+			var reading1 = AddAudioReading(hardware, DateTime.UtcNow.AddHours(-4));
+			var reading2 = AddAudioReading(hardware, DateTime.UtcNow.AddHours(-2));
+			reading2.Uploaded = true; // Indicates not finished uploading
+			db.SubmitChanges();
+
+			Assert.AreEqual(0, db.AudioReadings.Count(r => r.DeploymentID != null));
+			Assert.AreEqual(2, db.AudioReadings.Count(r => r.DeploymentID == null));
+
+			var deployment1 = hardware.AddDeployment(db, "TEST DEPLOYMENT1", DateTime.UtcNow.AddHours(-5), TestUserName);
+
+			Assert.AreEqual(2, db.AudioReadings.Count(r => r.DeploymentID != null));
+			Assert.AreEqual(0, db.AudioReadings.Count(r => r.DeploymentID == null));
+			Assert.AreEqual(2, db.AudioReadings.Count(r => r.DeploymentID == deployment1.DeploymentID));
+
+			var deployment2 = hardware.AddDeployment(db, "TEST DEPLOYMENT2", DateTime.UtcNow.AddHours(-3), TestUserName);
+
+			Assert.AreEqual(1, db.AudioReadings.Count(r => r.DeploymentID == deployment1.DeploymentID));
+			Assert.AreEqual(1, db.AudioReadings.Count(r => r.DeploymentID == deployment2.DeploymentID));
+		}
+
+		[TestMethod]
 		public void DeleteTestReadings()
 		{
 			var user = CreateUser();
