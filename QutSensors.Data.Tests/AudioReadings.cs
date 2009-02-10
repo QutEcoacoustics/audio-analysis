@@ -14,8 +14,10 @@ namespace QutSensors.Data.Tests
 		[TestMethod]
 		public void AddAudioReading()
 		{
-			Hardware hardware;
-			var deployment = CreateTestDeployment(out hardware);
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment = CreateDeployment(user, hardware);
+
 			// Create some audio readings
 			hardware.AddAudioReading(db, DateTime.UtcNow, new byte[0], "test", true);
 		}
@@ -23,13 +25,16 @@ namespace QutSensors.Data.Tests
 		[TestMethod]
 		public void MarkAsRead()
 		{
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment = CreateDeployment(user, hardware);
+
 			var notReadFilter = new ReadingsFilter() { IsRead = false };
 			var readFilter = new ReadingsFilter() { IsRead = true };
 			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
 			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
 
-			AddAudioReading();
-			var reading = db.AudioReadings.First();
+			var reading = AddAudioReading(hardware, DateTime.Now);
 			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
 			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
 
@@ -39,25 +44,63 @@ namespace QutSensors.Data.Tests
 		}
 
 		[TestMethod]
+		public void MarkAsRead2()
+		{
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment = CreateDeployment(user, hardware);
+
+			var notReadFilter = new ReadingsFilter() { IsRead = false };
+			var readFilter = new ReadingsFilter() { IsRead = true };
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			var reading1 = AddAudioReading(hardware, DateTime.Now);
+			var reading2 = AddAudioReading(hardware, DateTime.Now);
+			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			reading1.MarkAsRead(db, TestUserName);
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			reading2.MarkAsRead(db, TestUserName);
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+		}
+
+		[TestMethod]
+		public void MarkAsReadRepeated()
+		{
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment = CreateDeployment(user, hardware);
+
+			var notReadFilter = new ReadingsFilter() { IsRead = false };
+			var readFilter = new ReadingsFilter() { IsRead = true };
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			var reading1 = AddAudioReading(hardware, DateTime.Now);
+			var reading2 = AddAudioReading(hardware, DateTime.Now);
+			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			reading1.MarkAsRead(db, TestUserName);
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+
+			reading1.MarkAsRead(db, TestUserName);
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
+			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+		}
+
+		[TestMethod]
 		public void AddTag()
 		{
 			AddAudioReading();
 			var reading = db.AudioReadings.First();
 			reading.AddTag(db, "TEST TAG", 0, 5000, TestUserName);
-		}
-
-		Deployments CreateTestDeployment(out Hardware hardware)
-		{
-			var user = CreateUser();
-
-			// Create hardware
-			hardware = new Hardware() { UniqueID = "TEST_HARDWARE", CreatedTime = DateTime.UtcNow, LastContacted = DateTime.Now, CreatedBy = user.UserName };
-			db.Hardware.InsertOnSubmit(hardware);
-			db.SubmitChanges();
-
-			// Create deployment
-			var deployment = hardware.AddDeployment(db, "TEST DEPLOYMENT", DateTime.UtcNow, user);
-			return deployment;
 		}
 	}
 }
