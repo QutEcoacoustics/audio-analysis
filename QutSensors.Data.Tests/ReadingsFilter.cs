@@ -97,9 +97,31 @@ namespace QutSensors.Data.Tests
 			testFilter.AudioTags.Add("test");
 
 			Assert.AreEqual(2, nullFilter.GetAudioReadings(db).Count());
+			Assert.AreEqual(1, testFilter.GetAudioReadings(db).Count());
+			Assert.AreEqual(reading2.AudioReadingID, testFilter.GetAudioReadings(db).First().AudioReadingID);
+		}
+
+		[TestMethod]
+		public void FilterDeploymentNames()
+		{
+			var user = CreateUser();
+			var hardware = CreateHardware(user);
+			var deployment1 = CreateDeployment(user, hardware);
+			var deployment2 = hardware.AddDeployment(db, "TEST DEPLOYMENT 2", DateTime.Now.AddDays(5), user.UserName);
+			var reading1 = AddAudioReading(hardware, DateTime.Now);
+			var reading2 = AddAudioReading(hardware, DateTime.Now.AddDays(10));
+
+			Assert.AreEqual(2, db.AudioReadings.Count());
+
+			var nullFilter = new ReadingsFilter();
+			var testFilter = new ReadingsFilter() { CommaSeparatedDeploymentNames = "TEST DEPLOYMENT 2" };
+
 			Assert.AreEqual(2, nullFilter.GetAudioReadings(db).Count());
 			Assert.AreEqual(1, testFilter.GetAudioReadings(db).Count());
 			Assert.AreEqual(reading2.AudioReadingID, testFilter.GetAudioReadings(db).First().AudioReadingID);
+
+			testFilter.DeploymentNames.Add(TestDeploymentName);
+			Assert.AreEqual(2, testFilter.GetAudioReadings(db).Count());
 		}
 	}
 }
