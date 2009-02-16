@@ -54,7 +54,7 @@ namespace ProcessorUI
 		{
 			OnLog("Requesting jobs...");
 			ws = new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
-			ws.BeginGetJobItem(Settings.WorkerName, null, OnGotJob, null);
+			ws.BeginGetJobItem(Settings.WorkerName, OnGotJob, null);
 		}
 
 		void OnGotJob(IAsyncResult ar)
@@ -133,8 +133,6 @@ namespace ProcessorUI
 				{
 					OnLog("Analysing {0}", item.AudioReadingUrl);
 					var results = AnalyseFile(tempFile, item.MimeType, classifier);
-
-					
 
 					if (results != null)
 					{

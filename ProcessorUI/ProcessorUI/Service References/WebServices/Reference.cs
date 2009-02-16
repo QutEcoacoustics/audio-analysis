@@ -297,10 +297,10 @@ namespace ProcessorUI.WebServices {
     public interface Processor {
         
         [System.ServiceModel.OperationContractAttribute(Action="sensor.mquter.qut.edu.au/Processor/GetJobItem", ReplyAction="sensor.mquter.qut.edu.au/Processor/GetJobItemResponse")]
-        ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker, System.Nullable<int> preferredJobID);
+        ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker);
         
         [System.ServiceModel.OperationContractAttribute(AsyncPattern=true, Action="sensor.mquter.qut.edu.au/Processor/GetJobItem", ReplyAction="sensor.mquter.qut.edu.au/Processor/GetJobItemResponse")]
-        System.IAsyncResult BeginGetJobItem(string worker, System.Nullable<int> preferredJobID, System.AsyncCallback callback, object asyncState);
+        System.IAsyncResult BeginGetJobItem(string worker, System.AsyncCallback callback, object asyncState);
         
         ProcessorUI.WebServices.ProcessorJobItemDescription EndGetJobItem(System.IAsyncResult result);
         
@@ -391,13 +391,13 @@ namespace ProcessorUI.WebServices {
         
         public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> ReturnJobCompleted;
         
-        public ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker, System.Nullable<int> preferredJobID) {
-            return base.Channel.GetJobItem(worker, preferredJobID);
+        public ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker) {
+            return base.Channel.GetJobItem(worker);
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        public System.IAsyncResult BeginGetJobItem(string worker, System.Nullable<int> preferredJobID, System.AsyncCallback callback, object asyncState) {
-            return base.Channel.BeginGetJobItem(worker, preferredJobID, callback, asyncState);
+        public System.IAsyncResult BeginGetJobItem(string worker, System.AsyncCallback callback, object asyncState) {
+            return base.Channel.BeginGetJobItem(worker, callback, asyncState);
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -407,8 +407,7 @@ namespace ProcessorUI.WebServices {
         
         private System.IAsyncResult OnBeginGetJobItem(object[] inValues, System.AsyncCallback callback, object asyncState) {
             string worker = ((string)(inValues[0]));
-            System.Nullable<int> preferredJobID = ((System.Nullable<int>)(inValues[1]));
-            return this.BeginGetJobItem(worker, preferredJobID, callback, asyncState);
+            return this.BeginGetJobItem(worker, callback, asyncState);
         }
         
         private object[] OnEndGetJobItem(System.IAsyncResult result) {
@@ -424,11 +423,11 @@ namespace ProcessorUI.WebServices {
             }
         }
         
-        public void GetJobItemAsync(string worker, System.Nullable<int> preferredJobID) {
-            this.GetJobItemAsync(worker, preferredJobID, null);
+        public void GetJobItemAsync(string worker) {
+            this.GetJobItemAsync(worker, null);
         }
         
-        public void GetJobItemAsync(string worker, System.Nullable<int> preferredJobID, object userState) {
+        public void GetJobItemAsync(string worker, object userState) {
             if ((this.onBeginGetJobItemDelegate == null)) {
                 this.onBeginGetJobItemDelegate = new BeginOperationDelegate(this.OnBeginGetJobItem);
             }
@@ -439,8 +438,7 @@ namespace ProcessorUI.WebServices {
                 this.onGetJobItemCompletedDelegate = new System.Threading.SendOrPostCallback(this.OnGetJobItemCompleted);
             }
             base.InvokeAsync(this.onBeginGetJobItemDelegate, new object[] {
-                        worker,
-                        preferredJobID}, this.onEndGetJobItemDelegate, this.onGetJobItemCompletedDelegate, userState);
+                        worker}, this.onEndGetJobItemDelegate, this.onGetJobItemCompletedDelegate, userState);
         }
         
         public void SubmitResults(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results) {

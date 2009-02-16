@@ -123,17 +123,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\QutSensors.Data.Linq.Processor_JobItem.datasource" />
-    <None Include="Service References\WebServices\Processor.wsdl" />
   </ItemGroup>
   <ItemGroup>
     <WCFMetadataStorage Include="Service References\WebServices\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\WebServices\Processor.disco" />
-    <None Include="Service References\WebServices\Processor.xsd" />
-    <None Include="Service References\WebServices\Processor1.wsdl" />
-    <None Include="Service References\WebServices\Processor1.xsd" />
-    <None Include="Service References\WebServices\Processor2.xsd" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Service References\WebServices\configuration91.svcinfo" />
@@ -142,6 +134,10 @@
     <None Include="Service References\WebServices\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Service References\WebServices\Processor2.wsdl" />
+    <None Include="Service References\WebServices\Processor21.wsdl" />
+    <None Include="Service References\WebServices\Processor3.xsd" />
+    <None Include="Service References\WebServices\Processor31.xsd" />
     <None Include="Service References\WebServices\ProcessorUI.WebServices.ProcessorJobItemDescription.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -149,6 +145,10 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\WebServices\Processor1.disco" />
+    <None Include="Service References\WebServices\Processor32.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

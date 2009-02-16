@@ -17,15 +17,15 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost:45610/WebFrontend/Processor/Processor.svc" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://sensor.mquter.qut.edu.au/Processor/Processor.svc" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="Processor.wsdl" MetadataType="Wsdl" ID="f5d313c4-b8d2-4de4-a9f4-8235449b3fc7" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?wsdl" />
-    <MetadataFile FileName="Processor.disco" MetadataType="Disco" ID="b1316d60-3b73-4dd8-8b49-4053a54175e6" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?disco" />
-    <MetadataFile FileName="Processor.xsd" MetadataType="Schema" ID="a27d3295-3c9d-4b99-93b3-fdf44357894b" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd1" />
-    <MetadataFile FileName="Processor1.xsd" MetadataType="Schema" ID="1ccfd851-c01f-495e-8bae-38c6090a33cd" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd2" />
-    <MetadataFile FileName="Processor1.wsdl" MetadataType="Wsdl" ID="b1e1f4a4-9359-41a8-9fb5-3a25daebd4cf" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?wsdl=wsdl0" />
-    <MetadataFile FileName="Processor2.xsd" MetadataType="Schema" ID="088ce9e6-ce0a-49a1-802f-3216cc7644cd" SourceId="1" SourceUrl="http://localhost:45610/WebFrontend/Processor/Processor.svc?xsd=xsd0" />
+    <MetadataFile FileName="Processor2.wsdl" MetadataType="Wsdl" ID="40c6b83a-e805-49cc-9af8-adacbdfea063" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?wsdl" />
+    <MetadataFile FileName="Processor3.xsd" MetadataType="Schema" ID="60f1bcaf-52e8-400e-a0d6-e4c1b9b9de1b" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?xsd=xsd0" />
+    <MetadataFile FileName="Processor31.xsd" MetadataType="Schema" ID="cc33e90c-8cfe-4655-baea-227fed893530" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?xsd=xsd1" />
+    <MetadataFile FileName="Processor21.wsdl" MetadataType="Wsdl" ID="becbb155-a490-46b9-b973-320b5c0752e7" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="Processor1.disco" MetadataType="Disco" ID="635d2385-1fff-44da-8dce-0dc1fd98c72c" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?disco" />
+    <MetadataFile FileName="Processor32.xsd" MetadataType="Schema" ID="4c87baa6-2df7-4817-a5b8-67ecba7a2ca0" SourceId="1" SourceUrl="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc?xsd=xsd2" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
