@@ -136,13 +136,20 @@ namespace QutSensors.Data.Tests
 
 			var jobManager = new Mock<IJobManager>(MockBehavior.Strict);
 			JobManager.Instance = jobManager.Object;
+			try
+			{
+				var reading = hardware.AddAudioReading(db, DateTime.Now, new byte[8], "audio/x-wav", false);
 
-			var reading = hardware.AddAudioReading(db, DateTime.Now, new byte[8], "audio/x-wav", false);
+				jobManager.Setup(m => m.ProcessReading(It.IsAny<QutSensors.Data.Linq.QutSensors>(), It.IsAny<AudioReadings>()));
+				reading.AddData(db, new byte[8], 8, true);
 
-			jobManager.Setup(m => m.ProcessReading(It.IsAny<QutSensors.Data.Linq.QutSensors>(), It.IsAny<AudioReadings>()));
-			reading.AddData(db, new byte[8], 8, true);
-
-			jobManager.VerifyAll();
+				jobManager.VerifyAll();
+			}
+			finally
+			{
+				// Clear the mock
+				JobManager.Instance = null;
+			}
 		}
 
 		[TestMethod]
@@ -153,11 +160,18 @@ namespace QutSensors.Data.Tests
 
 			var jobManager = new Mock<IJobManager>(MockBehavior.Strict);
 			JobManager.Instance = jobManager.Object;
+			try
+			{
+				jobManager.Setup(m => m.ProcessReading(It.IsAny<QutSensors.Data.Linq.QutSensors>(), It.IsAny<AudioReadings>()));
+				var reading = hardware.AddAudioReading(db, DateTime.Now, new byte[8], "audio/x-wav", true);
 
-			jobManager.Setup(m => m.ProcessReading(It.IsAny<QutSensors.Data.Linq.QutSensors>(), It.IsAny<AudioReadings>()));
-			var reading = hardware.AddAudioReading(db, DateTime.Now, new byte[8], "audio/x-wav", true);
-
-			jobManager.VerifyAll();
+				jobManager.VerifyAll();
+			}
+			finally
+			{
+				// Clear the mock
+				JobManager.Instance = null;
+			}
 		}
 	}
 }

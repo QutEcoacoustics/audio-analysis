@@ -46,7 +46,7 @@ namespace QutSensors.Data.Tests
 		public void GetJobItem()
 		{
 			CreateJob();
-			var item = JobManager.Instance.GetJobItem(db, "TEST WORKER", null);
+			var item = JobManager.Instance.GetJobItem(db, "TEST WORKER");
 			Assert.IsNotNull(item);
 			Assert.AreNotEqual(0, db.Processor_JobItems.Count(i => i.Worker != null));
 			Assert.AreEqual(1, db.Processor_JobItems.Count(i => i.Worker == "TEST WORKER"));

@@ -23,7 +23,7 @@ namespace QutSensors.Data.Tests
 		#region Additional test attributes
 		// Use TestInitialize to run code before running each test 
 		[TestInitialize()]
-		public void MyTestInitialize()
+		public virtual void MyTestInitialize()
 		{
 			// Ideally this would be in a class initialise... but it's a static method so we can't
 			// do it via this cool DatabaseTest base class. This works, but slows things down a bit.
@@ -35,7 +35,7 @@ namespace QutSensors.Data.Tests
 		//
 		// Use TestCleanup to run code after each test has run
 		[TestCleanup()]
-		public void MyTestCleanup()
+		public virtual void MyTestCleanup()
 		{
 			db.Dispose();
 			transaction.Dispose();
