@@ -7,10 +7,10 @@ namespace QutSensors.Data.Tests
 		public static void InitialiseDB()
 		{
 			var connectionString = ConfigurationManager.ConnectionStrings["LocalSqlServer"].ConnectionString;
-			QutSensors.DB.ConnectionString = connectionString;
+			QutSensors.Data.Linq.QutSensors.ConnectionString = connectionString;
 
 			RikMigrations.DbProvider.DefaultConnectionString = connectionString;
-			RikMigrations.MigrationManager.UpgradeMax(typeof(QutSensors.DB).Assembly);
+			RikMigrations.MigrationManager.UpgradeMax(typeof(QutSensors.Data.Linq.QutSensors).Assembly);
 		}
 	}
 }
