@@ -23,11 +23,11 @@ namespace QutSensors.Data.Tests
 			AddAudioReading(hardware, DateTime.Now);
 
 			// Create template
-			var template = JobManager.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
+			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
 
 			// Create job
 			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
-			var job = JobManager.Add(db, filter, "TEST JOB", user.UserName, template);
+			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template);
 		}
 
 		[TestMethod]
@@ -46,7 +46,7 @@ namespace QutSensors.Data.Tests
 		public void GetJobItem()
 		{
 			CreateJob();
-			var item = JobManager.GetJobItem(db, "TEST WORKER", null);
+			var item = JobManager.Instance.GetJobItem(db, "TEST WORKER", null);
 			Assert.IsNotNull(item);
 			Assert.AreNotEqual(0, db.Processor_JobItems.Count(i => i.Worker != null));
 			Assert.AreEqual(1, db.Processor_JobItems.Count(i => i.Worker == "TEST WORKER"));
@@ -71,7 +71,7 @@ namespace QutSensors.Data.Tests
 		{
 			ReserveJobItem();
 			var item = db.Processor_JobItems.FirstOrDefault();
-			JobManager.CompleteJobItem(db, item.JobItemID);
+			JobManager.Instance.CompleteJobItem(db, item.JobItemID);
 			Assert.AreEqual(JobStatus.Complete, item.Status);
 		}
 
@@ -80,7 +80,7 @@ namespace QutSensors.Data.Tests
 		{
 			ReserveJobItem();
 			var item = db.Processor_JobItems.FirstOrDefault();
-			JobManager.ReturnJob(db, item.Worker, item.JobItemID);
+			JobManager.Instance.ReturnJob(db, item.Worker, item.JobItemID);
 			Assert.AreEqual(JobStatus.Ready, item.Status);
 			Assert.IsNull(item.Worker);
 			Assert.IsNull(item.WorkerAcceptedTimeUTC);
@@ -91,7 +91,7 @@ namespace QutSensors.Data.Tests
 		{
 			ReserveJobItem();
 			Assert.AreEqual(1, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER" && i.Status == JobStatus.Running).Count());
-			JobManager.FailAnyIncompleteJobs(db, "TEST WORKER");
+			JobManager.Instance.FailAnyIncompleteJobs(db, "TEST WORKER");
 			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, db.Processor_JobItems);
 			Assert.AreEqual(0, db.Processor_JobItems.Where(i => i.Worker == "TEST WORKER" && i.Status == JobStatus.Running).Count());
 		}
@@ -102,8 +102,8 @@ namespace QutSensors.Data.Tests
 			CreateJob();
 			var job = db.Processor_Jobs.First();
 
-			Assert.AreEqual(1, JobManager.GetOwnersJobs(db, TestUserName).Count());
-			var job2 = JobManager.GetOwnersJobs(db, TestUserName).First();
+			Assert.AreEqual(1, JobManager.Instance.GetOwnersJobs(db, TestUserName).Count());
+			var job2 = JobManager.Instance.GetOwnersJobs(db, TestUserName).First();
 			Assert.AreEqual(job.Name, job2.Name);
 		}
 
