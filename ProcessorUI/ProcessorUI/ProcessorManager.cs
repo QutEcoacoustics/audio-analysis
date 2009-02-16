@@ -160,7 +160,7 @@ namespace ProcessorUI
 			for (int i = 0; i < duration.Value.TotalMilliseconds; i += 60000)
 			{
 				OnLog("\t{0}-{1}", TimeSpan.FromMilliseconds(i), TimeSpan.FromMilliseconds(i + 60000));
-				using (var converted = DShowConverter.ToWav(file.FileName, mimeType, i, i + 60000))
+				using (var converted = DShowConverter.ConvertTo(file.FileName, mimeType, MimeTypes.WavMimeType, i, i + 60000) as BufferedDirectShowStream)
 				{
 					var result = classifier.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as MMResult;
 
