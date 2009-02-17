@@ -26,6 +26,24 @@ namespace ProcessorUI
 			set { Save("Server", value); }
 		}
 
+		public static int NumberOfThreads
+		{
+			get { return Load<int>("Threads", 1); }
+			set { Save("Threads", value); }
+		}
+
+		public static int FilesProcessed
+		{
+			get { return Load<int>("FilesProcessed", 0); }
+			set { Save("FilesProcessed", value); }
+		}
+
+		public static TimeSpan TotalDuration
+		{
+			get { return Load<TimeSpan>("TotalDuration", TimeSpan.Zero); }
+			set { Save("TotalDuration", value); }
+		}
+
 		static T Load<T>(string name, T defaultValue)
 		{
 			if (typeof(T) == typeof(TimeSpan))

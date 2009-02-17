@@ -107,6 +107,16 @@ namespace QutSensors.Data.Tests
 			Assert.AreEqual(job.Name, job2.Name);
 		}
 
+		[TestMethod]
+		public void ReturnJobItemWithError()
+		{
+			ReserveJobItem();
+			var item = db.Processor_JobItems.FirstOrDefault();
+			JobManager.Instance.ReturnJobWithError(db, item.Worker, item.JobItemID, "ERROR DETAILS");
+			Assert.AreEqual(JobStatus.Error, item.Status);
+			Assert.AreEqual(0, JobManager.Instance.GetJobItem(db, "TEST WORKER"));
+		}
+
 		[Serializable]
 		class DummyTemplateParameters : BaseClassifierParameters
 		{
