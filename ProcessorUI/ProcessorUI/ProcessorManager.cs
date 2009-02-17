@@ -20,8 +20,12 @@ namespace ProcessorUI
 			Stopping
 		}
 
+		static ProcessorClient GetWSProxy()
+		{
+			return new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
+		}
+
 		AutoResetEvent stopped;
-		WebServices.ProcessorClient ws;
 
 		public void Start()
 		{
@@ -53,14 +57,16 @@ namespace ProcessorUI
 		void GetNextJob()
 		{
 			OnLog("Requesting jobs...");
-			ws = new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
-			ws.BeginGetJobItem(Settings.WorkerName, OnGotJob, null);
+			var ws = GetWSProxy();
+			ws.BeginGetJobItem(Settings.WorkerName, OnGotJob, ws);
 		}
 
 		void OnGotJob(IAsyncResult ar)
 		{
 			if (State == ProcessorState.Stopping)
 			{
+				var ws = ar.AsyncState as WebServices.ProcessorClient;
+				ws.Close();
 				OnLog("Stopping");
 				OnStopped();
 			}
@@ -71,7 +77,15 @@ namespace ProcessorUI
 					ProcessorJobItemDescription item;
 					try
 					{
-						item = ws.EndGetJobItem(ar);
+						var ws = ar.AsyncState as WebServices.ProcessorClient;
+						try
+						{
+							item = ws.EndGetJobItem(ar);
+						}
+						finally
+						{
+							ws.Close();
+						}
 					}
 					catch (Exception e)
 					{
@@ -104,7 +118,15 @@ namespace ProcessorUI
 					{
 						if (!processed && item != null)
 						{
-							ws.ReturnJob(Settings.WorkerName, item.JobItemID);
+							var ws = GetWSProxy();
+							try
+							{
+								ws.ReturnJob(Settings.WorkerName, item.JobItemID);
+							}
+							finally
+							{
+								ws.Close();
+							}
 						}
 					}
 					
@@ -136,7 +158,15 @@ namespace ProcessorUI
 
 					if (results != null)
 					{
-						ws.SubmitResults(Settings.WorkerName, item.JobItemID, results.ToArray());
+						var ws = GetWSProxy();
+						try
+						{
+							ws.SubmitResults(Settings.WorkerName, item.JobItemID, results.ToArray());
+						}
+						finally
+						{
+							ws.Close();
+						}
 						return true;
 					}
 				}
