@@ -67,6 +67,9 @@ namespace AudioStuff
 
 		public void SaveDataAndImageToFile(string path, MMTemplate template, int nyquistFrequency)
 		{
+			if (!Directory.Exists(Path.GetDirectoryName(path)))
+				return;
+
 			Log.WriteIfVerbose("\tTemplate feature vector in file " + path);
 			VectorFPath = path;
 			ImageFPath = FileTools.ChangeFileExtention(path, ".bmp");

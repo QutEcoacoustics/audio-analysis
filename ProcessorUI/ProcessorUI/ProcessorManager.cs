@@ -20,17 +20,38 @@ namespace ProcessorUI
 			Stopping
 		}
 
-		static ProcessorClient GetWSProxy()
+		AutoResetEvent stopped;
+		long runningThreads;
+
+		public ProcessorManager()
 		{
-			return new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
+			TotalDuration = TimeSpan.Zero;
 		}
 
-		AutoResetEvent stopped;
+		#region Properties
+		public int FilesProcessed { get; set; }
+		public TimeSpan TotalDuration { get; set; }
+		#endregion
 
 		public void Start()
 		{
 			State = ProcessorState.Running;
-			GetNextJob();
+			lock (this)
+			{
+				if (Settings.NumberOfThreads == 1)
+				{
+					runningThreads = 1;
+					GetNextJob(Settings.WorkerName);
+				}
+				else
+				{
+					for (int i = 0; i < Settings.NumberOfThreads; i++)
+					{
+						Interlocked.Increment(ref runningThreads);
+						GetNextJob(Settings.WorkerName + "_" + i.ToString());
+					}
+				}
+			}
 		}
 
 		public void Stop()
@@ -46,7 +67,8 @@ namespace ProcessorUI
 			if (stopped == null)
 				stopped = new AutoResetEvent(false);
 			Stop();
-			stopped.WaitOne();
+			while (Interlocked.Read(ref runningThreads) > 0)
+				stopped.WaitOne();
 			stopped = null;
 		}
 
@@ -54,19 +76,21 @@ namespace ProcessorUI
 		public ProcessorState State { get; private set; }
 		#endregion
 
-		void GetNextJob()
+		void GetNextJob(string workerName)
 		{
 			OnLog("Requesting jobs...");
-			var ws = GetWSProxy();
-			ws.BeginGetJobItem(Settings.WorkerName, OnGotJob, ws);
+			var ws = new ServiceWrapper();
+			ws.Proxy.BeginGetJobItem(workerName, OnGotJob, new object[] { ws, workerName });
 		}
 
 		void OnGotJob(IAsyncResult ar)
 		{
+			var incomingWs = (ServiceWrapper)((object[])ar.AsyncState)[0];
+			var workerName = (string)((object[])ar.AsyncState)[1];
+
 			if (State == ProcessorState.Stopping)
 			{
-				var ws = ar.AsyncState as WebServices.ProcessorClient;
-				ws.Close();
+				incomingWs.Close();
 				OnLog("Stopping");
 				OnStopped();
 			}
@@ -75,26 +99,25 @@ namespace ProcessorUI
 				try
 				{
 					ProcessorJobItemDescription item;
-					try
 					{
-						var ws = ar.AsyncState as WebServices.ProcessorClient;
-						try
+						using (incomingWs)
 						{
-							item = ws.EndGetJobItem(ar);
-						}
-						finally
-						{
-							ws.Close();
+							try
+							{
+								item = incomingWs.Proxy.EndGetJobItem(ar);
+								incomingWs.Close();
+							}
+							catch (Exception e)
+							{
+								OnLog("Error in web service call - " + e.ToString());
+								OnLog("Sleeping...");
+								Thread.Sleep(5000);
+								GetNextJob(workerName);
+								return;
+							}
 						}
 					}
-					catch (Exception e)
-					{
-						OnLog("Error in web service call - " + e.ToString());
-						OnLog("Sleeping...");
-						Thread.Sleep(5000);
-						GetNextJob();
-						return;
-					}
+
 					bool processed = false;
 					try
 					{
@@ -102,14 +125,14 @@ namespace ProcessorUI
 						{
 							OnLog("No jobs available");
 							System.Threading.Thread.Sleep(30000);
-							GetNextJob();
+							GetNextJob(workerName);
 						}
 						else
 						{
-							processed = ProcessJobItem(item);
+							processed = ProcessJobItem(item, workerName);
 
 							if (State == ProcessorState.Running)
-								GetNextJob();
+								GetNextJob(workerName);
 							else
 								OnStopped();
 						}
@@ -118,31 +141,26 @@ namespace ProcessorUI
 					{
 						if (!processed && item != null)
 						{
-							var ws = GetWSProxy();
-							try
+							using (var ws = new ServiceWrapper())
 							{
-								ws.ReturnJob(Settings.WorkerName, item.JobItemID);
-							}
-							finally
-							{
+								ws.Proxy.ReturnJob(workerName, item.JobItemID);
 								ws.Close();
 							}
 						}
 					}
-					
 				}
 				catch (Exception e)
 				{
 					OnLog("ERROR! " + e.ToString());
 					OnLog("Sleeping...");
 					Thread.Sleep(5000);
-					GetNextJob();
+					GetNextJob(workerName);
 					//OnStopped();
 				}
 			}
 		}
 
-		bool ProcessJobItem(ProcessorJobItemDescription item)
+		bool ProcessJobItem(ProcessorJobItemDescription item, string workerName)
 		{
 			var parameters = BaseClassifierParameters.Deserialize(item.Job.Parameters);
 			var classifier = BaseClassifier.Create(parameters);
@@ -154,19 +172,26 @@ namespace ProcessorUI
 				if (State != ProcessorState.Stopping)
 				{
 					OnLog("Analysing {0}", item.AudioReadingUrl);
-					var results = AnalyseFile(tempFile, item.MimeType, classifier);
+					TimeSpan? duration;
+					var results = AnalyseFile(tempFile, item.MimeType, classifier, out duration);
 
 					if (results != null)
 					{
-						var ws = GetWSProxy();
-						try
+						using (var ws = new ServiceWrapper())
 						{
-							ws.SubmitResults(Settings.WorkerName, item.JobItemID, results.ToArray());
-						}
-						finally
-						{
+							ws.Proxy.SubmitResults(workerName, item.JobItemID, results.ToArray());
 							ws.Close();
 						}
+						try
+						{
+							lock (this)
+							{
+								FilesProcessed++;
+								if (duration != null)
+									TotalDuration += duration.Value;
+							}
+						}
+						catch { } // Don't allow this to bring down the processor!
 						return true;
 					}
 				}
@@ -174,15 +199,15 @@ namespace ProcessorUI
 			return false;
 		}
 
-		IEnumerable<ProcessorJobItemResult> AnalyseFile(TempFile file, string mimeType, BaseClassifier classifier)
+		IEnumerable<ProcessorJobItemResult> AnalyseFile(TempFile file, string mimeType, BaseClassifier classifier, out TimeSpan? duration)
 		{
 			var retVal = new List<ProcessorJobItemResult>();
 
-			var duration = DShowConverter.GetDuration(file.FileName, mimeType);
+			duration = DShowConverter.GetDuration(file.FileName, mimeType);
 			if (duration == null)
 			{
 				OnLog("Unable to calculate length");
-				return null;
+				throw new Exception("Unable to calculate length");
 			}
 			OnLog("Total length: {0}", duration);
 			for (int i = 0; i < duration.Value.TotalMilliseconds; i += 60000)
@@ -221,10 +246,55 @@ namespace ProcessorUI
 		{
 			OnLog("Stopped");
 			State = ProcessorState.Ready;
+			Interlocked.Decrement(ref runningThreads);
 			if (stopped != null)
 				stopped.Set();
-			if (Stopped != null)
+			if (Interlocked.Read(ref runningThreads) == 0 && Stopped != null)
 				Stopped(this, EventArgs.Empty);
+		}
+		#endregion
+	}
+
+	/// <summary>
+	/// Wraps the WCF Service to ensure Abort or Close is called as appropriate
+	/// Close should be called in normal circumstances, Abort if there's an error.
+	/// Easiest way to use is:
+	/// using (var ws = new ServiceWrapper()) {
+	///		ws.Proxy.Call();
+	///		ws.Close();
+	///	}
+	///	That way, if Call() fails then an exception is thrown and Dispose is called without Close
+	///	being called beforehand. In that case the wrapper will call Abort.
+	/// </summary>
+	class ServiceWrapper : IDisposable
+	{
+		WebServices.ProcessorClient proxy;
+		public ServiceWrapper()
+		{
+			proxy = new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
+		}
+
+		public WebServices.ProcessorClient Proxy
+		{
+			get { return proxy; }
+		}
+
+		public void Close()
+		{
+			proxy.Close();
+			proxy = null;
+		}
+
+		#region IDisposable
+		public void Dispose()
+		{
+			if (proxy != null)
+				proxy.Abort();
+		}
+
+		~ServiceWrapper()
+		{
+			Dispose();
 		}
 		#endregion
 	}

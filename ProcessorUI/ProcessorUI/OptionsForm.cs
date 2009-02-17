@@ -23,6 +23,7 @@ namespace ProcessorUI
 
 			txtServer.Text = Settings.Server;
 			txtDataFolder.Text = Settings.TempFolder;
+			updThreads.Value = Settings.NumberOfThreads;
 		}
 
 		private void cmdOK_Click(object sender, EventArgs e)
@@ -31,6 +32,7 @@ namespace ProcessorUI
 
 			Settings.Server = txtServer.Text;
 			Settings.TempFolder = txtDataFolder.Text;
+			Settings.NumberOfThreads = (int)updThreads.Value;
 		}
 
 		private void cmdCancel_Click(object sender, EventArgs e)

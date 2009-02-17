@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TowseyLib;
 using AudioTools;
+using System.IO;
 
 namespace AudioStuff
 {
@@ -76,7 +77,7 @@ namespace AudioStuff
 				Log.WriteIfVerbose("\tDerive NOISE Feature Vector from file: " + Template.FeatureVectorParameters.FeatureVectorPaths[0]);
 				FVs[0] = new FeatureVector(Template.FeatureVectorParameters.FeatureVectorPaths[0], Template.FeatureVectorParameters.FeatureVectorLength);
 			}
-			else if (noiseFVPath != null) // Write noise vector to file. It can then be used as a sample noise vector.
+			else if (noiseFVPath != null && Directory.Exists(Path.GetDirectoryName(noiseFVPath))) // Write noise vector to file. It can then be used as a sample noise vector.
 				SaveNoiseVector(noiseFVPath, FVs[0], s.NyquistFrequency);
 
 			//##################### PREPARE MATRIX OF NOISE VECTORS AND THEN SET NOISE RESPONSE FOR EACH feature vector

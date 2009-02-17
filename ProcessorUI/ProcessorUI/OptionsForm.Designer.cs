@@ -30,13 +30,17 @@
 		{
 			System.Windows.Forms.Label lblServer;
 			System.Windows.Forms.Label lblDataFolder;
+			System.Windows.Forms.Label lblThreads;
 			this.txtServer = new System.Windows.Forms.TextBox();
 			this.txtDataFolder = new System.Windows.Forms.TextBox();
 			this.cmdChooseDataFolder = new System.Windows.Forms.Button();
 			this.cmdCancel = new System.Windows.Forms.Button();
 			this.cmdOK = new System.Windows.Forms.Button();
+			this.updThreads = new System.Windows.Forms.NumericUpDown();
 			lblServer = new System.Windows.Forms.Label();
 			lblDataFolder = new System.Windows.Forms.Label();
+			lblThreads = new System.Windows.Forms.Label();
+			((System.ComponentModel.ISupportInitialize)(this.updThreads)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// lblServer
@@ -56,6 +60,15 @@
 			lblDataFolder.Size = new System.Drawing.Size(65, 13);
 			lblDataFolder.TabIndex = 1;
 			lblDataFolder.Text = "Data Folder:";
+			// 
+			// lblThreads
+			// 
+			lblThreads.AutoSize = true;
+			lblThreads.Location = new System.Drawing.Point(12, 67);
+			lblThreads.Name = "lblThreads";
+			lblThreads.Size = new System.Drawing.Size(156, 13);
+			lblThreads.TabIndex = 7;
+			lblThreads.Text = "Number of Processing Threads:";
 			// 
 			// txtServer
 			// 
@@ -90,7 +103,7 @@
 			// 
 			this.cmdCancel.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
 			this.cmdCancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-			this.cmdCancel.Location = new System.Drawing.Point(279, 69);
+			this.cmdCancel.Location = new System.Drawing.Point(279, 99);
 			this.cmdCancel.Name = "cmdCancel";
 			this.cmdCancel.Size = new System.Drawing.Size(75, 23);
 			this.cmdCancel.TabIndex = 5;
@@ -101,7 +114,7 @@
 			// cmdOK
 			// 
 			this.cmdOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-			this.cmdOK.Location = new System.Drawing.Point(198, 69);
+			this.cmdOK.Location = new System.Drawing.Point(198, 99);
 			this.cmdOK.Name = "cmdOK";
 			this.cmdOK.Size = new System.Drawing.Size(75, 23);
 			this.cmdOK.TabIndex = 6;
@@ -109,13 +122,24 @@
 			this.cmdOK.UseVisualStyleBackColor = true;
 			this.cmdOK.Click += new System.EventHandler(this.cmdOK_Click);
 			// 
+			// updThreads
+			// 
+			this.updThreads.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+						| System.Windows.Forms.AnchorStyles.Right)));
+			this.updThreads.Location = new System.Drawing.Point(174, 65);
+			this.updThreads.Name = "updThreads";
+			this.updThreads.Size = new System.Drawing.Size(180, 20);
+			this.updThreads.TabIndex = 8;
+			// 
 			// OptionsForm
 			// 
 			this.AcceptButton = this.cmdOK;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.CancelButton = this.cmdCancel;
-			this.ClientSize = new System.Drawing.Size(366, 104);
+			this.ClientSize = new System.Drawing.Size(366, 134);
+			this.Controls.Add(this.updThreads);
+			this.Controls.Add(lblThreads);
 			this.Controls.Add(this.cmdOK);
 			this.Controls.Add(this.cmdCancel);
 			this.Controls.Add(this.cmdChooseDataFolder);
@@ -127,6 +151,7 @@
 			this.Name = "OptionsForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "Processor Options";
+			((System.ComponentModel.ISupportInitialize)(this.updThreads)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -139,5 +164,6 @@
 		private System.Windows.Forms.Button cmdChooseDataFolder;
 		private System.Windows.Forms.Button cmdCancel;
 		private System.Windows.Forms.Button cmdOK;
+		private System.Windows.Forms.NumericUpDown updThreads;
 	}
 }

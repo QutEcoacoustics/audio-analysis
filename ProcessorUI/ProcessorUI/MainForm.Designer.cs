@@ -33,12 +33,16 @@
 			this.txtWorker = new System.Windows.Forms.TextBox();
 			this.lblWorker = new System.Windows.Forms.Label();
 			this.cmdOptions = new System.Windows.Forms.Button();
+			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+			this.statusTotal = new System.Windows.Forms.ToolStripStatusLabel();
+			this.statusDuration = new System.Windows.Forms.ToolStripStatusLabel();
+			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// cmdStart
 			// 
 			this.cmdStart.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
-			this.cmdStart.Location = new System.Drawing.Point(161, 295);
+			this.cmdStart.Location = new System.Drawing.Point(162, 543);
 			this.cmdStart.Name = "cmdStart";
 			this.cmdStart.Size = new System.Drawing.Size(75, 23);
 			this.cmdStart.TabIndex = 0;
@@ -56,7 +60,7 @@
 			this.txtLog.Name = "txtLog";
 			this.txtLog.ReadOnly = true;
 			this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-			this.txtLog.Size = new System.Drawing.Size(373, 251);
+			this.txtLog.Size = new System.Drawing.Size(373, 499);
 			this.txtLog.TabIndex = 1;
 			// 
 			// txtWorker
@@ -89,11 +93,35 @@
 			this.cmdOptions.UseVisualStyleBackColor = true;
 			this.cmdOptions.Click += new System.EventHandler(this.cmdOptions_Click);
 			// 
+			// statusStrip1
+			// 
+			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.statusTotal,
+            this.statusDuration});
+			this.statusStrip1.Location = new System.Drawing.Point(0, 569);
+			this.statusStrip1.Name = "statusStrip1";
+			this.statusStrip1.Size = new System.Drawing.Size(397, 22);
+			this.statusStrip1.TabIndex = 5;
+			this.statusStrip1.Text = "statusStrip1";
+			// 
+			// statusTotal
+			// 
+			this.statusTotal.Name = "statusTotal";
+			this.statusTotal.Size = new System.Drawing.Size(37, 17);
+			this.statusTotal.Text = "Total:";
+			// 
+			// statusDuration
+			// 
+			this.statusDuration.Name = "statusDuration";
+			this.statusDuration.Size = new System.Drawing.Size(56, 17);
+			this.statusDuration.Text = "Duration:";
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(397, 330);
+			this.ClientSize = new System.Drawing.Size(397, 591);
+			this.Controls.Add(this.statusStrip1);
 			this.Controls.Add(this.cmdOptions);
 			this.Controls.Add(this.lblWorker);
 			this.Controls.Add(this.txtWorker);
@@ -101,6 +129,8 @@
 			this.Controls.Add(this.cmdStart);
 			this.Name = "MainForm";
 			this.Text = "QUT Sensors Processor";
+			this.statusStrip1.ResumeLayout(false);
+			this.statusStrip1.PerformLayout();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -113,6 +143,9 @@
 		private System.Windows.Forms.TextBox txtWorker;
 		private System.Windows.Forms.Label lblWorker;
 		private System.Windows.Forms.Button cmdOptions;
+		private System.Windows.Forms.StatusStrip statusStrip1;
+		private System.Windows.Forms.ToolStripStatusLabel statusTotal;
+		private System.Windows.Forms.ToolStripStatusLabel statusDuration;
 	}
 }
 

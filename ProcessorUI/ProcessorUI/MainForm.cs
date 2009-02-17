@@ -31,6 +31,8 @@ namespace ProcessorUI
 			base.OnCreateControl();
 
 			txtWorker.Text = Settings.WorkerName;
+			processor.FilesProcessed = Settings.FilesProcessed;
+			processor.TotalDuration = Settings.TotalDuration;
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
@@ -81,15 +83,17 @@ namespace ProcessorUI
 				txtLog.Text = DateTime.Now.ToString("HH:mm:ss") + ":" + log + "\r\n" + txtLog.Text;
 				if (txtLog.Text.Length > 10000)
 					txtLog.Text = txtLog.Text.Substring(0, 8000);
+				Settings.FilesProcessed = processor.FilesProcessed;
+				Settings.TotalDuration = processor.TotalDuration;
+				statusTotal.Text = "Total: " + processor.FilesProcessed;
+				statusDuration.Text = "Duration: " + processor.TotalDuration;
 			}
 		}
 
 		private void cmdOptions_Click(object sender, EventArgs e)
 		{
 			using (var dia = new OptionsForm())
-			{
 				dia.ShowDialog(this);
-			}
 		}
 	}
 }
