@@ -319,6 +319,14 @@ namespace ProcessorUI.WebServices {
         System.IAsyncResult BeginReturnJob(string worker, int jobItemID, System.AsyncCallback callback, object asyncState);
         
         void EndReturnJob(System.IAsyncResult result);
+        
+        [System.ServiceModel.OperationContractAttribute(Action="sensor.mquter.qut.edu.au/Processor/ReturnJobWithError", ReplyAction="sensor.mquter.qut.edu.au/Processor/ReturnJobWithErrorResponse")]
+        void ReturnJobWithError(string worker, int jobItemID, string errorDetails);
+        
+        [System.ServiceModel.OperationContractAttribute(AsyncPattern=true, Action="sensor.mquter.qut.edu.au/Processor/ReturnJobWithError", ReplyAction="sensor.mquter.qut.edu.au/Processor/ReturnJobWithErrorResponse")]
+        System.IAsyncResult BeginReturnJobWithError(string worker, int jobItemID, string errorDetails, System.AsyncCallback callback, object asyncState);
+        
+        void EndReturnJobWithError(System.IAsyncResult result);
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "3.0.0.0")]
@@ -366,6 +374,12 @@ namespace ProcessorUI.WebServices {
         
         private System.Threading.SendOrPostCallback onReturnJobCompletedDelegate;
         
+        private BeginOperationDelegate onBeginReturnJobWithErrorDelegate;
+        
+        private EndOperationDelegate onEndReturnJobWithErrorDelegate;
+        
+        private System.Threading.SendOrPostCallback onReturnJobWithErrorCompletedDelegate;
+        
         public ProcessorClient() {
         }
         
@@ -390,6 +404,8 @@ namespace ProcessorUI.WebServices {
         public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> SubmitResultsCompleted;
         
         public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> ReturnJobCompleted;
+        
+        public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> ReturnJobWithErrorCompleted;
         
         public ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker) {
             return base.Channel.GetJobItem(worker);
@@ -543,6 +559,59 @@ namespace ProcessorUI.WebServices {
             base.InvokeAsync(this.onBeginReturnJobDelegate, new object[] {
                         worker,
                         jobItemID}, this.onEndReturnJobDelegate, this.onReturnJobCompletedDelegate, userState);
+        }
+        
+        public void ReturnJobWithError(string worker, int jobItemID, string errorDetails) {
+            base.Channel.ReturnJobWithError(worker, jobItemID, errorDetails);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        public System.IAsyncResult BeginReturnJobWithError(string worker, int jobItemID, string errorDetails, System.AsyncCallback callback, object asyncState) {
+            return base.Channel.BeginReturnJobWithError(worker, jobItemID, errorDetails, callback, asyncState);
+        }
+        
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
+        public void EndReturnJobWithError(System.IAsyncResult result) {
+            base.Channel.EndReturnJobWithError(result);
+        }
+        
+        private System.IAsyncResult OnBeginReturnJobWithError(object[] inValues, System.AsyncCallback callback, object asyncState) {
+            string worker = ((string)(inValues[0]));
+            int jobItemID = ((int)(inValues[1]));
+            string errorDetails = ((string)(inValues[2]));
+            return this.BeginReturnJobWithError(worker, jobItemID, errorDetails, callback, asyncState);
+        }
+        
+        private object[] OnEndReturnJobWithError(System.IAsyncResult result) {
+            this.EndReturnJobWithError(result);
+            return null;
+        }
+        
+        private void OnReturnJobWithErrorCompleted(object state) {
+            if ((this.ReturnJobWithErrorCompleted != null)) {
+                InvokeAsyncCompletedEventArgs e = ((InvokeAsyncCompletedEventArgs)(state));
+                this.ReturnJobWithErrorCompleted(this, new System.ComponentModel.AsyncCompletedEventArgs(e.Error, e.Cancelled, e.UserState));
+            }
+        }
+        
+        public void ReturnJobWithErrorAsync(string worker, int jobItemID, string errorDetails) {
+            this.ReturnJobWithErrorAsync(worker, jobItemID, errorDetails, null);
+        }
+        
+        public void ReturnJobWithErrorAsync(string worker, int jobItemID, string errorDetails, object userState) {
+            if ((this.onBeginReturnJobWithErrorDelegate == null)) {
+                this.onBeginReturnJobWithErrorDelegate = new BeginOperationDelegate(this.OnBeginReturnJobWithError);
+            }
+            if ((this.onEndReturnJobWithErrorDelegate == null)) {
+                this.onEndReturnJobWithErrorDelegate = new EndOperationDelegate(this.OnEndReturnJobWithError);
+            }
+            if ((this.onReturnJobWithErrorCompletedDelegate == null)) {
+                this.onReturnJobWithErrorCompletedDelegate = new System.Threading.SendOrPostCallback(this.OnReturnJobWithErrorCompleted);
+            }
+            base.InvokeAsync(this.onBeginReturnJobWithErrorDelegate, new object[] {
+                        worker,
+                        jobItemID,
+                        errorDetails}, this.onEndReturnJobWithErrorDelegate, this.onReturnJobWithErrorCompletedDelegate, userState);
         }
     }
 }

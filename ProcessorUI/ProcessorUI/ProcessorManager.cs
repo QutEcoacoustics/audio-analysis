@@ -152,10 +152,17 @@ namespace ProcessorUI
 				catch (Exception e)
 				{
 					OnLog("ERROR! " + e.ToString());
-					OnLog("Sleeping...");
-					Thread.Sleep(5000);
-					GetNextJob(workerName);
-					//OnStopped();
+					if (State == ProcessorState.Stopping)
+					{
+						OnLog("Stopping");
+						OnStopped();
+					}
+					else
+					{
+						OnLog("Sleeping...");
+						Thread.Sleep(5000);
+						GetNextJob(workerName);
+					}
 				}
 			}
 		}
@@ -172,8 +179,22 @@ namespace ProcessorUI
 				if (State != ProcessorState.Stopping)
 				{
 					OnLog("Analysing {0}", item.AudioReadingUrl);
-					TimeSpan? duration;
-					var results = AnalyseFile(tempFile, item.MimeType, classifier, out duration);
+					TimeSpan? duration = null;
+					IEnumerable<ProcessorJobItemResult> results = null;
+					try
+					{
+						results = AnalyseFile(tempFile, item.MimeType, classifier, out duration);
+					}
+					catch (Exception e)
+					{
+
+						using (var ws = new ServiceWrapper())
+						{
+							ws.Proxy.ReturnJobWithError(workerName, item.JobItemID, e.ToString());
+							ws.Close();
+						}
+						return true; // We've processed it, it failed, but it was processed and we've sent a result to the server
+					}
 
 					if (results != null)
 					{
