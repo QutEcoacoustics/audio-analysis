@@ -87,6 +87,7 @@ namespace ProcessorUI
 				Settings.TotalDuration = processor.TotalDuration;
 				statusTotal.Text = "Total: " + processor.FilesProcessed;
 				statusDuration.Text = "Duration: " + processor.TotalDuration;
+				statusThreads.Text = "Threads: " + processor.ThreadsRunning;
 			}
 		}
 

@@ -113,8 +113,60 @@ namespace QutSensors.Data.Tests
 			ReserveJobItem();
 			var item = db.Processor_JobItems.FirstOrDefault();
 			JobManager.Instance.ReturnJobWithError(db, item.Worker, item.JobItemID, "ERROR DETAILS");
+			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, item);
 			Assert.AreEqual(JobStatus.Error, item.Status);
-			Assert.AreEqual(0, JobManager.Instance.GetJobItem(db, "TEST WORKER"));
+			Assert.IsNull(JobManager.Instance.GetJobItem(db, "TEST WORKER"));
+		}
+
+		[TestMethod]
+		public void ReprocessFailedJobs()
+		{
+			CreateJob();
+			var job = db.Processor_Jobs.First();
+			var hardware = db.Hardware.First();
+			AddAudioReading(hardware, DateTime.Now.AddDays(1));
+			AddAudioReading(hardware, DateTime.Now.AddDays(1));
+
+			Assert.AreEqual(3, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(0, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(0, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(0, job.GetFailedJobs(db).Count());
+
+			var item = JobManager.Instance.GetJobItem(db, "TEST WORKER");
+			Assert.AreEqual(3, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(1, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(0, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(0, job.GetFailedJobs(db).Count());
+
+			JobManager.Instance.CompleteJobItem(db, item.JobItemID);
+			Assert.AreEqual(2, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(0, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(1, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(0, job.GetFailedJobs(db).Count());
+
+			item = JobManager.Instance.GetJobItem(db, "TEST WORKER");
+			Assert.AreEqual(2, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(1, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(1, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(0, job.GetFailedJobs(db).Count());
+
+			JobManager.Instance.ReturnJobWithError(db, item.Worker, item.JobItemID, "ERROR DETAILS");
+			
+			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, item);
+			Assert.AreEqual(JobStatus.Error, item.Status);
+			Assert.AreEqual(2, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(0, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(1, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(1, job.GetFailedJobs(db).Count());
+
+			JobManager.Instance.ReprocessFailedJobs(db, item.JobID);
+			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, item);
+			Assert.AreEqual(JobStatus.Ready, item.Status);
+			Assert.AreEqual(JobStatus.Error, item.Status);
+			Assert.AreEqual(2, job.GetIncompleteJobs(db).Count());
+			Assert.AreEqual(0, job.GetRunningJobs(db).Count());
+			Assert.AreEqual(1, job.GetCompletedJobs(db).Count());
+			Assert.AreEqual(0, job.GetFailedJobs(db).Count());
 		}
 
 		[Serializable]

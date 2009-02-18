@@ -36,6 +36,7 @@
 			this.statusStrip1 = new System.Windows.Forms.StatusStrip();
 			this.statusTotal = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusDuration = new System.Windows.Forms.ToolStripStatusLabel();
+			this.statusThreads = new System.Windows.Forms.ToolStripStatusLabel();
 			this.statusStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -97,7 +98,8 @@
 			// 
 			this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.statusTotal,
-            this.statusDuration});
+            this.statusDuration,
+            this.statusThreads});
 			this.statusStrip1.Location = new System.Drawing.Point(0, 569);
 			this.statusStrip1.Name = "statusStrip1";
 			this.statusStrip1.Size = new System.Drawing.Size(397, 22);
@@ -115,6 +117,12 @@
 			this.statusDuration.Name = "statusDuration";
 			this.statusDuration.Size = new System.Drawing.Size(56, 17);
 			this.statusDuration.Text = "Duration:";
+			// 
+			// statusThreads
+			// 
+			this.statusThreads.Name = "statusThreads";
+			this.statusThreads.Size = new System.Drawing.Size(52, 17);
+			this.statusThreads.Text = "Threads:";
 			// 
 			// MainForm
 			// 
@@ -146,6 +154,7 @@
 		private System.Windows.Forms.StatusStrip statusStrip1;
 		private System.Windows.Forms.ToolStripStatusLabel statusTotal;
 		private System.Windows.Forms.ToolStripStatusLabel statusDuration;
+		private System.Windows.Forms.ToolStripStatusLabel statusThreads;
 	}
 }
 
