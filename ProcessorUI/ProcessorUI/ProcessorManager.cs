@@ -31,6 +31,14 @@ namespace ProcessorUI
 		#region Properties
 		public int FilesProcessed { get; set; }
 		public TimeSpan TotalDuration { get; set; }
+		public long ThreadsRunning
+		{
+			get
+			{
+				lock (this)
+					return runningThreads;
+			}
+		}
 		#endregion
 
 		public void Start()
@@ -78,6 +86,11 @@ namespace ProcessorUI
 
 		void GetNextJob(string workerName)
 		{
+			if (State == ProcessorState.Stopping)
+			{
+				OnLog("Stopping");
+				OnStopped();
+			}
 			OnLog("Requesting jobs...");
 			var ws = new ServiceWrapper();
 			ws.Proxy.BeginGetJobItem(workerName, OnGotJob, new object[] { ws, workerName });
@@ -152,17 +165,9 @@ namespace ProcessorUI
 				catch (Exception e)
 				{
 					OnLog("ERROR! " + e.ToString());
-					if (State == ProcessorState.Stopping)
-					{
-						OnLog("Stopping");
-						OnStopped();
-					}
-					else
-					{
-						OnLog("Sleeping...");
-						Thread.Sleep(5000);
-						GetNextJob(workerName);
-					}
+					OnLog("Sleeping...");
+					Thread.Sleep(5000);
+					GetNextJob(workerName);
 				}
 			}
 		}
