@@ -121,6 +121,7 @@ namespace QutSensors.Data.Tests
 		[TestMethod]
 		public void ReprocessFailedJobs()
 		{
+			// TODO: Split this test up a bit.
 			CreateJob();
 			var job = db.Processor_Jobs.First();
 			var hardware = db.Hardware.First();
