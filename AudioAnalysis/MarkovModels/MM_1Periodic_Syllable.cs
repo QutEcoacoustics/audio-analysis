@@ -7,43 +7,22 @@ using TowseyLib;
 
 namespace MarkovModels
 {
-    public enum ScoreType { UNDEFINED, STANDARD, DURATION }
-
-    public class MarkovModel : BaseMM
+    public class MM_1Periodic_Syllable : MM_Base
     {
-        const double minProb = 0.001;
-        const double minLog  = -3.0;
         const double stateDurationMax = 1.0; //seconds
         private static double fractionalNH = 0.30; //arbitrary neighbourhood around user defined periodicity
 
 
-        private string name;
-        public  string Name { get { return name; } set { name = value; } }
-        private MMType graphType;
-        public  MMType GraphType { get { return graphType; } set { graphType = value; } }
-        private ScoreType scoreType;
-        public  ScoreType ScoreType { get { return scoreType; } set { scoreType = value; } }
 
-
-        //state initial and transition probabilities
-        double[] initialStateProbs;  //PI array in Rabiner notation
-        double[] logInitialStateProbs;  //PI array in Rabiner notation
-        double[,] transitionMatrix_MM;
-        double[,] logMatrix_MM;
-        double[,] transitionMatrix_NullM;
-        double[,] logMatrix_NullM;
 
         //state duration statistics
         public double DeltaT { get; set; } //duration of one time step in seconds
         double[,] stateDurationProbs;
         double[,] stateDurationLogProbs;
 
-        int numberOfStates;  //number of symbols including noise and garbage symbols.
         int numberOfWords;   // ie number of vocalisations
         double avWordLength; //average length (number of frames) of a vocalisation.
 
-        public int Gap_ms { get; set; }
-        public int Gap_frames { get; set; }
         public int Periodicity_ms { get; set; }
         public int Periodicity_frames { get; set; }
         public int Periodicity_NH_ms { get; set; }
@@ -52,87 +31,34 @@ namespace MarkovModels
         double avProbOfDataGivenMarkovModel;
         double avProbOfDataGivenNullModel;
 
-        /// <summary>
-        /// CONSTRUCTOR 1
-        /// Initialise Markov Model with pre-computed transition matrix
-        /// </summary>
-        /// <param name="Amatrix"></param>
-        public MarkovModel(double[,] Amatrix)
-        {
-            this.transitionMatrix_MM = Amatrix;
-            this.logMatrix_MM = Convert2Log(Amatrix);
-            this.numberOfStates = Amatrix.GetLength(0);
-        }
 
         /// <summary>
         /// CONSTRUCTOR 2
-        /// Initialise Markov Model with basic parameters
-        /// </summary>
-        /// <param name="name">Name of the markov Model</param>
-        /// <param name="type">connectivity of state transitions matrix</param>
-        /// <param name="stateCount">number of states</param>
-        public MarkovModel(string name, MMType type, int stateCount)
-        {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = stateCount;
-            if (this.graphType == MMType.MM_TWO_STATE_PERIODIC) this.numberOfStates = 2;
-        }
-
-        /// <summary>
-        /// CONSTRUCTOR 3
         /// use this constructor to initialise a TWO STATE PERIODIC MARKOV MODEL
         /// </summary>
-        public MarkovModel(string name, MMType type, int interval_ms, double deltaT)
+        public MM_1Periodic_Syllable(string name, int interval_ms, double deltaT) : base (2)
         {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = 2;
+            //this.graphType = MMType.ONE_PERIODIC_SYLLABLE;
+            this.name = "MM_1PeriodicSyllable";
+            this.graphType = MMType.UNDEFINED;
             this.DeltaT = deltaT;
-            if (type == MMType.MM_TWO_STATE_PERIODIC) SetGapParameters(interval_ms);
-            else
-            if (type == MMType.ONE_PERIODIC_SYLLABLE) SetPeriodicityParameters(interval_ms);
+            SetPeriodicityParameters(interval_ms);
         }
 
 
-        /// <summary>
-        /// CONSTRUCTOR 4
-        /// Initialise Markov Model with set of symbol sequences derived from example vocalisations
-        /// All the vocalisations are of one type or class.
-        /// </summary>
-        /// <param name="name"></param>
-        /// <param name="stateCount"></param>
-        /// <param name="exampleWords"></param>
-        public MarkovModel(string name, MMType type, int stateCount, string[] sequences)
-        {
-            this.name = name;
-            this.graphType = type;
-            this.numberOfStates = stateCount;
-            TrainModel(sequences);
-        }
 
         public void SetPeriodicityParameters(int period_ms)
         {
             int period_frame           = (int)Math.Round(period_ms / this.DeltaT / (double)1000);
             this.Periodicity_ms        = period_ms;
             this.Periodicity_frames    = period_frame;
-            this.Periodicity_NH_frames = (int)Math.Floor(period_frame * MarkovModel.fractionalNH); //arbitrary NH
-            this.Periodicity_NH_ms     = (int)Math.Floor(period_ms * MarkovModel.fractionalNH); //arbitrary NH
+            this.Periodicity_NH_frames = (int)Math.Floor(period_frame * MM_1Periodic_Syllable.fractionalNH); //arbitrary NH
+            this.Periodicity_NH_ms     = (int)Math.Floor(period_ms * MM_1Periodic_Syllable.fractionalNH); //arbitrary NH
             //Console.WriteLine("\tperiod_ms="    + period_ms    + "+/-" + this.Periodicity_NH_ms);
             //Console.WriteLine("\tperiod_frame=" + period_frame + "+/-" + this.Periodicity_NH_frames);
         }
-        public void SetGapParameters(int gap_ms)
-        {
-            int gap_frame = (int)Math.Round(gap_ms / this.DeltaT / (double)1000);
-            this.Gap_ms = gap_ms;
-            this.Gap_frames = gap_frame;
-            this.Periodicity_NH_frames = (int)Math.Floor(gap_frame * MarkovModel.fractionalNH); //arbitrary NH
-            this.Periodicity_NH_ms = (int)Math.Floor(gap_ms * MarkovModel.fractionalNH); //arbitrary NH
-            //Console.WriteLine("\gap_ms=" + gap_ms + "+/-" + this.Periodicity_NH_ms);
-            //Console.WriteLine("\gap_frame=" + gap_frame + "+/-" + this.Periodicity_NH_frames);
-        }
 
-        public void TrainModel(TrainingSequences data)
+        public void TrainModel(TrainingSet data)
         {
             if (Log.Verbosity > 0)
             {
@@ -140,8 +66,7 @@ namespace MarkovModels
                 data.WriteComposition();
             }
             string[] sequences = data.GetSequences();
-            if (this.graphType == MMType.MM_TWO_STATE_PERIODIC) TrainTwoStateModel(sequences);
-            else TrainModel(sequences);
+            TrainModel(sequences);
         }
 
         public void TrainModel(string[] sequences)
@@ -149,7 +74,7 @@ namespace MarkovModels
             this.numberOfWords = sequences.Length;
             this.avWordLength = AverageVocalisationLength(sequences);
             double[,] Amatrix;
-            MarkovModel.Sequences2TransitionMatrix(sequences, this.numberOfStates, out Amatrix);
+            MM_1Periodic_Syllable.Sequences2TransitionMatrix(sequences, this.numberOfStates, out Amatrix);
             this.transitionMatrix_MM = Amatrix;
             this.logMatrix_MM = Convert2Log(Amatrix);
 
@@ -158,15 +83,15 @@ namespace MarkovModels
             int[] unigramCounts;
             double[] unigramProbs;
             double[,] nullMatrix;
-            MarkovModel.Sequences2UnigramCounts(sequences, this.numberOfStates, out unigramCounts, out count);
-            MarkovModel.CalculateNullModelTransitionMatrix(unigramCounts, count, out unigramProbs, out nullMatrix);
+            MM_1Periodic_Syllable.Sequences2UnigramCounts(sequences, this.numberOfStates, out unigramCounts, out count);
+            MM_1Periodic_Syllable.CalculateNullModelTransitionMatrix(unigramCounts, count, out unigramProbs, out nullMatrix);
             this.transitionMatrix_NullM = nullMatrix;
             this.logMatrix_NullM = Convert2Log(nullMatrix);
             this.initialStateProbs = unigramProbs;
             this.logInitialStateProbs = Convert2Log(unigramProbs);
 
             //calculate state duration statistics
-            CalculateStateDurationProbs(sequences);
+            //CalculateStateDurationProbs(sequences);
 
             //calculate probability of data given two models
             CalculateAvProbOfSequences(sequences, out this.avProbOfDataGivenMarkovModel, out this.avProbOfDataGivenNullModel);
@@ -178,111 +103,6 @@ namespace MarkovModels
 
 
 
-        public void TrainTwoStateModel(string[] sequences)
-        {
-            this.numberOfWords = sequences.Length;
-            this.avWordLength = AverageVocalisationLength(sequences);// length in frames
-            int gap = this.Gap_frames;
-
-			Log.WriteIfVerbose("\tCalculating two-state MM initial/unigram frequenices");
-            int[] unigramCounts = new int[2];
-            unigramCounts[0] = this.Gap_frames;   unigramCounts[1] = (int)this.avWordLength;
-            double total = this.avWordLength + this.Gap_frames;
-            double[] unigramProbs = new double[2];
-            unigramProbs[0] = this.Gap_frames / total; unigramProbs[1]  = this.avWordLength / total;
-            this.initialStateProbs = unigramProbs;
-            this.logInitialStateProbs = Convert2Log(unigramProbs);
-
-            double[,] nullMatrix = new double[2, 2];
-            nullMatrix[0, 0] = unigramProbs[0]; nullMatrix[1, 0] = unigramProbs[0];
-            nullMatrix[0, 1] = unigramProbs[1]; nullMatrix[1, 1] = unigramProbs[1];
-            this.transitionMatrix_NullM = nullMatrix;
-            this.logMatrix_NullM = Convert2Log(nullMatrix);
-
-			Log.WriteIfVerbose("\tCalculating two-state MM transition matrix.");
-            double[,] Amatrix = new double[2, 2];
-            Amatrix[0, 0] = (this.Gap_frames - 1) / (double)this.Gap_frames; Amatrix[0, 1] = 1 / (double)this.Gap_frames;
-            Amatrix[1, 0] = (this.avWordLength - 1) / this.avWordLength;     Amatrix[1, 1] = 1 / this.avWordLength;
-            this.transitionMatrix_MM = Amatrix;
-            this.logMatrix_MM = Convert2Log(Amatrix);
-
-
-            //calculate state duration statistics
-            this.stateDurationProbs = CalculateTwoStateDurationProbs((double)this.Gap_frames, this.avWordLength);
-            this.stateDurationLogProbs = Convert2Log(stateDurationProbs);
-
-
-            //calculate probability of data given two models
-            CalculateAvProbOfSequences(sequences, out this.avProbOfDataGivenMarkovModel, out this.avProbOfDataGivenNullModel);
-            //debug output
-            //Console.WriteLine("################# RESULT OF TRAINING");
-            //WriteInfo(true);
-        }//end TrainModel()
-
-
-
-        /// <summary>
-        /// calculate state duration statistics
-        /// </summary>
-        public void CalculateStateDurationProbs(string[] exampleWords)
-        {
-            Log.WriteIfVerbose("\tCalculating two-state MM state duration statistics.");
-
-            double framesPerSecond = 1 / this.DeltaT;
-            int maxDuration = (int)(MarkovModel.stateDurationMax * framesPerSecond); //max state duration in frames
-            int[,] stateDurationCounts = new int[this.numberOfStates, maxDuration];
-
-            int examplecount = exampleWords.Length;
-            for (int w = 0; w < examplecount; w++)
-            {
-                string word = exampleWords[w];
-                int L = word.Length;
-                int currentDuration = 1; //must count duration of first symbol
-                for (int i = 1; i < L; i++) //for length of the symbol sequence extract bigrams.
-                {
-                    //convert symbol to integer.
-                    int int1 = DataTools.Char2Integer(word[i - 1], this.numberOfStates);      //represents state q(t-1)
-                    int int2 = DataTools.Char2Integer(word[i], this.numberOfStates);          //represents state q(t)
-                    if (int1 == int2)
-                    {
-                        currentDuration++;
-                    }
-                    else
-                    {
-                        if (currentDuration >= maxDuration) currentDuration = maxDuration - 1;
-                        stateDurationCounts[int1, currentDuration] += 1;
-                        currentDuration = 1;
-                    }
-                }
-            }//end over all sequences
-
-            //DataTools.writeMatrix(stateDurationCounts);
-
-            //init the duration matrix
-            stateDurationProbs = new double[this.numberOfStates, maxDuration];
-            //convert counts to probs after smoothing
-            for (int i = 0; i < this.numberOfStates; i++)//for all states
-            {
-                double[] density = new double[maxDuration];
-                //calculate duration probs - first smooth
-                int sum = stateDurationCounts[i, 0] + stateDurationCounts[i, 1];
-                density[0] = sum / (double)2;
-                for (int j = 1; j < (maxDuration - 1); j++) //for all durations
-                {
-                    sum = stateDurationCounts[i, j-1] + stateDurationCounts[i, j] + stateDurationCounts[i, j+1];
-                    density[j] = sum / (double)3;
-                }
-                sum = stateDurationCounts[i, maxDuration - 2] + stateDurationCounts[i, maxDuration - 1];
-                density[maxDuration - 1] = sum / (double)2;
-
-                density = DataTools.NormaliseProbabilites(density);
-                for (int j = 0; j < maxDuration; j++) stateDurationProbs[i, j] = density[j];
-            }//end of all states
-            this.stateDurationLogProbs = Convert2Log(stateDurationProbs);
-            //Console.WriteLine("##Duration bin count = " + this.durationBinCount + "  dim=[" + this.stateDurationProbs.GetLength(0) + "," + this.stateDurationProbs.GetLength(1) + "]");
-            //Console.WriteLine("##Duration bin count = " + this.durationBinCount + "  dim=[" + this.logStateDurationProbs.GetLength(0) + "," + this.logStateDurationProbs.GetLength(1) + "]");
-        }
-
         /// <summary>
         /// </summary>
         /// <param name="state1"></param>
@@ -293,7 +113,7 @@ namespace MarkovModels
             Log.WriteIfVerbose("\tCalculating two-state MM state duration statistics.");
 
             double framesPerSecond = 1 / this.DeltaT;
-            int maxDuration = (int)(MarkovModel.stateDurationMax * framesPerSecond); //max state duration in frames
+            int maxDuration = (int)(MM_1Periodic_Syllable.stateDurationMax * framesPerSecond); //max state duration in frames
             //Console.WriteLine("framesPerSecond=" + framesPerSecond.ToString("F2") + "  stateDuration=" + MarkovModel.stateDurationMax + "sec.  stateDuration_MaxFrames=" + maxDuration);
             int duration1 = (int)Math.Round(stateDuration1) - 1; //-1 because convert to array index
             int duration2 = (int)Math.Round(stateDuration2) - 1;
@@ -305,7 +125,7 @@ namespace MarkovModels
 
             //calculate neighbourhoods around modal state durations
             //for state 1
-            int NH = (int)Math.Round(stateDuration1 * MarkovModel.fractionalNH);
+            int NH = (int)Math.Round(stateDuration1 * MM_1Periodic_Syllable.fractionalNH);
             if (NH < 2) NH = 2;
             double[] pdf = new double[maxDuration];
             pdf[duration1] = 1.0;
@@ -319,7 +139,7 @@ namespace MarkovModels
             for (int j = 0; j < maxDuration; j++) probs[0, j] = pdf[j];
 
             //for state 2
-            NH = (int)Math.Round(stateDuration2 * MarkovModel.fractionalNH);
+            NH = (int)Math.Round(stateDuration2 * MM_1Periodic_Syllable.fractionalNH);
             if (NH < 2) NH = 2;
             pdf = new double[maxDuration];
             pdf[duration2] = 1.0;
@@ -374,7 +194,7 @@ namespace MarkovModels
                 for (int j = 0; j < vocalLength; j++) unigramLogScore += unigramScores[i + j];
                 unigramLogScore = unigramLogScore / (double)vocalLength;
 
-                double score = bigramLogScore - MarkovModel.minLog;
+                double score = bigramLogScore - MM_1Periodic_Syllable.minLog;
                 double likelihoodRatio = DataTools.AntiLogBase10(bigramLogScore) / DataTools.AntiLogBase10(unigramLogScore);
                 scores[i] = score;
                 //scores[i] = likelihoodRatio;
@@ -561,7 +381,7 @@ namespace MarkovModels
 
             //calculate null model's state duration distribution as a uniform pdf
             double framesPerSecond = 1 / this.DeltaT;
-            int maxDuration = (int)(MarkovModel.stateDurationMax * framesPerSecond); //max state duration in frames
+            int maxDuration = (int)(MM_1Periodic_Syllable.stateDurationMax * framesPerSecond); //max state duration in frames
             double logStateDurationProb_NM = Math.Log10(1 / (double)maxDuration);
 
             int currentDuration = 1;
@@ -616,7 +436,7 @@ namespace MarkovModels
 
             //calculate null model's state duration distribution as a uniform pdf
             double framesPerSecond = 1 / this.DeltaT;
-            int maxDuration = (int)(MarkovModel.stateDurationMax * framesPerSecond); //max state duration in frames
+            int maxDuration = (int)(MM_1Periodic_Syllable.stateDurationMax * framesPerSecond); //max state duration in frames
             double logStateDurationProb_NM = Math.Log10(1 / (double)maxDuration);
 
             count = 0;
@@ -707,69 +527,6 @@ namespace MarkovModels
         }
 
 
-        public double[] IntArray2LogUnigramFreqs(int[] array, int numberOfStates)
-        {
-            //Console.WriteLine("numberOfStates="+numberOfStates);
-            int L = array.Length;
-            int[] unigramCounts   = new int[numberOfStates];
-            for (int i = 0; i < L; i++)
-            {
-                if (array[i] >= numberOfStates) Console.WriteLine("################ MarkovModels.IntArray2LogUnigramFreqs() WARNING! array[i]=" + array[i]);
-                unigramCounts[array[i]]++;
-            }
-            double[] unigramFreqs = new double[numberOfStates];
-            for (int i = 0; i < numberOfStates; i++)
-            {
-                unigramFreqs[i] = unigramCounts[i] / (double)L;
-            }
-            double[] logFreqs = new double[numberOfStates];
-            for (int i = 0; i < numberOfStates; i++)
-            {
-                if (unigramFreqs[i] < minProb)
-                    logFreqs[i] = minLog;
-                else
-                    logFreqs[i] = Math.Log10(unigramFreqs[i]);
-            }
-            return logFreqs;
-        }
-
-
-
-        public static void Sequence2BigramCounts(int[] integerSequence, int stateCount, out int[,] bigramCounts)
-        {
-            int L = integerSequence.Length;
-            bigramCounts = new int[stateCount, stateCount];
-
-            for (int i = 1; i < L; i++)
-            {
-                bigramCounts[integerSequence[i], integerSequence[i - 1]] += 1;// count the bigrams
-            }
-        }
-
-
-
-        public static void Sequence2BigramFreqs(int[] integerSequence, int stateCount, out double[,] AMatrix)
-        {
-            int L = integerSequence.Length;
-            int[,] bigramCounts = new int[stateCount, stateCount];
-            int transitionCount = 0;
-
-            for (int i = 1; i < L; i++)
-            {
-
-                bigramCounts[integerSequence[i], integerSequence[i - 1]] += 1;// count the bigrams
-                if (!((integerSequence[i] == 0) && (integerSequence[i-1] == 0))) transitionCount++;
-            }
-            AMatrix = new double [stateCount, stateCount];
-            for (int i = 0; i < stateCount; i++)
-                for (int j = 0; j < stateCount; j++)
-                {
-                    AMatrix[i, j] = bigramCounts[i, j] / (double)transitionCount;
-                }
-            //AMatrix[0, 0] = 0.0;  //forbidden transition
-        }
-
-
         public static double AverageVocalisationLength(string[] examples)
         {
             int examplecount = examples.Length;
@@ -784,254 +541,6 @@ namespace MarkovModels
         }
 
 
-        /// <summary>
-        /// Calculates the unigram counts in a set of symbol sequences.
-        /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
-        /// First convert the symbol sequences to integer sequences.
-        /// Then construct array of counts.
-        /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
-        /// </summary>
-        /// <param name="examples"></param>
-        /// <param name="stateCount"></param>
-        /// <param name="AMatrix"></param>
-        public static void Sequences2UnigramCounts(string[] examples, int stateCount, out int[] unigramCounts, out int count)
-        {
-            int examplecount = examples.Length;
-            //Console.WriteLine("Number of Vocalisation Examples = " + examplecount);
-            unigramCounts = new int[stateCount];
-            count = 0;
-
-            for (int w = 0; w < examplecount; w++)
-            {
-                string word = examples[w];
-                int L = word.Length;
-                //Console.WriteLine(word);
-                for (int i = 0; i < L; i++) //for length of the symbol sequence extract bigrams.
-                {
-                    //convert symbol to integer.
-                    int int1 = DataTools.Char2Integer(word[i]);          //represents state q(i)
-                    if (int1 == Int32.MaxValue) int1 = stateCount - 1;   //the garbage symbol
-                    unigramCounts[int1] += 1;// count the bigrams
-                    count++;
-                }
-            }//end over all sequences
-        }//end method
-
-        /// <summary>
-        /// Calculates the bigram counts in a set of symbol sequences.
-        /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
-        /// First convert the symbol sequences to integer sequences.
-        /// Then construct matrix of counts.
-        /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
-        /// </summary>
-        /// <param name="examples"></param>
-        /// <param name="stateCount"></param>
-        /// <param name="bigramCounts"></param>
-        /// <param name="count"></param>
-        public static void Sequences2BigramCounts(string[] examples, int stateCount, out int[,] bigramCounts, out int count)
-        {
-            int examplecount = examples.Length;
-            //Console.WriteLine("Number of Vocalisation Examples = " + examplecount);
-            bigramCounts = new int[stateCount, stateCount];
-            count = 0;
-
-            for (int w = 0; w < examplecount; w++)
-            {
-                string word = examples[w];
-                int L = word.Length;
-                //Console.WriteLine(word);
-                for (int i = 1; i < L; i++) //for length of the symbol sequence extract bigrams.
-                {
-                    //convert symbol to integer.
-                    int int1 = DataTools.Char2Integer(word[i - 1], stateCount);      //represents state q(t-1)
-                    int int2 = DataTools.Char2Integer(word[i], stateCount);          //represents state q(t)
-                    bigramCounts[int1, int2] += 1;// count the bigrams
-                    count++;
-                }
-            }//end over all sequences
-        }//end method
-
-        /// <summary>
-        /// Derives the transition matrix from a set of symbol sequences.
-        /// Each symbol sequence represents an instance of a vocalisation.
-        /// All the vocalisations should be of the same type or class. 
-        /// First calculate a matrix of bigram counts.
-        /// Index zero is the noise symbol, 'n'.
-        /// Index (stateCount-1) is the garbage symbol. 
-        /// IMPORTANT!! a[i,j] = P[q(t)=Sj | q(t-1)=Si]
-        /// Therefore when calculating transition probabilities, the rows must sum to 1.0
-        /// </summary>
-        /// <param name="examples"></param>
-        /// <param name="stateCount"></param>
-        /// <param name="AMatrix"></param>
-        public static void Sequences2TransitionMatrix(string[] examples, int stateCount, out double[,] AMatrix)
-        {
-            int examplecount = examples.Length;
-            //Console.WriteLine("Number of Vocalisation Examples = " + examplecount);
-            int[,] bigramCounts;
-            int transitionCount;
-            Sequences2BigramCounts(examples, stateCount, out bigramCounts, out transitionCount);
-            //Console.WriteLine("Number of transitions (bigrams) in examples = " + transitionCount);
-
-            //init a transition matrix
-            AMatrix = new double[stateCount, stateCount];
-            for (int i = 0; i < stateCount; i++) //for each row
-            {
-                int sum = 0;
-                for (int j = 0; j < stateCount; j++) sum += bigramCounts[i, j];
-                if (sum == 0) AMatrix[i, 0] = 1.0;//row total=0 but prob must sum to 1.0
-                else
-                {
-                    for (int j = 0; j < stateCount; j++) AMatrix[i, j] = bigramCounts[i, j] / (double)sum;
-                }
-            }//end all rows
-        }//end method
-
-
-        /// <summary>
-        /// converts a matrix of probabilities to a matrix of log probs.
-        /// Assume that the sum of probs in each row = 1.0; - does not check.
-        /// </summary>
-        /// <param name="AMatrix"></param>
-        /// <returns></returns>
-        public static double[,] Convert2Log(double[,] AMatrix)
-        {
-            int rowCount = AMatrix.GetLength(0);
-            int colCount = AMatrix.GetLength(1);
-            double[,] logMatrix = new double[rowCount, colCount];
-            for (int i = 0; i < rowCount; i++)
-                for (int j = 0; j < colCount; j++)
-                {
-                    if (AMatrix[i, j] < minProb) 
-                        logMatrix[i, j] = minLog;
-                    else
-                        logMatrix[i, j] = Math.Log10(AMatrix[i, j]);
-                }
-            return logMatrix;
-        }
-
-        public static double[] Convert2Log(double[] probArray)
-        {
-            int stateCount = probArray.Length;
-            double[] logArray = new double[stateCount];
-            for (int i = 0; i < stateCount; i++)
-            {
-                if (probArray[i] < minProb) logArray[i] = minLog;
-                else                        logArray[i] = Math.Log10(probArray[i]);
-            }
-            return logArray;
-        }
-
-
-
-        /// <summary>
-        /// NOTE: Every row of the unigram or null model transition matrix is identical
-        /// because prob of symbol(t) does not depend on the symbol(t-1) but only on the unigram prob.
-        /// </summary>
-        public static void CalculateNullModelTransitionMatrix(int[] unigramCounts, int count, out double[] unigramProbs, out double[,] AMatrix)
-        {
-            int stateCount = unigramCounts.Length;
-            unigramProbs = new double[stateCount];
-
-            for (int i = 0; i < stateCount; i++)
-				unigramProbs[i] = unigramCounts[i] / (double)count;
-
-            //init a transition matrix - each row is the same ie the unigram probs
-            AMatrix = new double[stateCount, stateCount];
-            for (int i = 0; i < stateCount; i++)
-            {
-                for (int j = 0; j < stateCount; j++) AMatrix[i, j] = unigramProbs[j];
-            }//end all rows
-        }
-
-        public static int[] String2IntegerArray(string s, int stateCount)
-        {
-            if ((s == null) || (s.Length == 0)) return null;
-            int[] array = new int[s.Length];
-            for (int i = 0; i < s.Length; i++) { array[i] = DataTools.Char2Integer(s[i], stateCount); }
-
-            return array;
-        }
-        public static int[] String2IntegerArray(string s)
-        {
-            if ((s == null) || (s.Length == 0)) return null;
-            int[] array = new int[s.Length];
-            for (int i = 0; i < s.Length; i++) { array[i] = DataTools.Char2Integer(s[i]); }
-
-            return array;
-        }
-
-        public static MMType GetHmmType(string name)
-        {
-            try
-            {
-                return (MMType)Enum.Parse(typeof(MMType), name);
-            }
-			catch
-            {
-                return MMType.UNDEFINED;
-            }
-        }
     }//end class MarkovModel
 
-    public class TrainingSequences
-    {
-        public int Count { get { return sequences.Count; } }
-
-        private Hashtable tagList = null;
-        private List<string[]> sequences;
-
-        public TrainingSequences()
-        {
-        }
-
-        public void AddSequence(string tag, string sequence)
-        {
-			if (sequences == null) sequences = new List<string[]>();
-            if (tagList == null) tagList = new Hashtable();
-
-			string[] data = new string[] { tag, sequence };
-            sequences.Add(data);
-            if (!tagList.ContainsKey(tag))
-				tagList.Add(tag, 1);
-        }
-
-        public void AddSequences(string tag, string[] sequences)
-        {
-            for (int i = 0; i < sequences.Length; i++)
-                AddSequence(tag, sequences[i]);
-        }
-
-        public string[] GetSequences(string label)
-        {
-			return sequences.Where(d => d[0] == label).Select(d => d[1]).ToArray();
-        }
-
-        public int GetSequenceCount(string label)
-        {
-			return sequences.Where(d => d[0] == label).Count();
-        }
-
-        public string[] GetSequences()
-        {
-			return sequences.Select(d => d[1]).ToArray();
-        }
-
-        public void WriteComposition()
-        {
-            Console.WriteLine("\tCOMPOSITION OF TRAINING DATA.");
-            ICollection tags = tagList.Keys;
-            foreach (string tag in tags)
-            {
-                int number = GetSequenceCount(tag);
-                Console.WriteLine("\t Word=" + tag + "  Number of examples=" + number);
-                string[] words = GetSequences(tag);
-                for (int i = 0; i < words.Length; i++) Console.WriteLine("\t  "+words[i]);                          
-            }
-        }
-    }//class TrainingSequences
 }//end Namespace

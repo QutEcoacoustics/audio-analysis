@@ -4,6 +4,9 @@ using System.Text;
 
 namespace TowseyLib
 {
+
+
+
 	public static class Log
 	{
 		public static int Verbosity = 0;
@@ -35,5 +38,5 @@ namespace TowseyLib
 				Console.WriteLine(format, args);
 #endif
 		}
-	}
+	} //end class Log()
 }
