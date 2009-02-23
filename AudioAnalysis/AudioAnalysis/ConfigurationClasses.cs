@@ -102,6 +102,7 @@ namespace AudioAnalysis
 		}
 
 		#region Properties
+        //these k1 and k2 thresholds are dB above the base line minimum value. Different from values finally used in Sonogram classes
 		public static double SegmentationThresholdK1 { get; set; }	// dB threshold for recognition of vocalisations
 		public static double SegmentationThresholdK2 { get; set; }	// dB threshold for recognition of vocalisations
 		public static double K1K2Latency { get; set; }				// Seconds delay between signal reaching k1 and k2 thresholds
