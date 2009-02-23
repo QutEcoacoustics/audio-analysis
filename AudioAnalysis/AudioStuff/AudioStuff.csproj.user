@@ -1,8 +1,0 @@
-﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup>
-    <ProjectView>ProjectFiles</ProjectView>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <StartArguments>"C:\Users\masonr\Sensors\trunk\WebFrontend\Templates\sonogram.ini" "C:\Temp\BAC2_20071008-085040.wav" "C:\Temp\Test"</StartArguments>
-  </PropertyGroup>
-</Project>

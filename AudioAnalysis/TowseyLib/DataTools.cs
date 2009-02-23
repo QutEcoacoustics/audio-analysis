@@ -1822,62 +1822,6 @@ namespace TowseyLib
 
 
   //*************************************************************************************************************************************
-        
-        
-    /// <summary>
-    /// 
-    /// This method was designed to provide a char for a wide range of integers.
-    /// Is used by bird call recognition software - ie means of converting a 
-    /// feature vector ID (the INTEGER) into a char that can be incorporated  into
-    /// a long string.
-    /// At present the method only handles the integers 0 - 35.
-    /// Negative integers are converted to absolute value.
-    /// </summary>
-    /// <param name="num"></param>
-    /// <returns></returns>
-  static public char Integer2Char(int num)
-  {
-      int val = Math.Abs(num); //convert negative numbers!!!
-      if (val == Int32.MaxValue) return 'x';
-      if (val == 0)              return 'n';
-      if (val < 10) return val.ToString()[0];
-      if (val >= 36) return '?'; //integer exceeds range of this conversion
-
-      string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      int n = val - 10;
-      return ALPHABET[n];
-  }
-  /// <summary>
-  /// This method is the inverse of the method above: Integer2Char(int num)
-  /// Is used by bird call recognition software - ie means of converting a 
-  /// symbolic char into a feature vector ID (the INTEGER).
-  /// </summary>
-  /// <param name="c"></param>
-  /// <returns></returns>
-  public static int Char2Integer(char c)
-  {
-      if (c == 'n') return 0;
-      if (c == 'x') return Int32.MaxValue; // use max integer as substitute for garbage symbol.
-      //check for chars 0 - 9
-      for (int i = 1; i < 10; i++) { if (i.ToString()[0] == c) return i; }
-
-      //check for alphabetic chars
-      string ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-      for (int i = 0; i < 26; i++) { if (ALPHABET[i] == c) return (i+10); }
-
-      Console.WriteLine("DataTools.Char2Integer(char c): WARNING!! "+c+" is an illegitimate char for this function");
-      return 999; //not in chars 0-9 or A-Z
-  }
-  
-  public static int Char2Integer(char c, int stateCount)
-  {
-      int i = Char2Integer(c);
-      if (i == Int32.MaxValue) i = stateCount - 1; // the garbage symbol
-      return i;
-  }
-
-
-  //*************************************************************************************************************************************
 
 
 

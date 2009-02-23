@@ -3,10 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Linq;
 
 namespace TowseyLib
 {
-    public class FileTools
+    public static class FileTools
     {
         private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\"; 
 
@@ -298,5 +299,32 @@ namespace TowseyLib
             }//end using
             return table;
         }// end ReadPropertiesFile()
+
+
+        public static string PathCombine(params string[] paths)
+        {
+            return paths.Aggregate("", (s1, s2) => Path.Combine(s1, s2));
+        }
+
+        public static string UrlCombine(params string[] segments)
+        {
+            return segments.Aggregate("", (a, b) =>
+            {
+                if (string.IsNullOrEmpty(a))
+                    return b;
+                else
+                {
+                    if (a.EndsWith("\\") || a.EndsWith("/"))
+                        a = a.Substring(0, a.Length - 1);
+                    if (b.StartsWith("\\") || b.StartsWith("/"))
+                        b = b.Substring(1);
+                    return a + "/" + b;
+                }
+            });
+        } // end of UrlCombine(params string[] segments)
+
+
+
+
     }// end class
 }

@@ -126,6 +126,8 @@ namespace TowseyLib
 
         public static void Main() 
         {
+            Console.WriteLine("RUNNING FROM TowseyLib.Main()");
+
             const string wavDirName = @"C:\SensorNetworks\WavFiles\";
             const string fName = "SineSignal.wav";
             string path = wavDirName + fName;
