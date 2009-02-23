@@ -23,10 +23,6 @@ namespace MarkovModels
 
 
 
-        //state duration statistics
-        public double DeltaT { get; set; } //duration of one time step in seconds
-        double[,] stateDurationProbs;
-        double[,] stateDurationLogProbs;
 
         int numberOfWords;   // ie number of vocalisations
         double avWordLength; //average length (number of frames) of a vocalisation.
@@ -36,7 +32,7 @@ namespace MarkovModels
         public int Gap_NH_ms { get; set; }
         public int Gap_NH_frames { get; set; }
 
-        double avProbOfDataGivenMarkovModel;
+        //double avProbOfDataGivenMarkovModel;
         //double avProbOfDataGivenNullModel;
 
         double probOfAverageTrainingSequenceGivenModel;
@@ -194,7 +190,6 @@ namespace MarkovModels
                 int[] intSequence = MMTools.String2IntegerArray(sequence);
 
                 double bigramLogScore;
-                int count;
                 ProbOfSequence_StateDuration(intSequence, out bigramLogScore);
                 logProb_MM += bigramLogScore;
             }
@@ -406,7 +401,7 @@ namespace MarkovModels
             if (writeLogMatrices) Console.WriteLine("\t" + this.name + " - Transition Matrix of NULL Model");
             if (writeLogMatrices) DataTools.writeMatrix(this.logMatrix_NullM, "F3");
             Console.WriteLine("");
-            Console.WriteLine("  Prob Of Data (av per symbol) Given Markov Model = " + this.avProbOfDataGivenMarkovModel.ToString("F3"));
+           // Console.WriteLine("  Prob Of Data (av per symbol) Given Markov Model = " + this.avProbOfDataGivenMarkovModel.ToString("F3"));
 
             //double LLR = Math.Log10(avProbOfDataGivenNullModel / avProbOfDataGivenMarkovModel);
 

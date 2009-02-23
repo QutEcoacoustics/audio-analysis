@@ -89,14 +89,13 @@ namespace TowseyLib
         /// Calculate normalised energy of frame as  energy[i] = logEnergy - maxLogEnergy;
         /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
         /// </summary>
-        /// <param name="frames"></param>
+        /// <param name="frames">a matrix containing signal values grouped as overlapping frames</param>
         /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
-        /// <param name="doSpectralEnergy">indicates whether values are signal samples or FFT samples</param>
         /// <returns></returns>
         public static double[] SignalLogEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy)
         {
-            //double minLogEnergy is defined in header of Sonogram class
+            //double minLogEnergy & maxLogEnergy are defined in header of Sonogram class
             //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
             double minEnergyRatio = minLogEnergy - maxLogEnergy;
 

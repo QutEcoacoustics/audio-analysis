@@ -35,12 +35,12 @@ namespace AudioAnalysis
 
             //1:  make a sonogram
             //args[2] = opDir + "Test1";
-//            MakeSonogram(args[0], args[1], args[2]);
+            MakeSonogram(args[0], args[1], args[2]);
 
 
             //2: create template and save it
             string templateFname = "Template" + callID + ".txt";
-            CreateTemplate(args[0], args[1], new GUI(callID, templateDir), templateFname);
+//            CreateTemplate(args[0], args[1], new GUI(callID, templateDir), templateFname);
 
             //3: read an existing template
             //args[0] string appConfigPath
@@ -98,7 +98,8 @@ namespace AudioAnalysis
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image_mt.AddTrack(Image_Track.GetEnergyTrack(sonogram.FrameEnergy));
+            //image_mt.AddTrack(Image_Track.GetDecibelTrack(sonogram));
+            image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image_mt.Save(baseOutputPath + "_spectral.png");
             
 

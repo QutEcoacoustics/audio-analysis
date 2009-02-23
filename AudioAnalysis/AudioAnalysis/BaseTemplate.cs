@@ -224,7 +224,7 @@ namespace AudioAnalysis
             bool doHighlightSubband = false;
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetEnergyTrack(sonogram.FrameEnergy));
+            image.AddTrack(Image_Track.GetDecibelTrack(sonogram));
             image.Save(path);
         }
 

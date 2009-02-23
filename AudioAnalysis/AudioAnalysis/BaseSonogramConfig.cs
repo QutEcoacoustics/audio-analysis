@@ -60,7 +60,7 @@ namespace AudioAnalysis
             int? delta  = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
 
-
+            EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
 		}
 
 

@@ -443,8 +443,8 @@ namespace TowseyLib
         static public ArrayList getWordsAfter(int N, int start, String text)
         {
             ArrayList v = new ArrayList();
-            int wordStart, wordEnd;
-            String word;
+            //int wordStart, wordEnd;
+            //String word;
             int i = start;
             int L = text.Length;
             if (start >= L) return null;  // out of range ERROR
@@ -490,8 +490,8 @@ namespace TowseyLib
         static public ArrayList getWordsBefore(int N, int start, String text)
         {
             ArrayList v = new ArrayList();
-            int wordStart, wordEnd;
-            String word;
+            //int wordStart, wordEnd;
+            //String word;
             int i = start;
             int L = text.Length;
             if (start > L) return null;  // out of range ERROR

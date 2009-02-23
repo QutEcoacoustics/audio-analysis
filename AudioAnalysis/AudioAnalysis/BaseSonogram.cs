@@ -54,6 +54,8 @@ namespace AudioAnalysis
 		public double Frame_SNR { get { return FrameMax_dB - FrameNoise_dB; } }
 		public double MinDecibelReference { get; private set; } // Min reference dB value after noise substraction
 		public double MaxDecibelReference { get; private set; } // Max reference dB value after noise substraction
+        public double SegmentationThresholdK1 { get; private set; }
+        public double SegmentationThresholdK2 { get; private set; } 
 
         public bool ExtractSubband { get; set; } // extract sub-band when making spectrogram image
         private int  freqBand_Min;
@@ -112,8 +114,12 @@ namespace AudioAnalysis
 			// ZERO CROSSINGS
 			//this.zeroCross = DSP.ZeroCrossings(frames);
 
+            //AUDIO SEGMENTATION
 			double k1; double k2; int k1_k2delay; int syllableDelay; int minPulse;
 			SigState = DetermineEndpointsOfVocalisations(out k1, out k2, out k1_k2delay, out syllableDelay, out minPulse);
+            this.SegmentationThresholdK1 = k1;
+            this.SegmentationThresholdK2 = k2;
+
 
 			var fractionOfHighEnergyFrames = Speech.FractionHighEnergyFrames(Decibels, k2);
 			if ((fractionOfHighEnergyFrames > 0.8) && (Configuration.DoNoiseReduction))
@@ -154,7 +160,7 @@ namespace AudioAnalysis
             syllableDelay = (int)(EndpointDetectionConfiguration.VocalDelay / FrameOffset); //=10 frames delay required to separate vocalisations 
             minPulse = (int)(EndpointDetectionConfiguration.MinPulseDuration / FrameOffset); //=2 frames is min vocal length
 			//Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
-			return Speech.VocalizationDetection(Decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+			return Speech.VocalizationDetection(this.Decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
 		}
 
 		double[,] MakeAmplitudeSpectra(double[,] frames, TowseyLib.FFT.WindowFunc w, double epsilon)

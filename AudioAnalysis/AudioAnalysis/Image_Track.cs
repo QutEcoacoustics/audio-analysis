@@ -11,7 +11,7 @@ namespace AudioAnalysis
 {
 
 
-    public enum TrackType { none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
+    public enum TrackType { none, deciBels, segmentation, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
 
 
     public sealed class Image_Track
@@ -126,7 +126,9 @@ namespace AudioAnalysis
                     return syllablesTrackHeight;
                 case TrackType.scoreArray:
                     return scoreTrackHeight;
-                case TrackType.energy:
+                case TrackType.deciBels:
+                    return DefaultHeight;
+                case TrackType.segmentation:
                     return DefaultHeight;
                 case TrackType.scoreMatrix:
                     return DefaultHeight;
@@ -143,8 +145,11 @@ namespace AudioAnalysis
                 case TrackType.timeTics:
                     AddTimeTrack(bmp);    //time scale track
                     break;
-                case TrackType.energy:
+                case TrackType.deciBels:
                     AddDecibelTrack(bmp); //frame energy track
+                    break;
+                case TrackType.segmentation:
+                    AddSegmentationTrack(bmp); //segmentation track
                     break;
                 case TrackType.syllables:
                     AddSyllablesTrack(bmp);
@@ -155,6 +160,10 @@ namespace AudioAnalysis
                 case TrackType.scoreMatrix:
                     AddScoreMatrixTrack(bmp);  //add a score track
                     break;
+                default:
+                    Log.WriteLine("WARNING******** !!!! Image_Track.DrawTrack():- TRACKTYPE NOT DEFINED");
+                    break;
+
             }
             // none, energy, syllables, scoreArray, scoreMatrix, zeroCrossings, hits 
         }
@@ -317,18 +326,17 @@ namespace AudioAnalysis
         }
 
         /// <summary>
-        /// This method assumes that the passed decibel array has zero minimum bounds determined by constants
+        /// This method assumes that the passed decibel array has bounds determined by constants
         /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
         /// </summary>
         public Bitmap AddDecibelTrack(Bitmap bmp)
         {
             int width = bmp.Width;
-            int height = bmp.Height; //height = 10 + 513 + 10 + 50 = 583 
+            int height = bmp.Height; 
 
             int offset = height - Image_Track.DefaultHeight; //row id offset for placing track pixels
             Color white = Color.White;
             double range = this.MaxDecibelReference - this.MinDecibelReference;
-            //Console.WriteLine("range=" + range + "  minRef=" + this.MinDecibelReference + "  maxRef=" + this.MaxDecibelReference);
 
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
@@ -342,18 +350,47 @@ namespace AudioAnalysis
                 for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
             }
 
+            return bmp;
+        }
+
+        /// <summary>
+        /// This method assumes that the passed decibel array has bounds determined by constants
+        /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
+        /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
+
+        /// </summary>
+        public Bitmap AddSegmentationTrack(Bitmap bmp)
+        {
+            int width = bmp.Width;
+            int bmpHeight = bmp.Height;
+            int trackHeight = Image_Track.DefaultHeight;
+
+            int offset = bmpHeight - trackHeight; //row id offset for placing track pixels
+            Color white = Color.White;
+            double range = this.MaxDecibelReference - this.MinDecibelReference;
+            for (int x = 0; x < width; x++)
+            {
+                double norm = (doubleData[x] - this.MinDecibelReference) / range;
+                int id = trackHeight - 1 - (int)(trackHeight * norm);
+                if (id < 0) id = 0;
+                else if (id > trackHeight) id = trackHeight;
+                //paint white and leave a black vertical bar
+                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
+            }
+
             //display vocalisation state and thresholds used to determine endpoints
+            if (this.intData == null) return bmp;     //cannot show becuase no state info
+            Color[] stateColors = { Color.White, Color.Green, Color.Red };
             double v1 = this.SegmentationThreshold_k1 / range;
-            int k1 = Image_Track.DefaultHeight - (int)(Image_Track.DefaultHeight * v1);
+            int k1 = trackHeight - (int)(trackHeight * v1);
             double v2 = this.SegmentationThreshold_k2 / range;
-            int k2 = Image_Track.DefaultHeight - (int)(Image_Track.DefaultHeight * v2);
-            //Console.WriteLine("SegmentationThreshold_k2=" + SegmentationThreshold_k2 + "   v2=" + v2 + "  k2=" + k2);
+            int k2 = trackHeight - (int)(trackHeight * v2);
             if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
             if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
             int y1 = offset + k1;
-            if (y1 >= height) y1 = height - 1;
+            if (y1 >= bmpHeight) y1 = bmpHeight - 1;
             int y2 = offset + k2;
-            if (y2 >= height) y2 = height - 1;
+            if (y2 >= bmpHeight) y2 = bmpHeight - 1;
             for (int x = 0; x < width; x++)
             {
                 bmp.SetPixel(x, y1, Color.Orange);
@@ -369,9 +406,22 @@ namespace AudioAnalysis
             return bmp;
         }
 
-        public static Image_Track GetEnergyTrack(double[] dB)
+        public static Image_Track GetDecibelTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.energy, dB);
+            var track = new Image_Track(TrackType.deciBels, sg.Decibels);
+            track.MinDecibelReference = sg.MinDecibelReference;
+            track.MaxDecibelReference = sg.MaxDecibelReference;
+            return track;
+        }
+
+        public static Image_Track GetSegmentationTrack(BaseSonogram sg)
+        {
+            var track = new Image_Track(TrackType.segmentation, sg.Decibels);
+            track.intData = sg.SigState;
+            track.MinDecibelReference = sg.MinDecibelReference;
+            track.MaxDecibelReference = sg.MaxDecibelReference;
+            track.SegmentationThreshold_k1 = sg.SegmentationThresholdK1;
+            track.SegmentationThreshold_k2 = sg.SegmentationThresholdK2;
             return track;
         }
 

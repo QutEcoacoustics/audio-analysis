@@ -44,8 +44,7 @@ namespace AudioAnalysis
             //one markov model per template
             int fvCount = config.GetInt("FV_COUNT");
             if (fvCount != 1)
-                throw new Exception();
-            int numberOfStates = 2;
+                throw new Exception("WARNING! Must only have one Feature Vector to init this MM");
             markovModel = new MM_2State_Periodic(Gap_ms, this.FrameOffset);
             //markovModel.TrainModel(ts);
             //SongWindow = config.GetDoubleNullable("SONG_WINDOW") ?? 1.0;
