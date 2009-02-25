@@ -156,7 +156,7 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// Saves both the config infor and the actual FV files.
+        /// Saves both the config info and the actual FV files.
         /// Must save the config info first because this method calculates the FV file names.
         /// </summary>
         /// <param name="writer"></param>
@@ -186,12 +186,22 @@ namespace AudioAnalysis
             for (int i = 0; i < FVArray.Length; i++)
             {
                 fName = FVArray[i].VectorFName;
-                var path = Path.Combine(opDir, string.Format(fName, i));
+                var path = Path.Combine(opDir, string.Format(fName, i)+".txt");
                 Log.WriteIfVerbose("\tSaving FV file to:  "+path);
                 FVArray[i].SaveDataToFile(path);
                 FVfNames[i] = path;
-            }
+
+
+                if (BaseTemplate.InTestMode)
+                {
+                    Log.WriteLine("COMPARE FEATURE VECTOR FILES "+i);
+                    UnitTests.AssertAreEqual(new FileInfo(path),
+                                             new FileInfo(path + ".OLD"), true);
+                }
+            }// end pass over the array of FVs
             Log.WriteIfVerbose("END SaveFeatureVectors.Save()");
+
+
         } //end SaveFeatureVectors()
 
 
@@ -240,8 +250,8 @@ namespace AudioAnalysis
             for (int i = 0; i < FVCount; i++)
             {
                 string[] parts = FVIniData[i].Split('\t');
-                //Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from file <" + parts[0] + ">, frames " + parts[1]);
-                string fvPath = Path.Combine(templateDir, parts[0]);
+                Log.WriteIfVerbose("\tInit FeatureVector[" + (i + 1) + "] from file <" + parts[0] + ">, frames " + parts[1]);
+                string fvPath = Path.Combine(templateDir, parts[0]+".txt");
                 //Log.WriteIfVerbose("   Reading FV file " + fvPath);
                 this.FVArray[i] = new FeatureVector(fvPath);
             }

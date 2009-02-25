@@ -18,10 +18,11 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 8;
+            int callID = 1;   // USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
             ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             Log.Verbosity = 1;
+            if (callID == 1) BaseTemplate.InTestMode = true;//ie doing a unit test
             //#######################################################################################################
 
             string outputFolder = @"C:\SensorNetworks\Output\";  //default 
@@ -34,59 +35,28 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("target   Path =" + args[2]);
 
             //1:  make a sonogram
-            //args[2] = opDir + "Test1";
+            if (BaseTemplate.InTestMode) //ie doing a unit test - so put images in same dir as template
+                args[2] = templateDir + "TestImage1";  //args[2]
             MakeSonogram(args[0], args[1], args[2]);
 
 
             //2: create template and save it
             string templateFname = "Template" + callID + ".txt";
-//            CreateTemplate(args[0], args[1], new GUI(callID, templateDir), templateFname);
+            CreateTemplate(args[0], args[1], new GUI(callID, templateDir), templateFname);
 
             //3: read an existing template
             //args[0] string appConfigPath
-            string templatePath = templateDir + "Template" +callID+".txt"; //args[1]
+            string templatePath;
+            if (BaseTemplate.InTestMode) templatePath = templateDir + "Template" + callID + "_FOR_TESTING.txt"; //args[1]
+            else                         templatePath = templateDir + "Template" + callID + ".txt";
             outputFolder = templateDir;  //args[2]
-//            ReadAndRecognise(args[0], templatePath, args[1], outputFolder);
+            ReadAndRecognise(args[0], templatePath, args[1], outputFolder);
 
-            //4: 
-			/*string wavPath = @"C:\Temp\Data\BAC10\BAC10_20081123-072000.wav";
-			var oldSono = CreateOldSonogram(wavPath, SonogramType.acousticVectors);
-			var sono = new AcousticVectorsSonogram(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini", new WavReader(wavPath));
-
-			AssertAreEqual(oldSono.AcousticM, sono.Data);
-			AssertAreEqual(oldSono.Decibels, sono.Decibels);*/
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
 		}
 
-		private static void AssertAreEqual(double[,] a, double[,] b)
-		{
-			if (a.GetLength(0) != b.GetLength(0))
-				throw new Exception("First dimension is not equal");
-			if (a.GetLength(1) != b.GetLength(1))
-				throw new Exception("Second dimension is not equal");
-			for (int i = 0; i < a.GetLength(0); i++)
-				for (int j = 0; j < a.GetLength(1); j++)
-					if (a[i, j] != b[i, j])
-						throw new Exception("Not equal: " + i + "," + j);
-		}
-
-		private static void AssertAreEqual(double[] a, double[] b)
-		{
-			if (a.GetLength(0) != b.GetLength(0))
-				throw new Exception("First dimension is not equal");
-			for (int i = 0; i < a.GetLength(0); i++)
-				if (a[i] != b[i])
-					throw new Exception("Not equal: " + i);
-		}
-
-        //static Sonogram CreateOldSonogram(string wavPath, SonogramType type)
-        //{
-        //    var sonoConfig = SonoConfig.Load(@"C:\Users\masonr\Desktop\Sensor Data Processor\Templates\sonogram.ini");
-        //    sonoConfig.SonogramType = type;
-        //    return new Sonogram(sonoConfig, wavPath);
-        //}
 
         public static void MakeSonogram(string appConfigPath, string wavPath, string targetPath)
 		{
@@ -113,10 +83,10 @@ namespace AudioAnalysis
 			using (var image = sonogram.GetImage())
 				image.Save(baseOutputPath + "_acoustic.png", System.Drawing.Imaging.ImageFormat.Png);
 
-            Log.WriteIfVerbose("\nMake a SobelEdgeSonogram");
-            sonogram = new SobelEdgeSonogram(appConfigPath, new WavReader(wavPath));
-			using (var image = sonogram.GetImage())
-				image.Save(baseOutputPath + "_sobel.png", System.Drawing.Imaging.ImageFormat.Png);
+            //Log.WriteIfVerbose("\nMake a SobelEdgeSonogram");
+            //sonogram = new SobelEdgeSonogram(appConfigPath, new WavReader(wavPath));
+            //using (var image = sonogram.GetImage())
+            //    image.Save(baseOutputPath + "_sobel.png", System.Drawing.Imaging.ImageFormat.Png);
 		}
 
 
@@ -150,11 +120,24 @@ namespace AudioAnalysis
             //STEP THREE: Verify fv extraction by observing output from acoustic model.
             var avSono = new AcousticVectorsSonogram(template.SonogramConfig, wav);
             template.GenerateAndSaveSymbolSequence(avSono, opDir);
+
+            if (BaseTemplate.InTestMode)
+            {
+                Log.WriteLine("COMPARE TEMPLATE FILES");
+                UnitTests.AssertAreEqual(new FileInfo(template.OPPath), new FileInfo(template.OPPath + ".OLD"), false);
+                //UnitTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
+                UnitTests.AssertAreEqual(new FileInfo(opDir + "symbolSequences.txt"),
+                                         new FileInfo(opDir + "symbolSequences.txt.OLD"), true);
+
+                //Log.WriteLine("COMPARE FEATURE VECTOR FILES");
+                //UnitTests.AssertAreEqual(new FileInfo(template.FeatureVectorConfig.FVSourceFiles[1]),
+                //           new FileInfo(template.FeatureVectorConfig.FVSourceFiles[1] + ".OLD"));
+            }
+
             //STEP FOUR : view the resulting sonogram
-            bool doExtractSubband = false;
-            var spectralSono = new SpectralSonogram(template.SonogramConfig, wav, doExtractSubband);
+            //var spectralSono = new SpectralSonogram(template.SonogramConfig, wav, doExtractSubband);
             var imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
-            template.SaveSyllablesImage(spectralSono, imagePath);
+            template.SaveSyllablesImage(wav, imagePath);
 			return template;
 		}
 
@@ -170,9 +153,14 @@ namespace AudioAnalysis
 
         public static void ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)
 		{
+            Log.WriteLine("\n\n\nTEST EXISTING MODEL");
+            Log.WriteLine("READ EXISTING TEMPLATE AND USE TO RECOGNISE VOCALISATIONS");
+            Log.WriteLine("ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)");
+
             BaseTemplate.task = Task.VERIFY_MODEL;
             TowseyLib.Configuration config = new TowseyLib.Configuration(appConfigPath, templatePath);
             var template = new Template_MFCC(config);
+            template.OPPath = templatePath;
             string templateDir = Path.GetDirectoryName(templatePath);
             template.LoadFeatureVectorsFromFile(templateDir);
 
@@ -182,9 +170,8 @@ namespace AudioAnalysis
 
             var result = recogniser.Analyse(recording) as Results;
 
-            //result.SaveSymbolSequences(Path.Combine(Path.GetDirectoryName(templatePath), "symbolSequences.txt"), true);
-            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavPath) + ".png");
-            recogniser.SaveImage(imagePath, result);
+            string imagePath = Path.Combine(outputFolder, "RESULTS_"+Path.GetFileNameWithoutExtension(wavPath) + ".png");
+            template.SaveResultsImage(recording.GetWavData(), imagePath, result);
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {

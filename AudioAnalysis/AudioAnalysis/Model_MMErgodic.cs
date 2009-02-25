@@ -75,6 +75,9 @@ namespace AudioAnalysis
         public override void ScanSymbolSequenceWithModel(Results result, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_MMErgodic.ScanSymbolSequenceWithModel()");
+
+            List<string> mmMonitor = new List<string>(); // only used when Unit testing
+
             double[,] acousticMatrix = result.AcousticMatrix;
             string symbolSequence = result.SyllSymbols;
             int frameCount = symbolSequence.Length;
@@ -105,9 +108,11 @@ namespace AudioAnalysis
                 //song duration filter - skip vocalisations that are not of sensible length
                 double durationProb = vocalEvent.DurationProbability;
                 Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
+                mmMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
                 if (! vocalEvent.IsCorrectDuration)
                 {
                     Log.WriteIfVerbose("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
+                    mmMonitor.Add("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
                     continue;
                 }
 
@@ -129,12 +134,14 @@ namespace AudioAnalysis
                     bestFrame = vocalEvent.Start;
                 }
                 Log.WriteIfVerbose((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
+                mmMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
             }//end of scanning all vocalisations
 
             double bestTimePoint = (double)bestFrame * frameOffset;
-            Log.WriteIfVerbose("\n#### VocalCount={0} VocalValid={1} VocalBest={2:F3} bestFrame={3:D} @ {4:F1}s",
+            string str1 = String.Format("\n#### VocalCount={0} VocalValid={1} VocalBest={2:F3} bestFrame={3:D} @ {4:F1}s",
                 hitCount, correctDurationCount, bestHit, bestFrame, bestTimePoint);
-
+            Log.WriteIfVerbose(str1);
+            mmMonitor.Add(str1);
             result.LLRThreshold     = result.MaxScore - llrThreshold;  //display threshold
             result.VocalScores      = scores;
             result.VocalCount       = hitCount; // number of detected vocalisations
@@ -142,6 +149,16 @@ namespace AudioAnalysis
             result.VocalBestScore   = bestHit;   // the highest score obtained over all vocalisations
             result.VocalBestFrame   = bestFrame;
             result.VocalBestLocation= bestTimePoint;
+
+
+            if (BaseTemplate.InTestMode)
+            {
+                string path = BaseModel.opFolder + "\\markovModelParams.txt";
+                FileTools.WriteTextFile(path, mmMonitor);
+                Log.WriteLine("COMPARE FILES OF INTERMEDIATE PARAMETER VALUES");
+                UnitTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
+            } //end TEST MODE
+
 
             Log.WriteIfVerbose("END Model_MMErgodic.ScanSymbolSequenceWithModel()");
         } //end ScanSymbolSequenceWithModel()

@@ -16,6 +16,7 @@ namespace AudioAnalysis
     {
 
         #region Properties
+        public static string opFolder { get; set; } //only used when storing unit testing results during app testing.
         private ModelType modeltype = ModelType.UNDEFINED;
         public ModelType ModelType { get { return modeltype; } set { modeltype = value; } }
         public string modelName { get { return ModelType.ToString(); } }

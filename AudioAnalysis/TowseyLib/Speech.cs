@@ -168,6 +168,12 @@ namespace TowseyLib
         {
 
             int freqRange = maxFreq - minFreq;
+            if (freqRange <= 0)
+            {
+                Log.WriteLine("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero");
+                throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
+            }
+
             double fraction = freqRange / Nyquist;
             filterBankCount = (int)Math.Ceiling(filterBankCount * fraction);
 
@@ -301,6 +307,12 @@ namespace TowseyLib
         {
 
             double freqRange  = maxFreq - minFreq;
+            if (freqRange <= 0)
+            {
+                Log.WriteLine("Speech.MelFilterBank(): WARNING!!!! Freq range = zero");
+                throw new Exception("Speech.LinearFilterBank(): WARNING!!!! Freq range = zero. Check values of min & max freq.");
+            }
+            
             double melNyquist = Speech.Mel(Nyquist);
             double minMel     = Speech.Mel(minFreq);
             double maxMel     = Speech.Mel(maxFreq);

@@ -61,6 +61,7 @@
     <Compile Include="Speech.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="TextUtilities.cs" />
+    <Compile Include="UnitTests.cs" />
     <Compile Include="WavReader.cs" />
     <Compile Include="WavWriter.cs" />
   </ItemGroup>

@@ -17,7 +17,7 @@ namespace AudioAnalysis
 	{
 
         public static Task task { get; set; }
-
+        public static bool InTestMode = false;   //set this true when doing a unit test
 
         #region Properties
         public int CallID { get; set; }
@@ -228,11 +228,18 @@ namespace AudioAnalysis
             image.Save(path);
         }
 
+        public void SaveSyllablesImage(WavReader wav, string imagePath)
+        {
+            bool doExtractSubband = false;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            SaveSyllablesImage(spectralSono, imagePath);
+        }
+
         public void SaveSyllablesImage(SpectralSonogram sonogram, string path)
         {
             Log.WriteIfVerbose("Basetemplate.SaveSyllablesImage(SpectralSonogram sonogram, string path)");
             //want full bandwidth image with green band highlight and gridlines
-            bool isSubband = sonogram.ExtractSubband;
+          //  bool isSubband = sonogram.ExtractSubband;
             bool doHighlightSubband = true;
             bool add1kHzLines       = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -241,13 +248,25 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
             image.Save(path);
         }
+
+
+        public virtual void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
+        {
+            bool doExtractSubband = false;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            SaveResultsImage(spectralSono, imagePath, result);
+        }
+
         public virtual void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
         {
-            var image = new Image_MultiTrack(sonogram.GetImage());
+            Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)");
+            bool doHighlightSubband = true;
+            bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
-            //image.AddTrack(Image_Track.GetScoreTrack(result.VocalScores));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
         }
 
