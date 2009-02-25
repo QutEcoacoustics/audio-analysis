@@ -13,7 +13,7 @@ namespace AudioAnalysis
     public enum FV_MarqueeType { AT_ENERGY_PEAKS, AT_FIXED_INTERVALS }
 
 
-
+	[Serializable]
     public class FVConfig
     {
 

@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Transactions;
 using System.Configuration;
 using QutSensors.Data.Linq;
-using AudioStuff;
+using AudioAnalysis;
 using QutSensors.Data;
 
 namespace QutSensors.Data.Tests
@@ -163,7 +163,6 @@ namespace QutSensors.Data.Tests
 			JobManager.Instance.ReprocessFailedJobs(db, item.JobID);
 			db.Refresh(System.Data.Linq.RefreshMode.OverwriteCurrentValues, item);
 			Assert.AreEqual(JobStatus.Ready, item.Status);
-			Assert.AreEqual(JobStatus.Error, item.Status);
 			Assert.AreEqual(2, job.GetIncompleteJobs(db).Count());
 			Assert.AreEqual(0, job.GetRunningJobs(db).Count());
 			Assert.AreEqual(1, job.GetCompletedJobs(db).Count());
@@ -171,7 +170,7 @@ namespace QutSensors.Data.Tests
 		}
 
 		[Serializable]
-		class DummyTemplateParameters : BaseClassifierParameters
+		class DummyTemplateParameters : BaseTemplate
 		{
 		}
 	}

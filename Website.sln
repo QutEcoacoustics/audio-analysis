@@ -23,15 +23,13 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "45610"
+		VWDPort = "46884"
 		VWDDynamicPort = "true"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioTools", "AudioTools\AudioTools.csproj", "{6A03A803-AD91-4E12-967E-39DCDB2BB030}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioStuff", "AudioAnalysis\AudioStuff\AudioStuff.csproj", "{EE624932-920B-4380-94D5-A1B8993C5F14}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "AudioAnalysis\NeuralNets\NeuralNets.csproj", "{3453DB43-46DA-45E6-AD22-48BC081BC738}"
 EndProject
@@ -44,6 +42,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data.Tests", "QutSensors.Data.Tests\QutSensors.Data.Tests.csproj", "{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysis", "AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj", "{CB8177A5-2B01-4D8C-B434-63C4400EC381}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -88,16 +88,6 @@ Global
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.Build.0 = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Release|.NET.ActiveCfg = Release|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{EE624932-920B-4380-94D5-A1B8993C5F14}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{3453DB43-46DA-45E6-AD22-48BC081BC738}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{3453DB43-46DA-45E6-AD22-48BC081BC738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3453DB43-46DA-45E6-AD22-48BC081BC738}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -128,6 +118,16 @@ Global
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|.NET.ActiveCfg = Release|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

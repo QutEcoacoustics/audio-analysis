@@ -11,7 +11,7 @@ namespace AudioAnalysis
 {
     public enum ModelType { UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC }
 
-
+	[Serializable]
     public abstract class BaseModel
     {
 

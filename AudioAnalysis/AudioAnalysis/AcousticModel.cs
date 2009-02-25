@@ -11,6 +11,7 @@ using MarkovModels;
 
 namespace AudioAnalysis
 {
+	[Serializable]
     public class AcousticModel
     {
         const int NoiseSampleCount = 5000; // Number of samples to use when generating noise vector

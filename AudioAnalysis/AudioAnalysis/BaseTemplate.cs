@@ -3,19 +3,14 @@ using TowseyLib;
 using System.IO;
 using AudioTools;
 
-
-
 namespace AudioAnalysis
 {
-
     public enum Feature_Type { UNDEFINED, MFCC }
     public enum Task { UNDEFINED, EXTRACT_FV, CREATE_ACOUSTIC_MODEL, VERIFY_MODEL }
 
-
-
+	[Serializable]
 	public abstract class BaseTemplate
 	{
-
         public static Task task { get; set; }
         public static bool InTestMode = false;   //set this true when doing a unit test
 
@@ -40,7 +35,6 @@ namespace AudioAnalysis
         public ModelType Modeltype { get; set; }
         public BaseResult Result { get; set; }
         #endregion
-
 
         #region Static Methods
 
@@ -163,7 +157,9 @@ namespace AudioAnalysis
 
         #endregion
 
-
+		public BaseTemplate()
+		{
+		}
 
         /// <summary>
         /// CONSTRUCTOR
