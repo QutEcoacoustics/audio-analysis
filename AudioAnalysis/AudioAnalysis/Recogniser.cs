@@ -3,10 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AudioTools;
-//using QutSensors;
+using System.IO;
 using TowseyLib;
-//using MarkovModels;
-//using AudioTools;
 
 namespace AudioAnalysis
 {
@@ -51,26 +49,15 @@ namespace AudioAnalysis
             ModelType type = Template.Model.ModelType;
             if (type == ModelType.UNDEFINED)
             {
-                Log.WriteLine("Recogniser.Analysis: WARNING: The Recogniser MODEL is UNDERFINED.");
+                Log.WriteLine("Recogniser.Analysis(): WARNING: The Recogniser MODEL is UNDERFINED.");
                 Log.WriteLine("CANNOT PROCEED WITH ANALYSIS");
                 //throw new Exception("Terminating analysis");
                 return result;
             }
 
+            BaseModel.opFolder = Path.GetDirectoryName(Template.OPPath); //this only required when doing unit testing
             Model.ScanSymbolSequenceWithModel(result, frameOffset);
             return result;
-        }
-
-        /// <summary>
-        /// saves results of previous task along with sonogram image.
-        /// </summary>
-        /// <param name="imagePath"></param>
-        /// <param name="result"></param>
-        public void SaveImage(string imagePath, BaseResult result)
-        {
-            bool doFullBAndWidthImage = true;
-            var spectralSono = new SpectralSonogram(Template.SonogramConfig, Wav, doFullBAndWidthImage);
-            Template.SaveResultsImage(spectralSono, imagePath, result);
         }
 		
     } // end class MMRecogniser 

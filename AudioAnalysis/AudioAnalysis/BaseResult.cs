@@ -7,5 +7,6 @@ namespace AudioAnalysis
 {
 	public class BaseResult
 	{
+        public double[] Scores { get; set; }		// array of scores derived from arbitrary source
 	}
 }

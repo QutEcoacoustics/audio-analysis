@@ -441,8 +441,8 @@ namespace AudioAnalysis
         public static Image_Track GetScoreTrack(double[] scores, double? scoreMax, double? scoreThreshold)
         {
             var track = new Image_Track(TrackType.scoreArray, scores);
-            track.ScoreThreshold = (double)scoreThreshold;
-            track.ScoreMax       = (double)scoreMax;
+            track.ScoreThreshold = scoreThreshold ?? 0;
+            track.ScoreMax       = scoreMax ?? 0;
             return track;
         }
 

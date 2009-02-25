@@ -226,21 +226,18 @@ namespace AudioAnalysis
 
 		public Image GetImage()
 		{
-			return GetImage(1, null, null, false);
+			return GetImage(1, false, false);
 		}
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
 		{
             Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
             Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
-            return GetImage(1, this.freqBand_Min, this.freqBand_Max, add1kHzLines);
+            return GetImage(1, doHighlightSubband, add1kHzLines);
 		}
 
-		protected virtual Image GetImage(int binHeight, int? minHighlightFreq, int? maxHighlightFreq, bool add1kHzLines)
+		protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
 		{
-            //Log.WriteIfVerbose("BaseSonogram.GetImage()");
-            //Log.WriteIfVerbose("             minHighlightFreq=" + minHighlightFreq + "  maxHighlightFreq=" + maxHighlightFreq);
-
 			var data = Data;
 			int width = data.GetLength(0); // Number of spectra in sonogram
             int fftBins = data.GetLength(1);
@@ -251,9 +248,13 @@ namespace AudioAnalysis
 			DataTools.MinMax(data, out min, out max);
 			double range = max - min;
 
-            int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
-            int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
-
+            //int? minHighlightFreq = this.freqBand_Min;
+            //int? maxHighlightFreq = this.freqBand_Max;
+            //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
+            //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
+            //calculate top and bottom of sub-band 
+            int minHighlightBin = (int)Math.Round((double)this.freqBand_Min / (double)NyquistFrequency * fftBins);
+            int maxHighlightBin = (int)Math.Round((double)this.freqBand_Max / (double)NyquistFrequency * fftBins);
 			Color[] grayScale = ImageTools.GrayScale();
 
 			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
@@ -274,7 +275,7 @@ namespace AudioAnalysis
 
 						int g = c + 40; // green tinge used in the template scan band 
 						if (g >= 256) g = 255;
-                        Color col = IsInBand(y, minHighlightBin, maxHighlightBin) ? Color.FromArgb(c, g, c) : grayScale[c];
+                        Color col = (doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin)) ? Color.FromArgb(c, g, c) : grayScale[c];
                         bmp.SetPixel(x, yOffset - 1, col);
 					}//for all pixels in line
 					yOffset--;
@@ -500,30 +501,30 @@ namespace AudioAnalysis
 
 
 
-		protected override Image GetImage(int binHeight, int? minHighlightFreq, int? maxHighlightFreq, bool addGridLines)
-		{
-			int sonogramHeight = Data.GetLength(1);
-			if (minHighlightFreq != null || maxHighlightFreq != null)
-			{
-				double hzBin = (SampleRate / 2) / (double)sonogramHeight;
+        //protected override Image GetImage(int binHeight, int? minHighlightFreq, int? maxHighlightFreq, bool addGridLines)
+        //{
+        //    int sonogramHeight = Data.GetLength(1);
+        //    if (minHighlightFreq != null || maxHighlightFreq != null)
+        //    {
+        //        double hzBin = (SampleRate / 2) / (double)sonogramHeight;
 
-				if (((CepstralSonogramConfig)Configuration).MfccConfiguration.DoMelScale)
-				{
-					double melBin = Speech.Mel(NyquistFrequency) / (double)sonogramHeight;
-					if (maxHighlightFreq != null)
-					{
-						double topMel = Speech.Mel(maxHighlightFreq.Value * hzBin);
-						maxHighlightFreq = (int)(topMel / melBin);
-					}
-					if (minHighlightFreq != null)
-					{
-						double botMel = Speech.Mel(minHighlightFreq.Value * hzBin);
-						minHighlightFreq = (int)(botMel / melBin);
-					}
-				}
-			}
-            return base.GetImage(binHeight * (256 / sonogramHeight), minHighlightFreq, maxHighlightFreq, addGridLines);
-		}
+        //        if (((CepstralSonogramConfig)Configuration).MfccConfiguration.DoMelScale)
+        //        {
+        //            double melBin = Speech.Mel(NyquistFrequency) / (double)sonogramHeight;
+        //            if (maxHighlightFreq != null)
+        //            {
+        //                double topMel = Speech.Mel(maxHighlightFreq.Value * hzBin);
+        //                maxHighlightFreq = (int)(topMel / melBin);
+        //            }
+        //            if (minHighlightFreq != null)
+        //            {
+        //                double botMel = Speech.Mel(minHighlightFreq.Value * hzBin);
+        //                minHighlightFreq = (int)(botMel / melBin);
+        //            }
+        //        }
+        //    }
+        //    return base.GetImage(binHeight * (256 / sonogramHeight), minHighlightFreq, maxHighlightFreq, addGridLines);
+        //}
     } // end class CepstralSonogram : BaseSonogram
 
 

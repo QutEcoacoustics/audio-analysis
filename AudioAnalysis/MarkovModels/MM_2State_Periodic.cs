@@ -35,8 +35,8 @@ namespace MarkovModels
         //double avProbOfDataGivenMarkovModel;
         //double avProbOfDataGivenNullModel;
 
-        double probOfAverageTrainingSequenceGivenModel;
-        SongDuration songduration;
+        double probOfAverageTrainingSequenceGivenModel = 0.0;
+        SongDuration songduration = null;
 
 
 

@@ -34,6 +34,7 @@ namespace MarkovModels
 
         public double GetSongDurationProb(int symbolLength)
         {
+            if (symbolLength >= pdf.Length) return 0.0; //return zero probability when length out of range
             return pdf[symbolLength];
         }
 

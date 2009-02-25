@@ -54,7 +54,7 @@
   <ItemGroup>
     <Reference Include="QutSensors.Data, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\QutSensors.Data\bin\Debug\QutSensors.Data.dll</HintPath>
+      <HintPath>..\..\QutSensors.Data\bin\Debug\QutSensors.Data.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">

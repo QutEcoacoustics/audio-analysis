@@ -97,6 +97,17 @@ namespace AudioAnalysis
             for (int i = 0; i < FVs.Length; i++)
                 FVs[i].SetNoiseResponse(noiseM, i);
 
+            if (BaseTemplate.InTestMode)
+            {
+                string path = Path.GetDirectoryName(noiseFVPath) + "\\intermediateParams.txt";
+                List<string> noiseValues = new List<string>(FVs.Length);
+                for (int id = 0; id < FVs.Length; id++)
+                    noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
+                FileTools.WriteTextFile(path, noiseValues);
+                Log.WriteLine("COMPARE FILES OF INTERMEDIATE PARAMETER VALUES");
+                UnitTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
+            } //end TEST MODE
+
             //##################### DERIVE ACOUSTIC MATRIX OF SYLLABLE Z-SCORES
             Log.WriteIfVerbose("\n\tStep 3: Obtain ACOUSTIC MATRIX of syllable z-scores");
             int frameCount = s.Data.GetLength(0);
@@ -193,7 +204,9 @@ namespace AudioAnalysis
             int featureCount = dataMatrix.GetLength(1);
 
             double[,] noise = new double[noiseCount, featureCount];
-            RandomNumber rn = new RandomNumber();
+            RandomNumber rn;
+            if (BaseTemplate.InTestMode) rn = new RandomNumber(12345); //use seed in test mode
+            else                         rn = new RandomNumber();
 
             for (int i = 0; i < noiseCount; i++)
             {
@@ -248,15 +261,10 @@ namespace AudioAnalysis
             //need to convert the garbage integer in the integer sequence.
             //garbage symbol = 'x' = Int32.MaxValue. Convert Int32 to numberOfStates-1
             //states will be represented by integers: noise=0, fv=1..N, garbage=N+1
-            //OLD VERSION
-            //int garbageID = fvCount;
-            //for (int i = 0; i < frameCount; i++)
-            //    if (integerSequence[i] == Int32.MaxValue)
-            //        integerSequence[i] = garbageID;
-            // NEW VERSION - do not use garbage ID. set = 0
+            int garbageID = fvCount;
             for (int i = 0; i < frameCount; i++)
                 if (integerSequence[i] == Int32.MaxValue)
-                    integerSequence[i] = 0;
+                    integerSequence[i] = garbageID;
 
             SyllSymbols = sb.ToString();
             SyllableIDs = integerSequence;
@@ -271,6 +279,9 @@ namespace AudioAnalysis
                         .IsStateNotNull(SyllableIDs, "SyllableIDs has not been provided. Ensure you have generated the symbol sequence.")
                         .IsNotNull(path, "pathName")
                         .Check();
+
+            //SAVE EXISTING SEQUENCES FILE
+            if (File.Exists(path)) File.Copy(path, path+".OLD", true);
 
             using (TextWriter writer = new StreamWriter(path))
             {

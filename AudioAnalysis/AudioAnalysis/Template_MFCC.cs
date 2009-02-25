@@ -82,16 +82,26 @@ namespace AudioAnalysis
             else Model.Save(writer);
         }
 
-        public override void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
+        public override void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            var image = new Image_MultiTrack(sonogram.GetImage());
+            bool doExtractSubband = false;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            SaveResultsImage(spectralSono, imagePath, result);
+        }
+
+        public override void SaveResultsImage(SpectralSonogram sonogram, string imagePath, BaseResult result)
+        {
+            Log.WriteIfVerbose("Template_MFCC.SaveResultsImage(SpectralSonogram sonogram, string imagePath, Results result)");
+            bool doHighlightSubband = true;
+            bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
             double? scoreMax  = ((Results)result).MaxScore;
             double? threhsold = ((Results)result).LLRThreshold;
             image.AddTrack(Image_Track.GetScoreTrack(((Results)result).VocalScores, scoreMax, threhsold));
-            image.Save(path);
+            image.Save(imagePath);
         }
 
     } // end of class MMTemplate : TemplateParameters

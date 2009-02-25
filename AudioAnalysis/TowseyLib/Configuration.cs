@@ -84,8 +84,8 @@ namespace TowseyLib
 			if (int.TryParse(value, out int32))
 				return int32;
 
-            System.Console.WriteLine("Configuration.GetInt(): ERROR READING PROPERTIES FILE");
-			System.Console.WriteLine("INVALID VALUE=" + value);
+            Log.WriteLine("Configuration.GetInt(): ERROR READING PROPERTIES FILE");
+            Log.WriteLine("INVALID VALUE=" + value);
 			return -Int32.MaxValue;
 		}
 
@@ -93,7 +93,7 @@ namespace TowseyLib
 		{
             if (!table.ContainsKey(key))
             {
-                Log.WriteIfVerbose("Configuration.GetIntNullable(): ERROR READING PROPERTIES FILE\n\t" + key + "=value NOT FOUND");
+                //Log.WriteIfVerbose("Configuration.GetIntNullable(): ERROR READING PROPERTIES FILE\n\t" + key + "=value NOT FOUND");
                 return null;
             }
 
@@ -105,8 +105,8 @@ namespace TowseyLib
 			if (int.TryParse(value, out int32))
 				return int32;
 
-			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-			System.Console.WriteLine("INVALID VALUE=" + value);
+            Log.WriteLine("ERROR READING PROPERTIES FILE");
+            Log.WriteLine("INVALID VALUE=" + value);
 			return null;
 		}
 
@@ -123,8 +123,8 @@ namespace TowseyLib
 			if (double.TryParse(value, out d))
 				return d;
 
-			System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-			System.Console.WriteLine("INVALID VALUE=" + value);
+            Log.WriteLine("ERROR READING PROPERTIES FILE");
+            Log.WriteLine("INVALID VALUE=" + value);
 			return -Double.MaxValue;
 		}
 

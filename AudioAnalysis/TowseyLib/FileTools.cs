@@ -134,17 +134,20 @@ namespace TowseyLib
         }// end ReadtextFile()
 
 
-        public static void WriteTextFile(string fName, List<string> array)
+        public static void WriteTextFile(string path, List<string> array)
         {
+            if (File.Exists(path)) File.Copy(path, path + ".OLD", true); //overwrite
+
             int count = array.Count;
-            using (TextWriter writer = new StreamWriter(fName))
+            using (TextWriter writer = new StreamWriter(path))
                 foreach (string line in array)
                     writer.WriteLine(line);
         }// end WriteTextFile()
 
-        public static void WriteTextFile(string fPath, string line)
+        public static void WriteTextFile(string path, string line)
         {
-            using (TextWriter writer = new StreamWriter(fPath))
+            if (File.Exists(path)) File.Copy(path, path + ".OLD", true); //overwrite
+            using (TextWriter writer = new StreamWriter(path))
             {
                     writer.WriteLine(line);
             }//end using
@@ -250,7 +253,7 @@ namespace TowseyLib
 
         } //end of WriteMatrix2File
 
-        public static void WriteArray2File_Formatted(double[] array, string fName, string formatString)
+        public static void WriteArray2File_Formatted(double[] array, string path, string formatString)
         {
             int length = array.Length;
 
@@ -260,11 +263,11 @@ namespace TowseyLib
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
             }//end of all rows
-            WriteTextFile(fName, lines); //write matrix to file
+            WriteTextFile(path, lines); //write matrix to file
 
         } //end of WriteArray2File_Formatted
 
-        public static void WriteArray2File_Formatted(int[] array, string fName, string formatString)
+        public static void WriteArray2File_Formatted(int[] array, string path, string formatString)
         {
             int length = array.Length;
 
@@ -274,7 +277,7 @@ namespace TowseyLib
                 string line = array[i].ToString(formatString);
                 lines.Add(line);
             }//end of all rows
-            WriteTextFile(fName, lines); //write matrix to file
+            WriteTextFile(path, lines); //write matrix to file
 
         } //end of WriteArray2File_Formatted
 

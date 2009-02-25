@@ -82,7 +82,7 @@ namespace AudioAnalysis
         public int MarqueeEnd { get { return marqueeEnd; } }
 
         // PARAMETERS FOR THE ACOUSTIC MODELS ***************
-        private string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+        private string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\DefaultNoise.txt";
         public string FvDefaultNoiseFile { get { return fvDefaultNoiseFile; } }
         private double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
         public double ZScoreThreshold { get { return zScoreThreshold; } }
@@ -118,48 +118,48 @@ namespace AudioAnalysis
                 //************* CALL 1 PARAMETERS ***************
                 if (callID == 1)
                 {
-                    callName = "Lewin's Rail Kek-kek";
-                    callComment = "Template consists of a single KEK!";
-                    wavDirName = @"C:\SensorNetworks\WavFiles\";
-                    sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
-					sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
+                    callName = "TEST";
+                    callComment = "TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
+                    wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+                    sourceFile = "West_Knoll_St_Bees_Currawong3_20080919-060000";
+                    sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
                     opDir = @"C:\SensorNetworks\Templates\Template_1\";
 
                     //MFCC PARAMETERS
-                    featureType = Feature_Type.MFCC;
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
                     doNoiseReduction = false;
                     ceptralCoeffCount = 12;
-                    deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
+                    deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
 
-                    min_Freq = 1500; //Hz
-                    max_Freq = 5500; //Hz
+                    min_Freq = 1000; //Hz
+                    max_Freq = 8000; //Hz
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
                     fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
                     fvInit = new string[,] {
-                        {"template1_kek","1784,1828,1848,2113,2132,2152"}
+                        {"template1_syl1","4753,5403,6029,6172,6650,6701,6866,9027"},
+                        {"template1_syl2","4758,5408,6034,6175,6655,6704,6871,9030"},
+                        {"template1_syl3","4762,5412,6039,6178,6659,6707,6875,9033"},
+                        {"template1_syl4","4766,5416,6043,6183,6664,6712,6880,9037"},
                     };
 
-                    // PARAMETERS FOR THE ACOUSTIC MODELS ***************
-                    zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
+
+                    // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                    zScoreThreshold = 8.0; //options are 1.98, 2.33, 2.56, 3.1
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_1\template1_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.MM_TWO_STATE_PERIODIC;
-                    numberOfWords = 3; //number of defined song variations
-                    wordNames    = new String[] { "kek" };
+                    //modelType = ModelType.UNDEFINED;
+                    modelType = ModelType.MM_ERGODIC;
+                    numberOfWords = 4; //number of defined song variations
+                    wordNames = new String[] { "syl1", "syl2", "syl3", "syl4" };
                     wordExamples = new String[] { "111", "11", "1" };
-                    //maxSyllables=
-                    //double maxSyllableGap = 0.25; //seconds
-                    //double maxSong=
-                    callPeriodicity = 208;
                 } //end of if (callID == 1)
 
 
