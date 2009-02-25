@@ -7,6 +7,7 @@ using System.IO;
 
 namespace AudioAnalysis
 {
+	[Serializable]
 	public class BaseSonogramConfig
 	{
 
@@ -105,7 +106,7 @@ namespace AudioAnalysis
 	}
 
 
-
+	[Serializable]
 	public class CepstralSonogramConfig : BaseSonogramConfig
 	{
 		public new static CepstralSonogramConfig Load(string configFile)
@@ -132,7 +133,7 @@ namespace AudioAnalysis
 
 
 
-
+	[Serializable]
 	public class AVSonogramConfig : CepstralSonogramConfig
 	{
 

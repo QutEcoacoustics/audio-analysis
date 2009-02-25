@@ -3,7 +3,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using AudioStuff;
+using AudioAnalysis;
 
 namespace QutSensors.Data.Tests
 {
@@ -66,7 +66,7 @@ namespace QutSensors.Data.Tests
 		}
 
 		[Serializable]
-		class DummyTemplateParameters : BaseClassifierParameters
+		class DummyTemplateParameters : BaseTemplate
 		{
 		}
 	}

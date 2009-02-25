@@ -66,9 +66,9 @@
     <Compile Include="Validation.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioAnalysis\AudioStuff\AudioStuff.csproj">
-      <Project>{EE624932-920B-4380-94D5-A1B8993C5F14}</Project>
-      <Name>AudioStuff</Name>
+    <ProjectReference Include="..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
+      <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
+      <Name>AudioAnalysis</Name>
     </ProjectReference>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
