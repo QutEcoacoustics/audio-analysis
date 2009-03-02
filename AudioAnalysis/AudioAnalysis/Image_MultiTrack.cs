@@ -10,14 +10,10 @@ namespace AudioAnalysis
 {
 	public class Image_MultiTrack
 	{
-		#region Statics
+		#region Constants
 		public const int ScaleHeight = 10;
 		#endregion
 
-		public Image_MultiTrack(Image image)
-		{
-			Image = image;
-		}
 
 		#region Properties
 		public Image Image { get; private set; }
@@ -25,7 +21,17 @@ namespace AudioAnalysis
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
 		#endregion
 
-		public void AddTrack(Image_Track track)
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="image"></param>
+        public Image_MultiTrack(Image image)
+        {
+            Image = image;
+        }
+        
+        
+        public void AddTrack(Image_Track track)
 		{
 			tracks.Add(track);
 		}

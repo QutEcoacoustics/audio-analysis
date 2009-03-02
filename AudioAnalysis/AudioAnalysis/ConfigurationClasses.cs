@@ -9,7 +9,6 @@ namespace AudioAnalysis
 {
 	public static class FftConfiguration
 	{
-		//public static FftConfiguration(Configuration config)
         public static void SetConfig(Configuration config)
 		{
             int sr = config.GetIntNullable("SAMPLE_RATE") ?? 0;
@@ -53,8 +52,6 @@ namespace AudioAnalysis
 
 		public void Save(TextWriter writer)
 		{
-          //  writer.WriteConfigValue("MIN_FREQ", MinFreq); //=1500
-          //  writer.WriteConfigValue("MAX_FREQ", MaxFreq); //=5500
             writer.WriteConfigValue("DO_MELSCALE", DoMelScale);
             writer.WriteConfigValue("FILTERBANK_COUNT", FilterbankCount);
 			writer.WriteConfigValue("CC_COUNT", CcCount);
@@ -64,8 +61,6 @@ namespace AudioAnalysis
 		}
 
 		#region Properties
-      //  public int MinFreq { get; set; }
-      //  public int MaxFreq { get; set; }
         public int FilterbankCount { get; set; }
 		public bool DoMelScale { get; set; }
 		public int CcCount { get; set; }     //number of cepstral coefficients
@@ -101,7 +96,7 @@ namespace AudioAnalysis
             writer.Flush();
 		}
 
-		#region Properties
+		#region Six Static Properties
         //these k1 and k2 thresholds are dB above the base line minimum value. Different from values finally used in Sonogram classes
 		public static double SegmentationThresholdK1 { get; set; }	// dB threshold for recognition of vocalisations
 		public static double SegmentationThresholdK2 { get; set; }	// dB threshold for recognition of vocalisations

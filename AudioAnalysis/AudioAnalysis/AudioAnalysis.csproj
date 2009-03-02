@@ -84,7 +84,7 @@
     </Compile>
     <Compile Include="Recogniser.cs" />
     <Compile Include="Results.cs" />
-    <Compile Include="Template_MFCC.cs" />
+    <Compile Include="Template_CC.cs" />
     <Compile Include="Image_MultiTrack.cs" />
     <Compile Include="NewMain.cs" />
     <Compile Include="BaseSonogram.cs" />

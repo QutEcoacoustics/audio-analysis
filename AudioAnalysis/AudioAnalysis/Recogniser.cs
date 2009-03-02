@@ -10,17 +10,19 @@ namespace AudioAnalysis
 {
 	public class Recogniser
 	{
+
         #region Properties
-        public Template_MFCC Template { get; private set; }
+        public Template_CC Template { get; private set; }
         public BaseModel Model { get; private set; }
         public WavReader Wav { get; private set; }
         #endregion
+
 
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="template"></param>
-		internal Recogniser(Template_MFCC template)
+		internal Recogniser(Template_CC template)
 		{
             Log.WriteIfVerbose("INITIALISING RECOGNISER:");
             Log.WriteIfVerbose("\tTemplate: "+template.CallName);
@@ -55,7 +57,7 @@ namespace AudioAnalysis
                 return result;
             }
 
-            BaseModel.opFolder = Path.GetDirectoryName(Template.OPPath); //this only required when doing unit testing
+            BaseModel.opFolder = Path.GetDirectoryName(Template.DataPath); //this only required when doing unit testing
             Model.ScanSymbolSequenceWithModel(result, frameOffset);
             return result;
         }

@@ -25,7 +25,6 @@ namespace AudioAnalysis
 
         public FV_Source FVSourceType { get; set; }
         public FV_MarqueeType FVMarqueeType { get; set; }
-        //public string[] SelectedFrames { get; set; } //store frame IDs as string array
         public int MarqueeStart { get; set; }
         public int MarqueeEnd { get; set; }
         public int? MarqueeInterval { get; set; }
@@ -195,7 +194,7 @@ namespace AudioAnalysis
                 if (BaseTemplate.InTestMode)
                 {
                     Log.WriteLine("COMPARE FEATURE VECTOR FILES "+i);
-                    UnitTests.AssertAreEqual(new FileInfo(path),
+                    FunctionalTests.AssertAreEqual(new FileInfo(path),
                                              new FileInfo(path + ".OLD"), true);
                 }
             }// end pass over the array of FVs

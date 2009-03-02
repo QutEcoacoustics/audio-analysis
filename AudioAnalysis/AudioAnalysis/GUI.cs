@@ -11,8 +11,8 @@ namespace AudioAnalysis
 
         //can reset output directory from default
         public string opDir { get; private set; }
-        
 
+        #region DEFAULT CALL PARAMETERS
         //****************** DEFAULT CALL PARAMETERS
         private int callID = -1; //invalid default value!
         public int CallID { get { return callID; } }
@@ -104,6 +104,7 @@ namespace AudioAnalysis
         public  double SongWindow { get { return songWindow; } }
         private int callPeriodicity = 999;
         public  int CallPeriodicity { get { return callPeriodicity; } }
+        #endregion
 
 
         /// <summary>
@@ -115,11 +116,13 @@ namespace AudioAnalysis
         {
             this.callID = callID;
             this.opDir = opDir;
-                //************* CALL 1 PARAMETERS ***************
+            
+            #region CALL 1 PARAMETERS - FOR FUNCTIONAL TEST
+            //************* CALL 1 PARAMETERS ***************
                 if (callID == 1)
                 {
-                    callName = "TEST";
-                    callComment = "TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
+                    callName = "FUNCTIONAL_TEST";
+                    callComment = "FUNCITONAL TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "West_Knoll_St_Bees_Currawong3_20080919-060000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -161,9 +164,10 @@ namespace AudioAnalysis
                     wordNames = new String[] { "syl1", "syl2", "syl3", "syl4" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 1)
-
+                #endregion
 
                 //******************************************************************************************************************
+                #region CALL 2 PARAMETERS
                 //************* CALL 2 PARAMETERS ***************
                 if (callID == 2)
                 {
@@ -208,9 +212,10 @@ namespace AudioAnalysis
                     wordExamples = new String[] {"111", "11", "1"};
                     callPeriodicity = 208;
                 }//end of if (callID == 2)
-
+                #endregion
 
                 //******************************************************************************************************************
+                #region CALL 3 PARAMETERS
                 //************* CALL 3 PARAMETERS ***************
                 if (callID == 3)
                 {
@@ -255,9 +260,11 @@ namespace AudioAnalysis
                     wordNames = new String[] { "name" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 3)
+                #endregion
 
 
                 //******************************************************************************************************************
+                #region CALL 4 PARAMETERS
                 //************* CALL 4 PARAMETERS ***************
                 //coordinates to extract template using bitmap image of sonogram
                 //image coordinates: rows=freqBins; cols=timeSteps
@@ -269,9 +276,11 @@ namespace AudioAnalysis
                     Console.ReadLine();
                     System.Environment.Exit(999);
                 }
+                #endregion
 
 
                 //******************************************************************************************************************
+                #region CALL 5 PARAMETERS
                 //************* CALL 5 PARAMETERS ***************
                 if (callID == 5)
                 {
@@ -322,7 +331,7 @@ namespace AudioAnalysis
                     wordNames = new String[] { "name" };
                     wordExamples = new String[] { "111", "11", "1" };
                 }//end of if (callID == 5)
-
+                #endregion
 
                 //******************************************************************************************************************
                 //******************************************************************************************************************

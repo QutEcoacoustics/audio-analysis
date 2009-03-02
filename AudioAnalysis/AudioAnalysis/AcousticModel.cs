@@ -14,19 +14,21 @@ namespace AudioAnalysis
 	[Serializable]
     public class AcousticModel
     {
-        const int NoiseSampleCount = 5000; // Number of samples to use when generating noise vector
+        public const int NoiseSampleCount = 5000; // Number of samples to use when a generating noise vector/model
+        public const int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER 
 
+        #region Properties
         private BaseTemplate template;
         private FVConfig fvConfig;
         public int FvCount { get { return fvConfig.FVCount; } }
         private double FrameOffset;
         private double FramesPerSecond;
         public string FV_DefaultNoiseFile { get; set; }
-        public const int ZscoreSmoothingWindow = 3; //NB!!!! THIS IS NO LONGER A USER DETERMINED PARAMETER 
         public double ZscoreThreshold { get; set; }
 		public double[,] AcousticMatrix { get; set; }	// matrix of fv x time frames
 		public string SyllSymbols { get; set; }			// array of symbols  representing winning user defined feature templates
 		public int[] SyllableIDs { get; set; }			// array of integers representing winning user defined feature templates
+        #endregion
 
 
         /// <summary>
@@ -106,7 +108,7 @@ namespace AudioAnalysis
                     noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
                 FileTools.WriteTextFile(path, noiseValues);
                 Log.WriteLine("COMPARE FILES OF INTERMEDIATE PARAMETER VALUES");
-                UnitTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
+                FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
             } //end TEST MODE
 
             //##################### DERIVE ACOUSTIC MATRIX OF SYLLABLE Z-SCORES

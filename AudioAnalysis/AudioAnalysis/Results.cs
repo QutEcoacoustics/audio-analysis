@@ -10,14 +10,14 @@ namespace AudioAnalysis
 {
 	public class Results : BaseResult
 	{
-        public Results(Template_MFCC template)
+        public Results(Template_CC template)
         {
             Template = template;
         }
 
 		#region Properties
 		public string ID { get; set; }
-		public Template_MFCC Template { get; private set; }
+		public Template_CC Template { get; private set; }
 
 		public double[,] AcousticMatrix { get; set; }	// matrix of fv x time frames
 		public string SyllSymbols { get; set; }			// symbol sequence output from the acoustic model 
