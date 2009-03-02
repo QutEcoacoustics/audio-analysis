@@ -5,6 +5,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "NeuralNets\NeuralNets.csproj", "{3453DB43-46DA-45E6-AD22-48BC081BC738}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A050BD53-DEE0-40F3-BEAB-1F7474533C40}"
+	ProjectSection(SolutionItems) = preProject
+		AudioAnalysis.vsmdi = AudioAnalysis.vsmdi
+		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovModels", "MarkovModels\MarkovModels.csproj", "{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -20,7 +24,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "..\QutSe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioTools", "..\AudioTools\AudioTools.csproj", "{6A03A803-AD91-4E12-967E-39DCDB2BB030}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisTests", "AnalysisTests\AnalysisTests.csproj", "{C3D7DCEB-0A10-49AA-8B83-E6BF0B7554A3}"
+EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = AudioAnalysis.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -50,6 +59,10 @@ Global
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3D7DCEB-0A10-49AA-8B83-E6BF0B7554A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3D7DCEB-0A10-49AA-8B83-E6BF0B7554A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3D7DCEB-0A10-49AA-8B83-E6BF0B7554A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3D7DCEB-0A10-49AA-8B83-E6BF0B7554A3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
