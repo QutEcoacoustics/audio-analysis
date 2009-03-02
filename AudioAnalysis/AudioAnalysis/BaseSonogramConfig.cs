@@ -16,9 +16,6 @@ namespace AudioAnalysis
 
         public int SampleRate { get; set; }
         public TimeSpan Duration { get; set; }
-
-        //public FftConfiguration FftConfiguration { get; private set; }
-
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info

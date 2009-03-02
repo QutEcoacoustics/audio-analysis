@@ -124,9 +124,9 @@ namespace AudioAnalysis
             if (BaseTemplate.InTestMode)
             {
                 Log.WriteLine("COMPARE TEMPLATE FILES");
-                UnitTests.AssertAreEqual(new FileInfo(template.OPPath), new FileInfo(template.OPPath + ".OLD"), false);
+                FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + ".OLD"), false);
                 //UnitTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
-                UnitTests.AssertAreEqual(new FileInfo(opDir + "symbolSequences.txt"),
+                FunctionalTests.AssertAreEqual(new FileInfo(opDir + "symbolSequences.txt"),
                                          new FileInfo(opDir + "symbolSequences.txt.OLD"), true);
 
                 //Log.WriteLine("COMPARE FEATURE VECTOR FILES");
@@ -144,9 +144,10 @@ namespace AudioAnalysis
         public static void ReadTemplateAndVerify(string appConfigPath, string templateConfigPath, string outputFolder)
 		{
             TowseyLib.Configuration config = new TowseyLib.Configuration(appConfigPath, templateConfigPath);
-            var template = new Template_MFCC(config);
+            var template = new Template_CC(config);
 
-            // Default config file still supplied for backwards compatability ONLY. template should be fully described in template config file
+            // Default config file still supplied for backwards compatability ONLY.
+            // Template should be fully described in template config file
             //var template = new MMTemplate(new Configuration(appConfigPath, templateConfigPath));
             //VerifyTemplate(templateConfigPath, outputFolder, template);
 		}
@@ -158,15 +159,17 @@ namespace AudioAnalysis
             Log.WriteLine("ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)");
 
             BaseTemplate.task = Task.VERIFY_MODEL;
-            TowseyLib.Configuration config = new TowseyLib.Configuration(appConfigPath, templatePath);
-            var template = new Template_MFCC(config);
-            template.OPPath = templatePath;
-            string templateDir = Path.GetDirectoryName(templatePath);
-            template.LoadFeatureVectorsFromFile(templateDir);
+            var template = BaseTemplate.Load(appConfigPath, templatePath);
+
+            if (BaseTemplate.InTestMode)
+            {
+                var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+                var template2 = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
+            }
 
             var recording = new AudioRecording() { FileName = wavPath };
 
-            var recogniser = new Recogniser(template as Template_MFCC);
+            var recogniser = new Recogniser(template as Template_CC);
 
             var result = recogniser.Analyse(recording) as Results;
 
@@ -230,6 +233,13 @@ namespace AudioAnalysis
         //    image.AddTrack(am.GetSyllablesTrack());
         //    image.Save(path);
         //}
+
+
+        public static void AssertAreEqual(Template_CC t1, Template_CC t2)
+        {
+            if (t1.CallName != t2.CallName)
+                throw new Exception("PRE AND POST SERIALISED TEMPLATES ADO NOT HAVE SAME NAME");
+        }
 
 
         static void ChooseWavFile(out string wavDirName, out string wavFileName)

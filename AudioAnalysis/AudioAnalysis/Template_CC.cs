@@ -10,13 +10,13 @@ using QutSensors.Data;
 
 namespace AudioAnalysis
 {
-	public class Template_MFCC : BaseTemplate
+	public class Template_CC : BaseTemplate
 	{
 
         public string NoiseFVPath { get; private set; }
 
 
-		public Template_MFCC(Configuration config) : base(config)
+		public Template_CC(Configuration config) : base(config)
 		{
             SonogramConfig = new AVSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
@@ -46,7 +46,7 @@ namespace AudioAnalysis
 		public override void Save(string targetPath)
 		{
             Log.WriteIfVerbose("START MMTemplate.Save(targetPath=" + targetPath + ")");
-            this.OPPath = targetPath;
+            this.DataPath = targetPath;
             string opDir = Path.GetDirectoryName(targetPath);
             if (!Directory.Exists(opDir)) Directory.CreateDirectory(opDir);
 

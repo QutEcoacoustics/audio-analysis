@@ -15,7 +15,7 @@ namespace AudioAnalysis
 
 	public abstract class BaseSonogram
 	{
-		#region Statics
+		#region Constants 
         //constants for analysing the logEnergy array for signal segmentation
         public const double MinLogEnergy = -7.0;        // typical noise value for BAC2 recordings = -4.5
         public const double MaxLogEnergy = -0.60206;    // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
@@ -27,8 +27,6 @@ namespace AudioAnalysis
         //Has the effect of setting bcakground noise level to 0 dB. Value of 10dB is in Lamel et al, 1981 
         //Lamel et al call it "Adaptive Level Equalisatsion".
         public const double NoiseThreshold = 10.0; //dB
-
-
 		#endregion
 
 		#region Properties
@@ -57,9 +55,9 @@ namespace AudioAnalysis
         public double SegmentationThresholdK1 { get; private set; }
         public double SegmentationThresholdK2 { get; private set; } 
 
-        public bool ExtractSubband { get; set; } // extract sub-band when making spectrogram image
-        private int  freqBand_Min;
-        private int  freqBand_Max;
+        public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
+        private int   freqBand_Min;
+        private int   freqBand_Max;
 		public double FreqBandMax_dB { get; private set; }
 		public double FreqBandNoise_dB { get; private set; }
 		public double FreqBand_SNR { get; private set; }

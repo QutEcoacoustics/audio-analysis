@@ -13,11 +13,12 @@ namespace AudioAnalysis
     {
         public const string alphabet= "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-		public int FvLength { get; private set; }
+        #region Properties
+        public     int FvLength { get; private set; }
         public  string VectorFName { get; set; }
         public  string VectorFPath { get; private set; }
 
-        public string ImageFPath { get; set; }
+        public  string ImageFPath { get; set; }
 
 		public double[] Features { get; private set; }
 		public double[] FeaturesNormed { get; private set; } // To difference from mean
@@ -27,6 +28,7 @@ namespace AudioAnalysis
 
         public double NoiseAv { get; set; }
         public double NoiseSd { get; set; }
+        #endregion
 
 
 

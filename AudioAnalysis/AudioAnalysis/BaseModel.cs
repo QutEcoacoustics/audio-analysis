@@ -14,12 +14,14 @@ namespace AudioAnalysis
 	[Serializable]
     public abstract class BaseModel
     {
+        #region Static Variables
+        public static string opFolder { get; set; } //only used when storing unit testing results during app testing.
+        #endregion
 
         #region Properties
-        public static string opFolder { get; set; } //only used when storing unit testing results during app testing.
         private ModelType modeltype = ModelType.UNDEFINED;
-        public ModelType ModelType { get { return modeltype; } set { modeltype = value; } }
-        public string modelName { get { return ModelType.ToString(); } }
+        public  ModelType ModelType { get { return modeltype; } set { modeltype = value; } }
+        public  string modelName { get { return ModelType.ToString(); } }
 
         public int WordCount { get; set; }
         public string[] WordNames { get; set; }
@@ -28,7 +30,6 @@ namespace AudioAnalysis
 
         public double FrameOffset { get; private set; } //Time in seconds between commencement of consecutive frames
         public double FramesPerSecond { get { return 1 / FrameOffset; } }
-
         #endregion
 
 

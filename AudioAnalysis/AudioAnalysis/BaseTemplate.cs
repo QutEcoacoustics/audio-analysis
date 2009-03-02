@@ -11,16 +11,20 @@ namespace AudioAnalysis
 	[Serializable]
 	public abstract class BaseTemplate
 	{
-        public static Task task { get; set; }
-        public static bool InTestMode = false;   //set this true when doing a unit test
+        #region Static Variables
+        public static Task task { get; set; }    //WARNING ##### THIS VAR SHOULD BE CHANGED TO PROPERTY???
+        public static bool InTestMode = false;   //set this true when doing a functional test
+        #endregion
+
 
         #region Properties
         public int CallID { get; set; }
         public string CallName { get; set; }
         public string Comment { get; set; }
-        public string OPPath { get; set; } //path of opfile containing saved template data
+        public string DataPath   { get; set; } // path of saved template file
+        public string DataDir { get; set; }    // dir containing saved template data
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
-        public string SourceDir { get; set; } // Dir of original audio recording
+        public string SourceDir  { get; set; } // Dir of original audio recording
 
         private double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
         public double ZScoreThreshold { get { return zScoreThreshold; } }
@@ -33,22 +37,9 @@ namespace AudioAnalysis
         public AcousticModel AcousticModelConfig { get; set; }
         public BaseModel Model { get; set; }
         public ModelType Modeltype { get; set; }
-        public BaseResult Result { get; set; }
         #endregion
 
-        #region Static Methods
-
-        /// <summary>
-        /// use this Load method when reading a template from previously saved tamplate file
-        /// </summary>
-        /// <param name="configFile"></param>
-        /// <returns></returns>
-        public static BaseTemplate Load(string configFile)
-        {
-            var config = new Configuration(configFile);
-            config.SetPair("MODE", "READ_TEMPLATE"); //may be not necessary - have not used so far
-            return Load(config);
-        }
+        #region Static LOAD TEMPLATE Methods
 
         /// <summary>
         /// use this Load method when creating a template from user generated params
@@ -59,8 +50,22 @@ namespace AudioAnalysis
         public static BaseTemplate Load(string appConfigFile, GUI gui)
         {
             var config = MergeProperties(appConfigFile, gui);
-            config.SetPair("MODE", "CREATE_TEMPLATE"); //may be not necessary - have not used so far
             return Load(config);
+        }
+
+        /// <summary>
+        /// use this Load method when reading a template from previously saved tamplate file
+        /// </summary>
+        /// <param name="configFile"></param>
+        /// <returns></returns>
+        public static BaseTemplate Load(string appConfigPath, string templatePath)
+        {
+            var config = new TowseyLib.Configuration(appConfigPath, templatePath); //merge config into one class
+            config.SetPair("TEMPLATE_PATH", templatePath); //inform template of its location in file system
+            config.SetPair("TEMPLATE_DIR", Path.GetDirectoryName(templatePath)); //inform template of location of feature vector files
+            var template = BaseTemplate.Load(config);
+            template.LoadFeatureVectorsFromFile();
+            return template;
         }
 
         public static BaseTemplate Load(Configuration config)
@@ -68,13 +73,13 @@ namespace AudioAnalysis
             var modelName = config.GetString("MODEL_TYPE");
 
             ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
-            if (modelName.StartsWith("UNDEFINED")) return new Template_MFCC(config);
+            if (modelName.StartsWith("UNDEFINED")) return new Template_CC(config);
             else
-                if (modelName.StartsWith("MM_ERGODIC")) return new Template_MFCC(config);
+                if (modelName.StartsWith("MM_ERGODIC")) return new Template_CC(config);
             else
-                    if (modelName.StartsWith("MM_TWO_STATE_PERIODIC")) return new Template_MFCC(config);
+                    if (modelName.StartsWith("MM_TWO_STATE_PERIODIC")) return new Template_CC(config);
                 else
-                        if (modelName.StartsWith("ONE_PERIODIC_SYLLABLE")) return new Template_MFCC(config);
+                        if (modelName.StartsWith("ONE_PERIODIC_SYLLABLE")) return new Template_CC(config);
                     else
                     {
                         Log.Write("ERROR at BaseTemplate Load(Configuration config);\n" +
@@ -172,6 +177,8 @@ namespace AudioAnalysis
             Comment = config.GetString("COMMENT");  //e.g.Template consists of a single KEK!
             SourcePath = config.GetString("WAV_FILE_PATH");
             SourceDir  = Path.GetDirectoryName(SourcePath);
+            DataPath = config.GetString("TEMPLATE_PATH");
+            DataDir = config.GetString("TEMPLATE_DIR");
 		}
 
         public void ExtractTemplateFromSonogram(string wavPath)
@@ -189,9 +196,9 @@ namespace AudioAnalysis
             FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
         }
 
-        public void LoadFeatureVectorsFromFile(string templateDir)
+        public void LoadFeatureVectorsFromFile()
         {
-            this.FeatureVectorConfig.LoadFromFile(templateDir);
+            this.FeatureVectorConfig.LoadFromFile(this.DataDir);
         }
 
         public void GenerateAndSaveSymbolSequence(AcousticVectorsSonogram sonogram, string opDir)
@@ -270,7 +277,7 @@ namespace AudioAnalysis
 
         public virtual void Save(string targetPath)
         {
-            this.OPPath = targetPath;
+            this.DataPath = targetPath;
             if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + ".OLD", true); //overwrite
             using (var file = new StreamWriter(targetPath))
             {
@@ -286,7 +293,7 @@ namespace AudioAnalysis
             writer.WriteConfigValue("TEMPLATE_ID", CallID);
             writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
             writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
-            writer.WriteConfigValue("THIS_FILE", OPPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
+            writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE");
             writer.WriteConfigValue("DIR_LOCATION", SourceDir);  //WAV_FILE_PATH=C:\SensorNetworks\WavFiles\
