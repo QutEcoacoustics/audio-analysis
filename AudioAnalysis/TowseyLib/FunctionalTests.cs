@@ -6,7 +6,7 @@ using System.IO;
 
 namespace TowseyLib
 {
-    public static class UnitTests
+    public static class FunctionalTests
     {
 
 
@@ -64,8 +64,6 @@ namespace TowseyLib
             }
             Log.WriteLine("\t\t\t###################### PASS SIMILARITY TEST:- " + A.Name + "  and  " + B.Name + "\n");
         }
-
-
 
 
     }
