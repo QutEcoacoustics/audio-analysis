@@ -5,6 +5,7 @@ using System.Text;
 using AudioTools;
 using System.IO;
 using TowseyLib;
+using System.Reflection;
 
 namespace AudioAnalysis
 {
@@ -91,10 +92,12 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// In order to create and verify the feature extraction of a template, require four steps 
-        /// and each steps requires a different sonogram.
-        /// STEP 1: Prepare a matrix of cepstral coefficients - these are the basic features.
-        /// STEP 2: Extract FVs in the form of acoustic vectors. i.e. cepstral coeffs + delta and double delta coeffs.
+        /// In order to create and verify the feature extraction of a template, require four steps. 
+        /// THREE different sonograms required.
+        /// STEP 1: Init a template with required parameters
+        /// STEP 2a: Init audio recording and extract template form it.
+        ///         This step requires sonogram of cepstral coefficients - these are the basic features.
+        /// STEP 2b: Extract FVs in the form of acoustic vectors. i.e. cepstral coeffs + delta and double delta coeffs.
         /// STEP 3: Verify acoustic symbol output which requires Acoustic Vector sonogram
         /// STEP 4: Verify output of acoustic model by adding track to the spectral sonogram
         /// </summary>
@@ -108,48 +111,28 @@ namespace AudioAnalysis
             BaseTemplate.task = Task.CREATE_ACOUSTIC_MODEL;
             string opDir = gui.opDir;
             string opTemplatePath = opDir + templateFName;
+            //STEP ONE: Initialise template with parameters
             var template = BaseTemplate.Load(appConfigPath, gui);
-            //init class AudioRecording which contains one method GetWavData(), which returns a WavReaader
-            var recording = new AudioRecording() { FileName = wavPath };
-            //STEP ONE:
-            WavReader wav = recording.GetWavData();
-            var sono = new CepstralSonogram(template.SonogramConfig, wav);
-            //STEP TWO:
-            template.ExtractTemplateFromSonogram(sono);
+            //STEP TWO: Initialise AudioRecording and extract template
+            var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
+            template.ExtractTemplateFromRecording(recording);
             template.Save(opTemplatePath);
             //STEP THREE: Verify fv extraction by observing output from acoustic model.
-            var avSono = new AcousticVectorsSonogram(template.SonogramConfig, wav);
-            template.GenerateAndSaveSymbolSequence(avSono, opDir);
+            template.GenerateAndSaveSymbolSequence(recording, opDir);
 
             if (BaseTemplate.InTestMode)
             {
                 Log.WriteLine("COMPARE TEMPLATE FILES");
                 FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + ".OLD"), false);
-                //UnitTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
+                //FunctionalTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
                 FunctionalTests.AssertAreEqual(new FileInfo(opDir + "symbolSequences.txt"),
-                                         new FileInfo(opDir + "symbolSequences.txt.OLD"), true);
-
-                //Log.WriteLine("COMPARE FEATURE VECTOR FILES");
-                //UnitTests.AssertAreEqual(new FileInfo(template.FeatureVectorConfig.FVSourceFiles[1]),
-                //           new FileInfo(template.FeatureVectorConfig.FVSourceFiles[1] + ".OLD"));
+                                               new FileInfo(opDir + "symbolSequences.txt.OLD"), true);
             }
-
             //STEP FOUR : view the resulting sonogram
-            //var spectralSono = new SpectralSonogram(template.SonogramConfig, wav, doExtractSubband);
             var imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
+            WavReader wav = recording.GetWavData();
             template.SaveSyllablesImage(wav, imagePath);
 			return template;
-		}
-
-        public static void ReadTemplateAndVerify(string appConfigPath, string templateConfigPath, string outputFolder)
-		{
-            TowseyLib.Configuration config = new TowseyLib.Configuration(appConfigPath, templateConfigPath);
-            var template = new Template_CC(config);
-
-            // Default config file still supplied for backwards compatability ONLY.
-            // Template should be fully described in template config file
-            //var template = new MMTemplate(new Configuration(appConfigPath, templateConfigPath));
-            //VerifyTemplate(templateConfigPath, outputFolder, template);
 		}
 
         public static void ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)
@@ -163,14 +146,17 @@ namespace AudioAnalysis
 
             if (BaseTemplate.InTestMode)
             {
+                Log.WriteLine("\nTESTING SERIALISATION");
                 var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+                Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length+ " bytes");
                 var template2 = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
+                AssertAreEqual(template as Template_CC, template2);
+                template = null;
+                template = template2;
             }
 
-            var recording = new AudioRecording() { FileName = wavPath };
-
             var recogniser = new Recogniser(template as Template_CC);
-
+            var recording = new AudioRecording() { FileName = wavPath };
             var result = recogniser.Analyse(recording) as Results;
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_"+Path.GetFileNameWithoutExtension(wavPath) + ".png");
@@ -195,50 +181,76 @@ namespace AudioAnalysis
 
 		}
 
-		public static void ScanMultipleRecordingsWithTemplate(string templatePath, string wavFolder, string outputFolder)
+        public static void ScanMultipleRecordingsWithTemplate(string appConfigPath, string templatePath, string wavFolder, string outputFolder)
 		{
-            //var template = BaseTemplate.Load(templatePath);
-            //var recogniser = new MMRecogniser(template as MMTemplate);
+            Log.WriteLine("\n\nScanMultipleRecordingsWithTemplate(string appConfigPath, string templatePath, string wavFolder, string outputFolder)");
 
-            //var outputFile = Path.Combine(outputFolder, "outputAnalysis.csv");
-            //var headerRequired = !File.Exists(outputFile);
-            //using (var writer = new StreamWriter(outputFile))
-            //{
-            //    if (headerRequired)
-            //        writer.WriteLine(MMResult.GetSummaryHeader());
+            BaseTemplate.task = Task.VERIFY_MODEL;
+            var template = BaseTemplate.Load(appConfigPath, templatePath);
+            var recogniser = new Recogniser(template as Template_CC);
 
-            //    FileInfo[] files = new DirectoryInfo(wavFolder).GetFiles("*" + WavReader.WavFileExtension);
-            //    foreach (var file in files)
-            //    {
-            //        AcousticVectorsSonogram sonogram;
-            //        var recording = new AudioRecording() { FileName = file.FullName };
-            //        var result = recogniser.Analyse(recording, out sonogram);
-            //        result.ID = file.Name;
-            //        var imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-            //        SaveSyllablesImage(result, sonogram, imagePath);
+            var outputFile = Path.Combine(outputFolder, "outputAnalysis.csv");
+            var headerRequired = !File.Exists(outputFile);
+            using (var writer = new StreamWriter(outputFile))
+            {
+                if (headerRequired)
+                    writer.WriteLine(Results.GetSummaryHeader());
 
-            //        writer.WriteLine(result.GetOneLineSummary());
-            //    }
-            //}
+                FileInfo[] files = new DirectoryInfo(wavFolder).GetFiles("*" + WavReader.WavFileExtension);
+                foreach (var file in files)
+                {
+                    var recording = new AudioRecording() { FileName = file.FullName };
+
+                    var result = recogniser.Analyse(recording) as Results;
+                    result.ID = file.Name;
+                    //string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+                    //template.SaveResultsImage(recording.GetWavData(), imagePath, result);
+                    writer.WriteLine(result.GetOneLineSummary());
+                }
+            }
 		}
 
-        static void VerifyTemplate(AcousticVectorsSonogram sono, string outputFolder, BaseTemplate template)
+
+        public static void AssertAreEqual(Object obj1, Object obj2)
         {
-            //template.GenerateAndSaveSymbolSequence(sono, outputFolder, template);
-        }
+            Type type1 = obj1.GetType();
+            Type type2 = obj2.GetType();
+            if(type1 == null) throw new Exception("Object 1 is null");
+            if (type2 == null) throw new Exception("Object 2 is null");
+            if (type1 != type2) throw new Exception("Objects 1 & 2 not same type");
+            Log.WriteLine("Object1=" + type1.ToString() + "    Object2=" + type2.ToString());
+            //FieldInfo[] array1 = type1.GetFields();
+            //FieldInfo[] array2 = type2.GetFields();
+            PropertyInfo[] array1 = type1.GetProperties();
+            PropertyInfo[] array2 = type2.GetProperties();
+            Log.WriteLine("Property counts:  P1 count=" + array1.Length + "   P2 count=" + array2.Length);
+            int count = array1.Length;
+            for (int i = 0; i < count; i++ )
+            {
 
-        //static void SaveSyllablesImage(AcousticModel am, AcousticVectorsSonogram sonogram, string path)
-        //{
-        //    var image = new Image_MultiTrack(sonogram.GetImage());
-        //    image.AddTrack(am.GetSyllablesTrack());
-        //    image.Save(path);
-        //}
+                type1 = array1[i].PropertyType;
+                type2 = array2[i].PropertyType;
+                if (type1 == null)  throw new Exception("Property " + i + " of object 1 is null");
+                if (type2 == null) throw new Exception("Property " + i + " of object 2 is null");
+                if (type1 != type2) throw new Exception("Property " + i + " of object 1&2 not same");
+                Object property1 = array1[i].GetValue(obj1, null);
+                Object property2 = array2[i].GetValue(obj2, null);
+                if (property1 == null) throw new Exception("Property " + i + " of object 1 is null");
+                if (property2 == null) throw new Exception("Property " + i + " of object 2 is null");
 
-
-        public static void AssertAreEqual(Template_CC t1, Template_CC t2)
-        {
-            if (t1.CallName != t2.CallName)
-                throw new Exception("PRE AND POST SERIALISED TEMPLATES ADO NOT HAVE SAME NAME");
+                if ((type1.IsPrimitive) || (type1.Name.StartsWith("String")))
+                {
+                    Log.WriteLine("prop" + (i + 1) + "\tobj1    " + array1[i].Name + "=" + property1.ToString());
+                    Log.WriteLine("prop" + (i + 1) + "\tobj2    " + array2[i].Name + "=" + property2.ToString());
+                    if (property1.ToString() != property2.ToString()) throw new Exception("Properties " + i + " not equal.");
+                }
+                else
+                {
+                    Log.WriteLine("prop" + (i + 1) + "\t" + array1[i].Name + " of type " + type1.ToString() + "  is not a primitive. DO RECURSION.");
+                    //AssertAreEqual(property1, property2);
+                }
+            }
+            //Console.ReadLine();
         }
 
 

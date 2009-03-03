@@ -18,6 +18,8 @@ namespace MarkovModels
     /// MM = markov model
     /// SD = state duration
     /// </summary>
+
+    [Serializable]
     public class MMSD_Ergodic : MM_Base
     {
         int numberOfWords;   // ie number of vocalisations

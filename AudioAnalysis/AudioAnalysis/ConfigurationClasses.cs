@@ -7,7 +7,8 @@ using System.IO;
 
 namespace AudioAnalysis
 {
-	public static class FftConfiguration
+    [Serializable]
+    public static class FftConfiguration
 	{
         public static void SetConfig(Configuration config)
 		{
@@ -39,7 +40,8 @@ namespace AudioAnalysis
 		#endregion
 	}
 
-	public class MfccConfiguration
+    [Serializable]
+    public class MfccConfiguration
 	{
 		public MfccConfiguration(Configuration config)
 		{
@@ -73,7 +75,8 @@ namespace AudioAnalysis
     /// <summary>
     /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION
     /// </summary>
-	public static class EndpointDetectionConfiguration
+    [Serializable]
+    public static class EndpointDetectionConfiguration
 	{
 		public static void SetEndpointDetectionParams(Configuration config)
 		{
@@ -97,6 +100,7 @@ namespace AudioAnalysis
 		}
 
 		#region Six Static Properties
+        //these should be the same for all threads and processes
         //these k1 and k2 thresholds are dB above the base line minimum value. Different from values finally used in Sonogram classes
 		public static double SegmentationThresholdK1 { get; set; }	// dB threshold for recognition of vocalisations
 		public static double SegmentationThresholdK2 { get; set; }	// dB threshold for recognition of vocalisations

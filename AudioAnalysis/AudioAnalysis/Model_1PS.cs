@@ -11,6 +11,7 @@ namespace AudioAnalysis
 
 
 
+    [Serializable]
     public class Model_OnePeriodicSyllable : BaseModel
     {
 

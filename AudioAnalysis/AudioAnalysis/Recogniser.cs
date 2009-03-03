@@ -24,7 +24,7 @@ namespace AudioAnalysis
         /// <param name="template"></param>
 		internal Recogniser(Template_CC template)
 		{
-            Log.WriteIfVerbose("INITIALISING RECOGNISER:");
+            Log.WriteIfVerbose("\n\nINITIALISING RECOGNISER:");
             Log.WriteIfVerbose("\tTemplate: "+template.CallName);
 
 			Template = template;
