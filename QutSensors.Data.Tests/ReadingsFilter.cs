@@ -123,5 +123,40 @@ namespace QutSensors.Data.Tests
 			testFilter.DeploymentNames.Add(TestDeploymentName);
 			Assert.AreEqual(2, testFilter.GetAudioReadings(db).Count());
 		}
+
+		[TestMethod]
+		public void Serialization()
+		{
+			var filter = new ReadingsFilter();
+
+			Assert.IsTrue(FiltersEqual(filter, ReadingsFilter.Load(filter.SaveAsString(false), false)));
+
+			filter.AudioTags.Add("AT1");
+			filter.AudioTags.Add("AT2");
+			filter.DeploymentNames.Add("DN1");
+			filter.DeploymentNames.Add("DN2");
+			filter.DeploymentTags.Add("DT1");
+			filter.DeploymentTags.Add("DT2");
+			filter.FromDate = DateTime.Now.Date;
+			filter.IsRead = false;
+			filter.TestDeploymentsFilter = true;
+			filter.ToDate = DateTime.Now.Date.AddDays(4);
+
+			var serialisedFilter = filter.SaveAsString(false);
+			var deserialisedFilter = ReadingsFilter.Load(serialisedFilter, false);
+			Assert.IsTrue(FiltersEqual(filter, filter));
+			Assert.IsTrue(FiltersEqual(filter, deserialisedFilter));
+		}
+
+		bool FiltersEqual(ReadingsFilter a, ReadingsFilter b)
+		{
+			return a.AudioTags.Count == b.AudioTags.Count && a.AudioTags.All(t => b.AudioTags.Contains(t))
+				&& a.DeploymentNames.Count == b.DeploymentNames.Count && a.DeploymentNames.All(t => b.DeploymentNames.Contains(t))
+				&& a.DeploymentTags.Count == b.DeploymentTags.Count && a.DeploymentTags.All(t => b.DeploymentTags.Contains(t))
+				&& a.FromDate == b.FromDate
+				&& a.IsRead == b.IsRead
+				&& a.TestDeploymentsFilter == b.TestDeploymentsFilter
+				&& a.ToDate == b.ToDate;
+		}
 	}
 }
