@@ -10,6 +10,7 @@ using MarkovModels;
 
 namespace AudioAnalysis
 {
+    [Serializable]
     public class Model_MMErgodic : BaseModel
     {
 

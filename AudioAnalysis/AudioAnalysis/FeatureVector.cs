@@ -9,6 +9,7 @@ namespace AudioAnalysis
     using TowseyLib;
 	using System.Drawing.Imaging;
 
+    [Serializable]
     public class FeatureVector
     {
         public const string alphabet= "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";

@@ -65,7 +65,9 @@ namespace AudioAnalysis
             CallID = config.GetInt("TEMPLATE_ID");
             FVCount = config.GetInt("FV_COUNT");
             FVIniData = new string[FVCount];
-
+            MarqueeStart = 0;    //default value
+            MarqueeEnd = 0;      //default value
+            MarqueeInterval = 0; //default value
 
             switch (FVSourceType)
             {

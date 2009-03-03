@@ -10,6 +10,7 @@ using QutSensors.Data;
 
 namespace AudioAnalysis
 {
+    [Serializable]
 	public class Template_CC : BaseTemplate
 	{
 

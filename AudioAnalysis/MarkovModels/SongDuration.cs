@@ -6,6 +6,7 @@ using TowseyLib;
 
 namespace MarkovModels
 {
+    [Serializable]
     class SongDuration
     {
         string[] Sequences { set; get; }

@@ -13,6 +13,7 @@ public enum ScoreType { UNDEFINED, STANDARD, DURATION }
 
 namespace MarkovModels
 {
+    [Serializable]
     public class MM_Base
     {
         protected string name = "noName";

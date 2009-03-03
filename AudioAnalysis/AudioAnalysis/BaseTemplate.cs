@@ -179,20 +179,16 @@ namespace AudioAnalysis
             SourceDir  = Path.GetDirectoryName(SourcePath);
             DataPath = config.GetString("TEMPLATE_PATH");
             DataDir = config.GetString("TEMPLATE_DIR");
+            if ((SourcePath == null) ||(SourcePath == "")) 
+                SourcePath = "Source path not set!!"; //string must be given a value to enable later serialisation check
+            if ((SourceDir  == null) ||(SourceDir == ""))  
+                SourceDir  = "Source dir not set!!";  //string must be given a value to enable later serialisation check               
 		}
 
-        public void ExtractTemplateFromSonogram(string wavPath)
+        public void ExtractTemplateFromRecording(AudioRecording ar)
         {
-            ExtractTemplateFromSonogram(new WavReader(wavPath));
-        }
-
-        public void ExtractTemplateFromSonogram(WavReader wav)
-        {
-            ExtractTemplateFromSonogram(new CepstralSonogram(SonogramConfig, wav));
-        }
-
-        public void ExtractTemplateFromSonogram(CepstralSonogram sono)
-        {
+            WavReader wav = ar.GetWavData();
+            var sono = new CepstralSonogram(this.SonogramConfig, wav);
             FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
         }
 
@@ -201,9 +197,11 @@ namespace AudioAnalysis
             this.FeatureVectorConfig.LoadFromFile(this.DataDir);
         }
 
-        public void GenerateAndSaveSymbolSequence(AcousticVectorsSonogram sonogram, string opDir)
+        public void GenerateAndSaveSymbolSequence(AudioRecording ar, string opDir)
         {
-            this.AcousticModelConfig.GenerateSymbolSequence(sonogram, this);
+            WavReader wav = ar.GetWavData();
+            var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
+            this.AcousticModelConfig.GenerateSymbolSequence(avSonogram, this);
             this.AcousticModelConfig.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
         }
 

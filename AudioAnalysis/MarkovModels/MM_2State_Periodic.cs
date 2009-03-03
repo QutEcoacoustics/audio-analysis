@@ -15,6 +15,8 @@ namespace MarkovModels
     /// It contains methods that have been cut and paste from other classes but none of it
     /// has been put in working order.
     /// </summary>
+
+    [Serializable]
     public class MM_2State_Periodic : MM_Base
     {
         private static double fractionalNH = 0.30; //arbitrary neighbourhood around user defined periodicity

@@ -14,6 +14,7 @@ namespace AudioAnalysis
     /// ######################################### WARNING ##################################################
     /// WARNING!! This Model and associated Markov Model calss have not been debugged
     /// </summary>
+    [Serializable]
     public class Model_2StatePeriodic : BaseModel
     {
 
