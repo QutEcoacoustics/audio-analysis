@@ -7,10 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RikMigrationsCF", "RikMigra
 EndProject
 Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\", "{F7549524-A6E5-4BEB-AEA7-77F95FCE54EB}"
 	ProjectSection(WebsiteProperties) = preProject
-		SccProjectName = "Svn"
-		SccAuxPath = "Svn"
-		SccLocalPath = "Svn"
-		SccProvider = "SubversionScc"
+		SccProjectName = ""
+		SccAuxPath = ""
+		SccLocalPath = ""
+		SccProvider = ""
 		TargetFramework = "3.5"
 		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
@@ -39,20 +39,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		SensorV2.vsmdi = SensorV2.vsmdi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{93388CFD-6952-4500-9C9C-6C9647545F70}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioTools", "AudioTools\AudioTools.csproj", "{6A03A803-AD91-4E12-967E-39DCDB2BB030}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SensorV2Diag", "SensorV2Diag\SensorV2Diag.csproj", "{F49BD5E3-9A0C-4D71-A576-6B81F166DFD0}"
 EndProject
 Global
-	GlobalSection(SubversionScc) = preSolution
-		Svn-Managed = True
-		Manager = AnkhSVN - Subversion Support for Visual Studio
-	EndGlobalSection
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = SensorV2.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
 		Debug|Any CPU = Debug|Any CPU
@@ -103,16 +94,6 @@ Global
 		{BDAEA7B5-28BE-45D5-952E-76820E474649}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BDAEA7B5-28BE-45D5-952E-76820E474649}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{BDAEA7B5-28BE-45D5-952E-76820E474649}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|.NET.ActiveCfg = Release|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Any CPU.Build.0 = Release|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{93388CFD-6952-4500-9C9C-6C9647545F70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{6A03A803-AD91-4E12-967E-39DCDB2BB030}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -138,5 +119,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
 	EndGlobalSection
 EndGlobal
