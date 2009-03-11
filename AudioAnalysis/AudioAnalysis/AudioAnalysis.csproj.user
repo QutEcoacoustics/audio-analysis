@@ -16,4 +16,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartArguments>"C:\SensorNetworks\Templates\sonogram.ini"  "C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav" "C:\SensorNetworks\Output\Test1"</StartArguments>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <StartArguments>"C:\SensorNetworks\Templates\sonogram.ini"  "C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav" "C:\SensorNetworks\Output\Test1"</StartArguments>
+  </PropertyGroup>
 </Project>
