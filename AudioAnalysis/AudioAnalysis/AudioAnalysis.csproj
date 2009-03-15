@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.NewMain</StartupObject>
+    <StartupObject>AudioAnalysis.Main_SNR</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -95,6 +95,7 @@
     <Compile Include="AudioRecording.cs" />
     <Compile Include="BaseTemplate.cs" />
     <Compile Include="BaseResult.cs" />
+    <Compile Include="Main_SNR.cs" />
     <Compile Include="Model_2SP.cs" />
     <Compile Include="Model_MMErgodic.cs" />
     <Compile Include="FVExtractor.cs" />
@@ -108,7 +109,7 @@
     <Compile Include="Results.cs" />
     <Compile Include="Template_CC.cs" />
     <Compile Include="Image_MultiTrack.cs" />
-    <Compile Include="NewMain.cs" />
+    <Compile Include="MainTest.cs" />
     <Compile Include="BaseSonogram.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="BaseSonogramConfig.cs" />
@@ -123,6 +124,7 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
+    <None Include="ClassDiagram1.cd" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
