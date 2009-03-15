@@ -173,19 +173,26 @@ namespace TowseyLib
         
          
         /// <summary>
+        /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
         /// algorithm described in Lamel et al, 1981.
         /// NOTE: noiseThreshold is passed as decibels
         /// energy array is log energy ie not yet converted to decibels.
         /// Return energy converted to decibels i.e. multiply by 10.
         /// </summary>
-        /// <param name="logEnergy"></param>
+        /// <param name="logEnergy">NOTE: the log energy values are normalised to global constants</param>
         /// <param name="min_dB"></param>
         /// <param name="max_dB"></param>
         /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minEnergyRatio, double noiseThreshold_dB, out double Q)
+        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minEnergyRatio, out double Q)
         {
+            //Following const used to normalise the logEnergy values to the background noise.
+            //Has the effect of setting background noise level to 0 dB.
+            //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
+            const double noiseThreshold_dB = 10.0; //dB
+
+
             //ignore first N and last N frames when calculating background noise level because sometimes these frames
             // have atypically low signal values
             int buffer = 20; //ignore first N and last N frames when calculating background noise level
