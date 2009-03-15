@@ -9,7 +9,7 @@ using System.Reflection;
 
 namespace AudioAnalysis
 {
-	class NewMain
+	class MainTest
 	{
 		public static void Main(string[] args)
 		{
@@ -108,30 +108,27 @@ namespace AudioAnalysis
         /// <returns></returns>
         public static BaseTemplate CreateTemplate(string appConfigPath, string wavPath, GUI gui, string templateFName)
 		{
-            BaseTemplate.task = Task.CREATE_ACOUSTIC_MODEL;
-            string opDir = gui.opDir;
-            string opTemplatePath = opDir + templateFName;
-            //STEP ONE: Initialise template with parameters
-            var template = BaseTemplate.Load(appConfigPath, gui);
-            //STEP TWO: Initialise AudioRecording and extract template
-            var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
-            template.ExtractTemplateFromRecording(recording);
-            template.Save(opTemplatePath);
-            //STEP THREE: Verify fv extraction by observing output from acoustic model.
-            template.GenerateAndSaveSymbolSequence(recording, opDir);
+            var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName);
+
+            ////STEP ONE: Initialise AudioRecording
+            //var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
+            ////STEP TWO: Initialise template with parameters
+            //string opDir = gui.opDir;
+            //string opTemplatePath = opDir + templateFName;
+            //var template = BaseTemplate.Load(appConfigPath, gui);
+            ////STEP THREE: Extract template
+            //template.ExtractTemplateAndSave(recording, opTemplatePath);
+            ////STEP FOUR: Verify fv extraction by observing output from acoustic model.
+            //template.GenerateSymbolSequenceAndSave(recording, opDir);
 
             if (BaseTemplate.InTestMode)
             {
                 Log.WriteLine("COMPARE TEMPLATE FILES");
                 FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + ".OLD"), false);
                 //FunctionalTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
-                FunctionalTests.AssertAreEqual(new FileInfo(opDir + "symbolSequences.txt"),
-                                               new FileInfo(opDir + "symbolSequences.txt.OLD"), true);
+                FunctionalTests.AssertAreEqual(new FileInfo(gui.opDir + "symbolSequences.txt"),
+                                               new FileInfo(gui.opDir + "symbolSequences.txt.OLD"), true);
             }
-            //STEP FOUR : view the resulting sonogram
-            var imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
-            WavReader wav = recording.GetWavData();
-            template.SaveSyllablesImage(wav, imagePath);
 			return template;
 		}
 
@@ -141,7 +138,6 @@ namespace AudioAnalysis
             Log.WriteLine("READ EXISTING TEMPLATE AND USE TO RECOGNISE VOCALISATIONS");
             Log.WriteLine("ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)");
 
-            BaseTemplate.task = Task.VERIFY_MODEL;
             var template = BaseTemplate.Load(appConfigPath, templatePath);
 
             if (BaseTemplate.InTestMode)
@@ -155,7 +151,7 @@ namespace AudioAnalysis
                 template = template2;
             }
 
-            var recogniser = new Recogniser(template as Template_CC);
+            var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
             var recording = new AudioRecording() { FileName = wavPath };
             var result = recogniser.Analyse(recording) as Results;
 
@@ -185,7 +181,6 @@ namespace AudioAnalysis
 		{
             Log.WriteLine("\n\nScanMultipleRecordingsWithTemplate(string appConfigPath, string templatePath, string wavFolder, string outputFolder)");
 
-            BaseTemplate.task = Task.VERIFY_MODEL;
             var template = BaseTemplate.Load(appConfigPath, templatePath);
             var recogniser = new Recogniser(template as Template_CC);
 

@@ -30,7 +30,7 @@ namespace AudioAnalysis
         /// <param name="config"></param>
         public Model_MMErgodic(Configuration config)
         {
-            Log.WriteIfVerbose("INIT LanguageModel Model_MMErgodic CONSTRUCTOR 1");
+            Log.WriteIfVerbose("\nINIT LANGUAGE MODEL Model_MMErgodic CONSTRUCTOR 1");
             this.ModelType = ModelType.MM_ERGODIC;
             SetFrameOffset(config); //set sample rate, frame duration etc
 
@@ -172,6 +172,7 @@ namespace AudioAnalysis
 
             writer.WriteLine("#**************** INFO ABOUT THE LANGUAGE MODEL ***************");
             writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
+            writer.WriteLine("#MODEL_TYPE=UNDEFINED");
             writer.WriteConfigValue("MODEL_TYPE", ModelType);
 
             writer.WriteConfigValue("NUMBER_OF_WORDS", WordCount);

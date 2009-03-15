@@ -30,12 +30,8 @@ namespace AudioAnalysis
             ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
             this.Modeltype = modelType;
 
-            //do not init a Model if task is only to extract FVs and create an Acoustic Model.
-            if ((BaseTemplate.task == Task.CREATE_ACOUSTIC_MODEL) || (BaseTemplate.task == Task.EXTRACT_FV))
-            {
-                //Model = new Model_Undefined();
-                return;
-            }
+            //do not init a Model if in crete new template mode.
+            if (this.mode == Mode.CREATE_NEW_TEMPLATE) return;       
 
             if (modelType == ModelType.UNDEFINED) Model = new Model_Undefined();
             else if (modelType == ModelType.ONE_PERIODIC_SYLLABLE) Model = new Model_OnePeriodicSyllable(config);
@@ -67,7 +63,7 @@ namespace AudioAnalysis
             AcousticModelConfig.Save(writer);
 
             //write the default language model if only creating a new template
-            if ((BaseTemplate.task == Task.EXTRACT_FV) || (BaseTemplate.task == Task.CREATE_ACOUSTIC_MODEL))
+            if (this.mode == Mode.CREATE_NEW_TEMPLATE)
             {
                 writer.WriteLine("#**************** INFO ABOUT THE LANGUAGE MODEL ***************");
                 writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
