@@ -23,10 +23,6 @@ namespace AudioAnalysis
         //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
         //note that the cicada recordings reach max average frame amplitude = 0.55
 
-        //Following const used to normalise the logEnergy values to the background noise.
-        //Has the effect of setting bcakground noise level to 0 dB. Value of 10dB is in Lamel et al, 1981 
-        //Lamel et al call it "Adaptive Level Equalisatsion".
-        public const double NoiseThreshold = 10.0; //dB
 		#endregion
 
 		#region Properties
@@ -102,7 +98,7 @@ namespace AudioAnalysis
 			double Q;
 			double min_dB;
 			double max_dB;
-			Decibels = DSP.NoiseSubtract(FrameEnergy, out min_dB, out max_dB, minEnergyRatio, NoiseThreshold, out Q);
+			Decibels = DSP.NoiseSubtract(FrameEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
 			NoiseSubtracted = Q;
 			FrameNoise_dB = min_dB; //min decibels of all frames 
 			FrameMax_dB = max_dB;
@@ -132,7 +128,7 @@ namespace AudioAnalysis
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
-			Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(1));
+			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
@@ -205,7 +201,7 @@ namespace AudioAnalysis
 			//noise reduce the energy array to produce decibels array
 			double minFraction = MinLogEnergy - MaxLogEnergy;
 			double Q; double min_dB; double max_dB;
-			double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minFraction, NoiseThreshold, out Q);
+			double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minFraction, out Q);
 			NoiseSubtracted = Q;
 			FreqBandNoise_dB = min_dB; //min decibels of all frames 
 			FreqBandMax_dB = max_dB;
