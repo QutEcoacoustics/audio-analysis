@@ -6,18 +6,18 @@ using AudioTools;
 namespace AudioAnalysis
 {
     public enum Feature_Type { UNDEFINED, MFCC }
-    public enum Task { UNDEFINED, EXTRACT_FV, CREATE_ACOUSTIC_MODEL, VERIFY_MODEL }
+    public enum Mode { UNDEFINED, CREATE_NEW_TEMPLATE, READ_EXISTING_TEMPLATE }
 
 	[Serializable]
 	public abstract class BaseTemplate
 	{
         #region Static Variables
-        public static Task task { get; set; }    //WARNING ##### THIS VAR SHOULD BE CHANGED TO PROPERTY???
         public static bool InTestMode = false;   //set this true when doing a functional test
         #endregion
 
 
         #region Properties
+        public Mode mode { get; set; }   //MODE in which the template is operating
         public int CallID { get; set; }
         public string CallName { get; set; }
         public string Comment { get; set; }
@@ -42,7 +42,7 @@ namespace AudioAnalysis
         #region Static LOAD TEMPLATE Methods
 
         /// <summary>
-        /// use this Load method when creating a template from user generated params
+        /// call this Load method when creating a new template from user provided params
         /// </summary>
         /// <param name="appConfigFile"></param>
         /// <param name="gui"></param>
@@ -50,7 +50,34 @@ namespace AudioAnalysis
         public static BaseTemplate Load(string appConfigFile, GUI gui)
         {
             var config = MergeProperties(appConfigFile, gui);
-            return Load(config);
+            config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
+            BaseTemplate template = Load(config);
+            return template;
+        }
+
+        /// <summary>
+        /// call this Load method when creating a new template from user provided params
+        /// using only one line of code!
+        /// </summary>
+        /// <param name="appConfigFile">default param values</param>
+        /// <param name="gui">param values for this specific template</param>
+        /// <param name="wavPath">the recording from which templtae to be extracted</param>
+        /// <param name="templateFName">the path to which template info is to be saved</param>
+        /// <returns></returns>
+        public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
+        {
+            //STEP ONE: Initialise AudioRecording
+            var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
+            //STEP TWO: Initialise template with parameters
+            string opTemplatePath = gui.opDir + templateFName;
+            var config = MergeProperties(appConfigFile, gui);
+            config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
+            BaseTemplate template = Load(config);
+            //STEP THREE: Extract template
+            template.ExtractTemplateAndSave(recording, opTemplatePath);
+            //STEP FOUR: Verify fv extraction by observing output from acoustic model.
+            template.GenerateSymbolSequenceAndSave(recording, gui.opDir);
+            return template;
         }
 
         /// <summary>
@@ -63,6 +90,7 @@ namespace AudioAnalysis
             var config = new TowseyLib.Configuration(appConfigPath, templatePath); //merge config into one class
             config.SetPair("TEMPLATE_PATH", templatePath); //inform template of its location in file system
             config.SetPair("TEMPLATE_DIR", Path.GetDirectoryName(templatePath)); //inform template of location of feature vector files
+            config.SetPair("MODE", Mode.READ_EXISTING_TEMPLATE.ToString());
             var template = BaseTemplate.Load(config);
             template.LoadFeatureVectorsFromFile();
             return template;
@@ -172,8 +200,15 @@ namespace AudioAnalysis
         /// <param name="config"></param>
 		public BaseTemplate(Configuration config)
 		{
+            string modeStr = config.GetString("MODE");   // Mode.READ_EXISTING_TEMPLATE;
+            if (modeStr == null) mode = Mode.UNDEFINED;
+            else                 mode = (Mode)Enum.Parse(typeof(Mode), modeStr);
+
             CallID  = config.GetInt("TEMPLATE_ID");
             CallName = config.GetString("CALL_NAME");   //e.g.  Lewin's Rail Kek-kek
+
+            Log.WriteIfVerbose("\n\nINITIALISING TEMPLATE: mode=" + mode.ToString() + " name=" + CallName + " id=" + CallID);
+
             Comment = config.GetString("COMMENT");  //e.g.Template consists of a single KEK!
             SourcePath = config.GetString("WAV_FILE_PATH");
             SourceDir  = Path.GetDirectoryName(SourcePath);
@@ -185,6 +220,14 @@ namespace AudioAnalysis
                 SourceDir  = "Source dir not set!!";  //string must be given a value to enable later serialisation check               
 		}
 
+
+        public void ExtractTemplateAndSave(AudioRecording ar, string opTemplatePath)
+        {
+            ExtractTemplateFromRecording(ar);
+            Save(opTemplatePath);
+        }
+
+
         public void ExtractTemplateFromRecording(AudioRecording ar)
         {
             WavReader wav = ar.GetWavData();
@@ -192,17 +235,56 @@ namespace AudioAnalysis
             FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
         }
 
+
+
+        public virtual void Save(string targetPath)
+        {
+            this.DataPath = targetPath;
+            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + ".OLD", true); //overwrite
+            using (var file = new StreamWriter(targetPath))
+            {
+                Save(file);
+            }
+        }
+
+        public virtual void Save(TextWriter writer)
+        {
+            writer.WriteLine("DATE=" + DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
+            writer.WriteLine("#");
+            writer.WriteLine("#**************** TEMPLATE DATA");
+            writer.WriteConfigValue("TEMPLATE_ID", CallID);
+            writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
+            writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
+            writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
+            writer.WriteLine("#");
+            writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE");
+            writer.WriteConfigValue("DIR_LOCATION", SourceDir);  //WAV_FILE_PATH=C:\SensorNetworks\WavFiles\
+            writer.WriteConfigValue("WAV_FILE_NAME", Path.GetFileName(SourcePath));  //WAV_FILE_PATH=BAC2_20071008-085040.wav
+            writer.WriteConfigValue("WAV_DURATION", SonogramConfig.Duration.TotalSeconds);
+            writer.WriteConfigValue("WAV_SAMPLE_RATE", SonogramConfig.SampleRate);
+            writer.WriteLine("#");
+            writer.Flush();
+        }
+
+
+
+
         public void LoadFeatureVectorsFromFile()
         {
             this.FeatureVectorConfig.LoadFromFile(this.DataDir);
         }
 
-        public void GenerateAndSaveSymbolSequence(AudioRecording ar, string opDir)
+        public void GenerateSymbolSequenceAndSave(AudioRecording ar, string opDir)
         {
-            WavReader wav = ar.GetWavData();
+            WavReader wav = ar.GetWavData(); //get the wav file
+            //generate info about symbol sequence
             var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
             this.AcousticModelConfig.GenerateSymbolSequence(avSonogram, this);
+            //save info about symbol sequence
             this.AcousticModelConfig.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
+            // save an image of the sonogram with symbol sequence track added
+            var imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(this.SourcePath) + ".png");
+            SaveSyllablesImage(wav, imagePath);
         }
 
         public void GenerateSymbolSequence(AcousticVectorsSonogram sonogram)
@@ -270,40 +352,5 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
         }
-
-
-
-        public virtual void Save(string targetPath)
-        {
-            this.DataPath = targetPath;
-            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + ".OLD", true); //overwrite
-            using (var file = new StreamWriter(targetPath))
-            {
-                Save(file);
-            }
-        }
-
-		public virtual void Save(TextWriter writer)
-		{
-            writer.WriteLine("DATE="+DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
-            writer.WriteLine("#");
-            writer.WriteLine("#**************** TEMPLATE DATA");
-            writer.WriteConfigValue("TEMPLATE_ID", CallID);
-            writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
-            writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
-            writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
-            writer.WriteLine("#");
-            writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE");
-            writer.WriteConfigValue("DIR_LOCATION", SourceDir);  //WAV_FILE_PATH=C:\SensorNetworks\WavFiles\
-            writer.WriteConfigValue("WAV_FILE_NAME", Path.GetFileName(SourcePath));  //WAV_FILE_PATH=BAC2_20071008-085040.wav
-            writer.WriteConfigValue("WAV_DURATION", SonogramConfig.Duration.TotalSeconds);
-            writer.WriteConfigValue("WAV_SAMPLE_RATE", SonogramConfig.SampleRate);
-            writer.WriteLine("#");
-            writer.Flush();
-		}
-
-
-
-
 	}
 }
