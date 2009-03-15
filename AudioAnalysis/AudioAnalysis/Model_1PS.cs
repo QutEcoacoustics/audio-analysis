@@ -135,14 +135,15 @@ namespace AudioAnalysis
             writer.WriteLine("#**************** INFO ABOUT THE LANGUAGE MODEL ***************");
             writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
 
-            if ((BaseTemplate.task == Task.EXTRACT_FV) || (BaseTemplate.task == Task.CREATE_ACOUSTIC_MODEL))
-            {
-                writer.WriteLine("MODEL_TYPE=UNDEFINED");
-                writer.WriteLine("#MODEL_TYPE=ONE_PERIODIC_SYLLABLE");
-            }
-            else writer.WriteConfigValue("MODEL_TYPE", ModelType);
+            //if ((this.task == Task.EXTRACT_FV) || (this.task == Task.CREATE_ACOUSTIC_MODEL))
+            //{
+            //    writer.WriteLine("MODEL_TYPE=UNDEFINED");
+            //    writer.WriteLine("#MODEL_TYPE=ONE_PERIODIC_SYLLABLE");
+            //}
+            //else 
+                writer.WriteConfigValue("MODEL_TYPE", ModelType);
+
             writer.WriteConfigValue("PERIODICITY_MS", Periodicity_ms);
-            
             writer.WriteConfigValue("NUMBER_OF_WORDS", WordCount);
             // Although when read in the Words are split into different tags with multiple examples this information
             // is not stored (or used) so we can not persist it back. Instead we just write as if each word
