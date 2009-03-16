@@ -159,7 +159,7 @@ namespace AudioAnalysis
             //this line commented to avoid depedence on class SonoImage
 //			SonoImage.AddSonogram(bmp, matrix, binHeight, false, topScanBin, bottomScanBin);
 
-            int offset = Image_MultiTrack.ScaleHeight + imageHt + Image_MultiTrack.ScaleHeight;
+            int offset = Image_Track.timeScaleHt + imageHt + Image_Track.timeScaleHt;
 			return bmp;
 		}
 

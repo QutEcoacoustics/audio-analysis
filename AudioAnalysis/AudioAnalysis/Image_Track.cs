@@ -11,7 +11,7 @@ namespace AudioAnalysis
 {
 
 
-    public enum TrackType { none, deciBels, segmentation, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
+    public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
 
 
     public sealed class Image_Track
@@ -20,6 +20,7 @@ namespace AudioAnalysis
         public const int DefaultHeight = 30;   //pixel height of a track
         public const int timeScaleHt = 10;   //pixel height of the top and bottom time scales
         public const int syllablesTrackHeight = 10;   //pixel height of a track
+        public const int envelopeTrackHeight  = 40;   //pixel height of a track
         public const int scoreTrackHeight = 20;   //pixel height of a track
         #endregion
 
@@ -55,7 +56,7 @@ namespace AudioAnalysis
 
         public TrackType TrackType { get; set; }
 
-        public int Offset { get; set; }
+        public int Offset { get; set; } //set to TOP of the track in final image
         private int height = DefaultHeight;
         public int Height { get { return height; } set { height = value; } }
         private int[] intData = null;
@@ -64,6 +65,11 @@ namespace AudioAnalysis
 
         TimeSpan timeSpan { set; get; }
 
+        //these params used for signal envelope track
+        private double[] doubleData1 = null;
+        private double[] doubleData2 = null;
+
+        //these params used for segmentation track
         public double MinDecibelReference { set; get; }
         public double MaxDecibelReference { set; get; }
         public double SegmentationThreshold_k1 { set; get; }
@@ -96,12 +102,24 @@ namespace AudioAnalysis
             this.height = SetTrackHeight();
             //if (SonoImage.Verbose) Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
+        /// <summary>
+        /// used for showing the singal envelope track
+        /// </summary>
+        /// <param name="type"></param>
+        /// <param name="data1"></param>
+        /// <param name="data2"></param>
+        public Image_Track(TrackType type, double[] data1, double[] data2)
+        {
+            this.TrackType = type;
+            this.doubleData1 = data1;
+            this.doubleData2 = data2;
+            this.height = SetTrackHeight();
+        }
         public Image_Track(TrackType type, double[,] data)
         {
             this.TrackType = type;
             this.doubleMatrix = data;
             this.height = SetTrackHeight();
-            //if (SonoImage.Verbose) Console.WriteLine("\tTrack CONSTRUCTOR: trackType = " + type + "  Data = " + data.ToString());
         }
         public Image_Track(TrackType type, TimeSpan t)
         {
@@ -134,6 +152,8 @@ namespace AudioAnalysis
                     return scoreTrackHeight;
                 case TrackType.deciBels:
                     return DefaultHeight;
+                case TrackType.waveEnvelope:
+                    return envelopeTrackHeight;
                 case TrackType.segmentation:
                     return DefaultHeight;
                 case TrackType.scoreMatrix:
@@ -149,22 +169,25 @@ namespace AudioAnalysis
             switch (TrackType)
             {
                 case TrackType.timeTics:
-                    AddTimeTrack(bmp);    //time scale track
+                    DrawTimeTrack(bmp);    //time scale track
                     break;
                 case TrackType.deciBels:
-                    AddDecibelTrack(bmp); //frame energy track
+                    DrawDecibelTrack(bmp); //frame energy track
+                    break;
+                case TrackType.waveEnvelope:
+                    DrawWaveEnvelopeTrack(bmp); //signal envelope track
                     break;
                 case TrackType.segmentation:
-                    AddSegmentationTrack(bmp); //segmentation track
+                    DrawSegmentationTrack(bmp); //segmentation track
                     break;
                 case TrackType.syllables:
-                    AddSyllablesTrack(bmp);
+                    DrawSyllablesTrack(bmp);
                     break;
                 case TrackType.scoreArray:
-                    AddScoreArrayTrack(bmp);  //add a score track
+                    DrawScoreArrayTrack(bmp);  //add a score track
                     break;
                 case TrackType.scoreMatrix:
-                    AddScoreMatrixTrack(bmp);  //add a score track
+                    DrawScoreMatrixTrack(bmp);  //add a score track
                     break;
                 default:
                     Log.WriteLine("WARNING******** !!!! Image_Track.DrawTrack():- TRACKTYPE NOT DEFINED");
@@ -177,7 +200,7 @@ namespace AudioAnalysis
         /// <summary>
         /// paints a track of symbol colours derived from symbol ID
         /// </summary>
-        public Bitmap AddSyllablesTrack(Bitmap bmp)
+        public Bitmap DrawSyllablesTrack(Bitmap bmp)
         {
             int bmpWidth = bmp.Width;
             //int bmpHt = bmp.Height;
@@ -206,7 +229,7 @@ namespace AudioAnalysis
         /// <summary>
         /// This method assumes that the passed data array is of values, min=0.0, max=approx 8-16.
         /// </summary>
-        public Bitmap AddScoreArrayTrack(Bitmap bmp)
+        public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
             if (doubleData == null) return bmp;
             Color gray = Color.LightGray;
@@ -233,7 +256,7 @@ namespace AudioAnalysis
         }
 
 
-        public Bitmap AddTimeTrack(Bitmap bmp)
+        public Bitmap DrawTimeTrack(Bitmap bmp)
         {
             int width = bmp.Width;
             int height = bmp.Height;
@@ -293,7 +316,7 @@ namespace AudioAnalysis
         /// <summary>
         /// This method assumes that the passed data array is of values, min=0.0, max = approx 8-16.
         /// </summary>
-        public Bitmap AddScoreMatrixTrack(Bitmap bmp)
+        public Bitmap DrawScoreMatrixTrack(Bitmap bmp)
         {
             int bmpWidth = bmp.Width;
             int bmpHt = bmp.Height;
@@ -335,7 +358,7 @@ namespace AudioAnalysis
         /// This method assumes that the passed decibel array has bounds determined by constants
         /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
         /// </summary>
-        public Bitmap AddDecibelTrack(Bitmap bmp)
+        public Bitmap DrawDecibelTrack(Bitmap bmp)
         {
             int width = bmp.Width;
             int height = bmp.Height; 
@@ -344,7 +367,7 @@ namespace AudioAnalysis
             Color white = Color.White;
             double range = this.MaxDecibelReference - this.MinDecibelReference;
 
-            Color[] stateColors = { Color.White, Color.Green, Color.Red };
+            //Color[] stateColors = { Color.White, Color.Green, Color.Red };
 
             for (int x = 0; x < width; x++)
             {
@@ -360,21 +383,50 @@ namespace AudioAnalysis
         }
 
         /// <summary>
+        /// assumes that max signal value = 1.0 and min sig value = -1.0 i.e. wav file values 
+        /// </summary>
+        /// <param name="bmp"></param>
+        /// <returns></returns>
+        public Bitmap DrawWaveEnvelopeTrack(Bitmap bmp)
+        {
+            //int bmpHeight = bmp.Height;
+            //Offset += this.Height; //row id offset for placing track pixels
+            //Offset += (timeScaleHt - 1);//shift offset to bottom of scale
+            //int offset = bmpHeight - this.height; //row id offset for placing track pixels
+            //int bottom = Offset + this.height - 1;
+
+            int halfHeight = this.height / 2;
+
+            for (int x = 0; x < bmp.Width; x++)
+            {
+                int maxID = halfHeight + (int)Math.Round(doubleData2[x] * halfHeight);
+                int minID = halfHeight + (int)Math.Round(doubleData1[x] * halfHeight);
+                //Console.WriteLine(x + "   doubleData1[x]=" + doubleData1[x] + "   minID=" + minID);
+                //paint white and leave a blue vertical bar
+                for (int z = 0; z < this.Height; z++) bmp.SetPixel(x, this.Offset + z, Color.White);
+                bmp.SetPixel(x, this.Offset + this.Height, Color.Black);
+                for (int z = minID; z < maxID; z++) bmp.SetPixel(x, this.Offset + z, Color.Blue);
+                bmp.SetPixel(x, this.Offset + this.Height, Color.Black);
+            }
+
+            return bmp;
+        }
+
+        /// <summary>
         /// This method assumes that the passed decibel array has bounds determined by constants
         /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
         /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
 
         /// </summary>
-        public Bitmap AddSegmentationTrack(Bitmap bmp)
+        public Bitmap DrawSegmentationTrack(Bitmap bmp)
         {
-            int width = bmp.Width;
             int bmpHeight = bmp.Height;
             int trackHeight = Image_Track.DefaultHeight;
 
             int offset = bmpHeight - trackHeight; //row id offset for placing track pixels
             Color white = Color.White;
             double range = this.MaxDecibelReference - this.MinDecibelReference;
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < bmp.Width; x++)
             {
                 double norm = (doubleData[x] - this.MinDecibelReference) / range;
                 int id = trackHeight - 1 - (int)(trackHeight * norm);
@@ -397,7 +449,7 @@ namespace AudioAnalysis
             if (y1 >= bmpHeight) y1 = bmpHeight - 1;
             int y2 = offset + k2;
             if (y2 >= bmpHeight) y2 = bmpHeight - 1;
-            for (int x = 0; x < width; x++)
+            for (int x = 0; x < bmp.Width; x++)
             {
                 bmp.SetPixel(x, y1, Color.Orange);
                 bmp.SetPixel(x, y2, Color.Lime);
@@ -431,11 +483,19 @@ namespace AudioAnalysis
             return track;
         }
 
+        public static Image_Track GetWavEnvelopeTrack(BaseSonogram sg)
+        {
+            var track = new Image_Track(TrackType.waveEnvelope, sg.FrameMinAmplitude, sg.FrameMaxAmplitude);
+            //int height = track.Height;
+            return track;
+        }
+
+
+
         public static Image_Track GetTimeTrack(TimeSpan t)
         {
             var track = new Image_Track(TrackType.timeTics, t);
-            string name = track.TrackType.ToString();
-            int height = track.Height;
+            //int height = track.Height;
             return track;
         }
         public static Image_Track GetSyllablesTrack(int[] SyllableIDs, int garbageID)

@@ -99,15 +99,22 @@ namespace AudioAnalysis
             Console.WriteLine("sonogram.SegmentationThresholdK1 =" + sonogram.SegmentationThresholdK1.ToString("F3"));
             Console.WriteLine("sonogram.SegmentationThresholdK2 =" + sonogram.SegmentationThresholdK2.ToString("F3"));
 
-//            Console.WriteLine("sonogram.FreqBand_SNR =" + sonogram.FreqBand_SNR);
-//            Console.WriteLine("sonogram.FreqBandMax_dB =" + sonogram.FreqBandMax_dB);
-//            Console.WriteLine("sonogram.FreqBandNoise_dB =" + sonogram.FreqBandNoise_dB);
-            Console.ReadLine();
+//            Console.ReadLine();
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.Save(outputFolder + wavFileName + ".png");
+
+            var image2 = new Image_MultiTrack(sonogram.GetImage_ReducedWaveForm());
+            image2.Save(outputFolder + wavFileName + "_waveform.png");
+
+            int factor = 4;
+            var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor));
+            image3.Save(outputFolder + wavFileName + "_reduced.png");
+
+
             
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
@@ -145,8 +152,8 @@ namespace AudioAnalysis
             //string wavFileName = "SA0220080223-215657";
 
             //SAMFORD 24
-            //wavDirName = @"C:\SensorNetworks\WavFiles\\Samford24\";
-            //wavFileName = "Samford_24_20090313-123000";
+            wavDirName = @"C:\SensorNetworks\WavFiles\\Samford24\";
+            wavFileName = "Samford_24_20090313-123000";
 
             //AUSTRALIAN BIRD CALLS
             //const string wavDirName = @"C:\SensorNetworks\WavFiles\VoicesOfSubtropicalRainforests\";
@@ -199,11 +206,11 @@ namespace AudioAnalysis
             //wavFileName = "BAC10_20081101-045000";
 
             //TEST DATA
-            wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
             //wavFileName = "file0031_selection";
             //wavFileName = "daphne-151000_selection";
             //wavFileName = "jb1-161000_selection";
-            wavFileName = "jb3-151000_selection";
+            //wavFileName = "jb3-151000_selection";
 
         } //end ChooseWavFile()
 

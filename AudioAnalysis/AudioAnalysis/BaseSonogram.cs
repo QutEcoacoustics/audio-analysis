@@ -39,7 +39,10 @@ namespace AudioAnalysis
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }
 		public int FrameCount { get; private set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
 
-		public double[] FrameEnergy { get; private set; } // Energy per signal frame
+        public double[] FrameMinAmplitude { get; private set; } // minimum (i.e. max negative) signal value in a frame
+        public double[] FrameMaxAmplitude { get; private set; } // maximum (i.e. max positive) signal value in a frame
+
+        public double[] FrameEnergy { get; private set; } // Energy per signal frame
 		public double[] Decibels { get; private set; } // Normalised decibels per signal frame
 
 		public double NoiseSubtracted { get; private set; } // Noise (dB) subtracted from each frame decibel value
@@ -89,6 +92,12 @@ namespace AudioAnalysis
 			int step = (int)(config.WindowSize * (1 - config.WindowOverlap));
 			double[,] frames = DSP.Frames(signal, config.WindowSize, step);
 			FrameCount = frames.GetLength(0);
+
+            //Signal envelope per frame
+            double[] minAmp, maxAmp;
+            DSP.SignalEnvelope(frames, out minAmp, out maxAmp);
+            this.FrameMinAmplitude = minAmp;
+            this.FrameMaxAmplitude = maxAmp;
 
 			// ENERGY PER FRAME
 			FrameEnergy = DSP.SignalLogEnergy(frames, MinLogEnergy, MaxLogEnergy);
@@ -278,6 +287,90 @@ namespace AudioAnalysis
 
             if (add1kHzLines) Draw1kHzLines(bmp);
 			return bmp;
+        }
+
+        public Image GetImage_ReducedWaveForm()
+        {
+            var data = Data;
+            int frameCount = data.GetLength(0); // Number of spectra in sonogram
+            int imageWidth  = 284;
+            int subSample = frameCount / imageWidth;
+            int imageHeight = 60;
+            int halfHeight = imageHeight / 2;
+ 
+            //set up min, max, range for normalising of dB values
+            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            for (int w = 0; w < imageWidth; w++)
+            {
+                int start = w * subSample;
+                int end = ((w + 1) * subSample) - 1;
+                double min =  Double.MaxValue;
+                double max = -Double.MaxValue;
+                for (int x = start; x < end; x++)
+                {
+                    if (min > FrameMinAmplitude[x]) min = FrameMinAmplitude[x];
+                    else
+                    if (max < FrameMaxAmplitude[x]) max = FrameMaxAmplitude[x];
+
+                }
+                int minID = halfHeight + (int)Math.Round(min * halfHeight);
+                int maxID = halfHeight + (int)Math.Round(max * halfHeight);
+                for (int z = minID; z < maxID; z++) bmp.SetPixel(w, z, Color.LightBlue);
+            }
+            return bmp;
+        }
+
+
+        /// <summary>
+        /// factor must be an integer. 2 mean image reduced by factor of 2; 3 reduced by factor of 3 etc.
+        /// </summary>
+        /// <param name="factor"></param>
+        /// <returns></returns>
+        public Image GetImage_ReducedSonogram(int factor)
+        {
+            double[] logEnergy = this.FrameEnergy;
+            var data = Data; //sonogram intensity values
+            int frameCount  = data.GetLength(0); // Number of spectra in sonogram
+            int imageHeight = data.GetLength(1); // image ht = sonogram ht. Later include grid and score scales
+            int imageWidth  = frameCount / factor;
+            int subSample   = frameCount / imageWidth;
+
+            //set up min, max, range for normalising of dB values
+            double min; double max;
+            DataTools.MinMax(data, out min, out max);
+            double range = max - min;
+
+            Color[] grayScale = ImageTools.GrayScale();
+
+            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            for (int w = 0; w < imageWidth; w++)
+            {
+                int start = w * subSample;
+                int end = ((w + 1) * subSample) - 1;
+                double maxE = -Double.MaxValue;
+                int maxID = 0;
+                for (int x = start; x < end; x++)
+                {
+                    if (maxE < FrameEnergy[x])
+                    {
+                        maxE = FrameEnergy[x];
+                        maxID = x;
+                    }
+                }
+                //have found the frame with max energy. Now draw its spectrum
+                for (int y = 0; y < data.GetLength(1); y++) //over all freq bins
+                {
+                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    double value = (data[maxID, y] - min) / (double)range;
+                    int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                    if (c < 0) c = 0;
+                       else if (c >= 256) c = 255;
+                     Color col = grayScale[c];
+                     bmp.SetPixel(w, imageHeight-y-1, col);
+                }//end over all freq bins
+            }
+
+            return bmp;
         }
 
 
