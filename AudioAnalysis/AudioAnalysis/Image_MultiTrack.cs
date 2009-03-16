@@ -10,10 +10,6 @@ namespace AudioAnalysis
 {
 	public class Image_MultiTrack
 	{
-		#region Constants
-		public const int ScaleHeight = 10;
-		#endregion
-
 
 		#region Properties
 		public Image Image { get; private set; }

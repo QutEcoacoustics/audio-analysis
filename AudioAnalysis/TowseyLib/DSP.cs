@@ -76,6 +76,34 @@ namespace TowseyLib
             return newSig;
         }
 
+        /// <summary>
+        /// returns the min and max values in each frame. Signal values range from -1 to +1.
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <param name="minAmp"></param>
+        /// <param name="maxAmp"></param>
+        public static void SignalEnvelope(double[,] frames, out double[] minAmp, out double[] maxAmp)
+        {
+            int frameCount = frames.GetLength(0);
+            int N  = frames.GetLength(1);
+            minAmp = new double[frameCount];
+            maxAmp = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                double min =  Double.MaxValue;
+                double max = -Double.MaxValue;
+                for (int j = 0; j < N; j++)  //foreach sample in frame
+                {
+                    if (min > frames[i, j]) min = frames[i, j];
+                    else 
+                    if (max < frames[i, j]) max = frames[i, j];
+                }
+                minAmp[i] = min;
+                maxAmp[i] = max;
+            }
+        }
+
+
 
         /// <summary>
         /// Frame energy is the log of the summed energy of the samples.
