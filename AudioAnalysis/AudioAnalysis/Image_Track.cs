@@ -56,7 +56,8 @@ namespace AudioAnalysis
 
         public TrackType TrackType { get; set; }
 
-        public int Offset { get; set; } //set to TOP of the track in final image
+        public int topOffset { get; set; }    //set to track's TOP    pixel row in final image
+        public int bottomOffset { get; set; } //set to track's BOTTOM pixel row in final image
         private int height = DefaultHeight;
         public int Height { get { return height; } set { height = value; } }
         private int[] intData = null;
@@ -65,7 +66,6 @@ namespace AudioAnalysis
 
         TimeSpan timeSpan { set; get; }
 
-        //these params used for signal envelope track
         private double[] doubleData1 = null;
         private double[] doubleData2 = null;
 
@@ -214,44 +214,15 @@ namespace AudioAnalysis
             }
 
             //Console.WriteLine("offset=" + this.offset);
-            int bottom = Offset + this.height - 1;
+            int bottom = topOffset + this.height - 1;
             for (int x = 0; x < Math.Min(bmp.Width, intData.Length); x++)
             {
                 Color col = TrackColors[intData[x]];
                 if (intData[x] == 0) col = white;
                 if (intData[x] == this.garbageID) col = gray;
-                for (int z = 0; z < this.height; z++) bmp.SetPixel(x, Offset + z, col);  //add in hits
+                for (int z = 0; z < this.height; z++) bmp.SetPixel(x, topOffset + z, col);  //add in hits
                 bmp.SetPixel(x, bottom, Color.Black);
             }
-            return bmp;
-        }
-
-        /// <summary>
-        /// This method assumes that the passed data array is of values, min=0.0, max=approx 8-16.
-        /// </summary>
-        public Bitmap DrawScoreArrayTrack(Bitmap bmp)
-        {
-            if (doubleData == null) return bmp;
-            Color gray = Color.LightGray;
-            Color white = Color.White;
-            int bmpWidth = bmp.Width;
-            int bmpHt = bmp.Height;
-            for (int x = 0; x < Math.Min(bmp.Width, doubleData.Length); x++)
-            {
-                //if (doubleData[x] != 0.0) Console.WriteLine(x + "  " + doubleData[x]);
-                int id = this.Height - 1 - (int)(this.Height * doubleData[x] / this.ScoreMax);
-                if (id < 0) id = 0;
-                else if (id > this.Height) id = this.Height;
-                //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, Offset + z, white);
-            }
-
-            //add in horizontal threshold significance line
-            double max = 2 * this.ScoreThreshold;
-            if (max < this.ScoreMax) max = this.ScoreMax;
-            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / max)));
-            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, Offset + lineID, gray);
-
             return bmp;
         }
 
@@ -266,7 +237,7 @@ namespace AudioAnalysis
             Color gray = Color.Gray;
             Color white = Color.White;
             Color c = white;
-            Offset += (timeScaleHt - 1);//shift offset to bottom of scale
+            topOffset += (timeScaleHt - 1);//shift offset to bottom of scale
 
             for (int x = 0; x < width; x++)
             {
@@ -280,9 +251,9 @@ namespace AudioAnalysis
                 //bmp.SetPixel(x, timeScaleHt - 1, black);
 
                 //bottom axis tick marks
-                for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, Offset - h, c);
-                bmp.SetPixel(x, Offset, black);                    // top line of scale
-                bmp.SetPixel(x, Offset - timeScaleHt + 1, black);  // bottom line of scale
+                for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
+                bmp.SetPixel(x, topOffset, black);                    // top line of scale
+                bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
             } //end of adding time grid
             return bmp;
         }
@@ -314,20 +285,59 @@ namespace AudioAnalysis
         }
 
         /// <summary>
+        /// This method assumes that the passed data array is of values, min=0.0, max=approx 8-16.
+        /// </summary>
+        public Bitmap DrawScoreArrayTrack(Bitmap bmp)
+        {
+            if (doubleData == null) return bmp;
+            int bmpWidth = bmp.Width;
+            int dataLength = this.doubleData.Length;
+            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
+            if (subSample < 1) subSample = 1;
+
+            Color gray = Color.LightGray;
+            Color white = Color.White;
+
+            for (int w = 0; w < bmpWidth; w++)
+            {
+                int start = w * subSample;
+                int end = (w + 1) * subSample;
+                double max = -Double.MaxValue;
+                int location = 0;
+                for (int x = start; x < end; x++)
+                {
+                    if (max < doubleData[x]) max = doubleData[x];
+                    location = x;
+                }
+                int id = this.Height - 1 - (int)(this.Height * doubleData[w] / this.ScoreMax);
+                if (id < 0) id = 0;
+                else if (id > this.Height) id = this.Height;
+                //paint white and leave a black vertical histogram bar
+                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, white);
+            }
+
+            //add in horizontal threshold significance line
+            double thold = 2 * this.ScoreThreshold;
+            if (thold < this.ScoreMax) thold = this.ScoreMax;
+            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / thold)));
+            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
+
+            return bmp;
+        }
+
+        /// <summary>
         /// This method assumes that the passed data array is of values, min=0.0, max = approx 8-16.
         /// </summary>
         public Bitmap DrawScoreMatrixTrack(Bitmap bmp)
         {
             int bmpWidth = bmp.Width;
-            int bmpHt = bmp.Height;
-            //Console.WriteLine("arrayLength=" + scoreArray.Length + "  imageLength=" + width);
-            //Console.WriteLine("height=" + height);
-            int offset = bmpHt - Image_Track.DefaultHeight;
+            int dataLength = this.intData.Length;
+            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
+            if (subSample < 1) subSample = 1;
+
             Color gray = Color.LightGray;
             Color white = Color.White;
             Color red = Color.Red;
-            //  bool intDataExists = ((intData != null) && (intData.Length != 0));
-            //  if ((!intDataExists)) Console.WriteLine("#####WARNING!! AddScoreMatrixTrack(Bitmap bmp):- Integer data does not exists!");
 
             int numberOfScoreTracks = this.doubleMatrix.GetLength(0);
             double[] scores = new double[numberOfScoreTracks];
@@ -341,15 +351,15 @@ namespace AudioAnalysis
                 if (id < 0) id = 0;
                 else if (id > this.Height) id = this.Height;
                 //paint white and leave a black vertical histogram bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
-                for (int z = id; z < this.Height; z++) bmp.SetPixel(x, offset + z, TrackColors[maxIndex + 15]);
+                for (int z = 0; z < id; z++) bmp.SetPixel(x, topOffset + z, white);
+                for (int z = id; z < this.Height; z++) bmp.SetPixel(x, topOffset + z, TrackColors[maxIndex + 15]);
             }
 
             //add in horizontal threshold significance line
             double max = 2 * this.ScoreThreshold;
             if (max < this.ScoreMax) max = this.ScoreMax;
             int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / max)));
-            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, offset + lineID, gray);
+            for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
 
             return bmp;
         }
@@ -360,23 +370,29 @@ namespace AudioAnalysis
         /// </summary>
         public Bitmap DrawDecibelTrack(Bitmap bmp)
         {
-            int width = bmp.Width;
-            int height = bmp.Height; 
-
-            int offset = height - Image_Track.DefaultHeight; //row id offset for placing track pixels
-            Color white = Color.White;
             double range = this.MaxDecibelReference - this.MinDecibelReference;
+            int dataLength = doubleData.Length;
+            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
+            if (subSample < 1) subSample = 1;
 
-            //Color[] stateColors = { Color.White, Color.Green, Color.Red };
-
-            for (int x = 0; x < width; x++)
+            for (int w = 0; w < bmp.Width; w++)
             {
-                double norm = (doubleData[x] - this.MinDecibelReference) / range;
+                int start = w * subSample;
+                int end = (w+1) * subSample;
+                double max = -Double.MaxValue;
+                int location = 0;
+                for (int x = start; x < end; x++)
+                {
+                    if (max < doubleData[x]) max = doubleData[x];
+                    location = x;
+                }
+
+                double norm = (doubleData[location] - this.MinDecibelReference) / range;
                 int id = Image_Track.DefaultHeight - 1 - (int)(Image_Track.DefaultHeight * norm);
                 if (id < 0) id = 0;
                 else if (id > Image_Track.DefaultHeight) id = Image_Track.DefaultHeight;
                 //paint white and leave a black vertical bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
+                for (int z = 0; z < id; z++) bmp.SetPixel(w, topOffset + z, Color.White);
             }
 
             return bmp;
@@ -389,28 +405,35 @@ namespace AudioAnalysis
         /// <returns></returns>
         public Bitmap DrawWaveEnvelopeTrack(Bitmap bmp)
         {
-            //int bmpHeight = bmp.Height;
-            //Offset += this.Height; //row id offset for placing track pixels
-            //Offset += (timeScaleHt - 1);//shift offset to bottom of scale
-            //int offset = bmpHeight - this.height; //row id offset for placing track pixels
-            //int bottom = Offset + this.height - 1;
-
             int halfHeight = this.height / 2;
+            Color c = Color.FromArgb(10, 200, 255);
 
-            for (int x = 0; x < bmp.Width; x++)
+            for (int w = 0; w < bmp.Width; w++)
             {
-                int maxID = halfHeight + (int)Math.Round(doubleData2[x] * halfHeight);
-                int minID = halfHeight + (int)Math.Round(doubleData1[x] * halfHeight);
-                //Console.WriteLine(x + "   doubleData1[x]=" + doubleData1[x] + "   minID=" + minID);
-                //paint white and leave a blue vertical bar
-                for (int z = 0; z < this.Height; z++) bmp.SetPixel(x, this.Offset + z, Color.White);
-                bmp.SetPixel(x, this.Offset + this.Height, Color.Black);
-                for (int z = minID; z < maxID; z++) bmp.SetPixel(x, this.Offset + z, Color.Blue);
-                bmp.SetPixel(x, this.Offset + this.Height, Color.Black);
+                int minID = halfHeight + (int)Math.Round(doubleMatrix[0, w] * halfHeight);
+                //minID = halfHeight + (int)Math.Round(-1.0 * halfHeight);
+                int maxID = halfHeight + (int)Math.Round(doubleMatrix[1, w] * halfHeight) -1;
+                for (int z = minID; z <= maxID; z++) bmp.SetPixel(w, this.bottomOffset - z, c);
+                bmp.SetPixel(w, this.topOffset + halfHeight, c); //set zero line in case it was missed
+                if (doubleMatrix[0, w] < -0.99)
+                {
+                    bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
+                    bmp.SetPixel(w, this.bottomOffset - 2, Color.OrangeRed);
+                    bmp.SetPixel(w, this.bottomOffset - 3, Color.OrangeRed);
+                }else 
+                if (doubleMatrix[1, w] > 0.99)
+                {
+                    bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
+                    bmp.SetPixel(w, this.topOffset+1, Color.OrangeRed);
+                    bmp.SetPixel(w, this.topOffset+2, Color.OrangeRed);
+                }
+                //bmp.SetPixel(w, this.topOffset, Color.OrangeRed);
+                //bmp.SetPixel(w, this.bottomOffset - 1, Color.OrangeRed);
             }
 
             return bmp;
         }
+
 
         /// <summary>
         /// This method assumes that the passed decibel array has bounds determined by constants
@@ -420,46 +443,43 @@ namespace AudioAnalysis
         /// </summary>
         public Bitmap DrawSegmentationTrack(Bitmap bmp)
         {
-            int bmpHeight = bmp.Height;
-            int trackHeight = Image_Track.DefaultHeight;
+            bmp = DrawDecibelTrack(bmp);
 
-            int offset = bmpHeight - trackHeight; //row id offset for placing track pixels
-            Color white = Color.White;
+            if (this.intData == null) return bmp;     //cannot show becuase no state info
+
             double range = this.MaxDecibelReference - this.MinDecibelReference;
-            for (int x = 0; x < bmp.Width; x++)
-            {
-                double norm = (doubleData[x] - this.MinDecibelReference) / range;
-                int id = trackHeight - 1 - (int)(trackHeight * norm);
-                if (id < 0) id = 0;
-                else if (id > trackHeight) id = trackHeight;
-                //paint white and leave a black vertical bar
-                for (int z = 0; z < id; z++) bmp.SetPixel(x, offset + z, white);
-            }
+            int dataLength = this.intData.Length;
+            int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
+            if (subSample < 1) subSample = 1;
 
             //display vocalisation state and thresholds used to determine endpoints
-            if (this.intData == null) return bmp;     //cannot show becuase no state info
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
             double v1 = this.SegmentationThreshold_k1 / range;
-            int k1 = trackHeight - (int)(trackHeight * v1);
+            int k1 = this.Height - (int)(this.Height * v1);
             double v2 = this.SegmentationThreshold_k2 / range;
-            int k2 = trackHeight - (int)(trackHeight * v2);
-            if ((v1 < 0.0) || (v1 > 1.0)) return bmp;
+            int k2 = this.Height - (int)(this.Height * v2);
+            if ((v1 < 0.0) || (v1 > 1.0)) return bmp; //thresholds are illegal so stop now.
             if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
-            int y1 = offset + k1;
-            if (y1 >= bmpHeight) y1 = bmpHeight - 1;
-            int y2 = offset + k2;
-            if (y2 >= bmpHeight) y2 = bmpHeight - 1;
+
+            //calculate location of the segmentation threshold lines
+            int y1 = topOffset + k1;
+            if (y1 >= bmp.Height) y1 = bmp.Height - 1;
+            int y2 = topOffset + k2;
+            if (y2 >= bmp.Height) y2 = bmp.Height - 1;
+
             for (int x = 0; x < bmp.Width; x++)
             {
-                bmp.SetPixel(x, y1, Color.Orange);
+                bmp.SetPixel(x, y1, Color.Orange);//threshold lines
                 bmp.SetPixel(x, y2, Color.Lime);
 
                 //put state as top four pixels
-                Color col = stateColors[this.intData[x]];
-                bmp.SetPixel(x, offset, col);
-                bmp.SetPixel(x, offset + 1, col);
-                bmp.SetPixel(x, offset + 2, col);
-                bmp.SetPixel(x, offset + 3, col);
+                int location = x * subSample;
+                if (location > dataLength - 1) continue;
+                Color col = stateColors[this.intData[location]];
+                bmp.SetPixel(x, topOffset, col);
+                bmp.SetPixel(x, topOffset + 1, col);
+                bmp.SetPixel(x, topOffset + 2, col);
+                bmp.SetPixel(x, topOffset + 3, col);
             }
             return bmp;
         }
@@ -483,14 +503,12 @@ namespace AudioAnalysis
             return track;
         }
 
-        public static Image_Track GetWavEnvelopeTrack(BaseSonogram sg)
+        public static Image_Track GetWavEnvelopeTrack(AudioRecording ar, int imageWidth)
         {
-            var track = new Image_Track(TrackType.waveEnvelope, sg.FrameMinAmplitude, sg.FrameMaxAmplitude);
-            //int height = track.Height;
+            double[,] envelope = ar.GetWaveForm(imageWidth);
+            var track = new Image_Track(TrackType.waveEnvelope, envelope);
             return track;
         }
-
-
 
         public static Image_Track GetTimeTrack(TimeSpan t)
         {
