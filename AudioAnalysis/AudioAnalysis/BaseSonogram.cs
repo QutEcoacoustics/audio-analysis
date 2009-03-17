@@ -39,8 +39,8 @@ namespace AudioAnalysis
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }
 		public int FrameCount { get; private set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
 
-        public double[] FrameMinAmplitude { get; private set; } // minimum (i.e. max negative) signal value in a frame
-        public double[] FrameMaxAmplitude { get; private set; } // maximum (i.e. max positive) signal value in a frame
+        //public double[] FrameMinAmplitude { get; private set; } // minimum (i.e. max negative) signal value in a frame
+        //public double[] FrameMaxAmplitude { get; private set; } // maximum (i.e. max positive) signal value in a frame
 
         public double[] FrameEnergy { get; private set; } // Energy per signal frame
 		public double[] Decibels { get; private set; } // Normalised decibels per signal frame
@@ -93,11 +93,6 @@ namespace AudioAnalysis
 			double[,] frames = DSP.Frames(signal, config.WindowSize, step);
 			FrameCount = frames.GetLength(0);
 
-            //Signal envelope per frame
-            double[] minAmp, maxAmp;
-            DSP.SignalEnvelope(frames, out minAmp, out maxAmp);
-            this.FrameMinAmplitude = minAmp;
-            this.FrameMaxAmplitude = maxAmp;
 
 			// ENERGY PER FRAME
 			FrameEnergy = DSP.SignalLogEnergy(frames, MinLogEnergy, MaxLogEnergy);
@@ -289,37 +284,6 @@ namespace AudioAnalysis
 			return bmp;
         }
 
-        public Image GetImage_ReducedWaveForm()
-        {
-            var data = Data;
-            int frameCount = data.GetLength(0); // Number of spectra in sonogram
-            int imageWidth  = 284;
-            int subSample = frameCount / imageWidth;
-            int imageHeight = 60;
-            int halfHeight = imageHeight / 2;
- 
-            //set up min, max, range for normalising of dB values
-            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
-            for (int w = 0; w < imageWidth; w++)
-            {
-                int start = w * subSample;
-                int end = ((w + 1) * subSample) - 1;
-                double min =  Double.MaxValue;
-                double max = -Double.MaxValue;
-                for (int x = start; x < end; x++)
-                {
-                    if (min > FrameMinAmplitude[x]) min = FrameMinAmplitude[x];
-                    else
-                    if (max < FrameMaxAmplitude[x]) max = FrameMaxAmplitude[x];
-
-                }
-                int minID = halfHeight + (int)Math.Round(min * halfHeight);
-                int maxID = halfHeight + (int)Math.Round(max * halfHeight);
-                for (int z = minID; z < maxID; z++) bmp.SetPixel(w, z, Color.LightBlue);
-            }
-            return bmp;
-        }
-
 
         /// <summary>
         /// factor must be an integer. 2 mean image reduced by factor of 2; 3 reduced by factor of 3 etc.
@@ -341,6 +305,9 @@ namespace AudioAnalysis
             double range = max - min;
 
             Color[] grayScale = ImageTools.GrayScale();
+
+            //set up the 1000kHz scale
+            int[] vScale = CreateLinearYaxis(1000, imageHeight); //calculate location of 1000Hz grid lines
 
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
             for (int w = 0; w < imageWidth; w++)
@@ -368,6 +335,17 @@ namespace AudioAnalysis
                      Color col = grayScale[c];
                      bmp.SetPixel(w, imageHeight-y-1, col);
                 }//end over all freq bins
+
+                //set up grid color
+                Color gridCol = Color.Black;
+                if ((w % 2) == 0) gridCol = Color.White;
+                for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
+                {
+                    if (vScale[p] == 0) continue;
+                    int y = imageHeight - p;
+                    bmp.SetPixel(w, y, gridCol);
+                }
+
             }
 
             return bmp;
@@ -393,7 +371,6 @@ namespace AudioAnalysis
             int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
             //if (this.doMelScale) vScale = CreateMelYaxis(kHz, sHeight);
 
-            //Color c = Color.LightGray;
             for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
             {
                 if (vScale[p] == 0) continue;

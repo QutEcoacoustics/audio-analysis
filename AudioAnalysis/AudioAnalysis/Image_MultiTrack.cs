@@ -51,8 +51,9 @@ namespace AudioAnalysis
 			int offset = Image.Height;
 			foreach (var track in Tracks)
 			{
-				track.Offset = offset;
-				track.DrawTrack(retVal);
+				track.topOffset = offset;
+                track.bottomOffset = offset + track.Height-1;
+                track.DrawTrack(retVal);
 				offset += track.Height;
 			}
 			return retVal;

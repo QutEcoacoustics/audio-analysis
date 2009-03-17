@@ -100,18 +100,30 @@ namespace AudioAnalysis
             Console.WriteLine("sonogram.SegmentationThresholdK2 =" + sonogram.SegmentationThresholdK2.ToString("F3"));
 
 //            Console.ReadLine();
+            var recording = new AudioRecording() { FileName = wavPath };
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(sonogram));
+            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.Save(outputFolder + wavFileName + ".png");
 
-            var image2 = new Image_MultiTrack(sonogram.GetImage_ReducedWaveForm());
+            int imageWidth = 284;
+            int imageHeight = 60;
+            var image2 = new Image_MultiTrack(recording.GetImageOfWaveForm(imageWidth, imageHeight));
             image2.Save(outputFolder + wavFileName + "_waveform.png");
 
-            int factor = 4;
+            int factor = 10;
             var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor));
+            image3.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image3.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image3.Image.Width));
+            //image3.AddTrack(Image_Track.GetDecibelTrack(sonogram));
+            image3.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            double[] scores = new double[image3.Image.Width*4];
+            for (int n = 0; n < scores.Length; n++) scores[n] = (0.1 * n) % 1.0;
+            double scoreMax = 1.0; 
+            double scoreThreshold = 0.5;
+            //image3.AddTrack(Image_Track.GetScoreTrack(scores, scoreMax, scoreThreshold));
             image3.Save(outputFolder + wavFileName + "_reduced.png");
 
 
@@ -152,8 +164,8 @@ namespace AudioAnalysis
             //string wavFileName = "SA0220080223-215657";
 
             //SAMFORD 24
-            wavDirName = @"C:\SensorNetworks\WavFiles\\Samford24\";
-            wavFileName = "Samford_24_20090313-123000";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\\Samford24\";
+            //wavFileName = "Samford_24_20090313-123000";
 
             //AUSTRALIAN BIRD CALLS
             //const string wavDirName = @"C:\SensorNetworks\WavFiles\VoicesOfSubtropicalRainforests\";
@@ -206,11 +218,11 @@ namespace AudioAnalysis
             //wavFileName = "BAC10_20081101-045000";
 
             //TEST DATA
-            //wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
+            wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
             //wavFileName = "file0031_selection";
             //wavFileName = "daphne-151000_selection";
             //wavFileName = "jb1-161000_selection";
-            //wavFileName = "jb3-151000_selection";
+            wavFileName = "jb3-151000_selection";
 
         } //end ChooseWavFile()
 
