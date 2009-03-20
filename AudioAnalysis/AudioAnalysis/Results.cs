@@ -24,7 +24,6 @@ namespace AudioAnalysis
 		public int[] SyllableIDs { get; set; }			// above symbol sequence represented as array of integers - noise=0
         public int? VocalCount { get; set; }			// number of hits i.e. vocalisatsions in the symbol seuqence
         public int? VocalValid { get; set; }            // number of hits/vocalisations whose duration is valid for call
-        public double[] VocalScores { get; set; }		// array of scores derived from user defined call templates
 		public double? VocalBestScore { get; set; }	    // the best score in recording, and .....
         public int? VocalBestFrame { get; set; }        // id of frame having best score in recording 
         public double? VocalBestLocation { get; set; }	// its location in seconds from beginning of recording

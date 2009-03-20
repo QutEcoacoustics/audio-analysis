@@ -14,6 +14,8 @@ namespace AudioAnalysis
 
         #region DEFAULT CALL PARAMETERS
         //****************** DEFAULT CALL PARAMETERS
+        private string authorName = "NO NAME";
+        public string AuthorName { get { return authorName; } }
         private int callID = -1; //invalid default value!
         public int CallID { get { return callID; } }
         private string callName = "NO NAME";
@@ -121,6 +123,7 @@ namespace AudioAnalysis
             //************* CALL 1 PARAMETERS ***************
                 if (callID == 1)
                 {
+                    authorName = "Michael Towsey";
                     callName = "FUNCTIONAL_TEST";
                     callComment = "FUNCITONAL TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -171,6 +174,7 @@ namespace AudioAnalysis
                 //************* CALL 2 PARAMETERS ***************
                 if (callID == 2)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Lewin's Rail Kek-kek";
                     callComment = "Template consists of a single KEK!";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
@@ -219,6 +223,7 @@ namespace AudioAnalysis
                 //************* CALL 3 PARAMETERS ***************
                 if (callID == 3)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Soulful-tuneful";
                     callComment = "Unknown species in faint kek-kek file!";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
@@ -262,7 +267,6 @@ namespace AudioAnalysis
                 } //end of if (callID == 3)
                 #endregion
 
-
                 //******************************************************************************************************************
                 #region CALL 4 PARAMETERS
                 //************* CALL 4 PARAMETERS ***************
@@ -278,13 +282,13 @@ namespace AudioAnalysis
                 }
                 #endregion
 
-
                 //******************************************************************************************************************
                 #region CALL 5 PARAMETERS
                 //************* CALL 5 PARAMETERS ***************
                 if (callID == 5)
                 {
 
+                    authorName = "Michael Towsey";
                     callName = "Cricket";
                     callComment = "High freq warble";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
@@ -334,10 +338,11 @@ namespace AudioAnalysis
                 #endregion
 
                 //******************************************************************************************************************
-                //******************************************************************************************************************
+                #region CALL 6 PARAMETERS
                 //************* CALL 6 PARAMETERS ***************
                 if (callID == 6)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Koala Bellow";
                     callComment = "Various sounds - huff, puff and snort!";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -378,14 +383,14 @@ namespace AudioAnalysis
                     wordNames = new String[] { "huff","puff", "snort", "distant" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 6)
-
-
+                #endregion
 
                 //******************************************************************************************************************
-                //******************************************************************************************************************
+                #region CALL 7 PARAMETERS
                 //************* CALL 7 PARAMETERS ***************
                 if (callID == 7)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Fruit bat";
                     callComment = "Single fruit bat chirps";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -423,11 +428,14 @@ namespace AudioAnalysis
                     wordExamples = new String[] { "111", "11", "1" };
                     songWindow = 2.0; //seconds
                 } //end of if (callID == 7)
+                #endregion
 
                 //******************************************************************************************************************
+                #region CALL 8 PARAMETERS
                 //************* CALL 8 PARAMETERS ***************
                 if (callID == 8)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Currawong";
                     callComment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -471,12 +479,14 @@ namespace AudioAnalysis
                     wordNames = new String[] { "syll1", "syll2", "syll3", "syll4" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 8)
-
+                #endregion
 
                 //******************************************************************************************************************
+                #region CALL 9 PARAMETERS
                 //************* CALL 9 PARAMETERS ***************
                 if (callID == 9)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Curlew";
                     callComment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -521,12 +531,14 @@ namespace AudioAnalysis
                     wordExamples = new String[] { "111", "11", "1" };
                     songWindow = 0.8; //seconds
                 } //end of if (callID == 9)
+                #endregion
 
-
-            //******************************************************************************************************************
+                //******************************************************************************************************************
+                #region CALL 10 PARAMETERS
                 //************* CALL 10 PARAMETERS ***************
                 if (callID == 10)
                 {
+                    authorName = "Michael Towsey";
                     callName = "Rainbow Lorikeet";
                     callComment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
@@ -566,12 +578,15 @@ namespace AudioAnalysis
                     wordExamples = new String[] { "111", "11", "1" };
                     songWindow = 0.25; //seconds
                 } //end of if (callID == 10)
+                #endregion
+            
+            #region CALL 11 PARAMETERS
+            #endregion
 
 
 
 
-
-            }//end CONSTRUCTOR
+        }//end CONSTRUCTOR
     }//end class
 
 }

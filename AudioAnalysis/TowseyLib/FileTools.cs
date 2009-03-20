@@ -133,6 +133,31 @@ namespace TowseyLib
             return lines;
         }// end ReadtextFile()
 
+        public static byte[] ReadSerialisedObject(string path)
+        {
+            FileStream fs = new FileStream(path, FileMode.Open, FileAccess.Read);
+            BinaryReader br = new BinaryReader(fs);
+            long numBytes = new FileInfo(path).Length;
+            return br.ReadBytes((int)numBytes);
+        }// end ReadSerialisedObject()
+
+
+        public static void WriteSerialisedObject(string path, byte[] array)
+        {
+            try
+            {
+                FileStream fs = new FileStream(path, FileMode.Create, FileAccess.ReadWrite);
+                BinaryWriter bw = new BinaryWriter(fs);
+                bw.Write(array);
+                bw.Close();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("ERROR! WriteTextFile(string path, byte[] array) failed to write array.");
+            }
+        }
+
 
         public static void WriteTextFile(string path, List<string> array)
         {
@@ -297,7 +322,7 @@ namespace TowseyLib
                     if (words.Length == 1) continue;
                     string key = words[0];
                     string value = words[1];
-                    table.Add(key, value);
+                    if(! table.ContainsKey(key)) table.Add(key, value); //this may not be a good idea!
                 }//end while
             }//end using
             return table;

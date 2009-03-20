@@ -35,7 +35,8 @@ namespace AudioAnalysis
 		#region Properties
         public static int SampleRate { get; set; }
         public static int NyquistFreq { get; set; }
-		public static string WindowFunction { get; set; }
+        private static string windowFunction = "Hamming";
+        public  static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
 		public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
 		#endregion
 	}

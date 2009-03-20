@@ -289,6 +289,7 @@ namespace AudioAnalysis
         /// </summary>
         public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
+            //Console.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
             if (doubleData == null) return bmp;
             int bmpWidth = bmp.Width;
             int dataLength = this.doubleData.Length;

@@ -15,15 +15,6 @@ namespace AudioAnalysis
 
 	public abstract class BaseSonogram
 	{
-		#region Constants 
-        //constants for analysing the logEnergy array for signal segmentation
-        public const double MinLogEnergy = -7.0;        // typical noise value for BAC2 recordings = -4.5
-        public const double MaxLogEnergy = -0.60206;    // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
-        //public const double maxLogEnergy = -0.444;    // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
-        //public const double maxLogEnergy = -0.310;    // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        //note that the cicada recordings reach max average frame amplitude = 0.55
-
-		#endregion
 
 		#region Properties
 		public BaseSonogramConfig Configuration { get; private set; }
@@ -39,18 +30,16 @@ namespace AudioAnalysis
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }
 		public int FrameCount { get; private set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
 
-        //public double[] FrameMinAmplitude { get; private set; } // minimum (i.e. max negative) signal value in a frame
-        //public double[] FrameMaxAmplitude { get; private set; } // maximum (i.e. max positive) signal value in a frame
-
-        public double[] FrameEnergy { get; private set; } // Energy per signal frame
+        public double[] LogEnergy { get; private set; } // Energy per signal frame
 		public double[] Decibels { get; private set; } // Normalised decibels per signal frame
 
 		public double NoiseSubtracted { get; private set; } // Noise (dB) subtracted from each frame decibel value
 		public double FrameMax_dB { get; private set; }
-		public double FrameNoise_dB { get; private set; }
-		public double Frame_SNR { get { return FrameMax_dB - FrameNoise_dB; } }
+		public double FrameMin_dB { get; private set; }
+		public double Frame_SNR { get { return FrameMax_dB - NoiseSubtracted; } }
+        //sonogram.FrameMax_dB - sonogram.NoiseSubtracted;
 		public double MinDecibelReference { get; private set; } // Min reference dB value after noise substraction
-		public double MaxDecibelReference { get; private set; } // Max reference dB value after noise substraction
+        public double MaxDecibelReference { get; private set; } // Used to normalise the energy values for MFCCs
         public double SegmentationThresholdK1 { get; private set; }
         public double SegmentationThresholdK2 { get; private set; } 
 
@@ -95,19 +84,19 @@ namespace AudioAnalysis
 
 
 			// ENERGY PER FRAME
-			FrameEnergy = DSP.SignalLogEnergy(frames, MinLogEnergy, MaxLogEnergy);
+            LogEnergy = DSP.SignalLogEnergy(frames);
 
 			// FRAME NOISE SUBTRACTION: subtract background noise to produce decibels array in which zero dB = average noise
-			double minEnergyRatio = MinLogEnergy - MaxLogEnergy;
 			double Q;
 			double min_dB;
 			double max_dB;
-			Decibels = DSP.NoiseSubtract(FrameEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
+            double minEnergyRatio = DSP.MinEnergyReference - DSP.MaxEnergyReference;
+            Decibels = DSP.NoiseSubtract(LogEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
 			NoiseSubtracted = Q;
-			FrameNoise_dB = min_dB; //min decibels of all frames 
+			FrameMin_dB = min_dB; //min decibels of all frames 
 			FrameMax_dB = max_dB;
 			MinDecibelReference = min_dB - Q;
-			MaxDecibelReference = (MaxLogEnergy * 10) - Q;
+            MaxDecibelReference = (DSP.MaxEnergyReference * 10) - Q;
 
 			// ZERO CROSSINGS
 			//this.zeroCross = DSP.ZeroCrossings(frames);
@@ -150,10 +139,38 @@ namespace AudioAnalysis
 			Make(amplitudeM);
 		} //end Make(WavReader wav)
 
+        /// <summary>
+        /// WARNING: calculation of k1 and k2 is faulty.
+        /// MinDecibelReference should not be used ie k1 = EndpointDetectionConfiguration.SegmentationThresholdK1;
+        /// See the alternative below
+        /// 
+        /// ************* PARAMETERS FOR:- ENDPOINT DETECTION of VOCALISATIONS 
+        /// See Lamel et al 1981.
+        /// They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.
+        /// Here we set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames)
+        ///                  and "minimum pulse length" = 0.075s (2 frames) 
+        /// SEGMENTATION_THRESHOLD_K1 = decibels above the minimum level
+        /// SEGMENTATION_THRESHOLD_K2 = decibels above the minimum level
+        /// K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds
+        /// VOCAL_DELAY = seconds delay required to separate vocalisations 
+        /// MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.
+        /// SEGMENTATION_THRESHOLD_K1=3.5
+        /// SEGMENTATION_THRESHOLD_K2=6.0
+        /// K1_K2_LATENCY=0.05
+        /// VOCAL_DELAY=0.2
+        /// </summary>
+        /// <param name="k1"></param>
+        /// <param name="k2"></param>
+        /// <param name="k1_k2delay"></param>
+        /// <param name="syllableDelay"></param>
+        /// <param name="minPulse"></param>
+        /// <returns></returns>
 		int[] DetermineEndpointsOfVocalisations(out double k1, out double k2, out int k1_k2delay, out int syllableDelay, out int minPulse)
 		{
-            k1 = MinDecibelReference + EndpointDetectionConfiguration.SegmentationThresholdK1;
-            k2 = MinDecibelReference + EndpointDetectionConfiguration.SegmentationThresholdK2;
+            //k1 = MinDecibelReference + EndpointDetectionConfiguration.SegmentationThresholdK1;
+            //k2 = MinDecibelReference + EndpointDetectionConfiguration.SegmentationThresholdK2;
+            k1 = EndpointDetectionConfiguration.SegmentationThresholdK1;
+            k2 = EndpointDetectionConfiguration.SegmentationThresholdK2;
             k1_k2delay = (int)(EndpointDetectionConfiguration.K1K2Latency / FrameOffset); //=5  frames delay between signal reaching k1 and k2 thresholds
             syllableDelay = (int)(EndpointDetectionConfiguration.VocalDelay / FrameOffset); //=10 frames delay required to separate vocalisations 
             minPulse = (int)(EndpointDetectionConfiguration.MinPulseDuration / FrameOffset); //=2 frames is min vocal length
@@ -192,8 +209,7 @@ namespace AudioAnalysis
 
 		double[] FreqBandEnergy(double[,] fftAmplitudes)
 		{
-			//Console.WriteLine("minDefinedLogEnergy=" + Sonogram.minLogEnergy.ToString("F2") + "  maxLogEnergy=" + Sonogram.maxLogEnergy);
-			double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes, MinLogEnergy, MaxLogEnergy);
+            double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes);
 
 			//NOTE: FreqBand LogEnergy levels are higher than Frame levels but SNR remains same.
 			//double min; double max;
@@ -203,17 +219,14 @@ namespace AudioAnalysis
 			//Console.WriteLine("FreqBandNoise_dB=" + (min*10) + "  FreqBandMax_dB=" + (max*10) + "  SNR=" + State.FreqBand_SNR);
 
 			//noise reduce the energy array to produce decibels array
-			double minFraction = MinLogEnergy - MaxLogEnergy;
-			double Q; double min_dB; double max_dB;
-			double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minFraction, out Q);
+            double minEnergyRatio = DSP.MinEnergyReference - DSP.MaxEnergyReference;
+            double Q; double min_dB; double max_dB;
+            double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
 			NoiseSubtracted = Q;
 			FreqBandNoise_dB = min_dB; //min decibels of all frames 
 			FreqBandMax_dB = max_dB;
 			FreqBand_SNR = max_dB - min_dB;
 			MinDecibelReference = min_dB - NoiseSubtracted;
-			MaxDecibelReference = MinDecibelReference + FreqBand_SNR;
-			//State.MaxDecibelReference = (Sonogram.maxLogEnergy * 10) - State.NoiseSubtracted;
-			//Console.WriteLine("Q=" + State.NoiseSubtracted + "  MinDBReference=" + State.MinDecibelReference + "  MaxDecibelReference=" + State.MaxDecibelReference);
 			return decibels;
 		}
 
@@ -292,7 +305,7 @@ namespace AudioAnalysis
         /// <returns></returns>
         public Image GetImage_ReducedSonogram(int factor)
         {
-            double[] logEnergy = this.FrameEnergy;
+            double[] logEnergy = this.LogEnergy;
             var data = Data; //sonogram intensity values
             int frameCount  = data.GetLength(0); // Number of spectra in sonogram
             int imageHeight = data.GetLength(1); // image ht = sonogram ht. Later include grid and score scales
@@ -318,9 +331,9 @@ namespace AudioAnalysis
                 int maxID = 0;
                 for (int x = start; x < end; x++)
                 {
-                    if (maxE < FrameEnergy[x])
+                    if (maxE < LogEnergy[x])
                     {
-                        maxE = FrameEnergy[x];
+                        maxE = LogEnergy[x];
                         maxID = x;
                     }
                 }
@@ -495,106 +508,74 @@ namespace AudioAnalysis
 
 
 
-	public class CepstralSonogram : BaseSonogram
-	{
-		public CepstralSonogram(string configFile, WavReader wav)
-			: this(CepstralSonogramConfig.Load(configFile), wav)
-		{ }
+    public class CepstralSonogram : BaseSonogram
+    {
+        public CepstralSonogram(string configFile, WavReader wav)
+            : this(CepstralSonogramConfig.Load(configFile), wav)
+        { }
 
-		public CepstralSonogram(CepstralSonogramConfig config, WavReader wav)
-			: base(config, wav, false)
-		{ }
+        public CepstralSonogram(CepstralSonogramConfig config, WavReader wav)
+            : base(config, wav, false)
+        { }
 
-		public double MaxMel { get; private set; }      // Nyquist frequency on Mel scale
+        public double MaxMel { get; private set; }      // Nyquist frequency on Mel scale
 
-		protected override void Make(double[,] amplitudeM)
-		{
-			var config = Configuration as CepstralSonogramConfig;
-			Data = MakeCepstrogram(amplitudeM, Decibels, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
-		}
-
-		protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
-		{
-			Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
-
-			double[,] m = ApplyFilterBank(matrix);
-			m = Speech.DecibelSpectra(m);
-
-			if (Configuration.DoNoiseReduction)
-			{
-				Log.WriteIfVerbose("\t... doing noise reduction.");
-				m = ImageTools.NoiseReduction(m); //Mel scale conversion should be done before noise reduction
-			}
-
-			// not sure if we really need this... commented out for the moment because it'll use lots of memory
-			//SpectralM = m; //stores the reduced bandwidth, filtered, noise reduced spectra as new spectrogram
-
-			//calculate cepstral coefficients and normalise
-			m = Speech.Cepstra(m, ccCount);
-			m = DataTools.normalise(m);
-
-			//calculate the full range of MFCC coefficients ie including energy and deltas, etc
-			//normalise energy between 0.0 decibels and max decibels.
-			double[] E = Speech.NormaliseEnergyArray(decibels, MinDecibelReference, MaxDecibelReference);
-			return Speech.AcousticVectors(m, E, includeDelta, includeDoubleDelta);
-		}
-
-		double[,] ApplyFilterBank(double[,] matrix)
-		{
-			Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
-			//error check that filterBankCount < FFTbins
-			int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+        protected override void Make(double[,] amplitudeM)
+        {
             var config = Configuration as CepstralSonogramConfig;
-			if (config.MfccConfiguration.FilterbankCount > FFTbins)
-				throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + config.MfccConfiguration.FilterbankCount + " > " + FFTbins + ")\n\n");
+            Data = MakeCepstrogram(amplitudeM, Decibels, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
+        }
 
-			MaxMel = Speech.Mel(NyquistFrequency);
-			//this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
-			int bandCount = config.MfccConfiguration.FilterbankCount;
-			double[,] m = matrix;
-			Log.WriteIfVerbose("\tDim prior to filter bank  =" + m.GetLength(1));
+        protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
+        {
+            Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
 
-			if (config.MfccConfiguration.DoMelScale)
-				m = Speech.MelFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency); // using the Greg integral
-			else
-				m = Speech.LinearFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency);
-			Log.WriteIfVerbose("\tDim after use of filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
+            double[,] m = ApplyFilterBank(matrix);
+            m = Speech.DecibelSpectra(m);
 
-			return m;
-		} //end ApplyFilterBank(double[,] matrix)
+            if (Configuration.DoNoiseReduction)
+            {
+                Log.WriteIfVerbose("\t... doing noise reduction.");
+                m = ImageTools.NoiseReduction(m); //Mel scale conversion should be done before noise reduction
+            }
 
+            // not sure if we really need this... commented out for the moment because it'll use lots of memory
+            //SpectralM = m; //stores the reduced bandwidth, filtered, noise reduced spectra as new spectrogram
 
+            //calculate cepstral coefficients and normalise
+            m = Speech.Cepstra(m, ccCount);
+            m = DataTools.normalise(m);
 
-        //protected override Image GetImage(int binHeight, int? minHighlightFreq, int? maxHighlightFreq, bool addGridLines)
-        //{
-        //    int sonogramHeight = Data.GetLength(1);
-        //    if (minHighlightFreq != null || maxHighlightFreq != null)
-        //    {
-        //        double hzBin = (SampleRate / 2) / (double)sonogramHeight;
+            //calculate the full range of MFCC coefficients ie including energy and deltas, etc
+            //normalise energy between 0.0 decibels and max decibels.
+            double[] E = Speech.NormaliseDecibelArray(decibels, MaxDecibelReference);
+            return Speech.AcousticVectors(m, E, includeDelta, includeDoubleDelta);
+        }
 
-        //        if (((CepstralSonogramConfig)Configuration).MfccConfiguration.DoMelScale)
-        //        {
-        //            double melBin = Speech.Mel(NyquistFrequency) / (double)sonogramHeight;
-        //            if (maxHighlightFreq != null)
-        //            {
-        //                double topMel = Speech.Mel(maxHighlightFreq.Value * hzBin);
-        //                maxHighlightFreq = (int)(topMel / melBin);
-        //            }
-        //            if (minHighlightFreq != null)
-        //            {
-        //                double botMel = Speech.Mel(minHighlightFreq.Value * hzBin);
-        //                minHighlightFreq = (int)(botMel / melBin);
-        //            }
-        //        }
-        //    }
-        //    return base.GetImage(binHeight * (256 / sonogramHeight), minHighlightFreq, maxHighlightFreq, addGridLines);
-        //}
-    } // end class CepstralSonogram : BaseSonogram
+        double[,] ApplyFilterBank(double[,] matrix)
+        {
+            Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
+            //error check that filterBankCount < FFTbins
+            int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            var config = Configuration as CepstralSonogramConfig;
+            if (config.MfccConfiguration.FilterbankCount > FFTbins)
+                throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + config.MfccConfiguration.FilterbankCount + " > " + FFTbins + ")\n\n");
 
+            MaxMel = Speech.Mel(NyquistFrequency);
+            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
+            int bandCount = config.MfccConfiguration.FilterbankCount;
+            double[,] m = matrix;
+            Log.WriteIfVerbose("\tDim prior to filter bank  =" + m.GetLength(1));
 
+            if (config.MfccConfiguration.DoMelScale)
+                m = Speech.MelFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency); // using the Greg integral
+            else
+                m = Speech.LinearFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency);
+            Log.WriteIfVerbose("\tDim after use of filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
-
-
+            return m;
+        } //end ApplyFilterBank(double[,] matrix)
+    }
 
 
 	public class AcousticVectorsSonogram : CepstralSonogram
