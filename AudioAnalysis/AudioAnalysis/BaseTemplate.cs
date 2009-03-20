@@ -2,6 +2,8 @@
 using TowseyLib;
 using System.IO;
 using AudioTools;
+//using System.Collections;
+using System.Collections.Generic;
 
 namespace AudioAnalysis
 {
@@ -18,6 +20,7 @@ namespace AudioAnalysis
 
         #region Properties
         public Mode mode { get; set; }   //MODE in which the template is operating
+        public string AuthorName { get; set; }
         public int CallID { get; set; }
         public string CallName { get; set; }
         public string Comment { get; set; }
@@ -120,6 +123,7 @@ namespace AudioAnalysis
         public static Configuration MergeProperties(string appConfigFile, GUI gui)
         {
             var config = new Configuration(appConfigFile);
+            config.SetPair("AUTHOR", gui.AuthorName.ToString());
             config.SetPair("TEMPLATE_ID", gui.CallID.ToString());
             config.SetPair("CALL_NAME", gui.CallName);
             config.SetPair("COMMENT", gui.CallComment);
@@ -188,7 +192,32 @@ namespace AudioAnalysis
             return config;
         }
 
+        public static void LoadStaticConfig(string appConfigFile)
+        {
+            var config = new Configuration(appConfigFile);
+            Log.Verbosity=config.GetInt("VERBOSITY");
+            //SAMPLE_RATE=0
+            //SUBSAMPLE=0
+            //WINDOW_OVERLAP=0.5
+            //WINDOW_SIZE=512
+            FftConfiguration.WindowFunction  = config.GetString("WINDOW_FUNCTION");
+            FftConfiguration.NPointSmoothFFT = config.GetInt("N_POINT_SMOOTH_FFT");
+            EndpointDetectionConfiguration.SegmentationThresholdK1 = config.GetDouble("SEGMENTATION_THRESHOLD_K1");
+            EndpointDetectionConfiguration.SegmentationThresholdK2 = config.GetDouble("SEGMENTATION_THRESHOLD_K2");
+            EndpointDetectionConfiguration.K1K2Latency = config.GetDouble("K1_K2_LATENCY");
+            EndpointDetectionConfiguration.VocalDelay  = config.GetDouble("VOCAL_DELAY");
+            EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble("MIN_VOCAL_DURATION");
+            //DO_MELSCALE=false
+            //NOISE_REDUCE=false
+            //FILTERBANK_COUNT=64
+            //CC_COUNT=12            
+            //INCLUDE_DOUBLE_DELTA=true
+            //INCLUDE_DELTA=true
+            //DELTA_T=2
+        }
+
         #endregion
+
 
 		public BaseTemplate()
 		{
@@ -204,7 +233,8 @@ namespace AudioAnalysis
             if (modeStr == null) mode = Mode.UNDEFINED;
             else                 mode = (Mode)Enum.Parse(typeof(Mode), modeStr);
 
-            CallID  = config.GetInt("TEMPLATE_ID");
+            AuthorName = config.GetString("AUTHOR");    //e.g. Michael Towsey
+            CallID = config.GetInt("TEMPLATE_ID");
             CallName = config.GetString("CALL_NAME");   //e.g.  Lewin's Rail Kek-kek
 
             Log.WriteIfVerbose("\n\nINITIALISING TEMPLATE: mode=" + mode.ToString() + " name=" + CallName + " id=" + CallID);
@@ -250,6 +280,7 @@ namespace AudioAnalysis
         public virtual void Save(TextWriter writer)
         {
             writer.WriteLine("DATE=" + DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
+            writer.WriteConfigValue("AUTHOR", AuthorName);
             writer.WriteLine("#");
             writer.WriteLine("#**************** TEMPLATE DATA");
             writer.WriteConfigValue("TEMPLATE_ID", CallID);
@@ -352,5 +383,7 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
         }
-	}
+
+
+    }//end class
 }

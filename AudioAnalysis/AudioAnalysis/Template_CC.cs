@@ -56,8 +56,8 @@ namespace AudioAnalysis
 		public void Save(TextWriter writer, string opDir)
 		{
 			//throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
-
             base.Save(writer);
+            FftConfiguration.Save(writer);
             SonogramConfig.Save(writer);
             FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir);
             AcousticModelConfig.Save(writer);
@@ -97,8 +97,56 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
             double? scoreMax  = ((Results)result).MaxScore;
             double? threhsold = ((Results)result).LLRThreshold;
-            image.AddTrack(Image_Track.GetScoreTrack(((Results)result).VocalScores, scoreMax, threhsold));
+            image.AddTrack(Image_Track.GetScoreTrack(((Results)result).Scores, scoreMax, threhsold));
             image.Save(imagePath);
+        }
+
+        public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
+        {
+            bool doExtractSubband = false;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            SaveResultsImage(spectralSono, imagePath, result, hmmResults);
+        }
+
+        public void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)
+        {
+            Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)");
+            double[] hmmScores = ParseHmmScores(hmmResults, this.SonogramConfig.Duration, sonogram.FrameCount);
+
+            bool doHighlightSubband = true;
+            bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 8.0, 1.0));
+            image.AddTrack(Image_Track.GetScoreTrack(hmmScores, 8.0, 1.0));
+            image.Save(path);
+        }
+        public double[] ParseHmmScores(List<string> results, TimeSpan duration, int frameCount)
+        {
+            //Console.WriteLine("duration.TotalSeconds=" + duration.TotalSeconds);
+            double[] scores = new double[frameCount];
+            int hitCount = results.Count;
+            for (int i = 1; i < hitCount; i++)
+            {
+                string[] words = results[i].Split(' ');
+                long start = long.Parse(words[0]);
+                double startSec = start / (double)10000000;  //start in seconds
+                long end = long.Parse(words[1]);
+                double endSec = end / (double)10000000;  //start in seconds
+                string className = words[2];
+                double score = Double.Parse(words[3]);
+                int startFrame = (int)((startSec / (double)duration.TotalSeconds) * frameCount);
+                int endFrame = (int)((endSec / (double)duration.TotalSeconds) * frameCount);
+                //Console.WriteLine("startSec=" + startSec + "    endSec=" + endSec + "  startFrame=" + startFrame + "    endFrame=" + endFrame);
+                if (className.StartsWith("CURRAWONG"))
+                    for (int s = startFrame; s <= endFrame; s++)
+                    {
+                        scores[s] = 5.0;
+                    }
+            }
+            return scores;
         }
 
     } // end of class MMTemplate : TemplateParameters

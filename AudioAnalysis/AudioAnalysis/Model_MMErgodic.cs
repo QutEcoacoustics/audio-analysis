@@ -144,7 +144,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose(str1);
             mmMonitor.Add(str1);
             result.LLRThreshold     = result.MaxScore - llrThreshold;  //display threshold
-            result.VocalScores      = scores;
+            result.Scores           = scores;
             result.VocalCount       = hitCount; // number of detected vocalisations
             result.VocalValid       = correctDurationCount;
             result.VocalBestScore   = bestHit;   // the highest score obtained over all vocalisations

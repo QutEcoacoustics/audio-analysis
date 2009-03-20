@@ -53,51 +53,53 @@ namespace AudioAnalysis
             Console.WriteLine("Freq Bin Width  =" + sonogram.FBinWidth.ToString("F2") + " Hz");
 
             Console.WriteLine("\nENERGY PARAMETERS");
-            Console.WriteLine("Signal Max Amplitude  = " + sonogram.MaxAmplitude.ToString("F3"));
-            Console.WriteLine("\tExplanation: Signal samples take values between -1.0 and +1.0");
-            Console.WriteLine("\tExplanation: Signal energy is calculated frame by frame. The average value of the signal energy in a frame");
+            Console.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
+            Console.WriteLine("Minimum Log Energy       =" + sonogram.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
+            Console.WriteLine("Maximum Log Energy       =" + sonogram.LogEnergy.Max().ToString("F2"));
+            Console.WriteLine("Minimum dB / frame       =" + sonogram.FrameMin_dB.ToString("F2") + "  (See Note 4)");
+            Console.WriteLine("Maximum dB / frame       =" + sonogram.FrameMax_dB.ToString("F2"));
+
+            Console.WriteLine("\ndB NOISE SUBTRACTION");
+            Console.WriteLine("Noise (estimate of mode) =" + sonogram.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
+            double noiseSpan = sonogram.MinDecibelReference;
+            Console.WriteLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan*-1).ToString("F2") + " dB   (See Note 6)");
+            Console.WriteLine("SNR (max frame-noise)    =" + sonogram.Frame_SNR.ToString("F2") + " dB   (See Note 7)");
+
+
+            Console.WriteLine("\nSEGMENTATION PARAMETERS");
+            Console.WriteLine("SegmentationThreshold K1 =" + sonogram.SegmentationThresholdK1.ToString("F3") + " dB   (See Note 8)");
+            Console.WriteLine("SegmentationThreshold K2 =" + sonogram.SegmentationThresholdK2.ToString("F3") + " dB   (See Note 8)");
+
+            Console.WriteLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
+            Console.WriteLine("\n\tNote 2:      Signal energy is calculated frame by frame. The average value of the signal energy in a frame");
             Console.WriteLine("\t             equals the average of the amplitude squared of all 512 values in a frame.");
-            Console.WriteLine("\t             The Log Energy of a frame is the log(10) of its signal energy as calculated above.");
-            Console.WriteLine("\t             For calculation of SNR and to isolate acoustic events, it is useful to normalise the frame log energies with");
-            Console.WriteLine("\t             reference to maximum and minimum frame log energies defined as CONSTANTS.");
-            Console.WriteLine("\t             The following two constants are defined:");
-            Console.WriteLine("Minimum Frame Log Energy =" + BaseSonogram.MinLogEnergy.ToString("F3"));
-            Console.WriteLine("\tExplanation: A typical background noise value for Brisbane Airport (BAC2) recordings: Frame Log Energy = -4.5");
+            Console.WriteLine("\t             The Log Energy of a frame is the log(10) of its average signal energy as calculated above.");
+            Console.WriteLine("\n\tNote 3:      For audio segmentation and energy normalisation, it is useful to normalise the frame log energies with");
+            Console.WriteLine("\t             reference to a maximum and minimum frame log energy. We use:");
+            Console.WriteLine("\t             Minimum reference log energy = -7.0.");
+            Console.WriteLine("\t             A typical background noise log energy value for Brisbane Airport (BAC2) recordings is -4.5");
             Console.WriteLine("\t             A value of -7.0 allows for a very quiet background!");
-            Console.WriteLine("Maximum Frame Log Energy =" + BaseSonogram.MaxLogEnergy.ToString("F3"));
-            Console.WriteLine("\tExplanation: A value of Max Log Energy = -0.60206 is obtained by assuming the max average frame amplitude = 0.5");
+            Console.WriteLine("\t             Maximum reference log energy = -0.60206. This value is obtained by assuming an average frame amplitude = 0.5");
             Console.WriteLine("\t             That is -0.60206 = Math.Log10(0.5 * 0.5)");
-            Console.WriteLine("\t             Note that we have cicada recordings where the max average frame amplitude = 0.55");
+            Console.WriteLine("\t             Note that we have cicada recordings where the average frame amplitude = 0.55");
             Console.WriteLine("\t             When normalising the log energy, any value < min is set = min and then");
             Console.WriteLine("\t             normalised log energy = logE - maxLogEnergy = log(E / maxE).");
             Console.WriteLine("\t             Positive values of normalised log energy occur only when log energy exceeds the maximum.");
-            Console.WriteLine("\t             Log energy values are converted to decibels by multiplying by 10. Here are the minimum and maximum dB values");
-            Console.WriteLine("Minimum frame dB         =" + sonogram.FrameNoise_dB.ToString("F3"));
-            Console.WriteLine("Maximum frame dB         =" + sonogram.FrameMax_dB.ToString("F3"));
-
-            Console.WriteLine("\ndB NOISE SUBTRACTION");
-            Console.WriteLine("Noise Subtracted from each frame =" + sonogram.NoiseSubtracted.ToString("F3")+ " dB");
-            Console.WriteLine("\tExplanation: The average background noise per frame is calculated using an algorithm of Lamel et al, 1981. ");
-            Console.WriteLine("\t             They call it 'Adaptive Level Equalisatsion'. It effectively sets background noise level to 0 dB.");
-            Console.WriteLine("\t             After removal of noise the min and max reference dB levels are as follows:");
-            Console.WriteLine("Max DecibelReference =" + sonogram.MaxDecibelReference.ToString("F3") + " dB");
-            Console.WriteLine("Min DecibelReference =" + sonogram.MinDecibelReference.ToString("F3") + " dB");
-            Console.WriteLine("\tExplanation: The modal frame noise level is now 0 dB but the minimum level = "+ sonogram.MinDecibelReference.ToString("F3"));
-            Console.WriteLine("\t             The maximum dB reference level is that obtained if the log energy = maximum.");
-            Console.WriteLine("Max-min   frame SNR            = " + sonogram.Frame_SNR.ToString("F3") + " dB");
-            double snr = sonogram.FrameMax_dB - sonogram.NoiseSubtracted;
-            Console.WriteLine("Max-noise frame SNR            = " + snr.ToString("F3")+" dB       <<<<<<<<<<<< THIS IS THE KEY FIGURE");
-            Console.WriteLine("\tExplanation: Here are some dB comparisons. They are with reference to the auditory threshold at 1 kHz.");
+            Console.WriteLine("\n\tNote 4:      Log energy values are converted to decibels by multiplying by 10. Here are the minimum and maximum dB values");
+            Console.WriteLine("\n\tNote 5:      The modal background noise per frame is calculated using an algorithm of Lamel et al, 1981, called 'Adaptive Level Equalisatsion'.");
+            Console.WriteLine("\t             This sets the modal background noise level to 0 dB.");
+            Console.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.MinDecibelReference.ToString("F2")+" dB either side of zero.");
+            Console.WriteLine("\n\tNote 7:      Here are some dB comparisons. NOTE! They are with reference to the auditory threshold at 1 kHz.");
+            Console.WriteLine("\t             Our estimates of SNR are with respect to background environmental noise which is typically much higher than hearing threshold!");
             Console.WriteLine("\t             Leaves rustling, calm breathing:  10 dB");
             Console.WriteLine("\t             Very calm room:                   20 - 30 dB");
             Console.WriteLine("\t             Normal talking at 1 m:            40 - 60 dB");
             Console.WriteLine("\t             Major road at 10 m:               80 - 90 dB");
             Console.WriteLine("\t             Jet at 100 m:                    110 -140 dB");
+            Console.WriteLine("\n\tNote 8:      dB above the modal noise. Used as thresholds to segment acoustic events. ");
+            Console.WriteLine("\n");
 
 
-            Console.WriteLine("\nSEGMENTATION PARAMETERS");
-            Console.WriteLine("sonogram.SegmentationThresholdK1 =" + sonogram.SegmentationThresholdK1.ToString("F3"));
-            Console.WriteLine("sonogram.SegmentationThresholdK2 =" + sonogram.SegmentationThresholdK2.ToString("F3"));
 
 //            Console.ReadLine();
             var recording = new AudioRecording() { FileName = wavPath };
@@ -191,7 +193,7 @@ namespace AudioAnalysis
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
 
             //ST BEES
-            //wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //wavFileName = "West_Knoll_-_St_Bees_KoalaBellow20080919-073000"; //source file for template
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
@@ -207,7 +209,7 @@ namespace AudioAnalysis
             //wavFileName = "Honeymoon_Bay_St_Bees_Curlew3_20080914-003000";
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet1_20080918-080000";
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet2_20080916-160000";
-            //wavFileName = "Honeymoon_Bay_St_Bees_20090312-060000_PheasantCoucal";
+            wavFileName = "Honeymoon_Bay_St_Bees_20090312-060000_PheasantCoucal";
 
             //JENNIFER'S CD
             //string wavDirName = @"C:\SensorNetworks\WavFiles\JenniferCD\";
@@ -218,11 +220,11 @@ namespace AudioAnalysis
             //wavFileName = "BAC10_20081101-045000";
 
             //TEST DATA
-            wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\Test_12March2009\";
             //wavFileName = "file0031_selection";
             //wavFileName = "daphne-151000_selection";
             //wavFileName = "jb1-161000_selection";
-            wavFileName = "jb3-151000_selection";
+            //wavFileName = "jb3-151000_selection";
 
         } //end ChooseWavFile()
 

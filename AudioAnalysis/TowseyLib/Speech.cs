@@ -545,23 +545,18 @@ namespace TowseyLib
         /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
         /// </summary>
         /// <param name="energy"></param>
-        /// <param name="minDecibels">this parameter not used</param>
         /// <param name="maxDecibels"></param>
         /// <returns></returns>
-        public static double[] NormaliseEnergyArray(double[] energy, double minDecibels, double maxDecibels)
+        public static double[] NormaliseDecibelArray(double[] energy, double maxDecibels)
         {
             //normalise energy between 0.0 decibels and max decibels.
             int L = energy.Length;
             double[] E = new double[L];
-            //double range = maxDecibels - minDecibels;
-            double range = maxDecibels;
-            //Console.WriteLine(" minDecibels=" + minDecibels + " maxDecibels=" + maxDecibels + " range=" + range);
             for (int i = 0; i < L; i++)
             {
                 E[i] = energy[i]; 
                 if (E[i] < 0.0) E[i] = 0.0;
-//                E[i] = (energy[i] - minDecibels) / range;
-                E[i] = energy[i] / range;
+                E[i] = energy[i] / maxDecibels;
                 if (E[i] > 1.0) E[i] = 1.0;
             }
             //DataTools.WriteMinMaxOfArray(E);

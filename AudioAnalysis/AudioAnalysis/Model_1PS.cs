@@ -70,7 +70,7 @@ namespace AudioAnalysis
             //int clusterWindow = (int)Math.Floor(SongWindow * (1 / frameOffset));
             
             double[] scores = AcousticModel.WordSearch(symbolSequence, acousticMatrix, Words);
-            result.VocalScores = scores;
+            result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             //Console.WriteLine("VocalCOUNT=" + ((MMResult)result).VocalCount);
             //for (int i = 0; i < result.VocalScores.Length; i++) 
@@ -84,7 +84,7 @@ namespace AudioAnalysis
             scores = Model_OnePeriodicSyllable.ReconstituteScores(scores, peaks);
 
             //transfer score results so far to result object
-            result.VocalScores = scores;
+            result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             int maxIndex = DataTools.GetMaxIndex(scores);
             result.VocalBestScore = scores[maxIndex];

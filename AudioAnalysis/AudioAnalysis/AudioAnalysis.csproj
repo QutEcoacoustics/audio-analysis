@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_SNR</StartupObject>
+    <StartupObject>AudioAnalysis.Main_ScanOneRecording</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -95,6 +95,8 @@
     <Compile Include="AudioRecording.cs" />
     <Compile Include="BaseTemplate.cs" />
     <Compile Include="BaseResult.cs" />
+    <Compile Include="Main_CreateTemplate.cs" />
+    <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_SNR.cs" />
     <Compile Include="Model_2SP.cs" />
     <Compile Include="Model_MMErgodic.cs" />
@@ -134,6 +136,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">

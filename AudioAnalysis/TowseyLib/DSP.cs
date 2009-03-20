@@ -11,6 +11,16 @@ namespace TowseyLib
     {
         public const double pi = Math.PI;
 
+
+        //reference logEnergies for signal segmentation, energy normalisation etc
+        public const double MinEnergyReference = -7.0;      // typical noise value for BAC2 recordings = -4.5
+        public const double MaxEnergyReference = -0.60206;  // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
+        //public const double MaxLogEnergy = -0.444;        // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
+        //public const double MaxLogEnergy = -0.310;        // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
+        //public const double MaxLogEnergy = 0.0;           // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
+        //note that the cicada recordings reach max average frame amplitude = 0.55
+
+
         /// <summary>
         /// Breaks a long audio signal into frames with given step
         /// </summary>
@@ -121,13 +131,8 @@ namespace TowseyLib
         /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
         /// <returns></returns>
-        public static double[] SignalLogEnergy(double[,] frames, double minLogEnergy, double maxLogEnergy)
+        public static double[] SignalLogEnergy(double[,] frames)
         {
-            //double minLogEnergy & maxLogEnergy are defined in header of Sonogram class
-            //double maxLogEnergy = Math.Log10(0.25);// = -0.60206; which assumes max average frame amplitude = 0.5
-            double minEnergyRatio = minLogEnergy - maxLogEnergy;
-
-
             int frameCount = frames.GetLength(0);
             int N = frames.GetLength(1);
             double[] logEnergy = new double[frameCount];
@@ -146,19 +151,19 @@ namespace TowseyLib
                 //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
                 {
                     System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = minEnergyRatio; //normalise to absolute scale
+                    logEnergy[i] = DSP.MinEnergyReference - DSP.MaxEnergyReference; //normalise to absolute scale
                     continue;
                 }
                 double logE = Math.Log10(e);
                 //if(i==100) Console.ReadLine();
 
                 //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
-                if (logE < minLogEnergy)
+                if (logE < DSP.MinEnergyReference)
                 {
                     //System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
-                    logEnergy[i] = minEnergyRatio;
+                    logEnergy[i] = DSP.MinEnergyReference - DSP.MaxEnergyReference;
                 }
-                else logEnergy[i] = logE - maxLogEnergy;
+                else logEnergy[i] = logE - DSP.MaxEnergyReference;
                 //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
                 //if (i < 20) Console.WriteLine("e="+logEnergy[i]);
             }
