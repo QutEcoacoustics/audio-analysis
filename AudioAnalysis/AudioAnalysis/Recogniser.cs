@@ -42,25 +42,45 @@ namespace AudioAnalysis
             var avSono = new AcousticVectorsSonogram(Template.SonogramConfig, Wav);
             Template.GenerateSymbolSequence( avSono);
             double frameOffset = Template.SonogramConfig.GetFrameOffset();
-            Results result = new Results(Template);
-            //ACCUMULATE OUTPUT SO FAR and put info in Results object 
-            result.AcousticMatrix = Template.AcousticModelConfig.AcousticMatrix; //double[,] acousticMatrix
-            result.SyllSymbols    = Template.AcousticModelConfig.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
-            result.SyllableIDs    = Template.AcousticModelConfig.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
+            BaseResult result = Template.GetBlankResultCard();
+            ////ACCUMULATE OUTPUT SO FAR and put info in Results object 
+            //result.AcousticMatrix = Template.AcousticModelConfig.AcousticMatrix; //double[,] acousticMatrix
+            //result.SyllSymbols    = Template.AcousticModelConfig.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
+            //result.SyllableIDs    = Template.AcousticModelConfig.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
 
             ModelType type = Template.Model.ModelType;
+            BaseModel.opFolder = Path.GetDirectoryName(Template.DataPath); //this only required when doing unit testing
             if (type == ModelType.UNDEFINED)
             {
-                Log.WriteLine("Recogniser.Analysis(): WARNING: The Recogniser MODEL is UNDERFINED.");
+                Log.WriteLine("Recogniser.Analysis(): WARNING: The Template MODEL is UNDEFINED.");
                 Log.WriteLine("CANNOT PROCEED WITH ANALYSIS");
-                //throw new Exception("Terminating analysis");
                 return result;
             }
-
-            BaseModel.opFolder = Path.GetDirectoryName(Template.DataPath); //this only required when doing unit testing
-            Model.ScanSymbolSequenceWithModel(result, frameOffset);
-            return result;
+            else
+                if (type == ModelType.MM_ERGODIC)
+                {
+                    Model.ScanSymbolSequenceWithModel(result as Result_MMErgodic, frameOffset);
+                    return result;
+                }
+                else
+                    if (type == ModelType.ONE_PERIODIC_SYLLABLE)
+                    {
+                        Model.ScanSymbolSequenceWithModel(result as Result_MMErgodic, frameOffset);
+                        return result;
+                    }
+                    else
+                        if (type == ModelType.MM_TWO_STATE_PERIODIC)
+                        {
+                            Model.ScanSymbolSequenceWithModel(result as Result_MMErgodic, frameOffset);
+                            return result;
+                        }
+                        else
+                {
+                    //throw new Exception("Terminating analysis");
+                    return null;
+                }
         }
 		
     } // end class MMRecogniser 
+
 }

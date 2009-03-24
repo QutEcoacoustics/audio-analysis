@@ -111,7 +111,10 @@ namespace AudioAnalysis
 			var config = new Configuration(configFile);
 			return new CepstralSonogramConfig(config);
 		}
-
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="config"></param>
 		public CepstralSonogramConfig(Configuration config) : base(config)
 		{
 			MfccConfiguration = new MfccConfiguration(config);

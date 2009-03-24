@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScanOneRecording</StartupObject>
+    <StartupObject>AudioAnalysis.MainTest</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -108,7 +108,8 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Recogniser.cs" />
-    <Compile Include="Results.cs" />
+    <Compile Include="Result_1PS.cs" />
+    <Compile Include="Result_MMErgodic.cs" />
     <Compile Include="Template_CC.cs" />
     <Compile Include="Image_MultiTrack.cs" />
     <Compile Include="MainTest.cs" />

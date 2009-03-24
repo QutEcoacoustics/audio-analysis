@@ -18,7 +18,7 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 8;   // USE CALL 1 FOR UNIT TESTING
+            int callID = 6;   // USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             Log.Verbosity = 1;

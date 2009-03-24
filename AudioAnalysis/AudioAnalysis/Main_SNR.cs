@@ -103,7 +103,7 @@ namespace AudioAnalysis
 
 //            Console.ReadLine();
             var recording = new AudioRecording() { FileName = wavPath };
-            bool doHighlightSubband = false; bool add1kHzLines = true;
+            bool doHighlightSubband = true; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));

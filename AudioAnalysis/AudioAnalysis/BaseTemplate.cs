@@ -261,7 +261,8 @@ namespace AudioAnalysis
         public void ExtractTemplateFromRecording(AudioRecording ar)
         {
             WavReader wav = ar.GetWavData();
-            var sono = new CepstralSonogram(this.SonogramConfig, wav);
+            bool extractSubbandOnly = true;//always do this when creating new template
+            var sono = new CepstralSonogram(this.SonogramConfig, wav, extractSubbandOnly);
             FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
         }
 
@@ -382,6 +383,16 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
+        }
+
+        public virtual BaseResult GetBlankResultCard()
+        {
+            ModelType type = this.Model.ModelType;
+            if (type == ModelType.MM_ERGODIC) return new Result_MMErgodic(this);
+                else
+                if (type == ModelType.ONE_PERIODIC_SYLLABLE) return new Result_MMErgodic(this);
+                    else 
+                    return null;
         }
 
 

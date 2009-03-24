@@ -58,7 +58,7 @@ namespace AudioAnalysis
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
             var recording = new AudioRecording() { FileName = wavPath };
-            var result = recogniser.Analyse(recording) as Results;
+            var result = recogniser.Analyse(recording);
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");
             string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
@@ -69,19 +69,20 @@ namespace AudioAnalysis
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
-                Log.WriteLine("# Template Hits =" + result.VocalCount);
-                Log.Write("# Best Score    =" + result.VocalBestScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(result.VocalBestLocation.Value.ToString("F1") + " sec");
-                Log.WriteLine("# Periodicity   =" + result.CallPeriodicity_ms + " ms");
-                Log.WriteLine("# Periodic Hits =" + result.NumberOfPeriodicHits);
+                Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);
+                Log.Write("# Best Score    =" + ((Result_1PS)result).TopScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(((Result_1PS)result).VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.WriteLine("# Periodicity   =" + ((Result_1PS)result).CallPeriodicity_ms + " ms");
+                Log.WriteLine("# Periodic Hits =" + ((Result_1PS)result).NumberOfPeriodicHits);
             } else
             if (template.Model.ModelType == ModelType.MM_ERGODIC)
             {
+                var r2 = result as Result_MMErgodic;
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
-                Log.WriteLine("# Number of vocalisations = " + result.VocalCount);
-                Log.WriteLine("# Number of valid vocalisations = " + result.VocalValid + " (i.e. appropriate duration)");
-                Log.Write("# Best Vocalisation Score    = " + result.VocalBestScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(result.VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
+                Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid + " (i.e. appropriate duration)");
+                Log.Write("# Best Vocalisation Score    = " + r2.VocalBestScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.VocalBestLocation.Value.ToString("F1") + " sec");
             }
 
             Console.WriteLine("\nFINISHED!");
