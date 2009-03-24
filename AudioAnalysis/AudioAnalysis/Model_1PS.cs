@@ -58,9 +58,10 @@ namespace AudioAnalysis
 
 
         #region ScanSymbolSequenceWithModel and associates
-        public override void ScanSymbolSequenceWithModel(Results result, double frameOffset)
+        public override void ScanSymbolSequenceWithModel(BaseResult r, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_1PeriodicSyllable.ScanSymbolSequenceWithModel()");
+            var result = r as Result_1PS;
             double[,] acousticMatrix = result.AcousticMatrix;
             string symbolSequence = result.SyllSymbols;
             int[] integerSequence = result.SyllableIDs;
@@ -87,7 +88,7 @@ namespace AudioAnalysis
             result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             int maxIndex = DataTools.GetMaxIndex(scores);
-            result.VocalBestScore = scores[maxIndex];
+            result.TopScore = scores[maxIndex];
             result.VocalBestLocation = (double)maxIndex * frameOffset;
 
 

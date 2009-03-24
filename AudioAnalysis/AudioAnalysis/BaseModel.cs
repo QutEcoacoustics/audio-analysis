@@ -103,7 +103,7 @@ namespace AudioAnalysis
 
 
 
-        public abstract void ScanSymbolSequenceWithModel(Results result, double frameOffset);
+        public abstract void ScanSymbolSequenceWithModel(BaseResult result, double frameOffset);
 
         public abstract void Save(TextWriter writer);
 
@@ -136,7 +136,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("END Model_Undefined.Save()");
         }
 
-        public override void ScanSymbolSequenceWithModel(Results result, double frameOffset)
+        public override void ScanSymbolSequenceWithModel(BaseResult result, double frameOffset)
         {
             Log.WriteIfVerbose("Model_Undefined.ScanSymbolSequenceWithModel(): This method should not be called!!");
         }

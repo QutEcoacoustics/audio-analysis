@@ -73,9 +73,10 @@ namespace AudioAnalysis
         /// </summary>
         /// <param name="result"></param>
         /// <param name="frameOffset"></param>
-        public override void ScanSymbolSequenceWithModel(Results result, double frameOffset)
+        public override void ScanSymbolSequenceWithModel(BaseResult r, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_MMErgodic.ScanSymbolSequenceWithModel()");
+            var result = r as Result_MMErgodic;
 
             List<string> mmMonitor = new List<string>(); // only used when Unit testing
 

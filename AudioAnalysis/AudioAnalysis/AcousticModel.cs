@@ -104,12 +104,12 @@ namespace AudioAnalysis
 
             if (BaseTemplate.InTestMode)
             {
-                string path = Path.GetDirectoryName(noiseFVPath) + "\\intermediateParams.txt";
+                Log.WriteLine("\n########### COMPARE NOISE RESPONSE OF FEATURE VECTOR FILES");
+                string path = Path.GetDirectoryName(noiseFVPath) + "\\noiseResponse.txt";
                 List<string> noiseValues = new List<string>(FVs.Length);
                 for (int id = 0; id < FVs.Length; id++)
                     noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
                 FileTools.WriteTextFile(path, noiseValues);
-                Log.WriteLine("COMPARE FILES OF INTERMEDIATE PARAMETER VALUES");
                 FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
             } //end TEST MODE
 

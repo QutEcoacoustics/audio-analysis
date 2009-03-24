@@ -37,20 +37,19 @@ namespace AudioAnalysis
 		public double FrameMax_dB { get; private set; }
 		public double FrameMin_dB { get; private set; }
 		public double Frame_SNR { get { return FrameMax_dB - NoiseSubtracted; } }
-        //sonogram.FrameMax_dB - sonogram.NoiseSubtracted;
 		public double MinDecibelReference { get; private set; } // Min reference dB value after noise substraction
         public double MaxDecibelReference { get; private set; } // Used to normalise the energy values for MFCCs
         public double SegmentationThresholdK1 { get; private set; }
         public double SegmentationThresholdK2 { get; private set; } 
 
         public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
-        private int   freqBand_Min;
-        private int   freqBand_Max;
+        private int   subBand_Min;
+        private int   subBand_Max;
 		public double FreqBandMax_dB { get; private set; }
 		public double FreqBandNoise_dB { get; private set; }
-		public double FreqBand_SNR { get; private set; }
+		public double SubBand_SNR { get; private set; }
 
-		public int[] SigState { get; private set; } // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
+		public int[] SigState { get; private set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
 		public double[,] Data { get; protected set; } //the spectrogram data matrix
 		#endregion
@@ -67,8 +66,8 @@ namespace AudioAnalysis
 
 			MaxAmplitude = wav.CalculateMaximumAmplitude();
 
-			this.freqBand_Min = config.MinFreqBand ?? 0;
-			this.freqBand_Max = config.MaxFreqBand ?? NyquistFrequency;
+			this.subBand_Min = config.MinFreqBand ?? 0;
+			this.subBand_Max = config.MaxFreqBand ?? NyquistFrequency;
             //bool ExtractSubband = this.freqBand_Min > 0 || this.freqBand_Max < NyquistFrequency;
 
 			double[] signal = wav.Samples;
@@ -126,8 +125,8 @@ namespace AudioAnalysis
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
 			{
-				int c1 = (int)(this.freqBand_Min / FBinWidth);
-				int c2 = (int)(this.freqBand_Max / FBinWidth);
+				int c1 = (int)(this.subBand_Min / FBinWidth);
+				int c2 = (int)(this.subBand_Max / FBinWidth);
 				amplitudeM = DataTools.Submatrix(amplitudeM, 0, c1, amplitudeM.GetLength(0) - 1, c2);
 				Log.WriteIfVerbose("\tDim of required sub-band  =" + amplitudeM.GetLength(1));
 				//DETERMINE ENERGY IN FFT FREQ BAND
@@ -225,7 +224,7 @@ namespace AudioAnalysis
 			NoiseSubtracted = Q;
 			FreqBandNoise_dB = min_dB; //min decibels of all frames 
 			FreqBandMax_dB = max_dB;
-			FreqBand_SNR = max_dB - min_dB;
+			SubBand_SNR = max_dB - min_dB;
 			MinDecibelReference = min_dB - NoiseSubtracted;
 			return decibels;
 		}
@@ -264,8 +263,8 @@ namespace AudioAnalysis
             //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
             //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
             //calculate top and bottom of sub-band 
-            int minHighlightBin = (int)Math.Round((double)this.freqBand_Min / (double)NyquistFrequency * fftBins);
-            int maxHighlightBin = (int)Math.Round((double)this.freqBand_Max / (double)NyquistFrequency * fftBins);
+            int minHighlightBin = (int)Math.Round((double)this.subBand_Min / (double)NyquistFrequency * fftBins);
+            int maxHighlightBin = (int)Math.Round((double)this.subBand_Max / (double)NyquistFrequency * fftBins);
 			Color[] grayScale = ImageTools.GrayScale();
 
 			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
@@ -462,7 +461,7 @@ namespace AudioAnalysis
 
 	public class SpectralSonogram : BaseSonogram
 	{
-        //There are four CONSTRUCTORS
+        //There are three CONSTRUCTORS
         /// <summary>
         /// 
         /// </summary>
@@ -503,7 +502,7 @@ namespace AudioAnalysis
 			}
 			return m;
 		}
-	}
+    } //end of class SpectralSonogram : BaseSonogram
 
 
 
@@ -511,11 +510,10 @@ namespace AudioAnalysis
     public class CepstralSonogram : BaseSonogram
     {
         public CepstralSonogram(string configFile, WavReader wav)
-            : this(CepstralSonogramConfig.Load(configFile), wav)
+            : this(CepstralSonogramConfig.Load(configFile), wav, false)
         { }
-
-        public CepstralSonogram(CepstralSonogramConfig config, WavReader wav)
-            : base(config, wav, false)
+        public CepstralSonogram(CepstralSonogramConfig config, WavReader wav, bool extractSubbandOnly)
+            : base(config, wav, extractSubbandOnly)
         { }
 
         public double MaxMel { get; private set; }      // Nyquist frequency on Mel scale
@@ -581,11 +579,11 @@ namespace AudioAnalysis
 	public class AcousticVectorsSonogram : CepstralSonogram
 	{
 		public AcousticVectorsSonogram(string configFile, WavReader wav)
-			: base(AVSonogramConfig.Load(configFile), wav)
+			: base(AVSonogramConfig.Load(configFile), wav, false)
 		{ }
 
 		public AcousticVectorsSonogram(AVSonogramConfig config, WavReader wav)
-			: base(config, wav)
+			: base(config, wav, false)
 		{ }
 
 		protected override void Make(double[,] amplitudeM)

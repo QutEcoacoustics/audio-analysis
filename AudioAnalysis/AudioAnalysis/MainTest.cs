@@ -21,7 +21,10 @@ namespace AudioAnalysis
             // KEY PARAMETERS TO CHANGE
             int callID = 1;   // USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            //WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            wavFileName = wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for the Call 1 and call 8 template
+
             Log.Verbosity = 1;
             if (callID == 1) BaseTemplate.InTestMode = true;//ie doing a unit test
             //#######################################################################################################
@@ -122,12 +125,13 @@ namespace AudioAnalysis
 
             if (BaseTemplate.InTestMode)
             {
-                Log.WriteLine("COMPARE TEMPLATE FILES");
+                Log.WriteLine("\n########### COMPARE TEMPLATE FILES");
                 FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + ".OLD"), false);
                 //FunctionalTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
                 FunctionalTests.AssertAreEqual(new FileInfo(gui.opDir + "symbolSequences.txt"),
                                                new FileInfo(gui.opDir + "symbolSequences.txt.OLD"), true);
-            }
+            } //end TEST MODE
+
 			return template;
 		}
 
@@ -156,7 +160,7 @@ namespace AudioAnalysis
 
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
             var recording = new AudioRecording() { FileName = wavPath };
-            var result = recogniser.Analyse(recording) as Results;
+            var result = recogniser.Analyse(recording);
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_"+Path.GetFileNameWithoutExtension(wavPath) + ".png");
             string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
@@ -165,19 +169,21 @@ namespace AudioAnalysis
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
-                Log.WriteLine("# Template Hits =" + result.VocalCount);
-                Log.Write("# Best Score    =" + result.VocalBestScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(result.VocalBestLocation.Value.ToString("F1") + " sec");
-                Log.WriteLine("# Periodicity   =" + result.CallPeriodicity_ms + " ms");
-                Log.WriteLine("# Periodic Hits =" + result.NumberOfPeriodicHits);
+                var r2 = result as Result_1PS;
+                Log.WriteLine("# Template Hits =" + r2.VocalCount);
+                Log.Write("# Best Score    =" + r2.TopScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.WriteLine("# Periodicity   =" + r2.CallPeriodicity_ms + " ms");
+                Log.WriteLine("# Periodic Hits =" + r2.NumberOfPeriodicHits);
             }
             if (template.Model.ModelType == ModelType.MM_ERGODIC)
             {
+                var r2 = result as Result_MMErgodic;
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
-                Log.WriteLine("# Number of vocalisations = " + result.VocalCount);
-                Log.WriteLine("# Number of valid vocalisations = " + result.VocalValid+" (i.e. appropriate duration)");
-                Log.Write("# Best Vocalisation Score    = " + result.VocalBestScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(result.VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
+                Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid+" (i.e. appropriate duration)");
+                Log.Write("# Best Vocalisation Score    = " + r2.VocalBestScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.VocalBestLocation.Value.ToString("F1") + " sec");
             }
 
 		}
@@ -194,18 +200,18 @@ namespace AudioAnalysis
             using (var writer = new StreamWriter(outputFile))
             {
                 if (headerRequired)
-                    writer.WriteLine(Results.GetSummaryHeader());
+                    writer.WriteLine(Result_MMErgodic.GetSummaryHeader());
 
                 FileInfo[] files = new DirectoryInfo(wavFolder).GetFiles("*" + WavReader.WavFileExtension);
                 foreach (var file in files)
                 {
                     var recording = new AudioRecording() { FileName = file.FullName };
 
-                    var result = recogniser.Analyse(recording) as Results;
+                    var result = recogniser.Analyse(recording);
                     result.ID = file.Name;
                     //string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
                     //template.SaveResultsImage(recording.GetWavData(), imagePath, result);
-                    writer.WriteLine(result.GetOneLineSummary());
+                    //writer.WriteLine(result.GetOneLineSummary());
                 }
             }
 		}

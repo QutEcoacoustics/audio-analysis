@@ -151,20 +151,21 @@ namespace AudioAnalysis
                         {"template1_syl1","4753,5403,6029,6172,6650,6701,6866,9027"},
                         {"template1_syl2","4758,5408,6034,6175,6655,6704,6871,9030"},
                         {"template1_syl3","4762,5412,6039,6178,6659,6707,6875,9033"},
-                        {"template1_syl4","4766,5416,6043,6183,6664,6712,6880,9037"},
+                    //    {"template1_syl4","4766,5416,6043,6183,6664,6712,6880,9037"},
                     };
 
 
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                    zScoreThreshold = 8.0; //options are 1.98, 2.33, 2.56, 3.1
+                    zScoreThreshold = 7.0; //options are 1.98, 2.33, 2.56, 3.1
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_1\template1_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
                     //modelType = ModelType.UNDEFINED;
                     modelType = ModelType.MM_ERGODIC;
-                    numberOfWords = 4; //number of defined song variations
-                    wordNames = new String[] { "syl1", "syl2", "syl3", "syl4" };
+                    numberOfWords = 1; //number of defined song variations
+                    wordNames = new String[] { "syl1", "syl2", "syl3" };
+                    //wordNames = new String[] { "syl1", "syl2", "syl3", "syl4" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 1)
                 #endregion
@@ -364,23 +365,24 @@ namespace AudioAnalysis
                     max_Freq = 3000; //Hz
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
+                    fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES
                     fvInit = new string[,] {
-                        {"template6_puff","826,994,1140,1156,1469,1915,2103,2287,2676,3137,4314,4604"},
-                        {"template6_huff","595,640,752,897,957,1092,1691,1840,2061,2241,2604,4247"},
-                        {"template6_warmup","39,51,66,80,93,134,294"},
-                        {"template6_distant","10051,10092,10106,10080"},
+                        {"template6_puff","826,994,1140,1156,1449,1620,1914,2018,2103,2287,2676,2867,3020,3137,3291,3667,3970,4314,4604"},
+                        {"template6_huff","595,640,660,752,790,897,901,957,1055,1110,1325,1520,1590,1661,1691,1964,1724,1840,2061,2198,2241,2604,4247"},
+              //          {"template6_warmup","39,51,66,80,93,134,294"},
+              //          {"template6_distant","9993,10034,10051,10092,10106,10080,10196"},
                     };
                     //doFvAveraging = true;
 
                     // THE ACOUSTIC MODEL ***************
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
-                    zScoreThreshold = 1.4; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
+                    zScoreThreshold = 1.0; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
                     modelType = ModelType.MM_ERGODIC;
-                    numberOfWords = 4; //number of defined song variations
-                    wordNames = new String[] { "huff","puff", "snort", "distant" };
+                    numberOfWords = 1; //number of defined song variations
+                    //wordNames = new String[] { "huff","puff", "snort", "distant" };
+                    wordNames = new String[] { "huffNpuff" };
                     wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 6)
                 #endregion

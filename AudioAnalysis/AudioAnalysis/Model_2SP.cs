@@ -107,9 +107,12 @@ namespace AudioAnalysis
 
         #region ScanSymbolSequenceWithMM and associates
 
-        public override void ScanSymbolSequenceWithModel(Results result, double frameOffset)
+        public override void ScanSymbolSequenceWithModel(BaseResult r, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_MM2SP.ScanSymbolSequenceWithModel()");
+
+            var result = r as Result_1PS; //###########################################CHANGE TO RESULT_2SP WHEN AVAILABLE
+
             double[,] acousticMatrix = result.AcousticMatrix;
             string symbolSequence = result.SyllSymbols;
             //int[] integerSequence = result.SyllableIDs;

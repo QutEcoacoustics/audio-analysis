@@ -95,9 +95,9 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
-            double? scoreMax  = ((Results)result).MaxScore;
-            double? threhsold = ((Results)result).LLRThreshold;
-            image.AddTrack(Image_Track.GetScoreTrack(((Results)result).Scores, scoreMax, threhsold));
+            double? scoreMax  = ((Result_MMErgodic)result).MaxScore;
+            double? threhsold = ((Result_MMErgodic)result).LLRThreshold;
+            image.AddTrack(Image_Track.GetScoreTrack(((Result_MMErgodic)result).Scores, scoreMax, threhsold));
             image.Save(imagePath);
         }
 
