@@ -146,9 +146,11 @@ namespace AudioAnalysis
             mmMonitor.Add(str1);
             result.LLRThreshold     = result.MaxDisplayScore - llrThreshold;  //display threshold
             result.Scores           = scores;
+
+            //summary scores
             result.VocalCount       = hitCount; // number of detected vocalisations
-            result.VocalValid       = correctDurationCount;
-            result.RankingScore         = bestHit;   // the highest score obtained over all vocalisations
+            result.VocalValid       = correctDurationCount; //number of vocalisations of correct duration
+            result.RankingScore     = bestHit;   // the highest score obtained over all vocalisations
             result.FrameWithTopScore= bestFrame;
             result.TimeOfTopScore   = bestTimePoint;
 
@@ -157,7 +159,7 @@ namespace AudioAnalysis
             {
                 string path = BaseModel.opFolder + "\\markovModelParams.txt";
                 FileTools.WriteTextFile(path, mmMonitor);
-                Log.WriteLine("COMPARE FILES OF INTERMEDIATE PARAMETER VALUES");
+                Log.WriteLine("COMPARE FILES OF INTERMEDIATE MARKOV MODEL PARAMETERS");
                 FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
             } //end TEST MODE
 

@@ -20,6 +20,7 @@ namespace AudioAnalysis
         //summary scores
         public int? VocalCount { get; set; }			// number of vocalisatsions involving a recognised syllable
         public double? RankingScore { get; set; }	    // the score used to rank/compare this recording with others
+        public double? MaxScore { get; set; }	        // the maximum score obtained with this recording
         public int? FrameWithTopScore { get; set; }     // id of frame having top score in recording 
         public double? TimeOfTopScore { get; set; }	    // time of top score from beginning of recording in seconds 
 

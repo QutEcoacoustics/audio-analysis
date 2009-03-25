@@ -101,6 +101,7 @@ namespace AudioAnalysis
                     catch (Exception e)
                     {
                         sb.AppendLine("\tNo information found for this key: " + pair.Key);
+                        sb.AppendLine("\t" + e.ToString());
                     }
                 }
             }
