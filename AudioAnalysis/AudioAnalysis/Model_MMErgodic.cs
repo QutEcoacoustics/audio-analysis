@@ -124,7 +124,7 @@ namespace AudioAnalysis
 
                 //now SCALE THE SCORE ARRAY so that it can be displayed
                 double displayScore = llr;
-                result.MaxScore = maxDisplayScore;
+                result.MaxDisplayScore = maxDisplayScore;
                 displayScore += maxDisplayScore; //add positve value because max score expected to be zero.
                 if (displayScore > maxDisplayScore) displayScore = maxDisplayScore;
                 if (displayScore < 0) displayScore = 0;
@@ -144,13 +144,13 @@ namespace AudioAnalysis
                 hitCount, correctDurationCount, bestHit, bestFrame, bestTimePoint);
             Log.WriteIfVerbose(str1);
             mmMonitor.Add(str1);
-            result.LLRThreshold     = result.MaxScore - llrThreshold;  //display threshold
+            result.LLRThreshold     = result.MaxDisplayScore - llrThreshold;  //display threshold
             result.Scores           = scores;
             result.VocalCount       = hitCount; // number of detected vocalisations
             result.VocalValid       = correctDurationCount;
-            result.VocalBestScore   = bestHit;   // the highest score obtained over all vocalisations
-            result.VocalBestFrame   = bestFrame;
-            result.VocalBestLocation= bestTimePoint;
+            result.RankingScore         = bestHit;   // the highest score obtained over all vocalisations
+            result.FrameWithTopScore= bestFrame;
+            result.TimeOfTopScore   = bestTimePoint;
 
 
             if (BaseTemplate.InTestMode)

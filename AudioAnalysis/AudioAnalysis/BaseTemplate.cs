@@ -390,7 +390,7 @@ namespace AudioAnalysis
             ModelType type = this.Model.ModelType;
             if (type == ModelType.MM_ERGODIC) return new Result_MMErgodic(this);
                 else
-                if (type == ModelType.ONE_PERIODIC_SYLLABLE) return new Result_MMErgodic(this);
+                if (type == ModelType.ONE_PERIODIC_SYLLABLE) return new Result_1PS(this);
                     else 
                     return null;
         }

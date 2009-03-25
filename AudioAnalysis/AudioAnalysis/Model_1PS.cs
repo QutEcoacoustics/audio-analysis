@@ -88,8 +88,8 @@ namespace AudioAnalysis
             result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             int maxIndex = DataTools.GetMaxIndex(scores);
-            result.TopScore = scores[maxIndex];
-            result.VocalBestLocation = (double)maxIndex * frameOffset;
+            result.RankingScore = scores[maxIndex];
+            result.TimeOfTopScore = (double)maxIndex * frameOffset;
 
 
             if ((result.VocalCount < 2) || (Periodicity_ms <= 0))

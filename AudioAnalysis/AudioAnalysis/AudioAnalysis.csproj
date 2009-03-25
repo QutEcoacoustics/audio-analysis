@@ -108,6 +108,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Recogniser.cs" />
+    <Compile Include="ResultItem.cs" />
     <Compile Include="Result_1PS.cs" />
     <Compile Include="Result_MMErgodic.cs" />
     <Compile Include="Template_CC.cs" />
