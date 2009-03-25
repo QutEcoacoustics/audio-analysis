@@ -43,10 +43,6 @@ namespace AudioAnalysis
             Template.GenerateSymbolSequence( avSono);
             double frameOffset = Template.SonogramConfig.GetFrameOffset();
             BaseResult result = Template.GetBlankResultCard();
-            ////ACCUMULATE OUTPUT SO FAR and put info in Results object 
-            //result.AcousticMatrix = Template.AcousticModelConfig.AcousticMatrix; //double[,] acousticMatrix
-            //result.SyllSymbols    = Template.AcousticModelConfig.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
-            //result.SyllableIDs    = Template.AcousticModelConfig.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
 
             ModelType type = Template.Model.ModelType;
             BaseModel.opFolder = Path.GetDirectoryName(Template.DataPath); //this only required when doing unit testing

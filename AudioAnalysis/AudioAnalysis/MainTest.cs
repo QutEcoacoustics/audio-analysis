@@ -171,8 +171,8 @@ namespace AudioAnalysis
             {
                 var r2 = result as Result_1PS;
                 Log.WriteLine("# Template Hits =" + r2.VocalCount);
-                Log.Write("# Best Score    =" + r2.TopScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(r2.VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.Write("# Best Score    =" + r2.RankingScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
                 Log.WriteLine("# Periodicity   =" + r2.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + r2.NumberOfPeriodicHits);
             }
@@ -182,11 +182,15 @@ namespace AudioAnalysis
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
                 Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
                 Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid+" (i.e. appropriate duration)");
-                Log.Write("# Best Vocalisation Score    = " + r2.VocalBestScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(r2.VocalBestLocation.Value.ToString("F1") + " sec");
+                Log.Write("# Best Vocalisation Score    = " + r2.RankingScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
+
+
+                Log.WriteLine("\nAUTOMATED RESULTS FOR TEMPLATE " + template.CallName);
+                Log.WriteLine(r2.WriteResults());
             }
 
-		}
+        } //end ReadAndRecognise()
 
         public static void ScanMultipleRecordingsWithTemplate(string appConfigPath, string templatePath, string wavFolder, string outputFolder)
 		{
@@ -208,7 +212,7 @@ namespace AudioAnalysis
                     var recording = new AudioRecording() { FileName = file.FullName };
 
                     var result = recogniser.Analyse(recording);
-                    result.ID = file.Name;
+                    result.recordingName = file.Name;
                     //string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
                     //template.SaveResultsImage(recording.GetWavData(), imagePath, result);
                     //writer.WriteLine(result.GetOneLineSummary());
