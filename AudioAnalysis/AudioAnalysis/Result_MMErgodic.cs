@@ -53,13 +53,17 @@ namespace AudioAnalysis
         {
             var table = new Dictionary<string, string>();
             table.Add("UNITS", "LLR");
-            table.Add("COMMENT", "The log likelihood ratio, in this case, is to be interpreted as follows. " +
-                               "Let str1 be a test vocalisation and let str2 be an 'average' vocalisation used to train the Markov Model. "+
-                               "Let p1 = p(str1 | MM) and let p2 = p(str2 | MM). Then LLR = log (p1 /p2).  "+
-                               "Note that the LLR takes negative values because p1 < p2. "+
-                               "Note also that LRR's max value = 0.0 (i.e. test str has same prob has training sample.");
+            table.Add("COMMENT_ABOUT_LLR", "The log likelihood ratio, in this case, is interpreted as follows. " +
+                               "Let v1 be the test vocalisation and let v2 be an 'average' vocalisation used to train the Markov Model. "+
+                               "Let p1 = p(v1 | MM) and let p2 = p(v2 | MM). Then LLR = log (p1 /p2).  "+
+                               "Note 1: In theory LLR takes only negative values because p1 < p2. "+
+                               "Note 2: For same reason, LLR's max value = 0.0 (i.e. test str has same prob has training sample. " +
+                               "Note 3: In practice, LLR can have positive value when p1 > p2 because p2 is an average.");
 
-            table.Add("THRESHOLD", "3.0");
+            table.Add("THRESHOLD", "-6.64");
+            table.Add("COMMENT_ABOUT_THRESHOLD", "The null hypothesis is that the test sequence is a true positive. "+
+                      "Accept null hypothesis if LLR >= -6.64.  "+
+                      "Reject null hypothesis if LLR <  -6.64.");
             return table;
         }
         private static Dictionary<string, string> GetVocalCountInfo()
@@ -82,7 +86,7 @@ namespace AudioAnalysis
             return table;
         }
 
-        public string WriteResults()
+        public override string WriteResults()
         {
             StringBuilder sb = new StringBuilder("RESULTS OF SCANNING RECORDING FOR CALL <" + this.Template.CallName + ">\n");
             for (int i = 0; i < Result_MMErgodic.KeyNames.Length; i++)

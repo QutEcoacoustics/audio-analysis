@@ -142,6 +142,10 @@ namespace AudioAnalysis
             Log.WriteLine("ReadAndRecognise(string appConfigPath, string templatePath, string wavPath, string outputFolder)");
 
             var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
+            Log.WriteLine("\nAUTOMATED RESULTS FOR TEMPLATE BEFORE ANALYSIS!");
+            var r0 = template.GetBlankResultCard();
+            Log.WriteLine(r0.WriteResults());
+
 
             if (BaseTemplate.InTestMode)
             {
@@ -173,7 +177,7 @@ namespace AudioAnalysis
                 Log.WriteLine("# Template Hits =" + r2.VocalCount);
                 Log.Write("# Best Score    =" + r2.RankingScore.Value.ToString("F1") + " at ");
                 Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
-                Log.WriteLine("# Periodicity   =" + r2.CallPeriodicity_ms + " ms");
+                Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + r2.NumberOfPeriodicHits);
             }
             if (template.Model.ModelType == ModelType.MM_ERGODIC)

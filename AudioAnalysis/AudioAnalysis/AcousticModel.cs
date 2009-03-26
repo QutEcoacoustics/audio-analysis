@@ -23,7 +23,7 @@ namespace AudioAnalysis
         public int FvCount { get { return fvConfig.FVCount; } }
         private double FrameOffset;
         private double FramesPerSecond;
-        public string FV_DefaultNoiseFile { get; set; }
+       // public string FV_DefaultNoiseFile { get; set; }
         public double ZscoreThreshold { get; set; }
 		public double[,] AcousticMatrix { get; set; }	// matrix of fv x time frames
 		public string SyllSymbols { get; set; }			// array of symbols  representing winning user defined feature templates
@@ -37,7 +37,6 @@ namespace AudioAnalysis
         /// <param name="config"></param>
         public AcousticModel(Configuration config)
         {
-            FV_DefaultNoiseFile = config.GetPath("FV_DEFAULT_NOISE_FILE");
             ZscoreThreshold = config.GetDouble("ZSCORE_THRESHOLD");
         }
 
@@ -46,8 +45,6 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("START AcousticModel.Save()");
 
             writer.WriteLine("#**************** INFO ABOUT THE ACOUSTIC MODEL ***************");
-            //FV_DEFAULT_NOISE_FILE=C:\SensorNetworks\Templates\template_2_DefaultNoise.txt
-            writer.WriteConfigValue("FV_DEFAULT_NOISE_FILE", FV_DefaultNoiseFile);
             writer.WriteLine("#THRESHOLD OPTIONS: 3.1(p=0.001), 2.58(p=0.005), 2.33(p=0.01), 2.15(p=0.03), 1.98(p=0.05)");
             writer.WriteConfigValue("ZSCORE_THRESHOLD", ZscoreThreshold); //=1.98
             writer.WriteLine("#");
@@ -63,7 +60,7 @@ namespace AudioAnalysis
             this.fvConfig = template.FeatureVectorConfig;
             this.FrameOffset = sonogram.FrameOffset;
             this.FramesPerSecond = sonogram.FramesPerSecond;
-            AcousticMatrix = GenerateAcousticMatrix(sonogram, FV_DefaultNoiseFile);
+            AcousticMatrix = GenerateAcousticMatrix(sonogram);
             AcousticMatrix2SymbolSequence(AcousticMatrix);
         }
 
@@ -71,28 +68,29 @@ namespace AudioAnalysis
         /// <summary>
         /// Scans a sonogram with predefined feature vectors using a previously loaded template.
         /// </summary>
-        double[,] GenerateAcousticMatrix(AcousticVectorsSonogram s, string noiseFVPath)
+        double[,] GenerateAcousticMatrix(AcousticVectorsSonogram s)
         {
-            Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE");
             //##################### DERIVE NOISE FEATURE VECTOR OR READ PRE-COMPUTED NOISE FILE
+            Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE AND GENERATE ACOUSTIC MODEL");
             Log.WriteIfVerbose("\tStep 1: Derive NOISE Feature Vector, FV[0], from the passed SONOGRAM");
-            Console.WriteLine(fvConfig.FVArray.ToString());
             var FVs = GetFeatureVectors(fvConfig.FVArray);
             int fvCount = FVs.Length;
 
             int count;
-            //NB! changed calculation of threshold 20th March 2009 to correspond to refactoring of decibel code.
-            //double dbThreshold = s.MinDecibelReference + EndpointDetectionConfiguration.SegmentationThresholdK2;  // FreqBandNoise_dB;
-            double dbThreshold = EndpointDetectionConfiguration.SegmentationThresholdK2;  // FreqBandNoise_dB;
-            FVs[0] = GetNoiseFeatureVector(s.Data, s.Decibels, dbThreshold, out count);
-
+            FVs[0] = GetNoiseFeatureVector(s.Data, s.Decibels, out count);
+            //if (template.mode == Mode.READ_EXISTING_TEMPLATE) FVs[0] = null; //debugging purposes only
             if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file
             {
-                Log.WriteIfVerbose("\tDerive NOISE Feature Vector from file: " + fvConfig.FVfNames[0]);
-                FVs[0] = new FeatureVector(fvConfig.FVfNames[0], fvConfig.FVLength);
+                Log.WriteIfVerbose("\tDerive NOISE Feature Vector from default Noise file: ");
+                FVs[0] = fvConfig.DefaultNoiseFV; //
             }
-            else if (noiseFVPath != null) // Write noise vector to file. It can then be used as a sample noise vector.
-                SaveNoiseVector(noiseFVPath, FVs[0], s.NyquistFrequency);
+            else
+                if ((template.mode == Mode.CREATE_NEW_TEMPLATE) && (fvConfig.FV_DefaultNoisePath != null)) //Write noise vector to file. Can be used as sample noise vector.
+            {
+                //Log.WriteIfVerbose("\tSave NOISE Feature Vector to file: " + noiseFVPath);
+                fvConfig.DefaultNoiseFV = FVs[0]; //keep this so it can be serialised
+                SaveNoiseVector(fvConfig.FV_DefaultNoisePath, FVs[0], s.NyquistFrequency);
+            }
 
             //##################### PREPARE MATRIX OF NOISE VECTORS AND THEN SET NOISE RESPONSE FOR EACH feature vector
             Log.WriteIfVerbose("\n\tStep 2: Obtain noise response for each feature vector");
@@ -105,7 +103,7 @@ namespace AudioAnalysis
             if (BaseTemplate.InTestMode)
             {
                 Log.WriteLine("\n########### COMPARE NOISE RESPONSE OF FEATURE VECTOR FILES");
-                string path = Path.GetDirectoryName(noiseFVPath) + "\\noiseResponse.txt";
+                string path = Path.GetDirectoryName(fvConfig.FV_DefaultNoisePath) + "\\noiseResponse.txt";
                 List<string> noiseValues = new List<string>(FVs.Length);
                 for (int id = 0; id < FVs.Length; id++)
                     noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
@@ -159,8 +157,10 @@ namespace AudioAnalysis
         /// If there are not enough low energy frames, then the method returns null and caller must get
         /// noise FV from another source.
         /// </summary>
-        FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double decibelThreshold, out int count)
+        FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, out int count)
         {
+            double decibelThreshold = EndpointDetectionConfiguration.SegmentationThresholdK2;  // FreqBandNoise_dB;
+
             int rows = acousticM.GetLength(0);
             int cols = acousticM.GetLength(1);
 
@@ -196,7 +196,7 @@ namespace AudioAnalysis
             for (int j = 0; j < cols; j++)
                 noiseFV[j] /= (double)count;
 
-            return new FeatureVector(noiseFV);
+            return new FeatureVector(noiseFV, "Noise");
         }
 
 

@@ -33,6 +33,8 @@ namespace AudioAnalysis
         public string OPDir { get; set; }
         public string[] FVfNames { get; set; }
         public string[] FVSourceFiles { get; set; }
+        public string FV_DefaultNoisePath { get; set; }
+        public FeatureVector DefaultNoiseFV { get; set; } //default noise FV used if cannot construct one from recording to be scanned
         private FeatureVector[] fvArray;
         public FeatureVector[] FVArray
         {
@@ -64,6 +66,8 @@ namespace AudioAnalysis
             //Log.WriteIfVerbose("\tFV_SOURCE=" + FVSourceType.ToString());
             CallID = config.GetInt("TEMPLATE_ID");
             FVCount = config.GetInt("FV_COUNT");
+            FV_DefaultNoisePath = config.GetPath("FV_DEFAULT_NOISE_FILE");
+
             FVIniData = new string[FVCount];
             MarqueeStart = 0;    //default value
             MarqueeEnd = 0;      //default value
@@ -172,7 +176,7 @@ namespace AudioAnalysis
         public void SaveFeatureVectors(string opDir)
         {
             Log.WriteIfVerbose("START SaveFeatureVectors.Save()");
-            var fName = FVArray[0].VectorFName; //check that first FV has a destination path and assume all do!
+            var fName = FVArray[0].name; //check that first FV has a destination path and assume all do!
         
             // Ensure to save feature vectors first so paths are correctly set.
             //SaveFeatureVectors(Path.GetDirectoryName(templateFilePath), templateName + "_FV{0}.txt");
@@ -186,7 +190,7 @@ namespace AudioAnalysis
 
             for (int i = 0; i < FVArray.Length; i++)
             {
-                fName = FVArray[i].VectorFName;
+                fName = FVArray[i].name;
                 var path = Path.Combine(opDir, string.Format(fName, i)+".txt");
                 Log.WriteIfVerbose("\tSaving FV file to:  "+path);
                 FVArray[i].SaveDataToFile(path);
@@ -213,6 +217,8 @@ namespace AudioAnalysis
 
             writer.WriteLine("#**************** INFO ABOUT FEATURE VECTORS **************************");
 
+            //FV_DEFAULT_NOISE_FILE=C:\SensorNetworks\Templates\template_2_DefaultNoise.txt
+            writer.WriteConfigValue("FV_DEFAULT_NOISE_FILE", FV_DefaultNoisePath);
             writer.WriteConfigValue("FV_SOURCE", FVSourceType.ToString());
             if (FVSourceType == FV_Source.MARQUEE)
             {
@@ -256,6 +262,9 @@ namespace AudioAnalysis
                 //Log.WriteIfVerbose("   Reading FV file " + fvPath);
                 this.FVArray[i] = new FeatureVector(fvPath);
             }
+
+            this.DefaultNoiseFV = new FeatureVector(FV_DefaultNoisePath);
+
         }//end LoadFromFile()
 
 

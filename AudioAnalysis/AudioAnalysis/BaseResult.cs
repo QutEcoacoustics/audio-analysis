@@ -33,7 +33,9 @@ namespace AudioAnalysis
             return null;
         }
 
-
-
+        public virtual string WriteResults()
+        {
+            return "NO RESULTS AVAILABLE FROM BASE CLASS.";
+        }
     }
 }

@@ -100,7 +100,7 @@ namespace AudioAnalysis
             }
 
             //finally do periodicity analysis
-            result.CallPeriodicity_ms = this.Periodicity_ms;
+            Result_1PS.CallPeriodicity_ms = this.Periodicity_ms;
             result.CallPeriodicity_frames = this.Periodicity_frames;
             bool[] periodPeaks = Model_OnePeriodicSyllable.Periodicity(peaks, Periodicity_frames, Periodicity_NH_frames);
             result.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);

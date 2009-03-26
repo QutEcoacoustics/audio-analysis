@@ -16,8 +16,7 @@ namespace AudioAnalysis
 
         #region Properties
         public     int FvLength { get; private set; }
-        public  string VectorFName { get; set; }
-        public  string VectorFPath { get; private set; }
+        public  string name { get; set; }
 
         public  string ImageFPath { get; set; }
 
@@ -25,6 +24,7 @@ namespace AudioAnalysis
 		public double[] FeaturesNormed { get; private set; } // To difference from mean
 
         public string SourceFile { get; set; }
+        public string SourcePath { get; private set; }
         public string FrameIndices { get; set; }
 
         public double NoiseAv { get; set; }
@@ -40,12 +40,13 @@ namespace AudioAnalysis
         /// <param name="length"></param>
         public FeatureVector(string path, int length)
         {
-            VectorFPath = path;
+            SourcePath = path;
             FvLength = length;
 
             FileInfo f = new FileInfo(path);
-            VectorFName = f.Name;
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 1: name=" + VectorFName + "  length=" + length);
+            SourceFile = f.Name;
+            this.name  = f.Name;
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 1: name=" + name + "  length=" + length);
 
             Features = FileTools.ReadDoubles2Vector(path);
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
@@ -55,21 +56,23 @@ namespace AudioAnalysis
         /// CONSTRUCTOR 2
         /// </summary>
         /// <param name="vector"></param>
-        public FeatureVector(double[] vector)
+        public FeatureVector(double[] vector, string name)
         {
+            this.name = name;
             FvLength = vector.Length;
             Features = vector;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 2: name=NULL  length=" + FvLength);
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 2: name=" + name + "  length=" + FvLength);
         }
 
-        public FeatureVector(double[] vector, string sourceFile)
+        public FeatureVector(double[] vector, string name, string sourceFile)
         {
+            this.name = name;
             this.SourceFile = sourceFile;
             FvLength = vector.Length;
             Features = vector;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 3: sourceFile =" + sourceFile + " length=" + FvLength);
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 3: name=" + name + " sourceFile=" + sourceFile + " length=" + FvLength);
         }
 
         /// <summary>
@@ -78,20 +81,20 @@ namespace AudioAnalysis
         /// <param name="path"></param>
         public FeatureVector(string path)
         {
-            VectorFPath = path;
-
+            SourcePath = path;
             FileInfo f = new FileInfo(path);
-            VectorFName = f.Name;
+            SourceFile = f.Name;
+            this.name = f.Name;
             Features = FileTools.ReadDoubles2Vector(path);
             FvLength = Features.Length;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 4: name=" + VectorFName + "  length=" + FvLength);
+            Log.WriteIfVerbose("\tFV CONSTRUCTOR 4: SourceFile=" + SourceFile + "  length=" + FvLength);
 
         }
 
         public string GetIniData()
         {
-            return VectorFName+"\t"+FrameIndices;
+            return name+"\t"+FrameIndices;
         }
 
         public void SetFrameIndex(int id)
@@ -102,7 +105,7 @@ namespace AudioAnalysis
 		public void SaveDataAndImageToFile(string path, BaseTemplate t, int nyquistFrequency)
 		{
 			Log.WriteIfVerbose("\tFeature vector in file " + path);
-			this.VectorFPath = path;
+			this.SourcePath = path;
 			FileTools.WriteArray2File_Formatted(Features, path, "F5");
 
             this.ImageFPath = FileTools.ChangeFileExtention(path, ".bmp");
@@ -251,7 +254,7 @@ namespace AudioAnalysis
 
         public override String ToString()
         {
-            return "<fName=" + this.VectorFName+">";
+            return "<fName=" + this.name+">";
         }
 
 
@@ -333,7 +336,8 @@ namespace AudioAnalysis
 			}
 			for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)fvCount; //average feature values
 
-			FeatureVector newFV = new FeatureVector(avVector, fvs[0].SourceFile);//assume all FVs have same source file
+            string newName = fvs[0].name; //set new name to first old name
+			FeatureVector newFV = new FeatureVector(avVector, newName, fvs[0].SourceFile);//assume all FVs have same source file
 			//combine the original frame indices into comma separated integers
 			string indices = fvs[0].FrameIndices;
 			for (int i = 1; i < fvCount; i++) indices = indices + "," + fvs[i].FrameIndices; //assume all FVs originate from single frame

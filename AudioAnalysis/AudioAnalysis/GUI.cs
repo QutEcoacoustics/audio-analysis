@@ -206,12 +206,12 @@ namespace AudioAnalysis
 
 
                     // PARAMETERS FOR THE ACOUSTIC MODELS ***************
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                    fvDefaultNoiseFile = opDir+"template2_DefaultNoise.txt";
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
-                    //modelType = ModelType.UNDEFINED;
-                    modelType = ModelType.ONE_PERIODIC_SYLLABLE;
+                    modelType = ModelType.UNDEFINED;
+                    //modelType = ModelType.ONE_PERIODIC_SYLLABLE;
                     numberOfWords = 1; //number of defined song variations
                     wordNames    = new String[] { "kek" };
                     wordExamples = new String[] {"111", "11", "1"};

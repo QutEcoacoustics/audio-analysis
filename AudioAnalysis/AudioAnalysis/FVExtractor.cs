@@ -83,8 +83,8 @@ namespace AudioAnalysis
                 string fvName   = data[0];
                 string frameIDs = data[1];
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] Name=" + fvName + " from frames " + frameIDs);
-                fvs[i] = ExtractFeatureVectorsFromSelectedFramesAndAverage(M, frameIDs, dT);
-                fvs[i].VectorFName = fvName;
+                fvs[i] = ExtractFeatureVectorsFromSelectedFramesAndAverage(M, frameIDs, dT, fvName);
+                fvs[i].name = fvName;
                 fvs[i].FrameIndices = frameIDs;
                 fvs[i].SourceFile = sonoConfig.SourceFName;
             }
@@ -138,7 +138,7 @@ namespace AudioAnalysis
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from frame " + frameIndices[i]);
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
-                fvs[i] = new FeatureVector(acousticV);
+                fvs[i] = new FeatureVector(acousticV, "NO NAME");
                 // Wav source may not be from a file
                 //fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
                 fvs[i].SetFrameIndex(frameIndices[i]);
@@ -146,7 +146,7 @@ namespace AudioAnalysis
             return fvs;
         }
 
-        private static FeatureVector ExtractFeatureVectorsFromSelectedFramesAndAverage(double[,] M, string frames, int dT)
+        private static FeatureVector ExtractFeatureVectorsFromSelectedFramesAndAverage(double[,] M, string frames, int dT, string fvName)
         {
             //initialise feature vectors for template. Each frame provides one vector
             string[] frameIDs = frames.Split(',');
@@ -157,18 +157,18 @@ namespace AudioAnalysis
             {
                 int frameID = Int32.Parse(frameIDs[i]);
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from frame " + frameID);
-                fvs[i] = ExtractFeatureVectorFromOneFrame(M, frameID, dT);
+                fvs[i] = ExtractFeatureVectorFromOneFrame(M, frameID, dT, fvName);
             }
             return FeatureVector.AverageFeatureVectors(fvs, 1);
         }
 
 
 
-        private static FeatureVector ExtractFeatureVectorFromOneFrame(double[,]M, int frameNumber, int dT)
+        private static FeatureVector ExtractFeatureVectorFromOneFrame(double[,] M, int frameNumber, int dT, string fvName)
         {
             //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
             double[] acousticV = Speech.GetAcousticVector(M, frameNumber, dT); //combines  frames T-dT, T and T+dT
-            var fv = new FeatureVector(acousticV);
+            var fv = new FeatureVector(acousticV, fvName);
             return fv;
         }
 
