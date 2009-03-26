@@ -11,7 +11,7 @@ namespace AudioAnalysis
         public double? MaxDisplayScore { get; set; }	        // upper limit for diplay of scores 
 
 		public int? CallPeriodicity_frames { get; set; }
-		public int? CallPeriodicity_ms { get; set; }
+		public static int? CallPeriodicity_ms { get; set; }
 		public int? NumberOfPeriodicHits { get; set; }
 
         public static string[] KeyNames = { "RANK_SCORE", "VOCAL_COUNT", "TIMEOF_TOP_SCORE" };
@@ -54,7 +54,7 @@ namespace AudioAnalysis
             table["UNITS"] = "integer";
             table["COMMENT"] = "The count of the number of recognised syllables that have the correct time interval from " +
                                "the previous recognised syllable. ";
-            table["PERIODICITY"] = "The required periodicity in ms for syllables of this call type.";
+            table["PERIODICITY"] = "The required periodicity in ms for syllables of this call type = " + CallPeriodicity_ms + ".";
             return table;
         }
         private static Dictionary<string, string> GetVocalCountInfo()

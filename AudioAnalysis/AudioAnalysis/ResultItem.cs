@@ -39,6 +39,7 @@ namespace AudioAnalysis
 
         public override string ToString()
         {
+            if (value == null) return " null value";
             if (valueType == typeof(double)) return ((double)value).ToString("F3");
             if (valueType == typeof(Int32))  return ((Int32)value).ToString();
             else                             return value.ToString();

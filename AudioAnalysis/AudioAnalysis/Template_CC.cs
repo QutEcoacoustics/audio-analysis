@@ -14,17 +14,12 @@ namespace AudioAnalysis
 	public class Template_CC : BaseTemplate
 	{
 
-        public string NoiseFVPath { get; private set; }
-
-
 		public Template_CC(Configuration config) : base(config)
 		{
             SonogramConfig = new AVSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModelConfig   = new AcousticModel(config);
-            if (config.Source != null)
-                NoiseFVPath = Path.Combine(Path.GetDirectoryName(config.Source), Path.GetFileNameWithoutExtension(config.Source) + "_NoiseFV.txt");
 
             var modelName = config.GetString("MODEL_TYPE");
             ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
