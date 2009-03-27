@@ -102,7 +102,7 @@ namespace AudioAnalysis
             FrameIndices = id.ToString();
         }
 
-		public void SaveDataAndImageToFile(string path, BaseTemplate t, int nyquistFrequency)
+		public void SaveDataAndImageToFile(string path, BaseTemplate t)
 		{
 			Log.WriteIfVerbose("\tFeature vector in file " + path);
 			this.SourcePath = path;
@@ -110,7 +110,7 @@ namespace AudioAnalysis
 
             this.ImageFPath = FileTools.ChangeFileExtention(path, ".bmp");
             Log.WriteIfVerbose("\tFeature vector image in file " + ImageFPath);
-            this.SaveImage(t, nyquistFrequency);
+            this.SaveImage(t);
 		}
 
 		public void SaveDataToFile(string path)
@@ -118,32 +118,36 @@ namespace AudioAnalysis
 			FileTools.WriteArray2File_Formatted(Features, path, "F5");
 		}
 
-        public void SaveImage(BaseTemplate t, int nyquistFrequency)
+        public void SaveImage(BaseTemplate t)
 		{
-            Bitmap bmp = CreateBitMapOfTemplate(Features, t.SonogramConfig.MfccConfiguration.DoMelScale, nyquistFrequency, t.SonogramConfig.MaxFreqBand ?? nyquistFrequency, t.SonogramConfig.MinFreqBand ?? 0);
+            int nyquistFreq = t.SonogramConfig.SampleRate / 2;
+            bool doMel = t.SonogramConfig.MfccConfiguration.DoMelScale;
+            int minF = t.SonogramConfig.MinFreqBand ?? nyquistFreq;
+            int maxF = t.SonogramConfig.MaxFreqBand ?? nyquistFreq;
+            Bitmap bmp = CreateBitMapOfFV(Features, doMel, nyquistFreq, maxF, minF);
 			bmp.Save(ImageFPath);
 		}
 
-		public Bitmap CreateBitMapOfTemplate(double[] featureVector, bool doMelScale, int nyquistFrequency, int topScanBin, int bottomScanBin)
+		public Bitmap CreateBitMapOfFV(double[] featureVector, bool doMelScale, int nyquistFrequency, int topScanBin, int bottomScanBin)
 		{
 			int fVLength = featureVector.Length;
 			int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
 			int rowWidth = 15;
 
 			// Create a matrix of the required image
-			double[,] matrix = new double[rowWidth * 3, avLength];
+			double[,] data = new double[rowWidth * 3, avLength];
 			for (int r = 0; r < rowWidth; r++)
 			{
 				for (int c = 0; c < avLength; c++)
 				{
-					matrix[r, c] = featureVector[c];
-					matrix[r + rowWidth, c] = featureVector[avLength + c];
-					matrix[r + (2 * rowWidth), c] = featureVector[(2 * avLength) + c];
+                    data[r, c]                  = featureVector[c];
+                    data[r + rowWidth, c]       = featureVector[avLength + c];
+                    data[r + (2 * rowWidth), c] = featureVector[(2 * avLength) + c];
 				}
 			}
 
-			int width = matrix.GetLength(0); // Number of spectra in sonogram
-			int sHeight = matrix.GetLength(1); // Number of freq bins in sonogram
+            int width = data.GetLength(0); // Number of spectra in sonogram
+            int sHeight = data.GetLength(1); // Number of freq bins in sonogram
 			int binHeight = 256 / sHeight; // Several pixels per cepstral coefficient
 
 			int imageHt = sHeight * binHeight; // image ht = sonogram ht. Later include grid and score scales
@@ -159,11 +163,33 @@ namespace AudioAnalysis
 			}
 
 			Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
-            //this line commented to avoid depedence on class SonoImage
-//			SonoImage.AddSonogram(bmp, matrix, binHeight, false, topScanBin, bottomScanBin);
+            //set up min, max, range for normalising of dB values
+            double min; double max;
+            DataTools.MinMax(data, out min, out max);
+            double range = max - min;
 
-            int offset = Image_Track.timeScaleHt + imageHt + Image_Track.timeScaleHt;
-			return bmp;
+            Color[] grayScale = ImageTools.GrayScale();
+
+            int yOffset = imageHt;
+            for (int y = 0; y < data.GetLength(1); y++) //over all freq bins
+            {
+                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
+                {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
+                        double value = (data[x, y] - min) / (double)range;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0)     c = 0;
+                        else 
+                        if (c >= 256)  c = 255;
+
+                        bmp.SetPixel(x, yOffset - 1, grayScale[c]);
+                    }//for all pixels in line
+                    yOffset--;
+                } //end repeats over one track
+            }//end over all freq bins
+            return bmp;
 		}
 
         public void SetNoiseResponse(double[,] noiseM, int id)
@@ -285,8 +311,8 @@ namespace AudioAnalysis
 				end = start + range;
 			}
 			int indexCount = range / interval;
-			Console.WriteLine("\tstart=" + start + ",  End=" + end + ",  Duration= " + range + "frames");
-			Console.WriteLine("indexCount=" + indexCount);
+			//Console.WriteLine("\tstart=" + start + ",  End=" + end + ",  Duration= " + range + "frames");
+			//Console.WriteLine("indexCount=" + indexCount);
 			int[] indices = new int[indexCount];
 			for (int i = 0; i < indexCount; i++) indices[i] = start + (i * interval);
 			return indices;

@@ -28,11 +28,8 @@ namespace AudioAnalysis
         public string DataDir { get; set; }    // dir containing saved template data
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
         public string SourceDir  { get; set; } // Dir of original audio recording
-
-        private double zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-        public double ZScoreThreshold { get { return zScoreThreshold; } }
-        public int MinTemplateFreq { get; set; }
-        public int MaxTemplateFreq { get; set; }
+//        public int MinTemplateFreq { get; set; }
+//        public int MaxTemplateFreq { get; set; }
 
 
         public AVSonogramConfig SonogramConfig { get; set; }
@@ -77,7 +74,10 @@ namespace AudioAnalysis
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
             BaseTemplate template = Load(config);
             //STEP THREE: Extract template
-            template.ExtractTemplateAndSave(recording, opTemplatePath);
+            //template.ExtractTemplateAndSave(recording, opTemplatePath);
+            template.ExtractTemplateFromRecording(recording);
+            template.Save(opTemplatePath);
+
             //STEP FOUR: Verify fv extraction by observing output from acoustic model.
             template.GenerateSymbolSequenceAndSave(recording, gui.opDir);
             return template;
@@ -251,11 +251,11 @@ namespace AudioAnalysis
 		}
 
 
-        public void ExtractTemplateAndSave(AudioRecording ar, string opTemplatePath)
-        {
-            ExtractTemplateFromRecording(ar);
-            Save(opTemplatePath);
-        }
+        //public void ExtractTemplateAndSave(AudioRecording ar, string opTemplatePath)
+        //{
+        //    ExtractTemplateFromRecording(ar);
+        //    Save(opTemplatePath);
+        //}
 
 
         public void ExtractTemplateFromRecording(AudioRecording ar)
@@ -271,7 +271,7 @@ namespace AudioAnalysis
         public virtual void Save(string targetPath)
         {
             this.DataPath = targetPath;
-            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + ".OLD", true); //overwrite
+            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + "OLD.txt", true); //overwrite
             using (var file = new StreamWriter(targetPath))
             {
                 Save(file);

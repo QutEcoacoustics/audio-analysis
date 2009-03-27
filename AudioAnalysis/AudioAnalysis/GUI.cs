@@ -175,13 +175,13 @@ namespace AudioAnalysis
                 //************* CALL 2 PARAMETERS ***************
                 if (callID == 2)
                 {
-                    authorName = "Michael Towsey";
-                    callName = "Lewin's Rail Kek-kek";
+                    authorName  = "Michael Towsey";
+                    callName    = "Lewin's Rail Kek-kek";
                     callComment = "Template consists of a single KEK!";
-                    wavDirName = @"C:\SensorNetworks\WavFiles\";
-                    sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
-                    sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
-                    opDir = @"C:\SensorNetworks\Templates\Template_2\";
+                    wavDirName  = @"C:\SensorNetworks\WavFiles\";
+                    sourceFile  = "BAC2_20071008-085040";  //Lewin's rail kek keks.
+                    sourcePath  = wavDirName + sourceFile + WavReader.WavFileExtension;
+                    opDir       = @"C:\SensorNetworks\Templates\Template_2\";
 
                     //MFCC PARAMETERS
                     frameSize = 512;
@@ -195,13 +195,15 @@ namespace AudioAnalysis
                     deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                     //dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
 
-                    min_Freq = 1500; //Hz
-                    max_Freq = 5500; //Hz
+                    //min_Freq = 1500; //Hz
+                    //max_Freq = 5500; //Hz
+                    min_Freq = 600; //Hz
+                    max_Freq = 1600; //Hz
 
                     //FEATURE VECTOR PREPARATION DETAILS
                     fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
                     fvInit = new string[,] {
-                        {"FV_template2_kek.txt","1784,1828,1848,2113,2132,2152"}
+                        {"FV_template2_kek","1784,1828,1848,2113,2132,2152"}
                     };
 
 
@@ -210,8 +212,8 @@ namespace AudioAnalysis
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.UNDEFINED;
-                    //modelType = ModelType.ONE_PERIODIC_SYLLABLE;
+                    //modelType = ModelType.UNDEFINED;
+                    modelType = ModelType.ONE_PERIODIC_SYLLABLE;
                     numberOfWords = 1; //number of defined song variations
                     wordNames    = new String[] { "kek" };
                     wordExamples = new String[] {"111", "11", "1"};
@@ -367,15 +369,16 @@ namespace AudioAnalysis
                     //FEATURE VECTOR EXTRACTION PARAMETERS
                     fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES
                     fvInit = new string[,] {
-                        {"template6_puff","826,994,1140,1156,1449,1620,1914,2018,2103,2287,2676,2867,3020,3137,3291,3667,3970,4314,4604"},
-                        {"template6_huff","595,640,660,752,790,897,901,957,1055,1110,1325,1520,1590,1661,1691,1964,1724,1840,2061,2198,2241,2604,4247"},
+                        {"template6_puff","826,994,1140,1156,1469,1915,2103,2287,2676,3137,4314,4604"},
+                        //{"template6_puff","826,994,1140,1156,1449,1620,1914,2018,2103,2287,2676,2867,3020,3137,3291,3667,3970,4314,4604"},
+                        {"template6_huff","595,640,752,897,957,1092,1691,1840,2061,2241,2604,4247"},
+                        //{"template6_huff","595,640,660,752,790,897,901,957,1055,1110,1325,1520,1590,1661,1691,1964,1724,1840,2061,2198,2241,2604,4247"},
               //          {"template6_warmup","39,51,66,80,93,134,294"},
               //          {"template6_distant","9993,10034,10051,10092,10106,10080,10196"},
                     };
-                    //doFvAveraging = true;
 
                     // THE ACOUSTIC MODEL ***************
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                    fvDefaultNoiseFile = opDir + "template6_DefaultNoise.txt";
                     zScoreThreshold = 1.0; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
