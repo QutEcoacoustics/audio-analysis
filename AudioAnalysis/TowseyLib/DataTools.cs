@@ -915,22 +915,39 @@ namespace TowseyLib
 			int cols = m.GetLength(1);
 			double[,] ret = new double[rows,cols];
 
-			for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
-			{
-				if (m[i,j] > max)
-					max = m[i,j];
-				if (m[i,j] < min)
-					min = m[i,j];
-			}
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    if (m[i, j] > max) max = m[i, j];
+                    else
+                        if (m[i, j] < min) min = m[i, j];
+                }
+            }
 			double range = max - min;
 
-			for (int i = 0; i < rows; i++)
-			for (int j = 0; j < cols; j++)
-				ret[i, j] = (m[i, j] - min) / range;
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                    ret[i, j] = (m[i, j] - min) / range;
+            }
 
 			return (ret);
 		}
+
+        public static double[,] MatrixTranspose(double[,] m)
+        {
+ 			int rows = m.GetLength(0);
+			int cols = m.GetLength(1);
+            double[,] ret = new double[cols, rows];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                    ret[j, i] = m[i, j];
+            }
+            return (ret);
+        }
+
 
         /// <summary>
         /// shift values by their mean.
