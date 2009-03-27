@@ -1498,8 +1498,8 @@ namespace TowseyLib
 
             int Ypixels = cellYpixels * rows;
             int Xpixels = cellXpixels * cols;
-            Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
-            Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+            //Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            //Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
             Color[] grayScale = GrayScale();
 
@@ -1511,6 +1511,7 @@ namespace TowseyLib
             {
                 for (int c = 0; c < cols; c++)
                 {
+                    double val = norm[r, c];
                     int colorId = (int)Math.Floor(norm[r, c] * 255);
                     int xOffset = (cellXpixels * c);
                     int yOffset = (cellYpixels * r);

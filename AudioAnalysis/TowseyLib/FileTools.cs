@@ -161,7 +161,7 @@ namespace TowseyLib
 
         public static void WriteTextFile(string path, List<string> array)
         {
-            if (File.Exists(path)) File.Copy(path, path + ".OLD", true); //overwrite
+            if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
 
             int count = array.Count;
             using (TextWriter writer = new StreamWriter(path))
@@ -171,7 +171,7 @@ namespace TowseyLib
 
         public static void WriteTextFile(string path, string line)
         {
-            if (File.Exists(path)) File.Copy(path, path + ".OLD", true); //overwrite
+            if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
             using (TextWriter writer = new StreamWriter(path))
             {
                     writer.WriteLine(line);
