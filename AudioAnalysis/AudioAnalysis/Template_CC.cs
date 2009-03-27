@@ -37,12 +37,12 @@ namespace AudioAnalysis
 
 		public override void Save(string targetPath)
 		{
-            Log.WriteIfVerbose("START MMTemplate.Save(targetPath=" + targetPath + ")");
+            Log.WriteIfVerbose("START Template_CC.Save(targetPath=" + targetPath + ")");
             this.DataPath = targetPath;
             string opDir = Path.GetDirectoryName(targetPath);
             if (!Directory.Exists(opDir)) Directory.CreateDirectory(opDir);
 
-            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + ".OLD", true); //overwrite
+            if (File.Exists(targetPath)) File.Copy(targetPath, targetPath + "OLD.txt", true); //overwrite
   
             Save(new StreamWriter(targetPath), opDir);
 		}
@@ -52,9 +52,9 @@ namespace AudioAnalysis
 		{
 			//throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
             base.Save(writer);
-            FftConfiguration.Save(writer);
+            //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
             SonogramConfig.Save(writer);
-            FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir);
+            FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
             AcousticModelConfig.Save(writer);
 
             //write the default language model if only creating a new template

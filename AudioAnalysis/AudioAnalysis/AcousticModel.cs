@@ -73,11 +73,12 @@ namespace AudioAnalysis
             //##################### DERIVE NOISE FEATURE VECTOR OR READ PRE-COMPUTED NOISE FILE
             Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE AND GENERATE ACOUSTIC MODEL");
             Log.WriteIfVerbose("\tStep 1: Derive NOISE Feature Vector, FV[0], from the passed SONOGRAM");
+            Log.WriteIfVerbose("\t\tSonogram dimensions are rows=" + s.Data.GetLength(0) + "  cols=" + s.Data.GetLength(1)); 
             var FVs = GetFeatureVectors(fvConfig.FVArray);
             int fvCount = FVs.Length;
 
             int count;
-            FVs[0] = GetNoiseFeatureVector(s.Data, s.Decibels, out count);
+            FVs[0] = GetNoiseFeatureVector(s.Data, s.DecibelsPerFrame, out count);
             //if (template.mode == Mode.READ_EXISTING_TEMPLATE) FVs[0] = null; //debugging purposes only
             if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file
             {
@@ -85,57 +86,75 @@ namespace AudioAnalysis
                 FVs[0] = fvConfig.DefaultNoiseFV; //
             }
             else
-                if ((template.mode == Mode.CREATE_NEW_TEMPLATE) && (fvConfig.FV_DefaultNoisePath != null)) //Write noise vector to file. Can be used as sample noise vector.
+            if ((template.mode == Mode.CREATE_NEW_TEMPLATE) && (fvConfig.FV_DefaultNoisePath != null)) //Write noise vector to file. Can be used as sample noise vector.
             {
-                //Log.WriteIfVerbose("\tSave NOISE Feature Vector to file: " + noiseFVPath);
+                Log.WriteIfVerbose("\tSave NOISE Feature Vector to file: " + fvConfig.FV_DefaultNoisePath);
                 fvConfig.DefaultNoiseFV = FVs[0]; //keep this so it can be serialised
-                SaveNoiseVector(fvConfig.FV_DefaultNoisePath, FVs[0], s.NyquistFrequency);
+                FVs[0].SaveDataAndImageToFile(fvConfig.FV_DefaultNoisePath, template);
             }
 
-            //##################### PREPARE MATRIX OF NOISE VECTORS AND THEN SET NOISE RESPONSE FOR EACH feature vector
+            //for debugging can here read in any FVs you like
+            //FVs[0] = new FeatureVector(@"C:\SensorNetworks\Templates\Template_8\template8_DefaultNoise.txt");
+            //FVs[0] = new FeatureVector(@"C:\SensorNetworks\Templates\Template_2_OLD\template2_NoiseFV.txt");
+            //FVs[1] = new FeatureVector(@"C:\SensorNetworks\Templates\Template_2_OLD\template2_kek_FV1.txt");
+            //FVs[1] = new FeatureVector(@"C:\SensorNetworks\Templates\Template_6_OLD\template_6_huff_FV1.txt");
+            //FVs[2] = new FeatureVector(@"C:\SensorNetworks\Templates\Template_6_OLD\template_6_puff_FV1.txt");
+
+
+            //##################### GENERATE A NOISE MODEL AND THEN SET NOISE RESPONSE FOR EACH feature vector
+            //##################### NOISE MODEL CONSISTS OF A MATRIX OF NOISE VECTORS
             Log.WriteIfVerbose("\n\tStep 2: Obtain noise response for each feature vector");
             double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount);
             //following alternative to above method only gets noise estimate from low energy frames
-            //double[,] noiseM = GetRandomNoiseMatrix(s.AcousticM, this.noiseSampleCount, this.decibels, this.decibelThreshold);
+            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.Decibels, this.decibelThreshold);
+            if (template.mode == Mode.CREATE_NEW_TEMPLATE) 
+                ImageTools.DrawMatrix(noiseM, @"C:\SensorNetworks\Templates\Template_2\NoiseMatrix.bmp");
+
             for (int i = 0; i < FVs.Length; i++)
                 FVs[i].SetNoiseResponse(noiseM, i);
 
-            if (BaseTemplate.InTestMode)
+
+            #region FOR CHECKING OF NOISE RESPONSE ONLY
+            string path = Path.GetDirectoryName(fvConfig.FV_DefaultNoisePath) + "\\noiseResponse.txt";
+            if ((template.mode == Mode.CREATE_NEW_TEMPLATE) || (BaseTemplate.InTestMode))
             {
-                Log.WriteLine("\n########### COMPARE NOISE RESPONSE OF FEATURE VECTOR FILES");
-                string path = Path.GetDirectoryName(fvConfig.FV_DefaultNoisePath) + "\\noiseResponse.txt";
+                Log.WriteLine("\n########### SAVING NOISE RESPONSE VALUES TO FILE");
                 List<string> noiseValues = new List<string>(FVs.Length);
                 for (int id = 0; id < FVs.Length; id++)
                     noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
                 FileTools.WriteTextFile(path, noiseValues);
-                FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
+            }
+            if (BaseTemplate.InTestMode)
+            {
+                Log.WriteLine("########### COMPARE NOISE RESPONSE VALUES");
+                FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + "OLD.txt"), true);
             } //end TEST MODE
+            #endregion
+
 
             //##################### DERIVE ACOUSTIC MATRIX OF SYLLABLE Z-SCORES
-            Log.WriteIfVerbose("\n\tStep 3: Obtain ACOUSTIC MATRIX of syllable z-scores");
             int frameCount = s.Data.GetLength(0);
-            int window = AcousticModel.ZscoreSmoothingWindow;
+            Log.WriteIfVerbose("\n\tStep 3: Obtain ACOUSTIC MATRIX[" + frameCount + "," + fvCount + "] of syllable z-scores");
             double[,] acousticMatrix = new double[frameCount, fvCount];
+
             for (int n = 0; n < fvCount; n++)  //for all feature vectors
             {
                 Log.WriteIfVerbose("\t... with FV " + n);
 
                 //now calculate z-score for each score value
                 double[] zscores = FVs[n].Scan_CrossCorrelation(s.Data);
-                zscores = DataTools.filterMovingAverage(zscores, window);  //smooth the Z-scores
+                zscores = DataTools.filterMovingAverage(zscores, AcousticModel.ZscoreSmoothingWindow);  //smooth the Z-scores
 
                 for (int i = 0; i < frameCount; i++) acousticMatrix[i, n] = zscores[i];// transfer z-scores to matrix of acoustic z-scores
             }//end for loop over all feature vectors
 
+            if (template.mode == Mode.CREATE_NEW_TEMPLATE)
+            {
+                double[,] transpose = DataTools.MatrixTranspose(acousticMatrix);
+                ImageTools.DrawMatrix(transpose, @"C:\SensorNetworks\Templates\Template_2\AcousticMatrix.bmp");
+            }
             return acousticMatrix;
         }//end GenerateAcousticMatrix()
-
-
-        void SaveNoiseVector(string noiseFVPath, FeatureVector noiseFV, int nyquistFrequency)
-        {
-            Log.WriteIfVerbose("\tWriting noise template to file:- " + noiseFVPath);
-            noiseFV.SaveDataAndImageToFile(noiseFVPath, template, nyquistFrequency);
-        }
 
 
         /// <summary>
@@ -286,7 +305,7 @@ namespace AudioAnalysis
                         .Check();
 
             //SAVE EXISTING SEQUENCES FILE
-            if (File.Exists(path)) File.Copy(path, path+".OLD", true);
+            if (File.Exists(path)) File.Copy(path, path+"OLD.txt", true);
 
             using (TextWriter writer = new StreamWriter(path))
             {

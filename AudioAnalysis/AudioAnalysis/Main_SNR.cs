@@ -121,14 +121,19 @@ namespace AudioAnalysis
             image3.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image3.Image.Width));
             //image3.AddTrack(Image_Track.GetDecibelTrack(sonogram));
             image3.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            double[] scores = new double[image3.Image.Width*4];
-            for (int n = 0; n < scores.Length; n++) scores[n] = (0.1 * n) % 1.0;
-            double scoreMax = 1.0; 
-            double scoreThreshold = 0.5;
+            //double[] scores = new double[image3.Image.Width*4];
+            //for (int n = 0; n < scores.Length; n++) scores[n] = (0.1 * n) % 1.0;
+            //double scoreMax = 1.0; 
+            //double scoreThreshold = 0.5;
             //image3.AddTrack(Image_Track.GetScoreTrack(scores, scoreMax, scoreThreshold));
             image3.Save(outputFolder + wavFileName + "_reduced.png");
 
-
+            int minHz = 1000; int maxHz = 2000;
+            sonogram.CalculateSubbandSNR(new WavReader(wavPath), minHz, maxHz);
+            Console.WriteLine("Sub-band Min dB   =" + sonogram.SubbandMin_dB.ToString("F2") + " dB");
+            Console.WriteLine("Sub-band Max dB   =" + sonogram.SubbandMax_dB.ToString("F2") + " dB");
+            Console.WriteLine("Sub-band Q        =" + sonogram.Subband_NoiseSubtracted.ToString("F2") + " dB");
+            Console.WriteLine("SNR (sub-band)    =" + sonogram.Subband_SNR.ToString("F2") + " dB");
             
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();

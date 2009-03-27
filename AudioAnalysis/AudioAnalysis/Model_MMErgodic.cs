@@ -160,7 +160,7 @@ namespace AudioAnalysis
                 string path = BaseModel.opFolder + "\\markovModelParams.txt";
                 FileTools.WriteTextFile(path, mmMonitor);
                 Log.WriteLine("COMPARE FILES OF INTERMEDIATE MARKOV MODEL PARAMETERS");
-                FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + ".OLD"), true);
+                FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + "OLD.txt"), true);
             } //end TEST MODE
 
 

@@ -166,16 +166,11 @@ namespace AudioAnalysis
         /// </summary>
         /// <param name="writer"></param>
         /// <param name="opDir"></param>
-        public void SaveConfigAndFeatureVectors(TextWriter writer, string opDir)
+        public void SaveConfigAndFeatureVectors(TextWriter writer, string opDir, BaseTemplate t)
         {
-            Save(writer, opDir);
-            SaveFeatureVectors(opDir);
-        }
+            Log.WriteIfVerbose("START FVConfig.SaveConfigAndFeatureVectors()");
+            Save(writer, opDir);  //######### MUST DO THIS FIRST
 
-
-        public void SaveFeatureVectors(string opDir)
-        {
-            Log.WriteIfVerbose("START SaveFeatureVectors.Save()");
             var fName = FVArray[0].name; //check that first FV has a destination path and assume all do!
         
             // Ensure to save feature vectors first so paths are correctly set.
@@ -193,7 +188,8 @@ namespace AudioAnalysis
                 fName = FVArray[i].name;
                 var path = Path.Combine(opDir, string.Format(fName, i)+".txt");
                 Log.WriteIfVerbose("\tSaving FV file to:  "+path);
-                FVArray[i].SaveDataToFile(path);
+
+                FVArray[i].SaveDataAndImageToFile(path, t);
                 FVfNames[i] = path;
 
 
@@ -201,10 +197,10 @@ namespace AudioAnalysis
                 {
                     Log.WriteLine("COMPARE FEATURE VECTOR FILES "+i);
                     FunctionalTests.AssertAreEqual(new FileInfo(path),
-                                             new FileInfo(path + ".OLD"), true);
+                                             new FileInfo(path + "OLD.txt"), true);
                 }
             }// end pass over the array of FVs
-            Log.WriteIfVerbose("END SaveFeatureVectors.Save()");
+            Log.WriteIfVerbose("END FVConfig.SaveConfigAndFeatureVectors()");
 
 
         } //end SaveFeatureVectors()

@@ -112,7 +112,7 @@ namespace AudioAnalysis
                     frameIndices = FeatureVector.GetFrameIndices(start, end, interval);
                     break;
                 case FV_MarqueeType.AT_ENERGY_PEAKS:
-                    double[] frameEnergy = sonogram.Decibels;
+                    double[] frameEnergy = sonogram.DecibelsPerFrame;
                     double energyThreshold = EndpointDetectionConfiguration.SegmentationThresholdK1;
                     frameIndices = FeatureVector.GetFrameIndices(start, end, frameEnergy, energyThreshold);
                     Log.WriteIfVerbose("\tEnergy threshold=" + energyThreshold.ToString("F2"));

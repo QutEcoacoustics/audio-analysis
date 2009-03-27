@@ -487,7 +487,7 @@ namespace AudioAnalysis
 
         public static Image_Track GetDecibelTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.deciBels, sg.Decibels);
+            var track = new Image_Track(TrackType.deciBels, sg.DecibelsPerFrame);
             track.MinDecibelReference = sg.MinDecibelReference;
             track.MaxDecibelReference = sg.MaxDecibelReference;
             return track;
@@ -495,7 +495,7 @@ namespace AudioAnalysis
 
         public static Image_Track GetSegmentationTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.segmentation, sg.Decibels);
+            var track = new Image_Track(TrackType.segmentation, sg.DecibelsPerFrame);
             track.intData = sg.SigState;
             track.MinDecibelReference = sg.MinDecibelReference;
             track.MaxDecibelReference = sg.MaxDecibelReference;

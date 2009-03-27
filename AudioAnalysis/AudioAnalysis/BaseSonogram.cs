@@ -31,23 +31,25 @@ namespace AudioAnalysis
 		public int FrameCount { get; private set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
 
         public double[] LogEnergy { get; private set; } // Energy per signal frame
-		public double[] Decibels { get; private set; } // Normalised decibels per signal frame
+		public double[] DecibelsPerFrame { get; private set; }    // Normalised decibels per signal frame
+        public double[] DecibelsInFreqBand { get; private set; }  // Normalised decibels in extracted freq band
 
 		public double NoiseSubtracted { get; private set; } // Noise (dB) subtracted from each frame decibel value
 		public double FrameMax_dB { get; private set; }
 		public double FrameMin_dB { get; private set; }
-		public double Frame_SNR { get { return FrameMax_dB - NoiseSubtracted; } }
+        public double Frame_SNR { get; private set; }
 		public double MinDecibelReference { get; private set; } // Min reference dB value after noise substraction
         public double MaxDecibelReference { get; private set; } // Used to normalise the energy values for MFCCs
         public double SegmentationThresholdK1 { get; private set; }
         public double SegmentationThresholdK2 { get; private set; } 
 
         public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
-        private int   subBand_Min;
-        private int   subBand_Max;
-		public double FreqBandMax_dB { get; private set; }
-		public double FreqBandNoise_dB { get; private set; }
-		public double SubBand_SNR { get; private set; }
+        private int   subBand_MinHz; //min freq (Hz) of the required subband
+        private int   subBand_MaxHz; //max freq (Hz) of the required subband
+        public double SubbandMin_dB { get; private set; }
+        public double SubbandMax_dB { get; private set; }
+        public double Subband_NoiseSubtracted { get; private set; } // Subband noise (dB) subtracted from each frame
+        public double Subband_SNR { get; private set; }
 
 		public int[] SigState { get; private set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
@@ -66,8 +68,8 @@ namespace AudioAnalysis
 
 			MaxAmplitude = wav.CalculateMaximumAmplitude();
 
-			this.subBand_Min = config.MinFreqBand ?? 0;
-			this.subBand_Max = config.MaxFreqBand ?? NyquistFrequency;
+			this.subBand_MinHz = config.MinFreqBand ?? 0;
+			this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
             //bool ExtractSubband = this.freqBand_Min > 0 || this.freqBand_Max < NyquistFrequency;
 
 			double[] signal = wav.Samples;
@@ -82,20 +84,9 @@ namespace AudioAnalysis
 			FrameCount = frames.GetLength(0);
 
 
-			// ENERGY PER FRAME
-            LogEnergy = DSP.SignalLogEnergy(frames);
-
-			// FRAME NOISE SUBTRACTION: subtract background noise to produce decibels array in which zero dB = average noise
-			double Q;
-			double min_dB;
-			double max_dB;
-            double minEnergyRatio = DSP.MinEnergyReference - DSP.MaxEnergyReference;
-            Decibels = DSP.NoiseSubtract(LogEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
-			NoiseSubtracted = Q;
-			FrameMin_dB = min_dB; //min decibels of all frames 
-			FrameMax_dB = max_dB;
-			MinDecibelReference = min_dB - Q;
-            MaxDecibelReference = (DSP.MaxEnergyReference * 10) - Q;
+			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
+            this.LogEnergy = DSP.SignalLogEnergy(frames);
+            CalculateDecibelsPerFrame();
 
 			// ZERO CROSSINGS
 			//this.zeroCross = DSP.ZeroCrossings(frames);
@@ -107,7 +98,7 @@ namespace AudioAnalysis
             this.SegmentationThresholdK2 = k2;
 
 
-			var fractionOfHighEnergyFrames = Speech.FractionHighEnergyFrames(Decibels, k2);
+			var fractionOfHighEnergyFrames = Speech.FractionHighEnergyFrames(DecibelsPerFrame, k2);
 			if ((fractionOfHighEnergyFrames > 0.8) && (Configuration.DoNoiseReduction))
 			{
 				Log.WriteLine("\n\t################### Sonogram.Make(WavReader wav): WARNING ##########################################");
@@ -120,19 +111,18 @@ namespace AudioAnalysis
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
-			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(1));
+			Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
 			{
-				int c1 = (int)(this.subBand_Min / FBinWidth);
-				int c2 = (int)(this.subBand_Max / FBinWidth);
-				amplitudeM = DataTools.Submatrix(amplitudeM, 0, c1, amplitudeM.GetLength(0) - 1, c2);
+                amplitudeM = ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz);
 				Log.WriteIfVerbose("\tDim of required sub-band  =" + amplitudeM.GetLength(1));
-				//DETERMINE ENERGY IN FFT FREQ BAND
-				Decibels = FreqBandEnergy(amplitudeM);
-				//DETERMINE ENDPOINTS OF VOCALISATIONS
-				SigState = Speech.VocalizationDetection(Decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+				//DETERMINE ENERGY, dB and SNR IN FREQ SUBBAND
+                double[] subbandLogEnergy = DSP.SignalLogEnergy(amplitudeM);
+                DecibelsPerFrame = CalculateDecibelsPerSubbandFrame(subbandLogEnergy);
+				//RECALCULATE ENDPOINTS OF VOCALISATIONS
+				SigState = Speech.VocalizationDetection(DecibelsPerFrame, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
 			}
 
 			Make(amplitudeM);
@@ -174,7 +164,7 @@ namespace AudioAnalysis
             syllableDelay = (int)(EndpointDetectionConfiguration.VocalDelay / FrameOffset); //=10 frames delay required to separate vocalisations 
             minPulse = (int)(EndpointDetectionConfiguration.MinPulseDuration / FrameOffset); //=2 frames is min vocal length
 			//Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
-			return Speech.VocalizationDetection(this.Decibels, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
+			return Speech.VocalizationDetection(this.DecibelsPerFrame, k1, k2, k1_k2delay, syllableDelay, minPulse, null);
 		}
 
 		double[,] MakeAmplitudeSpectra(double[,] frames, TowseyLib.FFT.WindowFunc w, double epsilon)
@@ -206,30 +196,69 @@ namespace AudioAnalysis
 			return sonogram;
 		}
 
-		double[] FreqBandEnergy(double[,] fftAmplitudes)
-		{
-            double[] logEnergy = DSP.SignalLogEnergy(fftAmplitudes);
 
-			//NOTE: FreqBand LogEnergy levels are higher than Frame levels but SNR remains same.
-			//double min; double max;
-			//DataTools.MinMax(logEnergy, out min, out max);
-			//Console.WriteLine("FrameNoise_dB   =" + State.FrameNoise_dB    + "  FrameMax_dB   =" + State.FrameMax_dB    + "  SNR=" + State.Frame_SNR);
-			//Console.WriteLine("FreqBandNoise_dB=" + State.FreqBandNoise_dB + "  FreqBandMax_dB=" + State.FreqBandMax_dB + "  SNR=" + State.FreqBand_SNR);
-			//Console.WriteLine("FreqBandNoise_dB=" + (min*10) + "  FreqBandMax_dB=" + (max*10) + "  SNR=" + State.FreqBand_SNR);
+        public double[,] ExtractFreqSubband(WavReader wav, int minHz, int maxHz)
+        {
+			double[] signal = wav.Samples;
+			int step = (int)(this.Configuration.WindowSize * (1 - this.Configuration.WindowOverlap));
+            double[,] frames = DSP.Frames(signal, this.Configuration.WindowSize, step);
+			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
+			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
 
-			//noise reduce the energy array to produce decibels array
+            return ExtractFreqSubband(amplitudeM, minHz, maxHz);
+        }
+
+        public double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz)
+        {
+            int c1 = (int)(minHz / FBinWidth);
+            int c2 = (int)(maxHz / FBinWidth);
+            return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
+        }
+
+        /// <summary>
+        /// subtract background noise to produce a decibels array in which zero dB = modal noise
+        /// </summary>
+        /// <param name="logEnergy"></param>
+        /// <returns></returns>
+        public void CalculateDecibelsPerFrame()
+        {
+			double Q;
+			double min_dB;
+			double max_dB;
             double minEnergyRatio = DSP.MinEnergyReference - DSP.MaxEnergyReference;
-            double Q; double min_dB; double max_dB;
-            double[] decibels = DSP.NoiseSubtract(logEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
-			NoiseSubtracted = Q;
-			FreqBandNoise_dB = min_dB; //min decibels of all frames 
-			FreqBandMax_dB = max_dB;
-			SubBand_SNR = max_dB - min_dB;
-			MinDecibelReference = min_dB - NoiseSubtracted;
-			return decibels;
+            this.DecibelsPerFrame = DSP.NoiseSubtract(this.LogEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
+            this.NoiseSubtracted = Q;
+			this.FrameMin_dB = min_dB; //min decibels of all frames 
+			this.FrameMax_dB = max_dB;
+			this.MinDecibelReference = min_dB - Q;
+            this.MaxDecibelReference = (DSP.MaxEnergyReference * 10) - Q;
+            this.Frame_SNR = MaxDecibelReference - Q;
+        }
+        private double[] CalculateDecibelsPerSubbandFrame(double[] subbandLogEnergy)
+		{
+            double Q;
+            double min_dB;
+            double max_dB;
+            double minEnergyRatio = DSP.MinEnergyReference - DSP.MaxEnergyReference;
+            //noise reduce the energy array to produce decibels array
+            double[] decibels = DSP.NoiseSubtract(subbandLogEnergy, out min_dB, out max_dB, minEnergyRatio, out Q);
+
+            this.Subband_NoiseSubtracted = Q;
+            this.SubbandMin_dB = min_dB; //min subband decibels of all frames 
+            this.SubbandMax_dB = max_dB;
+            this.MinDecibelReference = min_dB - Q;
+            //this.MaxDecibelReference = (DSP.MaxEnergyReference * 10) - Q;
+            this.Subband_SNR = MaxDecibelReference - Q;
+            return decibels;
 		}
 
-
+        public void CalculateSubbandSNR(WavReader wav, int minHz, int maxHz)
+        {
+            var subband = ExtractFreqSubband(wav, minHz, maxHz);
+            var subbandLogEnergy = DSP.SignalLogEnergy(subband);
+            CalculateDecibelsPerSubbandFrame(subbandLogEnergy);
+        }
 
 		protected abstract void Make(double[,] amplitudeM);
 
@@ -263,8 +292,8 @@ namespace AudioAnalysis
             //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
             //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
             //calculate top and bottom of sub-band 
-            int minHighlightBin = (int)Math.Round((double)this.subBand_Min / (double)NyquistFrequency * fftBins);
-            int maxHighlightBin = (int)Math.Round((double)this.subBand_Max / (double)NyquistFrequency * fftBins);
+            int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
+            int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
 			Color[] grayScale = ImageTools.GrayScale();
 
 			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
@@ -521,7 +550,7 @@ namespace AudioAnalysis
         protected override void Make(double[,] amplitudeM)
         {
             var config = Configuration as CepstralSonogramConfig;
-            Data = MakeCepstrogram(amplitudeM, Decibels, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
+            Data = MakeCepstrogram(amplitudeM, DecibelsPerFrame, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
         }
 
         protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
@@ -589,8 +618,8 @@ namespace AudioAnalysis
 		protected override void Make(double[,] amplitudeM)
 		{
 			var config = Configuration as AVSonogramConfig;
-			Data = MakeAcousticVectors(amplitudeM, Decibels, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta, config.DeltaT);
-		}
+			Data = MakeAcousticVectors(amplitudeM, DecibelsPerFrame, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta, config.DeltaT);
+        }
 
 		double[,] MakeAcousticVectors(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT)
 		{
@@ -603,7 +632,7 @@ namespace AudioAnalysis
 			int cepstralL = m.GetLength(1);  // length of cepstral vector 
 			int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
 
-			double[] featureVector = new double[featurevL];
+		//	double[] featureVector = new double[featurevL];
 			double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
 			for (int i = deltaT; i < frameCount - deltaT; i++)
 			{

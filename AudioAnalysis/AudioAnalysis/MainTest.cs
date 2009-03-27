@@ -41,7 +41,7 @@ namespace AudioAnalysis
             //1:  make a sonogram
             if (BaseTemplate.InTestMode) //ie doing a unit test - so put images in same dir as template
                 args[2] = templateDir + "TestImage1";  //args[2]
-            MakeSonogram(args[0], args[1], args[2]);
+ //           MakeSonogram(args[0], args[1], args[2]);
 
 
             //2: create template and save it
@@ -112,24 +112,13 @@ namespace AudioAnalysis
 		{
             var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName);
 
-            ////STEP ONE: Initialise AudioRecording
-            //var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
-            ////STEP TWO: Initialise template with parameters
-            //string opDir = gui.opDir;
-            //string opTemplatePath = opDir + templateFName;
-            //var template = BaseTemplate.Load(appConfigPath, gui);
-            ////STEP THREE: Extract template
-            //template.ExtractTemplateAndSave(recording, opTemplatePath);
-            ////STEP FOUR: Verify fv extraction by observing output from acoustic model.
-            //template.GenerateSymbolSequenceAndSave(recording, opDir);
-
             if (BaseTemplate.InTestMode)
             {
                 Log.WriteLine("\n########### COMPARE TEMPLATE FILES");
-                FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + ".OLD"), false);
+                FunctionalTests.AssertAreEqual(new FileInfo(template.DataPath), new FileInfo(template.DataPath + "OLD.txt"), false);
                 //FunctionalTests.AssertAreEqual(oldSono.Decibels, sono.Decibels);
                 FunctionalTests.AssertAreEqual(new FileInfo(gui.opDir + "symbolSequences.txt"),
-                                               new FileInfo(gui.opDir + "symbolSequences.txt.OLD"), true);
+                                               new FileInfo(gui.opDir + "symbolSequences.txtOLD.txt"), true);
             } //end TEST MODE
 
 			return template;
