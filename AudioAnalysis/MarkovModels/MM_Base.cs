@@ -91,6 +91,8 @@ namespace MarkovModels
             //    int bin = duration / MarkovModel.durationBinWidth;
             //    if (bin >= this.durationBinCount) bin = this.durationBinCount - 1;
             //    return this.stateDurationLogProbs[state, bin];
+            int maxD = this.stateDurationLogProbs.GetLength(1);
+            if (duration >= maxD) duration = maxD - 1;
             return this.stateDurationLogProbs[state, duration];
         }
 
