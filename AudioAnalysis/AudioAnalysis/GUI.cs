@@ -157,7 +157,7 @@ namespace AudioAnalysis
 
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                    zScoreThreshold = 7.0; //options are 1.98, 2.33, 2.56, 3.1
+                    zScoreThreshold = 6.0; //options are 1.98, 2.33, 2.56, 3.1
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_1\template1_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
@@ -195,10 +195,8 @@ namespace AudioAnalysis
                     deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                     //dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
 
-                    //min_Freq = 1500; //Hz
-                    //max_Freq = 5500; //Hz
-                    min_Freq = 600; //Hz
-                    max_Freq = 1600; //Hz
+                    min_Freq = 1500; //Hz
+                    max_Freq = 5500; //Hz
 
                     //FEATURE VECTOR PREPARATION DETAILS
                     fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE

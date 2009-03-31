@@ -70,8 +70,8 @@ namespace AudioAnalysis
         private double[] doubleData2 = null;
 
         //these params used for segmentation track
-        public double MinDecibelReference { set; get; }
-        public double MaxDecibelReference { set; get; }
+        //public double MinDecibelReference { set; get; }
+        //public double MaxDecibelReference { set; get; }
         public double SegmentationThreshold_k1 { set; get; }
         public double SegmentationThreshold_k2 { set; get; }
 
@@ -366,12 +366,10 @@ namespace AudioAnalysis
         }
 
         /// <summary>
-        /// This method assumes that the passed decibel array has bounds determined by constants
-        /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
+        /// This method assumes that the passed decibel array has been normalised
         /// </summary>
         public Bitmap DrawDecibelTrack(Bitmap bmp)
         {
-            double range = this.MaxDecibelReference - this.MinDecibelReference;
             int dataLength = doubleData.Length;
             int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
             if (subSample < 1) subSample = 1;
@@ -388,7 +386,7 @@ namespace AudioAnalysis
                     location = x;
                 }
 
-                double norm = (doubleData[location] - this.MinDecibelReference) / range;
+                double norm = doubleData[location];
                 int id = Image_Track.DefaultHeight - 1 - (int)(Image_Track.DefaultHeight * norm);
                 if (id < 0) id = 0;
                 else if (id > Image_Track.DefaultHeight) id = Image_Track.DefaultHeight;
@@ -437,8 +435,7 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// This method assumes that the passed decibel array has bounds determined by constants
-        /// in the Sonogram class i.e. Sonogram.minLogEnergy and Sonogram.maxLogEnergy.
+        /// This method assumes that the passed decibel array has been normalised
         /// Also requires values to be set for SegmentationThreshold_k1 and SegmentationThreshold_k2
 
         /// </summary>
@@ -448,16 +445,15 @@ namespace AudioAnalysis
 
             if (this.intData == null) return bmp;     //cannot show becuase no state info
 
-            double range = this.MaxDecibelReference - this.MinDecibelReference;
             int dataLength = this.intData.Length;
             int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
             if (subSample < 1) subSample = 1;
 
             //display vocalisation state and thresholds used to determine endpoints
             Color[] stateColors = { Color.White, Color.Green, Color.Red };
-            double v1 = this.SegmentationThreshold_k1 / range;
+            double v1 = this.SegmentationThreshold_k1;
             int k1 = this.Height - (int)(this.Height * v1);
-            double v2 = this.SegmentationThreshold_k2 / range;
+            double v2 = this.SegmentationThreshold_k2;
             int k2 = this.Height - (int)(this.Height * v2);
             if ((v1 < 0.0) || (v1 > 1.0)) return bmp; //thresholds are illegal so stop now.
             if ((v2 < 0.0) || (v2 > 1.0)) return bmp;
@@ -485,22 +481,28 @@ namespace AudioAnalysis
             return bmp;
         }
 
+        /// <summary>
+        /// ASSUME that passed decibel array has been normalised
+        /// </summary>
+        /// <param name="sg"></param>
+        /// <returns></returns>
         public static Image_Track GetDecibelTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.deciBels, sg.DecibelsPerFrame);
-            track.MinDecibelReference = sg.MinDecibelReference;
-            track.MaxDecibelReference = sg.MaxDecibelReference;
+            var track = new Image_Track(TrackType.deciBels, sg.DecibelsNormalised);
             return track;
         }
 
+        /// <summary>
+        /// ASSUME that passed decibel array has been normalised
+        /// </summary>
+        /// <param name="sg"></param>
+        /// <returns></returns>
         public static Image_Track GetSegmentationTrack(BaseSonogram sg)
         {
-            var track = new Image_Track(TrackType.segmentation, sg.DecibelsPerFrame);
+            var track = new Image_Track(TrackType.segmentation, sg.DecibelsNormalised);
             track.intData = sg.SigState;
-            track.MinDecibelReference = sg.MinDecibelReference;
-            track.MaxDecibelReference = sg.MaxDecibelReference;
-            track.SegmentationThreshold_k1 = sg.SegmentationThresholdK1;
-            track.SegmentationThreshold_k2 = sg.SegmentationThresholdK2;
+            track.SegmentationThreshold_k1 = EndpointDetectionConfiguration.K1Threshold / sg.Max_dBReference;
+            track.SegmentationThreshold_k2 = EndpointDetectionConfiguration.K2Threshold / sg.Max_dBReference;
             return track;
         }
 
