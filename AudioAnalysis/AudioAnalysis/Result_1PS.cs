@@ -8,8 +8,6 @@ namespace AudioAnalysis
     public class Result_1PS : BaseResult
     {
 		#region Properties
-        public double? MaxDisplayScore { get; set; }	        // upper limit for diplay of scores 
-
 		public int? CallPeriodicity_frames { get; set; }
 		public static int? CallPeriodicity_ms { get; set; }
 		public int? NumberOfPeriodicHits { get; set; }

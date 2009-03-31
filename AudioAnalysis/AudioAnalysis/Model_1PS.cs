@@ -61,6 +61,12 @@ namespace AudioAnalysis
         public override void ScanSymbolSequenceWithModel(BaseResult r, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_1PeriodicSyllable.ScanSymbolSequenceWithModel()");
+            if (r == null)
+            {
+                Log.WriteLine("The Result object is null!");
+                throw new Exception("#$%^&*()_+ EXTERMINATE");
+            }
+
             var result = r as Result_1PS;
             double[,] acousticMatrix = result.AcousticMatrix;
             string symbolSequence = result.SyllSymbols;
@@ -90,6 +96,8 @@ namespace AudioAnalysis
             int maxIndex = DataTools.GetMaxIndex(scores);
             result.MaxScore = scores[maxIndex];
             result.TimeOfTopScore = (double)maxIndex * frameOffset;
+            result.MaxDisplayScore = result.MaxScore;
+            result.DisplayThreshold = ZScoreThreshold;  //temporary#$%^&&**()()
 
 
             if ((result.VocalCount < 2) || (Periodicity_ms <= 0))

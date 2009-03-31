@@ -26,7 +26,7 @@ namespace AudioAnalysis
             wavFileName = wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for the Call 1 and call 8 template
 
             Log.Verbosity = 1;
-            if (callID == 1) BaseTemplate.InTestMode = true;//ie doing a unit test
+            BaseTemplate.InTestMode = true;//ie doing a unit test
             //#######################################################################################################
 
             string outputFolder = @"C:\SensorNetworks\Output\";  //default 
@@ -133,7 +133,7 @@ namespace AudioAnalysis
             var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
             Log.WriteLine("\nAUTOMATED RESULTS FOR TEMPLATE BEFORE ANALYSIS!");
             var r0 = template.GetBlankResultCard();
-            Log.WriteLine(r0.WriteResults());
+            if(r0 != null) Log.WriteLine(r0.WriteResults());
 
 
             if (BaseTemplate.InTestMode)

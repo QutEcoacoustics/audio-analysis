@@ -157,7 +157,7 @@ namespace AudioAnalysis
 
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                    zScoreThreshold = 6.0; //options are 1.98, 2.33, 2.56, 3.1
+                    zScoreThreshold = 5.0; //options are 1.98, 2.33, 2.56, 3.1
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_1\template1_DefaultNoise.txt";
 
                     //LANGUAGE MODEL

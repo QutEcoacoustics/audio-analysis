@@ -146,6 +146,7 @@ namespace AudioAnalysis
             mmMonitor.Add(str1);
             result.LLRThreshold     = result.MaxDisplayScore - llrThreshold;  //display threshold
             result.Scores           = scores;
+            result.DisplayThreshold = result.LLRThreshold;
 
             //summary scores
             result.VocalCount       = hitCount; // number of detected vocalisations

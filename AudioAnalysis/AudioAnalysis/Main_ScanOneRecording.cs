@@ -19,7 +19,7 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 8;   // ONLY USE CALL 1 FOR UNIT TESTING
+            int callID = 2;   // ONLY USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE
             Log.Verbosity = 1;
@@ -40,20 +40,24 @@ namespace AudioAnalysis
 
 
 
-            string serialPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(templatePath) + ".serialised"); ;
+            string serialPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(templatePath) + ".serialised");
+
             //COMMENT OUT OPTION ONE IF A SERIALISED TEMPLATE IS AVAILABLE.
             //OPTION ONE: LOAD TEMPLATE AND SERIALISE
-            //var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
-            //Log.WriteLine("\n\nWriting serialised template to file: " + serialPath);
-            //var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
-            //Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
-            //FileTools.WriteSerialisedObject(serialPath, serializedData);
+            var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
+            Log.WriteLine("\n\nWriting serialised template to file: " + serialPath);
+            var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+            Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
+            FileTools.WriteSerialisedObject(serialPath, serializedData);
 
             //OPTION TWO: READ SERIALISED TEMPLATE
-            BaseTemplate.LoadStaticConfig(appConfigPath);
-            Log.WriteLine("\tReading serialised template from file: " + serialPath);
-            var serializedData = FileTools.ReadSerialisedObject(serialPath);
-            var template = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
+            //BaseTemplate.LoadStaticConfig(appConfigPath);
+            //Log.WriteLine("\tReading serialised template from file: " + serialPath);
+            //var serializedData = FileTools.ReadSerialisedObject(serialPath);
+            //var template = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
+
+
+
 
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
@@ -61,11 +65,12 @@ namespace AudioAnalysis
             var result = recogniser.Analyse(recording);
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");
-            string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
-            List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
+            template.SaveResultsImage(recording.GetWavData(), imagePath, result);//WITHOUT HMM SCORE
 
-            //template.SaveResultsImage(recording.GetWavData(), imagePath, result);//WITHOUT HMM SCORE
-            template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);//WITH HMM SCORE
+            //INSTEAD OF PREVIOUS LINE USE FOLLOWING LINES WITH ALFREDOS HMM SCORES
+            //string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
+            //List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
+            //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);//WITH HMM SCORE
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
