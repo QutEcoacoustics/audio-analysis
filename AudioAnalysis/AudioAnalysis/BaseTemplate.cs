@@ -80,6 +80,14 @@ namespace AudioAnalysis
 
             //STEP FOUR: Verify fv extraction by observing output from acoustic model.
             template.GenerateSymbolSequenceAndSave(recording, gui.opDir);
+
+            //STEP FIVE: save an image of the sonogram with symbol sequence track added
+            var imagePath = Path.Combine(gui.opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
+            template.SonogramConfig.DisplayFullBandwidthImage = true;
+            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavData());
+            spectralSono.CalculateSubbandSNR(new WavReader(wavPath), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
+            template.SaveSyllablesImage(spectralSono, imagePath);
+
             return template;
         }
 
@@ -202,8 +210,8 @@ namespace AudioAnalysis
             //WINDOW_SIZE=512
             FftConfiguration.WindowFunction  = config.GetString("WINDOW_FUNCTION");
             FftConfiguration.NPointSmoothFFT = config.GetInt("N_POINT_SMOOTH_FFT");
-            EndpointDetectionConfiguration.SegmentationThresholdK1 = config.GetDouble("SEGMENTATION_THRESHOLD_K1");
-            EndpointDetectionConfiguration.SegmentationThresholdK2 = config.GetDouble("SEGMENTATION_THRESHOLD_K2");
+            EndpointDetectionConfiguration.K1Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K1");
+            EndpointDetectionConfiguration.K2Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K2");
             EndpointDetectionConfiguration.K1K2Latency = config.GetDouble("K1_K2_LATENCY");
             EndpointDetectionConfiguration.VocalDelay  = config.GetDouble("VOCAL_DELAY");
             EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble("MIN_VOCAL_DURATION");
@@ -251,18 +259,10 @@ namespace AudioAnalysis
 		}
 
 
-        //public void ExtractTemplateAndSave(AudioRecording ar, string opTemplatePath)
-        //{
-        //    ExtractTemplateFromRecording(ar);
-        //    Save(opTemplatePath);
-        //}
-
-
         public void ExtractTemplateFromRecording(AudioRecording ar)
         {
             WavReader wav = ar.GetWavData();
-            bool extractSubbandOnly = true;//always do this when creating new template
-            var sono = new CepstralSonogram(this.SonogramConfig, wav, extractSubbandOnly);
+            var sono = new CepstralSonogram(this.SonogramConfig, wav);
             FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
         }
 
@@ -314,9 +314,6 @@ namespace AudioAnalysis
             this.AcousticModelConfig.GenerateSymbolSequence(avSonogram, this);
             //save info about symbol sequence
             this.AcousticModelConfig.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
-            // save an image of the sonogram with symbol sequence track added
-            var imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(this.SourcePath) + ".png");
-            SaveSyllablesImage(wav, imagePath);
         }
 
         public void GenerateSymbolSequence(AcousticVectorsSonogram sonogram)
@@ -325,14 +322,14 @@ namespace AudioAnalysis
         }
 
 
-        public void SaveSyllablesImage(AcousticVectorsSonogram sonogram, string path)
-        {
-            var image = new Image_MultiTrack(sonogram.GetImage());
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
-            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
-            image.Save(path);
-        }
+        //public void SaveSyllablesImage(AcousticVectorsSonogram sonogram, string path)
+        //{
+        //    var image = new Image_MultiTrack(sonogram.GetImage());
+        //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+        //    int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
+        //    image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
+        //    image.Save(path);
+        //}
         public void SaveEnergyImage(SpectralSonogram sonogram, string path)
         {
             Log.WriteIfVerbose("Basetemplate.SaveEnergyImage(SpectralSonogram sonogram, string path)");
@@ -341,13 +338,6 @@ namespace AudioAnalysis
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetDecibelTrack(sonogram));
             image.Save(path);
-        }
-
-        public void SaveSyllablesImage(WavReader wav, string imagePath)
-        {
-            bool doExtractSubband = false;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
-            SaveSyllablesImage(spectralSono, imagePath);
         }
 
         public void SaveSyllablesImage(SpectralSonogram sonogram, string path)
@@ -359,16 +349,19 @@ namespace AudioAnalysis
             bool add1kHzLines       = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.Image.Width));
+            //image.AddTrack(Image_Track.GetDecibelTrack(sonogram));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
             image.Save(path);
         }
 
 
-        public virtual void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
+        public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            bool doExtractSubband = false;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result);
         }
 

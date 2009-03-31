@@ -74,12 +74,12 @@ namespace AudioAnalysis
             else Model.Save(writer);
         }
 
-        public override void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
-        {
-            bool doExtractSubband = false;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
-            SaveResultsImage(spectralSono, imagePath, result);
-        }
+        //public override void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
+        //{
+        //    bool doExtractSubband = false;
+        //    var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+        //    SaveResultsImage(spectralSono, imagePath, result);
+        //}
 
         public override void SaveResultsImage(SpectralSonogram sonogram, string imagePath, BaseResult result)
         {
@@ -96,10 +96,12 @@ namespace AudioAnalysis
             image.Save(imagePath);
         }
 
+
+        //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
-            bool doExtractSubband = false;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
+            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result, hmmResults);
         }
 

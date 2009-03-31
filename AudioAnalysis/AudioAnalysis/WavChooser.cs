@@ -79,6 +79,8 @@ namespace AudioAnalysis
             //wavFileName = "Honeymoon_Bay_St_Bees_Curlew3_20080914-003000";  //source file for template
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet1_20080918-080000";
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet2_20080916-160000";
+            //wavFileName = "Honeymoon_Bay_St_Bees_20090312-060000_PheasantCoucal";
+
 
             //JENNIFER'S CD
             //string wavDirName = @"C:\SensorNetworks\WavFiles\JenniferCD\";

@@ -25,6 +25,7 @@ namespace AudioAnalysis
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
         public int? MidFreqBand { get; set; }
+        public bool DisplayFullBandwidthImage { get; set; }
         #endregion
 
 
@@ -57,6 +58,7 @@ namespace AudioAnalysis
 			MaxFreqBand = config.GetIntNullable("MAX_FREQ");
             int? delta  = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
+            DisplayFullBandwidthImage = false;
 
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
 		}

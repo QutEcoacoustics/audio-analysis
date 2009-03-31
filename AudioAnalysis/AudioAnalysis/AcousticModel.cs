@@ -23,7 +23,6 @@ namespace AudioAnalysis
         public int FvCount { get { return fvConfig.FVCount; } }
         private double FrameOffset;
         private double FramesPerSecond;
-       // public string FV_DefaultNoiseFile { get; set; }
         public double ZscoreThreshold { get; set; }
 		public double[,] AcousticMatrix { get; set; }	// matrix of fv x time frames
 		public string SyllSymbols { get; set; }			// array of symbols  representing winning user defined feature templates
@@ -78,7 +77,7 @@ namespace AudioAnalysis
             int fvCount = FVs.Length;
 
             int count;
-            FVs[0] = GetNoiseFeatureVector(s.Data, s.DecibelsPerFrame, out count);
+            FVs[0] = GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference, out count);
             //if (template.mode == Mode.READ_EXISTING_TEMPLATE) FVs[0] = null; //debugging purposes only
             if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file
             {
@@ -107,8 +106,6 @@ namespace AudioAnalysis
             double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount);
             //following alternative to above method only gets noise estimate from low energy frames
             //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.Decibels, this.decibelThreshold);
-            if (template.mode == Mode.CREATE_NEW_TEMPLATE) 
-                ImageTools.DrawMatrix(noiseM, @"C:\SensorNetworks\Templates\Template_2\NoiseMatrix.bmp");
 
             for (int i = 0; i < FVs.Length; i++)
                 FVs[i].SetNoiseResponse(noiseM, i);
@@ -148,11 +145,17 @@ namespace AudioAnalysis
                 for (int i = 0; i < frameCount; i++) acousticMatrix[i, n] = zscores[i];// transfer z-scores to matrix of acoustic z-scores
             }//end for loop over all feature vectors
 
-            if (template.mode == Mode.CREATE_NEW_TEMPLATE)
+            #region Make Image of Acoustic Matrix For Debugging Purposes Only
+            if (template.mode == Mode.CREATE_NEW_TEMPLATE) //FOR DEBUGGING
             {
                 double[,] transpose = DataTools.MatrixTranspose(acousticMatrix);
                 ImageTools.DrawMatrix(transpose, @"C:\SensorNetworks\Templates\Template_2\AcousticMatrix.bmp");
+
+             //   ImageTools.DrawMatrix(noiseM,    @"C:\SensorNetworks\Templates\Template_2\NoiseMatrix.bmp");
             }
+
+            #endregion
+
             return acousticMatrix;
         }//end GenerateAcousticMatrix()
 
@@ -171,22 +174,23 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// Extracts all those frames passed sonogram matrix whose signal energy is below the threshold and 
-        ///                     returns an average of the feature vectors derived from those frames.
+        /// Extracts all those frames from the passed sonogram matrix whose relative signal energy is 
+        /// below the normalised threshold and returns an average of the feature vectors derived from those frames.
         /// If there are not enough low energy frames, then the method returns null and caller must get
         /// noise FV from another source.
+        /// NOTE: The decibels array must have been previously normalised between 0-1.
         /// </summary>
-        FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, out int count)
+        FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double maxRefDB, out int count)
         {
-            double decibelThreshold = EndpointDetectionConfiguration.SegmentationThresholdK2;  // FreqBandNoise_dB;
-
+            double decibelThreshold = EndpointDetectionConfiguration.K2Threshold;
+            double relativeThreshold = decibelThreshold / decibelThreshold; 
             int rows = acousticM.GetLength(0);
             int cols = acousticM.GetLength(1);
 
             double[] noiseFV = new double[cols];
 
             //use the IEnumerable Interface with a lamda expression in place of function
-            count = decibels.Count(d => (d <= decibelThreshold)); // Number of frames below the noise threshold
+            count = decibels.Count(d => (d <= relativeThreshold)); // Number of frames below the noise threshold
 
 
             int targetCount = rows / 5; // Want a minimum of 20% of frames for a noise estimate
