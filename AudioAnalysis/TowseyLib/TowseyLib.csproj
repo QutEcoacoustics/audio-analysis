@@ -78,6 +78,7 @@
     <Compile Include="FileTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Shape.cs" />
+    <Compile Include="SNR.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="Statistics.cs" />
     <Compile Include="TextUtilities.cs" />

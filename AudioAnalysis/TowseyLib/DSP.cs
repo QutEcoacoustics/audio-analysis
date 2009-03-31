@@ -7,25 +7,19 @@ namespace TowseyLib
     /// <summary>
     /// digital signal processing methods
     /// </summary>
-    public class DSP
+    public static class DSP
     {
         public const double pi = Math.PI;
 
-
-        //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinEnergyReference = -7.0;      // typical noise value for BAC2 recordings = -4.5
-        public const double MaxEnergyReference = -0.60206;  // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
-        //public const double MaxLogEnergy = -0.444;        // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
-        //public const double MaxLogEnergy = -0.310;        // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        //public const double MaxLogEnergy = 0.0;           // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
-        //note that the cicada recordings reach max average frame amplitude = 0.55
 
 
         /// <summary>
         /// Breaks a long audio signal into frames with given step
         /// </summary>
-        public static double[,] Frames(double[] data, int windowSize, int step)
+        public static double[,] Frames(double[] data, int windowSize, double windowOverlap)
         {
+            int step = (int)(windowSize * (1 - windowOverlap));
+
             if (step < 1)
                 throw new ArgumentException("Frame Step must be at least 1");
             if (step > windowSize)
@@ -115,70 +109,6 @@ namespace TowseyLib
 
 
 
-        /// <summary>
-        /// Frame energy is the log of the summed energy of the samples.
-        /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
-        /// BUT this method returns the AVERAGE sample energy, which therefore normalises for frame length / sample number. 
-        /// 
-        /// Energy normalisation formula taken from Lecture Notes of Prof. Bryan Pellom
-        /// Automatic Speech Recognition: From Theory to Practice.
-        /// http://www.cis.hut.fi/Opinnot/T-61.184/ September 27th 2004.
-        /// 
-        /// Calculate normalised energy of frame as  energy[i] = logEnergy - maxLogEnergy;
-        /// This is same as log10(logEnergy / maxLogEnergy) ie normalised to a fixed maximum energy value.
-        /// </summary>
-        /// <param name="frames">a matrix containing signal values grouped as overlapping frames</param>
-        /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
-        /// <param name="maxLogEnergy">absolute max to which we normalise</param>
-        /// <returns></returns>
-        public static double[] SignalLogEnergy(double[,] frames)
-        {
-            int frameCount = frames.GetLength(0);
-            int N = frames.GetLength(1);
-            double[] logEnergy = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
-            {
-                double sum = 0.0;
-                for (int j = 0; j < N; j++)  //foreach sample in frame
-                {
-                    sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
-                }
-                double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
-                //Console.WriteLine("e=" + e);
-                //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
-
-                if (e == Double.MinValue) //to guard against log(0) but this should never happen!
-                //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
-                {
-                    System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = DSP.MinEnergyReference - DSP.MaxEnergyReference; //normalise to absolute scale
-                    continue;
-                }
-                double logE = Math.Log10(e);
-                //if(i==100) Console.ReadLine();
-
-                //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
-                if (logE < DSP.MinEnergyReference)
-                {
-                    //System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
-                    logEnergy[i] = DSP.MinEnergyReference - DSP.MaxEnergyReference;
-                }
-                else logEnergy[i] = logE - DSP.MaxEnergyReference;
-                //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
-                //if (i < 20) Console.WriteLine("e="+logEnergy[i]);
-            }
-
-            //normalise to RELATIVE energy value i.e. max in the current frame
-            //double maxEnergy = energy[DataTools.getMaxIndex()];
-            //for (int i = 0; i < frameCount; i++) //foreach time step
-            //{
-            //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
-            //}
-            return logEnergy;
-        }
-
-
-
 
         /// <summary>
         /// counts the zero crossings in each frame
@@ -201,82 +131,6 @@ namespace TowseyLib
                 zc[i] = count / 2;
             }
             return zc;
-        }
-
-        
-         
-        /// <summary>
-        /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
-        /// algorithm described in Lamel et al, 1981.
-        /// NOTE: noiseThreshold is passed as decibels
-        /// energy array is log energy ie not yet converted to decibels.
-        /// Return energy converted to decibels i.e. multiply by 10.
-        /// </summary>
-        /// <param name="logEnergy">NOTE: the log energy values are normalised to global constants</param>
-        /// <param name="min_dB"></param>
-        /// <param name="max_dB"></param>
-        /// <param name="noiseThreshold_dB"></param>
-        /// <param name="Q">noise in decibels subtracted from each frame</param>
-        /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, double minEnergyRatio, out double Q)
-        {
-            //Following const used to normalise the logEnergy values to the background noise.
-            //Has the effect of setting background noise level to 0 dB.
-            //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
-            const double noiseThreshold_dB = 10.0; //dB
-
-
-            //ignore first N and last N frames when calculating background noise level because sometimes these frames
-            // have atypically low signal values
-            int buffer = 20; //ignore first N and last N frames when calculating background noise level
-
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
-            //Console.WriteLine("minFractionEnergy = " + minFraction);
-            for (int i = buffer; i < logEnergy.Length-buffer; i++)
-            {
-                if (logEnergy[i] == minEnergyRatio) continue; //ignore lowest values in establishing noise level
-                if (logEnergy[i] < min) min = logEnergy[i];
-                else
-                if (logEnergy[i] > max) max = logEnergy[i];
-            }
-            min_dB = min * 10;  //multiply by 10 to convert to decibels
-            max_dB = max * 10;
-
-            int binCount = 100;
-            double binWidth = noiseThreshold_dB / binCount;
-            int[] histo = new int[binCount];
-            int L = logEnergy.Length;
-            double absThreshold = min_dB + noiseThreshold_dB;
-
-            for (int i = 0; i < L; i++)
-            {
-                double dB = 10 * logEnergy[i];
-                if (dB <= absThreshold)
-                {
-                    int id = (int)((dB - min_dB) / binWidth);
-                    if (id >= binCount)
-                    {
-                        id = binCount - 1;
-                    } else
-                    if (id < 0) id = 0;
-                    histo[id]++;    
-                }
-            }
-            double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
-            //DataTools.writeBarGraph(histo);
-
-            // find peak of lowBins histogram
-            int peakID = DataTools.GetMaxIndex(smoothHisto);
-            Q = min_dB + ((peakID+1) * binWidth); //modal noise level
-            
-            // subtract noise energy` and return relative energy as decibel values.
-            double[] en = new double[L];
-            for (int i = 0; i < L; i++) en[i] = (logEnergy[i]*10) - Q;
-            //Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
-            //Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
-
-            return en;
         }
 
         /// <summary>

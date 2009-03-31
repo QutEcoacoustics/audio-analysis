@@ -14,35 +14,20 @@ namespace TowseyLib
             int frameCount = amplitudeM.GetLength(0);
             int binCount   = amplitudeM.GetLength(1);
 
-            double[,] SPEC = new double[frameCount, binCount];
+            double[,] spectra = new double[frameCount, binCount];
 
             for (int i = 0; i < frameCount; i++)//foreach time step
             {
                 for (int j = 0; j < binCount; j++) //foreach freq bin
                 {
                     double amplitude = amplitudeM[i, j];
-                    double power = 10 * Math.Log10(amplitude * amplitude);    //convert amplitude to decibels
-                    ////NOTE: the decibels calculation should be a ratio. 
-                    //// Here the ratio is implied ie relative to the power in the normalised wav signal
-                    SPEC[i, j] = power;
+                    double power = 20 * Math.Log10(amplitude); //convert amplitude to decibels dB = 10*log(amplitude ^2)
+                    ////NOTE: the decibels calculation should be a ratio. Here the ratio is implied.
+                    spectra[i, j] = power;
                 }
             } //end of all frames
-            return SPEC;
+            return spectra;
         }
-
-
-        public static double FractionHighEnergyFrames(double[] decibels, double dbThreshold)
-        {
-            int L = decibels.Length;
-            int count = 0;
-            for (int i = 0; i < L; i++) //foreach time step
-            {
-                if (decibels[i] > dbThreshold) count++;
-            }
-            return (count/(double)L);
-        }
-
-
 
 
         public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableDelay, int minPulse, int[] zeroCrossings)
@@ -539,29 +524,6 @@ namespace TowseyLib
         //********************************************************************************************************************
         //*********************************************** GET ACOUSTIC VECTORS
 
-        /// <summary>
-        /// normalise the energy values using the passed reference decibel levels
-        /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
-        /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
-        /// </summary>
-        /// <param name="energy"></param>
-        /// <param name="maxDecibels"></param>
-        /// <returns></returns>
-        public static double[] NormaliseDecibelArray(double[] energy, double maxDecibels)
-        {
-            //normalise energy between 0.0 decibels and max decibels.
-            int L = energy.Length;
-            double[] E = new double[L];
-            for (int i = 0; i < L; i++)
-            {
-                E[i] = energy[i]; 
-                if (E[i] < 0.0) E[i] = 0.0;
-                E[i] = energy[i] / maxDecibels;
-                if (E[i] > 1.0) E[i] = 1.0;
-            }
-            //DataTools.WriteMinMaxOfArray(E);
-            return E;
-        }
 
         public static double[,] AcousticVectors(double[,] mfcc, double[] energy, bool includeDelta, bool includeDoubleDelta)
         {
@@ -583,18 +545,6 @@ namespace TowseyLib
             return acousticM;
         } //AcousticVectors()
 
-
-        //public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, int deltaT, bool includeDelta, bool includeDoubleDelta)
-        //{
-        //    int frameCount = M.GetLength(0); //number of frames
-        //    int mfccCount = M.GetLength(1); //number of MFCCs
-        //    int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
-        //    int dim = coeffcount; //
-        //    if (includeDelta) dim += coeffcount;
-        //    if (includeDoubleDelta) dim += coeffcount;
-        //    double[] fv = new double[dim];
-        //    return fv;
-        //}
 
         /// <summary>
         /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients
