@@ -38,7 +38,6 @@ namespace AudioAnalysis
 		{
             Wav = recording.GetWavData();
 
-            ////STEP THREE: Verify fv extraction by observing output from acoustic model.
             var avSono = new AcousticVectorsSonogram(Template.SonogramConfig, Wav);
             Template.GenerateSymbolSequence( avSono);
             double frameOffset = Template.SonogramConfig.GetFrameOffset();
@@ -61,14 +60,14 @@ namespace AudioAnalysis
                 else
                     if (type == ModelType.ONE_PERIODIC_SYLLABLE)
                     {
-                        Model.ScanSymbolSequenceWithModel(result as Result_MMErgodic, frameOffset);
-                        return result;
+                        Model.ScanSymbolSequenceWithModel(result as Result_1PS, frameOffset);
+                        return result as Result_1PS;
                     }
                     else
-                        if (type == ModelType.MM_TWO_STATE_PERIODIC)
+                        if (type == ModelType.MM_TWO_STATE_PERIODIC) //NOT YET IMPLEMENTED
                         {
-                            Model.ScanSymbolSequenceWithModel(result as Result_MMErgodic, frameOffset);
-                            return result;
+                            Model.ScanSymbolSequenceWithModel(result as BaseResult, frameOffset);
+                            return result as BaseResult;
                         }
                         else
                 {

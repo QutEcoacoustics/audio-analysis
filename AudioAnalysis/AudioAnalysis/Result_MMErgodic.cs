@@ -11,7 +11,6 @@ namespace AudioAnalysis
 	public class Result_MMErgodic : BaseResult
 	{
 		#region Properties
-        public double? MaxDisplayScore { get; set; }	// upper limit for diplay of scores 
         public int? VocalValid { get; set; }            // number of hits/vocalisations whose duration is valid for call
         public double? LLRThreshold { get; set; }       // significance threshold for display of LLR scores
 

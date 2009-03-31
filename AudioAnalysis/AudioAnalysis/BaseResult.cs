@@ -24,6 +24,8 @@ namespace AudioAnalysis
         public int? FrameWithTopScore { get; set; }     // id of frame having top score in recording 
         public double? TimeOfTopScore { get; set; }	    // time of top score from beginning of recording in seconds 
 
+        public double? MaxDisplayScore { get; set; }	// upper limit for diplay of scores 
+        public double? DisplayThreshold { get; set; }	// threshold for diplay of scores 
         #endregion
 
         public abstract ResultItem GetResultItem(string key);

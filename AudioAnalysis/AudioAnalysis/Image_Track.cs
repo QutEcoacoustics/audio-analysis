@@ -318,9 +318,10 @@ namespace AudioAnalysis
             }
 
             //add in horizontal threshold significance line
-            double thold = 2 * this.ScoreThreshold;
-            if (thold < this.ScoreMax) thold = this.ScoreMax;
-            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / thold)));
+          //  double thold = 2 * this.ScoreThreshold;
+           // if (thold < this.ScoreMax) thold = this.ScoreMax;
+          //  int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / thold)));
+            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / this.ScoreMax)));
             for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
 
             return bmp;

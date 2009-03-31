@@ -15,7 +15,7 @@ namespace AudioAnalysis
             wavDirName = @"C:\SensorNetworks\WavFiles\";
             //wavFileName = "sineSignal";
             //wavFileName = "golden-whistler";
-            wavFileName = "BAC2_20071008-085040";            //Lewin's rail kek keks //source file for template.
+            wavFileName = "BAC2_20071008-085040";            //Lewin's rail kek keks //source file for template 2.
             //wavFileName = "BAC1_20071008-084607";            //faint kek-kek call
             //wavFileName = "BAC2_20071011-182040_cicada";     //repeated cicada chirp 5 hz bursts of white noise
             //wavFileName = "dp3_20080415-195000";             //ZERO SIGNAL silent room recording using dopod

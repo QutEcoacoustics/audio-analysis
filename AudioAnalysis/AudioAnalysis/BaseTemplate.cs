@@ -384,8 +384,11 @@ namespace AudioAnalysis
             if (type == ModelType.MM_ERGODIC) return new Result_MMErgodic(this);
                 else
                 if (type == ModelType.ONE_PERIODIC_SYLLABLE) return new Result_1PS(this);
-                    else 
+                else
+                {
+                    Log.WriteIfVerbose("\n WARNING: BaseTemplate.GetBlankResultCard(): UNKNOWN MODEL TYPE = "+type.ToString());
                     return null;
+                }
         }
 
 
