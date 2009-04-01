@@ -148,8 +148,8 @@ namespace AudioAnalysis
             #region Make Image of Acoustic Matrix For Debugging Purposes Only
             if (template.mode == Mode.CREATE_NEW_TEMPLATE) //FOR DEBUGGING
             {
-                double[,] transpose = DataTools.MatrixTranspose(acousticMatrix);
-                ImageTools.DrawMatrix(transpose, @"C:\SensorNetworks\Templates\Template_2\AcousticMatrix.bmp");
+                //double[,] transpose = DataTools.MatrixTranspose(acousticMatrix);
+                //ImageTools.DrawMatrix(transpose, @"C:\SensorNetworks\Templates\Template_2\AcousticMatrix.bmp");
 
              //   ImageTools.DrawMatrix(noiseM,    @"C:\SensorNetworks\Templates\Template_2\NoiseMatrix.bmp");
             }

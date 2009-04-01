@@ -347,7 +347,7 @@ namespace AudioAnalysis
                     callName = "Koala Bellow";
                     callComment = "Various sounds - huff, puff and snort!";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
-                    sourceFile = "West_Knoll_-_St_Bees_KoalaBellow20080919-073000";  //Koala Bellows
+                    sourceFile = "WestKnoll_StBees_KoalaBellow20080919-073000";  //Koala Bellows
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
                     opDir = @"C:\SensorNetworks\Templates\Template_6\";
 
@@ -358,26 +358,26 @@ namespace AudioAnalysis
                     doMelConversion = true;
                     doNoiseReduction = false;
                     ceptralCoeffCount = 12;
-                    deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
+                    deltaT = 3; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
                     min_Freq = 200; //Hz
-                    max_Freq = 3000; //Hz
+                    max_Freq = 3200; //Hz
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
                     fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES
                     fvInit = new string[,] {
-                        {"template6_puff","826,994,1140,1156,1469,1915,2103,2287,2676,3137,4314,4604"},
+                        //{"template6_puff","826,994,1140,1156,1469,1915,2103,2287,2676,3137,4314,4604"},
                         //{"template6_puff","826,994,1140,1156,1449,1620,1914,2018,2103,2287,2676,2867,3020,3137,3291,3667,3970,4314,4604"},
-                        {"template6_huff","595,640,752,897,957,1092,1691,1840,2061,2241,2604,4247"},
-                        //{"template6_huff","595,640,660,752,790,897,901,957,1055,1110,1325,1520,1590,1661,1691,1964,1724,1840,2061,2198,2241,2604,4247"},
-              //          {"template6_warmup","39,51,66,80,93,134,294"},
-              //          {"template6_distant","9993,10034,10051,10092,10106,10080,10196"},
+                        //{"template6_huff","595,640,752,897,957,1092,1691,1840,2061,2241,2604,4247"},
+                        {"template6_huff","595,640,660,752,790,897,901,957,1055,1110,1325,1520,1590,1661,1691,1964,1724,1840,2061,2198,2241,2604,4247"},
+                        //{"template6_warmup","39,51,66,80,93,134,294"},
+                        //{"template6_distant","9993,10034,10051,10092,10106,10080,10196"},
                     };
 
                     // THE ACOUSTIC MODEL ***************
                     fvDefaultNoiseFile = opDir + "template6_DefaultNoise.txt";
-                    zScoreThreshold = 1.0; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
+                    zScoreThreshold = 1.00; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
                     modelType = ModelType.MM_ERGODIC;
@@ -472,8 +472,8 @@ namespace AudioAnalysis
 
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
-                    zScoreThreshold = 8.0; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                    zScoreThreshold = 5.0; //options are 1.98, 2.33, 2.56, 3.1
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_8\template8_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
                     //modelType = ModelType.UNDEFINED;

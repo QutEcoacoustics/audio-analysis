@@ -25,10 +25,11 @@ namespace MarkovModels
 
         public double[] CalculateSongLengthPDF(string[] sequences)
         {
-            int maxLength = (int)Math.Round(this.AvSongLength * 2);
+            int maxLength = (int)Math.Round(this.AvSongLength * 5);
             double[] probs = new double[maxLength];
-            for (int w = 0; w < sequences.Length; w++) probs[sequences[w].Length] += 1.0;
-            probs = DataTools.filterMovingAverage(probs, 5);
+            for (int w = 1; w < probs.Length-1; w++) probs[w] = 0.01;
+            for (int w = 1; w < sequences.Length; w++) probs[sequences[w].Length] += 1.0;
+            probs = DataTools.filterMovingAverage(probs, 9);
             probs = DataTools.NormaliseProbabilites(probs);
             return probs;
         }
