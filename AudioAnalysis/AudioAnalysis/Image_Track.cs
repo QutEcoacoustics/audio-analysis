@@ -51,10 +51,11 @@ namespace AudioAnalysis
 
 
         #region Properties
-        public double scoreMax = 8.0; //max score displayed in score track of image
-        public double ScoreMax { get { return scoreMax; } set { scoreMax = value; } }
-
         public TrackType TrackType { get; set; }
+
+        public double scoreMax = 8.0; //default max score displayed in score track of image
+        public double ScoreMax { get { return scoreMax; } set { scoreMax = value; } }
+        public double ScoreThreshold { set; get; }
 
         public int topOffset { get; set; }    //set to track's TOP    pixel row in final image
         public int bottomOffset { get; set; } //set to track's BOTTOM pixel row in final image
@@ -70,12 +71,9 @@ namespace AudioAnalysis
         private double[] doubleData2 = null;
 
         //these params used for segmentation track
-        //public double MinDecibelReference { set; get; }
-        //public double MaxDecibelReference { set; get; }
         public double SegmentationThreshold_k1 { set; get; }
         public double SegmentationThreshold_k2 { set; get; }
 
-        public double ScoreThreshold { set; get; }
         private int garbageID = 0;
         public int GarbageID { get { return garbageID; } set { garbageID = value; } }
         #endregion

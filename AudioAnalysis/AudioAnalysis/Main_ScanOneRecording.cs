@@ -19,7 +19,7 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 2;   // ONLY USE CALL 1 FOR UNIT TESTING
+            int callID = 6;   // ONLY USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE
             Log.Verbosity = 1;
@@ -51,8 +51,9 @@ namespace AudioAnalysis
             FileTools.WriteSerialisedObject(serialPath, serializedData);
 
             //OPTION TWO: READ SERIALISED TEMPLATE
-            //BaseTemplate.LoadStaticConfig(appConfigPath);
             //Log.WriteLine("\tReading serialised template from file: " + serialPath);
+            //if (!File.Exists(serialPath)) throw new Exception("SERIALISED FILE DOES NOT EXIST. TERMINATE!");
+            //BaseTemplate.LoadStaticConfig(appConfigPath);
             //var serializedData = FileTools.ReadSerialisedObject(serialPath);
             //var template = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
 
