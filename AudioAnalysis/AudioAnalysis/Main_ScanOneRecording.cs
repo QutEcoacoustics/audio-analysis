@@ -76,8 +76,8 @@ namespace AudioAnalysis
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
                 Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);
-                Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(((Result_1PS)result).TimeOfTopScore.Value.ToString("F1") + " sec");
+                Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScoreValue.Value.ToString("F1") + " at ");
+                Log.WriteLine(((Result_1PS)result).TimeOfMaxScore.Value.ToString("F1") + " sec");
                 Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + ((Result_1PS)result).NumberOfPeriodicHits);
             } else
@@ -87,8 +87,8 @@ namespace AudioAnalysis
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
                 Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
                 Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid + " (i.e. appropriate duration)");
-                Log.Write("# Best Vocalisation Score    = " + r2.RankingScore.Value.ToString("F1") + " at ");
-                Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
+                Log.Write("# Best Vocalisation Score    = " + r2.RankingScoreValue.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.TimeOfMaxScore.Value.ToString("F1") + " sec");
             }
 
             Console.WriteLine("\nFINISHED!");

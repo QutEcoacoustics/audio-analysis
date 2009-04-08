@@ -95,7 +95,7 @@ namespace AudioAnalysis
             result.VocalCount = DataTools.CountPositives(scores);
             int maxIndex = DataTools.GetMaxIndex(scores);
             result.MaxScore = scores[maxIndex];
-            result.TimeOfTopScore = (double)maxIndex * frameOffset;
+            result.TimeOfMaxScore = (double)maxIndex * frameOffset;
             result.MaxDisplayScore = result.MaxScore;
             result.DisplayThreshold = ZScoreThreshold;  //temporary#$%^&&**()()
 
@@ -112,7 +112,7 @@ namespace AudioAnalysis
             result.CallPeriodicity_frames = this.Periodicity_frames;
             bool[] periodPeaks = Model_OnePeriodicSyllable.Periodicity(peaks, Periodicity_frames, Periodicity_NH_frames);
             result.NumberOfPeriodicHits = DataTools.CountTrues(periodPeaks);
-            result.RankingScore = DataTools.CountTrues(periodPeaks);//used to rank recordings
+            result.RankingScoreValue = DataTools.CountTrues(periodPeaks);//used to rank recordings
             //adjust score array for periodicity
             for (int i = 0; i < frameCount; i++) if (!periodPeaks[i]) scores[i] = 0.0;
 

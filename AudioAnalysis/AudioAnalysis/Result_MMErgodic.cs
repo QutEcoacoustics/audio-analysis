@@ -14,7 +14,22 @@ namespace AudioAnalysis
         public int? VocalValid { get; set; }            // number of hits/vocalisations whose duration is valid for call
         public double? LLRThreshold { get; set; }       // significance threshold for display of LLR scores
 
-        public static string[] KeyNames = {"RANK_SCORE","VOCAL_COUNT","VOCAL_VALID","TIMEOF_TOP_SCORE"};
+        private string[] resultItemKeys = new string[] { "LLR_VALUE", "VOCAL_COUNT", "VOCAL_VALID", BaseResult.TIME_OF_TOP_SCORE };
+        public override string[] ResultItemKeys 
+        {
+            get
+            {
+                return resultItemKeys;
+            }
+        }
+
+        public override string RankingScoreName
+        {
+            get
+            {
+                return "LLR_VALUE";
+            }
+        }
 
 		#endregion
 
@@ -32,19 +47,19 @@ namespace AudioAnalysis
 
         public override ResultItem GetResultItem(string key)
         {
-            if (key.Equals("RANK_SCORE"))           return new ResultItem("RANK_SCORE", RankingScore, GetTopScoreInfo());
+            if (key.Equals("LLR_VALUE")) return new ResultItem("LLR_VALUE", RankingScoreValue, GetTopScoreInfo());
             else if (key.Equals("VOCAL_COUNT"))     return new ResultItem("VOCAL_COUNT", VocalCount, GetResultInfo("VOCAL_COUNT"));
             else if (key.Equals("VOCAL_VALID"))     return new ResultItem("VOCAL_VALID", VocalValid, GetResultInfo("VOCAL_VALID"));
-            else if (key.Equals("TIMEOF_TOP_SCORE"))return new ResultItem("TIMEOF_TOP_SCORE", TimeOfTopScore, GetResultInfo("TIMEOF_TOP_SCORE"));
+            else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE)) return new ResultItem(BaseResult.TIME_OF_TOP_SCORE, TimeOfMaxScore, GetResultInfo(BaseResult.TIME_OF_TOP_SCORE));
             return null;
         }
 
         public new static Dictionary<string, string> GetResultInfo(string key)
         {
-            if (key.Equals("RANK_SCORE"))          return GetTopScoreInfo();
+            if (key.Equals("LLR_VALUE")) return GetTopScoreInfo();
             else if (key.Equals("VOCAL_COUNT"))    return GetVocalCountInfo();
             else if (key.Equals("VOCAL_VALID"))    return GetVocalValidInfo();
-            else if (key.Equals("TIMEOF_TOP_SCORE")) return GetTimeOfTopScoreInfo();
+            else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE)) return GetTimeOfTopScoreInfo();
             return null;
         }
 
@@ -88,11 +103,11 @@ namespace AudioAnalysis
         public override string WriteResults()
         {
             StringBuilder sb = new StringBuilder("RESULTS OF SCANNING RECORDING FOR CALL <" + this.Template.CallName + ">\n");
-            for (int i = 0; i < Result_MMErgodic.KeyNames.Length; i++)
+            for (int i = 0; i < this.resultItemKeys.Length; i++)
             {
-                ResultItem item = GetResultItem(KeyNames[i]);
-                sb.AppendLine(KeyNames[i] + " = " + item.ToString());
-                var info = GetResultInfo(KeyNames[i]);
+                ResultItem item = GetResultItem(this.resultItemKeys[i]);
+                sb.AppendLine(this.resultItemKeys[i] + " = " + item.ToString());
+                var info = GetResultInfo(this.resultItemKeys[i]);
                 if (info == null) sb.AppendLine("\tNo information found for this result item.");
                 else
                 foreach (var pair in info)

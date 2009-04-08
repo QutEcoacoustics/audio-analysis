@@ -151,9 +151,9 @@ namespace AudioAnalysis
             //summary scores
             result.VocalCount       = hitCount; // number of detected vocalisations
             result.VocalValid       = correctDurationCount; //number of vocalisations of correct duration
-            result.RankingScore     = bestHit;   // the highest score obtained over all vocalisations
-            result.FrameWithTopScore= bestFrame;
-            result.TimeOfTopScore   = bestTimePoint;
+            result.RankingScoreValue     = bestHit;   // the highest score obtained over all vocalisations
+            result.FrameWithMaxScore= bestFrame;
+            result.TimeOfMaxScore   = bestTimePoint;
 
 
             if (BaseTemplate.InTestMode)
