@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace AudioAnalysis
 {
 	[Serializable]
 	public abstract class BaseResult
     {
+        protected const string TIME_OF_TOP_SCORE = "TIME_OF_TOP_SCORE";
 
         #region Properties
         public string recordingName { get; set; }       //name of the recording file which was sacnned with template.
@@ -19,16 +21,24 @@ namespace AudioAnalysis
 
         //summary scores
         public int? VocalCount { get; set; }			// number of vocalisatsions involving a recognised syllable
-        public double? RankingScore { get; set; }	    // the score used to rank/compare this recording with others
+        public double? RankingScoreValue { get; set; }	    // the score used to rank/compare this recording with others
         public double? MaxScore { get; set; }	        // the maximum score obtained with this recording
-        public int? FrameWithTopScore { get; set; }     // id of frame having top score in recording 
-        public double? TimeOfTopScore { get; set; }	    // time of top score from beginning of recording in seconds 
+        public int? FrameWithMaxScore { get; set; }     // id of frame having top score in recording 
+        public double? TimeOfMaxScore { get; set; }	    // time of top score from beginning of recording in seconds 
 
         public double? MaxDisplayScore { get; set; }	// upper limit for diplay of scores 
-        public double? DisplayThreshold { get; set; }	// threshold for diplay of scores 
+        public double? DisplayThreshold { get; set; }	// threshold for diplay of scores
+
+        public double? RankingScoreLocation { get; set; }
+        public abstract string RankingScoreName { get; }
         #endregion
 
         public abstract ResultItem GetResultItem(string key);
+
+        public abstract string[] ResultItemKeys
+        {
+            get;
+        }
 
         public static Dictionary<string, string> GetResultInfo(string key)
         {
@@ -38,6 +48,37 @@ namespace AudioAnalysis
         public virtual string WriteResults()
         {
             return "NO RESULTS AVAILABLE FROM BASE CLASS.";
+        }
+
+        public XmlDocument ToXml()
+        {
+            XmlDocument document = new XmlDocument();
+
+            XmlElement firstChild = document.CreateElement("Results");
+
+            foreach (string resultItemKey in this.ResultItemKeys)
+            {
+                XmlElement element = document.CreateElement(resultItemKey);
+
+                ResultItem resultItem = this.GetResultItem(resultItemKey);                
+
+                double resultVal = 0.0;
+
+                try
+                {
+                    resultVal = double.Parse(resultItem.GetValue().ToString());
+                }
+                catch
+                {
+
+                }
+                element.InnerText = resultVal.ToString();
+
+                firstChild.AppendChild(element);
+            }
+
+            document.AppendChild(firstChild);
+            return document;
         }
     }
 }

@@ -12,7 +12,24 @@ namespace AudioAnalysis
 		public static int? CallPeriodicity_ms { get; set; }
 		public int? NumberOfPeriodicHits { get; set; }
 
-        public static string[] KeyNames = { "RANK_SCORE", "VOCAL_COUNT", "TIMEOF_TOP_SCORE" };
+        private string[] resultItemKeys = { "PERIODIC_HITS", "VOCAL_COUNT", BaseResult.TIME_OF_TOP_SCORE };
+
+        public override string[] ResultItemKeys
+        {
+            get
+            {
+                return resultItemKeys;
+            }
+        }
+
+        public override string RankingScoreName
+        {
+            get
+            {
+                return "PERIODIC_HITS";
+            }
+
+        }
 
 		#endregion
 
@@ -32,17 +49,17 @@ namespace AudioAnalysis
 
         public override ResultItem GetResultItem(string key)
         {
-            if (key.Equals(KeyNames[0]))      return new ResultItem(KeyNames[0], RankingScore,   GetResultInfo(KeyNames[0]));
-            else if (key.Equals(KeyNames[1])) return new ResultItem(KeyNames[1], VocalCount,     GetResultInfo(KeyNames[1]));
-            else if (key.Equals(KeyNames[2])) return new ResultItem(KeyNames[2], TimeOfTopScore, GetResultInfo(KeyNames[2]));
+            if (key.Equals(resultItemKeys[0])) return new ResultItem(resultItemKeys[0], RankingScoreValue, GetResultInfo(resultItemKeys[0]));
+            else if (key.Equals(resultItemKeys[1])) return new ResultItem(resultItemKeys[1], VocalCount, GetResultInfo(resultItemKeys[1]));
+            else if (key.Equals(resultItemKeys[2])) return new ResultItem(resultItemKeys[2], TimeOfMaxScore, GetResultInfo(resultItemKeys[2]));
             return null;
         }
 
         public new static Dictionary<string, string> GetResultInfo(string key)
         {
-            if (key.Equals("RANK_SCORE"))            return GetRankingScoreInfo();
+            if (key.Equals("PERIODIC_HITS")) return GetRankingScoreInfo();
             else if (key.Equals("VOCAL_COUNT"))      return GetVocalCountInfo();
-            else if (key.Equals("TIMEOF_TOP_SCORE")) return GetTimeOfTopScoreInfo();
+            else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE)) return GetTimeOfTopScoreInfo();
             return null;
         }
 
@@ -72,7 +89,7 @@ namespace AudioAnalysis
 
         public string GetOneLineSummary()
         {
-            return string.Format("{0},{1},{2:F1},{3:F1}", recordingName, NumberOfPeriodicHits, RankingScore, TimeOfTopScore);
+            return string.Format("{0},{1},{2:F1},{3:F1}", recordingName, NumberOfPeriodicHits, RankingScoreValue, TimeOfMaxScore);
         }
 
 

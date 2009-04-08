@@ -200,6 +200,17 @@ namespace AudioAnalysis
             return config;
         }
 
+        public static void LoadDefaultConfig()
+        {
+            FftConfiguration.WindowFunction = "Hamming";
+            FftConfiguration.NPointSmoothFFT = 3;
+            EndpointDetectionConfiguration.K1Threshold = 3.5;
+            EndpointDetectionConfiguration.K2Threshold = 6.0;
+            EndpointDetectionConfiguration.K1K2Latency = 0.05;
+            EndpointDetectionConfiguration.VocalDelay = 0.2;
+            EndpointDetectionConfiguration.MinPulseDuration = 0.075;
+        }
+
         public static void LoadStaticConfig(string appConfigFile)
         {
             var config = new Configuration(appConfigFile);
