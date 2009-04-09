@@ -547,12 +547,11 @@ namespace AudioAnalysis
 			int cepstralL = m.GetLength(1);  // length of cepstral vector 
 			int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
 
-		//	double[] featureVector = new double[featurevL];
 			double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
 			for (int i = deltaT; i < frameCount - deltaT; i++)
 			{
 				double[] rowTm2 = DataTools.GetRow(m, i - deltaT);
-				double[] rowT = DataTools.GetRow(m, i);
+				double[] rowT   = DataTools.GetRow(m, i);
 				double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
 
 				for (int j = 0; j < cepstralL; j++) acousticM[i, j] = rowTm2[j];
