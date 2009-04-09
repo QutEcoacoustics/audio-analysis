@@ -77,6 +77,9 @@
     <Compile Include="DataTools.cs" />
     <Compile Include="FileTools.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RecordingFetcher.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Shape.cs" />
     <Compile Include="SNR.cs" />
     <Compile Include="Speech.cs" />
