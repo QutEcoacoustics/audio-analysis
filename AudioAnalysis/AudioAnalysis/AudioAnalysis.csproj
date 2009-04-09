@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScanOneRecording</StartupObject>
+    <StartupObject>AudioAnalysis.Main_SonogramCycle</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -98,6 +98,7 @@
     <Compile Include="Main_CreateTemplate.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_SNR.cs" />
+    <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="Model_2SP.cs" />
     <Compile Include="Model_MMErgodic.cs" />
     <Compile Include="FVExtractor.cs" />

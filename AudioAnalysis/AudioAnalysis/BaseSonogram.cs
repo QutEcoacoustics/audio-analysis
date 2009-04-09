@@ -105,7 +105,7 @@ namespace AudioAnalysis
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
-			Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
+			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
@@ -198,8 +198,8 @@ namespace AudioAnalysis
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
 		{
-            Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
-            Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
+           // Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
+           // Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
             return GetImage(1, doHighlightSubband, add1kHzLines);
 		}
 
@@ -442,7 +442,7 @@ namespace AudioAnalysis
 		/// </summary>
 		double[,] MakeSpectrogram_fullBandWidth(double[,] amplitudeM)
 		{
-            Log.WriteIfVerbose("BaseSonogram.MakeSpectrogram_fullBandWidth(double[,] matrix)");
+            //Log.WriteIfVerbose("BaseSonogram.MakeSpectrogram_fullBandWidth(double[,] matrix)");
             double[,] m = Speech.DecibelSpectra(amplitudeM);//convert amplitude spectrogram to dB spectrogram
 
 			if (Configuration.DoNoiseReduction)
