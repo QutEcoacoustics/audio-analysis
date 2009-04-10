@@ -10,7 +10,16 @@ namespace QutSensors.Data.Tests
 			QutSensors.Data.Linq.QutSensors.ConnectionString = connectionString;
 
 			RikMigrations.DbProvider.DefaultConnectionString = connectionString;
-			RikMigrations.MigrationManager.UpgradeMax(typeof(QutSensors.Data.Linq.QutSensors).Assembly);
+
+            RikMigrations.Providers.MssqlProvider provider = new RikMigrations.Providers.MssqlProvider(null);
+
+			RikMigrations.MigrationManager.UpgradeMax(typeof(QutSensors.Data.Linq.QutSensors).Assembly, GetDbProvider(), "DEFAULT", "QutSensors.Processor");
 		}
+
+
+        public static RikMigrations.DbProvider GetDbProvider()
+        {
+            return new RikMigrations.Providers.MssqlProvider(null);
+        }
 	}
 }

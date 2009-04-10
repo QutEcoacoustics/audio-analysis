@@ -109,9 +109,9 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AudioAnalysis\AudioStuff\AudioStuff.csproj">
-      <Project>{EE624932-920B-4380-94D5-A1B8993C5F14}</Project>
-      <Name>AudioStuff</Name>
+    <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
+      <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
+      <Name>AudioAnalysis</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
@@ -135,10 +135,9 @@
     <None Include="Service References\WebServices\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor2.wsdl" />
-    <None Include="Service References\WebServices\Processor21.wsdl" />
-    <None Include="Service References\WebServices\Processor3.xsd" />
-    <None Include="Service References\WebServices\Processor31.xsd" />
+    <None Include="Service References\WebServices\Processor.wsdl" />
+    <None Include="Service References\WebServices\Processor.xsd" />
+    <None Include="Service References\WebServices\Processor1.wsdl" />
     <None Include="Service References\WebServices\ProcessorUI.WebServices.ProcessorJobItemDescription.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -148,8 +147,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor1.disco" />
-    <None Include="Service References\WebServices\Processor32.xsd" />
+    <None Include="Service References\WebServices\Processor.disco" />
+    <None Include="Service References\WebServices\Processor1.xsd" />
+    <None Include="Service References\WebServices\Processor2.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

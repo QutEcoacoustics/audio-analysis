@@ -23,7 +23,7 @@ namespace QutSensors.Data.Tests
 			AddAudioReading(hardware, DateTime.Now);
 
 			// Create template
-			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
+			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			// Create job
 			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
@@ -173,5 +173,20 @@ namespace QutSensors.Data.Tests
 		class DummyTemplateParameters : BaseTemplate
 		{
 		}
+
+        Dictionary<string, Dictionary<string, string>> CreateDummyTemplateResults()
+        {
+            Dictionary<string, Dictionary<string, string>> retVal = new Dictionary<string, Dictionary<string, string>>();
+
+            Dictionary<string, string> resultInfos = new Dictionary<string, string>();
+
+            resultInfos.Add("Comment", "This is a dummy result item");
+            resultInfos.Add("Units", "foos");
+            resultInfos.Add("Ref", "DOI:crossreference");
+
+            retVal.Add("PeriodicHits", resultInfos);
+
+            return retVal;
+        }
 	}
 }

@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AudioStuff;
+using AudioAnalysis;
 using ProcessorUI.WebServices;
 using AudioTools;
 using System.Threading;
+using QutSensors.Data;
+using System.Xml.Linq;
+using System.IO;
 
 namespace ProcessorUI
 {
@@ -174,9 +177,19 @@ namespace ProcessorUI
 
 		bool ProcessJobItem(ProcessorJobItemDescription item, string workerName)
 		{
-			var parameters = BaseClassifierParameters.Deserialize(item.Job.Parameters);
-			var classifier = BaseClassifier.Create(parameters);
-			OnLog("Job Retrieved - JobItemID {0} for {1}({2})", item.JobItemID, item.Job.Name, parameters.Name);
+            BaseTemplate.LoadDefaultConfig();
+   
+            // Something odd is happening here. foo1 is null yet baz is a Template_CC
+            // Revisit how the template was serialized in the first place
+            var foo = item.Job.Parameters.BinaryDeserialize();
+            var foo1 = foo as Template_CC;
+            byte[] bar = (byte[])foo;
+            var baz = bar.BinaryDeserialize();
+            Template_CC template = baz as Template_CC;
+           
+            Recogniser recogniser = new Recogniser(template);
+
+			OnLog("Job Retrieved - JobItemID {0} for {1}({2})", item.JobItemID, item.Job.Name, template.CallName);
 
 			using (var tempFile = new TempFile(".wav"))
 			{
@@ -188,7 +201,7 @@ namespace ProcessorUI
 					IEnumerable<ProcessorJobItemResult> results = null;
 					try
 					{
-						results = AnalyseFile(tempFile, item.MimeType, classifier, out duration);
+						results = AnalyseFile(tempFile, item.MimeType, recogniser, out duration);
 					}
 					catch (Exception e)
 					{
@@ -225,7 +238,7 @@ namespace ProcessorUI
 			return false;
 		}
 
-		IEnumerable<ProcessorJobItemResult> AnalyseFile(TempFile file, string mimeType, BaseClassifier classifier, out TimeSpan? duration)
+		IEnumerable<ProcessorJobItemResult> AnalyseFile(TempFile file, string mimeType, Recogniser recogniser, out TimeSpan? duration)
 		{
 			var retVal = new List<ProcessorJobItemResult>();
 
@@ -241,20 +254,31 @@ namespace ProcessorUI
 				OnLog("\t{0}-{1}", TimeSpan.FromMilliseconds(i), TimeSpan.FromMilliseconds(i + 60000));
 				using (var converted = DShowConverter.ConvertTo(file.FileName, mimeType, MimeTypes.WavMimeType, i, i + 60000) as BufferedDirectShowStream)
 				{
-					var result = classifier.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as MMResult;
+                    BaseResult results = recogniser.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as BaseResult;
 
-					OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBest, result.VocalBestLocation);
-					retVal.Add(new ProcessorJobItemResult()
-					{
-						Start = i,
-						Stop = i + 60000,
-						NumberOfHits = result.NumberOfPeriodicHits ?? 0,
-						BestScore = result.VocalBest,
-						BestScoreLocation = result.VocalBestLocation
-					});
+					//OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBestFrame, result.VocalBestLocation);
+
+                    
+                    StringReader reader = new StringReader(results.ToXml().InnerXml);
+
+                    XElement element = XElement.Load(reader);
+
+                    retVal.Add(new ProcessorJobItemResult()
+                        {
+                            Start = i,
+                            Stop = i + 60000,
+                            Results = element,
+                            RankingScoreValue = results.RankingScoreValue ?? 0.0,
+                            RankingScoreName = results.RankingScoreName,
+                            RankingScoreLocation = results.TimeOfMaxScore ?? 0.0                                                                      
+                        }
+                    );
+                    
 				}
 				if (State == ProcessorState.Stopping)
+                {
 					return null;
+                }
 			}
 			return retVal;
 		}

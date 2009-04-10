@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="O3qS+elLfsyW4rVkcfDjd5FyMWQ=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="XaCYGgDQM2hh9bETMbxoqnXNX2s=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="wsHttpBinding" name="WSHttpBinding_Processor">
       <properties>
@@ -115,10 +115,10 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="WSHttpBinding_Processor" contract="WebServices.Processor" bindingType="wsHttpBinding" address="http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc" bindingConfiguration="WSHttpBinding_Processor">
+    <endpoint name="WSHttpBinding_Processor" contract="WebServices.Processor" bindingType="wsHttpBinding" address="http://localhost:6412/WebFrontend/Processor/Processor.svc" bindingConfiguration="WSHttpBinding_Processor">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://fitkgbl07.fit.qut.edu.au/Processor/Processor.svc</serializedValue>
+          <serializedValue>http://localhost:6412/WebFrontend/Processor/Processor.svc</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />
