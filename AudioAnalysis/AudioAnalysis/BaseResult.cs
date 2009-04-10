@@ -29,7 +29,6 @@ namespace AudioAnalysis
         public double? MaxDisplayScore { get; set; }	// upper limit for diplay of scores 
         public double? DisplayThreshold { get; set; }	// threshold for diplay of scores
 
-        public double? RankingScoreLocation { get; set; }
         public abstract string RankingScoreName { get; }
         #endregion
 

@@ -16,8 +16,8 @@ namespace QutSensors.Data.Tests
 			var user = CreateUser();
 			var hardware = CreateHardware(user);
 			var deployment = CreateDeployment(user, hardware);
-
-			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
+            
+			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter = new ReadingsFilter() {FromDate = DateTime.Today};
 			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template, true, true);
@@ -39,7 +39,7 @@ namespace QutSensors.Data.Tests
 			var hardware = CreateHardware(user);
 			var deployment = CreateDeployment(user, hardware);
 
-			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
+			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter1 = new ReadingsFilter() { FromDate = DateTime.Today };
 			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, true, true);
@@ -71,7 +71,7 @@ namespace QutSensors.Data.Tests
 			var user = CreateUser();
 			var hardware = CreateHardware(user);
 			var deployment = CreateDeployment(user, hardware);
-			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.");
+			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter1 = new ReadingsFilter() { };
 			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, false, false);
@@ -93,5 +93,21 @@ namespace QutSensors.Data.Tests
 		class DummyTemplateParameters : BaseTemplate
 		{
 		}
+
+        Dictionary<string, Dictionary<string, string>> CreateDummyTemplateResults()
+        {
+            Dictionary<string, Dictionary<string, string>> retVal = new Dictionary<string, Dictionary<string, string>>();
+
+            Dictionary<string, string> resultInfos = new Dictionary<string, string>();
+
+            resultInfos.Add("Comment", "This is a dummy result item");
+            resultInfos.Add("Units", "foos");
+            resultInfos.Add("Ref", "DOI:crossreference");
+
+            retVal.Add("PeriodicHits", resultInfos);
+
+            return retVal;
+        }
+
 	}
 }
