@@ -152,7 +152,7 @@ namespace AudioAnalysis
             }
 
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
-            var recording = new AudioRecording() { FileName = wavPath };
+            var recording = new AudioRecording(wavPath);
             var result = recogniser.Analyse(recording);
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_"+Path.GetFileNameWithoutExtension(wavPath) + ".png");
@@ -202,7 +202,7 @@ namespace AudioAnalysis
                 FileInfo[] files = new DirectoryInfo(wavFolder).GetFiles("*" + WavReader.WavFileExtension);
                 foreach (var file in files)
                 {
-                    var recording = new AudioRecording() { FileName = file.FullName };
+                    var recording = new AudioRecording(file.FullName);
 
                     var result = recogniser.Analyse(recording);
                     result.recordingName = file.Name;

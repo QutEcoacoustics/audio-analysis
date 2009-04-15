@@ -62,7 +62,7 @@ namespace AudioAnalysis
 
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
-            var recording = new AudioRecording() { FileName = wavPath };
+            var recording = new AudioRecording(wavPath);
             var result = recogniser.Analyse(recording);
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");

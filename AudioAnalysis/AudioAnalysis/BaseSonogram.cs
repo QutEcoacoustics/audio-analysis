@@ -14,10 +14,23 @@ namespace AudioAnalysis
 
 
 	public abstract class BaseSonogram
-	{
+    {
+        //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
+        double acousticEventThreshold = 7;   //dB threshold above zero or modal noise - SETS MIN DECIBEL BOUND
+        double acousticEventSnrFactor = 2.0; //multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
+        //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
+        //idea is to relate spectral detail to the SNR calculated from original audio signal.
 
-		#region Properties
-		public BaseSonogramConfig Configuration { get; private set; }
+        /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.
+         *            For template creation, the max dB bound should be set to fixed level for all sonograms 
+         *            because if all sonograms normaliesd to same max then can compare near (high intesnity) and far (low intensity) 
+         *            vocalisations.
+        */
+
+
+
+        #region Properties
+        public BaseSonogramConfig Configuration { get; private set; }
 
 		public double MaxAmplitude { get; private set; }
 		public int SampleRate { get; private set; }
@@ -190,6 +203,28 @@ namespace AudioAnalysis
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
         }
 
+        /// <summary>
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public double[,] NoiseReduce(double[,] matrix)
+        {
+            Log.WriteIfVerbose("\t... doing noise reduction.");
+            //double minIntensity; // min value in matrix
+            //double maxIntensity; // max value in matrix
+            //DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
+            double[,] mnr = matrix;
+            //mnr = ImageTools.WienerFilter(mnr);
+            double maxDB = this.acousticEventSnrFactor * this.SnrFrames.Snr*2; // sets upper limit for sonogram SNR
+            mnr = SNR.NoiseReduction(mnr, acousticEventThreshold, maxDB);
+            
+            //min-max after noise reduction
+            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
+            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  dB");
+            return mnr;
+        }
 
 		public Image GetImage()
 		{
@@ -222,6 +257,17 @@ namespace AudioAnalysis
             //calculate top and bottom of sub-band 
             int minHighlightBin = (int)Math.Round((double)this.subBand_MinHz / (double)NyquistFrequency * fftBins);
             int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
+            if (this.Configuration.DoMelScale)
+            {
+                //int minFreq = 0;
+                //int maxFreq = this.NyquistFrequency;
+                double minMel = Speech.Mel(this.subBand_MinHz);
+                double maxMel = Speech.Mel(this.subBand_MaxHz);
+                int melRange = (int)(maxMel - minMel + 1);
+                double pixelPerMel = imageHeight / (double)melRange;
+                minHighlightBin = (int)Math.Round((double)minMel * pixelPerMel);
+                maxHighlightBin = (int)Math.Round((double)maxMel * pixelPerMel);
+            }
 			Color[] grayScale = ImageTools.GrayScale();
 
 			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
@@ -314,9 +360,7 @@ namespace AudioAnalysis
                     int y = imageHeight - p;
                     bmp.SetPixel(w, y, gridCol);
                 }
-
             }
-
             return bmp;
         }
 
@@ -338,7 +382,7 @@ namespace AudioAnalysis
             //calculate height of the sonogram
             int sHeight = height;
             int[] vScale = CreateLinearYaxis(kHz, sHeight); //calculate location of 1000Hz grid lines
-            //if (this.doMelScale) vScale = CreateMelYaxis(kHz, sHeight);
+            if (this.Configuration.DoMelScale) vScale = CreateMelYaxis(kHz, sHeight);
 
             for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
             {
@@ -377,6 +421,7 @@ namespace AudioAnalysis
             }
             return vScale;
         }
+
 
         /// <summary>
         /// use this method to generate grid lines for mel scale image
@@ -433,26 +478,24 @@ namespace AudioAnalysis
 
 		protected override void Make(double[,] amplitudeM)
 		{
-			Data = MakeSpectrogram_fullBandWidth(amplitudeM);
+            double[,] m = amplitudeM;
+            if (Configuration.DoMelScale) m = ApplyFilterBank(m);
+            //CONVERT AMPLITUDES TO DECIBELS
+            m = Speech.DecibelSpectra(m);//convert amplitude spectrogram to dB spectrogram
+            //NOISE REDUCTION
+            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
+            this.Data = m;
 		}
 
-		/// <summary>
-		/// Converts amplitude spectra to power spectra
-		/// Does NOT apply filter bank i.e. returns full bandwidth spectrogram
-		/// </summary>
-		double[,] MakeSpectrogram_fullBandWidth(double[,] amplitudeM)
-		{
-            //Log.WriteIfVerbose("BaseSonogram.MakeSpectrogram_fullBandWidth(double[,] matrix)");
-            double[,] m = Speech.DecibelSpectra(amplitudeM);//convert amplitude spectrogram to dB spectrogram
-
-			if (Configuration.DoNoiseReduction)
-			{
-				Log.WriteIfVerbose("\t... doing noise reduction.");
-				m = ImageTools.NoiseReduction(m); //Mel scale conversion should be done before noise reduction
-			}
-			return m;
-		}
-    } //end of class SpectralSonogram : BaseSonogram
+        double[,] ApplyFilterBank(double[,] matrix)
+        {
+            Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
+            int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
+            return m;
+        } //end ApplyFilterBank(double[,] matrix)
+    //}
+   } //end of class SpectralSonogram : BaseSonogram
 
 
 
@@ -480,13 +523,8 @@ namespace AudioAnalysis
 
             double[,] m = ApplyFilterBank(matrix);
             m = Speech.DecibelSpectra(m);
-
-            if (Configuration.DoNoiseReduction)
-            {
-                Log.WriteIfVerbose("\t... doing noise reduction.");
-                m = ImageTools.NoiseReduction(m); //Mel scale conversion should be done before noise reduction
-            }
-
+            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
+           
             //calculate cepstral coefficients and normalise
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
@@ -586,8 +624,7 @@ namespace AudioAnalysis
 		double[,] SobelEdgegram(double[,] matrix)
 		{
 			double[,] m = Speech.DecibelSpectra(matrix);
-			if (Configuration.DoNoiseReduction)
-				m = ImageTools.NoiseReduction(m);
+            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
 			return ImageTools.SobelEdgeDetection(m);
 		}
     }// end SobelEdgeSonogram : BaseSonogram

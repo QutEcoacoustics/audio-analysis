@@ -36,7 +36,8 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("output folder =" + outputFolder);
             Console.WriteLine();
 
-            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new WavReader(wavPath));
+            byte[] bytes = System.IO.File.ReadAllBytes(wavPath);
+            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new WavReader(bytes));
 
             Console.WriteLine("Signal Duration =" + sonogram.Duration);
             Console.WriteLine("Sample Rate     =" + sonogram.SampleRate);
@@ -103,7 +104,7 @@ namespace AudioAnalysis
 
 
 //            Console.ReadLine();
-            var recording = new AudioRecording() { FileName = wavPath };
+            var recording = new AudioRecording(bytes, wavPath);
             bool doHighlightSubband = true; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
@@ -126,8 +127,8 @@ namespace AudioAnalysis
 
 
             //EXTRACT SNR DATA ABOUT SUB BAND/.
-            int minHz = 1500; int maxHz = 5500;
-            sonogram.CalculateSubbandSNR(new WavReader(wavPath), minHz, maxHz);
+            int minHz = 100; int maxHz = 6100;
+            sonogram.CalculateSubbandSNR(new WavReader(bytes), minHz, maxHz);
             Console.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
             Console.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");
             Console.WriteLine("Sub-band Max dB   =" + sonogram.SnrSubband.Max_dB.ToString("F2") + " dB");
