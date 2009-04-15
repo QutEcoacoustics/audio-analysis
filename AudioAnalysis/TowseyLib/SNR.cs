@@ -246,5 +246,237 @@ namespace TowseyLib
             return E;
         }
 
+
+        // #############################################################################################################################
+        // ################################# NOISE REDUCTION ALGORITHM #################################################################
+
+        /// <summary>
+        /// This is my new noise reduction alorithm, 14-04-2009.
+        /// It calculates the modal noise value for each freq bin and subtracts same.
+        /// Then normalise the intensity values between the passed min and max dB values
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduction(double[,] matrix, double minDB, double maxDB)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            //calculate modal noise for each freq bin
+            double[] modalNoise = CalculateModalNoise(matrix);
+            modalNoise = DataTools.filterMovingAverage(modalNoise, 5);
+            double[,] outM = new double[rowCount, colCount];
+
+            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            {
+                for (int y = 0; y < rowCount; y++) //for all rows
+                {
+                    outM[y, col] = matrix[y, col] - modalNoise[col];
+                    if (outM[y, col] < 0.0) outM[y, col] = 0.0;
+                }//end for all rows
+            }//end for all cols
+
+            outM = NormaliseIntensity(outM, minDB, maxDB);
+            return outM;
+            //return matrix;
+        }// end of NoiseReduction()
+
+
+        /// <summary>
+        /// Calculates the modal noise value for each freq bin.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[] CalculateModalNoise(double[,] matrix)
+        {
+            //set parameters for noise histograms based on overlapping bands.
+            //*******************************************************************************************************************
+            int bandWidth = 3;  // should be an odd number
+            int binCount = 64;  //number of pixel intensity bins
+            int binLimit = (int)(binCount * 0.6); //sets upper limit to location of modal noise bin. Higher values = more severe noise removal.
+            //*******************************************************************************************************************
+
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double binWidth = (maxIntensity - minIntensity) / binCount;  //width of an intensity bin
+            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
+
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            if (bandWidth > colCount) bandWidth = colCount - 1;
+            int halfWidth = bandWidth / 2;
+
+            //init matrix from which histogram derived
+            double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
+            double[] modalNoise = new double[colCount];
+
+            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            {
+                //construct new submatrix to calculate modal noise
+                int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+                if (start < 0) start = 0;
+                int stop = col + halfWidth;
+                if (stop >= colCount) stop = colCount - 1;
+                submatrix = DataTools.Submatrix(matrix, 0, start, rowCount - 1, stop);
+                int[] histo = DataTools.Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
+                //DataTools.writeBarGraph(histo);
+                double[] smoothHisto = DataTools.filterMovingAverage(histo, 7);
+                int maxindex; //mode
+                DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
+                if (maxindex > binLimit) maxindex = binLimit;
+                modalNoise[col] = minIntensity + (maxindex * binWidth);
+                //Console.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
+            }//end for all cols
+            return modalNoise;
+        }// end of CalculateModalNoise(double[,] matrix)
+
+        public static double[,] NormaliseIntensity(double[,] m, double minDB, double maxDB)
+        {
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(m, out minIntensity, out maxIntensity);
+            double shift = maxDB - maxIntensity;
+
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            double[,] normM = new double[rowCount, colCount];
+            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            {
+                for (int row = 0; row < rowCount; row++) //for all rows
+                {
+                    normM[row, col] = m[row, col] + shift;
+                    if (normM[row, col] < minDB) normM[row, col] = 0;
+                }
+            }
+            return normM;
+        }//end NormaliseIntensity(double[,] m, double minDB, double maxDB)
+
+
+
+
+
+
+        /// <summary>
+        /// This is my original noise reduction alorithm. It calculates an intensity transfer function for each sub band
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        //public static double[,] NoiseReduction(double[,] matrix)
+        //{
+        //    //set parameters for noise histograms based on overlapping bands.
+        //    //*******************************************************************************************************************
+        //    int ncbbc = 4;  //number of columns between band centres
+        //    int bandWidth = 4;
+        //    int binCount = 64;  //number of pixel intensity bins
+        //    int binLimit = (int)(binCount * 0.7); //sets upper limit to location of modal noise bin. Higher values = more severe noise removal.
+        //    double momentum = 0.4;  //determines how rapidly Transfer Function changes as one ascends the freq bands
+        //    double noiseThreshold = 0.0; // trim all values if < X dB above modal noise
+        //    //*******************************************************************************************************************
+
+
+        //    double minIntensity; // min value in matrix
+        //    double maxIntensity; // max value in matrix
+        //    DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+        //    double binWidth = (maxIntensity - minIntensity) / binCount;  //width of an intensity bin
+
+        //    int rowCount = matrix.GetLength(0);
+        //    int colCount = matrix.GetLength(1);
+        //    if (bandWidth > colCount) bandWidth = colCount - 1;
+        //    int halfWidth = bandWidth / 2;
+        //    int bandCount = colCount / ncbbc;
+
+        //    //Console.WriteLine("matrix rows =" + rowCount + " matrix cols=" + colCount+ "  bandWidth=" + bandWidth);
+        //    Console.WriteLine("minIntensity=" + minIntensity+"  maxIntensity="+maxIntensity+"  binWidth="+binWidth);
+
+        //    //init matrix from which histogram and transfer fnc derived
+        //    double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
+        //   // double[,] tmpM = new double[rowCount, ncbbc];  //matrix to which transfer function is applied
+        //    double[,] outM = new double[rowCount, colCount];
+        //    double[] transferFnc = null;
+        //    double[] prevTransferFnc = null;
+        //    int nextCol = 0;
+        //    double thresholdIntensity = -Double.MaxValue;
+
+        //    for (int col = 0; col < colCount; col++)//for all cols
+        //    {
+        //        //Console.WriteLine("#########################################col=" + col + "   nextCol=" + nextCol);
+        //        if (col == nextCol)  //recalculate the transfer function
+        //        {
+
+        //            prevTransferFnc = transferFnc; //to smooth the transition between functions
+        //            nextCol += ncbbc;
+
+        //            //construct new submatrix to recalculate the current transfer function
+        //            int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
+        //            if (start < 0) start = 0;
+        //            int stop = col + halfWidth;
+        //            if (stop >= colCount) stop = colCount - 1;
+        //            submatrix = DataTools.Submatrix(matrix, 0, start, rowCount - 1, stop);
+        //            double modalNoise;
+        //            int[] histo = DataTools.Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
+        //            //DataTools.writeBarGraph(histo);
+        //            transferFnc = TransferFunction(histo, minIntensity, maxIntensity, binWidth, binLimit, out modalNoise);
+        //            thresholdIntensity = modalNoise + noiseThreshold;
+        //            //Console.WriteLine("        have calc transfer func");
+        //        }
+
+        //        for (int y = 0; y < rowCount; y++) //for all rows
+        //        {
+        //            int intensityIndex = (int)Math.Floor((matrix[y, col] - minIntensity) / binWidth);
+        //            if (intensityIndex >= binCount) intensityIndex = binCount - 1;
+        //            else if (intensityIndex < 0) intensityIndex = 0;
+        //            double factor = transferFnc[intensityIndex]; //do not use momentum
+        //            if (prevTransferFnc != null) factor = ((1 - momentum) * transferFnc[intensityIndex]) + (momentum * prevTransferFnc[intensityIndex]);
+        //            //factor = factor * factor;
+        //            int newIndex = (int)(intensityIndex * factor);
+        //            double newIntensity = minIntensity + (newIndex * binWidth);
+        //            if (newIntensity < thresholdIntensity) newIntensity = minIntensity;
+
+        //            // SEVERAL DIFFERENT IMAGE OUTPUT OPTIONS
+        //            outM[y, col] = newIntensity;          // (1) multiply pixel by factor
+        //            //if (factor > 0.7) outM[y, col] = 1.0; // (2) produce a binary image
+        //        }
+        //    }//for all cols
+        //    return outM;
+        //}// end of NoiseReduction()
+
+
+        //public static double[] TransferFunction(int[] histo, double min, double max, double binWidth, int binLimit, out double modalIntensity)
+        //{
+        //    int binCount = histo.Length;
+        //    double[] smoothHisto = DataTools.filterMovingAverage(histo, 7);
+        //    int maxindex; //mode
+        //    DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
+        //    if (maxindex > binLimit) maxindex = binLimit;
+        //    modalIntensity = (maxindex * binWidth) + min;
+        //    //Console.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
+
+        //    //init transfer function, tf
+        //    double[] tf = new double[binCount];
+        //    //set all values below mode = 0.0
+        //    for (int i = 0; i < maxindex; i++) tf[i] = 0.0;
+        //    //assume noise is gaussian and upper bound is twice mode
+        //    int upperBound = 2 * maxindex;
+        //    if (upperBound > binCount) upperBound = binCount;
+        //    //set tf[i] to probability that value is signal
+        //    int offset = 0;
+        //    for (int i = maxindex; i < upperBound; i++)
+        //    {
+        //        double noise = smoothHisto[maxindex - offset];
+        //        offset++;
+        //        double prob = (smoothHisto[i] - noise) / smoothHisto[i];
+        //        if (prob < 0.0) prob = 0.0;
+        //        tf[i] = prob;
+        //        //tf[i] = Math.Sqrt(prob);
+        //    }
+        //    // above the noise band set transfer function = 1.0;
+        //    for (int i = upperBound; i < binCount; i++) tf[i] = 1.0;
+        //    //if (tf[binCount - 1] == 0.0) return new double[binCount];
+        //    return tf;
+        //}
+
+
+
     }// end class
 }
