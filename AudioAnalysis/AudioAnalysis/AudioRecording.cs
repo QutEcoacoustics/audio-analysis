@@ -12,10 +12,30 @@ namespace AudioAnalysis
 	{
 		#region Properties
 		public string FileName { get; set; }
-		#endregion
+        public byte[] Bytes { get; set; }
+        #endregion
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="bytes"></param>
+        public AudioRecording(byte[] bytes)
+        {
+            this.Bytes = bytes;
+        }
+        public AudioRecording(string name)
+        {
+            this.FileName = name;
+        }
+        public AudioRecording(byte[] bytes, string name)
+        {
+            this.Bytes = bytes;
+            this.FileName = name;
+        }
 
 		public WavReader GetWavData()
 		{
+            if(Bytes != null) return new WavReader(Bytes);
 			return new WavReader(FileName);
 		}
 
