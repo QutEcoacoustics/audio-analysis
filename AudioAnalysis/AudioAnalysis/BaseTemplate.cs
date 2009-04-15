@@ -28,9 +28,6 @@ namespace AudioAnalysis
         public string DataDir { get; set; }    // dir containing saved template data
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
         public string SourceDir  { get; set; } // Dir of original audio recording
-//        public int MinTemplateFreq { get; set; }
-//        public int MaxTemplateFreq { get; set; }
-
 
         public AVSonogramConfig SonogramConfig { get; set; }
         public FVConfig FeatureVectorConfig { get; set; }
@@ -67,7 +64,7 @@ namespace AudioAnalysis
         public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
         {
             //STEP ONE: Initialise AudioRecording
-            var recording = new AudioRecording() { FileName = wavPath }; //AudioRecording has one method GetWavData() to return a WavReaader
+            var recording = new AudioRecording(wavPath); //AudioRecording has one method GetWavData() to return a WavReaader
             //STEP TWO: Initialise template with parameters
             string opTemplatePath = gui.opDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);

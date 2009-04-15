@@ -29,14 +29,21 @@ namespace AudioAnalysis
             opName = opName.Replace("+", "");
             string opPath = opDir + opName;
 
-            Console.WriteLine("Get recording:- " + recordingName);
-            byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
+            //Console.WriteLine("Get recording:- " + recordingName);
+            //byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
 
-            Console.WriteLine("Write File");
-            System.IO.File.WriteAllBytes(opPath, bytes);
+            //Console.WriteLine("Write File");
+            //System.IO.File.WriteAllBytes(opPath, bytes);
+            //Console.WriteLine("Make Sonogram");
+            //BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(opPath));
 
-            Console.WriteLine("Make Sonogram");
-            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(opPath));
+            //alternatively read straight from local file
+            //opPath = @"C:\SensorNetworks\WavFiles\StBees\HoneymoonBay_StBees_20081120-183000.wav";
+            opPath = @"C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav";
+            //opPath = @"C:\SensorNetworks\WavFiles\BAC2_20071011-182040_cicada.wav";
+            byte[] bytes = System.IO.File.ReadAllBytes(opPath);
+            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(bytes));
+            Console.WriteLine("sonogram SNR = "+sonogram.SnrFrames.Snr);
 
             Console.WriteLine("Make Image");
             Log.Verbosity = 0;

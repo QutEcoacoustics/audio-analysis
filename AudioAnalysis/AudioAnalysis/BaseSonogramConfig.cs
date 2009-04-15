@@ -20,6 +20,7 @@ namespace AudioAnalysis
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
+        public bool DoMelScale { get; set; }
         public bool DoNoiseReduction { get; set; }
 
         public int? MinFreqBand { get; set; }
@@ -53,8 +54,9 @@ namespace AudioAnalysis
 			WindowSize = config.GetInt("WINDOW_SIZE");
 			WindowOverlap = config.GetDouble("WINDOW_OVERLAP");
 
-			DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
-			MinFreqBand = config.GetIntNullable("MIN_FREQ");
+            DoMelScale       = config.GetBoolean("DO_MELSCALE");
+            DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
+            MinFreqBand = config.GetIntNullable("MIN_FREQ");
 			MaxFreqBand = config.GetIntNullable("MAX_FREQ");
             int? delta  = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
