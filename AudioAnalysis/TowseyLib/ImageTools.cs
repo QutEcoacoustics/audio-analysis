@@ -375,6 +375,67 @@ namespace TowseyLib
 
 
 
+        public static double[,] WienerFilter(double[,] matrix)
+        {
+            int M = 3;
+            int N = 3;
+            int rNH = M / 2;
+            int cNH = N / 2;
+
+            double totMean = 0.0;
+            double totSD = 0.0;
+            NormalDist.AverageAndSD(matrix, out totMean, out totSD);
+            double colVar = totSD * totSD;
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+            for (int c = 0; c < cols; c++)
+            {
+                //double[] column = DataTools.GetColumn(matrix, c);
+                //double colMean = 0.0;
+                //double colSD = 0.0;
+                //NormalDist.AverageAndSD(column, out colMean, out colSD);
+                //double colVar = colSD * colSD;
+
+                for (int r = 0; r < rows; r++)
+                {
+                    double X = 0.0;
+                    double Xe2 = 0.0;
+                    int count = 0;
+                    for (int i = r - rNH; i <= (r + rNH); i++)
+                    {
+                        if (i < 0) continue;
+                        if (i >= rows) continue;
+                        for (int j = c - cNH; j <= (c + cNH); j++)
+                        {
+                            if (j < 0) continue;
+                            if (j >= cols) continue;
+                            X   +=  matrix[i, j];
+                            Xe2 += (matrix[i, j] * matrix[i, j]);
+                            count++;
+                            //Console.WriteLine(i+"  "+j+"   count="+count);
+                            //Console.ReadLine();
+                        }
+                    }
+                    //Console.WriteLine("End NH count="+count);
+                    //calculate variance of the neighbourhood
+                    double mean     =  X / count;
+                    double variance = (Xe2 / count) - (mean * mean);
+                    double ratio = (variance - colVar) / variance;
+                    if (ratio > 0.0) ratio = 0.5;
+                    else ratio = -0.5;
+ 
+                    outM[r, c] = mean + (ratio * (matrix[r, c] - mean));
+                    
+
+                   // Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));
+                   // Console.ReadLine();
+                }
+            }
+            return outM;
+        }
+
 
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
@@ -767,124 +828,6 @@ namespace TowseyLib
             return M;
         }// end of SubtractAverage()
 
-
-
-        // ###################################################################################################################################
-
-
-        public static double[] TransferFunction(int[] histo, double min, double max, double binWidth, int binLimit, out double modalIntensity)
-        {
-            int binCount = histo.Length;
-            double[] smoothHisto = DataTools.filterMovingAverage(histo, 7);
-            int maxindex; //mode
-            DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
-            if (maxindex > binLimit) maxindex = binLimit;
-            modalIntensity = (maxindex * binWidth) + min;
-            //Console.WriteLine("  modal index=" + maxindex + "  modalIntensity=" + modalIntensity.ToString("F3"));
-
-            //init transfer function, tf
-            double[] tf = new double[binCount];
-            //set all values below mode = 0.0
-            for (int i = 0; i < maxindex; i++) tf[i] = 0.0;
-            //assume noise is gaussian and upper bound is twice mode
-            int upperBound = 2 * maxindex;
-            if (upperBound > binCount) upperBound = binCount;
-            //set tf[i] to probability that value is signal
-            int offset = 0;
-            for (int i = maxindex; i < upperBound; i++)
-            {
-                double noise = smoothHisto[maxindex - offset];
-                offset++;
-                double prob = (smoothHisto[i] - noise) / smoothHisto[i];
-                if (prob < 0.0) prob = 0.0;
-                tf[i] = prob;
-                //tf[i] = Math.Sqrt(prob);
-            }
-            // above the noise band set transfer function = 1.0;
-            for (int i = upperBound; i < binCount; i++) tf[i] = 1.0;
-            //if (tf[binCount - 1] == 0.0) return new double[binCount];
-            return tf;
-        }
-
-
-        public static double[,] NoiseReduction(double[,] matrix)
-        {
-            //set parameters for noise histograms based on overlapping bands.
-            //*******************************************************************************************************************
-            int ncbbc = 4;  //number of columns between band centres
-            int bandWidth = 4;
-            int binCount = 64;  //number of pixel intensity bins
-            int binLimit = (int)(binCount * 0.7); //sets upper limit to location of modal noise bin. Higher values = more severe noise removal.
-            double momentum = 0.4;  //determines how rapidly Transfer Function changes as one ascends the freq bands
-            double noiseThreshold = 0.0; // trim all values if < X dB above modal noise
-            //*******************************************************************************************************************
-
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double binWidth = (maxIntensity - minIntensity) / binCount;  //width of an intensity bin
-
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            if (bandWidth > colCount) bandWidth = colCount - 1;
-            int halfWidth = bandWidth / 2;
-            int bandCount = colCount / ncbbc;
-
-            //Console.WriteLine("matrix rows =" + rowCount + " matrix cols=" + colCount+ "  bandWidth=" + bandWidth);
-            //Console.WriteLine("minIntensity=" + minIntensity+"  maxIntensity="+maxIntensity+"  binWidth="+binWidth);
-
-            //init matrix from which histogram and transfer fnc derived
-            double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
-           // double[,] tmpM = new double[rowCount, ncbbc];  //matrix to which transfer function is applied
-            double[,] outM = new double[rowCount, colCount];
-            double[] transferFnc = null;
-            double[] prevTransferFnc = null;
-            int nextCol = 0;
-            double thresholdIntensity = -Double.MaxValue;
-
-            for (int col = 0; col < colCount; col++)//for all cols
-            {
-                //Console.WriteLine("#########################################col=" + col + "   nextCol=" + nextCol);
-                if (col == nextCol)  //recalculate the transfer function
-                {
-
-                    prevTransferFnc = transferFnc; //to smooth the transition between functions
-                    nextCol += ncbbc;
-
-                    //construct new submatrix to recalculate the current transfer function
-                    int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
-                    if (start < 0) start = 0;
-                    int stop = col + halfWidth;
-                    if (stop >= colCount) stop = colCount - 1;
-                    submatrix = DataTools.Submatrix(matrix, 0, start, rowCount - 1, stop);
-                    double modalNoise;
-                    int[] histo = DataTools.Histo(submatrix, binCount, minIntensity, maxIntensity, binWidth);
-                    //DataTools.writeBarGraph(histo);
-                    transferFnc = TransferFunction(histo, minIntensity, maxIntensity, binWidth, binLimit, out modalNoise);
-                    thresholdIntensity = modalNoise + noiseThreshold;
-                    //Console.WriteLine("        have calc transfer func");
-                }
-
-                for (int y = 0; y < rowCount; y++) //for all rows
-                {
-                    int intensityIndex = (int)Math.Floor((matrix[y, col] - minIntensity) / binWidth);
-                    if (intensityIndex >= binCount) intensityIndex = binCount - 1;
-                    else if (intensityIndex < 0) intensityIndex = 0;
-                    double factor = transferFnc[intensityIndex]; //do not use momentum
-                    if (prevTransferFnc != null) factor = ((1 - momentum) * transferFnc[intensityIndex]) + (momentum * prevTransferFnc[intensityIndex]);
-                    //factor = factor * factor;
-                    int newIndex = (int)(intensityIndex * factor);
-                    double newIntensity = minIntensity + (newIndex * binWidth);
-                    if (newIntensity < thresholdIntensity) newIntensity = minIntensity;
-
-                    // SEVERAL DIFFERENT IMAGE OUTPUT OPTIONS
-                    outM[y, col] = newIntensity;          // (1) multiply pixel by factor
-                    //if (factor > 0.7) outM[y, col] = 1.0; // (2) produce a binary image
-                }
-            }//for all cols
-            return outM;
-        }// end of NoiseReduction()
 
 
 
