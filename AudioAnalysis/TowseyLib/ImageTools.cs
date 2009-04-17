@@ -422,11 +422,13 @@ namespace TowseyLib
                     //calculate variance of the neighbourhood
                     double mean     =  X / count;
                     double variance = (Xe2 / count) - (mean * mean);
-                    double ratio = (variance - colVar) / variance;
-                    if (ratio > 0.0) ratio = 0.5;
-                    else ratio = -0.5;
- 
+                    double numerator = variance - colVar;
+                    if (numerator < 0.0) numerator = 0.0;
+                    double denominator = variance;
+                    if (colVar > denominator) denominator = colVar;
+                    double ratio = numerator / denominator;
                     outM[r, c] = mean + (ratio * (matrix[r, c] - mean));
+
                     
 
                    // Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1"));

@@ -354,6 +354,58 @@ namespace TowseyLib
 
 
 
+        public static double[,] RemoveBackgroundNoise(double[,] matrix, double threshold)
+        {
+            int M = 3; // each row is a frame or time instance
+            int N = 9; // each column is a frequency bin
+            int rNH = M / 2;
+            int cNH = N / 2;
+
+            double min;
+            double max;
+            DataTools.MinMax(matrix, out min, out max);
+            threshold += min;
+            //int[] h = DataTools.Histo(matrix, 50);
+            //DataTools.writeBarGraph(h);
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            double[,] outM = new double[rows, cols];
+            for (int c = 0; c < cols; c++)
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    //if (matrix[r, c] <= 70.0) continue;
+                    double X = 0.0;
+                    double Xe2 = 0.0;
+                    int count = 0;
+                    for (int i = r - rNH; i <= (r + rNH); i++)
+                    {
+                        if (i < 0) continue;
+                        if (i >= rows) continue;
+                        for (int j = c - cNH; j <= (c + cNH); j++)
+                        {
+                            if (j < 0) continue;
+                            if (j >= cols) continue;
+                            X += matrix[i, j];
+                            Xe2 += (matrix[i, j] * matrix[i, j]);
+                            count++;
+                            //Console.WriteLine(i+"  "+j+"   count="+count);
+                            //Console.ReadLine();
+                        }
+                    }//end local NH
+                    double mean = X / count;
+                    //double variance = (Xe2 / count) - (mean * mean);
+
+                    if (mean < threshold) outM[r, c] = min;
+                    else outM[r, c] = matrix[r, c];
+                    //Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1") + "  mean=" + mean + "  variance=" + variance);
+                    //Console.ReadLine();
+                }
+            }
+            return outM;
+        }
+
 
 
 

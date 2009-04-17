@@ -105,7 +105,7 @@ namespace AudioAnalysis
 
 //            Console.ReadLine();
             var recording = new AudioRecording(bytes, wavPath);
-            bool doHighlightSubband = true; bool add1kHzLines = true;
+            bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
@@ -114,8 +114,11 @@ namespace AudioAnalysis
 
             int imageWidth = 284;
             int imageHeight = 60;
-            var image2 = new Image_MultiTrack(recording.GetImageOfWaveForm(imageWidth, imageHeight));
+            var image2 = new Image_MultiTrack(recording.GetWaveForm(imageWidth, imageHeight));
             image2.Save(outputFolder + wavFileName + "_waveform.png");
+            double dBMin = -25.0; //-25 dB appear to be good value
+            var image6 = new Image_MultiTrack(recording.GetWaveFormDB(imageWidth, imageHeight, dBMin));
+            image6.Save(outputFolder + wavFileName + "_waveformDB.png");
 
             int factor = 10;
             var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor));
@@ -127,7 +130,8 @@ namespace AudioAnalysis
 
 
             //EXTRACT SNR DATA ABOUT SUB BAND/.
-            int minHz = 100; int maxHz = 6100;
+            int minHz = 100; int maxHz = 6000;
+            doHighlightSubband = true;
             sonogram.CalculateSubbandSNR(new WavReader(bytes), minHz, maxHz);
             Console.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
             Console.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");

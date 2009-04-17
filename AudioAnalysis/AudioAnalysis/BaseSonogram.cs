@@ -15,19 +15,6 @@ namespace AudioAnalysis
 
 	public abstract class BaseSonogram
     {
-        //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
-        double acousticEventThreshold = 7;   //dB threshold above zero or modal noise - SETS MIN DECIBEL BOUND
-        double acousticEventSnrFactor = 2.0; //multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
-        //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
-        //idea is to relate spectral detail to the SNR calculated from original audio signal.
-
-        /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.
-         *            For template creation, the max dB bound should be set to fixed level for all sonograms 
-         *            because if all sonograms normaliesd to same max then can compare near (high intesnity) and far (low intensity) 
-         *            vocalisations.
-        */
-
-
 
         #region Properties
         public BaseSonogramConfig Configuration { get; private set; }
@@ -210,15 +197,27 @@ namespace AudioAnalysis
         /// <returns></returns>
         public double[,] NoiseReduce(double[,] matrix)
         {
+            //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
+            double decibelThreshold = 6.5;   //dB threshold above zero or modal noise - SETS MIN DECIBEL BOUND
+            double snrFactor = 2.5; //multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
+            //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
+            //idea is to relate spectral detail to the SNR calculated from original audio signal.
+            /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.
+             *            For template creation, the max dB bound should be set to fixed level for all sonograms 
+             *            because if all sonograms normaliesd to same max then can compare near (high intesnity) and far (low intensity) 
+             *            vocalisations.
+            */
+
             Log.WriteIfVerbose("\t... doing noise reduction.");
             //double minIntensity; // min value in matrix
             //double maxIntensity; // max value in matrix
             //DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
             //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             double[,] mnr = matrix;
-            //mnr = ImageTools.WienerFilter(mnr);
-            double maxDB = this.acousticEventSnrFactor * this.SnrFrames.Snr*2; // sets upper limit for sonogram SNR
-            mnr = SNR.NoiseReduction(mnr, acousticEventThreshold, maxDB);
+            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
+            double maxDB = snrFactor * this.SnrFrames.Snr; // sets upper limit for sonogram SNR
+            mnr = SNR.NoiseReduction(mnr, decibelThreshold, maxDB);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold); //NOT WORKING
             
             //min-max after noise reduction
             //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
@@ -250,8 +249,8 @@ namespace AudioAnalysis
 			DataTools.MinMax(data, out min, out max);
 			double range = max - min;
 
-            //int? minHighlightFreq = this.freqBand_Min;
-            //int? maxHighlightFreq = this.freqBand_Max;
+            //int? minHighlightFreq = this.subBand_MinHz;
+            //int? maxHighlightFreq = this.subBand_MaxHz;
             //int minHighlightBin = (minHighlightFreq == null) ? 0 : (int)Math.Round((double)minHighlightFreq / (double)NyquistFrequency * fftBins);
             //int maxHighlightBin = (maxHighlightFreq == null) ? 0 : (int)Math.Round((double)maxHighlightFreq / (double)NyquistFrequency * fftBins);
             //calculate top and bottom of sub-band 
@@ -259,14 +258,13 @@ namespace AudioAnalysis
             int maxHighlightBin = (int)Math.Round((double)this.subBand_MaxHz / (double)NyquistFrequency * fftBins);
             if (this.Configuration.DoMelScale)
             {
-                //int minFreq = 0;
-                //int maxFreq = this.NyquistFrequency;
-                double minMel = Speech.Mel(this.subBand_MinHz);
-                double maxMel = Speech.Mel(this.subBand_MaxHz);
-                int melRange = (int)(maxMel - minMel + 1);
+                double maxMel = Speech.Mel(this.NyquistFrequency);
+                int melRange = (int)(maxMel - 0 + 1);
                 double pixelPerMel = imageHeight / (double)melRange;
-                minHighlightBin = (int)Math.Round((double)minMel * pixelPerMel);
-                maxHighlightBin = (int)Math.Round((double)maxMel * pixelPerMel);
+                double minBandMel = Speech.Mel(this.subBand_MinHz);
+                double maxBandMel = Speech.Mel(this.subBand_MaxHz);
+                minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
+                maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
             }
 			Color[] grayScale = ImageTools.GrayScale();
 
