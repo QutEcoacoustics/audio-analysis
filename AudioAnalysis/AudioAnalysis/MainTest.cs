@@ -164,8 +164,8 @@ namespace AudioAnalysis
             {
                 var r2 = result as Result_1PS;
                 Log.WriteLine("# Template Hits =" + r2.VocalCount);
-                Log.Write("# Best Score    =" + r2.RankingScoreValue.Value.ToString("F1") + " at ");
-                Log.WriteLine(r2.TimeOfMaxScore.Value.ToString("F1") + " sec");
+                Log.Write("# Best Score    =" + r2.RankingScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
                 Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + r2.NumberOfPeriodicHits);
             }
@@ -175,8 +175,8 @@ namespace AudioAnalysis
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
                 Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
                 Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid+" (i.e. appropriate duration)");
-                Log.Write("# Best Vocalisation Score    = " + r2.RankingScoreValue.Value.ToString("F1") + " at ");
-                Log.WriteLine(r2.TimeOfMaxScore.Value.ToString("F1") + " sec");
+                Log.Write("# Best Vocalisation Score    = " + r2.RankingScore.Value.ToString("F1") + " at ");
+                Log.WriteLine(r2.TimeOfTopScore.Value.ToString("F1") + " sec");
 
 
                 Log.WriteLine("\nAUTOMATED RESULTS FOR TEMPLATE " + template.CallName);

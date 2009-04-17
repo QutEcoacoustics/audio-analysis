@@ -68,7 +68,25 @@ namespace AudioAnalysis
             return envelope;
         }
 
-        public Image GetImageOfWaveForm(int imageWidth, int imageHeight)
+        public double[,] GetWaveFormDB(int length, double dBMin)
+        {
+            double[,] wf = GetWaveForm(length);
+            double[,] wfDB = new double[2, length];
+            for (int w = 0; w < length; w++)
+            {
+                if (wf[0, w] >= -0.0001) wfDB[0, w] = dBMin;
+                else                     wfDB[0, w] = 10 * Math.Log10(Math.Abs(wf[0, w]));
+                if (wf[1, w] <= 0.0001)  wfDB[1, w] = dBMin;
+                else                     wfDB[1, w] = 10 * Math.Log10(Math.Abs(wf[1, w]));
+                //Console.WriteLine(wf[0, w] + " >> " + (wfDB[0, w]).ToString("F5"));
+                //Console.WriteLine(wf[1, w] + " >> " + (wfDB[1, w]).ToString("F5"));
+                //Console.ReadLine();
+            }
+            return wfDB;
+        }
+
+
+        public Image GetWaveForm(int imageWidth, int imageHeight)
         {
             double[,] envelope = GetWaveForm(imageWidth);
             int halfHeight = imageHeight / 2;
@@ -100,6 +118,46 @@ namespace AudioAnalysis
             return bmp;
         }
 
+
+        public Image GetWaveFormDB(int imageWidth, int imageHeight, double dBMin)
+        {
+            double[,] envelope = GetWaveFormDB(imageWidth, dBMin);
+            //envelope values should all lie in [-40.0, 0.0].
+            double slope = -(1 / dBMin); 
+            int halfHeight = imageHeight / 2;
+            Color c = Color.FromArgb(10, 200, 255);
+
+            //set up min, max, range for normalising of dB values
+            Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            for (int w = 0; w < imageWidth; w++)
+            {
+                //Convert log values to interval [0,1]
+                double minLinear = (slope * envelope[0, w]) + 1.0;  // y = mx + c
+                double maxLinear = (slope * envelope[1, w]) + 1.0;
+                int minID = halfHeight - (int)Math.Round(minLinear * halfHeight);
+                int maxID = halfHeight + (int)Math.Round(maxLinear * halfHeight);
+                for (int z = minID; z < maxID; z++) bmp.SetPixel(w, imageHeight - z - 1, c);
+                //Console.WriteLine(envelope[0, w] + " >> " + maxLinear);
+                //Console.ReadLine();
+
+                bmp.SetPixel(w, halfHeight, c); //set zero line in case it was missed
+
+                //mark clipping in red
+                if (minLinear < -0.99)
+                {
+                    bmp.SetPixel(w, imageHeight - 1, Color.OrangeRed);
+                    bmp.SetPixel(w, imageHeight - 2, Color.OrangeRed);
+                    bmp.SetPixel(w, imageHeight - 3, Color.OrangeRed);
+                }
+                if (maxLinear > 0.99)
+                {
+                    bmp.SetPixel(w, 0, Color.OrangeRed);
+                    bmp.SetPixel(w, 1, Color.OrangeRed);
+                    bmp.SetPixel(w, 2, Color.OrangeRed);
+                }
+            }
+            return bmp;
+        }
 
     }// end class AudioRecording
 }

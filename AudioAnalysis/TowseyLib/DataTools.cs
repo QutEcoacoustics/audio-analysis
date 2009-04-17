@@ -593,6 +593,8 @@ namespace TowseyLib
     if(max>8000)sf=200;
     if(max>16000)sf=300;
     if(max>32000)sf=600;
+    if(max>64000)sf=1200;
+    if(max>128000)sf=2400;
 
     for (int i=0; i < data.Length; i++)
     {
@@ -704,6 +706,16 @@ namespace TowseyLib
       return histo;
   }
 
+  static public int[] Histo(double[,] data, int binCount)
+  {
+      double min; 
+      double max;
+      DataTools.MinMax(data, out min, out max);
+      double binWidth = (max - min) / (double)binCount;
+      Console.WriteLine("data min="+min+"  data max="+ max + " binwidth="+binWidth);
+
+      return Histo(data, binCount, min, max, binWidth);
+  }
 
   static public int[] Histo(double[,] data, int binCount, double min, double max, double binWidth)
   {
