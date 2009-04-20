@@ -382,21 +382,21 @@ namespace TowseyLib
             int rNH = M / 2;
             int cNH = N / 2;
 
-            double totMean = 0.0;
-            double totSD = 0.0;
-            NormalDist.AverageAndSD(matrix, out totMean, out totSD);
-            double colVar = totSD * totSD;
+            //double totMean = 0.0;
+            //double totSD = 0.0;
+            //NormalDist.AverageAndSD(matrix, out totMean, out totSD);
+            //double colVar = totSD * totSD;
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             double[,] outM = new double[rows, cols];
             for (int c = 0; c < cols; c++)
             {
-                //double[] column = DataTools.GetColumn(matrix, c);
-                //double colMean = 0.0;
-                //double colSD = 0.0;
-                //NormalDist.AverageAndSD(column, out colMean, out colSD);
-                //double colVar = colSD * colSD;
+                double[] column = DataTools.GetColumn(matrix, c);
+                double colMean = 0.0;
+                double colSD = 0.0;
+                NormalDist.AverageAndSD(column, out colMean, out colSD);
+                double colVar = colSD * colSD;
 
                 for (int r = 0; r < rows; r++)
                 {

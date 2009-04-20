@@ -45,9 +45,12 @@ namespace AudioAnalysis
 			// Calculate total height of the bmp
 			var height = CalculateImageHeight();
 
+            //set up a new image having the correct dimensions
 			var retVal = new Bitmap(Image.Width, height, PixelFormat.Format24bppRgb);
+            //create new graphics canvas and add in the sonogram image
 			using (var g = Graphics.FromImage(retVal))
 				g.DrawImage(Image, 0, 0);
+            //now add tracks to the image
 			int offset = Image.Height;
 			foreach (var track in Tracks)
 			{

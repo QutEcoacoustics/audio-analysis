@@ -251,19 +251,17 @@ namespace TowseyLib
         // ################################# NOISE REDUCTION ALGORITHM #################################################################
 
         /// <summary>
-        /// This is my new noise reduction alorithm, 14-04-2009.
-        /// It calculates the modal noise value for each freq bin and subtracts same.
-        /// Then normalise the intensity values between the passed min and max dB values
+        /// Calculates the modal noise value for each freq bin and subtracts same.
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] NoiseReduction(double[,] matrix, double minDB, double maxDB)
+        public static double[,] RemoveModalNoise(double[,] matrix)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
             //calculate modal noise for each freq bin
             double[] modalNoise = CalculateModalNoise(matrix);
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 5);
+            modalNoise = DataTools.filterMovingAverage(modalNoise, 7);
             double[,] outM = new double[rowCount, colCount];
 
             for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
@@ -274,11 +272,8 @@ namespace TowseyLib
                     if (outM[y, col] < 0.0) outM[y, col] = 0.0;
                 }//end for all rows
             }//end for all cols
-
-            outM = NormaliseIntensity(outM, minDB, maxDB);
             return outM;
-            //return matrix;
-        }// end of NoiseReduction()
+        }// end of RemoveModalNoise()
 
 
         /// <summary>
@@ -397,6 +392,8 @@ namespace TowseyLib
                     double mean = X / count;
                     //double variance = (Xe2 / count) - (mean * mean);
 
+                    //if ((c<(cols/5))&&(mean < (threshold+1.0))) outM[r, c] = min;
+                    //else
                     if (mean < threshold) outM[r, c] = min;
                     else outM[r, c] = matrix[r, c];
                     //Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1") + "  mean=" + mean + "  variance=" + variance);

@@ -1799,7 +1799,7 @@ namespace TowseyLib
   { 
     if(width <= 1) return signal;    // no filter required
     int  length = signal.Length;
-    if(length <= 3) return signal;   // no worth the effort!
+    if(length <= 3) return signal;   // not worth the effort!
     
     double[] fs = new double[length]; // filtered signal
     int    edge = width/2;            // half window width.
