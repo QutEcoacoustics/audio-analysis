@@ -198,30 +198,35 @@ namespace AudioAnalysis
         public double[,] NoiseReduce(double[,] matrix)
         {
             //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
-            double decibelThreshold = 6.5;   //dB threshold above zero or modal noise - SETS MIN DECIBEL BOUND
-            double snrFactor = 2.5; //multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
+            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+            double snrFactor = 5.0; //Multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
             //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
-            //idea is to relate spectral detail to the SNR calculated from original audio signal.
+            //This is an attempt to relate spectral detail to the SNR calculated from original audio signal.
             /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.
              *            For template creation, the max dB bound should be set to fixed level for all sonograms 
-             *            because if all sonograms normaliesd to same max then can compare near (high intesnity) and far (low intensity) 
+             *            because if all sonograms normaliesd to same max then can compare near (high intensity) and far (low intensity) 
              *            vocalisations.
             */
 
             Log.WriteIfVerbose("\t... doing noise reduction.");
-            //double minIntensity; // min value in matrix
-            //double maxIntensity; // max value in matrix
-            //DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
-            double[,] mnr = matrix;
-            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
-            double maxDB = snrFactor * this.SnrFrames.Snr; // sets upper limit for sonogram SNR
-            mnr = SNR.NoiseReduction(mnr, decibelThreshold, maxDB);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold); //NOT WORKING
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             
-            //min-max after noise reduction
+            double[,] mnr = matrix;
+            mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
+            mnr = SNR.RemoveModalNoise(mnr);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold); 
+
+            //NORMALISE
             //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
-            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  dB");
+            //Console.WriteLine("BEFORE NORMALISE minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
+            //double maxDB = snrFactor * this.SnrFrames.Snr; // sets upper limit for sonogram SNR
+            //Console.WriteLine("Set max DB= " + maxDB.ToString("F2") + " dB = " + snrFactor + " * " + this.SnrFrames.Snr + " dB");
+            //mnr = SNR.NormaliseIntensity(mnr, 0.0, maxDB);
+            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
+            //Console.WriteLine("AFTER  NORMALISE minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             return mnr;
         }
 
