@@ -52,20 +52,20 @@ namespace AudioAnalysis
 
             //################################################################################################################
             //#### GET RECORDING DIRECT FROM DATABASE AND WRITE TO FILE
-            //Console.WriteLine("Get recording:- " + recordingName);
-            //byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
-            //Console.WriteLine("Write to file:- size=" + bytes.Length);
-            //File.WriteAllBytes(opPath, bytes);
-            //var recording = new AudioRecording(opPath);
-            //BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(opPath));
+            Console.WriteLine("Get recording:- " + recordingName);
+            byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
+            Console.WriteLine("Write to file:- size=" + bytes.Length);
+            File.WriteAllBytes(opPath, bytes);
+            var recording = new AudioRecording(opPath);
+            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(opPath));
             //#### 
             //############ ALTERNATIVE READ RECORDING FROM LOCAL FILE SYSTEM
             //opPath = @"C:\SensorNetworks\WavFiles\StBees\HoneymoonBay_StBees_20081120-183000.wav";
-            opPath = @"C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav";
+            //opPath = @"C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav";
             //opPath = @"C:\SensorNetworks\WavFiles\BAC2_20071011-182040_cicada.wav";
-            byte[] bytes = System.IO.File.ReadAllBytes(opPath);
-            var recording = new AudioRecording(bytes);
-            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(bytes));
+            //byte[] bytes = System.IO.File.ReadAllBytes(opPath);
+            //var recording = new AudioRecording(bytes);
+            //BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new AudioTools.WavReader(bytes));
             //################################################################################################################
 
 

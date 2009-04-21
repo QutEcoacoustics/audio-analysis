@@ -208,11 +208,11 @@ namespace AudioAnalysis
              *            vocalisations.
             */
 
-            Log.WriteIfVerbose("\t... doing noise reduction.");
+            //Log.WriteIfVerbose("\t... doing noise reduction.");
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
+            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             
             double[,] mnr = matrix;
             mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
@@ -492,7 +492,7 @@ namespace AudioAnalysis
 
         double[,] ApplyFilterBank(double[,] matrix)
         {
-            Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
+            //Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
             int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
             double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
             return m;

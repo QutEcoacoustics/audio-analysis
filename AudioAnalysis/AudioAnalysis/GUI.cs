@@ -30,7 +30,7 @@ namespace AudioAnalysis
         public string SourceFile { get { return sourceFile; } }
 
         //ENERGY AND NOISE PARAMETERS
-        private double dynamicRange = 30.0; //decibels above noise level #### YET TO DO THIS PROPERLY
+        private double dynamicRange = 30.0; //decibels above noise level #### YET TO IMPLEMENT THIS
         public double DynamicRange { get { return dynamicRange; } }
         //private backgroundFilter= //noise reduction??
 
@@ -187,13 +187,13 @@ namespace AudioAnalysis
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
-                    doMelConversion = false;
-                    doNoiseReduction = false;
+                    doMelConversion = true;
+                    doNoiseReduction = true;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
                     deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
-                    //dynamicRange = 30.0; //decibels above noise level #### YET TO TO DO THIS PROPERLY
+                    //dynamicRange = 30.0; //decibels above noise level #### YET TO IMPLEMENT THIS
 
                     min_Freq = 1500; //Hz
                     max_Freq = 5500; //Hz
