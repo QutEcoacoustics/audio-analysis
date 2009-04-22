@@ -9,7 +9,7 @@ using TowseyLib;
 
 namespace AudioAnalysis
 {
-    class Main_ScanOneRecording
+    class Main_CreateTemplate_Part2
     {
         public static void Main(string[] args)
         {
@@ -24,6 +24,18 @@ namespace AudioAnalysis
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE
             Log.Verbosity = 1;
             //#######################################################################################################
+
+            Log.WriteLine("\n\nIMPORTANT!  Have you entered information about the language model into the template?");
+            Log.WriteLine("\tFor example lines like the following:");
+            Log.WriteLine("\tMODEL_TYPE=ONE_PERIODIC_SYLLABLE");
+            Log.WriteLine("\tNUMBER_OF_WORDS=1");
+            Log.WriteLine("\tWORD1_NAME=Kek");
+            Log.WriteLine("\tWORD1_EXAMPLE1=11");
+            Log.WriteLine("\tWORD1_EXAMPLE2=111");
+            Log.WriteLine("\tPERIODICITY_MS=208");
+            Log.WriteLine("\nPRESS ENTER KEY TO CONTINUE - ELSE CLOSE WINDOW.");
+            Console.ReadLine();
+
 
             string appConfigPath = args[0];
             string templateDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
@@ -40,40 +52,26 @@ namespace AudioAnalysis
 
 
 
+
+            //LOAD TEMPLATE AND SERIALISE
+            Log.WriteLine("\n\nLoading template and serialise.");
+            var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
+            var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+            Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
             string serialPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(templatePath) + ".serialised");
-
-            //COMMENT OUT OPTION ONE IF A SERIALISED TEMPLATE IS AVAILABLE.
-            //OPTION ONE: LOAD TEMPLATE AND SERIALISE
-            //var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
-            //Log.WriteLine("\n\nWriting serialised template to file: " + serialPath);
-            //var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
-            //Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
-            //FileTools.WriteSerialisedObject(serialPath, serializedData);
-
-            //OPTION TWO: READ SERIALISED TEMPLATE
-            Log.WriteLine("\tReading serialised template from file: " + serialPath);
-            if (!File.Exists(serialPath)) throw new Exception("SERIALISED FILE DOES NOT EXIST. TERMINATE!");
-            BaseTemplate.LoadStaticConfig(appConfigPath);
-            var serializedData = FileTools.ReadSerialisedObject(serialPath);
-            var template = QutSensors.Data.Utilities.BinaryDeserialize(serializedData) as Template_CC;
-
-
-
+            Log.WriteLine("\tWriting serialised template to file: " + serialPath);
+            FileTools.WriteSerialisedObject(serialPath, serializedData);
 
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
-            var recording = new AudioRecording(wavPath);
-            var result = recogniser.Analyse(recording);
+            var recording  = new AudioRecording(wavPath);
+            var result     = recogniser.Analyse(recording);
 
+            //SAVE RESULTS IMAGE
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");
-            //SAVE RESULTS IMAGE WITHOUT HMM SCORE
             template.SaveResultsImage(recording.GetWavData(), imagePath, result);
 
-            //INSTEAD OF PREVIOUS LINE USE FOLLOWING LINES WITH ALFREDOS HMM SCORES
-            //string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
-            //List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
-            //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);//WITH HMM SCORE
-
+            //WRITE RESULTS
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
                 Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);

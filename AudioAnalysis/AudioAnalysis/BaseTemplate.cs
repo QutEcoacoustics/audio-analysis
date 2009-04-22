@@ -64,14 +64,14 @@ namespace AudioAnalysis
         public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
         {
             //STEP ONE: Initialise AudioRecording
-            var recording = new AudioRecording(wavPath); //AudioRecording has one method GetWavData() to return a WavReaader
+            byte[] bytes = System.IO.File.ReadAllBytes(wavPath);
+            var recording = new AudioRecording(bytes); //AudioRecording has one method GetWavData() that returns a WavReaader
             //STEP TWO: Initialise template with parameters
             string opTemplatePath = gui.opDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
             BaseTemplate template = Load(config);
             //STEP THREE: Extract template
-            //template.ExtractTemplateAndSave(recording, opTemplatePath);
             template.ExtractTemplateFromRecording(recording);
             template.Save(opTemplatePath);
 

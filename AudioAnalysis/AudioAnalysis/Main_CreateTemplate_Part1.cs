@@ -7,7 +7,7 @@ using TowseyLib;
 
 namespace AudioAnalysis
 {
-    class Main_CreateTemplate
+    class Main_CreateTemplate_Part1
     {
 
         public static void Main(string[] args)

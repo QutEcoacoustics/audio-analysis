@@ -93,8 +93,8 @@ namespace AudioAnalysis
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
             var result = recogniser.Analyse(recording);
             Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);
-            Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScore.Value.ToString("F1") + " at ");
-            Log.WriteLine(((Result_1PS)result).TimeOfTopScore.Value.ToString("F1") + " sec");
+            Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScoreValue.Value.ToString("F1") + " at ");
+            Log.WriteLine(((Result_1PS)result).TimeOfMaxScore.Value.ToString("F1") + " sec");
             Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
             Log.WriteLine("# Periodic Hits =" + ((Result_1PS)result).NumberOfPeriodicHits);
 
