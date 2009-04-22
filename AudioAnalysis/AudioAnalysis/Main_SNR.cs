@@ -21,7 +21,8 @@ namespace AudioAnalysis
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
             string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            AudioRecording recording;
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             //#######################################################################################################
 
             string appConfigPath = args[0];
@@ -36,8 +37,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("output folder =" + outputFolder);
             Console.WriteLine();
 
-            byte[] bytes = System.IO.File.ReadAllBytes(wavPath);
-            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, new WavReader(bytes));
+            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, recording.GetWavData());
 
             Console.WriteLine("\nSIGNAL PARAMETERS");
             Console.WriteLine("Signal Duration =" + sonogram.Duration);
@@ -98,7 +98,7 @@ namespace AudioAnalysis
 
 
 //            Console.ReadLine();
-            var recording = new AudioRecording(bytes, wavPath);
+            //recording = new AudioRecording(bytes, wavPath);
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
@@ -126,7 +126,7 @@ namespace AudioAnalysis
             //EXTRACT SNR DATA ABOUT SUB BAND/.
             int minHz = 100; int maxHz = 6000;
             doHighlightSubband = true;
-            sonogram.CalculateSubbandSNR(new WavReader(bytes), minHz, maxHz);
+            sonogram.CalculateSubbandSNR(recording.GetWavData(), minHz, maxHz);
             Console.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
             //Console.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");
             //Console.WriteLine("Sub-band Max dB   =" + sonogram.SnrSubband.Max_dB.ToString("F2") + " dB");

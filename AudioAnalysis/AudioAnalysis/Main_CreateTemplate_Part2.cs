@@ -21,7 +21,8 @@ namespace AudioAnalysis
             // KEY PARAMETERS TO CHANGE
             int callID = 2;   // ONLY USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE
+            AudioRecording recording;
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             Log.Verbosity = 1;
             //#######################################################################################################
 
@@ -64,7 +65,6 @@ namespace AudioAnalysis
 
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
-            var recording  = new AudioRecording(wavPath);
             var result     = recogniser.Analyse(recording);
 
             //SAVE RESULTS IMAGE
