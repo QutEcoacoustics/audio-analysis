@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace AudioAnalysis
 {
@@ -9,7 +10,7 @@ namespace AudioAnalysis
     {
 
 
-        public static void ChooseWavFile(out string wavDirName, out string wavFileName)
+        public static void ChooseWavFile(out string wavDirName, out string wavFileName, out AudioRecording recording)
         {
             //BRISBANE AIRPORT CORP
             wavDirName = @"C:\SensorNetworks\WavFiles\";
@@ -89,7 +90,41 @@ namespace AudioAnalysis
             //JENNIFER'S DATA
             //wavDirName = @"C:\SensorNetworks\WavFiles\Jennifer_BAC10\BAC10\";
             //wavFileName = "BAC10_20081101-045000";
+
+
+            string wavPath = wavDirName + wavFileName + ".wav";
+            recording = new AudioRecording(wavPath);
+
         } //end ChooseWavFile()
 
-    }
+
+
+        public static void DownloadBytesFile(out string opDir, out string fileName, out AudioRecording recording)
+        {
+            opDir = @"C:\SensorNetworks\Output\";
+
+            //string recordingName = "Samford+23/20090408-000000.mp3";
+            //string recordingName = "BAC10/20081017-045000.mp3";
+            //string recordingName = "BAC+JB3+-+Velma/20081116-042000.mp3";
+            //string recordingName = "BAC8/20080612-040000.mp3";    //able to download
+            //string recordingName = "BAC10/20081206-072000.mp3";
+            string recordingName = "BAC8/20080605-020000.mp3";
+
+
+            //process the recording name
+            recordingName = recordingName.Replace('/', '_');
+            recordingName = recordingName.Replace("+", "");
+            Console.WriteLine("Get recording:- " + recordingName);
+            fileName = Path.GetFileNameWithoutExtension(recordingName);
+
+            //get bytes and write them to file and then read it.
+            byte[] bytes = TowseyLib.RecordingFetcher.GetRecordingByFileName(recordingName);
+            Console.WriteLine("Recording size=" + bytes.Length+ " bytes");
+            string opPath = opDir + recordingName;
+            File.WriteAllBytes(opPath, bytes);
+            recording = new AudioRecording(opPath);
+        }
+
+
+    }//end class
 }

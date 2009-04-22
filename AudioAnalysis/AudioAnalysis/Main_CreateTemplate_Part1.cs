@@ -20,7 +20,8 @@ namespace AudioAnalysis
             // KEY PARAMETERS TO CHANGE
             int callID = 2;
             string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            AudioRecording recording;
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             Log.Verbosity = 1;
             //#######################################################################################################
 

@@ -21,26 +21,30 @@ namespace AudioAnalysis
             // KEY PARAMETERS TO CHANGE
             int callID = 2;   // ONLY USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE
+            AudioRecording recording;
+            //WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);      //WARNING! MUST CHOOSE WAV FILE
+            WavChooser.DownloadBytesFile(out wavDirName, out wavFileName, out recording);  //WARNING! MUST CHOOSE WAV FILE
             Log.Verbosity = 1;
             //#######################################################################################################
 
             string appConfigPath = args[0];
             string templateDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
             string templatePath = templateDir + "Template" + callID + ".txt";
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
+          //  string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
+
+            
             //string outputFolder = @"C:\SensorNetworks\Output\";  //default 
-            string outputFolder = templateDir;  //args[2]
+            string outputFolder = wavDirName;  //args[2]
 
             Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
             Log.WriteIfVerbose("CallID        =" + callID);
-            Log.WriteIfVerbose("wav File Path =" + wavPath);
+            Log.WriteIfVerbose("recording Name=" + wavFileName);
             Log.WriteIfVerbose("target   Path =" + outputFolder);
 
 
 
 
-            string serialPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(templatePath) + ".serialised");
+            string serialPath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(templatePath) + ".serialised");
 
             //COMMENT OUT OPTION ONE IF A SERIALISED TEMPLATE IS AVAILABLE.
             //OPTION ONE: LOAD TEMPLATE AND SERIALISE
@@ -62,17 +66,18 @@ namespace AudioAnalysis
 
             //LOAD recogniser and scan
             var recogniser = new Recogniser(template as Template_CC); //GET THE TYPE
-            var recording = new AudioRecording(wavPath);
             var result = recogniser.Analyse(recording);
 
-            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");
+
+            string imagePath = Path.Combine(outputFolder, "RESULTS_" + wavFileName + ".png");
             //SAVE RESULTS IMAGE WITHOUT HMM SCORE
             template.SaveResultsImage(recording.GetWavData(), imagePath, result);
-
             //INSTEAD OF PREVIOUS LINE USE FOLLOWING LINES WITH ALFREDOS HMM SCORES
             //string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
             //List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
             //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);//WITH HMM SCORE
+
+
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
