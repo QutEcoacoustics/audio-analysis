@@ -9,11 +9,10 @@ namespace TowseyLib
     {
 
         //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinEnergyReference = -7.0;      // typical noise value for BAC2 recordings = -4.5
-        public const double MaxEnergyReference = -0.60206;  // = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
-        //public const double MaxLogEnergy = -0.444;        // = Math.Log10(0.36) which assumes max average frame amplitude = 0.6
-        //public const double MaxLogEnergy = -0.310;        // = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
-        //public const double MaxLogEnergy = 0.0;           // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
+        public const double MinLogEnergyReference = -7.0;    // typical noise value for BAC2 recordings = -4.5
+        //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
+        //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
+        public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
         //note that the cicada recordings reach max average frame amplitude = 0.55
 
 
@@ -76,28 +75,24 @@ namespace TowseyLib
                 //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
                 {
                     System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
-                    logEnergy[i] = SNR.MinEnergyReference - SNR.MaxEnergyReference; //normalise to absolute scale
+                    logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference; //normalise to absolute scale
                     continue;
                 }
                 double logE = Math.Log10(e);
-                //if(i==100) Console.ReadLine();
 
                 //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
-                if (logE < SNR.MinEnergyReference)
+                if (logE < SNR.MinLogEnergyReference)
                 {
-                    //System.Console.WriteLine("DSP.SignalLogEnergy() NOTE!!! LOW LogEnergy[" + i + "]=" + logEnergy[i].ToString("F6"));
-                    logEnergy[i] = SNR.MinEnergyReference - SNR.MaxEnergyReference;
+                    logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference;
                 }
-                else logEnergy[i] = logE - SNR.MaxEnergyReference;
-                //if (logE > maxLogEnergy) Console.WriteLine("logE > maxLogEnergy - " + logE +">"+ maxLogEnergy);
-                //if (i < 20) Console.WriteLine("e="+logEnergy[i]);
+                else logEnergy[i] = logE - SNR.MaxLogEnergyReference;
             }
 
-            //normalise to RELATIVE energy value i.e. max in the current frame
-            //double maxEnergy = energy[DataTools.getMaxIndex()];
+            //could alternatively normalise to RELATIVE energy value i.e. max frame energy in the current signal
+            //double maxEnergy = logEnergy[DataTools.getMaxIndex(logEnergy)];
             //for (int i = 0; i < frameCount; i++) //foreach time step
             //{
-            //    //energy[i] = ((energy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
+            //    logEnergy[i] = ((logEnergy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
             //}
             return logEnergy;
         }
@@ -123,7 +118,7 @@ namespace TowseyLib
             //Has the effect of setting background noise level to 0 dB.
             //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
             const double noiseThreshold_dB = 10.0; //dB
-            double minEnergyRatio = SNR.MinEnergyReference - SNR.MaxEnergyReference;
+            double minEnergyRatio = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference;
 
 
             //ignore first N and last N frames when calculating background noise level because sometimes these frames
@@ -287,7 +282,7 @@ namespace TowseyLib
             //*******************************************************************************************************************
             int bandWidth = 3;  // should be an odd number
             int binCount = 64;  //number of pixel intensity bins
-            int binLimit = (int)(binCount * 0.6); //sets upper limit to location of modal noise bin. Higher values = more severe noise removal.
+            int binLimit = (int)(binCount * 0.666); //sets upper limit to modal noise bin. Higher values = more severe noise removal.
             //*******************************************************************************************************************
 
 
