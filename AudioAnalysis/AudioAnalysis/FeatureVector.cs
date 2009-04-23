@@ -143,8 +143,11 @@ namespace AudioAnalysis
                     data[r, c]                  = featureVector[c];
                     data[r + rowWidth, c]       = featureVector[avLength + c];
                     data[r + (2 * rowWidth), c] = featureVector[(2 * avLength) + c];
-				}
-			}
+                }
+                //data[r, 0] = 0.0;
+                //data[r + rowWidth, 0] = 0.0;
+                //data[r + (2 * rowWidth), 0] = 0.0;
+            }
 
             int width = data.GetLength(0); // Number of spectra in sonogram
             int sHeight = data.GetLength(1); // Number of freq bins in sonogram
@@ -173,7 +176,7 @@ namespace AudioAnalysis
             int yOffset = imageHt;
             for (int y = 0; y < data.GetLength(1); y++) //over all freq bins
             {
-                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
+                for (int r = 0; r < binHeight; r++) //repeat this bin if cepstral image
                 {
                     for (int x = 0; x < width; x++) //for pixels in the line
                     {

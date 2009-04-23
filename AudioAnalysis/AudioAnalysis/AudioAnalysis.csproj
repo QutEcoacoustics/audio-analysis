@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScanOneRecording</StartupObject>
+    <StartupObject>AudioAnalysis.Main_SNR</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -140,6 +140,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <Compile Include="Template_CCAuto.cs" />
     <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>

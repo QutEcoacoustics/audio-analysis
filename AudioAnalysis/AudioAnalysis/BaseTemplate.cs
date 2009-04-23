@@ -352,7 +352,6 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("Basetemplate.SaveSyllablesImage(SpectralSonogram sonogram, string path)");
             //want full bandwidth image with green band highlight and gridlines
-          //  bool isSubband = sonogram.ExtractSubband;
             bool doHighlightSubband = true;
             bool add1kHzLines       = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));

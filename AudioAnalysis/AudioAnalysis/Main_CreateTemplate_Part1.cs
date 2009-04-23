@@ -40,7 +40,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("target   Path =" + outputFolder);
 
             //creates template with UNDEFINED MODEL
-            var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName) as Template_CC;
+            var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName)/* as Template_CC*/;
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();

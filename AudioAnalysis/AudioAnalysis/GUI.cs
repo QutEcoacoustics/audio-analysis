@@ -82,6 +82,8 @@ namespace AudioAnalysis
         public int MarqueeStart { get { return marqueeStart; } }
         private int marqueeEnd = 999;
         public int MarqueeEnd { get { return marqueeEnd; } }
+        private int numberOfSyllables;
+        public int NumberOfSyllables { get { return numberOfSyllables; } }
 
         // PARAMETERS FOR THE ACOUSTIC MODELS ***************
         private string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\DefaultNoise.txt";
@@ -225,19 +227,18 @@ namespace AudioAnalysis
                 if (callID == 3)
                 {
                     authorName = "Michael Towsey";
-                    callName = "Soulful-tuneful";
-                    callComment = "Unknown species in faint kek-kek file!";
-                    wavDirName = @"C:\SensorNetworks\WavFiles\";
-                    sourceFile = "BAC1_20071008-084607";
-                    sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
-                    opDir = @"C:\SensorNetworks\Templates\Template_3\";
+                    callName = "Currawong";
+                    callComment = "First attempt at automated analysis";
+                    wavDirName = @"C:\SensorNetworks\WavFiles\Template\Template_3\Training\";
+                    //sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
+                    //opDir = @"C:\SensorNetworks\Templates\Template_3\";
 
                     //MFCC PARAMETERS
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = false;
+                    doNoiseReduction = true;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -245,19 +246,13 @@ namespace AudioAnalysis
 
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
-                    fvInit = new string[,] {
-                        {"template3_syl1","337,376,413,1161,1197,2110,3288,3331,4767"},
-                        {"template3_syl2","433,437,446,450,1217,1222,1229,1234,3355,3359,3372"},
-                        {"template3_syl3","496,1281,2196,3418,4852"},
-                    };
-
-                    min_Freq = 600; //Hz
-                    max_Freq = 3700; //Hz
+                    min_Freq = 800; //Hz
+                    max_Freq = 6000; //Hz
+                    numberOfSyllables = 4;
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_2\template2_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
                     modelType = ModelType.UNDEFINED;

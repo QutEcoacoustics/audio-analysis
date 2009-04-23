@@ -16,7 +16,7 @@ namespace AudioAnalysis
             wavDirName = @"C:\SensorNetworks\WavFiles\";
             //wavFileName = "sineSignal";
             //wavFileName = "golden-whistler";
-            wavFileName = "BAC2_20071008-085040";            //Lewin's rail kek keks //source file for template 2.
+            wavFileName = "BAC2_20071008-085040";            //Lewin's rail kek keks - source file for template 2.
             //wavFileName = "BAC1_20071008-084607";            //faint kek-kek call
             //wavFileName = "BAC2_20071011-182040_cicada";     //repeated cicada chirp 5 hz bursts of white noise
             //wavFileName = "dp3_20080415-195000";             //ZERO SIGNAL silent room recording using dopod
@@ -91,6 +91,11 @@ namespace AudioAnalysis
             //wavDirName = @"C:\SensorNetworks\WavFiles\Jennifer_BAC10\BAC10\";
             //wavFileName = "BAC10_20081101-045000";
 
+            //BRIDGECREEK
+            //wavDirName = @"C:\SensorNetworks\WavFiles\BridgeCreek\";
+            //wavFileName = "cabin_earlyMorning";
+            //wavFileName = "file0044_22kHz";
+            //wavFileName = "file0026_22kHz16bit";
 
             string wavPath = wavDirName + wavFileName + ".wav";
             recording = new AudioRecording(wavPath);
