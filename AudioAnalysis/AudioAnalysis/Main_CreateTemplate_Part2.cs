@@ -75,7 +75,7 @@ namespace AudioAnalysis
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {
                 Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);
-                Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScoreValue.Value.ToString("F1") + " at ");
+                Log.Write("# Max Score     =" + ((Result_1PS)result).MaxScore.Value.ToString("F1") + " at ");
                 Log.WriteLine(((Result_1PS)result).TimeOfMaxScore.Value.ToString("F1") + " sec");
                 Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + ((Result_1PS)result).NumberOfPeriodicHits);

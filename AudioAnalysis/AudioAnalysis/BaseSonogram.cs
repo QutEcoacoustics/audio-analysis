@@ -82,8 +82,8 @@ namespace AudioAnalysis
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             this.SnrFrames = new SNR(frames);
             this.DecibelsPerFrame = SnrFrames.Decibels;
-            this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for MFCCs
-            this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray();
+            this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
+            this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
 			// ZERO CROSSINGS
 			//this.zeroCross = DSP.ZeroCrossings(frames);
@@ -184,8 +184,8 @@ namespace AudioAnalysis
             this.SnrSubband = new SNR(subband); //subband is the amplitude values
             //RECALCULATE DecibelsNormalised and dB REFERENCE LEVEL - need for MFCCs
             this.DecibelsInSubband = SnrSubband.Decibels;
-            this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray();
-            this.Max_dBReference = SnrSubband.MaxReference_dBWrtNoise;
+            this.Max_dBReference   = SnrSubband.MaxReference_dBWrtNoise;
+            this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
             //RECALCULATE ENDPOINTS OF VOCALISATIONS
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
         }
@@ -522,6 +522,7 @@ namespace AudioAnalysis
 
         protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
         {
+            //NOTE!!!! The decibel array has been normalised in 0 - 1.
             Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
 
             double[,] m = ApplyFilterBank(matrix);
@@ -531,7 +532,7 @@ namespace AudioAnalysis
             //calculate cepstral coefficients and normalise
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
-            //calculate the full range of MFCC coefficients ie including energy and deltas, etc
+            //calculate the full range of MFCC coefficients ie including decibel and deltas, etc
             return Speech.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
         }
 
