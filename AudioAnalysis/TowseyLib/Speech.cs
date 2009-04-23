@@ -525,9 +525,9 @@ namespace TowseyLib
         //*********************************************** GET ACOUSTIC VECTORS
 
 
-        public static double[,] AcousticVectors(double[,] mfcc, double[] energy, bool includeDelta, bool includeDoubleDelta)
+        public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
         {
-
+            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
             int frameCount = mfcc.GetLength(0); //number of frames
             int mfccCount  = mfcc.GetLength(1); //number of MFCCs
             int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
@@ -539,7 +539,7 @@ namespace TowseyLib
             double[,] acousticM = new double[frameCount, dim];
             for (int t = 0; t < frameCount; t++) //for all spectra or time steps
             {
-                double[] fv = GetFeatureVector(energy, mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+                double[] fv = GetFeatureVector(dBNormed, mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
                 for (int i = 0; i < dim; i++) acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
             }
             return acousticM;
@@ -569,11 +569,12 @@ namespace TowseyLib
         }
 
 
-        public static double[] GetFeatureVector(double[] E, double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
+        public static double[] GetFeatureVector(double[] dB, double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
         {
+            //the dB array has been normalised in 0-1.
             int frameCount = M.GetLength(0); //number of frames
-            int mfccCount = M.GetLength(1); //number of MFCCs
-            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int mfccCount = M.GetLength(1);  //number of MFCCs
+            int coeffcount = mfccCount + 1;  //number of MFCCs + 1 for energy
             int dim = coeffcount; //
             if (includeDelta) dim += coeffcount;
             if (includeDoubleDelta) dim += coeffcount;
@@ -581,7 +582,7 @@ namespace TowseyLib
 
             //add in the CEPSTRAL coefficients
             double[] fv = new double[dim];
-            fv[0] = E[timeID];
+            fv[0] = dB[timeID];
             for (int i = 0; i < mfccCount; i++) fv[1 + i] = M[timeID, i];
 
             //add in the DELTA coefficients
@@ -593,7 +594,7 @@ namespace TowseyLib
                     for (int i = offset; i < dim; i++) fv[i] = 0.5;
                     return fv;
                 }
-                fv[offset] = E[timeID + 1] - E[timeID - 1];
+                fv[offset] = dB[timeID + 1] - dB[timeID - 1];
                 for (int i = 0; i < mfccCount; i++)
                 {
                     fv[1 + offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
@@ -618,7 +619,7 @@ namespace TowseyLib
                     for (int i = offset; i < dim; i++) fv[i] = 0.5;
                     return fv;
                 }
-                fv[offset] = (E[timeID + 2] - E[timeID]) - (E[timeID] - E[timeID - 2]);
+                fv[offset] = (dB[timeID + 2] - dB[timeID]) - (dB[timeID] - dB[timeID - 2]);
                 //Console.WriteLine("fv[offset]=" + fv[offset]);
                 for (int i = 0; i < mfccCount; i++)
                 {
