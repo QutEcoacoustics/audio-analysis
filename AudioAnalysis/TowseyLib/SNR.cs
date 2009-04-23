@@ -24,7 +24,7 @@ namespace TowseyLib
         public double minEnergyRatio {get; set;}
         public double NoiseSubtracted { get; set; } //the modal noise in dB
         public double NoiseRange {get; set;}        //difference between min_dB and the modal noise dB
-        public double MaxReference_dBWrtNoise {get; set;} //max reference dB wrt modal noise = 0.0
+        public double MaxReference_dBWrtNoise {get; set;} //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
         public double Snr { get; set; }             //sig/noise ratio i.e. max dB wrt modal noise = 0.0
 
         /// <summary>
@@ -192,9 +192,9 @@ namespace TowseyLib
             this.NoiseRange = min_dB - Q;
             this.Snr = max_dB - Q;
             //need an appropriate dB reference level for normalising dB arrays.
-            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference * 10) - Q;  // NO GOOD!
-            //this.MaxReference_dBWrtNoise = max_dB - Q;                         // OK
-            this.MaxReference_dBWrtNoise = max_dB - min_dB;                      // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
+            //this.MaxReference_dBWrtNoise = max_dB - Q;                      // OK
+            this.MaxReference_dBWrtNoise = max_dB - min_dB;                   // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
 
         public double FractionHighEnergyFrames(double dbThreshold)
@@ -213,9 +213,9 @@ namespace TowseyLib
             return (count / (double)L);
         }
 
-        public double[] NormaliseDecibelArray()
+        public double[] NormaliseDecibelArray_ZeroOne(double maxDecibels)
         {
-            return NormaliseDecibelArray(this.Decibels, this.MaxReference_dBWrtNoise);
+            return NormaliseDecibelArray_ZeroOne(this.Decibels, maxDecibels);
         }
 
         /// <summary>
@@ -226,7 +226,7 @@ namespace TowseyLib
         /// <param name="energy"></param>
         /// <param name="maxDecibels"></param>
         /// <returns></returns>
-        public static double[] NormaliseDecibelArray(double[] dB, double maxDecibels)
+        public static double[] NormaliseDecibelArray_ZeroOne(double[] dB, double maxDecibels)
         {
             //normalise power between 0.0 decibels and max decibels.
             int L = dB.Length;
