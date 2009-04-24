@@ -7,15 +7,67 @@ using System.IO;
 
 namespace AudioAnalysis
 {
+    public static class ConfigKeys
+    {
+        public enum WindowFunctions { Hamming };
+        public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
+
+        public struct Fft
+        {
+            public const string WindowFunction = "WINDOW_FUNCTION";
+            public const string NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
+            public const string NyquistFrequency = "NYQUIST_FREQ";
+        }
+
+        public struct Mfcc
+        {
+            public const string FilterbankCount = "FILTERBANK_COUNT";
+            public const string DoMelScale = "DO_MELSCALE";
+            public const string CcCount = "CC_COUNT";
+            public const string IncludeDelta = "INCLUDE_DELTA";
+            public const string IncludeDoubleDelta = "INCLUDE_DOUBLE_DELTA";
+            public const string DeltaT = "DELTA_T";
+        }
+
+        public struct EndpointDetection
+        {
+            public const string K1SegmentationThreshold = "SEGMENTATION_THRESHOLD_K1";
+            public const string K2SegmentationThreshold = "SEGMENTATION_THRESHOLD_K2";
+            public const string K1K2Latency = "K1_K2_LATENCY";
+            public const string VocalDelay = "VOCAL_DELAY";
+            public const string MinVocalDuration = "MIN_VOCAL_DURATION";
+        }
+
+        public struct Windowing
+        {
+            public const string SampleRate = "SAMPLE_RATE";
+            public const string SubSample = "SUBSAMPLE";
+            public const string WindowSize = "WINDOW_SIZE";
+            public const string WindowOverlap = "WINDOW_OVERLAP";
+        }
+
+        public struct Sonogram
+        {
+            public const string SonogramType = "SONOGRAM_TYPE";
+        }
+
+        public struct ImageSave
+        {
+            public const string AddGrid = "ADDGRID";
+        }
+    }
+
     [Serializable]
     public static class FftConfiguration
 	{
+        
+
         public static void SetConfig(Configuration config)
 		{
-            int sr = config.GetIntNullable("SAMPLE_RATE") ?? 0;
+            int sr = config.GetIntNullable(ConfigKeys.Windowing.SampleRate) ?? 0;
             SetSampleRate(sr);
-			WindowFunction = config.GetString("WINDOW_FUNCTION");
-			NPointSmoothFFT = config.GetIntNullable("N_POINT_SMOOTH_FFT") ?? 0;
+            WindowFunction = config.GetString(ConfigKeys.Fft.WindowFunction);
+            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Fft.NPointSmoothFFT) ?? 0;
 		}
 
         public static void SetSampleRate(int sr)
@@ -26,16 +78,16 @@ namespace AudioAnalysis
 
 		public static void Save(TextWriter writer)
 		{
-            writer.WriteConfigValue("NYQUIST_FREQ",  NyquistFreq);
-			writer.WriteConfigValue("WINDOW_FUNCTION", WindowFunction);
-			writer.WriteConfigValue("N_POINT_SMOOTH_FFT", NPointSmoothFFT);
+            writer.WriteConfigValue(ConfigKeys.Fft.NyquistFrequency, NyquistFreq);
+            writer.WriteConfigValue(ConfigKeys.Fft.WindowFunction, WindowFunction);
+            writer.WriteConfigValue(ConfigKeys.Fft.NPointSmoothFFT, NPointSmoothFFT);
             writer.Flush();
         }
 
 		#region Properties
         public static int SampleRate { get; set; }
         public static int NyquistFreq { get; set; }
-        private static string windowFunction = "Hamming";
+        private static string windowFunction = ConfigKeys.WindowFunctions.Hamming.ToString();
         public  static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
 		public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
 		#endregion
@@ -44,22 +96,23 @@ namespace AudioAnalysis
     [Serializable]
     public class MfccConfiguration
 	{
+
 		public MfccConfiguration(Configuration config)
 		{
-			FilterbankCount = config.GetInt("FILTERBANK_COUNT");
-			DoMelScale = config.GetBoolean("DO_MELSCALE");
-			CcCount = config.GetInt("CC_COUNT"); //number of cepstral coefficients
-			IncludeDelta = config.GetBoolean("INCLUDE_DELTA");
-			IncludeDoubleDelta = config.GetBoolean("INCLUDE_DOUBLE_DELTA");
+            FilterbankCount = config.GetInt(ConfigKeys.Mfcc.FilterbankCount);
+            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.DoMelScale);
+            CcCount = config.GetInt(ConfigKeys.Mfcc.CcCount); //number of cepstral coefficients
+            IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.IncludeDelta);
+            IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.IncludeDoubleDelta);
 		}
 
 		public void Save(TextWriter writer)
 		{
-            writer.WriteConfigValue("DO_MELSCALE", DoMelScale);
-            writer.WriteConfigValue("FILTERBANK_COUNT", FilterbankCount);
-			writer.WriteConfigValue("CC_COUNT", CcCount);
-			writer.WriteConfigValue("INCLUDE_DELTA", IncludeDelta);
-			writer.WriteConfigValue("INCLUDE_DOUBLE_DELTA", IncludeDoubleDelta);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.DoMelScale, DoMelScale);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.FilterbankCount, FilterbankCount);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.CcCount, CcCount);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.IncludeDelta, IncludeDelta);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.IncludeDoubleDelta, IncludeDoubleDelta);
             writer.Flush();
 		}
 
@@ -72,27 +125,27 @@ namespace AudioAnalysis
 		#endregion
 	}
 
-
     /// <summary>
     /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION
     /// </summary>
     [Serializable]
     public static class EndpointDetectionConfiguration
 	{
+
 		public static void SetEndpointDetectionParams(Configuration config)
 		{
-			K1Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K1"); //dB threshold for recognition of vocalisations
-			K2Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K2"); //dB threshold for recognition of vocalisations
-			K1K2Latency = config.GetDouble("K1_K2_LATENCY");						//seconds delay between signal reaching k1 and k2 thresholds
-			VocalDelay = config.GetDouble("VOCAL_DELAY");             //seconds delay required to separate vocalisations 
-			MinPulseDuration = config.GetDouble("MIN_VOCAL_DURATION");      //minimum length of energy pulse - do not use this - 
+            K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.K1SegmentationThreshold); //dB threshold for recognition of vocalisations
+            K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.K2SegmentationThreshold); //dB threshold for recognition of vocalisations
+            K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.K1K2Latency);				//seconds delay between signal reaching k1 and k2 thresholds
+            VocalDelay = config.GetDouble(ConfigKeys.EndpointDetection.VocalDelay);               //seconds delay required to separate vocalisations 
+            MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.MinVocalDuration);   //minimum length of energy pulse - do not use this - 
         }
 
 		public static void Save(TextWriter writer)
 		{
             writer.WriteLine("#**************** INFO ABOUT SEGMENTATION");
-			writer.WriteConfigValue("SEGMENTATION_THRESHOLD_K1", K1Threshold);
-			writer.WriteConfigValue("SEGMENTATION_THRESHOLD_K2", K2Threshold);
+            writer.WriteConfigValue(ConfigKeys.EndpointDetection.K1SegmentationThreshold, K1Threshold);
+            writer.WriteConfigValue(ConfigKeys.EndpointDetection.K2SegmentationThreshold, K2Threshold);
 			//writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
 			//writer.WriteConfigValue("VOCAL_DELAY", VocalDelay);
 			//writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
@@ -148,4 +201,6 @@ namespace AudioAnalysis
 		public static double MinPulseDuration { get; set; }		// Minimum length of energy pulse - do not use this
 		#endregion
 	}
+
+
 }

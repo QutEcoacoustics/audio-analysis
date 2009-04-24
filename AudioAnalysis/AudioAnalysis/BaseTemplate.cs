@@ -65,7 +65,7 @@ namespace AudioAnalysis
         {
             //STEP ONE: Initialise AudioRecording
             byte[] bytes = System.IO.File.ReadAllBytes(wavPath);
-            var recording = new AudioRecording(bytes); //AudioRecording has one method GetWavData() that returns a WavReaader
+            var recording = new AudioRecording(bytes); //AudioRecording has one method GetWavData() that returns a WavReader
             //STEP TWO: Initialise template with parameters
             string opTemplatePath = gui.opDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);

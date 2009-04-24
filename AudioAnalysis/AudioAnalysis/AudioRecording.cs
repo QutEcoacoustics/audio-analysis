@@ -15,6 +15,8 @@ namespace AudioAnalysis
         public byte[] Bytes { get; set; }
         #endregion
 
+        private WavReader wavReader = null;
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -33,9 +35,22 @@ namespace AudioAnalysis
             this.FileName = name;
         }
 
+        public AudioRecording(WavReader wavReader)
+        {
+            this.wavReader = wavReader;
+        }
+              
 		public WavReader GetWavData()
 		{
-            if(Bytes != null) return new WavReader(Bytes);
+            if (wavReader != null)
+            {
+                return wavReader;
+            }
+
+            if (Bytes != null)
+            {
+                return new WavReader(Bytes);
+            }
 			return new WavReader(FileName);
 		}
 

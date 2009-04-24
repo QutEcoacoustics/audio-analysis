@@ -508,6 +508,12 @@ namespace AudioAnalysis
         public static Image_Track GetWavEnvelopeTrack(AudioRecording ar, int imageWidth)
         {
             double[,] envelope = ar.GetWaveForm(imageWidth);
+
+            return GetWavEnvelopeTrack(envelope, imageWidth);
+        }
+
+        public static Image_Track GetWavEnvelopeTrack(double[,] envelope, int imageWidth)
+        {            
             var track = new Image_Track(TrackType.waveEnvelope, envelope);
             return track;
         }
