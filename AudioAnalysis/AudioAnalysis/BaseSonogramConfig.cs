@@ -41,7 +41,41 @@ namespace AudioAnalysis
             return new BaseSonogramConfig(config);
 		}
 
+        /// <summary>
+        /// Default Constructor
+        /// </summary>
+        public BaseSonogramConfig()
+        {
+            Configuration config = new Configuration();
 
+            config.SetPair(ConfigKeys.Fft.WindowFunction, ConfigKeys.WindowFunctions.Hamming.ToString());
+            config.SetPair(ConfigKeys.Fft.NPointSmoothFFT, "3");
+
+            config.SetPair(ConfigKeys.Windowing.SampleRate, "0");
+            config.SetPair(ConfigKeys.Windowing.WindowSize, "512");
+            config.SetPair(ConfigKeys.Windowing.WindowOverlap, "0.5");
+
+            config.SetPair(ConfigKeys.EndpointDetection.K1SegmentationThreshold, "3.5");
+            config.SetPair(ConfigKeys.EndpointDetection.K2SegmentationThreshold, "6.0");
+            config.SetPair(ConfigKeys.EndpointDetection.K1K2Latency, "0.05");
+            config.SetPair(ConfigKeys.EndpointDetection.VocalDelay, "0.2");
+            config.SetPair(ConfigKeys.EndpointDetection.MinVocalDuration, "0.075");
+
+            config.SetPair(ConfigKeys.Mfcc.DoMelScale, true.ToString());
+            config.SetPair(ConfigKeys.Mfcc.FilterbankCount, "64");
+            config.SetPair(ConfigKeys.Mfcc.CcCount, "12");
+            config.SetPair(ConfigKeys.Mfcc.IncludeDelta, true.ToString());
+            config.SetPair(ConfigKeys.Mfcc.IncludeDoubleDelta, true.ToString());
+            config.SetPair(ConfigKeys.Mfcc.DeltaT, "2");
+
+            config.SetPair(ConfigKeys.Sonogram.SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
+
+            config.SetPair(ConfigKeys.ImageSave.AddGrid, true.ToString());
+
+            Initialize(config);
+                        
+        }
+        
 
         /// <summary>
         /// CONSTRUCTOR
@@ -49,21 +83,26 @@ namespace AudioAnalysis
         /// <param name="config"></param>
 		public BaseSonogramConfig(Configuration config)
 		{
+            Initialize(config);
+		}
+
+        private void Initialize(Configuration config)
+        {
             SourceFName = config.GetString("WAV_FILE_NAME");
             FftConfiguration.SetConfig(config);
-			WindowSize = config.GetInt("WINDOW_SIZE");
-			WindowOverlap = config.GetDouble("WINDOW_OVERLAP");
+            WindowSize = config.GetInt("WINDOW_SIZE");
+            WindowOverlap = config.GetDouble("WINDOW_OVERLAP");
 
-            DoMelScale       = config.GetBoolean("DO_MELSCALE");
+            DoMelScale = config.GetBoolean("DO_MELSCALE");
             DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
             MinFreqBand = config.GetIntNullable("MIN_FREQ");
-			MaxFreqBand = config.GetIntNullable("MAX_FREQ");
-            int? delta  = MaxFreqBand - MinFreqBand;
+            MaxFreqBand = config.GetIntNullable("MAX_FREQ");
+            int? delta = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
             DisplayFullBandwidthImage = false;
 
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
-		}
+        }
 
 
 		public virtual void Save(TextWriter writer)

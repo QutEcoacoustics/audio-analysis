@@ -45,6 +45,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data.Tests", "Qu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysis", "AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj", "{CB8177A5-2B01-4D8C-B434-63C4400EC381}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovModels", "AudioAnalysis\MarkovModels\MarkovModels.csproj", "{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Website.vsmdi
@@ -157,6 +159,18 @@ Global
 		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|x86.ActiveCfg = Release|x86
 		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|x86.Build.0 = Release|x86
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|.NET.ActiveCfg = Release|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
