@@ -117,18 +117,28 @@ namespace AudioAnalysis
 		{
 			FileTools.WriteArray2File_Formatted(Features, path, "F5");
 		}
-
-        public void SaveImage(BaseTemplate t)
+        public void SaveImage()
+        {
+            Bitmap bmp = CreateBitMapOfFV(Features);
+            bmp.Save(ImageFPath);
+        }
+        public void SaveImage(string path)
 		{
-            int nyquistFreq = t.SonogramConfig.SampleRate / 2;
-            bool doMel = t.SonogramConfig.MfccConfiguration.DoMelScale;
-            int minF = t.SonogramConfig.MinFreqBand ?? nyquistFreq;
-            int maxF = t.SonogramConfig.MaxFreqBand ?? nyquistFreq;
-            Bitmap bmp = CreateBitMapOfFV(Features, doMel, nyquistFreq, maxF, minF);
-			bmp.Save(ImageFPath);
+            Bitmap bmp = CreateBitMapOfFV(Features);
+            bmp.Save(path);
 		}
+        public void SaveImage(BaseTemplate t)
+        {
+            //int nyquistFreq = t.SonogramConfig.SampleRate / 2;
+            //bool doMel = t.SonogramConfig.MfccConfiguration.DoMelScale;
+            //int minF = t.SonogramConfig.MinFreqBand ?? nyquistFreq;
+            //int maxF = t.SonogramConfig.MaxFreqBand ?? nyquistFreq;
+            //Bitmap bmp = CreateBitMapOfFV(Features, doMel, nyquistFreq, maxF, minF);
+            Bitmap bmp = CreateBitMapOfFV(Features);
+            bmp.Save(ImageFPath);
+        }
 
-		public Bitmap CreateBitMapOfFV(double[] featureVector, bool doMelScale, int nyquistFrequency, int topScanBin, int bottomScanBin)
+        public Bitmap CreateBitMapOfFV(double[] featureVector/*, bool doMelScale, int nyquistFrequency, int topScanBin, int bottomScanBin*/)
 		{
 			int fVLength = featureVector.Length;
 			int avLength = fVLength / 3; //assume that feature vector is composed of three parts.
@@ -144,9 +154,6 @@ namespace AudioAnalysis
                     data[r + rowWidth, c]       = featureVector[avLength + c];
                     data[r + (2 * rowWidth), c] = featureVector[(2 * avLength) + c];
                 }
-                //data[r, 0] = 0.0;
-                //data[r + rowWidth, 0] = 0.0;
-                //data[r + (2 * rowWidth), 0] = 0.0;
             }
 
             int width = data.GetLength(0); // Number of spectra in sonogram
@@ -155,15 +162,15 @@ namespace AudioAnalysis
 
 			int imageHt = sHeight * binHeight; // image ht = sonogram ht. Later include grid and score scales
 
-			if (doMelScale) //do mel scale conversions
-			{
-				double hzBin = nyquistFrequency / (double)sHeight;
-				double melBin = Speech.Mel(nyquistFrequency) / (double)sHeight;
-				double topMel = Speech.Mel(topScanBin * hzBin);
-				double botMel = Speech.Mel(bottomScanBin * hzBin);
-				topScanBin = (int)(topMel / melBin);
-				bottomScanBin = (int)(botMel / melBin);
-			}
+	//		if (doMelScale) //do mel scale conversions
+	//		{
+	//			double hzBin = nyquistFrequency / (double)sHeight;
+	//			double melBin = Speech.Mel(nyquistFrequency) / (double)sHeight;
+	//			double topMel = Speech.Mel(topScanBin * hzBin);
+	//			double botMel = Speech.Mel(bottomScanBin * hzBin);
+	//			topScanBin = (int)(topMel / melBin);
+	//			bottomScanBin = (int)(botMel / melBin);
+	//		}
 
 			Bitmap bmp = new Bitmap(width, imageHt, PixelFormat.Format24bppRgb);
             //set up min, max, range for normalising of dB values
@@ -374,6 +381,50 @@ namespace AudioAnalysis
 
 			return newFV;
 		}
-		#endregion
+        public static FeatureVector AverageFeatureVectors(List<FeatureVector> fvs, int newID)
+        {
+            Log.WriteIfVerbose("   AVERAGING: FeatureVector.AverageFeatureVectors(List<FeatureVector> fvs, int newID)");
+            if (fvs == null) throw new Exception("AverageFeatureVectors(): FV array = null");
+            int fvCount = fvs.Count;
+            if (fvCount == 0) throw new Exception("AverageFeatureVectors(): FV Array length = " + fvCount);
+            int featureCount = fvs[0].FvLength;
+
+            //accumulate the acoustic vectors from multiple frames into an averaged feature vector
+            double[] avVector = new double[featureCount];
+            for (int i = 0; i < fvCount; i++)
+            {
+                for (int j = 0; j < featureCount; j++) avVector[j] += fvs[i].Features[j]; //sum the feature values
+            }
+            for (int i = 0; i < featureCount; i++) avVector[i] = avVector[i] / (double)fvCount; //average feature values
+
+            string newName = fvs[0].name; //set new name to first old name
+            FeatureVector newFV = new FeatureVector(avVector, newName, fvs[0].SourceFile);//assume all FVs have same source file
+            //combine the original frame indices into comma separated integers
+            string indices = fvs[0].FrameIndices;
+            for (int i = 1; i < fvCount; i++) indices = indices + "," + fvs[i].FrameIndices; //assume all FVs originate from single frame
+            newFV.FrameIndices = indices;
+
+            return newFV;
+        }
+        public static List<double[]> GetVectors(List<FeatureVector> fvs)
+        {
+            if (fvs == null) throw new Exception("AverageFeatureVectors(): FV array = null");
+            int fvCount = fvs.Count;
+            if (fvCount == 0) throw new Exception("AverageFeatureVectors(): FV Array length = " + fvCount);
+            int featureCount = fvs[0].FvLength;
+
+            //transfer val;ues to arrays of double
+            List<double[]> list = new List<double[]>();
+            for (int i = 0; i < fvCount; i++)
+            {
+                double[] vector = new double[featureCount];
+                for (int j = 0; j < featureCount; j++) vector[j] += fvs[i].Features[j]; //sum the feature values
+                list.Add(vector);
+            }
+            return list;
+        }
+
+
+        #endregion
     }//end of class
 }
