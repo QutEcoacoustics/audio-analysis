@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_SNR</StartupObject>
+    <StartupObject>AudioAnalysis.Main_CreateTemplate_Part1</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
