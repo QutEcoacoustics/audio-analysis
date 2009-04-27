@@ -20,10 +20,12 @@ namespace AudioAnalysis
         public int CallID { get { return callID; } }
         private string callName = "NO NAME";
         public string CallName { get { return callName; } }
-        private string callComment = "DEFAULT COMMENT";
-        public string CallComment { get { return callComment; } }
+        private string comment = "DEFAULT COMMENT";
+        public string Comment { get { return comment; } }
 
         public string WavDirName;
+        private string trainingDirName;
+        public string TrainingDirName { get { return trainingDirName; } }
         private string sourcePath = "NO_PATH";
         public string SourcePath { get { return sourcePath; } }
         private string sourceFile = "NO_NAME";
@@ -32,16 +34,15 @@ namespace AudioAnalysis
         //ENERGY AND NOISE PARAMETERS
         private double dynamicRange = 30.0; //decibels above noise level #### YET TO IMPLEMENT THIS
         public double DynamicRange { get { return dynamicRange; } }
-        //private backgroundFilter= //noise reduction??
 
         //FRAMING PARAMETERS
+        //int sampleRate; //determined by source WAV file
         private int frameSize = 512;
         public int FrameSize { get { return frameSize; } }
         private double frameOverlap = 0.5;
         public double FrameOverlap { get { return frameOverlap; } }
 
         //FEATURE PARAMETERS
-        //int sampleRate; //determined by source WAV file
         private Feature_Type featureType = Feature_Type.UNDEFINED;   //the default feature type  
         public Feature_Type FeatureType { get { return featureType; } }
 
@@ -61,16 +62,10 @@ namespace AudioAnalysis
         public int DeltaT { get { return deltaT; } }
 
             //FEATURE VECTOR EXTRACTION PARAMETERS
+        private int numberOfSyllables;
+        public int NumberOfSyllables { get { return numberOfSyllables; } }
         private FV_Source fv_Source = FV_Source.SELECTED_FRAMES;  //FV_Source.MARQUEE;
         public  FV_Source Fv_Source  { get { return fv_Source; } }
-        private FV_MarqueeType fv_Extraction = FV_MarqueeType.AT_ENERGY_PEAKS;  //AT_FIXED_INTERVALS
-        public FV_MarqueeType Fv_Extraction { get { return fv_Extraction; } }
-        private int fvExtractionInterval = 999; //milliseconds
-        public int FvExtractionInterval { get { return fvExtractionInterval; } }
-        //private bool doFvAveraging = false;
-        //public bool DoFvAveraging { get { return doFvAveraging; } }
-        //private string selectedFrames = "0";
-        //public string SelectedFrames { get { return selectedFrames; } }
         private string[,] fvInit = null;
         public string[,] FvInit { get { return fvInit; } }
 
@@ -78,12 +73,6 @@ namespace AudioAnalysis
         public int Min_Freq { get { return min_Freq; } }
         private int max_Freq = 9999; //Hz
         public int Max_Freq { get { return max_Freq; } }
-        private int marqueeStart = 999;
-        public int MarqueeStart { get { return marqueeStart; } }
-        private int marqueeEnd = 999;
-        public int MarqueeEnd { get { return marqueeEnd; } }
-        private int numberOfSyllables;
-        public int NumberOfSyllables { get { return numberOfSyllables; } }
 
         // PARAMETERS FOR THE ACOUSTIC MODELS ***************
         private string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\DefaultNoise.txt";
@@ -127,7 +116,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "FUNCTIONAL_TEST";
-                    callComment = "FUNCITONAL TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
+                    comment = "FUNCITONAL TEST DERIVED FROM CURRAWONG RECORDING AT ST BEES - TEMPLATE #8";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "West_Knoll_St_Bees_Currawong3_20080919-060000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -179,11 +168,12 @@ namespace AudioAnalysis
                 {
                     authorName  = "Michael Towsey";
                     callName    = "Lewin's Rail Kek-kek";
-                    callComment = "Template consists of a single KEK!";
+                    comment = "Template consists of a single KEK!";
                     wavDirName  = @"C:\SensorNetworks\WavFiles\";
                     sourceFile  = "BAC2_20071008-085040";  //Lewin's rail kek keks.
                     sourcePath  = wavDirName + sourceFile + WavReader.WavFileExtension;
                     opDir       = @"C:\SensorNetworks\Templates\Template_2\";
+                    featureType = Feature_Type.MFCC;
 
                     //MFCC PARAMETERS
                     frameSize = 512;
@@ -228,10 +218,12 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Currawong";
-                    callComment = "First attempt at automated analysis";
-                    wavDirName = @"C:\SensorNetworks\WavFiles\Template\Template_3\Training\";
-                    //sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
-                    //opDir = @"C:\SensorNetworks\Templates\Template_3\";
+                    comment = "First attempt at automated analysis";
+                    trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\Training\";
+                    wavDirName = @"C:\SensorNetworks\WavFiles\";
+                    WavDirName = wavDirName;
+                    opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
+                    featureType = Feature_Type.CC_AUTO;
 
                     //MFCC PARAMETERS
                     frameSize = 512;
@@ -246,13 +238,13 @@ namespace AudioAnalysis
 
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
+                    numberOfSyllables = 4;
                     min_Freq = 800; //Hz
                     max_Freq = 6000; //Hz
-                    numberOfSyllables = 4;
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_2\template2_DefaultNoise.txt";
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\template" + callID + "_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
                     modelType = ModelType.UNDEFINED;
@@ -286,7 +278,7 @@ namespace AudioAnalysis
 
                     authorName = "Michael Towsey";
                     callName = "Cricket";
-                    callComment = "High freq warble";
+                    comment = "High freq warble";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
                     sourceFile = "BAC2_20071008-085040";  //Lewin's rail kek keks.
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -307,17 +299,6 @@ namespace AudioAnalysis
                     max_Freq = 9000; //Hz
                     
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    fv_Source = FV_Source.SELECTED_FRAMES;  //options are SELECTED_FRAMES or MARQUEE
-                    fv_Extraction = FV_MarqueeType.AT_FIXED_INTERVALS;  //AT_ENERGY_PEAKS or AT_FIXED_INTERVALS
-                    fvExtractionInterval = 200; //milliseconds
-                    //marquee = from 1555 To 1667;
-                    fvInit = new string[,] {
-                        {"template5_syl1","1555"},
-                        {"template5_syl2","1580"},
-                        {"template5_syl3","1600"},
-                        {"template5_syl4","1630"},
-                        {"template5_syl5","1667"},
-                    };
 
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
@@ -340,7 +321,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Koala Bellow";
-                    callComment = "Various sounds - huff, puff and snort!";
+                    comment = "Various sounds - huff, puff and snort!";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "WestKnoll_StBees_KoalaBellow20080919-073000";  //Koala Bellows
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -390,7 +371,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Fruit bat";
-                    callComment = "Single fruit bat chirps";
+                    comment = "Single fruit bat chirps";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -435,7 +416,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Currawong";
-                    callComment = "From St Bees";
+                    comment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "West_Knoll_St_Bees_Currawong3_20080919-060000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -486,7 +467,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Curlew";
-                    callComment = "From St Bees";
+                    comment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "Honeymoon_Bay_St_Bees_Curlew3_20080914-003000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
@@ -538,7 +519,7 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Rainbow Lorikeet";
-                    callComment = "From St Bees";
+                    comment = "From St Bees";
                     wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
                     sourceFile = "West_Knoll_St_Bees_RainbowLorikeet1_20080918-080000";
                     sourcePath = wavDirName + sourceFile + WavReader.WavFileExtension;
