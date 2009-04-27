@@ -140,7 +140,7 @@ namespace AudioAnalysis
             //envelope values should all lie in [-40.0, 0.0].
             double slope = -(1 / dBMin); 
             int halfHeight = imageHeight / 2;
-            Color c = Color.FromArgb(10, 200, 255);
+            Color c = Color.FromArgb(255, 24, 116, 205);
 
             //set up min, max, range for normalising of dB values
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
