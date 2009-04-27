@@ -1608,6 +1608,26 @@ namespace TowseyLib
       }
       return indexMax;
   }
+        /// <summary>
+        /// same as above but returns the index of data element having minimum value
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+  static public int GetMinIndex(double[] data)
+  {
+      //if(data == null) return -1;
+      int indexMin = 0;
+      double min = data[0];
+      for (int i = 1; i < data.Length; i++)
+      {
+          if (data[i] < min)
+          {
+              min = data[i];
+              indexMin = i;
+          }
+      }
+      return indexMin;
+  }
 
   /**
    * returns the index of max value in an array of int
