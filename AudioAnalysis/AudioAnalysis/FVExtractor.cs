@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
+using NeuralNets;
 using AudioTools;
 
 namespace AudioAnalysis
@@ -13,59 +14,21 @@ namespace AudioAnalysis
     static class FVExtractor
     {
 
-        /// <summary>
-        /// LOGIC FOR EXTRACTION OF FEATURE VECTORS FROM SONOGRAM ****************************************************************
-        /// </summary>
-        public static void ExtractFVsFromSonogram(CepstralSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        public static void ExtractFVsFromRecording(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
         {
-            Log.WriteIfVerbose("START method FVExtractor.ExtractFVsFromSonogram()");
+            Log.WriteIfVerbose("START method FVExtractor.ExtractFVsFromRecording()");
+            WavReader wav = ar.GetWavData();
+            var sonogram = new CepstralSonogram(sonoConfig, wav);
             //transfer parameters to where required
             sonoConfig.SampleRate = sonogram.SampleRate;
             sonoConfig.Duration = sonogram.Duration;
             FftConfiguration.SetSampleRate(sonoConfig.SampleRate);
 
             //prepare the feature vectors
-            FeatureVector[] featureVectors;
-            switch (FVParams.FVSourceType)
-            {
-                case FV_Source.SELECTED_FRAMES:
-                    featureVectors = GetFeatureVectorsFromFrames(sonogram, FVParams, sonoConfig);
-                    break;
-                case FV_Source.MARQUEE:
-                    switch (FVParams.FVMarqueeType)
-                    {
-                        case FV_MarqueeType.AT_ENERGY_PEAKS:
-                            featureVectors = GetFeatureVectorsFromMarquee(sonogram, FVParams, sonoConfig);
-                            break;
-                        case FV_MarqueeType.AT_FIXED_INTERVALS:
-                            featureVectors = GetFeatureVectorsFromMarquee(sonogram, FVParams, sonoConfig);
-                            break;
-                        default:
-                            throw new InvalidCastException("ExtractTemplateFromSonogram(: WARNING!! INVALID FV EXTRACTION OPTION!)");
-                    }
-                    break;
-                default:
-                    throw new InvalidOperationException("ExtractTemplateFromSonogram(: WARNING!! INVALID FV SOURCE OPTION!)");
-            }
+            FVParams.FVArray = GetFeatureVectorsFromFrames(sonogram, FVParams, sonoConfig);
 
-            FVParams.FVArray = featureVectors;
-
-            if (FVParams.FVSourceType == FV_Source.MARQUEE)
-            {
-                int count = featureVectors.Length;
-                FVParams.FVCount = count;
-                FVParams.FVArray = featureVectors;
-                FVParams.FVLength = featureVectors[0].FvLength; //assume all same length
-
-                FVParams.FVfNames = new string[count];
-                for (int n = 0; n < count; n++) FVParams.FVfNames[n] = "template" + FVParams.CallID + "_FV"+(n+1)+".txt";
-                FVParams.FVSourceFiles = new string[count];
-                for (int n = 0; n < count; n++) FVParams.FVSourceFiles[n] = featureVectors[n].SourceFile;
-
-            }
-            Log.WriteIfVerbose("END method FVExtractor.ExtractFVsFromSonogram()");
+            Log.WriteIfVerbose("END method FVExtractor.ExtractFVsFromRecording()");
         } // end ExtractFVsFromSonogram()
-
 
 
         private static FeatureVector[] GetFeatureVectorsFromFrames(BaseSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
@@ -93,59 +56,6 @@ namespace AudioAnalysis
             return fvs;
         }
 
-        private static FeatureVector[] GetFeatureVectorsFromMarquee(BaseSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
-        {
-            int start = FVParams.MarqueeStart;
-            int end = FVParams.MarqueeEnd;
-            int marqueeFrames = end - start + 1;
-            var frameDuration = sonoConfig.GetFrameDuration(sonogram.SampleRate);
-            double marqueeDuration = marqueeFrames * frameDuration;
-            Log.WriteIfVerbose("\tMarquee start=" + start + ",  End=" + end + ",  Duration= " + marqueeFrames + "frames =" + marqueeDuration.ToString("F2") + "s");
-            int[] frameIndices = null;
-
-
-            switch (FVParams.FVMarqueeType)
-            {
-                case FV_MarqueeType.AT_FIXED_INTERVALS:
-                    int interval = (int)(FVParams.MarqueeInterval / frameDuration / (double)1000);
-                    Log.WriteIfVerbose("\tFrame interval=" + interval + "ms");
-                    frameIndices = FeatureVector.GetFrameIndices(start, end, interval);
-                    break;
-                case FV_MarqueeType.AT_ENERGY_PEAKS:
-                    double[] frameEnergy = sonogram.DecibelsNormalised;
-                    double energyThreshold = EndpointDetectionConfiguration.K1Threshold;
-                    frameIndices = FeatureVector.GetFrameIndices(start, end, frameEnergy, energyThreshold);
-                    Log.WriteIfVerbose("\tEnergy threshold=" + energyThreshold.ToString("F2"));
-                    break;
-                default:
-                    Log.WriteLine("Template.GetFeatureVectorsFromMarquee():- WARNING!!! INVALID FEATURE VECTOR EXTRACTION OPTION");
-                    break;
-            }
-
-            string indices = DataTools.writeArray2String(frameIndices);
-            Log.WriteIfVerbose("\tExtracted frame indices are:-" + indices);
-
-            //initialise feature vectors for template. Each frame provides one vector in three parts
-            //int coeffcount = M.GetLength(1);  //number of MFCC deltas etcs
-            //int featureCount = coeffcount * 3;
-            int indicesL = frameIndices.Length;
-            int dT = sonoConfig.DeltaT;
-            double[,] M = sonogram.Data;
-
-            FeatureVector[] fvs = new FeatureVector[indicesL];
-            for (int i = 0; i < indicesL; i++)
-            {
-                Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] from frame " + frameIndices[i]);
-                //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
-                double[] acousticV = Speech.GetAcousticVector(M, frameIndices[i], dT); //combines  frames T-dT, T and T+dT
-                fvs[i] = new FeatureVector(acousticV, "NO NAME");
-                // Wav source may not be from a file
-                //fvs[i].SourceFile = TemplateState.WavFilePath; //assume all FVs have same source file
-                fvs[i].SetFrameIndex(frameIndices[i]);
-            }
-            return fvs;
-        }
-
         private static FeatureVector ExtractFeatureVectorsFromSelectedFramesAndAverage(double[,] M, string frames, int dT, string fvName)
         {
             //initialise feature vectors for template. Each frame provides one vector
@@ -161,6 +71,95 @@ namespace AudioAnalysis
             }
             return FeatureVector.AverageFeatureVectors(fvs, 1);
         }
+
+
+        /// <summary>
+        /// This kmethod is called when constructing a CC AUTO template.
+        /// </summary>
+        /// <param name="ar"></param>
+        /// <param name="FVParams"></param>
+        /// <param name="sonoConfig"></param>
+        public static void ExtractFVsFromVocalisations(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        {
+            Log.WriteIfVerbose("START FVExtractor.ExtractFVsFromVocalisations()");
+
+            WavReader wav = ar.GetWavData();
+            var sonogram = new CepstralSonogram(sonoConfig, wav);
+            //transfer parameters to where required
+            sonoConfig.SampleRate = sonogram.SampleRate;
+            sonoConfig.Duration = sonogram.Duration;
+            FftConfiguration.SetSampleRate(sonoConfig.SampleRate);
+
+            //Get List of Vocalisation Recordings
+            string ext = ".wav";
+            string samplesDir = FVParams.FVSourceDir;
+            FileInfo[] files = FileTools.GetFilesInDirectory(samplesDir, ext);
+            List<FeatureVector> list = new List<FeatureVector>(); 
+            foreach (FileInfo f in files)
+            {
+                //Make sonogram of each recording
+                Console.WriteLine("Recording = "+f.Name);
+                AudioRecording recording = new AudioRecording(f.FullName);
+                WavReader wr = recording.GetWavData();
+                var ss = new SpectralSonogram(sonoConfig, wr);
+                var image = new Image_MultiTrack(ss.GetImage(false, false));
+                string path = samplesDir + Path.GetFileNameWithoutExtension(f.Name)+ ".png";
+                image.Save(path);
+
+               //Extract the FVs from each
+                var cs = new CepstralSonogram(sonoConfig, wr);
+                List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, sonoConfig);
+                Log.WriteIfVerbose("Have extracted " + fvs.Count+ " feature vectors.");
+                list.AddRange(fvs);
+            }
+
+            //Cluster the FVs
+            Log.WriteIfVerbose("Have extracted "+list.Count+" feature vectors.");
+
+            //Get the centroids
+            Cluster cluster = new Cluster(FeatureVector.GetVectors(list));
+            VQ vq = new VQ(cluster, FVParams.FVCount);
+            vq.Train();
+
+            //use centroids as feature vectors
+            //FVParams.FVArray = vq.GetCentroids();
+            int fvCount = FVParams.FVCount;
+            FVParams.FVArray = new FeatureVector[fvCount];
+            for (int i = 0; i < fvCount; i++)
+            {
+                string fvName = "centroid"+(i+1);
+                Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] Name=" + fvName);
+                FVParams.FVArray[i] = new FeatureVector(vq.MinErrorCentroids[i], fvName);
+            }
+
+            FVParams.FVLength = FVParams.FVArray[0].FvLength;
+            Log.WriteIfVerbose("END method FVExtractor.ExtractFVsFromVocalisations()");
+            //Console.ReadLine();
+        } // end ExtractFVsFromSonogram()
+
+
+        private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        {
+            int interval = 3; //extract feature vector at this interval
+            int fvCount = sonogram.FrameCount / interval;
+
+            //initialise feature vectors for template. Each frame provides one vector in three parts
+            int dT = sonoConfig.DeltaT;
+            double[,] M = sonogram.Data;
+
+            List<FeatureVector> list = new List<FeatureVector>();
+            for (int i = dT; i < fvCount - dT; i++)
+            {
+                int id = i * interval;
+                //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
+                double[] acousticV = Speech.GetAcousticVector(M, id, dT); //combines  frames T-dT, T and T+dT
+                FeatureVector fv = new FeatureVector(acousticV, sonogram.Configuration.SourceFName);
+                fv.SetFrameIndex(id);
+                list.Add(fv);
+            }
+            return list;
+        }
+
 
 
 
