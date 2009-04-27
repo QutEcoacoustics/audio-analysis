@@ -9,9 +9,7 @@ using QutSensors;
 
 namespace AudioAnalysis
 {
-    public enum FV_Source { SELECTED_FRAMES, MARQUEE }
-    public enum FV_MarqueeType { AT_ENERGY_PEAKS, AT_FIXED_INTERVALS }
-
+    public enum FV_Source { SELECTED_FRAMES, FIXED_INTERVALS }
 
 	[Serializable]
     public class FVConfig
@@ -20,19 +18,17 @@ namespace AudioAnalysis
 
         #region Properties
         public int CallID { get; set; } //required for constructing FV file names
+        public Feature_Type FeatureExtractionType{ get; set; }
         public int FVCount { get; set; }
         public string[] FVIniData { get; private set; }
 
         public FV_Source FVSourceType { get; set; }
-        public FV_MarqueeType FVMarqueeType { get; set; }
-        public int MarqueeStart { get; set; }
-        public int MarqueeEnd { get; set; }
-        public int? MarqueeInterval { get; set; }
 
         public int FVLength { get; set; }
         public string OPDir { get; set; }
         public string[] FVfNames { get; set; }
-        public string[] FVSourceFiles { get; set; }
+        public string   FVSourceDir { get; set; }    //used when in AUTO mode
+        public string[] FVSourceFiles { get; set; }  //used when in manual mode
         public string FV_DefaultNoisePath { get; set; }
         public FeatureVector DefaultNoiseFV { get; set; } //default noise FV used if cannot construct one from recording to be scanned
         private FeatureVector[] fvArray;
@@ -62,20 +58,19 @@ namespace AudioAnalysis
         public FVConfig(Configuration config)
         {
             //FEATURE VECTORS
-            FVSourceType = GetFVSource(config);
-            //Log.WriteIfVerbose("\tFV_SOURCE=" + FVSourceType.ToString());
+            var  featureExtractionName = config.GetString("FEATURE_TYPE");
+            this.FeatureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+
             CallID = config.GetInt("TEMPLATE_ID");
-            FVCount = config.GetInt("FV_COUNT");
             FV_DefaultNoisePath = config.GetPath("FV_DEFAULT_NOISE_FILE");
 
-            FVIniData = new string[FVCount];
-            MarqueeStart = 0;    //default value
-            MarqueeEnd = 0;      //default value
-            MarqueeInterval = 0; //default value
 
-            switch (FVSourceType)
+            switch (FeatureExtractionType)
             {
-                case FV_Source.SELECTED_FRAMES:
+                case Feature_Type.MFCC:
+                    this.FVSourceType = FV_Source.SELECTED_FRAMES;
+                    FVCount = config.GetInt("FV_COUNT");
+                    FVIniData = new string[FVCount];
                     string frames = config.GetString("FV_SELECTED_FRAMES");
                     //Log.WriteIfVerbose("\tSelected frames=" + frames);
                     for (int i = 0; i < FVCount; i++)
@@ -83,12 +78,11 @@ namespace AudioAnalysis
                         FVIniData[i] = config.GetString("FV"+(i+1)+"_DATA");
                     }
                     break;
-                case FV_Source.MARQUEE:
-                    MarqueeStart = config.GetInt("MARQUEE_START");
-                    MarqueeEnd = config.GetInt("MARQUEE_END");
-                    int? interval;
-                    FVMarqueeType = GetMarqueeType(config, out interval);
-                    MarqueeInterval = interval;
+                case Feature_Type.CC_AUTO:
+                    this.FVSourceType = FV_Source.FIXED_INTERVALS;
+                    FVSourceDir = config.GetString("TRAINING_DIR");
+                    FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
+                    Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
                     break;
             }
         }//end Constructor()
@@ -97,66 +91,66 @@ namespace AudioAnalysis
 
         #region Feature Vector Parameter Reading
 
-        public FV_Source GetFVSource(Configuration config)
-        {
-            if (!config.ContainsKey("FV_SOURCE"))
-            {
-                Log.WriteLine("FVConfig.GetFVSource():- WARNING! NO SOURCE FOR FEATURE VECTORS IS DEFINED!");
-                Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
-                return FV_Source.SELECTED_FRAMES;
-            }
+        //public FV_Source GetFVSource(Configuration config)
+        //{
+        //    if (!config.ContainsKey("FV_SOURCE"))
+        //    {
+        //        Log.WriteLine("FVConfig.GetFVSource():- WARNING! NO SOURCE FOR FEATURE VECTORS IS DEFINED!");
+        //        Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+        //        return FV_Source.SELECTED_FRAMES;
+        //    }
 
-            string value = config.GetString("FV_SOURCE");
-            if (value.StartsWith("MARQUEE"))
-            {
-                return FV_Source.MARQUEE;
+        //    string value = config.GetString("FV_SOURCE");
+        //    if (value.StartsWith("MARQUEE"))
+        //    {
+        //        return FV_Source.MARQUEE;
 
-            }
-            else if (value.StartsWith("SELECTED_FRAMES"))
-                return FV_Source.SELECTED_FRAMES;
-            else
-            {
-                Log.WriteLine("FVConfig.GetFVSource():- WARNING! INVALID SOURCE FOR FEATURE VECTORS IS DEFINED! " + value);
-                Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
-                return FV_Source.SELECTED_FRAMES;
-            }
-        }
+        //    }
+        //    else if (value.StartsWith("SELECTED_FRAMES"))
+        //        return FV_Source.SELECTED_FRAMES;
+        //    else
+        //    {
+        //        Log.WriteLine("FVConfig.GetFVSource():- WARNING! INVALID SOURCE FOR FEATURE VECTORS IS DEFINED! " + value);
+        //        Log.WriteLine("                         SET THE DEFAULT: FV_Source = SELECTED_FRAMES");
+        //        return FV_Source.SELECTED_FRAMES;
+        //    }
+        //}
 
 
-        public FV_MarqueeType GetMarqueeType(Configuration config, out int? interval)
-        {
-            interval = null;
+        //public FV_MarqueeType GetMarqueeType(Configuration config, out int? interval)
+        //{
+        //    interval = null;
 
-            if (!config.ContainsKey("MARQUEE_TYPE"))
-            {
-                Log.WriteLine("FVConfig.GetMarqueeType():- WARNING! NO MARQUEE_TYPE (EXTRACTION PROCESS) IS DEFINED FOR FEATURE VECTORS!");
-                Log.WriteLine("                            SET THE DEFAULT:- FV_MarqueeType = AT_ENERGY_PEAKS");
-                return FV_MarqueeType.AT_ENERGY_PEAKS;
-            }
+        //    if (!config.ContainsKey("MARQUEE_TYPE"))
+        //    {
+        //        Log.WriteLine("FVConfig.GetMarqueeType():- WARNING! NO MARQUEE_TYPE (EXTRACTION PROCESS) IS DEFINED FOR FEATURE VECTORS!");
+        //        Log.WriteLine("                            SET THE DEFAULT:- FV_MarqueeType = AT_ENERGY_PEAKS");
+        //        return FV_MarqueeType.AT_ENERGY_PEAKS;
+        //    }
 
-            string value = config.GetString("MARQUEE_TYPE");
-            if (value.StartsWith("AT_ENERGY_PEAKS"))
-                return FV_MarqueeType.AT_ENERGY_PEAKS;
-            else if (value.StartsWith("AT_FIXED_INTERVALS_OF_"))
-            {
-                string[] words = value.Split('_');
-                int i;
-                if (!int.TryParse(words[4], out i))
-                {
-                    Log.WriteLine("FVConfig.MarqueeType():- WARNING! INVALID INTEGER:- " + words[4]);
-                    interval = 0;
-                }
-                else
-                    interval = i;
-                return FV_MarqueeType.AT_FIXED_INTERVALS;
-            }
-            else
-            {
-                Log.WriteLine("FVConfig.MarqueeType():- WARNING! INVALID EXTRACTION VALUE IS DEFINED FOR FEATURE VECTORS! " + value);
-                Log.WriteLine("                         SET THE DEFAULT:- MarqueeType = AT_ENERGY_PEAKS");
-                return FV_MarqueeType.AT_ENERGY_PEAKS;
-            }
-        } //end GetMarqueeType()
+        //    string value = config.GetString("MARQUEE_TYPE");
+        //    if (value.StartsWith("AT_ENERGY_PEAKS"))
+        //        return FV_MarqueeType.AT_ENERGY_PEAKS;
+        //    else if (value.StartsWith("AT_FIXED_INTERVALS_OF_"))
+        //    {
+        //        string[] words = value.Split('_');
+        //        int i;
+        //        if (!int.TryParse(words[4], out i))
+        //        {
+        //            Log.WriteLine("FVConfig.MarqueeType():- WARNING! INVALID INTEGER:- " + words[4]);
+        //            interval = 0;
+        //        }
+        //        else
+        //            interval = i;
+        //        return FV_MarqueeType.AT_FIXED_INTERVALS;
+        //    }
+        //    else
+        //    {
+        //        Log.WriteLine("FVConfig.MarqueeType():- WARNING! INVALID EXTRACTION VALUE IS DEFINED FOR FEATURE VECTORS! " + value);
+        //        Log.WriteLine("                         SET THE DEFAULT:- MarqueeType = AT_ENERGY_PEAKS");
+        //        return FV_MarqueeType.AT_ENERGY_PEAKS;
+        //    }
+        //} //end GetMarqueeType()
         #endregion
 
 
@@ -216,16 +210,6 @@ namespace AudioAnalysis
             //FV_DEFAULT_NOISE_FILE=C:\SensorNetworks\Templates\template_2_DefaultNoise.txt
             writer.WriteConfigValue("FV_DEFAULT_NOISE_FILE", FV_DefaultNoisePath);
             writer.WriteConfigValue("FV_SOURCE", FVSourceType.ToString());
-            if (FVSourceType == FV_Source.MARQUEE)
-            {
-                writer.WriteConfigValue("MARQUEE_START", MarqueeStart);
-                writer.WriteConfigValue("MARQUEE_END", MarqueeEnd);
-                writer.WriteConfigValue("MARQUEE_TYPE", FVMarqueeType);
-                if (FVMarqueeType == FV_MarqueeType.AT_FIXED_INTERVALS)
-                {
-                    writer.WriteConfigValue("MARQUEE_INTERVAL", MarqueeInterval);
-                }
-            }
             writer.Flush();
             writer.WriteConfigValue("FEATURE_VECTOR_LENGTH", FVLength);
             writer.WriteConfigValue("FV_COUNT", FVCount);
