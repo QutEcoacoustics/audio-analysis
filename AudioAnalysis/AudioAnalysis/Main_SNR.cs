@@ -98,7 +98,6 @@ namespace AudioAnalysis
 
 
 //            Console.ReadLine();
-            //recording = new AudioRecording(bytes, wavPath);
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
