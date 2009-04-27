@@ -18,7 +18,7 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 2;
+            int callID = 3;
             string wavDirName; string wavFileName;
             AudioRecording recording;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
@@ -37,10 +37,10 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
             Log.WriteIfVerbose("CallID        =" + callID);
             Log.WriteIfVerbose("wav File Path =" + wavPath);
-            Log.WriteIfVerbose("target   Path =" + outputFolder);
+            Log.WriteIfVerbose("output   Path =" + outputFolder);
 
             //creates template with UNDEFINED MODEL
-            var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName)/* as Template_CC*/;
+            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateFName)/* as Template_CC*/;
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
