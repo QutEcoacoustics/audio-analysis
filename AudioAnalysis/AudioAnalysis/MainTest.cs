@@ -21,7 +21,8 @@ namespace AudioAnalysis
             // KEY PARAMETERS TO CHANGE
             int callID = 1;   // USE CALL 1 FOR UNIT TESTING
             string wavDirName; string wavFileName;
-            //WavChooser.ChooseWavFile(out wavDirName, out wavFileName);  //WARNING! MUST CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            AudioRecording recording;
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             wavFileName = wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for the Call 1 and call 8 template
 
@@ -46,7 +47,7 @@ namespace AudioAnalysis
 
             //2: create template and save it
             string templateFname = "Template" + callID + ".txt";
-            CreateTemplate(args[0], args[1], new GUI(callID, templateDir), templateFname);
+            CreateTemplate(args[0], recording, new GUI(callID, templateDir), templateFname);
 
             //3: read an existing template
             //args[0] string appConfigPath
@@ -108,9 +109,9 @@ namespace AudioAnalysis
         /// <param name="gui"></param>
         /// <param name="templateFName"></param>
         /// <returns></returns>
-        public static BaseTemplate CreateTemplate(string appConfigPath, string wavPath, GUI gui, string templateFName)
+        public static BaseTemplate CreateTemplate(string appConfigPath, AudioRecording recording, GUI gui, string templateFName)
 		{
-            var template = BaseTemplate.Load(appConfigPath, gui, wavPath, templateFName);
+            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateFName);
 
             if (BaseTemplate.InTestMode)
             {
