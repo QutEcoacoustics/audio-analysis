@@ -21,11 +21,12 @@ namespace AudioAnalysis
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModelConfig   = new AcousticModel(config);
 
+            //DEAL WITH THE VOCALISATION MODEL TYPE
             var modelName = config.GetString("MODEL_TYPE");
             ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
             this.Modeltype = modelType;
 
-            //do not init a Model if in crete new template mode.
+            //do not init a Model if in create new template mode.
             if (this.mode == Mode.CREATE_NEW_TEMPLATE) return;       
 
             if (modelType == ModelType.UNDEFINED) Model = new Model_Undefined();
@@ -35,9 +36,20 @@ namespace AudioAnalysis
 
         }
 
+        /// <summary>
+        /// The call to static method FVExtractor.ExtractFVsFromRecording() results in the
+        /// creation of an array of feature vectors each representing a portion of a vocalisation.
+        /// </summary>
+        /// <param name="ar"></param>
+        protected override void ExtractTemplateFromRecording(AudioRecording ar)
+        {
+            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecording()"); 
+            FVExtractor.ExtractFVsFromVocalisations(ar, FeatureVectorConfig, SonogramConfig);
+        }
+
 		public override void Save(string targetPath)
 		{
-            Log.WriteIfVerbose("START Template_CC.Save(targetPath=" + targetPath + ")");
+            Log.WriteIfVerbose("START Template_CCAuto.Save(targetPath=" + targetPath + ")");
             this.DataPath = targetPath;
             string opDir = Path.GetDirectoryName(targetPath);
             if (!Directory.Exists(opDir)) Directory.CreateDirectory(opDir);
@@ -74,16 +86,9 @@ namespace AudioAnalysis
             else Model.Save(writer);
         }
 
-        //public override void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
-        //{
-        //    bool doExtractSubband = false;
-        //    var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
-        //    SaveResultsImage(spectralSono, imagePath, result);
-        //}
-
         public override void SaveResultsImage(SpectralSonogram sonogram, string imagePath, BaseResult result)
         {
-            Log.WriteIfVerbose("Template_MFCC.SaveResultsImage(SpectralSonogram sonogram, string imagePath, Results result)");
+            Log.WriteIfVerbose("Template_CCAuto.SaveResultsImage(SpectralSonogram sonogram, string imagePath, Results result)");
             bool doHighlightSubband = true;
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
@@ -95,6 +100,12 @@ namespace AudioAnalysis
         }
 
 
+
+
+
+        //**********************************************************************************************************************
+        //**********************************************************************************************************************
+        //**********************************************************************************************************************
         //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
