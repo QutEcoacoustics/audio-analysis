@@ -35,6 +35,16 @@ namespace AudioAnalysis
 
         }
 
+        /// <summary>
+        /// The call to static method FVExtractor.ExtractFVsFromRecording() results in the
+        /// creation of an array of feature vectors each representing a portion of a vocalisation.
+        /// </summary>
+        /// <param name="ar"></param>
+        protected override void ExtractTemplateFromRecording(AudioRecording ar)
+        {
+            FVExtractor.ExtractFVsFromRecording(ar, FeatureVectorConfig, SonogramConfig);
+        }
+
 		public override void Save(string targetPath)
 		{
             Log.WriteIfVerbose("START Template_CC.Save(targetPath=" + targetPath + ")");
@@ -74,12 +84,6 @@ namespace AudioAnalysis
             else Model.Save(writer);
         }
 
-        //public override void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
-        //{
-        //    bool doExtractSubband = false;
-        //    var spectralSono = new SpectralSonogram(this.SonogramConfig, wav, doExtractSubband);
-        //    SaveResultsImage(spectralSono, imagePath, result);
-        //}
 
         public override void SaveResultsImage(SpectralSonogram sonogram, string imagePath, BaseResult result)
         {
