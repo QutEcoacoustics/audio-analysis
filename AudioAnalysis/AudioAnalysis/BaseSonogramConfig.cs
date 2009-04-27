@@ -70,7 +70,7 @@ namespace AudioAnalysis
 
             config.SetPair(ConfigKeys.Sonogram.SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
 
-            config.SetPair(ConfigKeys.ImageSave.AddGrid, true.ToString());
+            config.SetPair(ConfigKeys.ImageSave.AddGrid, false.ToString());
 
             Initialize(config);
                         

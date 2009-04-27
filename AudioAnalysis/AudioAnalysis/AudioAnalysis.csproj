@@ -193,4 +193,8 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>copy $(TargetDir)AudioAnalysis.exe ..\..\..\..\Webfrontend\Bin\
+copy $(TargetDir)AudioAnalysis.pdb ..\..\..\..\Webfrontend\Bin\</PostBuildEvent>
+  </PropertyGroup>
 </Project>

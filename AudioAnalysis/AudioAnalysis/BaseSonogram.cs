@@ -310,6 +310,21 @@ namespace AudioAnalysis
         /// <returns></returns>
         public Image GetImage_ReducedSonogram(int factor)
         {
+            return GetImage_ReducedSonogram(factor, true);
+        }
+
+        public Image GetImage_ReducedSonogramWithWidth(int width, bool drawGridLines)
+        {
+            var data = Data; //sonogram intensity values
+            int frameCount = data.GetLength(0); // Number of spectra in sonogram
+
+            int factor = frameCount / width;
+
+            return GetImage_ReducedSonogram(factor, drawGridLines);
+        }
+
+        public Image GetImage_ReducedSonogram(int factor, bool drawGridLines)
+        {
           //  double[] logEnergy = this.LogEnPerFrame;
             var data = Data; //sonogram intensity values
             int frameCount  = data.GetLength(0); // Number of spectra in sonogram
@@ -355,14 +370,19 @@ namespace AudioAnalysis
                 }//end over all freq bins
 
                 //set up grid color
-                Color gridCol = Color.Black;
-                if ((w % 2) == 0) gridCol = Color.White;
-                for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
+
+                if (drawGridLines)
                 {
-                    if (vScale[p] == 0) continue;
-                    int y = imageHeight - p;
-                    bmp.SetPixel(w, y, gridCol);
+                    Color gridCol = Color.Black;
+                    if ((w % 2) == 0) gridCol = Color.Black;
+                    for (int p = 0; p < vScale.Length; p++) //over all Y-axis pixels
+                    {
+                        if (vScale[p] == 0) continue;
+                        int y = imageHeight - p;
+                        bmp.SetPixel(w, y, gridCol);
+                    }
                 }
+
             }
             return bmp;
         }
