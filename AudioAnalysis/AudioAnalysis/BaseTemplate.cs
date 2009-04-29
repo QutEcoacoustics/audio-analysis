@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace AudioAnalysis
 {
-    public enum Feature_Type { UNDEFINED, MFCC }
+    public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO }
     public enum Mode { UNDEFINED, CREATE_NEW_TEMPLATE, READ_EXISTING_TEMPLATE }
 
 	[Serializable]
@@ -58,31 +58,31 @@ namespace AudioAnalysis
         /// </summary>
         /// <param name="appConfigFile">default param values</param>
         /// <param name="gui">param values for this specific template</param>
-        /// <param name="wavPath">the recording from which templtae to be extracted</param>
+        /// <param name="recording">the recording from which templtae to be extracted</param>
         /// <param name="templateFName">the path to which template info is to be saved</param>
         /// <returns></returns>
-        public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
+        //public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
+        public static BaseTemplate Load(string appConfigFile, GUI gui, AudioRecording recording, string templateFName)
         {
-            //STEP ONE: Initialise AudioRecording
-            byte[] bytes = System.IO.File.ReadAllBytes(wavPath);
-            var recording = new AudioRecording(bytes); //AudioRecording has one method GetWavData() that returns a WavReader
-            //STEP TWO: Initialise template with parameters
+            //STEP ONE: Initialise template with parameters
             string opTemplatePath = gui.opDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
             BaseTemplate template = Load(config);
-            //STEP THREE: Extract template
+
+            //STEP TWO: Extract template
             template.ExtractTemplateFromRecording(recording);
             template.Save(opTemplatePath);
 
-            //STEP FOUR: Verify fv extraction by observing output from acoustic model.
+            //STEP THREE: Verify fv extraction by observing output from acoustic model.
             template.GenerateSymbolSequenceAndSave(recording, gui.opDir);
 
             //STEP FIVE: save an image of the sonogram with symbol sequence track added
             var imagePath = Path.Combine(gui.opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
             template.SonogramConfig.DisplayFullBandwidthImage = true;
             var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavData());
-            spectralSono.CalculateSubbandSNR(new WavReader(wavPath), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
+            //spectralSono.CalculateSubbandSNR(new WavReader(wavPath), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand); 
+            spectralSono.CalculateSubbandSNR(recording.GetWavData(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
             template.SaveSyllablesImage(spectralSono, imagePath);
 
             return template;
@@ -106,22 +106,22 @@ namespace AudioAnalysis
 
         public static BaseTemplate Load(Configuration config)
         {
-            var modelName = config.GetString("MODEL_TYPE");
+            var featureExtractionName = config.GetString("FEATURE_TYPE");
 
-            ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
-            if (modelName.StartsWith("UNDEFINED")) return new Template_CC(config);
+            Feature_Type featureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+            if (featureExtractionName.StartsWith("UNDEFINED"))
+            {
+                throw new Exception("The feature extraction type <" + featureExtractionName + "> is undefined. FATAL ERROR!");
+            }
+            if (featureExtractionName.StartsWith("MFCC")) return new Template_CC(config);
             else
-                if (modelName.StartsWith("MM_ERGODIC")) return new Template_CC(config);
+            if (featureExtractionName.StartsWith("CC_AUTO")) return new Template_CCAuto(config);
             else
-                    if (modelName.StartsWith("MM_TWO_STATE_PERIODIC")) return new Template_CC(config);
-                else
-                        if (modelName.StartsWith("ONE_PERIODIC_SYLLABLE")) return new Template_CC(config);
-                    else
-                    {
-                        Log.Write("ERROR at BaseTemplate Load(Configuration config);\n" +
-                            "The ModelType = " + modelName + " which is an unknown Type");
-                        throw new ArgumentException("Unrecognised template type.");
-                    }
+            {
+               Log.Write("ERROR at BaseTemplate Load(Configuration config);\n" +
+               "The Feature Extraction Type = " + featureExtractionName + " which is an unknown.");
+               throw new ArgumentException("Unrecognised type.");
+            }
         }
 
 
@@ -131,9 +131,10 @@ namespace AudioAnalysis
             config.SetPair("AUTHOR", gui.AuthorName.ToString());
             config.SetPair("TEMPLATE_ID", gui.CallID.ToString());
             config.SetPair("CALL_NAME", gui.CallName);
-            config.SetPair("COMMENT", gui.CallComment);
+            config.SetPair("COMMENT", gui.Comment);
             //**************** INFO ABOUT ORIGINAL .WAV FILE
             config.SetPair("WAV_DIR", gui.WavDirName); //wavDirName = @"C:\SensorNetworks\WavFiles\";
+            config.SetPair("TRAINING_DIR", gui.TrainingDirName); //location of training vocalisations
             config.SetPair("WAV_FILE_NAME", gui.SourceFile);  //Lewin's rail kek keks.
             config.SetPair("WAV_FILE_PATH", gui.SourcePath);
             //config.SetPair("NYQUIST_FREQ", gui.); //default value set in appConfig File
@@ -155,35 +156,28 @@ namespace AudioAnalysis
             config.SetPair("INCLUDE_DELTA", gui.IncludeDeltaFeatures.ToString());
             config.SetPair("INCLUDE_DOUBLEDELTA", gui.IncludeDoubleDeltaFeatures.ToString());
             config.SetPair("DELTA_T", gui.DeltaT.ToString());
+
             //**************** FV EXTRACTION OPTIONS **************************
-            config.SetPair("FV_SOURCE", gui.Fv_Source.ToString());
-
+            config.SetPair("NUMBER_OF_SYLLABLES", gui.NumberOfSyllables.ToString());//CC_AUTO option
+            config.SetPair("FV_SOURCE", gui.Fv_Source.ToString()); //MFCC option
             //FV INIT is a table of strings. Must deconstruct
-            int fvCount = gui.FvInit.GetLength(0);
-            config.SetPair("FV_COUNT", fvCount.ToString());
-            for (int i = 0; i < fvCount; i++)
+            if (gui.FvInit != null)
             {
-                config.SetPair("FV"+(i+1)+"_DATA", gui.FvInit[i,0]+"\t"+gui.FvInit[i,1]);
+                int fvCount = gui.FvInit.GetLength(0);
+                config.SetPair("FV_COUNT", fvCount.ToString());
+               for (int i = 0; i < fvCount; i++)
+               {
+                   config.SetPair("FV"+(i+1)+"_DATA", gui.FvInit[i,0]+"\t"+gui.FvInit[i,1]);
+               }
             }
-
-            config.SetPair("MARQUEE_TYPE", gui.Fv_Extraction.ToString());
-            config.SetPair("MARQUEE_START", gui.MarqueeStart.ToString());
-            config.SetPair("MARQUEE_END", gui.MarqueeEnd.ToString());
-            config.SetPair("MARQUEE_INTERVAL", gui.FvExtractionInterval.ToString());
-            //config.SetPair("FV_DESCRIPTOR", gui.FVDescriptor);
-            //config.SetPair("FV_DO_AVERAGING", gui.DoFvAveraging.ToString());
             config.SetPair("FV_DEFAULT_NOISE_FILE", gui.FvDefaultNoiseFile);
 
-            //**************** INFO ABOUT FEATURE VECTORS - THE ACOUSTIC MODEL ***************
-            //config.SetPair("FEATURE_VECTOR_LENGTH", gui.MmType.ToString());
-            //config.SetPair("NUMBER_OF_FEATURE_VECTORS", gui.MmType.ToString());
 
-
-            //THRESHOLDS FOR THE ACOUSTIC MODEL
+            //******************* THRESHOLDS FOR THE ACOUSTIC MODEL ****************
             //THRESHOLD OPTIONS: 3.1(p=0.001), 2.58(p=0.005), 2.33(p=0.01), 2.15(p=0.03), 1.98(p=0.05),
             config.SetPair("ZSCORE_THRESHOLD", gui.ZScoreThreshold.ToString());
 
-            //**************** INFO ABOUT LANGUAGE MODEL
+            //**************** INFO ABOUT LANGUAGE MODEL ***************************
             //There are 3 choices of MODEl TYPE: (1)UNDEFINED (2)ERGODIC (3)TWO_STATE_PERIODIC (4)OLD_PERIODIC
             config.SetPair("MODEL_TYPE", gui.ModelType.ToString());
             //There are 3 choices of MM: (1)UNDEFINED (2)ERGODIC (3)TWO_STATE_PERIODIC (4)OLD_PERIODIC
@@ -267,12 +261,7 @@ namespace AudioAnalysis
 		}
 
 
-        public void ExtractTemplateFromRecording(AudioRecording ar)
-        {
-            WavReader wav = ar.GetWavData();
-            var sono = new CepstralSonogram(this.SonogramConfig, wav);
-            FVExtractor.ExtractFVsFromSonogram(sono, FeatureVectorConfig, SonogramConfig);
-        }
+        protected abstract void ExtractTemplateFromRecording(AudioRecording ar);
 
 
 
@@ -330,14 +319,6 @@ namespace AudioAnalysis
         }
 
 
-        //public void SaveSyllablesImage(AcousticVectorsSonogram sonogram, string path)
-        //{
-        //    var image = new Image_MultiTrack(sonogram.GetImage());
-        //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-        //    int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
-        //    image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
-        //    image.Save(path);
-        //}
         public void SaveEnergyImage(SpectralSonogram sonogram, string path)
         {
             Log.WriteIfVerbose("Basetemplate.SaveEnergyImage(SpectralSonogram sonogram, string path)");
