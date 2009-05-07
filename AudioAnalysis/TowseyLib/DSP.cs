@@ -274,15 +274,17 @@ namespace TowseyLib
 
 
             //COPY THIS TEST TEMPLATE
-            if (false) //test Method(parameters)
+            bool doit1 = false;
+            if (doit1) //test Method(parameters)
             {   
                 System.Console.WriteLine("\nTest of METHOD)");
             }//end test Method(string fName)
 
 
 
-            if (true) //test Method(parameters)
-           {
+            bool doit2 = true;
+            if (doit2) //test Method(parameters)
+            {
                 System.Console.WriteLine("\nTest of Filter_DecayingSinusoid()");
                 double sf = 100;
                 double tHalf = 0.2;//seconds
@@ -299,7 +301,8 @@ namespace TowseyLib
 
 
 
-            if (false) //test Filter_DecayingSinusoid()
+            bool doit3 = false;
+            if (doit3) //test Filter_DecayingSinusoid()
             {
                 System.Console.WriteLine("\nTest of Filter_DecayingSinusoid()");
                 int signalLength= 100;

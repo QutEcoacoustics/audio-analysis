@@ -3,7 +3,7 @@ using System.IO;
 
 namespace TowseyLib
 {
-    class WavWriter
+    public class WavWriter
     {
 
         /// <summary>
@@ -70,7 +70,7 @@ namespace TowseyLib
             //perfect5th tones
             //for (int i = 0; i < samples; i++) writer.Write(perfect5th[i]);
             //write the signal
-            for (int i = 0; i < samples; i++) writer.Write((short)signal[i]);
+            for (int i = 0; i < samples; i++) writer.Write((short)signal[i]);//converts double to signed 16 bit
 
             writer.Close();
             stream.Close();

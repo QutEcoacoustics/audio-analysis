@@ -15,7 +15,8 @@ namespace TowseyLib
         {
             Log.WriteLine("TESTING METHODS IN CLASS FileTools\n\n");
 
-            if (false) //test ReadTextFile(string fName)
+            bool doit1 = false;
+            if (doit1) //test ReadTextFile(string fName)
             {
                 string fName = testDir + "testTextFile.txt";
                 var array = ReadTextFile(fName);
@@ -23,7 +24,8 @@ namespace TowseyLib
 					Console.WriteLine(line);
             }//end test ReadTextFile(string fName)
 
-            if (false) //test WriteTextFile(string fName)
+            bool doit2 = false;
+            if (doit2) //test WriteTextFile(string fName)
             {
                 string fName = testDir + "testOfWritingATextFile.txt";
                 var array = new List<string>();
@@ -34,8 +36,9 @@ namespace TowseyLib
                 array.Add("string5");
                 WriteTextFile(fName, array);
             }//end test WriteTextFile(string fName)
-            
-            if (false) //test ReadDoubles2Matrix(string fName)
+
+            bool doit3 = false;
+            if (doit3) //test ReadDoubles2Matrix(string fName)
             {
                 string fName = testDir + "testOfReadingMatrixFile.txt";
                 double[,] matrix = ReadDoubles2Matrix(fName);
@@ -45,7 +48,8 @@ namespace TowseyLib
                 DataTools.writeMatrix(matrix);
             }//end test ReadDoubles2Matrix(string fName)
 
-            if (true) //test Method(parameters)
+            bool doit4 = true;
+            if (doit4) //test Method(parameters)
             {
                 string fName = testDir + "testWriteOfMatrix2File.txt";
                 double[,] matrix = { {0.1,0.2,0.3,0.4,0.5,0.6},
@@ -58,7 +62,8 @@ namespace TowseyLib
             }//end test Method(string fName)
 
             //COPY THIS TEST TEMPLATE
-            if (false) //test Method(parameters)
+            bool doit5 = false;
+            if (doit5) //test Method(parameters)
             {
             }//end test Method(string fName)
 
