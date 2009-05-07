@@ -18,7 +18,10 @@ namespace AudioAnalysis
 
         #region Properties
         public int CallID { get; set; } //required for constructing FV file names
-        public Feature_Type FeatureExtractionType{ get; set; }
+
+        public double StartTime{ get; set; }
+        public double EndTime { get; set; }
+        public Feature_Type FeatureExtractionType { get; set; }
         public int FVCount { get; set; }
         public string[] FVIniData { get; private set; }
 
@@ -83,6 +86,10 @@ namespace AudioAnalysis
                     FVSourceDir = config.GetString("TRAINING_DIR");
                     FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
                     Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
+                    break;
+                case Feature_Type.DCT_2D:
+                    this.StartTime = config.GetDouble("START_TIME");
+                    this.EndTime   = config.GetDouble("END_TIME");
                     break;
             }
         }//end Constructor()

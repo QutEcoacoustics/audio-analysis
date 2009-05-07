@@ -18,29 +18,29 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            int callID = 3;
+            int callID = 4;
             string wavDirName; string wavFileName;
             AudioRecording recording;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
             Log.Verbosity = 1;
             //#######################################################################################################
 
-            string appConfigPath = args[0];
+            string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
+            if(args.Length > 0) appConfigPath = args[0];
             string templateDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
-            string templatePath = templateDir + "Template" + callID + ".txt";
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            //string outputFolder = @"C:\SensorNetworks\Output\";  //default 
-            string outputFolder = templateDir;  //args[2]
-            var gui = new GUI(callID, templateDir);
             string templateFName = "Template" + callID + ".txt";
+            //string outputFolder = templateDir;  //args[2]
+            var gui = new GUI(callID, templateDir);
 
-            Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            Log.WriteIfVerbose("CallID        =" + callID);
-            Log.WriteIfVerbose("wav File Path =" + wavPath);
-            Log.WriteIfVerbose("output   Path =" + outputFolder);
+            Console.WriteLine("appConfigPath =" + appConfigPath);
+            Console.WriteLine("CallID        =" + callID);
+            Console.WriteLine("wav Dir       =" + wavDirName);
+            Console.WriteLine("wav File Path =" + recording.FileName);
+            Console.WriteLine("template dir  =" + templateDir);
+            Console.WriteLine("template name =" + templateFName);
 
             //creates template with UNDEFINED MODEL
-            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateFName)/* as Template_CC*/;
+            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateDir, templateFName);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();

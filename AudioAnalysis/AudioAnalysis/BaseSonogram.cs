@@ -199,7 +199,7 @@ namespace AudioAnalysis
         {
             //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
             double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-            double snrFactor = 5.0; //Multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
+            //double snrFactor = 5.0; //Multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
             //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
             //This is an attempt to relate spectral detail to the SNR calculated from original audio signal.
             /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.

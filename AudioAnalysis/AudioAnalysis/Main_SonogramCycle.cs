@@ -101,7 +101,7 @@ namespace AudioAnalysis
             Console.WriteLine("Make Image");
             Log.Verbosity = 0;
             imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(opPath) + "_2.png");
-            template.SaveResultsImage(recording.GetWavData(), imagePath, result);//WITHOUT HMM SCORE
+            template.SaveResultsImage(recording.GetWavReader(), imagePath, result);//WITHOUT HMM SCORE
 
             string appPath = @"C:\WINDOWS\system32\mspaint.exe";
             string arguments = imagePath;
