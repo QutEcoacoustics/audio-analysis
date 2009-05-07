@@ -57,7 +57,7 @@ namespace TowseyLib
             // fill in probable inter-syllable gaps
             bool sig = true;
             int count = 0;
-            for (int i = 0; i < L; i++)//foreach time step
+            for (int i = syllableDelay; i < decibels.Length; i++) //foreach time step
             {
                 if (state[i] == 0)
                 {
@@ -68,8 +68,9 @@ namespace TowseyLib
                 if (state[i] == 2)
                 {
                     //Console.WriteLine("count["+i+"]="+count);
+                    if ((sig == false) && (count < syllableDelay))
+                        for (int j = 1; j <= count; j++) state[i - j] = 1;//fill gap with state = 1;
                     sig = true;
-                    if (count < syllableDelay) for (int j = 1; j <= count; j++) state[i - j] = 1;
                     count = 0;
                 }
             }

@@ -25,8 +25,11 @@ namespace TowseyLib
 			Source = files[files.Length - 1]; // Take last file as filename
 			table = new Dictionary<string, string>();
 			foreach (var file in files)
-				foreach (var item in FileTools.ReadPropertiesFile(file))
-					table[item.Key] = item.Value;
+                foreach (var item in FileTools.ReadPropertiesFile(file))
+                {
+                    table[item.Key] = item.Value;
+                    //if (item.Key.StartsWith("VERBOSITY")) Console.WriteLine("VERBOSITY = " + item.Value);
+                }
         }
 
 

@@ -13,8 +13,8 @@ namespace TowseyLib
         {
             Console.WriteLine("TESTING METHODS IN CLASS DataTools");
 
-
-            if (false) //test Submatrix()
+            bool doit1 = false;
+            if (doit1) //test Submatrix()
             {
                 Console.WriteLine(""); 
                 string fName = testDir + "testOfReadingMatrixFile.txt";
@@ -1648,7 +1648,14 @@ namespace TowseyLib
     }
   }
 
-
+   static public bool ValueInList(int value, int[] data)
+   {
+       for (int i = 0; i < data.Length; i++)
+       {
+           if(value == data[i]) return true;
+       }
+       return false;
+   }
 
 
   /**

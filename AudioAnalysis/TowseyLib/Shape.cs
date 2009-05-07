@@ -763,8 +763,8 @@ namespace TowseyLib
             Console.WriteLine("TESTING METHODS IN CLASS DataTools");
 
             //string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
-
-            if (false) //test1 method AREA, CENTROID and CENTROID-DISTANCE()
+            Boolean doit1 = false;
+            if (doit1) //test1 method AREA, CENTROID and CENTROID-DISTANCE()
             {
                 Console.WriteLine("Test Method Name()");
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
@@ -786,7 +786,8 @@ namespace TowseyLib
 
             } //end test1
 
-            if (false) //test2 method IncludesRow(), IncludesColumn(), PointInside()
+            Boolean doit2 = false;
+            if (doit2) //test2 method IncludesRow(), IncludesColumn(), PointInside()
             {
                 Console.WriteLine("Test Method Name()");
                 int r1 = 10; int c1 = 10; int r2 = 20; int c2 = 20;
@@ -857,10 +858,10 @@ namespace TowseyLib
             } //end test3
 
 
-            if (false) //test Method()
-            {
-                Console.WriteLine("Test Method Name()");
-            } //end test4
+            //if (false) //test Method()
+            //{
+            //    Console.WriteLine("Test Method Name()");
+            //} //end test4
 
 
             Console.WriteLine("\nFINISHED!!");
