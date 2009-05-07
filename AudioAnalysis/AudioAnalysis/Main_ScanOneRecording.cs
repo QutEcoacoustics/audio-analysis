@@ -71,11 +71,11 @@ namespace AudioAnalysis
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + wavFileName + ".png");
             //SAVE RESULTS IMAGE WITHOUT HMM SCORE
-            template.SaveResultsImage(recording.GetWavData(), imagePath, result);
+            template.SaveResultsImage(recording.GetWavReader(), imagePath, result);
             //INSTEAD OF PREVIOUS LINE USE FOLLOWING LINES WITH ALFREDOS HMM SCORES
-            //string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
-            //List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
-            //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);//WITH HMM SCORE
+            string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
+            List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
+            template.SaveResultsImage(recording.GetWavReader(), imagePath, result, hmmResults);//WITH HMM SCORE
 
 
 

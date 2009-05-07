@@ -17,7 +17,7 @@ namespace AudioAnalysis
         public static void ExtractFVsFromRecording(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
         {
             Log.WriteIfVerbose("START method FVExtractor.ExtractFVsFromRecording()");
-            WavReader wav = ar.GetWavData();
+            WavReader wav = ar.GetWavReader();
             var sonogram = new CepstralSonogram(sonoConfig, wav);
             //transfer parameters to where required
             sonoConfig.SampleRate = sonogram.SampleRate;
@@ -56,6 +56,14 @@ namespace AudioAnalysis
             return fvs;
         }
 
+        /// <summary>
+        /// called from FVExtractor.GetFeatureVectorsFromFrames(BaseSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        /// </summary>
+        /// <param name="M"></param>
+        /// <param name="frames"></param>
+        /// <param name="dT"></param>
+        /// <param name="fvName"></param>
+        /// <returns></returns>
         private static FeatureVector ExtractFeatureVectorsFromSelectedFramesAndAverage(double[,] M, string frames, int dT, string fvName)
         {
             //initialise feature vectors for template. Each frame provides one vector
@@ -74,7 +82,7 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// This kmethod is called when constructing a CC AUTO template.
+        /// This method is called when constructing a CC AUTO template.
         /// </summary>
         /// <param name="ar"></param>
         /// <param name="FVParams"></param>
@@ -83,7 +91,7 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("START FVExtractor.ExtractFVsFromVocalisations()");
 
-            WavReader wav = ar.GetWavData();
+            WavReader wav = ar.GetWavReader();
             var sonogram = new CepstralSonogram(sonoConfig, wav);
             //transfer parameters to where required
             sonoConfig.SampleRate = sonogram.SampleRate;
@@ -100,7 +108,7 @@ namespace AudioAnalysis
                 //Make sonogram of each recording
                 Console.WriteLine("Recording = "+f.Name);
                 AudioRecording recording = new AudioRecording(f.FullName);
-                WavReader wr = recording.GetWavData();
+                WavReader wr = recording.GetWavReader();
                 var ss = new SpectralSonogram(sonoConfig, wr);
                 var image = new Image_MultiTrack(ss.GetImage(false, false));
                 string path = samplesDir + Path.GetFileNameWithoutExtension(f.Name)+ ".png";
@@ -171,7 +179,35 @@ namespace AudioAnalysis
             return fv;
         }
 
+        /// <summary>
+        /// This method is called when constructing a DCT_2D template.
+        /// </summary>
+        /// <param name="ar"></param>
+        /// <param name="FVParams"></param>
+        /// <param name="sonoConfig"></param>
+        public static void ExtractFVsFromMarquee(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        {
+            if(Log.Verbosity==1) Console.WriteLine("START FVExtractor.ExtractFVsFromMarquee()");
+            Log.WriteIfVerbose("Start time = " + FVParams.StartTime.ToString("F3") + " seconds from start of recording");
+            Log.WriteIfVerbose("End   time = " + FVParams.EndTime.ToString("F3")   + " seconds from start of recording");
+            FVParams.FVArray = new FeatureVector[1];
+            FVParams.FVCount = 1;
 
+            //extract marquee using start, end values
+            Log.WriteIfVerbose("");
+
+
+            //pad to fixed number of frames
+
+            //do the DCT
+ 
+            //store as single FV
+
+
+
+            Console.WriteLine("End of the Line");
+            Console.ReadLine();
+        }
 
     } //end class FVExtractor
 

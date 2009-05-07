@@ -37,7 +37,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;LOGTOCONSOLE</DefineConstants>
+    <DefineConstants>TRACE;LOGTOCONSOLE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -95,6 +95,7 @@
     <Compile Include="AudioRecording.cs" />
     <Compile Include="BaseTemplate.cs" />
     <Compile Include="BaseResult.cs" />
+    <Compile Include="Main_Alfredo1.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
     <Compile Include="Main_CreateTemplate_Part2.cs" />
@@ -140,6 +141,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Template_CCAuto.cs" />
+    <Compile Include="Template_DCT2D.cs" />
     <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -194,7 +196,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetDir)AudioAnalysis.exe ..\..\..\..\Webfrontend\Bin\
-copy $(TargetDir)AudioAnalysis.pdb ..\..\..\..\Webfrontend\Bin\</PostBuildEvent>
+    <PostBuildEvent>REM copy $(TargetDir)AudioAnalysis.exe ..\..\..\..\Webfrontend\Bin\
+REM copy $(TargetDir)AudioAnalysis.pdb ..\..\..\..\Webfrontend\Bin\</PostBuildEvent>
   </PropertyGroup>
 </Project>

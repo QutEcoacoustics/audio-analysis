@@ -47,7 +47,7 @@ namespace AudioAnalysis
 
             //2: create template and save it
             string templateFname = "Template" + callID + ".txt";
-            CreateTemplate(args[0], recording, new GUI(callID, templateDir), templateFname);
+            CreateTemplate(args[0], recording, new GUI(callID, templateDir), templateDir, templateFname);
 
             //3: read an existing template
             //args[0] string appConfigPath
@@ -109,9 +109,9 @@ namespace AudioAnalysis
         /// <param name="gui"></param>
         /// <param name="templateFName"></param>
         /// <returns></returns>
-        public static BaseTemplate CreateTemplate(string appConfigPath, AudioRecording recording, GUI gui, string templateFName)
+        public static BaseTemplate CreateTemplate(string appConfigPath, AudioRecording recording, GUI gui, string templateDir, string templateFName)
 		{
-            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateFName);
+            var template = BaseTemplate.Load(appConfigPath, gui, recording, templateDir, templateFName);
 
             if (BaseTemplate.InTestMode)
             {
@@ -159,7 +159,7 @@ namespace AudioAnalysis
             string imagePath = Path.Combine(outputFolder, "RESULTS_"+Path.GetFileNameWithoutExtension(wavPath) + ".png");
             string hmmPath = Path.Combine(Path.GetDirectoryName(templatePath), "Currawong_HMMScores.txt");
             List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
-            template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults);
+            template.SaveResultsImage(recording.GetWavReader(), imagePath, result, hmmResults);
 
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
             {

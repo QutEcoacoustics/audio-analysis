@@ -7,7 +7,7 @@ using System.Collections.Generic;
 
 namespace AudioAnalysis
 {
-    public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO }
+    public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
     public enum Mode { UNDEFINED, CREATE_NEW_TEMPLATE, READ_EXISTING_TEMPLATE }
 
 	[Serializable]
@@ -61,12 +61,12 @@ namespace AudioAnalysis
         /// <param name="recording">the recording from which templtae to be extracted</param>
         /// <param name="templateFName">the path to which template info is to be saved</param>
         /// <returns></returns>
-        //public static BaseTemplate Load(string appConfigFile, GUI gui, string wavPath, string templateFName)
-        public static BaseTemplate Load(string appConfigFile, GUI gui, AudioRecording recording, string templateFName)
+        public static BaseTemplate Load(string appConfigFile, GUI gui, AudioRecording recording, string templateDir, string templateFName)
         {
             //STEP ONE: Initialise template with parameters
-            string opTemplatePath = gui.opDir + templateFName;
+            string opTemplatePath = templateDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);
+            config.SetPair("WAV_FILE_NAME", recording.FilePath);
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
             BaseTemplate template = Load(config);
 
@@ -80,9 +80,9 @@ namespace AudioAnalysis
             //STEP FIVE: save an image of the sonogram with symbol sequence track added
             var imagePath = Path.Combine(gui.opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
             template.SonogramConfig.DisplayFullBandwidthImage = true;
-            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavData());
+            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
             //spectralSono.CalculateSubbandSNR(new WavReader(wavPath), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand); 
-            spectralSono.CalculateSubbandSNR(recording.GetWavData(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
+            spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
             template.SaveSyllablesImage(spectralSono, imagePath);
 
             return template;
@@ -117,6 +117,8 @@ namespace AudioAnalysis
             else
             if (featureExtractionName.StartsWith("CC_AUTO")) return new Template_CCAuto(config);
             else
+            if (featureExtractionName.StartsWith("DCT_2D")) return new Template_DCT2D(config);
+            else
             {
                Log.Write("ERROR at BaseTemplate Load(Configuration config);\n" +
                "The Feature Extraction Type = " + featureExtractionName + " which is an unknown.");
@@ -127,28 +129,39 @@ namespace AudioAnalysis
 
         public static Configuration MergeProperties(string appConfigFile, GUI gui)
         {
-            var config = new Configuration(appConfigFile);
+            LoadDefaultConfig(); //just in case the appCOnfig does not exist
+
+            //set up the config table
+            var config = new Configuration();
+            if (File.Exists(appConfigFile)) config = new Configuration(appConfigFile);
+
             config.SetPair("AUTHOR", gui.AuthorName.ToString());
             config.SetPair("TEMPLATE_ID", gui.CallID.ToString());
             config.SetPair("CALL_NAME", gui.CallName);
             config.SetPair("COMMENT", gui.Comment);
+
             //**************** INFO ABOUT ORIGINAL .WAV FILE
-            config.SetPair("WAV_DIR", gui.WavDirName); //wavDirName = @"C:\SensorNetworks\WavFiles\";
             config.SetPair("TRAINING_DIR", gui.TrainingDirName); //location of training vocalisations
-            config.SetPair("WAV_FILE_NAME", gui.SourceFile);  //Lewin's rail kek keks.
+            config.SetPair("TESTING_DIR",  gui.TestDirName);     //location of testing vocalisations
+            config.SetPair("WAV_DIR", gui.WavDirName);           //wavDirName = @"C:\SensorNetworks\WavFiles\";
+            config.SetPair("WAV_FILE_NAME", gui.SourceFile);     //file containing source vocalisation.
             config.SetPair("WAV_FILE_PATH", gui.SourcePath);
             //config.SetPair("NYQUIST_FREQ", gui.); //default value set in appConfig File
             //config.SetPair("WAV_SAMPLE_RATE",);   //default value set in appConfig File
             //config.SetPair("WAV_DURATION", gui.); //default value set in appConfig File
+
             //**************** INFO ABOUT FRAMES
             config.SetPair("FRAME_SIZE", gui.FrameSize.ToString());
             config.SetPair("FRAME_OVERLAP", gui.FrameOverlap.ToString());
-            //config.SetPair("", gui.DynamicRange.ToString()); 
+
             //**************** FEATURE PARAMETERS
             config.SetPair("FEATURE_TYPE", gui.FeatureType.ToString());
+            //config.SetPair("DYNAMIC_RANGE", gui.DynamicRange.ToString()); 
+            config.SetPair("MIN_FREQ",   gui.Min_Freq.ToString());
+            config.SetPair("MAX_FREQ",   gui.Max_Freq.ToString());
+            config.SetPair("START_TIME", gui.StartTime.ToString()); //used for defining a marqueed vocalisation
+            config.SetPair("END_TIME",   gui.EndTime.ToString());   //used for defining a marqueed vocalisation
 
-            config.SetPair("MIN_FREQ", gui.Min_Freq.ToString());
-            config.SetPair("MAX_FREQ", gui.Max_Freq.ToString());
             config.SetPair("FILTERBANK_COUNT", gui.FilterBankCount.ToString());
             config.SetPair("DO_MEL_CONVERSION", gui.DoMelConversion.ToString());
             config.SetPair("DO_NOISE_REDUCTION", gui.DoNoiseReduction.ToString());
@@ -193,6 +206,7 @@ namespace AudioAnalysis
 
         public static void LoadDefaultConfig()
         {
+            Log.Verbosity = 0;
             FftConfiguration.WindowFunction = "Hamming";
             FftConfiguration.NPointSmoothFFT = 3;
             EndpointDetectionConfiguration.K1Threshold = 3.5;
@@ -239,6 +253,9 @@ namespace AudioAnalysis
         /// <param name="config"></param>
 		public BaseTemplate(Configuration config)
 		{
+            Log.Verbosity = config.GetInt("VERBOSITY");
+            Log.WriteIfVerbose("BaseTemplate CONSTRUCTOR: VERBOSITY = " + Log.Verbosity);
+
             string modeStr = config.GetString("MODE");   // Mode.READ_EXISTING_TEMPLATE;
             if (modeStr == null) mode = Mode.UNDEFINED;
             else                 mode = (Mode)Enum.Parse(typeof(Mode), modeStr);
@@ -305,7 +322,7 @@ namespace AudioAnalysis
 
         public void GenerateSymbolSequenceAndSave(AudioRecording ar, string opDir)
         {
-            WavReader wav = ar.GetWavData(); //get the wav file
+            WavReader wav = ar.GetWavReader(); //get the wav file
             //generate info about symbol sequence
             var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
             this.AcousticModelConfig.GenerateSymbolSequence(avSonogram, this);

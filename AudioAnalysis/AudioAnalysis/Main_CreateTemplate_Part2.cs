@@ -69,7 +69,7 @@ namespace AudioAnalysis
 
             //SAVE RESULTS IMAGE
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(wavPath) + ".png");
-            template.SaveResultsImage(recording.GetWavData(), imagePath, result);
+            template.SaveResultsImage(recording.GetWavReader(), imagePath, result);
 
             //WRITE RESULTS
             if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)

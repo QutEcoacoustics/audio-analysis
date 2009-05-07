@@ -36,7 +36,7 @@ namespace AudioAnalysis
 
 		public BaseResult Analyse(AudioRecording recording)
 		{
-            Wav = recording.GetWavData();
+            Wav = recording.GetWavReader();
 
             var avSono = new AcousticVectorsSonogram(Template.SonogramConfig, Wav);
             Template.GenerateSymbolSequence( avSono);

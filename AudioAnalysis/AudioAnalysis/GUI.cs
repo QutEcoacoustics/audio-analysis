@@ -26,6 +26,8 @@ namespace AudioAnalysis
         public string WavDirName;
         private string trainingDirName;
         public string TrainingDirName { get { return trainingDirName; } }
+        private string testDirName;
+        public string TestDirName { get { return testDirName; } }
         private string sourcePath = "NO_PATH";
         public string SourcePath { get { return sourcePath; } }
         private string sourceFile = "NO_NAME";
@@ -70,9 +72,13 @@ namespace AudioAnalysis
         public string[,] FvInit { get { return fvInit; } }
 
         private int min_Freq = 0; //Hz
-        public int Min_Freq { get { return min_Freq; } }
-        private int max_Freq = 9999; //Hz
-        public int Max_Freq { get { return max_Freq; } }
+        public  int Min_Freq { get { return min_Freq; } }
+        private int max_Freq = 99999; //Hz dummy value which must be reset
+        public  int Max_Freq { get { return max_Freq; } }
+        private double startTime = 0.000;
+        public  double StartTime { get { return startTime; } }
+        private double endTime = 0.000;
+        public  double EndTime { get { return endTime; } }
 
         // PARAMETERS FOR THE ACOUSTIC MODELS ***************
         private string fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\DefaultNoise.txt";
@@ -169,7 +175,7 @@ namespace AudioAnalysis
                     authorName  = "Michael Towsey";
                     callName    = "Lewin's Rail Kek-kek";
                     comment = "Template consists of a single KEK!";
-                    wavDirName  = @"C:\SensorNetworks\WavFiles\";
+                    //wavDirName  = @"C:\SensorNetworks\WavFiles\";
                     sourceFile  = "BAC2_20071008-085040";  //Lewin's rail kek keks.
                     sourcePath  = wavDirName + sourceFile + WavReader.WavFileExtension;
                     opDir       = @"C:\SensorNetworks\Templates\Template_2\";
@@ -219,10 +225,11 @@ namespace AudioAnalysis
                     authorName = "Michael Towsey";
                     callName = "Currawong";
                     comment = "First attempt at automated analysis";
-                    trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\Training\";
+                    trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TrainingSet2\";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
                     WavDirName = wavDirName;
                     opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
+                    //sourcePath = opDir + "CurrawongOutput";
                     featureType = Feature_Type.CC_AUTO;
 
                     //MFCC PARAMETERS
@@ -244,7 +251,7 @@ namespace AudioAnalysis
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\template" + callID + "_DefaultNoise.txt";
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\\template" + callID + "_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
                     modelType = ModelType.UNDEFINED;
@@ -262,11 +269,35 @@ namespace AudioAnalysis
                 //image coordinates: rows=freqBins; cols=timeSteps
                 if (callID == 4)
                 {
-                    Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-                    Console.WriteLine("ABORT!!  CAN ONLY READ TEMPLATE 4! CANNOT CREATE IT.");
-                    Console.WriteLine("\t\tPRESS ANY KEY TO EXIT");
-                    Console.ReadLine();
-                    System.Environment.Exit(999);
+                    authorName = "Michael Towsey";
+                    callName = "Currawong";
+                    comment = "First attempt at 2D DCT feature vector";
+                    testDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\Test\";
+                    featureType = Feature_Type.DCT_2D;
+
+                    //MFCC PARAMETERS
+                    frameSize = 512;
+                    frameOverlap = 0.5;
+                    filterBankCount = 64;
+                    doMelConversion = true;
+                    doNoiseReduction = true;
+                    ceptralCoeffCount = 12;
+
+                    //FEATURE VECTOR EXTRACTION PARAMETERS
+                    min_Freq  = 800; //Hz
+                    max_Freq  = 6000; //Hz
+                    startTime = 60.0; //seconds
+                    endTime   = 80.0; //seconds  
+
+                    // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
+                    zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
+                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\\template" + callID + "_DefaultNoise.txt";
+
+                    //LANGUAGE MODEL
+                    modelType = ModelType.UNDEFINED;
+                    numberOfWords = 1; //number of defined song variations
+                    wordNames = new String[] { "word names not required" };
+                    wordExamples = new String[] { "111", "11", "1" };
                 }
                 #endregion
 

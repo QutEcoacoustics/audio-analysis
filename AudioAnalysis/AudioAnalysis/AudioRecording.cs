@@ -5,17 +5,22 @@ using System.Text;
 using AudioTools;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
+using TowseyLib;
 
 namespace AudioAnalysis
 {
 	public class AudioRecording
 	{
-		#region Properties
-		public string FileName { get; set; }
-        public byte[] Bytes { get; set; }
-        #endregion
-
         private WavReader wavReader = null;
+        
+        #region Properties
+		public string FileName { get; private set; }
+        public string FilePath { get; private set; }
+        public byte[] Bytes { get; set; }
+        public int SamplingRate  { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
+        public int BitsPerSample { get { if (wavReader != null) return wavReader.BitsPerSample; else return -999; } }
+        #endregion
 
         /// <summary>
         /// CONSTRUCTOR
@@ -24,15 +29,21 @@ namespace AudioAnalysis
         public AudioRecording(byte[] bytes)
         {
             this.Bytes = bytes;
+            if (Bytes != null) this.wavReader = new WavReader(bytes);
+            this.FilePath = "UNKNOWN";
         }
-        public AudioRecording(string name)
+        public AudioRecording(string path)
         {
-            this.FileName = name;
+            this.FilePath  = path;
+            this.FileName  = Path.GetFileNameWithoutExtension(path);
+            this.wavReader = new WavReader(path);
         }
         public AudioRecording(byte[] bytes, string name)
         {
             this.Bytes = bytes;
-            this.FileName = name;
+            if (Bytes != null) this.wavReader = new WavReader(bytes);
+            this.FilePath = name;
+            this.FileName = Path.GetFileNameWithoutExtension(name);
         }
 
         public AudioRecording(WavReader wavReader)
@@ -40,18 +51,9 @@ namespace AudioAnalysis
             this.wavReader = wavReader;
         }
               
-		public WavReader GetWavData()
+		public WavReader GetWavReader()
 		{
-            if (wavReader != null)
-            {
-                return wavReader;
-            }
-
-            if (Bytes != null)
-            {
-                return new WavReader(Bytes);
-            }
-			return new WavReader(FileName);
+            return wavReader;
 		}
 
 
@@ -59,7 +61,7 @@ namespace AudioAnalysis
         {
             double[,] envelope = new double[2, length];
 
-            var wavData = GetWavData();
+            var wavData = GetWavReader();
             var data = wavData.Samples;
             int sampleCount = data.GetLength(0); // Number of samples in signal
             int subSample = sampleCount / length;
@@ -172,6 +174,43 @@ namespace AudioAnalysis
                 }
             }
             return bmp;
+        }
+
+        public AudioRecording Extract(double startTime, double endTime)
+        {
+            Console.WriteLine("AudioRecording.Extract()");
+            int startIndex = (int)(startTime * this.SamplingRate);
+            int endIndex   = (int)(endTime   * this.SamplingRate);
+            Console.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
+            Console.WriteLine("end  =" + endTime.ToString("F1")  + "s = " + endIndex);
+            int sampleCount = endIndex - startIndex + 1;
+            double[] signal = new double[sampleCount];
+            for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 100000;
+            Console.WriteLine("length=" + signal.Length);
+
+            //int sampleRate = 22050;
+            //sampleRate = this.SamplingRate;
+            //Console.WriteLine("sampleRate = " + this.SamplingRate);
+            //double duration = 30.245; //sig duration in seconds
+            //int[] harmonics = { 250, 500, 1000, 2000 };
+            //double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
+            //signal = DSP.GetSignal(this.SamplingRate, (endTime-startTime), harmonics);
+
+            int channels = 1;
+            for (int i = 0; i < 100; i++) Console.WriteLine(signal[i]); 
+            WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SamplingRate);
+            var ar = new AudioRecording(wav);
+            return ar;
+        }
+
+        public void Save(string path)
+        {
+            // int sampleRate = 22050;
+            //double duration = 30.245; //sig duration in seconds
+            //int[] harmonics = { 500, 1000, 2000, 4000 };
+            //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
+            //WavWriter.WriteWavFile(signal2, sampleRate, path);
+            WavWriter.WriteWavFile(this.wavReader.Samples, this.SamplingRate, path);
         }
 
     }// end class AudioRecording
