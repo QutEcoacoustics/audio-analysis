@@ -476,6 +476,19 @@ namespace TowseyLib
             return OP;
         }
 
+
+
+        public static double[,] DCT_2D(double[,] spectra, int coeffCount)
+        {
+            int frameCount = spectra.GetLength(0);  //number of frames
+            int binCount = spectra.GetLength(1);    // number of filters in filter bank
+
+            double[,] OP = Cepstra(spectra, coeffCount);
+            return OP;
+        }
+
+        
+        
         /// <summary>
         /// 
         /// </summary>
@@ -495,6 +508,8 @@ namespace TowseyLib
             }
             return cosines;
         }
+
+
 
         public static double[] DCT(double[] spectrum, double[,] cosines)
         {
