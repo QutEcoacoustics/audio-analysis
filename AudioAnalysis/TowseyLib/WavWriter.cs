@@ -19,7 +19,7 @@ namespace TowseyLib
         /// Play it with the WAV file player. It uses CD quality audio -- 44100 samples per second, each one with 16 bits per sample.
         /// Unlike a CD, do this in mono, not stereo.
         /// </summary>
-        /// <param name="signal"></param>
+        /// <param name="signal">IMPORTANT: The signal values must be in range of signed 16 bit integer ie -32768 to +32768</param>
         /// <param name="samplesPerSecond"></param>
         /// <param name="path"></param>
         public static void WriteWavFile(double[] signal, int samplesPerSecond, string path)
