@@ -176,7 +176,7 @@ namespace AudioAnalysis
             return bmp;
         }
 
-        public AudioRecording Extract(double startTime, double endTime)
+        public AudioRecording ExportSignal(double startTime, double endTime)
         {
             Console.WriteLine("AudioRecording.Extract()");
             int startIndex = (int)(startTime * this.SamplingRate);
@@ -185,19 +185,10 @@ namespace AudioAnalysis
             Console.WriteLine("end  =" + endTime.ToString("F1")  + "s = " + endIndex);
             int sampleCount = endIndex - startIndex + 1;
             double[] signal = new double[sampleCount];
-            for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 100000;
-            Console.WriteLine("length=" + signal.Length);
-
-            //int sampleRate = 22050;
-            //sampleRate = this.SamplingRate;
-            //Console.WriteLine("sampleRate = " + this.SamplingRate);
-            //double duration = 30.245; //sig duration in seconds
-            //int[] harmonics = { 250, 500, 1000, 2000 };
-            //double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
-            //signal = DSP.GetSignal(this.SamplingRate, (endTime-startTime), harmonics);
-
+            //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
+            for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
+            //for (int i = 0; i < 100; i++) Console.WriteLine(signal[i]); //debug check for integers
             int channels = 1;
-            for (int i = 0; i < 100; i++) Console.WriteLine(signal[i]); 
             WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SamplingRate);
             var ar = new AudioRecording(wav);
             return ar;

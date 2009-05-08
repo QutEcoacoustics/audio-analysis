@@ -56,9 +56,9 @@ namespace AudioAnalysis
         public bool DoNoiseReduction { get { return doNoiseReduction; } }
         private int ceptralCoeffCount = 12;
         public int CeptralCoeffCount { get { return ceptralCoeffCount; } }
-        private bool includeDeltaFeatures = true;
+        private bool includeDeltaFeatures = false;
         public bool IncludeDeltaFeatures { get { return includeDeltaFeatures; } }
-        private bool includeDoubleDeltaFeatures = true;
+        private bool includeDoubleDeltaFeatures = false;
         public bool IncludeDoubleDeltaFeatures { get { return includeDoubleDeltaFeatures; } }
         private int deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
         public int DeltaT { get { return deltaT; } }
@@ -265,8 +265,6 @@ namespace AudioAnalysis
                 //******************************************************************************************************************
                 #region CALL 4 PARAMETERS
                 //************* CALL 4 PARAMETERS ***************
-                //coordinates to extract template using bitmap image of sonogram
-                //image coordinates: rows=freqBins; cols=timeSteps
                 if (callID == 4)
                 {
                     authorName = "Michael Towsey";
@@ -281,13 +279,13 @@ namespace AudioAnalysis
                     filterBankCount = 64;
                     doMelConversion = true;
                     doNoiseReduction = true;
-                    ceptralCoeffCount = 12;
+                    //ceptralCoeffCount = 12;
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
                     min_Freq  = 800; //Hz
                     max_Freq  = 6000; //Hz
-                    startTime = 60.0; //seconds
-                    endTime   = 80.0; //seconds  
+                    startTime = 62.688; //seconds
+                    endTime   = 63.083; //seconds  
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1

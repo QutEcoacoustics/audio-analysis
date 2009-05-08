@@ -48,29 +48,29 @@ namespace AudioAnalysis
         {
             Configuration config = new Configuration();
 
-            config.SetPair(ConfigKeys.Fft.WindowFunction, ConfigKeys.WindowFunctions.Hamming.ToString());
-            config.SetPair(ConfigKeys.Fft.NPointSmoothFFT, "3");
+            config.SetPair(ConfigKeys.Fft.Key_WindowFunction, ConfigKeys.WindowFunctions.Hamming.ToString());
+            config.SetPair(ConfigKeys.Fft.Key_NPointSmoothFFT, "3");
 
-            config.SetPair(ConfigKeys.Windowing.SampleRate, "0");
-            config.SetPair(ConfigKeys.Windowing.WindowSize, "512");
-            config.SetPair(ConfigKeys.Windowing.WindowOverlap, "0.5");
+            config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
+            config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
+            config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
-            config.SetPair(ConfigKeys.EndpointDetection.K1SegmentationThreshold, "3.5");
-            config.SetPair(ConfigKeys.EndpointDetection.K2SegmentationThreshold, "6.0");
-            config.SetPair(ConfigKeys.EndpointDetection.K1K2Latency, "0.05");
-            config.SetPair(ConfigKeys.EndpointDetection.VocalDelay, "0.2");
-            config.SetPair(ConfigKeys.EndpointDetection.MinVocalDuration, "0.075");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_K1K2Latency, "0.05");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_VocalDelay, "0.2");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
-            config.SetPair(ConfigKeys.Mfcc.DoMelScale, true.ToString());
-            config.SetPair(ConfigKeys.Mfcc.FilterbankCount, "64");
-            config.SetPair(ConfigKeys.Mfcc.CcCount, "12");
-            config.SetPair(ConfigKeys.Mfcc.IncludeDelta, true.ToString());
-            config.SetPair(ConfigKeys.Mfcc.IncludeDoubleDelta, true.ToString());
-            config.SetPair(ConfigKeys.Mfcc.DeltaT, "2");
+            config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, true.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, "64");
+            config.SetPair(ConfigKeys.Mfcc.Key_CcCount, "12");
+            config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, false.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, false.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, "2");
 
-            config.SetPair(ConfigKeys.Sonogram.SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
+            config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
 
-            config.SetPair(ConfigKeys.ImageSave.AddGrid, false.ToString());
+            config.SetPair(ConfigKeys.ImageSave.Key_AddGrid, false.ToString());
 
             Initialize(config);
                         
@@ -192,17 +192,17 @@ namespace AudioAnalysis
             if (duration != null)
                 Duration = TimeSpan.FromSeconds(duration.Value);
             SampleRate = config.GetInt("WAV_SAMPLE_RATE");
-			DeltaT = config.GetInt("DELTA_T"); // Frames between acoustic vectors
+			DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
 		}
 
 		public override void Save(TextWriter writer)
 		{
 			base.Save(writer);
-			writer.WriteConfigValue("DELTA_T", DeltaT);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
             writer.WriteLine("#");
             writer.Flush();
 		}
 
 		public int DeltaT { get; set; }
-	}
+    }//end class AVSonogramConfig which is derived from CepstralSonogramConfig
 }

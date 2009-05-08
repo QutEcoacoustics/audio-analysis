@@ -182,20 +182,25 @@ namespace AudioAnalysis
         /// <summary>
         /// This method is called when constructing a DCT_2D template.
         /// </summary>
-        /// <param name="ar"></param>
+        /// <param name="s">This is sonogram of the extracted portion of wav file</param>
         /// <param name="FVParams"></param>
         /// <param name="sonoConfig"></param>
-        public static void ExtractFVsFromMarquee(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        public static void Extract2D_DCTFromMarquee(SpectralSonogram s, FVConfig FVParams)
         {
             if(Log.Verbosity==1) Console.WriteLine("START FVExtractor.ExtractFVsFromMarquee()");
-            Log.WriteIfVerbose("Start time = " + FVParams.StartTime.ToString("F3") + " seconds from start of recording");
-            Log.WriteIfVerbose("End   time = " + FVParams.EndTime.ToString("F3")   + " seconds from start of recording");
+            //Log.WriteIfVerbose("Start time = " + FVParams.StartTime.ToString("F3") + " seconds from start of recording");
+            //Log.WriteIfVerbose("End   time = " + FVParams.EndTime.ToString("F3")   + " seconds from start of recording");
             FVParams.FVArray = new FeatureVector[1];
             FVParams.FVCount = 1;
 
-            //extract marquee using start, end values
-            Log.WriteIfVerbose("");
+            //Assume that the entire spectral sonogram is the marquee part required.
+            var config = s.Configuration as CepstralSonogramConfig;
+            double[,] dctM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
 
+            dctM = DataTools.normalise(dctM);
+
+            Log.WriteIfVerbose("dim of DCT_2D matrix = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
+            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix.bmp");
 
             //pad to fixed number of frames
 
