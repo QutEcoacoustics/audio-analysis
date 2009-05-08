@@ -20,36 +20,46 @@ namespace AudioAnalysis
         public BaseSonogramConfig Configuration { get; private set; }
 
 		public double MaxAmplitude { get; private set; }
-		public int SampleRate { get; private set; }
+		public int SampleRate { get; protected set; }
 		public int NyquistFrequency { get { return SampleRate / 2; } }
-		public TimeSpan Duration { get; private set; }
+        public TimeSpan Duration { get; protected set; }
 
 		public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } } // Duration of full frame or window in seconds
 		public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
 		public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }
-		public int FrameCount { get; private set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
+        public int FrameCount { get; protected set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
 
         //energy and dB per frame
         public SNR SnrFrames { get; private set; }
-		public double[] DecibelsPerFrame { get; private set; }    // Normalised decibels per signal frame
+        public double[] DecibelsPerFrame { get; protected set; }    // Normalised decibels per signal frame
 
         //energy and dB per frame sub-band
         public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
-        private int   subBand_MinHz; //min freq (Hz) of the required subband
-        private int   subBand_MaxHz; //max freq (Hz) of the required subband
-        public SNR SnrSubband { get; private set; }
-        public double[] DecibelsInSubband { get; private set; }  // Normalised decibels in extracted freq band
+        protected int subBand_MinHz; //min freq (Hz) of the required subband
+        protected int subBand_MaxHz; //max freq (Hz) of the required subband
+        public SNR    SnrSubband { get; private set; }
+        public double[] DecibelsInSubband { get; protected set; }  // Normalised decibels in extracted freq band
 
-        public double[] DecibelsNormalised { get; private set; } 
-        public double Max_dBReference { get; private set; } // Used to normalise the dB values for MFCCs
+        public double[] DecibelsNormalised { get; protected set; }
+        public double Max_dBReference { get; protected set; } // Used to normalise the dB values for MFCCs
 
 
-		public int[] SigState { get; private set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
+        public int[] SigState { get; protected set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
 		public double[,] Data { get; protected set; } //the spectrogram data matrix
 		#endregion
 
+        /// <summary>
+        /// use this constructor when want to extract time segment of existing sonogram
+        /// </summary>
+        /// <param name="config"></param>
+        public BaseSonogram(BaseSonogramConfig config)
+        {
+            Configuration = config;
+            this.subBand_MinHz = config.MinFreqBand ?? 0;
+            this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
+        }
 
         /// <summary>
         /// BASE CONSTRUCTOR
@@ -229,6 +239,7 @@ namespace AudioAnalysis
             //Console.WriteLine("AFTER  NORMALISE minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             return mnr;
         }
+
 
 		public Image GetImage()
 		{
@@ -487,17 +498,62 @@ namespace AudioAnalysis
 	public class SpectralSonogram : BaseSonogram
 	{
         //There are three CONSTRUCTORS
+        //Use the third constructor when you want to init a new Spectrogram by extracting portion of an existing sonogram.
         /// <summary>
         /// 
         /// </summary>
         /// <param name="configFile"></param>
         /// <param name="wav"></param>
-		public SpectralSonogram(string configFile, WavReader wav)
+        public SpectralSonogram(string configFile, WavReader wav)
 			: this (BaseSonogramConfig.Load(configFile), wav)
 		{ }
 		public SpectralSonogram(BaseSonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
+        public SpectralSonogram(SpectralSonogram sg, double startTime, double endTime)
+            : base(sg.Configuration)
+        {
+            int startFrame = (int)Math.Round(startTime * sg.FramesPerSecond);
+            int endFrame   = (int)Math.Round(endTime   * sg.FramesPerSecond);
+            int frameCount = endFrame-startFrame + 1;
+
+            //sg.MaxAmplitude { get; private set; }
+            this.SampleRate = sg.SampleRate;
+            this.Duration = TimeSpan.FromSeconds(endTime - startTime);
+            //sg.FrameDuration ={ get { return Configuration.WindowSize / (double)SampleRate; } } // Duration of full frame or window in seconds
+            //sg.FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
+            //sg.FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }
+            //sg.FramesPerSecond { get { return 1 / FrameOffset; } }
+            this.FrameCount = frameCount;
+
+            ////energy and dB per frame
+            //public SNR SnrFrames { get; private set; }
+            this.DecibelsPerFrame = new double[frameCount];  // Normalised decibels per signal frame
+            for(int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame+i]; 
+
+            ////energy and dB per frame sub-band
+            this.ExtractSubband = this.ExtractSubband;
+            this.subBand_MinHz  = sg.subBand_MinHz; //min freq (Hz) of the required subband
+            this.subBand_MaxHz  = sg.subBand_MaxHz; //max freq (Hz) of the required subband
+            //sg.SnrSubband { get; private set; }
+            this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
+            for(int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame+i]; 
+
+            //public double[] DecibelsNormalised { get; private set; } 
+            this.Max_dBReference = sg.Max_dBReference; // Used to normalise the dB values for MFCCs
+            this.DecibelsNormalised = new double[frameCount];
+            for(int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame+i];
+
+            this.SigState = new int[frameCount];    //Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
+            for(int i = 0; i < frameCount; i++) this.SigState[i] = sg.SigState[startFrame+i]; 
+
+            //the spectrogram data matrix
+            int featureCount = sg.Data.GetLength(1);
+            this.Data = new double[frameCount, featureCount];
+            for(int i = 0; i < frameCount; i++) //each row of matrix is a frame
+                for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
+                    this.Data[i, j] = sg.Data[startFrame + i, j];
+        }
 
 		protected override void Make(double[,] amplitudeM)
 		{

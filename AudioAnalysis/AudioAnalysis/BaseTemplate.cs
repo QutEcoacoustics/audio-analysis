@@ -68,6 +68,7 @@ namespace AudioAnalysis
             var config = MergeProperties(appConfigFile, gui);
             config.SetPair("WAV_FILE_NAME", recording.FilePath);
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
+            config.SetPair("TEMPLATE_DIR", templateDir);
             BaseTemplate template = Load(config);
 
             //STEP TWO: Extract template
@@ -151,8 +152,9 @@ namespace AudioAnalysis
             //config.SetPair("WAV_DURATION", gui.); //default value set in appConfig File
 
             //**************** INFO ABOUT FRAMES
-            config.SetPair("FRAME_SIZE", gui.FrameSize.ToString());
-            config.SetPair("FRAME_OVERLAP", gui.FrameOverlap.ToString());
+            config.SetPair(ConfigKeys.Windowing.Key_WindowSize, gui.FrameSize.ToString());
+            config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, gui.FrameOverlap.ToString());
+            //config.SetPair(ConfigKeys.Windowing.Key_SubSample, gui.);
 
             //**************** FEATURE PARAMETERS
             config.SetPair("FEATURE_TYPE", gui.FeatureType.ToString());
@@ -162,13 +164,13 @@ namespace AudioAnalysis
             config.SetPair("START_TIME", gui.StartTime.ToString()); //used for defining a marqueed vocalisation
             config.SetPair("END_TIME",   gui.EndTime.ToString());   //used for defining a marqueed vocalisation
 
-            config.SetPair("FILTERBANK_COUNT", gui.FilterBankCount.ToString());
-            config.SetPair("DO_MEL_CONVERSION", gui.DoMelConversion.ToString());
-            config.SetPair("DO_NOISE_REDUCTION", gui.DoNoiseReduction.ToString());
-            config.SetPair("CC_COUNT", gui.CeptralCoeffCount.ToString());
-            config.SetPair("INCLUDE_DELTA", gui.IncludeDeltaFeatures.ToString());
-            config.SetPair("INCLUDE_DOUBLEDELTA", gui.IncludeDoubleDeltaFeatures.ToString());
-            config.SetPair("DELTA_T", gui.DeltaT.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, gui.FilterBankCount.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, gui.DoMelConversion.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_DoNoiseReduction, gui.DoNoiseReduction.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_CcCount, gui.CeptralCoeffCount.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, gui.IncludeDeltaFeatures.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, gui.IncludeDoubleDeltaFeatures.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, gui.DeltaT.ToString());
 
             //**************** FV EXTRACTION OPTIONS **************************
             config.SetPair("NUMBER_OF_SYLLABLES", gui.NumberOfSyllables.ToString());//CC_AUTO option
@@ -200,7 +202,6 @@ namespace AudioAnalysis
             config.SetPair("NUMBER_OF_WORDS", "1"); //default value for template creation
             config.SetPair("WORD1_NAME", "word");   //default value for template creation
             config.SetPair("WORD1_EXAMPLE1", "1");  //default value for template creation
-
             return config;
         }
 
@@ -224,13 +225,13 @@ namespace AudioAnalysis
             //SUBSAMPLE=0
             //WINDOW_OVERLAP=0.5
             //WINDOW_SIZE=512
-            FftConfiguration.WindowFunction  = config.GetString("WINDOW_FUNCTION");
-            FftConfiguration.NPointSmoothFFT = config.GetInt("N_POINT_SMOOTH_FFT");
-            EndpointDetectionConfiguration.K1Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K1");
-            EndpointDetectionConfiguration.K2Threshold = config.GetDouble("SEGMENTATION_THRESHOLD_K2");
-            EndpointDetectionConfiguration.K1K2Latency = config.GetDouble("K1_K2_LATENCY");
-            EndpointDetectionConfiguration.VocalDelay  = config.GetDouble("VOCAL_DELAY");
-            EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble("MIN_VOCAL_DURATION");
+            FftConfiguration.WindowFunction  = config.GetString(ConfigKeys.Fft.Key_WindowFunction);
+            FftConfiguration.NPointSmoothFFT = config.GetInt(ConfigKeys.Fft.Key_NPointSmoothFFT);
+            EndpointDetectionConfiguration.K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold);
+            EndpointDetectionConfiguration.K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold);
+            EndpointDetectionConfiguration.K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);
+            EndpointDetectionConfiguration.VocalDelay = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalDelay);
+            EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);
             //DO_MELSCALE=false
             //NOISE_REDUCE=false
             //FILTERBANK_COUNT=64

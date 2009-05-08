@@ -15,9 +15,7 @@ namespace AudioAnalysis
     {
         public Template_DCT2D(Configuration config) : base(config)
 		{
-            //if (item.Key.StartsWith("VERBOSITY")) Console.WriteLine("VERBOSITY = " + item.Value);
             SonogramConfig = new AVSonogramConfig(config);
-
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModelConfig   = new AcousticModel(config);
@@ -34,7 +32,6 @@ namespace AudioAnalysis
             else if (modelType == ModelType.ONE_PERIODIC_SYLLABLE) Model = new Model_OnePeriodicSyllable(config);
             else if (modelType == ModelType.MM_TWO_STATE_PERIODIC) Model = new Model_2StatePeriodic(config);
             else if (modelType == ModelType.MM_ERGODIC)            Model = new Model_MMErgodic(config);
-
         }
 
         /// <summary>
@@ -45,14 +42,37 @@ namespace AudioAnalysis
         protected override void ExtractTemplateFromRecording(AudioRecording ar)
         {
             if (Log.Verbosity == 1) Console.WriteLine("START Template_DCT2D.ExtractTemplateFromRecording()");
+            string opDir = this.DataDir;
             double startTime = this.FeatureVectorConfig.StartTime;
             double endTime   = this.FeatureVectorConfig.EndTime;
-            AudioRecording ar2 = ar.Extract(startTime, endTime);
-            string path = @"C:\SensorNetworks\Templates\Template_4\recordoing.wav";
+
+            //save full length spectrogram image
+            var ss = new SpectralSonogram(this.SonogramConfig, ar.GetWavReader());
+            //var image = new Image_MultiTrack(ss.GetImage(false, false));
+            string path = opDir + ar.FileName + ".png";
+            //image.Save(path);
+            Console.WriteLine("Full length of sonogram = "+ss.FrameCount+" frames = "+ss.Duration.TotalSeconds+" s");
+
+
+            //extract portion of spectrogram
+            var s2 = new SpectralSonogram(ss, startTime, endTime);
+            var image = new Image_MultiTrack(s2.GetImage(false, false));
+            string fName = ar.FileName + "_" + startTime.ToString("F0") + "s-" + endTime.ToString("F0") + "s";
+            path = opDir + fName + ".png";
+            image.Save(path);
+
+            //extract and save part of wav file
+            AudioRecording ar2 = ar.ExportSignal(startTime, endTime);            
+            path = opDir + fName + ".wav";
             ar2.Save(path);
-            Console.WriteLine("FINISHED");
-            Console.ReadLine();
-            FVExtractor.ExtractFVsFromMarquee(ar, FeatureVectorConfig, SonogramConfig);
+
+            //save extracted portion of wav file as spectrogram image - to compare with preivous verison
+            //ss = new SpectralSonogram(this.SonogramConfig, ar2.GetWavReader());
+            //image = new Image_MultiTrack(ss.GetImage(false, false));
+            //path = opDir + fName + "alternative.png";
+            //image.Save(path);
+
+            FVExtractor.Extract2D_DCTFromMarquee(s2, FeatureVectorConfig);
         }
 
 		public override void Save(string targetPath)
