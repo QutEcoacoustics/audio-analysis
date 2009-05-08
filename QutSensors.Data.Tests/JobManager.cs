@@ -92,7 +92,11 @@ namespace QutSensors.Data.Tests
 		[Serializable]
 		class DummyTemplateParameters : BaseTemplate
 		{
-		}
+            protected override void ExtractTemplateFromRecording(AudioRecording ar)
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         Dictionary<string, Dictionary<string, string>> CreateDummyTemplateResults()
         {
