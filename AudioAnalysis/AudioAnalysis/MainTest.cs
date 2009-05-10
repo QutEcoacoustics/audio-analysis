@@ -13,6 +13,9 @@ namespace AudioAnalysis
 	{
 		public static void Main(string[] args)
 		{
+            MakeImageReducedSonogram();
+            return;
+
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Console.WriteLine("");
 
@@ -255,6 +258,30 @@ namespace AudioAnalysis
                 }
             }
             //Console.ReadLine();
+        }
+
+        public static void MakeImageReducedSonogram()
+        {
+
+            string wavPath = System.Configuration.ConfigurationSettings.AppSettings["ReducedSonogramSourceWavPath"];
+            string baseOutputPath = System.Configuration.ConfigurationSettings.AppSettings["ReducedSonogramTargetImagePath"];
+
+            Log.WriteIfVerbose("\n\nMake a SpectralSonogram");
+
+            BaseSonogramConfig config = new BaseSonogramConfig();
+
+            BaseSonogram sonogram = new SpectralSonogram(config, new WavReader(wavPath));
+            bool doHighlightSubband = false;
+            bool add1kHzLines = true;
+            //var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            //image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            ////image_mt.AddTrack(Image_Track.GetDecibelTrack(sonogram));
+            //image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            //image_mt.Save(baseOutputPath + "_spectral.png");
+
+            System.Drawing.Image image = sonogram.GetImage_ReducedSonogramWithWidth(12000,true);
+
+            image.Save(baseOutputPath + "_spectral.png");
         }
 
 
