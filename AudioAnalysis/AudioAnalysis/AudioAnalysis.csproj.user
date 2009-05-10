@@ -12,6 +12,8 @@
     </BootstrapperUrlHistory>
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
+    <ErrorReportUrlHistory>
+    </ErrorReportUrlHistory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartArguments>"C:\SensorNetworks\Templates\Template_8\Alfredo_results\TestMichael.wav" "C:\SensorNetworks\Templates\Template_8\Alfredo_results\results_TestMichael.mlf"</StartArguments>
