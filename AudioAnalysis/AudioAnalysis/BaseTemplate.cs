@@ -29,9 +29,10 @@ namespace AudioAnalysis
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
         public string SourceDir  { get; set; } // Dir of original audio recording
 
+        public Feature_Type FeatureExtractionType { get; set; }
         public AVSonogramConfig SonogramConfig { get; set; }
         public FVConfig FeatureVectorConfig { get; set; }
-        public AcousticModel AcousticModelConfig { get; set; }
+        public Acoustic_Model AcousticModel { get; set; }
         public BaseModel Model { get; set; }
         public ModelType Modeltype { get; set; }
         #endregion
@@ -110,15 +111,16 @@ namespace AudioAnalysis
             var featureExtractionName = config.GetString("FEATURE_TYPE");
 
             Feature_Type featureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
-            if (featureExtractionName.StartsWith("UNDEFINED"))
-            {
-                throw new Exception("The feature extraction type <" + featureExtractionName + "> is undefined. FATAL ERROR!");
-            }
             if (featureExtractionName.StartsWith("MFCC")) return new Template_CC(config);
             else
             if (featureExtractionName.StartsWith("CC_AUTO")) return new Template_CCAuto(config);
             else
             if (featureExtractionName.StartsWith("DCT_2D")) return new Template_DCT2D(config);
+            else
+            if (featureExtractionName.StartsWith("UNDEFINED"))
+            {
+                throw new Exception("The feature extraction type <" + featureExtractionName + "> is undefined. FATAL ERROR!");
+            }
             else
             {
                Log.Write("ERROR at BaseTemplate Load(Configuration config);\n" +
@@ -275,7 +277,11 @@ namespace AudioAnalysis
             if ((SourcePath == null) ||(SourcePath == "")) 
                 SourcePath = "Source path not set!!"; //string must be given a value to enable later serialisation check
             if ((SourceDir  == null) ||(SourceDir == ""))  
-                SourceDir  = "Source dir not set!!";  //string must be given a value to enable later serialisation check               
+                SourceDir  = "Source dir not set!!";  //string must be given a value to enable later serialisation check  
+
+            var featureExtractionName = config.GetString("FEATURE_TYPE");
+            this.FeatureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+ 
 		}
 
 
@@ -323,19 +329,18 @@ namespace AudioAnalysis
 
         public void GenerateSymbolSequenceAndSave(AudioRecording ar, string opDir)
         {
-            WavReader wav = ar.GetWavReader(); //get the wav file
+            GenerateSymbolSequence(ar.GetWavReader());
+            this.AcousticModel.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
+        }
+
+        public void GenerateSymbolSequence(WavReader wav)
+        {
             //generate info about symbol sequence
             var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
-            this.AcousticModelConfig.GenerateSymbolSequence(avSonogram, this);
-            //save info about symbol sequence
-            this.AcousticModelConfig.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
+            this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
+            //Console.WriteLine("End of the Line");
+            //Console.ReadLine();
         }
-
-        public void GenerateSymbolSequence(AcousticVectorsSonogram sonogram)
-        {
-            this.AcousticModelConfig.GenerateSymbolSequence(sonogram, this);
-        }
-
 
         public void SaveEnergyImage(SpectralSonogram sonogram, string path)
         {
@@ -358,8 +363,8 @@ namespace AudioAnalysis
             //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.Image.Width));
             //image.AddTrack(Image_Track.GetDecibelTrack(sonogram));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
-            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
+            int garbageID = this.AcousticModel.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
             image.Save(path);
         }
 
@@ -378,8 +383,8 @@ namespace AudioAnalysis
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
-            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
+            int garbageID = this.AcousticModel.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
         }

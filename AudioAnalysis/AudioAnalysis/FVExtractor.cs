@@ -190,28 +190,61 @@ namespace AudioAnalysis
             if(Log.Verbosity==1) Console.WriteLine("START FVExtractor.ExtractFVsFromMarquee()");
             //Log.WriteIfVerbose("Start time = " + FVParams.StartTime.ToString("F3") + " seconds from start of recording");
             //Log.WriteIfVerbose("End   time = " + FVParams.EndTime.ToString("F3")   + " seconds from start of recording");
-            FVParams.FVArray = new FeatureVector[1];
-            FVParams.FVCount = 1;
 
             //Assume that the entire spectral sonogram is the marquee part required.
             var config = s.Configuration as CepstralSonogramConfig;
-            double[,] dctM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
+            double[,] cepstralM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
+            int frameCount = cepstralM.GetLength(0);
 
-            dctM = DataTools.normalise(dctM);
+            cepstralM = DataTools.normalise(cepstralM);
 
-            Log.WriteIfVerbose("dim of DCT_2D matrix = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
-            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix.bmp");
+            Log.WriteIfVerbose("dim of cepstral matrix = " + frameCount + "*" + cepstralM.GetLength(1));
+            ImageTools.DrawMatrix(cepstralM, @"C:\SensorNetworks\Templates\Template_4\matrix1.bmp");
 
             //pad to fixed number of frames
-
+            double duration = 0.5; //duration of padded matrix in seconds
+            int dim = (int)Math.Round(s.FramesPerSecond * duration);
+            double[,] padM = new double[dim, config.MfccConfiguration.CcCount];
+            Log.WriteIfVerbose("dim of padded matrix   = " + padM.GetLength(0) + "*" + padM.GetLength(1));
+            for (int r = 0; r < frameCount; r++)
+                for (int c = 0; c < config.MfccConfiguration.CcCount; c++) padM[r,c] = cepstralM[r,c];
+            ImageTools.DrawMatrix(padM, @"C:\SensorNetworks\Templates\Template_4\matrix2.bmp");
+            
             //do the DCT
- 
-            //store as single FV
+            double[,] cosines = Speech.Cosines(dim, config.MfccConfiguration.CcCount + 1); //set up the cosine coefficients
+            double[,] dctM = new double[config.MfccConfiguration.CcCount, config.MfccConfiguration.CcCount]; 
+            Log.WriteIfVerbose("dim of DCT_2D matrix   = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
+            for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+            {
+                double[] col = DataTools.GetColumn(padM, c);
+                double[] dct = Speech.DCT(col, cosines);
+                for (int r = 0; r < config.MfccConfiguration.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
+            }
+            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix3.bmp");
 
+            //store as single FV using the zig-zag 2D-DCT matrix
+            if (Speech.zigzag12x12.GetLength(0) != config.MfccConfiguration.CcCount)
+            {
+                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) +" != "+ config.MfccConfiguration.CcCount);
+                throw new Exception("Fatal Error!");
+            }
+            else
+                Log.WriteIfVerbose("zigzag dim = CcCount = " + Speech.zigzag12x12.GetLength(0));
 
+            int FVdim = 70;
+            double[] fv = new double[FVdim];
+            for (int r = 0; r < config.MfccConfiguration.CcCount; r++)
+                for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+                {
+                    int id = Speech.zigzag12x12[r,c];
+                    if(id <= FVdim) fv[id-1] = dctM[r,c];
+                }
+            FVParams.FVCount = 1;
+            FVParams.FVArray = new FeatureVector[FVParams.FVCount];
+            FVParams.FVArray[0] = new FeatureVector(fv, "Marquee_2D-DCT"); 
 
-            Console.WriteLine("End of the Line");
-            Console.ReadLine();
+            //Console.WriteLine("End of the Line");
+            //Console.ReadLine();
         }
 
     } //end class FVExtractor
