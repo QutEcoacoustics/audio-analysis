@@ -89,7 +89,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AcousticModel.cs" />
+    <Compile Include="Acoustic_Model.cs" />
     <Compile Include="BaseModel.cs" />
     <Compile Include="ConfigurationClasses.cs" />
     <Compile Include="AudioRecording.cs" />

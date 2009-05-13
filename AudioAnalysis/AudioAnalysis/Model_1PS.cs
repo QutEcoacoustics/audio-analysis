@@ -76,7 +76,7 @@ namespace AudioAnalysis
             //##################### PARSE SYMBOL STREAM USING MARKOV MODELS
             //int clusterWindow = (int)Math.Floor(SongWindow * (1 / frameOffset));
             
-            double[] scores = AcousticModel.WordSearch(symbolSequence, acousticMatrix, Words);
+            double[] scores = Acoustic_Model.WordSearch(symbolSequence, acousticMatrix, Words);
             result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             //Console.WriteLine("VocalCOUNT=" + ((MMResult)result).VocalCount);

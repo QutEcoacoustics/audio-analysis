@@ -39,9 +39,9 @@ namespace AudioAnalysis
         {
             Template = template;
             //ACCUMULATE OUTPUT SO FAR
-            AcousticMatrix = Template.AcousticModelConfig.AcousticMatrix; //double[,] acousticMatrix
-            SyllSymbols = Template.AcousticModelConfig.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
-            SyllableIDs = Template.AcousticModelConfig.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
+            AcousticMatrix = Template.AcousticModel.AcousticMatrix; //double[,] acousticMatrix
+            SyllSymbols = Template.AcousticModel.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
+            SyllableIDs = Template.AcousticModel.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
             //ModelType type = Template.Model.ModelType;
 
         }

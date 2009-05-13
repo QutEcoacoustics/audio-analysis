@@ -18,7 +18,7 @@ namespace AudioAnalysis
             SonogramConfig = new AVSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
-            AcousticModelConfig   = new AcousticModel(config);
+            AcousticModel   = new Acoustic_Model(config);
 
             //DEAL WITH THE VOCALISATION MODEL TYPE
             var modelName = config.GetString("MODEL_TYPE");
@@ -94,7 +94,7 @@ namespace AudioAnalysis
             //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
             SonogramConfig.Save(writer);
             FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
-            AcousticModelConfig.Save(writer);
+            AcousticModel.Save(writer);
 
             //write the default language model if only creating a new template
             if (this.mode == Mode.CREATE_NEW_TEMPLATE)
@@ -120,8 +120,8 @@ namespace AudioAnalysis
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            int garbageID = this.AcousticModelConfig.FvCount + 2 - 1;
-            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModelConfig.SyllableIDs, garbageID));
+            int garbageID = this.AcousticModel.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(imagePath);
         }
