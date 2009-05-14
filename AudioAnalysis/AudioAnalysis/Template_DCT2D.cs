@@ -75,6 +75,34 @@ namespace AudioAnalysis
             FVExtractor.Extract2D_DCTFromMarquee(s2, FeatureVectorConfig);
         }
 
+
+        public void ScanRecording(AudioRecording recording, string opDir)
+        {
+            Log.WriteIfVerbose("START Template_DCT2D.ScanRecording(opDir=" + opDir + ")");
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, recording.GetWavReader());
+            //var
+            int[] segmentation = spectralSono.SigState;
+
+            double[] scores = new double[segmentation.Length];
+            for (int i = 0; i < spectralSono.FrameCount; i++ )
+            {
+                if (segmentation[i] == 0) continue;
+
+                double time = spectralSono.FramesPerSecond * i;
+                double startTime = time - 0.25;
+                double endTime   = time + 0.25;
+                Console.WriteLine(i.ToString("D4") + "\t" + segmentation[i]);
+                var s2 = new SpectralSonogram(spectralSono, startTime, endTime);
+                FVExtractor.Extract2D_DCTFromMarquee(s2, FeatureVectorConfig);
+                //double[] fv2 = s2.FVParams.FVArray[0];
+
+
+            }
+
+
+        }
+
+
 		public override void Save(string targetPath)
 		{
             Log.WriteIfVerbose("START Template_DCT2D.Save(targetPath=" + targetPath + ")");
@@ -100,13 +128,14 @@ namespace AudioAnalysis
             if (this.mode == Mode.CREATE_NEW_TEMPLATE)
             {
                 writer.WriteLine("#**************** INFO ABOUT THE LANGUAGE MODEL ***************");
-                writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
-                writer.WriteLine("MODEL_TYPE=UNDEFINED");
-                writer.WriteLine("#MODEL_TYPE=" + this.Modeltype);
-                writer.WriteLine("NUMBER_OF_WORDS=1");
-                writer.WriteLine("WORD1_NAME=Dummy");
-                writer.WriteLine("WORD1_EXAMPLE1=1234");
-                writer.WriteLine("WORD1_EXAMPLE2=5678");
+                writer.WriteLine("# A LANGUAGE MODEL IS NOT DEFINED FOR THIS TEMPLATE TYPE ");
+                //writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
+                //writer.WriteLine("MODEL_TYPE=UNDEFINED");
+                //writer.WriteLine("#MODEL_TYPE=" + this.Modeltype);
+                //writer.WriteLine("NUMBER_OF_WORDS=1");
+                //writer.WriteLine("WORD1_NAME=Dummy");
+                //writer.WriteLine("WORD1_EXAMPLE1=1234");
+                //writer.WriteLine("WORD1_EXAMPLE2=5678");
                 writer.WriteLine("#");
                 writer.Flush();
             }

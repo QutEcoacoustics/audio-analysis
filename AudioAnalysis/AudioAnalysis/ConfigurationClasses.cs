@@ -16,6 +16,14 @@ namespace AudioAnalysis
         public enum WindowFunctions { Hamming };
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
 
+        public struct Recording 
+        {
+            public const string Key_RecordingFileName = "WAV_FILE_NAME";
+   //         public const string Key_SubSample = "SUBSAMPLE";
+   //         public const string Key_WindowSize = "FRAME_SIZE";
+   //         public const string Key_WindowOverlap = "FRAME_OVERLAP";
+        }
+
         public struct Windowing //or Framing
         {
             public const string Key_SampleRate = "SAMPLE_RATE";
@@ -33,11 +41,13 @@ namespace AudioAnalysis
 
         public struct Mfcc
         {
-            public const string Key_DoMelScale = "DO_MEL_CONVERSION";
+            public const string Key_DoMelScale       = "DO_MEL_CONVERSION";
             public const string Key_DoNoiseReduction = "DO_NOISE_REDUCTION";
-            public const string Key_FilterbankCount = "FILTERBANK_COUNT";
-            public const string Key_CcCount = "CC_COUNT";
-            public const string Key_IncludeDelta = "INCLUDE_DELTA";
+            public const string Key_MinFreq          = "MIN_FREQ";
+            public const string Key_MaxFreq          = "MAX_FREQ";
+            public const string Key_FilterbankCount  = "FILTERBANK_COUNT";
+            public const string Key_CcCount          = "CC_COUNT";
+            public const string Key_IncludeDelta     = "INCLUDE_DELTA";
             public const string Key_IncludeDoubleDelta = "INCLUDE_DOUBLEDELTA";
             public const string Key_DeltaT = "DELTA_T";
         }

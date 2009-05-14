@@ -32,13 +32,23 @@ namespace AudioAnalysis
 
 		public static BaseSonogramConfig Load(string configFile)
 		{
-			var config = new Configuration(configFile);
-            if (config.GetInt("VERBOSITY") > 0)
+            if (!File.Exists(configFile))
             {
-                Log.Verbosity = 1;
-                Log.WriteIfVerbose("Verbosity set true in Application Config file.");
+                Log.WriteLine("The configuraiton file <" + configFile + "> does not exist!");
+                Log.WriteLine("Initialising application with default parameter values.");
+                return new BaseSonogramConfig();
             }
-            return new BaseSonogramConfig(config);
+            else
+            {
+                Configuration config = new Configuration(configFile);
+                if (config.GetInt("VERBOSITY") > 0)
+                {
+                    Log.Verbosity = 1;
+                    Log.WriteIfVerbose("Verbosity set true in Application Config file.");
+
+                }
+                return new BaseSonogramConfig(config);
+            }
 		}
 
         /// <summary>
@@ -55,13 +65,16 @@ namespace AudioAnalysis
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
+            config.SetPair(ConfigKeys.Mfcc.Key_DoNoiseReduction, false.ToString());
+
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1K2Latency, "0.05");
             config.SetPair(ConfigKeys.EndpointDetection.Key_VocalDelay, "0.2");
             config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, true.ToString());
+
+            config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, "64");
             config.SetPair(ConfigKeys.Mfcc.Key_CcCount, "12");
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, false.ToString());
@@ -88,15 +101,15 @@ namespace AudioAnalysis
 
         private void Initialize(Configuration config)
         {
-            SourceFName = config.GetString("WAV_FILE_NAME");
+            SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
             FftConfiguration.SetConfig(config);
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
-            DoMelScale = config.GetBoolean("DO_MELSCALE");
-            DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
-            MinFreqBand = config.GetIntNullable("MIN_FREQ");
-            MaxFreqBand = config.GetIntNullable("MAX_FREQ");
+            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
+            DoNoiseReduction = config.GetBoolean(ConfigKeys.Mfcc.Key_DoNoiseReduction);
+            MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
+            MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
             DisplayFullBandwidthImage = false;
@@ -108,14 +121,14 @@ namespace AudioAnalysis
 		public virtual void Save(TextWriter writer)
 		{
             writer.WriteLine("#**************** INFO ABOUT FRAMES");
-			writer.WriteConfigValue("FRAME_SIZE", WindowSize);
-			writer.WriteConfigValue("FRAME_OVERLAP", WindowOverlap);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowSize, WindowSize);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_WindowOverlap, WindowOverlap);
             EndpointDetectionConfiguration.Save(writer);
             writer.WriteLine("#**************** INFO ABOUT SONOGRAM");
             writer.WriteConfigValue("MIN_FREQ", MinFreqBand);
 			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
-            writer.WriteConfigValue("NOISE_REDUCE", DoNoiseReduction);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DoNoiseReduction, DoNoiseReduction);
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");

@@ -76,16 +76,30 @@ namespace AudioAnalysis
             template.ExtractTemplateFromRecording(recording);
             template.Save(opTemplatePath);
 
-            //STEP THREE: Verify fv extraction by observing output from acoustic model.
-            template.GenerateSymbolSequenceAndSave(recording, gui.opDir);
+            //STEP THREE: Verify the template - what happens depends on the template
+            if (template.FeatureExtractionType == Feature_Type.DCT_2D)
+            {
+                ((Template_DCT2D)template).ScanRecording(recording, templateDir);
+            }
+            else
+            {
+                //STEP THREE: Verify fv extraction by observing output from acoustic model.
+                template.GenerateSymbolSequenceAndSave(recording, templateDir);
+            }
 
-            //STEP FIVE: save an image of the sonogram with symbol sequence track added
-            var imagePath = Path.Combine(gui.opDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
+            //STEP FOUR: save an image of the sonogram with symbol sequence track added
+            var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
             template.SonogramConfig.DisplayFullBandwidthImage = true;
             var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
-            //spectralSono.CalculateSubbandSNR(new WavReader(wavPath), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand); 
             spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
-            template.SaveSyllablesImage(spectralSono, imagePath);
+            if (template.FeatureExtractionType == Feature_Type.DCT_2D)
+            {
+              //  ((Template_DCT2D)template).SaveResultsImage(spectralSono, imagePath);
+            }
+            else
+            {
+                template.SaveSyllablesImage(spectralSono, imagePath);
+            }
 
             return template;
         }
