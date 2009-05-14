@@ -36,7 +36,7 @@ namespace AudioAnalysis
             if (config.GetInt("VERBOSITY") > 0)
             {
                 Log.Verbosity = 1;
-                //Log.WriteIfVerbose("Verbosity set true in Application Config file.");
+                Log.WriteIfVerbose("Verbosity set true in Application Config file.");
             }
             return new BaseSonogramConfig(config);
 		}
