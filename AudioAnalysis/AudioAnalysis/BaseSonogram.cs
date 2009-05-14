@@ -331,6 +331,11 @@ namespace AudioAnalysis
 
             int factor = frameCount / width;
 
+            if (factor <= 1)
+            {
+                return GetImage();
+            }
+
             return GetImage_ReducedSonogram(factor, drawGridLines);
         }
 

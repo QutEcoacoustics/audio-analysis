@@ -90,8 +90,8 @@ namespace AudioAnalysis
         {
             SourceFName = config.GetString("WAV_FILE_NAME");
             FftConfiguration.SetConfig(config);
-            WindowSize = config.GetInt("WINDOW_SIZE");
-            WindowOverlap = config.GetDouble("WINDOW_OVERLAP");
+            WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
+            WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
             DoMelScale = config.GetBoolean("DO_MELSCALE");
             DoNoiseReduction = config.GetBoolean("NOISE_REDUCE");
