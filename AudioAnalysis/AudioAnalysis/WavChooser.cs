@@ -97,6 +97,11 @@ namespace AudioAnalysis
             //wavFileName = "file0044_22kHz";
             //wavFileName = "file0026_22kHz16bit";
 
+            //BARAKULA
+            //wavDirName = @"C:\SensorNetworks\WavFiles\Barakula\";
+            //wavFileName = "20090508-071000.palm";
+            //wavFileName = "20090508-071000.dopod";
+
             string wavPath = wavDirName + wavFileName + ".wav";
             recording = new AudioRecording(wavPath);
 
