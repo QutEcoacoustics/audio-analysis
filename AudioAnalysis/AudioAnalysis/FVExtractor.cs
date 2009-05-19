@@ -14,7 +14,7 @@ namespace AudioAnalysis
     static class FVExtractor
     {
 
-        public static void ExtractFVsFromRecording(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        public static void ExtractFVsFromRecording(AudioRecording ar, FVConfig FVParams, CepstralSonogramConfig sonoConfig)
         {
             Log.WriteIfVerbose("START method FVExtractor.ExtractFVsFromRecording()");
             WavReader wav = ar.GetWavReader();
@@ -31,7 +31,7 @@ namespace AudioAnalysis
         } // end ExtractFVsFromSonogram()
 
 
-        private static FeatureVector[] GetFeatureVectorsFromFrames(BaseSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        private static FeatureVector[] GetFeatureVectorsFromFrames(BaseSonogram sonogram, FVConfig FVParams, CepstralSonogramConfig sonoConfig)
         {
             Log.WriteIfVerbose("\nEXTRACTING FEATURE VECTORS FROM FRAMES:- method FVExtractor.GetFeatureVectorsFromFrames()");
 
@@ -87,44 +87,47 @@ namespace AudioAnalysis
         /// <param name="ar"></param>
         /// <param name="FVParams"></param>
         /// <param name="sonoConfig"></param>
-        public static void ExtractFVsFromVocalisations(AudioRecording ar, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        public static void ExtractFVsFromVocalisations(FileInfo[] files, FVConfig FVParams, CepstralSonogramConfig cepstralConfig)
         {
             Log.WriteIfVerbose("START FVExtractor.ExtractFVsFromVocalisations()");
+            Log.WriteIfVerbose("\tNumber of vocalisations = " + files.Length);
+            int interval = 5; //extract feature vector at this interval +1
 
-            WavReader wav = ar.GetWavReader();
-            var sonogram = new CepstralSonogram(sonoConfig, wav);
-            //transfer parameters to where required
-            sonoConfig.SampleRate = sonogram.SampleRate;
-            sonoConfig.Duration = sonogram.Duration;
-            FftConfiguration.SetSampleRate(sonoConfig.SampleRate);
+            //use next two lines to save image of sonogram
+            //cepstralConfig.SaveSonogramImage = true;
+            //cepstralConfig.ImageDir = files[0].DirectoryName;
 
-            //Get List of Vocalisation Recordings
-            string ext = ".wav";
-            string samplesDir = FVParams.FVSourceDir;
-            FileInfo[] files = FileTools.GetFilesInDirectory(samplesDir, ext);
-            List<FeatureVector> list = new List<FeatureVector>(); 
+            List<FeatureVector> list = new List<FeatureVector>();
             foreach (FileInfo f in files)
             {
                 //Make sonogram of each recording
-                Console.WriteLine("Recording = "+f.Name);
+                //Console.WriteLine("Recording = "+f.Name);
                 AudioRecording recording = new AudioRecording(f.FullName);
-                WavReader wr = recording.GetWavReader();
-                var ss = new SpectralSonogram(sonoConfig, wr);
-                var image = new Image_MultiTrack(ss.GetImage(false, false));
-                string path = samplesDir + Path.GetFileNameWithoutExtension(f.Name)+ ".png";
-                image.Save(path);
+                WavReader wav = recording.GetWavReader();
+                cepstralConfig.SourceFName = Path.GetFileNameWithoutExtension(f.Name);
+                FftConfiguration.SetSampleRate(wav.SampleRate);
 
                //Extract the FVs from each
-                var cs = new CepstralSonogram(sonoConfig, wr);
-                List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, sonoConfig);
+                Log.WriteIfVerbose("\tInit CepstralSonogram(cepstralConfig, wav)"); 
+                var cs = new CepstralSonogram(cepstralConfig, wav);
+                List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, cepstralConfig, interval);
                 Log.WriteIfVerbose("Have extracted " + fvs.Count+ " feature vectors.");
                 list.AddRange(fvs);
-            }
+
+                //following lines for debug using images
+                //var ss = new SpectralSonogram(cepstralConfig, wav);
+                //var image = new Image_MultiTrack(cs.GetImage(false, false));
+                //string path = ((CepstralSonogramConfig)cs.Configuration).ImageDir + "\\" + cs.Configuration.SourceFName + "ccc.png";
+                //Console.WriteLine("Make(): saving sonogram image to " + path);
+                //image.Save(path);
+            } //end of all training vocalisations
 
             //Cluster the FVs
-            Log.WriteIfVerbose("Have extracted "+list.Count+" feature vectors.");
+            Log.WriteIfVerbose("Have extracted "+list.Count+" feature vectors from " + files.Count()+ " files.");
+           // Console.ReadLine();
 
             //Get the centroids
+            Log.WriteIfVerbose("\nSTART VECTOR QUANTISATION");
             Cluster cluster = new Cluster(FeatureVector.GetVectors(list));
             VQ vq = new VQ(cluster, FVParams.FVCount);
             vq.Train();
@@ -135,21 +138,22 @@ namespace AudioAnalysis
             FVParams.FVArray = new FeatureVector[fvCount];
             for (int i = 0; i < fvCount; i++)
             {
+                Log.WriteIfVerbose("   Min error centroid[" + (i + 1) + "] is average of " + vq.Clusters[i].Size + " vectors.");
                 string fvName = "centroid"+(i+1);
                 Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] Name=" + fvName);
                 FVParams.FVArray[i] = new FeatureVector(vq.MinErrorCentroids[i], fvName);
+                //FVParams.FVArray[i] = list[i];
             }
 
             FVParams.FVLength = FVParams.FVArray[0].FvLength;
             Log.WriteIfVerbose("END method FVExtractor.ExtractFVsFromVocalisations()");
             //Console.ReadLine();
-        } // end ExtractFVsFromSonogram()
+        } // end ExtractFVsFromVocalisations()
 
 
-        private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, AVSonogramConfig sonoConfig)
+        private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, CepstralSonogramConfig sonoConfig, int interval)
         {
-            int interval = 3; //extract feature vector at this interval
-            int fvCount = sonogram.FrameCount / interval;
+            int fvCount = sonogram.FrameCount;
 
             //initialise feature vectors for template. Each frame provides one vector in three parts
             int dT = sonoConfig.DeltaT;
@@ -158,12 +162,14 @@ namespace AudioAnalysis
             List<FeatureVector> list = new List<FeatureVector>();
             for (int i = dT; i < fvCount - dT; i++)
             {
-                int id = i * interval;
+                Console.WriteLine("frame "+i+" dB = "+sonogram.DecibelsPerFrame[i]);
+                if (sonogram.DecibelsPerFrame[i] < 7.5) continue; //ignore low dB frames
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
-                double[] acousticV = Speech.GetAcousticVector(M, id, dT); //combines  frames T-dT, T and T+dT
+                double[] acousticV = Speech.GetAcousticVector(M, i, dT); //combines  frames T-dT, T and T+dT
                 FeatureVector fv = new FeatureVector(acousticV, sonogram.Configuration.SourceFName);
-                fv.SetFrameIndex(id);
+                fv.SetFrameIndex(i);
                 list.Add(fv);
+                i += interval;
             }
             return list;
         }
@@ -179,73 +185,8 @@ namespace AudioAnalysis
             return fv;
         }
 
-        /// <summary>
-        /// This method is called when constructing a DCT_2D template.
-        /// </summary>
-        /// <param name="s">This is sonogram of the extracted portion of wav file</param>
-        /// <param name="FVParams"></param>
-        /// <param name="sonoConfig"></param>
-        public static void Extract2D_DCTFromMarquee(SpectralSonogram s, FVConfig FVParams)
-        {
-            if(Log.Verbosity==1) Console.WriteLine("START FVExtractor.ExtractFVsFromMarquee()");
-            //Log.WriteIfVerbose("Start time = " + FVParams.StartTime.ToString("F3") + " seconds from start of recording");
-            //Log.WriteIfVerbose("End   time = " + FVParams.EndTime.ToString("F3")   + " seconds from start of recording");
 
-            //Assume that the entire spectral sonogram is the marquee part required.
-            var config = s.Configuration as CepstralSonogramConfig;
-            double[,] cepstralM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
-            int frameCount = cepstralM.GetLength(0);
 
-            cepstralM = DataTools.normalise(cepstralM);
-
-            Log.WriteIfVerbose("dim of cepstral matrix = " + frameCount + "*" + cepstralM.GetLength(1));
-            ImageTools.DrawMatrix(cepstralM, @"C:\SensorNetworks\Templates\Template_4\matrix1.bmp");
-
-            //pad to fixed number of frames
-            double duration = 0.5; //duration of padded matrix in seconds
-            int dim = (int)Math.Round(s.FramesPerSecond * duration);
-            double[,] padM = new double[dim, config.MfccConfiguration.CcCount];
-            Log.WriteIfVerbose("dim of padded matrix   = " + padM.GetLength(0) + "*" + padM.GetLength(1));
-            for (int r = 0; r < frameCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++) padM[r,c] = cepstralM[r,c];
-            ImageTools.DrawMatrix(padM, @"C:\SensorNetworks\Templates\Template_4\matrix2.bmp");
-            
-            //do the DCT
-            double[,] cosines = Speech.Cosines(dim, config.MfccConfiguration.CcCount + 1); //set up the cosine coefficients
-            double[,] dctM = new double[config.MfccConfiguration.CcCount, config.MfccConfiguration.CcCount]; 
-            Log.WriteIfVerbose("dim of DCT_2D matrix   = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
-            for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
-            {
-                double[] col = DataTools.GetColumn(padM, c);
-                double[] dct = Speech.DCT(col, cosines);
-                for (int r = 0; r < config.MfccConfiguration.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
-            }
-            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix3.bmp");
-
-            //store as single FV using the zig-zag 2D-DCT matrix
-            if (Speech.zigzag12x12.GetLength(0) != config.MfccConfiguration.CcCount)
-            {
-                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) +" != "+ config.MfccConfiguration.CcCount);
-                throw new Exception("Fatal Error!");
-            }
-            else
-                Log.WriteIfVerbose("zigzag dim = CcCount = " + Speech.zigzag12x12.GetLength(0));
-
-            int FVdim = 70;
-            double[] fv = new double[FVdim];
-            for (int r = 0; r < config.MfccConfiguration.CcCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
-                {
-                    int id = Speech.zigzag12x12[r,c];
-                    if(id <= FVdim) fv[id-1] = dctM[r,c];
-                }
-            FVParams.FVCount = 1;
-            FVParams.FVArray = new FeatureVector[FVParams.FVCount];
-            FVParams.FVArray[0] = new FeatureVector(fv, "Marquee_2D-DCT"); 
-
-            //Console.WriteLine("End of the Line");
-            //Console.ReadLine();
-        }
 
     } //end class FVExtractor
 

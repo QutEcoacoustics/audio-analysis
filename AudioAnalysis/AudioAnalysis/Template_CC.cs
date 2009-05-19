@@ -16,7 +16,7 @@ namespace AudioAnalysis
 
 		public Template_CC(Configuration config) : base(config)
 		{
-            SonogramConfig = new AVSonogramConfig(config);
+            SonogramConfig = new CepstralSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);

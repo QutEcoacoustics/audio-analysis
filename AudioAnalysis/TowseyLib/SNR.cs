@@ -124,6 +124,8 @@ namespace TowseyLib
             //ignore first N and last N frames when calculating background noise level because sometimes these frames
             // have atypically low signal values
             int buffer = 20; //ignore first N and last N frames when calculating background noise level
+            //HOWEVER do not ignore them for short recordings!
+            if (logEnergy.Length < 1000) buffer = 0; //ie recording is < approx 11 seconds long
 
             double min = Double.MaxValue;
             double max = -Double.MaxValue;

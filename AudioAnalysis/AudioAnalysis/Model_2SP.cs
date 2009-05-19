@@ -61,7 +61,7 @@ namespace AudioAnalysis
         /// <param name="fvCount"></param>
         /// <param name="sonogramConfig"></param>
         /// <param name="sampleRate"></param>
-        public Model_2StatePeriodic(Configuration config, int fvCount, BaseSonogramConfig sonogramConfig, int sampleRate)
+        public Model_2StatePeriodic(Configuration config, int fvCount, SonogramConfig sonogramConfig, int sampleRate)
         {
             Log.WriteIfVerbose("INIT Model_2StatePeriodic CONSTRUCTOR 2");
             this.ModelType = ModelType.MM_TWO_STATE_PERIODIC;

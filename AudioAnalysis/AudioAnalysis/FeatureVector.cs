@@ -260,17 +260,17 @@ namespace AudioAnalysis
             if (fLength != sHeight) throw new Exception("WARNING!! FV Length != height of acoustic matrix. " + fLength + " != " + sHeight);
 
             double[] scores = new double[sWidth];
-            double avScore = 0.0;
+            double sum = 0.0;
             for (int r = 0; r < sWidth; r++)//scan over sonogram
             {
                 double[] aV = DataTools.GetRow(acousticM, r);
                 double ccc = CrossCorrelation(aV);  //cross-correlation coeff
                 scores[r] = ccc;
-                avScore += ccc;
+                sum += ccc;
             }//end of loop over sonogram
 
             // replace dummy values by the minimum
-            avScore /= sWidth;
+            double avScore = sum / sWidth;
             int edge = 4;
             for (int x = 0; x < edge; x++) scores[x] = avScore;
             for (int x = (sWidth - edge - 1); x < sWidth; x++) scores[x] = avScore;

@@ -46,7 +46,7 @@ namespace AudioAnalysis
 
 
             //Configuration config = new Configuration();
-            BaseSonogramConfig sonoConfig = new BaseSonogramConfig();
+            SonogramConfig sonoConfig = new SonogramConfig();
 
             AudioRecording ar = new AudioRecording(wavPath);
             Console.WriteLine();

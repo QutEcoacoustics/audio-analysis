@@ -13,15 +13,16 @@ namespace AudioAnalysis
     /// </summary>
     public static class ConfigKeys
     {
-        public enum WindowFunctions { Hamming };
+        public enum WindowFunctions { HAMMING };
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
+        public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
+        public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE }
+
 
         public struct Recording 
         {
             public const string Key_RecordingFileName = "WAV_FILE_NAME";
-   //         public const string Key_SubSample = "SUBSAMPLE";
-   //         public const string Key_WindowSize = "FRAME_SIZE";
-   //         public const string Key_WindowOverlap = "FRAME_OVERLAP";
+            public const string Key_RecordingDirName  = "WAV_DIR_NAME";
         }
 
         public struct Windowing //or Framing
@@ -32,26 +33,30 @@ namespace AudioAnalysis
             public const string Key_WindowOverlap = "FRAME_OVERLAP";
         }
 
-        public struct Fft
-        {
-            public const string Key_WindowFunction   = "WINDOW_FUNCTION";
-            public const string Key_NPointSmoothFFT  = "N_POINT_SMOOTH_FFT";
-            public const string Key_NyquistFrequency = "NYQUIST_FREQ";
-        }
-
         public struct Mfcc
         {
+            public const string Key_WindowFunction = "WINDOW_FUNCTION";
+            public const string Key_NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
+            public const string Key_NyquistFrequency = "NYQUIST_FREQ";
+            public const string Key_StartTime = "START_TIME";
+            public const string Key_EndTime          = "END_TIME";
             public const string Key_DoMelScale       = "DO_MEL_CONVERSION";
-            public const string Key_DoNoiseReduction = "DO_NOISE_REDUCTION";
+            public const string Key_NoiseReductionType = "NOISE_REDUCTION_TYPE";
             public const string Key_MinFreq          = "MIN_FREQ";
             public const string Key_MaxFreq          = "MAX_FREQ";
             public const string Key_FilterbankCount  = "FILTERBANK_COUNT";
             public const string Key_CcCount          = "CC_COUNT";
             public const string Key_IncludeDelta     = "INCLUDE_DELTA";
             public const string Key_IncludeDoubleDelta = "INCLUDE_DOUBLEDELTA";
-            public const string Key_DeltaT = "DELTA_T";
+            public const string Key_DeltaT           = "DELTA_T";
         }
 
+        public struct Snr
+        {
+            public const string Key_DynamicRange = "DYNAMIC_RANGE";
+        }
+
+            
         public struct EndpointDetection
         {
             public const string Key_K1SegmentationThreshold = "SEGMENTATION_THRESHOLD_K1";
@@ -64,6 +69,11 @@ namespace AudioAnalysis
         public struct Sonogram
         {
             public const string Key_SonogramType = "SONOGRAM_TYPE";
+        }
+
+        public struct Template
+        {
+            public const string Key_TemplateType = "TEMPLATE_TYPE";
         }
 
         public struct ImageSave
@@ -84,8 +94,8 @@ namespace AudioAnalysis
 		{
             int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
             SetSampleRate(sr);
-            WindowFunction = config.GetString(ConfigKeys.Fft.Key_WindowFunction);
-            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Fft.Key_NPointSmoothFFT) ?? 0;
+            WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
 		}
 
         public static void SetSampleRate(int sr)
@@ -96,16 +106,16 @@ namespace AudioAnalysis
 
 		public static void Save(TextWriter writer)
 		{
-            writer.WriteConfigValue(ConfigKeys.Fft.Key_NyquistFrequency, NyquistFreq);
-            writer.WriteConfigValue(ConfigKeys.Fft.Key_WindowFunction, WindowFunction);
-            writer.WriteConfigValue(ConfigKeys.Fft.Key_NPointSmoothFFT, NPointSmoothFFT);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
             writer.Flush();
         }
 
 		#region Properties
         public static int SampleRate { get; set; }
         public static int NyquistFreq { get; set; }
-        private static string windowFunction = ConfigKeys.WindowFunctions.Hamming.ToString();
+        private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
         public  static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
 		public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
 		#endregion

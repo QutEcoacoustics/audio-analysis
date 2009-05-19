@@ -17,7 +17,7 @@ namespace AudioAnalysis
     {
 
         #region Properties
-        public BaseSonogramConfig Configuration { get; private set; }
+        public SonogramConfig Configuration { get; private set; }
 
 		public double MaxAmplitude { get; private set; }
 		public int SampleRate { get; protected set; }
@@ -32,7 +32,7 @@ namespace AudioAnalysis
 
         //energy and dB per frame
         public SNR SnrFrames { get; private set; }
-        public double[] DecibelsPerFrame { get; protected set; }    // Normalised decibels per signal frame
+        public double[] DecibelsPerFrame { get { return SnrFrames.Decibels; } protected set {} }//decibels per signal frame
 
         //energy and dB per frame sub-band
         public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
@@ -54,7 +54,7 @@ namespace AudioAnalysis
         /// use this constructor when want to extract time segment of existing sonogram
         /// </summary>
         /// <param name="config"></param>
-        public BaseSonogram(BaseSonogramConfig config)
+        public BaseSonogram(SonogramConfig config)
         {
             Configuration = config;
             this.subBand_MinHz = config.MinFreqBand ?? 0;
@@ -67,7 +67,7 @@ namespace AudioAnalysis
         /// <param name="config"></param>
         /// <param name="wav"></param>
         /// <param name="doExtractSubband"></param>
-        public BaseSonogram(BaseSonogramConfig config, WavReader wav)
+        public BaseSonogram(SonogramConfig config, WavReader wav)
 		{
 			Configuration = config;
 
@@ -91,7 +91,6 @@ namespace AudioAnalysis
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             this.SnrFrames = new SNR(frames);
-            this.DecibelsPerFrame = SnrFrames.Decibels;
             this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
@@ -102,7 +101,7 @@ namespace AudioAnalysis
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
 
             var fractionOfHighEnergyFrames = SnrFrames.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
-			if ((fractionOfHighEnergyFrames > 0.8) && (Configuration.DoNoiseReduction))
+			if (fractionOfHighEnergyFrames > 0.8)
 			{
                 Log.WriteLine("\nWARNING ##########################################");
                 Log.WriteLine("\t################### BaseSonogram(BaseSonogramConfig config, WavReader wav, bool doExtractSubband)");
@@ -144,7 +143,7 @@ namespace AudioAnalysis
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			int smoothingWindow = 3; //to smooth the spectrum 
 
-			double[,] sonogram = new double[frameCount, binCount];
+			double[,] sgM = new double[frameCount, binCount];
 
 			for (int i = 0; i < frameCount; i++)//foreach time step
 			{
@@ -156,10 +155,10 @@ namespace AudioAnalysis
 					double amplitude = f1[j];
 					if (amplitude < epsilon)
 						amplitude = epsilon; // to prevent possible log of a very small number
-					sonogram[i, j] = amplitude;
+					sgM[i, j] = amplitude;
 				}
 			} //end of all frames
-			return sonogram;
+			return sgM;
 		}
 
 
@@ -205,41 +204,39 @@ namespace AudioAnalysis
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public double[,] NoiseReduce(double[,] matrix)
+        public double[,] NoiseReduce_Standard(double[,] matrix)
         {
-            //TWo PARAMETERS REQUIRED FOR NOISE REDUCTION - they set min and max normalisation bounds
             double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-            //double snrFactor = 5.0; //Multiply signal SNR by this factor to set UPPER DECIBEL BOUND for sonogram normalisation
-            //increase the factor in order to increase sonogram SNR and therefore show more spectral detail.
-            //This is an attempt to relate spectral detail to the SNR calculated from original audio signal.
-            /* PRINCIPLE: For display purposes, the max dB bound should be related to signal SNR.
-             *            For template creation, the max dB bound should be set to fixed level for all sonograms 
-             *            because if all sonograms normaliesd to same max then can compare near (high intensity) and far (low intensity) 
-             *            vocalisations.
-            */
 
-            //Log.WriteIfVerbose("\t... doing noise reduction.");
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
-            
             double[,] mnr = matrix;
-            mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
+            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
             mnr = SNR.RemoveModalNoise(mnr);
             mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold); 
-
-            //NORMALISE
-            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
-            //Console.WriteLine("BEFORE NORMALISE minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
-            //double maxDB = snrFactor * this.SnrFrames.Snr; // sets upper limit for sonogram SNR
-            //Console.WriteLine("Set max DB= " + maxDB.ToString("F2") + " dB = " + snrFactor + " * " + this.SnrFrames.Snr + " dB");
-            //mnr = SNR.NormaliseIntensity(mnr, 0.0, maxDB);
-            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
-            //Console.WriteLine("AFTER  NORMALISE minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + " dB");
             return mnr;
         }
 
+        /// <summary>
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public double[,] NoiseReduce_FixedRange(double[,] matrix)
+        {
+            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+            double dynamicRange = this.Configuration.DynamicRange;
+            Console.WriteLine("THIS BASE SONOGRAM DR = " + dynamicRange);
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double[,] mnr = matrix;
+            mnr = SNR.RemoveModalNoise(mnr);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            return mnr;
+        }
 
 		public Image GetImage()
 		{
@@ -255,7 +252,7 @@ namespace AudioAnalysis
 
 		protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
 		{
-			var data = Data;
+			var data = this.Data;
 			int width = data.GetLength(0); // Number of spectra in sonogram
             int fftBins = data.GetLength(1);
             int imageHeight = fftBins * binHeight; // image ht = sonogram ht. Later include grid and score scales
@@ -510,9 +507,9 @@ namespace AudioAnalysis
         /// <param name="configFile"></param>
         /// <param name="wav"></param>
         public SpectralSonogram(string configFile, WavReader wav)
-			: this (BaseSonogramConfig.Load(configFile), wav)
+			: this (SonogramConfig.Load(configFile), wav)
 		{ }
-		public SpectralSonogram(BaseSonogramConfig config, WavReader wav)
+		public SpectralSonogram(SonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
         public SpectralSonogram(SpectralSonogram sg, double startTime, double endTime)
@@ -558,7 +555,9 @@ namespace AudioAnalysis
             for(int i = 0; i < frameCount; i++) //each row of matrix is a frame
                 for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
                     this.Data[i, j] = sg.Data[startFrame + i, j];
-        }
+        }//end CONSTRUCTOR
+
+
 
 		protected override void Make(double[,] amplitudeM)
 		{
@@ -567,9 +566,35 @@ namespace AudioAnalysis
             //CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m);//convert amplitude spectrogram to dB spectrogram
             //NOISE REDUCTION
-            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
-            this.Data = m;
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)            m = NoiseReduce_Standard(m);
+            else
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+            
+            this.Data = m; //store data matrix
 		}
+
+        /// <summary>
+        /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
+        /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised
+        /// </summary>
+        /// <param name="dynamicRange"></param>
+        public void NormaliseDynamicRange(double dynamicRange)
+        {
+            int frameCount = this.Data.GetLength(0);
+            int featureCount=this.Data.GetLength(1);
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(this.Data, out minIntensity, out maxIntensity);
+            double[,] newMatrix = new double[frameCount,featureCount];
+
+            for (int i = 0; i < frameCount; i++) //each row of matrix is a frame
+                for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
+                {
+                    newMatrix[i, j] = this.Data[i, j];
+                }
+            this.Data = newMatrix;
+        }
+
 
         double[,] ApplyFilterBank(double[,] matrix)
         {
@@ -578,7 +603,7 @@ namespace AudioAnalysis
             double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
             return m;
         } //end ApplyFilterBank(double[,] matrix)
-    //}
+    
    } //end of class SpectralSonogram : BaseSonogram
 
 
@@ -606,10 +631,14 @@ namespace AudioAnalysis
             //NOTE!!!! The decibel array has been normalised in 0 - 1.
             Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
 
-            double[,] m = ApplyFilterBank(matrix);
+            double[,] m = ApplyFilterBank(matrix);//also does mel scale conversion
             m = Speech.DecibelSpectra(m);
-            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
-           
+
+            //NOISE REDUCTION
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD) m = NoiseReduce_Standard(m);
+            else
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+
             //calculate cepstral coefficients and normalise
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
@@ -626,7 +655,6 @@ namespace AudioAnalysis
             if (config.MfccConfiguration.FilterbankCount > FFTbins)
                 throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + config.MfccConfiguration.FilterbankCount + " > " + FFTbins + ")\n\n");
 
-            MaxMel = Speech.Mel(NyquistFrequency);
             //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
             int bandCount = config.MfccConfiguration.FilterbankCount;
             double[,] m = matrix;
@@ -646,16 +674,16 @@ namespace AudioAnalysis
 	public class AcousticVectorsSonogram : CepstralSonogram
 	{
 		public AcousticVectorsSonogram(string configFile, WavReader wav)
-			: base(AVSonogramConfig.Load(configFile), wav)
+            : base(CepstralSonogramConfig.Load(configFile), wav)
 		{ }
 
-		public AcousticVectorsSonogram(AVSonogramConfig config, WavReader wav)
+        public AcousticVectorsSonogram(CepstralSonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
 
 		protected override void Make(double[,] amplitudeM)
 		{
-			var config = Configuration as AVSonogramConfig;
+            var config = Configuration as CepstralSonogramConfig;
             Data = MakeAcousticVectors(amplitudeM, this.DecibelsNormalised, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta, config.DeltaT);
         }
 
@@ -694,10 +722,10 @@ namespace AudioAnalysis
 	public class SobelEdgeSonogram : BaseSonogram
 	{
 		public SobelEdgeSonogram(string configFile, WavReader wav)
-			: base(BaseSonogramConfig.Load(configFile), wav)
+			: base(SonogramConfig.Load(configFile), wav)
 		{ }
 
-		public SobelEdgeSonogram(BaseSonogramConfig config, WavReader wav)
+		public SobelEdgeSonogram(SonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
 
@@ -709,8 +737,11 @@ namespace AudioAnalysis
 		double[,] SobelEdgegram(double[,] matrix)
 		{
 			double[,] m = Speech.DecibelSpectra(matrix);
-            if (Configuration.DoNoiseReduction) m = NoiseReduce(m);
-			return ImageTools.SobelEdgeDetection(m);
+            //NOISE REDUCTION
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD) m = NoiseReduce_Standard(m);
+            else
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+            return ImageTools.SobelEdgeDetection(m);
 		}
     }// end SobelEdgeSonogram : BaseSonogram
 }

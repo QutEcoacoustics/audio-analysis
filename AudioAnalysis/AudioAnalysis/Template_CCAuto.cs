@@ -14,9 +14,33 @@ namespace AudioAnalysis
     class Template_CCAuto : BaseTemplate
     {
 
+
+        /// <summary>
+        /// call this Load method when creating a new template from user provided params
+        /// using only one line of code!
+        /// </summary>
+        public static BaseTemplate Load(string appConfigFile, GUI gui, FileInfo[] recordingFiles, string templateDir, string templateFName)
+        {
+            //STEP ONE: Initialise template with parameters
+            Log.WriteIfVerbose("\nSTEP ONE: Initialise template with parameters");
+            string opTemplatePath = templateDir + templateFName;
+            var config = MergeProperties(appConfigFile, gui);
+            config.SetPair(ConfigKeys.Recording.Key_RecordingDirName, recordingFiles[0].DirectoryName);//assume all files in same dir
+            config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
+            config.SetPair("TEMPLATE_DIR", templateDir);
+            var template = new Template_CCAuto(config);
+
+            //STEP TWO: Extract template and save
+            Log.WriteIfVerbose("\nSTEP TWO: Extract template and save");
+            template.ExtractTemplateFromRecordings(recordingFiles);
+            template.Save(opTemplatePath);
+            return template;
+        }
+
+
         public Template_CCAuto(Configuration config) : base(config)
 		{
-            SonogramConfig = new AVSonogramConfig(config);
+            SonogramConfig = new CepstralSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);
@@ -43,11 +67,16 @@ namespace AudioAnalysis
         /// <param name="ar"></param>
         protected override void ExtractTemplateFromRecording(AudioRecording ar)
         {
-            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecording()"); 
-            FVExtractor.ExtractFVsFromVocalisations(ar, FeatureVectorConfig, SonogramConfig);
+            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecording(AudioRecording ar)");
         }
 
-		public override void Save(string targetPath)
+        protected void ExtractTemplateFromRecordings(FileInfo[] recordingFiles)
+        {
+            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecordings()");
+            FVExtractor.ExtractFVsFromVocalisations(recordingFiles, FeatureVectorConfig, SonogramConfig);
+        }
+        
+        public override void Save(string targetPath)
 		{
             Log.WriteIfVerbose("START Template_CCAuto.Save(targetPath=" + targetPath + ")");
             this.DataPath = targetPath;
