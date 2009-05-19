@@ -8,11 +8,11 @@ using System.IO;
 namespace AudioAnalysis
 {
 	[Serializable]
-	public class BaseSonogramConfig
+	public class SonogramConfig
 	{
 
         #region Properties
-        public string SourceFName { get; private set; }
+        public string SourceFName { get; set; }
 
         public int SampleRate { get; set; }
         public TimeSpan Duration { get; set; }
@@ -21,7 +21,8 @@ namespace AudioAnalysis
         public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
         public bool DoMelScale { get; set; }
-        public bool DoNoiseReduction { get; set; }
+        public ConfigKeys.NoiseReductionType NoiseReductionType { get; set; }
+        public double DynamicRange { get; set; }
 
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
@@ -30,13 +31,13 @@ namespace AudioAnalysis
         #endregion
 
 
-		public static BaseSonogramConfig Load(string configFile)
+		public static SonogramConfig Load(string configFile)
 		{
             if (!File.Exists(configFile))
             {
                 Log.WriteLine("The configuraiton file <" + configFile + "> does not exist!");
                 Log.WriteLine("Initialising application with default parameter values.");
-                return new BaseSonogramConfig();
+                return new SonogramConfig();
             }
             else
             {
@@ -47,26 +48,25 @@ namespace AudioAnalysis
                     Log.WriteIfVerbose("Verbosity set true in Application Config file.");
 
                 }
-                return new BaseSonogramConfig(config);
+                return new SonogramConfig(config);
             }
 		}
 
         /// <summary>
         /// Default Constructor
         /// </summary>
-        public BaseSonogramConfig()
+        public SonogramConfig()
         {
             Configuration config = new Configuration();
 
-            config.SetPair(ConfigKeys.Fft.Key_WindowFunction, ConfigKeys.WindowFunctions.Hamming.ToString());
-            config.SetPair(ConfigKeys.Fft.Key_NPointSmoothFFT, "3");
 
             config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_DoNoiseReduction, false.ToString());
-
+            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, false.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, ConfigKeys.WindowFunctions.HAMMING.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1K2Latency, "0.05");
@@ -94,7 +94,7 @@ namespace AudioAnalysis
         /// CONSTRUCTOR
         /// </summary>
         /// <param name="config"></param>
-		public BaseSonogramConfig(Configuration config)
+		public SonogramConfig(Configuration config)
 		{
             Initialize(config);
 		}
@@ -106,8 +106,10 @@ namespace AudioAnalysis
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
+            DynamicRange = config.GetDouble(ConfigKeys.Snr.Key_DynamicRange);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
-            DoNoiseReduction = config.GetBoolean(ConfigKeys.Mfcc.Key_DoNoiseReduction);
+            string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
+            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce); 
             MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
@@ -128,7 +130,7 @@ namespace AudioAnalysis
             writer.WriteConfigValue("MIN_FREQ", MinFreqBand);
 			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DoNoiseReduction, DoNoiseReduction);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
@@ -156,17 +158,25 @@ namespace AudioAnalysis
         }
 
 
-	}
+    } // end BaseSonogramConfig()
 
 
 	[Serializable]
-	public class CepstralSonogramConfig : BaseSonogramConfig
+	public class CepstralSonogramConfig : SonogramConfig
 	{
 		public new static CepstralSonogramConfig Load(string configFile)
 		{
 			var config = new Configuration(configFile);
 			return new CepstralSonogramConfig(config);
 		}
+
+        private bool saveSonogramImage = false;
+        public  bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
+        private string imageDir = null;
+        public  string ImageDir { get { return imageDir; } set { imageDir = value; } }
+        public MfccConfiguration MfccConfiguration { get; set; }
+        public int DeltaT { get; set; }
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -174,48 +184,54 @@ namespace AudioAnalysis
 		public CepstralSonogramConfig(Configuration config) : base(config)
 		{
 			MfccConfiguration = new MfccConfiguration(config);
-		}
+            SampleRate   = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
+            DeltaT       = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+            var duration = config.GetDoubleNullable("WAV_DURATION");
+            if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
+        }
 
 		public override void Save(TextWriter writer)
 		{
 			base.Save(writer);
 			MfccConfiguration.Save(writer);
-		}
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
+            writer.WriteLine("#");
+            writer.Flush();
+        }
 
-		public MfccConfiguration MfccConfiguration { get; set; }
     } //end class CepstralSonogramConfig
 
 
 
 
 
-	[Serializable]
-	public class AVSonogramConfig : CepstralSonogramConfig
-	{
+    //[Serializable]
+    //public class AVSonogramConfig : CepstralSonogramConfig
+    //{
 
-		public new static AVSonogramConfig Load(string configFile)
-		{
-			var config = new Configuration(configFile);
-			return new AVSonogramConfig(config);
-		}
+    //    public new static AVSonogramConfig Load(string configFile)
+    //    {
+    //        var config = new Configuration(configFile);
+    //        return new AVSonogramConfig(config);
+    //    }
 
-		public AVSonogramConfig(Configuration config) : base(config)
-		{
-            var duration = config.GetDoubleNullable("WAV_DURATION");
-            if (duration != null)
-                Duration = TimeSpan.FromSeconds(duration.Value);
-            SampleRate = config.GetInt("WAV_SAMPLE_RATE");
-			DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
-		}
+    //    public AVSonogramConfig(Configuration config) : base(config)
+    //    {
+    //        var duration = config.GetDoubleNullable("WAV_DURATION");
+    //        if (duration != null)
+    //            Duration = TimeSpan.FromSeconds(duration.Value);
+    //        SampleRate = config.GetInt("WAV_SAMPLE_RATE");
+    //        DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+    //    }
 
-		public override void Save(TextWriter writer)
-		{
-			base.Save(writer);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
-            writer.WriteLine("#");
-            writer.Flush();
-		}
+    //    public override void Save(TextWriter writer)
+    //    {
+    //        base.Save(writer);
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
+    //        writer.WriteLine("#");
+    //        writer.Flush();
+    //    }
 
-		public int DeltaT { get; set; }
-    }//end class AVSonogramConfig which is derived from CepstralSonogramConfig
+    //    public int DeltaT { get; set; }
+    //}//end class AVSonogramConfig which is derived from CepstralSonogramConfig
 }

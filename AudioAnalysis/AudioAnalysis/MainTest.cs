@@ -268,7 +268,7 @@ namespace AudioAnalysis
 
             Log.WriteIfVerbose("\n\nMake a SpectralSonogram");
 
-            BaseSonogramConfig config = new BaseSonogramConfig();
+            SonogramConfig config = new SonogramConfig();
 
             BaseSonogram sonogram = new SpectralSonogram(config, new WavReader(wavPath));
             bool doHighlightSubband = false;

@@ -21,7 +21,7 @@ namespace AudioAnalysis
 
         public double StartTime{ get; set; }
         public double EndTime { get; set; }
-        public Feature_Type FeatureExtractionType { get; set; }
+        public ConfigKeys.Feature_Type FeatureExtractionType { get; set; }
         public int FVCount { get; set; }
         public string[] FVIniData { get; private set; }
 
@@ -62,7 +62,7 @@ namespace AudioAnalysis
         {
             //FEATURE VECTORS
             var  featureExtractionName = config.GetString("FEATURE_TYPE");
-            this.FeatureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+            this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
 
             CallID = config.GetInt("TEMPLATE_ID");
             FV_DefaultNoisePath = config.GetPath("FV_DEFAULT_NOISE_FILE");
@@ -70,7 +70,7 @@ namespace AudioAnalysis
 
             switch (FeatureExtractionType)
             {
-                case Feature_Type.MFCC:
+                case ConfigKeys.Feature_Type.MFCC:
                     this.FVSourceType = FV_Source.SELECTED_FRAMES;
                     FVCount = config.GetInt("FV_COUNT");
                     FVIniData = new string[FVCount];
@@ -81,13 +81,13 @@ namespace AudioAnalysis
                         FVIniData[i] = config.GetString("FV"+(i+1)+"_DATA");
                     }
                     break;
-                case Feature_Type.CC_AUTO:
+                case ConfigKeys.Feature_Type.CC_AUTO:
                     this.FVSourceType = FV_Source.FIXED_INTERVALS;
                     FVSourceDir = config.GetString("TRAINING_DIR");
                     FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
                     Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
                     break;
-                case Feature_Type.DCT_2D:
+                case ConfigKeys.Feature_Type.DCT_2D:
                     this.StartTime = config.GetDouble("START_TIME");
                     this.EndTime   = config.GetDouble("END_TIME");
                     break;

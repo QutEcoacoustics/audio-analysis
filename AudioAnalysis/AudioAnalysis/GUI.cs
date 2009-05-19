@@ -34,8 +34,8 @@ namespace AudioAnalysis
         public string SourceFile { get { return sourceFile; } }
 
         //ENERGY AND NOISE PARAMETERS
-        private double dynamicRange = 30.0; //decibels above noise level #### YET TO IMPLEMENT THIS
-        public double DynamicRange { get { return dynamicRange; } }
+        private double dynamicRange = 30.0; //decibels above noise level for automated templates
+        public double DynamicRange { get { return dynamicRange; } set { dynamicRange = value; } }
 
         //FRAMING PARAMETERS
         //int sampleRate; //determined by source WAV file
@@ -45,15 +45,15 @@ namespace AudioAnalysis
         public double FrameOverlap { get { return frameOverlap; } }
 
         //FEATURE PARAMETERS
-        private Feature_Type featureType = Feature_Type.UNDEFINED;   //the default feature type  
-        public Feature_Type FeatureType { get { return featureType; } }
+        private ConfigKeys.Feature_Type featureType = ConfigKeys.Feature_Type.UNDEFINED;   //the default feature type  
+        public ConfigKeys.Feature_Type FeatureType { get { return featureType; } }
 
         private int filterBankCount = 64;
         public int FilterBankCount { get { return filterBankCount; } }
         private bool doMelConversion = true;
         public bool DoMelConversion { get { return doMelConversion; } }
-        private bool doNoiseReduction = false;
-        public bool DoNoiseReduction { get { return doNoiseReduction; } }
+        private ConfigKeys.NoiseReductionType noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+        public  ConfigKeys.NoiseReductionType NoiseReductionType { get { return noiseReductionType; } set { noiseReductionType = value; } }
         private int ceptralCoeffCount = 12;
         public int CeptralCoeffCount { get { return ceptralCoeffCount; } }
         private bool includeDeltaFeatures = false;
@@ -133,7 +133,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -179,14 +179,14 @@ namespace AudioAnalysis
                     sourceFile  = "BAC2_20071008-085040";  //Lewin's rail kek keks.
                     sourcePath  = wavDirName + sourceFile + WavReader.WavFileExtension;
                     opDir       = @"C:\SensorNetworks\Templates\Template_2\";
-                    featureType = Feature_Type.MFCC;
+                    featureType = ConfigKeys.Feature_Type.MFCC;
 
                     //MFCC PARAMETERS
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = true;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -224,28 +224,29 @@ namespace AudioAnalysis
                 {
                     authorName = "Michael Towsey";
                     callName = "Currawong";
-                    comment = "First attempt at automated analysis";
-                    trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TrainingSet2\";
+                    comment = "First attempt at automated extraction of template from multiple recordings of vocalisations";
+                    trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TrainingSet1\";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
                     WavDirName = wavDirName;
                     opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
-                    //sourcePath = opDir + "CurrawongOutput";
-                    featureType = Feature_Type.CC_AUTO;
+                    featureType = ConfigKeys.Feature_Type.CC_AUTO;
+
+                    DynamicRange = 30.0; //for noise removal
 
                     //MFCC PARAMETERS
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = true;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
                     ceptralCoeffCount = 12;
-                    includeDeltaFeatures = true;
-                    includeDoubleDeltaFeatures = true;
+                    includeDeltaFeatures = false;
+                    includeDoubleDeltaFeatures = false;
                     deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
 
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    numberOfSyllables = 4;
+                    numberOfSyllables = 8;
                     min_Freq = 800; //Hz
                     max_Freq = 6000; //Hz
 
@@ -271,14 +272,14 @@ namespace AudioAnalysis
                     callName = "Currawong";
                     comment = "First attempt at 2D DCT feature vector";
                     testDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\Test\";
-                    featureType = Feature_Type.DCT_2D;
+                    featureType = ConfigKeys.Feature_Type.DCT_2D;
 
                     //MFCC PARAMETERS
                     frameSize = 512;
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = true;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
                     //ceptralCoeffCount = 12;
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
@@ -318,7 +319,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
@@ -361,7 +362,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     deltaT = 3; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
@@ -411,7 +412,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -456,7 +457,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -507,7 +508,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -559,7 +560,7 @@ namespace AudioAnalysis
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    doNoiseReduction = false;
+                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;

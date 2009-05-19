@@ -9,8 +9,8 @@ namespace NeuralNets
     public class Cluster
     {
         public int Size { get { return Vectors.Count; } }
-        public List<double[]> Vectors { get; private set; }
-        public double[] Centroid { get; private set; }
+        public List<double[]> Vectors { get; private set; }  //members  of the cluster
+        public double[] Centroid { get; private set; }       //centroid of the cluster
 
 
         /// <summary>
@@ -37,7 +37,11 @@ namespace NeuralNets
         public double[] CalculateCentroid()
         {
             int vCount = Vectors.Count;
-            if (vCount == 0) throw new Exception("Cluster.Centroid(): count = " + vCount);
+            if (vCount == 0)
+            {
+                return null;
+                //throw new Exception("Cluster.Centroid(): count = " + vCount);
+            }
             int featureCount = Vectors[0].Length;
 
             //accumulate the vectors into an averaged feature vector
@@ -57,6 +61,11 @@ namespace NeuralNets
         {
             this.Centroid = new double[vector.Length];
             for(int i = 0; i < vector.Length; i++) this.Centroid[i] = vector[i];
+        }
+
+        public void ResetMembers()
+        {
+            this.Vectors = new List<double[]>();
         }
         
         

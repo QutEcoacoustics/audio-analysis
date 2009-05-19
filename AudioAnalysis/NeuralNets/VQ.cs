@@ -84,7 +84,7 @@ namespace NeuralNets
             int vectorCount = this.initialCluster.Size;
             for (int c = 0; c < CodeSize; c++)
             {
-                int id = this.rn.GetInt(vectorCount - 1);
+                int id = this.rn.GetInt(vectorCount - 1); //pick a vector at random
                 //Console.WriteLine("Initialise cluster " + c + " with vector " + id);
                 Clusters[c] = new Cluster(this.initialCluster.Vectors[id]);
             }
@@ -123,6 +123,10 @@ namespace NeuralNets
         public double CalculateCodebookError()
         {
             int vectorCount = this.initialCluster.Size;
+
+            //empty the clusters of their current members
+            for (int c = 0; c < CodeSize; c++) Clusters[c].ResetMembers();
+
             double error = 0.0;
             for (int v = 0; v < vectorCount; v++)
             {

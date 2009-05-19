@@ -7,7 +7,6 @@ using System.Collections.Generic;
 
 namespace AudioAnalysis
 {
-    public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
     public enum Mode { UNDEFINED, CREATE_NEW_TEMPLATE, READ_EXISTING_TEMPLATE }
 
 	[Serializable]
@@ -29,8 +28,8 @@ namespace AudioAnalysis
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
         public string SourceDir  { get; set; } // Dir of original audio recording
 
-        public Feature_Type FeatureExtractionType { get; set; }
-        public AVSonogramConfig SonogramConfig { get; set; }
+        public ConfigKeys.Feature_Type FeatureExtractionType { get; set; }
+        public CepstralSonogramConfig SonogramConfig { get; set; }
         public FVConfig FeatureVectorConfig { get; set; }
         public Acoustic_Model AcousticModel { get; set; }
         public BaseModel Model { get; set; }
@@ -72,37 +71,44 @@ namespace AudioAnalysis
             config.SetPair("TEMPLATE_DIR", templateDir);
             BaseTemplate template = Load(config);
 
-            //STEP TWO: Extract template
+            //STEP TWO: Extract template and save
             template.ExtractTemplateFromRecording(recording);
             template.Save(opTemplatePath);
+            return template;
+        }
 
-            //STEP THREE: Verify the template - what happens depends on the template
-            if (template.FeatureExtractionType == Feature_Type.DCT_2D)
+        /// <summary>
+        /// Verify the template - what happens depends on the feature extraction type of template
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="recording"></param>
+        /// <param name="templateDir"></param>
+        public static void VerifyTemplate(BaseTemplate template, AudioRecording recording, string templateDir)
+        {
+
+            Log.WriteIfVerbose("\nSTEP THREE: Verify template and save scanned recording as image");
+            //Set up a spectral sonogram for image puposes the sonogram with symbol sequence track added
+            var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
+            template.SonogramConfig.DisplayFullBandwidthImage = true;
+            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
+            spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
+
+            if (template.FeatureExtractionType == ConfigKeys.Feature_Type.DCT_2D)
             {
                 ((Template_DCT2D)template).ScanRecording(recording, templateDir);
+                //Save an image of the spectralsonogram with symbol sequence track added
+                ((Template_DCT2D)template).SaveScanImage(spectralSono, imagePath);
             }
             else
             {
                 //STEP THREE: Verify fv extraction by observing output from acoustic model.
                 template.GenerateSymbolSequenceAndSave(recording, templateDir);
-            }
-
-            //STEP FOUR: save an image of the sonogram with symbol sequence track added
-            var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
-            template.SonogramConfig.DisplayFullBandwidthImage = true;
-            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
-            spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
-            if (template.FeatureExtractionType == Feature_Type.DCT_2D)
-            {
-              //  ((Template_DCT2D)template).SaveResultsImage(spectralSono, imagePath);
-            }
-            else
-            {
+                //Save an image of the spectralsonogram with symbol sequence track added
                 template.SaveSyllablesImage(spectralSono, imagePath);
             }
+        } //end VerifyTemplate()
 
-            return template;
-        }
+
 
         /// <summary>
         /// use this Load method when reading a template from previously saved tamplate file
@@ -124,7 +130,7 @@ namespace AudioAnalysis
         {
             var featureExtractionName = config.GetString("FEATURE_TYPE");
 
-            Feature_Type featureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+            ConfigKeys.Feature_Type featureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
             if (featureExtractionName.StartsWith("MFCC")) return new Template_CC(config);
             else
             if (featureExtractionName.StartsWith("CC_AUTO")) return new Template_CCAuto(config);
@@ -174,15 +180,15 @@ namespace AudioAnalysis
 
             //**************** FEATURE PARAMETERS
             config.SetPair("FEATURE_TYPE", gui.FeatureType.ToString());
-            //config.SetPair("DYNAMIC_RANGE", gui.DynamicRange.ToString()); 
-            config.SetPair("MIN_FREQ",   gui.Min_Freq.ToString());
-            config.SetPair("MAX_FREQ",   gui.Max_Freq.ToString());
-            config.SetPair("START_TIME", gui.StartTime.ToString()); //used for defining a marqueed vocalisation
-            config.SetPair("END_TIME",   gui.EndTime.ToString());   //used for defining a marqueed vocalisation
+            config.SetPair(ConfigKeys.Snr.Key_DynamicRange, gui.DynamicRange.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_MinFreq, gui.Min_Freq.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_MaxFreq, gui.Max_Freq.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_StartTime, gui.StartTime.ToString()); //used for defining a marqueed vocalisation
+            config.SetPair(ConfigKeys.Mfcc.Key_EndTime, gui.EndTime.ToString());   //used for defining a marqueed vocalisation
 
             config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, gui.FilterBankCount.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, gui.DoMelConversion.ToString());
-            config.SetPair(ConfigKeys.Mfcc.Key_DoNoiseReduction, gui.DoNoiseReduction.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, gui.NoiseReductionType.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_CcCount, gui.CeptralCoeffCount.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, gui.IncludeDeltaFeatures.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, gui.IncludeDoubleDeltaFeatures.ToString());
@@ -241,8 +247,8 @@ namespace AudioAnalysis
             //SUBSAMPLE=0
             //WINDOW_OVERLAP=0.5
             //WINDOW_SIZE=512
-            FftConfiguration.WindowFunction  = config.GetString(ConfigKeys.Fft.Key_WindowFunction);
-            FftConfiguration.NPointSmoothFFT = config.GetInt(ConfigKeys.Fft.Key_NPointSmoothFFT);
+            FftConfiguration.WindowFunction  = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+            FftConfiguration.NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT);
             EndpointDetectionConfiguration.K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold);
             EndpointDetectionConfiguration.K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold);
             EndpointDetectionConfiguration.K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);
@@ -294,7 +300,7 @@ namespace AudioAnalysis
                 SourceDir  = "Source dir not set!!";  //string must be given a value to enable later serialisation check  
 
             var featureExtractionName = config.GetString("FEATURE_TYPE");
-            this.FeatureExtractionType = (Feature_Type)Enum.Parse(typeof(Feature_Type), featureExtractionName);
+            this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
  
 		}
 
