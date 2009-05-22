@@ -37,7 +37,7 @@ namespace AudioAnalysis
         public Model_OnePeriodicSyllable(Configuration config)
         {
             Log.WriteIfVerbose("INIT Model_OnePeriodicSyllable: CONSTRUCTOR 1");
-            this.ModelType = ModelType.ONE_PERIODIC_SYLLABLE;
+            this.ModelType = LanguageModelType.ONE_PERIODIC_SYLLABLE;
             //modelName = config.GetString("MODEL_TYPE");
             //ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
             WordCount = config.GetInt("NUMBER_OF_WORDS"); //number of defined song variations 
@@ -50,7 +50,7 @@ namespace AudioAnalysis
 
             // READ TRAINING SEQUENCES
             WordCount = config.GetInt("NUMBER_OF_WORDS");
-            Words = GetSequences(config);
+            WordExamples = GetSequences(config);
         }// end of Constructor 1
 
 
@@ -76,7 +76,7 @@ namespace AudioAnalysis
             //##################### PARSE SYMBOL STREAM USING MARKOV MODELS
             //int clusterWindow = (int)Math.Floor(SongWindow * (1 / frameOffset));
             
-            double[] scores = Acoustic_Model.WordSearch(symbolSequence, acousticMatrix, Words);
+            double[] scores = Acoustic_Model.WordSearch(symbolSequence, acousticMatrix, WordExamples);
             result.Scores = scores;
             result.VocalCount = DataTools.CountPositives(scores);
             //Console.WriteLine("VocalCOUNT=" + ((MMResult)result).VocalCount);
@@ -161,7 +161,7 @@ namespace AudioAnalysis
 
             for (int i = 0; i < WordCount; i++)
             {
-                writer.WriteConfigArray("WORD{0}_EXAMPLE1", Words);
+                writer.WriteConfigArray("WORD{0}_EXAMPLE1", WordExamples);
             }
             //writer.WriteConfigArray("WORD{0}_EXAMPLE1", Words);
             writer.WriteLine("#");

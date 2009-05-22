@@ -9,7 +9,7 @@ using MarkovModels;
 
 namespace AudioAnalysis
 {
-    public enum ModelType { UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC }
+    public enum LanguageModelType { UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC }
 
 	[Serializable]
     public abstract class BaseModel
@@ -19,13 +19,13 @@ namespace AudioAnalysis
         #endregion
 
         #region Properties
-        private ModelType modeltype = ModelType.UNDEFINED;
-        public  ModelType ModelType { get { return modeltype; } set { modeltype = value; } }
+        private LanguageModelType modeltype = LanguageModelType.UNDEFINED;
+        public  LanguageModelType ModelType { get { return modeltype; } set { modeltype = value; } }
         public  string modelName { get { return ModelType.ToString(); } }
 
         public int WordCount { get; set; }
         public string[] WordNames { get; set; }
-        public string[] Words { get; set; }
+        public string[] WordExamples { get; set; }
         public double SongWindow { get; set; } //window duration in seconds - used to calculate statistics
 
         public double FrameOffset { get; private set; } //Time in seconds between commencement of consecutive frames
@@ -36,35 +36,28 @@ namespace AudioAnalysis
         public BaseModel Load(Configuration config)
         {
             string modelName = config.GetString("MODEL_TYPE");
-            ModelType type = (ModelType)Enum.Parse(typeof(ModelType), modelName);
+            LanguageModelType type = (LanguageModelType)Enum.Parse(typeof(LanguageModelType), modelName);
 
-            if (type == ModelType.UNDEFINED)
+            if (type == LanguageModelType.UNDEFINED)
                 return (new Model_Undefined());
             else
-                if (type == ModelType.ONE_PERIODIC_SYLLABLE)
+                if (type == LanguageModelType.ONE_PERIODIC_SYLLABLE)
                     return (new Model_OnePeriodicSyllable(config));
                 else
-                    if (type == ModelType.MM_TWO_STATE_PERIODIC)
+                    if (type == LanguageModelType.MM_TWO_STATE_PERIODIC)
                         return (new Model_2StatePeriodic(config));
                     else
-                        if (type == ModelType.MM_ERGODIC)
+                        if (type == LanguageModelType.MM_ERGODIC)
                             return (new Model_MMErgodic(config));
             Log.WriteLine("BaseModel Load(): WARNING!! No model was defined.");
             return null;
         }
 
-
-
-
-        //protected void SetFrameOffset(Configuration config, BaseSonogramConfig sonogramConfig, int sampleRate)
-        //{
-        //    this.FrameOffset = sonogramConfig.GetFrameDuration(sampleRate) * (1 - sonogramConfig.WindowOverlap); // Duration of non-overlapped part of window/frame in seconds
-        //}
         protected void SetFrameOffset(Configuration config)
         {
-            int sr = config.GetInt("WAV_SAMPLE_RATE");
-            int frameSize = config.GetInt("FRAME_SIZE");
-            double frameOverlap = config.GetDouble("FRAME_OVERLAP");
+            int sr = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
+            int frameSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
+            double frameOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
             double frameDuration = frameSize / (double)sr; // Duration of full frame or window in seconds
             this.FrameOffset = frameDuration * (1 - frameOverlap); // Duration of non-overlapped part of window/frame in seconds
         }
@@ -117,9 +110,9 @@ namespace AudioAnalysis
         public Model_Undefined()
         {
             Log.WriteIfVerbose("INIT LanguageModel Model_Undefined CONSTRUCTOR 1");
-            this.ModelType = ModelType.UNDEFINED;
+            this.ModelType = LanguageModelType.UNDEFINED;
             WordCount = 0; 
-            Words = null;
+            WordExamples = null;
             SongWindow = 0.0;
         }
 

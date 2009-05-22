@@ -22,16 +22,16 @@ namespace AudioAnalysis
             AcousticModel   = new Acoustic_Model(config);
 
             var modelName = config.GetString("MODEL_TYPE");
-            ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
+            LanguageModelType modelType = (LanguageModelType)Enum.Parse(typeof(LanguageModelType), modelName);
             this.Modeltype = modelType;
 
             //do not init a Model if in crete new template mode.
             if (this.mode == Mode.CREATE_NEW_TEMPLATE) return;       
 
-            if (modelType == ModelType.UNDEFINED) Model = new Model_Undefined();
-            else if (modelType == ModelType.ONE_PERIODIC_SYLLABLE) Model = new Model_OnePeriodicSyllable(config);
-            else if (modelType == ModelType.MM_TWO_STATE_PERIODIC) Model = new Model_2StatePeriodic(config);
-            else if (modelType == ModelType.MM_ERGODIC)            Model = new Model_MMErgodic(config);
+            if (modelType == LanguageModelType.UNDEFINED) LanguageModel = new Model_Undefined();
+            else if (modelType == LanguageModelType.ONE_PERIODIC_SYLLABLE) LanguageModel = new Model_OnePeriodicSyllable(config);
+            else if (modelType == LanguageModelType.MM_TWO_STATE_PERIODIC) LanguageModel = new Model_2StatePeriodic(config);
+            else if (modelType == LanguageModelType.MM_ERGODIC)            LanguageModel = new Model_MMErgodic(config);
 
         }
 
@@ -81,7 +81,7 @@ namespace AudioAnalysis
                 writer.WriteLine("#");
                 writer.Flush();
             }
-            else Model.Save(writer);
+            else LanguageModel.Save(writer);
         }
 
 

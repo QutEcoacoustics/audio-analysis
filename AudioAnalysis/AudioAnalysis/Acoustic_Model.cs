@@ -25,8 +25,8 @@ namespace AudioAnalysis
         private double FramesPerSecond;
         public double ZscoreThreshold { get; set; }
 		public double[,] AcousticMatrix { get; set; }	// matrix of fv x time frames
-		public string SyllSymbols { get; set; }			// array of symbols  representing winning user defined feature templates
-		public int[] SyllableIDs { get; set; }			// array of integers representing winning user defined feature templates
+		public string SyllSymbols { get; set; }			// array of symbols  representing winning user defined feature vectors
+        public int[] SyllableIDs { get; set; }			// array of integers representing winning user defined feature vectors
         #endregion
 
 
@@ -115,7 +115,7 @@ namespace AudioAnalysis
             string path = Path.GetDirectoryName(fvConfig.FV_DefaultNoisePath) + "\\noiseResponse.txt";
             if ((template.mode == Mode.CREATE_NEW_TEMPLATE) || (BaseTemplate.InTestMode))
             {
-                Log.WriteLine("\n########### SAVING NOISE RESPONSE VALUES TO FILE");
+                Log.WriteIfVerbose("\n########### SAVING NOISE RESPONSE VALUES TO FILE");
                 List<string> noiseValues = new List<string>(FVs.Length);
                 for (int id = 0; id < FVs.Length; id++)
                     noiseValues.Add("FV[" + id + "] Av Noise Response =" + FVs[id].NoiseAv.ToString("F3") + "+/-" + FVs[id].NoiseSd.ToString("F3"));
@@ -299,7 +299,11 @@ namespace AudioAnalysis
         } //end AcousticMatrix2SymbolSequence()
 
 
+
+
+
         #region Symbol Sequence Formatting
+
         public void SaveSymbolSequence(string path, bool includeUserDefinedVocabulary)
         {
             Validation.Begin()
@@ -437,6 +441,33 @@ namespace AudioAnalysis
             }
             return gaps;
         } //end of CalculateGaps()
+
+        /// <summary>
+        /// trims the 'x' and 'n' chars from beginning and end of a string.
+        /// </summary>
+        /// <param name="sylseq"></param>
+        /// <returns></returns>
+        public static string TrimSyllableSequence(string symbolSequence)
+        {
+            string str = symbolSequence.Replace('x', ' ');
+            str = str.Replace('n', ' ');
+            return str.Trim();
+        }
+
+        /// <summary>
+        /// fill spaces in a symbol sequence with legitimate char
+        /// </summary>
+        /// <param name="symbolSequence"></param>
+        /// <returns></returns>
+        public static string FillGaps(string symbolSequence)
+        {
+            var sb = new StringBuilder(symbolSequence);
+            for (int i = 1; i < sb.Length; i++)
+            {
+                if (sb[i] == ' ') sb[i] = sb[i - 1];
+            }
+            return sb.ToString();
+        }
 
         #endregion
 

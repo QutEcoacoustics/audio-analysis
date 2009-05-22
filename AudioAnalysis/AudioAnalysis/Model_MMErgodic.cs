@@ -31,14 +31,23 @@ namespace AudioAnalysis
         public Model_MMErgodic(Configuration config)
         {
             Log.WriteIfVerbose("\nINIT LANGUAGE MODEL Model_MMErgodic CONSTRUCTOR 1");
-            this.ModelType = ModelType.MM_ERGODIC;
+            this.ModelType = LanguageModelType.MM_ERGODIC;
             SetFrameOffset(config); //set sample rate, frame duration etc
 
             // READ TRAINING SEQUENCES
-            WordCount = config.GetInt("NUMBER_OF_WORDS"); //number of defined song variations 
+            this.WordCount = config.GetInt(ConfigKeys.Template.Key_WordCount); //number of different 
+            this.WordNames = new String[this.WordCount];
+            for (int i = 0; i < this.WordCount; i++)
+                this.WordNames[i] = config.GetString("WORD" + (i + 1) + "_NAME");  
+
             TrainingSet ts = GetTrainingSet(config);
+            int exampleCount = ts.Count;
+            this.WordExamples = new string[exampleCount];
+            for (int i = 0; i < exampleCount; i++) //assume only have examples for one word
+                this.WordExamples[i] = config.GetString("WORD1_EXAMPLE"+ (i + 1));  
+
             //one markov model per template
-            int fvCount = config.GetInt("FV_COUNT");
+            int fvCount = config.GetInt(ConfigKeys.Template.Key_FVCount);
             int numberOfStates = fvCount + 1; //because need extra state for start and end noise
             markovModel = new MMSD_Ergodic(numberOfStates, this.FrameOffset);
             markovModel.TrainModel(ts);
@@ -80,7 +89,7 @@ namespace AudioAnalysis
 
             List<string> mmMonitor = new List<string>(); // only used when Unit testing
 
-            double[,] acousticMatrix = result.AcousticMatrix;
+            //double[,] acousticMatrix = result.AcousticMatrix; //not used for this model
             string symbolSequence = result.SyllSymbols;
             int frameCount = symbolSequence.Length;
             
@@ -111,12 +120,12 @@ namespace AudioAnalysis
                 double durationProb = vocalEvent.DurationProbability;
                 Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
                 mmMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                if (! vocalEvent.IsCorrectDuration)
-                {
-                    Log.WriteIfVerbose("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
-                    mmMonitor.Add("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
-                    continue;
-                }
+                //if (! vocalEvent.IsCorrectDuration)
+                //{
+                //    Log.WriteIfVerbose("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
+                //    mmMonitor.Add("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
+                //    continue;
+                //}
 
                 correctDurationCount++;
                 //double score = DataTools.AntiLogBase10(logScore) / DataTools.AntiLogBase10(probOfAverageTrainingSequenceGivenModel);
@@ -128,7 +137,8 @@ namespace AudioAnalysis
                 displayScore += maxDisplayScore; //add positve value because max score expected to be zero.
                 if (displayScore > maxDisplayScore) displayScore = maxDisplayScore;
                 if (displayScore < 0) displayScore = 0;
-                for (int j = 0; j < vocalEvent.Length; j++) scores[vocalEvent.Start + j] = displayScore;
+                //for (int j = 0; j < vocalEvent.Length; j++) scores[vocalEvent.Start + j] = displayScore;
+                scores[vocalEvent.Start] = displayScore;
 
                 if (llr > bestHit)
                 {
@@ -180,14 +190,20 @@ namespace AudioAnalysis
             writer.WriteConfigValue("MODEL_TYPE", ModelType);
 
             writer.WriteConfigValue("NUMBER_OF_WORDS", WordCount);
-            // Although when read in the Words are split into different tags with multiple examples this information
-            // is not stored (or used) so we can not persist it back. Instead we just write as if each word
-            // is separate with 1 example each
-
             for (int i = 0; i < WordCount; i++)
             {
-                writer.WriteConfigArray("WORD{0}_EXAMPLE1", Words);
+                writer.WriteConfigValue("WORD" + (i + 1) + "_NAME", this.WordNames[i]);
             }
+
+            double avLength = 0.0; //to determine average length of training vocalisations
+            for (int i = 0; i < this.WordExamples.Length; i++) //assume only one word for moment
+            {
+                writer.WriteConfigValue("WORD1_EXAMPLE" + (i + 1), WordExamples[i]);
+                avLength += WordExamples[i].Length;
+            }
+            avLength /= WordExamples.Length;
+            writer.WriteLine("#AVERAGE LENGTH OF EXAMPLE CALLS = " + avLength.ToString("F1"));
+
             writer.WriteLine("#");
             writer.WriteConfigValue("SONG_WINDOW", SongWindow);
             writer.WriteLine("#");

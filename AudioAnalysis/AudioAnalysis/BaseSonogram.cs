@@ -103,11 +103,11 @@ namespace AudioAnalysis
             var fractionOfHighEnergyFrames = SnrFrames.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
 			if (fractionOfHighEnergyFrames > 0.8)
 			{
-                Log.WriteLine("\nWARNING ##########################################");
-                Log.WriteLine("\t################### BaseSonogram(BaseSonogramConfig config, WavReader wav, bool doExtractSubband)");
-				Log.WriteLine("\t################### This is a high energy recording. The fraction of high energy frames = "
+                Log.WriteIfVerbose("\nWARNING ##########################################");
+                Log.WriteIfVerbose("\t################### BaseSonogram(BaseSonogramConfig config, WavReader wav, bool doExtractSubband)");
+                Log.WriteIfVerbose("\t################### This is a high energy recording. The fraction of high energy frames = "
 																+ fractionOfHighEnergyFrames.ToString("F2") + " > 80%");
-				Log.WriteLine("\t################### Noise reduction algorithm may not work well in this instance!\n");
+                Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
 			}
 
 			//generate the spectra of FFT AMPLITUDES
@@ -227,7 +227,7 @@ namespace AudioAnalysis
         {
             double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
             double dynamicRange = this.Configuration.DynamicRange;
-            Console.WriteLine("THIS BASE SONOGRAM DR = " + dynamicRange);
+            Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + dynamicRange);
 
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix

@@ -334,6 +334,16 @@ namespace MarkovModels
             return list;
         }
 
+        public static List<Vocalisation> ExtractPartialWords(string sequence, double avVocalLength)
+        {
+            var listOfWholeVocalisations = ExtractWords(sequence);
+            Console.WriteLine("MMTools: whole word count = " + listOfWholeVocalisations.Count);
+            var finalList = ExtractPartialVocalisations(listOfWholeVocalisations, (int)avVocalLength);
+            Console.WriteLine("MMTools: partial word count = " + finalList.Count);
+            return finalList;
+        }
+
+
         public static List<Vocalisation> ExtractWords(string sequence)
         {
             var list = new List<Vocalisation>();
@@ -366,6 +376,38 @@ namespace MarkovModels
 
             return list;
         }
+
+        public static List<Vocalisation> ExtractPartialVocalisations(List<Vocalisation> listOfWholeVocalisations, int avVocalLength)
+        {
+            var listOfPartialVocalisations = new List<Vocalisation>();
+            var newList = new List<Vocalisation>();
+
+            int listLength = listOfWholeVocalisations.Count;
+            for (int i = 0; i < listLength; i++) //go through the list
+            {
+                Vocalisation vocalEvent = listOfWholeVocalisations[i];
+                //if (vocalEvent.Length <= avVocalLength)
+                //{
+                //    newList.Add(vocalEvent);
+                //    continue;
+                //}
+
+                string seq = vocalEvent.Sequence;
+                //break long events into overlapping parts
+                //for (int e = 0; e < (seq.Length - avVocalLength); e++)
+                for (int e = 0; e < seq.Length; e++)
+                {
+                    int length = avVocalLength;
+                    int start = vocalEvent.Start + e;
+                    int end   = start + avVocalLength - 1;
+                    if (end >= vocalEvent.End) length = seq.Length - e;
+                    Vocalisation newEvent = new Vocalisation(start, end, seq.Substring(e, length));
+                    newList.Add(newEvent);
+                }
+            }
+            return newList;
+        }
+
 
         public static bool IsSyllable(char c)
         {

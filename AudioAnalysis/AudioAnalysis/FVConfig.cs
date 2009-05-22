@@ -61,7 +61,7 @@ namespace AudioAnalysis
         public FVConfig(Configuration config)
         {
             //FEATURE VECTORS
-            var  featureExtractionName = config.GetString("FEATURE_TYPE");
+            var  featureExtractionName = config.GetString(ConfigKeys.Template.Key_FVType);
             this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
 
             CallID = config.GetInt("TEMPLATE_ID");
@@ -72,24 +72,24 @@ namespace AudioAnalysis
             {
                 case ConfigKeys.Feature_Type.MFCC:
                     this.FVSourceType = FV_Source.SELECTED_FRAMES;
-                    FVCount = config.GetInt("FV_COUNT");
+                    FVCount = config.GetInt(ConfigKeys.Template.Key_FVCount);
                     FVIniData = new string[FVCount];
                     string frames = config.GetString("FV_SELECTED_FRAMES");
                     //Log.WriteIfVerbose("\tSelected frames=" + frames);
                     for (int i = 0; i < FVCount; i++)
                     {
-                        FVIniData[i] = config.GetString("FV"+(i+1)+"_DATA");
+                        FVIniData[i] = config.GetString("FV"+(i+1)+"_FILE");
                     }
                     break;
                 case ConfigKeys.Feature_Type.CC_AUTO:
                     this.FVSourceType = FV_Source.FIXED_INTERVALS;
-                    FVSourceDir = config.GetString("TRAINING_DIR");
+                    FVSourceDir = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
                     FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
                     Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
                     break;
                 case ConfigKeys.Feature_Type.DCT_2D:
-                    this.StartTime = config.GetDouble("START_TIME");
-                    this.EndTime   = config.GetDouble("END_TIME");
+                    this.StartTime = config.GetDouble(ConfigKeys.Mfcc.Key_StartTime);
+                    this.EndTime   = config.GetDouble(ConfigKeys.Mfcc.Key_EndTime);
                     break;
             }
         }//end Constructor()
@@ -228,7 +228,7 @@ namespace AudioAnalysis
                     Log.WriteLine("FVConfig.Save. WARNING! FVArray == null");
                     break;
                 }
-                writer.WriteConfigValue("FV" + (n + 1) + "_DATA", FVArray[n].GetIniData());
+                writer.WriteConfigValue("FV" + (n + 1) + "_FILE", FVArray[n].GetIniData());
                 writer.WriteConfigValue("FV" + (n + 1) + "_SOURCE", FVArray[n].SourceFile);
             }
             writer.WriteLine("#");

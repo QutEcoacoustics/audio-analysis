@@ -87,8 +87,8 @@ namespace AudioAnalysis
         public double ZScoreThreshold { get { return zScoreThreshold; } }
 
         //LANGUAGE MODEL
-        private ModelType modelType = ModelType.UNDEFINED;   //the default hmm type  
-        public ModelType ModelType { get { return modelType; } }
+        private LanguageModelType modelType = LanguageModelType.UNDEFINED;   //the default hmm type  
+        public LanguageModelType ModelType { get { return modelType; } }
         private int numberOfWords = 0; //number of defined song variations 
         public  int NumberOfWords { get { return numberOfWords; } }
         private string[] wordNames = { "noname" };
@@ -159,7 +159,7 @@ namespace AudioAnalysis
 
                     //LANGUAGE MODEL
                     //modelType = ModelType.UNDEFINED;
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 1; //number of defined song variations
                     wordNames = new String[] { "syl1", "syl2", "syl3" };
                     //wordNames = new String[] { "syl1", "syl2", "syl3", "syl4" };
@@ -209,7 +209,7 @@ namespace AudioAnalysis
 
                     //LANGUAGE MODEL
                     //modelType = ModelType.UNDEFINED;
-                    modelType = ModelType.ONE_PERIODIC_SYLLABLE;
+                    modelType = LanguageModelType.ONE_PERIODIC_SYLLABLE;
                     numberOfWords = 1; //number of defined song variations
                     wordNames    = new String[] { "kek" };
                     wordExamples = new String[] {"111", "11", "1"};
@@ -226,6 +226,7 @@ namespace AudioAnalysis
                     callName = "Currawong";
                     comment = "First attempt at automated extraction of template from multiple recordings of vocalisations";
                     trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TrainingSet1\";
+                    testDirName     = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TestSet\";
                     wavDirName = @"C:\SensorNetworks\WavFiles\";
                     WavDirName = wavDirName;
                     opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
@@ -246,7 +247,7 @@ namespace AudioAnalysis
 
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    numberOfSyllables = 8;
+                    //numberOfSyllables = 8;
                     min_Freq = 800; //Hz
                     max_Freq = 6000; //Hz
 
@@ -255,11 +256,10 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\\template" + callID + "_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.UNDEFINED;
-                    //modelType = ModelType.MM_ERGODIC;
-                    numberOfWords = 1; //number of defined song variations
-                    wordNames = new String[] { "name" };
-                    wordExamples = new String[] { "111", "11", "1" };
+                    modelType = LanguageModelType.MM_ERGODIC;
+                    numberOfWords = 1; //number of distinct call types
+                    wordNames = new String[] { "Currawong" }; //names for the call types
+                    //wordExamples = new String[] { "111", "11", "1" };
                 } //end of if (callID == 3)
                 #endregion
 
@@ -293,7 +293,7 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\\template" + callID + "_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.UNDEFINED;
+                    modelType = LanguageModelType.UNDEFINED;
                     numberOfWords = 1; //number of defined song variations
                     wordNames = new String[] { "word names not required" };
                     wordExamples = new String[] { "111", "11", "1" };
@@ -336,7 +336,7 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.UNDEFINED;
+                    modelType = LanguageModelType.UNDEFINED;
                     //modelType = ModelType.MM_ERGODIC;
                     numberOfWords = 1; //number of defined song variations
                     wordNames = new String[] { "name" };
@@ -386,7 +386,7 @@ namespace AudioAnalysis
                     zScoreThreshold = 1.00; //keep this as initial default. Later options are 1.98, 2.33, 2.56, 3.1
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 1; //number of defined song variations
                     //wordNames = new String[] { "huff","puff", "snort", "distant" };
                     wordNames = new String[] { "huffNpuff" };
@@ -431,7 +431,7 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 1; //number of defined song variations
                     wordNames = new String[] { "squeak" };
                     wordExamples = new String[] { "111", "11", "1" };
@@ -483,7 +483,7 @@ namespace AudioAnalysis
 
                     //LANGUAGE MODEL
                     //modelType = ModelType.UNDEFINED;
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 4; //number of defined song variations
                     wordNames = new String[] { "syll1", "syll2", "syll3", "syll4" };
                     wordExamples = new String[] { "111", "11", "1" };
@@ -534,7 +534,7 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 4; //number of defined song variations
                     wordNames = new String[] { "syll1", "syll2", "syll3", "syll4", "syll5", "syll6" };
                     wordExamples = new String[] { "111", "11", "1" };
@@ -581,7 +581,7 @@ namespace AudioAnalysis
                     fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\template_2_DefaultNoise.txt";
 
                     //LANGUAGE MODEL
-                    modelType = ModelType.MM_ERGODIC;
+                    modelType = LanguageModelType.MM_ERGODIC;
                     numberOfWords = 1; //number of defined song variations
                     wordNames = new String[] { "squawk" };
                     wordExamples = new String[] { "111", "11", "1" };

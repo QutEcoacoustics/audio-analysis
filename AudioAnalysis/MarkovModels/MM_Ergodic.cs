@@ -140,7 +140,7 @@ namespace MarkovModels
                 if (int1 == int2) //no change of state
                 {
                     if (j == L - 1) //come to end of sequence
-                    {   //should never get to this option where sequence is bracked by noise
+                    {   //should never get to this option where sequence is bracketed by noise
                         logScore += StateDurationLogProbability(currentDuration, int2);
                         //Console.WriteLine("D j=" + j + "  LASTState=" + int2 + "  duration=" + currentDuration +"  p="+StateDurationLogProbability(currentDuration, int2).ToString("F2"));
                     }
@@ -177,14 +177,10 @@ namespace MarkovModels
         /// this scoring version incorporates state duration
         /// </summary>
         /// <param name="symbolSequence"></param>
-        /// <param name="scores"></param>
-        /// <param name="hitCount"></param>
-        /// <param name="bestHit"></param>
-        /// <param name="bestFrame"></param>
         public MMResults ScoreSequence(string symbolSequence)
-        {        
+        {
             //obtain a list of valid vocalisations represented as symbol strings
-            List<Vocalisation> list = MMTools.ExtractWords(symbolSequence);
+            List<Vocalisation> list = MMTools.ExtractPartialWords(symbolSequence, this.avWordLength);
             int listLength = list.Count;
 
             for (int i = 0; i < listLength; i++) //
@@ -196,20 +192,23 @@ namespace MarkovModels
                 //song duration filter - skip vocalisations that are not of sensible length
                 double durationProb = this.songduration.GetSongDurationProb(vocalEvent.Length);
                 vocalEvent.DurationProbability = durationProb;
-                //Log.WriteIfVerbose((i+1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                if (durationProb < 0.005)
-                {
-                    vocalEvent.IsCorrectDuration = false;
-                    //Console.WriteLine("\tDuration probability for " + vocalEvent.Length + " frames is too low");
-                    continue;
-                }
-                else vocalEvent.IsCorrectDuration = true;
+                Log.WriteIfVerbose((i+1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
+                double logDurationProb = -5;
+                if (durationProb > 0.00001) logDurationProb = Math.Log10(durationProb);
 
+                //if (durationProb < 0.005)
+                //{
+                //    vocalEvent.IsCorrectDuration = false;
+                //    //Console.WriteLine("\tDuration probability for " + vocalEvent.Length + " frames is too low");
+                //    continue;
+                //}
+                //else vocalEvent.IsCorrectDuration = true;
+                vocalEvent.IsCorrectDuration = true;
 
                 //calculate prob score for extract represented as integer array
                 double logScore;
                 ProbOfSequence_StateDuration(array, out logScore);
-                vocalEvent.Score = logScore;
+                vocalEvent.Score = logScore + logDurationProb;
 
             }//end of scanning all vocalisations
 
