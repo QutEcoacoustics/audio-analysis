@@ -79,7 +79,7 @@ namespace AudioAnalysis
 
 
 
-            if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
+            if (template.LanguageModel.ModelType == LanguageModelType.ONE_PERIODIC_SYLLABLE)
             {
                 Log.WriteLine("# Template Hits =" + ((Result_1PS)result).VocalCount);
                 Log.Write("# Best Score    =" + ((Result_1PS)result).RankingScoreValue.Value.ToString("F1") + " at ");
@@ -87,7 +87,7 @@ namespace AudioAnalysis
                 Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + ((Result_1PS)result).NumberOfPeriodicHits);
             } else
-            if (template.Model.ModelType == ModelType.MM_ERGODIC)
+            if (template.LanguageModel.ModelType == LanguageModelType.MM_ERGODIC)
             {
                 var r2 = result as Result_MMErgodic;
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);

@@ -32,8 +32,8 @@ namespace AudioAnalysis
         public CepstralSonogramConfig SonogramConfig { get; set; }
         public FVConfig FeatureVectorConfig { get; set; }
         public Acoustic_Model AcousticModel { get; set; }
-        public BaseModel Model { get; set; }
-        public ModelType Modeltype { get; set; }
+        public BaseModel LanguageModel { get; set; }
+        public LanguageModelType Modeltype { get; set; }
         #endregion
 
         #region Static LOAD TEMPLATE Methods
@@ -79,6 +79,7 @@ namespace AudioAnalysis
 
         /// <summary>
         /// Verify the template - what happens depends on the feature extraction type of template
+        /// STEP THREE: Verify fv extraction by observing output from acoustic model.
         /// </summary>
         /// <param name="template"></param>
         /// <param name="recording"></param>
@@ -87,8 +88,7 @@ namespace AudioAnalysis
         {
 
             Log.WriteIfVerbose("\nSTEP THREE: Verify template and save scanned recording as image");
-            //Set up a spectral sonogram for image puposes the sonogram with symbol sequence track added
-            var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
+            //Set up a spectral sonogram for image with symbol sequence track added
             template.SonogramConfig.DisplayFullBandwidthImage = true;
             var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
             spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
@@ -97,13 +97,22 @@ namespace AudioAnalysis
             {
                 ((Template_DCT2D)template).ScanRecording(recording, templateDir);
                 //Save an image of the spectralsonogram with symbol sequence track added
+                var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
                 ((Template_DCT2D)template).SaveScanImage(spectralSono, imagePath);
             }
             else
+            if (template.FeatureExtractionType == ConfigKeys.Feature_Type.CC_AUTO)
             {
-                //STEP THREE: Verify fv extraction by observing output from acoustic model.
                 template.GenerateSymbolSequenceAndSave(recording, templateDir);
                 //Save an image of the spectralsonogram with symbol sequence track added
+                var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+                template.SaveSyllablesImage(spectralSono, imagePath);
+            }
+            else
+            {
+                template.GenerateSymbolSequenceAndSave(recording, templateDir);
+                //Save an image of the spectralsonogram with symbol sequence track added
+                var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
                 template.SaveSyllablesImage(spectralSono, imagePath);
             }
         } //end VerifyTemplate()
@@ -164,8 +173,8 @@ namespace AudioAnalysis
             config.SetPair("COMMENT", gui.Comment);
 
             //**************** INFO ABOUT ORIGINAL .WAV FILE
-            config.SetPair("TRAINING_DIR", gui.TrainingDirName); //location of training vocalisations
-            config.SetPair("TESTING_DIR",  gui.TestDirName);     //location of testing vocalisations
+            config.SetPair(ConfigKeys.Recording.Key_TrainingDirName, gui.TrainingDirName); //location of training vocalisations
+            config.SetPair(ConfigKeys.Recording.Key_TestingDirName,  gui.TestDirName);     //location of testing vocalisations
             config.SetPair("WAV_DIR", gui.WavDirName);           //wavDirName = @"C:\SensorNetworks\WavFiles\";
             config.SetPair("WAV_FILE_NAME", gui.SourceFile);     //file containing source vocalisation.
             config.SetPair("WAV_FILE_PATH", gui.SourcePath);
@@ -201,7 +210,7 @@ namespace AudioAnalysis
             if (gui.FvInit != null)
             {
                 int fvCount = gui.FvInit.GetLength(0);
-                config.SetPair("FV_COUNT", fvCount.ToString());
+                config.SetPair(ConfigKeys.Template.Key_FVCount, fvCount.ToString());
                for (int i = 0; i < fvCount; i++)
                {
                    config.SetPair("FV"+(i+1)+"_DATA", gui.FvInit[i,0]+"\t"+gui.FvInit[i,1]);
@@ -215,14 +224,15 @@ namespace AudioAnalysis
             config.SetPair("ZSCORE_THRESHOLD", gui.ZScoreThreshold.ToString());
 
             //**************** INFO ABOUT LANGUAGE MODEL ***************************
-            //There are 3 choices of MODEl TYPE: (1)UNDEFINED (2)ERGODIC (3)TWO_STATE_PERIODIC (4)OLD_PERIODIC
-            config.SetPair("MODEL_TYPE", gui.ModelType.ToString());
-            //There are 3 choices of MM: (1)UNDEFINED (2)ERGODIC (3)TWO_STATE_PERIODIC (4)OLD_PERIODIC
-            //config.SetPair("MM_TYPE", gui.MmType.ToString());
+            //There are 3 choices of MARKOV MODEL TYPE: (1)UNDEFINED (2)ERGODIC (3)TWO_STATE_PERIODIC (4)OLD_PERIODIC
+            config.SetPair(ConfigKeys.Template.Key_ModelType, gui.ModelType.ToString());
             config.SetPair("GAP_MS", "999");       //default value for template creation
             config.SetPair("PERIODICITY_MS", gui.CallPeriodicity.ToString());
-            config.SetPair("NUMBER_OF_WORDS", "1"); //default value for template creation
-            config.SetPair("WORD1_NAME", "word");   //default value for template creation
+            int wordCount = 1; //default value
+            if (gui.NumberOfWords > 1) wordCount = gui.NumberOfWords;
+            config.SetPair(ConfigKeys.Template.Key_WordCount, wordCount.ToString());
+            for (int i = 0; i < wordCount; i++)
+                config.SetPair("WORD"+(i+1)+"_NAME", gui.WordNames[i]);  
             config.SetPair("WORD1_EXAMPLE1", "1");  //default value for template creation
             return config;
         }
@@ -403,18 +413,37 @@ namespace AudioAnalysis
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            int garbageID = this.AcousticModel.FvCount + 2 - 1;
-            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
             image.Save(path);
         }
 
+        public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result)
+        {
+            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            SaveSyllablesAndResultsImage(spectralSono, imagePath, result);
+        }
+        public virtual void SaveSyllablesAndResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
+        {
+            Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)");
+            bool doHighlightSubband = true;
+            bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            int garbageID = this.AcousticModel.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
+            image.Save(path);
+        }
+
+
         public virtual BaseResult GetBlankResultCard()
         {
-            ModelType type = this.Model.ModelType;
-            if (type == ModelType.MM_ERGODIC) return new Result_MMErgodic(this);
+            LanguageModelType type = this.LanguageModel.ModelType;
+            if (type == LanguageModelType.MM_ERGODIC) return new Result_MMErgodic(this);
                 else
-                if (type == ModelType.ONE_PERIODIC_SYLLABLE) return new Result_1PS(this);
+                if (type == LanguageModelType.ONE_PERIODIC_SYLLABLE) return new Result_1PS(this);
                 else
                 {
                     Log.WriteIfVerbose("\n WARNING: BaseTemplate.GetBlankResultCard(): UNKNOWN MODEL TYPE = "+type.ToString());

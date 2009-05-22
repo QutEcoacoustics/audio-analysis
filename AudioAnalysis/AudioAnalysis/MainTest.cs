@@ -164,7 +164,7 @@ namespace AudioAnalysis
             List<string> hmmResults = FileTools.ReadTextFile(hmmPath);
             template.SaveResultsImage(recording.GetWavReader(), imagePath, result, hmmResults);
 
-            if (template.Model.ModelType == ModelType.ONE_PERIODIC_SYLLABLE)
+            if (template.LanguageModel.ModelType == LanguageModelType.ONE_PERIODIC_SYLLABLE)
             {
                 var r2 = result as Result_1PS;
                 Log.WriteLine("# Template Hits =" + r2.VocalCount);
@@ -173,7 +173,7 @@ namespace AudioAnalysis
                 Log.WriteLine("# Periodicity   =" + Result_1PS.CallPeriodicity_ms + " ms");
                 Log.WriteLine("# Periodic Hits =" + r2.NumberOfPeriodicHits);
             }
-            if (template.Model.ModelType == ModelType.MM_ERGODIC)
+            if (template.LanguageModel.ModelType == LanguageModelType.MM_ERGODIC)
             {
                 var r2 = result as Result_MMErgodic;
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);

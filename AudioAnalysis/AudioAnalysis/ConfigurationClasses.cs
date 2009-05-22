@@ -23,22 +23,24 @@ namespace AudioAnalysis
         {
             public const string Key_RecordingFileName = "WAV_FILE_NAME";
             public const string Key_RecordingDirName  = "WAV_DIR_NAME";
+            public const string Key_TrainingDirName   = "TRAIN_DIR_NAME";
+            public const string Key_TestingDirName    = "TEST_DIR_NAME";
         }
 
         public struct Windowing //or Framing
         {
-            public const string Key_SampleRate = "SAMPLE_RATE";
-            public const string Key_SubSample = "SUBSAMPLE";
-            public const string Key_WindowSize = "FRAME_SIZE";
+            public const string Key_SampleRate    = "SAMPLE_RATE";
+            public const string Key_SubSample     = "SUBSAMPLE";
+            public const string Key_WindowSize    = "FRAME_SIZE";
             public const string Key_WindowOverlap = "FRAME_OVERLAP";
         }
 
         public struct Mfcc
         {
-            public const string Key_WindowFunction = "WINDOW_FUNCTION";
-            public const string Key_NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
+            public const string Key_WindowFunction   = "WINDOW_FUNCTION";
+            public const string Key_NPointSmoothFFT  = "N_POINT_SMOOTH_FFT";
             public const string Key_NyquistFrequency = "NYQUIST_FREQ";
-            public const string Key_StartTime = "START_TIME";
+            public const string Key_StartTime        = "START_TIME";
             public const string Key_EndTime          = "END_TIME";
             public const string Key_DoMelScale       = "DO_MEL_CONVERSION";
             public const string Key_NoiseReductionType = "NOISE_REDUCTION_TYPE";
@@ -53,7 +55,7 @@ namespace AudioAnalysis
 
         public struct Snr
         {
-            public const string Key_DynamicRange = "DYNAMIC_RANGE";
+            public const string Key_DynamicRange     = "DYNAMIC_RANGE";
         }
 
             
@@ -61,8 +63,8 @@ namespace AudioAnalysis
         {
             public const string Key_K1SegmentationThreshold = "SEGMENTATION_THRESHOLD_K1";
             public const string Key_K2SegmentationThreshold = "SEGMENTATION_THRESHOLD_K2";
-            public const string Key_K1K2Latency = "K1_K2_LATENCY";
-            public const string Key_VocalDelay = "VOCAL_DELAY";
+            public const string Key_K1K2Latency      = "K1_K2_LATENCY";
+            public const string Key_VocalDelay       = "VOCAL_DELAY";
             public const string Key_MinVocalDuration = "MIN_VOCAL_DURATION";
         }
 
@@ -74,6 +76,12 @@ namespace AudioAnalysis
         public struct Template
         {
             public const string Key_TemplateType = "TEMPLATE_TYPE";
+            public const string Key_TemplateDir  = "TEMPLATE_DIR";
+            public const string Key_FVCount      = "FV_COUNT";         //number of feature vectors in acoustic model
+            public const string Key_FVType       = "FEATURE_TYPE";     //type of feature vector to be extracted
+            public const string Key_ModelType    = "MODEL_TYPE";       //language model
+            public const string Key_WordCount    = "NUMBER_OF_WORDS";  //in the language model
+            public const string Key_WordNames    = "WORD_NAMES";       //in the language model
         }
 
         public struct ImageSave

@@ -46,9 +46,9 @@ namespace NeuralNets
                     StoreMinErrorCentroids();
                     minError = error;
                 }
-                Console.WriteLine("repeat="+(r+1)+"  error="+error.ToString("F2"));
+                Log.WriteIfVerbose(" repeat="+(r+1)+"  error="+error.ToString("F3"));
             }
-            Console.WriteLine("FINALLY best error was=" + this.minError);
+            Log.WriteIfVerbose("FINALLY best error was=" + this.minError.ToString("F3") + "\n");
         }
 
         /// <summary>
@@ -71,10 +71,10 @@ namespace NeuralNets
                 previousError = error;
                 if (deltaError < errorTol)  break;
                 if (error      < 0.0000001) break;
-                //Console.WriteLine("i" + iter + "  e=" + error + "   deltaError=" + deltaError);
+                //Log.WriteIfVerbose("i" + iter + "  e=" + error + "   deltaError=" + deltaError);
                 CalculateCentroids();
             }
-            //Console.WriteLine("deltaError=" + deltaError + " total iter=" + iter);
+            //Log.WriteIfVerbose("deltaError=" + deltaError + " total iter=" + iter);
             return error;
         }
 

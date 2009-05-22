@@ -13,7 +13,10 @@ namespace AudioAnalysis
     [Serializable]
     class Template_CCAuto : BaseTemplate
     {
-
+        public string TrainingDirName { get; set; }
+        public string TestingDirName { get; set; }
+        public string[] WordNames    { get; set; } // name of call or vocalisation 
+        public string[] WordExamples { get; set; } // symbolSequences - examples of a single call. Derived from automatic template creation 
 
         /// <summary>
         /// call this Load method when creating a new template from user provided params
@@ -21,18 +24,22 @@ namespace AudioAnalysis
         /// </summary>
         public static BaseTemplate Load(string appConfigFile, GUI gui, FileInfo[] recordingFiles, string templateDir, string templateFName)
         {
-            //STEP ONE: Initialise template with parameters
             Log.WriteIfVerbose("\nSTEP ONE: Initialise template with parameters");
-            string opTemplatePath = templateDir + templateFName;
             var config = MergeProperties(appConfigFile, gui);
+            config.SetPair(ConfigKeys.Template.Key_TemplateDir, templateDir);
             config.SetPair(ConfigKeys.Recording.Key_RecordingDirName, recordingFiles[0].DirectoryName);//assume all files in same dir
             config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
-            config.SetPair("TEMPLATE_DIR", templateDir);
+            //STEP ONE: Initialise template with parameters
             var template = new Template_CCAuto(config);
-
-            //STEP TWO: Extract template and save
-            Log.WriteIfVerbose("\nSTEP TWO: Extract template and save");
+            //STEP TWO: Extract template
+            Log.WriteIfVerbose("\nSTEP TWO: Extract template");
             template.ExtractTemplateFromRecordings(recordingFiles);
+            //STEP THREE: Extract template
+            Log.WriteIfVerbose("\nSTEP THREE: Create language model");
+            template.CreateLanguageModel(config);
+            //STEP FOUR: Save template
+            Log.WriteIfVerbose("\nSTEP FOUR: Save template");
+            string opTemplatePath = templateDir + templateFName;
             template.Save(opTemplatePath);
             return template;
         }
@@ -40,40 +47,65 @@ namespace AudioAnalysis
 
         public Template_CCAuto(Configuration config) : base(config)
 		{
-            SonogramConfig = new CepstralSonogramConfig(config);
+            //Initialise all components of template with parameters
+            //this.CallName = config.GetString("WORD" + (i + 1) + "_NAME");
+            this.CallName        = config.GetString("WORD1_NAME");
+            this.TrainingDirName = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
+            this.TestingDirName  = config.GetString(ConfigKeys.Recording.Key_TestingDirName);
+            SonogramConfig       = new CepstralSonogramConfig(config);
             EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
-            FeatureVectorConfig   = new FVConfig(config);
-            AcousticModel   = new Acoustic_Model(config);
-
-            //DEAL WITH THE VOCALISATION MODEL TYPE
-            var modelName = config.GetString("MODEL_TYPE");
-            ModelType modelType = (ModelType)Enum.Parse(typeof(ModelType), modelName);
-            this.Modeltype = modelType;
-
-            //do not init a Model if in create new template mode.
-            if (this.mode == Mode.CREATE_NEW_TEMPLATE) return;       
-
-            if (modelType == ModelType.UNDEFINED) Model = new Model_Undefined();
-            else if (modelType == ModelType.ONE_PERIODIC_SYLLABLE) Model = new Model_OnePeriodicSyllable(config);
-            else if (modelType == ModelType.MM_TWO_STATE_PERIODIC) Model = new Model_2StatePeriodic(config);
-            else if (modelType == ModelType.MM_ERGODIC)            Model = new Model_MMErgodic(config);
-
+            FeatureVectorConfig  = new FVConfig(config);
+            AcousticModel        = new Acoustic_Model(config);
         }
 
         /// <summary>
-        /// The call to static method FVExtractor.ExtractFVsFromRecording() results in the
-        /// creation of an array of feature vectors each representing a portion of a vocalisation.
+        /// THIS METHOD NOT REQUIRED WHEN CREATING TEMPLATE AUTOMATICALLY
         /// </summary>
         /// <param name="ar"></param>
         protected override void ExtractTemplateFromRecording(AudioRecording ar)
         {
-            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecording(AudioRecording ar)");
+            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecording()");
         }
+
 
         protected void ExtractTemplateFromRecordings(FileInfo[] recordingFiles)
         {
-            Log.WriteIfVerbose("START Template_CCAuto.ExtractTemplateFromRecordings()");
+            Log.WriteIfVerbose("\nSTART Template_CCAuto.ExtractTemplateFromRecordings()");
             FVExtractor.ExtractFVsFromVocalisations(recordingFiles, FeatureVectorConfig, SonogramConfig);
+            FVExtractor.ExtractSymbolSequencesFromVocalisations(recordingFiles, this);
+
+            Log.WriteIfVerbose("END   Template_CCAuto.ExtractTemplateFromRecordings()\n");
+        }
+
+        protected void CreateLanguageModel(Configuration config)
+        {
+            //DEAL WITH THE VOCALISATION MODEL TYPE
+            //set up the config file using info obtained from feature extraction
+            config.SetPair(ConfigKeys.Template.Key_FVCount, this.FeatureVectorConfig.FVCount.ToString());
+
+            int wordCount = config.GetInt(ConfigKeys.Template.Key_WordCount); //number of distinct songs or calls
+            this.WordNames = new string[wordCount];
+            for (int i = 0; i < wordCount; i++)
+            {
+                this.WordNames[i] = config.GetString("WORD" + (i + 1) + "_NAME");
+                Console.WriteLine("WORD" + (i + 1) + "_NAME="+this.WordNames[i]);
+            }
+
+            int exampleCount = this.WordExamples.Length;
+
+            for (int i = 0; i < exampleCount; i++)
+            {
+                config.SetPair("WORD" + wordCount + "_EXAMPLE" + (i+1), this.WordExamples[i]);
+            }
+
+            //initialise the language model with config
+            var modelName = config.GetString(ConfigKeys.Template.Key_ModelType);
+            LanguageModelType modelType = (LanguageModelType)Enum.Parse(typeof(LanguageModelType), modelName);
+            this.Modeltype = modelType;
+            if (modelType == LanguageModelType.UNDEFINED) LanguageModel = new Model_Undefined();
+            else if (modelType == LanguageModelType.ONE_PERIODIC_SYLLABLE) LanguageModel = new Model_OnePeriodicSyllable(config);
+            else if (modelType == LanguageModelType.MM_TWO_STATE_PERIODIC) LanguageModel = new Model_2StatePeriodic(config);
+            else if (modelType == LanguageModelType.MM_ERGODIC) LanguageModel = new Model_MMErgodic(config);
         }
         
         public override void Save(string targetPath)
@@ -92,27 +124,28 @@ namespace AudioAnalysis
 		public void Save(TextWriter writer, string opDir)
 		{
 			//throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
-            base.Save(writer);
-            //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
+            writer.WriteLine("DATE=" + DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
+            writer.WriteConfigValue("AUTHOR", AuthorName);
+            writer.WriteLine("#");
+            writer.WriteLine("#**************** TEMPLATE DATA");
+            writer.WriteConfigValue("TEMPLATE_ID", CallID);
+            writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
+            writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
+            writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
+            writer.WriteLine("#");
+            writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE[s]");
+            writer.WriteConfigValue(ConfigKeys.Recording.Key_TrainingDirName, this.TrainingDirName);
+            writer.WriteConfigValue(ConfigKeys.Recording.Key_TestingDirName,  this.TestingDirName);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.SampleRate);
+            writer.WriteLine("#");
+            writer.Flush();
+
             SonogramConfig.Save(writer);
+            //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
             FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
             AcousticModel.Save(writer);
-
-            //write the default language model if only creating a new template
-            if (this.mode == Mode.CREATE_NEW_TEMPLATE)
-            {
-                writer.WriteLine("#**************** INFO ABOUT THE LANGUAGE MODEL ***************");
-                writer.WriteLine("#Options: UNDEFINED, ONE_PERIODIC_SYLLABLE, MM_ERGODIC, MM_TWO_STATE_PERIODIC");
-                writer.WriteLine("MODEL_TYPE=UNDEFINED");
-                writer.WriteLine("#MODEL_TYPE=" + this.Modeltype);
-                writer.WriteLine("NUMBER_OF_WORDS=1");
-                writer.WriteLine("WORD1_NAME=Dummy");
-                writer.WriteLine("WORD1_EXAMPLE1=1234");
-                writer.WriteLine("WORD1_EXAMPLE2=5678");
-                writer.WriteLine("#");
-                writer.Flush();
-            }
-            else Model.Save(writer);
+            LanguageModel.Save(writer);
+            writer.Flush();
         }
 
         public override void SaveResultsImage(SpectralSonogram sonogram, string imagePath, BaseResult result)

@@ -33,7 +33,7 @@ namespace AudioAnalysis
         public Model_2StatePeriodic(Configuration config)
         {
             Log.WriteIfVerbose("INIT Model_2StatePeriodic CONSTRUCTOR 1");
-            this.ModelType = ModelType.MM_TWO_STATE_PERIODIC;
+            this.ModelType = LanguageModelType.MM_TWO_STATE_PERIODIC;
             SetFrameOffset(config); //set sample rate, frame duration etc
 
             // READ TRAINING SEQUENCES
@@ -64,7 +64,7 @@ namespace AudioAnalysis
         public Model_2StatePeriodic(Configuration config, int fvCount, SonogramConfig sonogramConfig, int sampleRate)
         {
             Log.WriteIfVerbose("INIT Model_2StatePeriodic CONSTRUCTOR 2");
-            this.ModelType = ModelType.MM_TWO_STATE_PERIODIC;
+            this.ModelType = LanguageModelType.MM_TWO_STATE_PERIODIC;
             WordCount = config.GetInt("NUMBER_OF_WORDS"); //number of defined song variations 
             Gap_ms = config.GetInt("GAP_MS");
 
@@ -91,7 +91,7 @@ namespace AudioAnalysis
                 }
 
             } // end for loop over all words
-            Words = ts.GetSequences();
+            WordExamples = ts.GetSequences();
 
             //MM_Base mm;
             //    int? gap_ms = config.GetIntNullable("GAP_MS");
