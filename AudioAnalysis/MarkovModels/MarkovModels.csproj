@@ -51,7 +51,7 @@
     <Compile Include="MM_Base.cs" />
     <Compile Include="MM_2State_Periodic.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SongDuration.cs" />
+    <Compile Include="SequenceInfo.cs" />
     <Compile Include="StateDurationTools.cs" />
     <Compile Include="TrainingSet.cs" />
   </ItemGroup>

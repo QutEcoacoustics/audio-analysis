@@ -74,10 +74,13 @@ namespace AudioAnalysis
         /// Note in this situation, we interpret as follows: 
         /// The null hypothesis is that the test sequence is no different from a training sequence.
         /// The null hypothesis is accepted if  -6.64 <= LLR <=0.
-        ///>The null hypothesis is rejected means that the test sequence is NOT recognised by the model.
+        ///> The null hypothesis is rejected means that the test sequence is NOT recognised by the model.
         /// The null hypothesis is rejected if  LLR < -6.64.
         ///
         ///> For display purposes, we must shift the display into positive territory.
+        ///  In addition, a quality score is calculated. If the quality score fails to exceed a threshold, then the
+        ///  display score is set to zero.
+        ///  The final score displayed in image is shifted to the range 0-10.
         /// 
         /// </summary>
         /// <param name="result"></param>
@@ -102,66 +105,56 @@ namespace AudioAnalysis
 
             //ANALYSE THE MM RESULTS FOR EACH VOCALISATION - CALCULATE LLR etc
             //init the results variables
+            const double maxDisplayScore = 10.0; //a suitable value for the expected range of LLR and Quality Scores
             int hitCount = list.Count;
-            int correctDurationCount = 0;
             double bestHit = -Double.MaxValue;
             int bestFrame = -1;
-            double maxDisplayScore = 10.0;
-            double llrThreshold = LLR_THRESHOLD;
             double[] scores = new double[frameCount];
 
             for (int i = 0; i < listLength; i++) //
-            {
+            //for (int i = 0; i < 50; i++) //
+                {
                 Vocalisation vocalEvent = list[i];
-                //Log.WriteIfVerbose.WriteLine(i + " " + extract.Sequence);
                 int[] array = MMTools.String2IntegerArray('n' + vocalEvent.Sequence + 'n');
 
                 //song duration filter - skip vocalisations that are not of sensible length
                 double durationProb = vocalEvent.DurationProbability;
-                Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
+                //Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
                 mmMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                //if (! vocalEvent.IsCorrectDuration)
-                //{
-                //    Log.WriteIfVerbose("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
-                //    mmMonitor.Add("\tDuration probability for " + vocalEvent.Length + " frames is too low.");
-                //    continue;
-                //}
 
-                correctDurationCount++;
-                //double score = DataTools.AntiLogBase10(logScore) / DataTools.AntiLogBase10(probOfAverageTrainingSequenceGivenModel);
                 double llr = vocalEvent.Score - mmResults.probOfAverageTrainingSequenceGivenModel;
 
-                //now SCALE THE SCORE ARRAY so that it can be displayed
-                double displayScore = llr;
+                //now SCALE THE SCORE ARRAY so that it can be displayed in range +0 to +10.
+                double displayScore = llr + vocalEvent.QualityScore;
                 result.MaxDisplayScore = maxDisplayScore;
                 displayScore += maxDisplayScore; //add positve value because max score expected to be zero.
                 if (displayScore > maxDisplayScore) displayScore = maxDisplayScore;
-                if (displayScore < 0) displayScore = 0;
-                //for (int j = 0; j < vocalEvent.Length; j++) scores[vocalEvent.Start + j] = displayScore;
-                scores[vocalEvent.Start] = displayScore;
+                if (displayScore < 0) displayScore = 0.0;
+                if (vocalEvent.QualityScore < mmResults.qualityThreshold) displayScore = 0.0;
+                scores[vocalEvent.Start] = displayScore; //assign score to beginning of vocalisation event
 
-                if (llr > bestHit)
+                if (displayScore > bestHit)
                 {
-                    bestHit = llr;
+                    bestHit = displayScore;
                     bestFrame = vocalEvent.Start;
                 }
-                Log.WriteIfVerbose((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
+                //Log.WriteIfVerbose((i + 1).ToString("D2") + " LLR=" + llr.ToString("F2") + " \tQual=" + vocalEvent.QualityScore.ToString("F2") + "\t" + vocalEvent.Sequence);
                 mmMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
             }//end of scanning all vocalisations
 
             double bestTimePoint = (double)bestFrame * frameOffset;
-            string str1 = String.Format("\n#### VocalCount={0} VocalValid={1} VocalBest={2:F3} bestFrame={3:D} @ {4:F1}s",
-                hitCount, correctDurationCount, bestHit, bestFrame, bestTimePoint);
+            string str1 = String.Format("\n#### VocalCount={0} VocalBest={1:F3} bestFrame={2:D} @ {3:F1}s",
+                                                     hitCount,     bestHit,     bestFrame,     bestTimePoint);
             Log.WriteIfVerbose(str1);
             mmMonitor.Add(str1);
+            double llrThreshold     = LLR_THRESHOLD; //LLR_THRESHOLD=Chi2 statistic for DOF=1 and alpha=0.01
             result.LLRThreshold     = result.MaxDisplayScore - llrThreshold;  //display threshold
             result.Scores           = scores;
             result.DisplayThreshold = result.LLRThreshold;
 
             //summary scores
-            result.VocalCount       = hitCount; // number of detected vocalisations
-            result.VocalValid       = correctDurationCount; //number of vocalisations of correct duration
-            result.RankingScoreValue     = bestHit;   // the highest score obtained over all vocalisations
+            result.VocalCount       = hitCount;  // number of detected vocalisations
+            result.RankingScoreValue= bestHit;   // the highest score obtained over all vocalisations
             result.FrameWithMaxScore= bestFrame;
             result.TimeOfMaxScore   = bestTimePoint;
 
