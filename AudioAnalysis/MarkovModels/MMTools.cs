@@ -334,9 +334,9 @@ namespace MarkovModels
             return list;
         }
 
-        public static List<Vocalisation> ExtractPartialWords(string sequence, double avVocalLength)
+        public static List<Vocalisation> ExtractPartialWords(string recordingAsSymbolSequence, double avVocalLength)
         {
-            var listOfWholeVocalisations = ExtractWords(sequence);
+            var listOfWholeVocalisations = ExtractWords(recordingAsSymbolSequence);
             Console.WriteLine("MMTools: whole word count = " + listOfWholeVocalisations.Count);
             var finalList = ExtractPartialVocalisations(listOfWholeVocalisations, (int)avVocalLength);
             Console.WriteLine("MMTools: partial word count = " + finalList.Count);
@@ -344,18 +344,18 @@ namespace MarkovModels
         }
 
 
-        public static List<Vocalisation> ExtractWords(string sequence)
+        public static List<Vocalisation> ExtractWords(string recordingAsSymbolSequence)
         {
             var list = new List<Vocalisation>();
             bool inWord = false;
-            int L = sequence.Length;
+            int L = recordingAsSymbolSequence.Length;
             int wordStart = 0;
             int buffer = 3;
 
             for (int i = 0; i < L - buffer; i++)
             {
                 bool endWord = true;
-                char c = sequence[i];
+                char c = recordingAsSymbolSequence[i];
                 if (IsSyllable(c))
                 {
                     if (!inWord)
@@ -363,12 +363,12 @@ namespace MarkovModels
                     inWord = true;
                     endWord = false;
                 }
-                else if (ContainsSyllable(sequence.Substring(i, buffer)))
+                else if (ContainsSyllable(recordingAsSymbolSequence.Substring(i, buffer)))
                     endWord = false;
 
                 if ((inWord) && (endWord))
                 {
-                    var extract = new Vocalisation(wordStart, i, sequence.Substring(wordStart, i - wordStart));
+                    var extract = new Vocalisation(wordStart, (i-1), recordingAsSymbolSequence.Substring(wordStart, i - wordStart));
                     list.Add(extract);
                     inWord = false;
                 }
@@ -393,13 +393,13 @@ namespace MarkovModels
                 //}
 
                 string seq = vocalEvent.Sequence;
-                //break long events into overlapping parts
-                //for (int e = 0; e < (seq.Length - avVocalLength); e++)
+                //break events into overlapping parts
                 for (int e = 0; e < seq.Length; e++)
                 {
-                    int length = avVocalLength;
-                    int start = vocalEvent.Start + e;
-                    int end   = start + avVocalLength - 1;
+                    int length = vocalEvent.Length - e;
+                    if (length > avVocalLength) length = avVocalLength;
+                    int start  = vocalEvent.Start + e;
+                    int end    = start + length - 1;
                     if (end >= vocalEvent.End) length = seq.Length - e;
                     Vocalisation newEvent = new Vocalisation(start, end, seq.Substring(e, length));
                     newList.Add(newEvent);

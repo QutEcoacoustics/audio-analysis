@@ -26,7 +26,7 @@ namespace MarkovModels
         double avWordLength; //average length (number of frames) of a vocalisation.
 
         double probOfAverageTrainingSequenceGivenModel;
-        SongDuration songduration;
+        SequenceInfo info;
 
 
         /// <summary>
@@ -48,10 +48,11 @@ namespace MarkovModels
             string[] sequences = data.GetSequences();
             this.numberOfWords = sequences.Length;
             this.avWordLength = TrainingSet.AverageSequenceLength(sequences);// length in frames
-            songduration = new SongDuration(sequences, DeltaT);
-            Log.WriteIfVerbose("\n##Av song length = " + songduration.AvSongLength);
+            info = new SequenceInfo(sequences, DeltaT);
+            Log.WriteIfVerbose("\n##Av transition count= " + info.AvTransitionCount.ToString("F2") + "+/-" + info.SdTransitionCount.ToString("F2"));
+            Log.WriteIfVerbose("\n##Av sequence length = " + info.AvSeqLength.ToString("F2") + "+/-" + info.SdSeqLength.ToString("F2"));
             Log.WriteIfVerbose("\t  The Song Duration PDF");
-            Log.WriteIfVerbose(songduration.WritePdf2String());
+            Log.WriteIfVerbose(info.WritePdf2String());
             TrainModel(sequences);
         }
 
@@ -176,45 +177,39 @@ namespace MarkovModels
         /// Extracts short vocalisations from a long symbol sequence and scores them with MM.
         /// this scoring version incorporates state duration
         /// </summary>
-        /// <param name="symbolSequence"></param>
-        public MMResults ScoreSequence(string symbolSequence)
+        /// <param name="recordingAsSymbolSequence"></param>
+        public MMResults ScoreSequence(string recordingAsSymbolSequence)
         {
-            //obtain a list of valid vocalisations represented as symbol strings
-            List<Vocalisation> list = MMTools.ExtractPartialWords(symbolSequence, this.avWordLength);
+            //extract list of partial vocalisations represented as symbol strings
+            List<Vocalisation> list = MMTools.ExtractPartialWords(recordingAsSymbolSequence, this.avWordLength);
             int listLength = list.Count;
 
             for (int i = 0; i < listLength; i++) //
             {
                 Vocalisation vocalEvent = list[i];
-                //Log.WriteIfVerbose.WriteLine(i + " " + extract.Sequence);
+                //Log.WriteIfVerbose(i + " " + vocalEvent.Sequence);
                 int[] array = MMTools.String2IntegerArray('n' + vocalEvent.Sequence + 'n');
+                 
+                vocalEvent.DurationProbability = this.info.GetSongDurationProb(vocalEvent.Length);
+                vocalEvent.LengthZscore     = Math.Abs(vocalEvent.Length          - this.info.AvSeqLength)       / this.info.SdSeqLength;
+                vocalEvent.TransitionZscore = Math.Abs(vocalEvent.TransitionCount - this.info.AvTransitionCount) / this.info.SdTransitionCount;
+                //Log.WriteIfVerbose((i + 1).ToString("D3") + " lengthZscore = " + vocalEvent.LengthZscore.ToString("F3") + " transitionZscore = " + vocalEvent.TransitionZscore.ToString("F3"));
 
-                //song duration filter - skip vocalisations that are not of sensible length
-                double durationProb = this.songduration.GetSongDurationProb(vocalEvent.Length);
-                vocalEvent.DurationProbability = durationProb;
-                Log.WriteIfVerbose((i+1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                double logDurationProb = -5;
-                if (durationProb > 0.00001) logDurationProb = Math.Log10(durationProb);
+                //sum the z-scores to get a quality score. The larger the z-scores, the poorer the quality.
+                //best quality value = 0; lower negaitve number = lower quality
+                vocalEvent.QualityScore = -(vocalEvent.LengthZscore + vocalEvent.TransitionZscore);
 
-                //if (durationProb < 0.005)
-                //{
-                //    vocalEvent.IsCorrectDuration = false;
-                //    //Console.WriteLine("\tDuration probability for " + vocalEvent.Length + " frames is too low");
-                //    continue;
-                //}
-                //else vocalEvent.IsCorrectDuration = true;
-                vocalEvent.IsCorrectDuration = true;
-
-                //calculate prob score for extract represented as integer array
+                //calculate prob score for vocalisation
                 double logScore;
                 ProbOfSequence_StateDuration(array, out logScore);
-                vocalEvent.Score = logScore + logDurationProb;
+                vocalEvent.Score = logScore;
 
             }//end of scanning all vocalisations
 
             //initialise a results object with list of vocalisations and return to Model object
             MMResults results = new MMResults(list);
             results.probOfAverageTrainingSequenceGivenModel = this.probOfAverageTrainingSequenceGivenModel;
+            results.qualityThreshold = -4.0;
             return results;
         }//end ScanSequence()
 

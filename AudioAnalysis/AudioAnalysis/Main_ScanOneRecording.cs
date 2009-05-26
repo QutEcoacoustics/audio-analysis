@@ -92,7 +92,6 @@ namespace AudioAnalysis
                 var r2 = result as Result_MMErgodic;
                 Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
                 Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
-                Log.WriteLine("# Number of valid vocalisations = " + r2.VocalValid + " (i.e. appropriate duration)");
                 Log.Write("# Best Vocalisation Score    = " + r2.RankingScoreValue.Value.ToString("F1") + " at ");
                 Log.WriteLine(r2.TimeOfMaxScore.Value.ToString("F1") + " sec");
             }
