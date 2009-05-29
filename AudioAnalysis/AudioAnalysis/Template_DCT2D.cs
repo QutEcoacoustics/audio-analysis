@@ -18,7 +18,6 @@ namespace AudioAnalysis
         public Template_DCT2D(Configuration config) : base(config)
 		{
             SonogramConfig = new CepstralSonogramConfig(config);
-            EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);
 

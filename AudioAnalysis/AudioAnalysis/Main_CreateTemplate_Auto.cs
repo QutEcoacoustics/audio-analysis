@@ -39,7 +39,7 @@ namespace AudioAnalysis
             string ext = ".wav";
             FileInfo[] recordingFiles = FileTools.GetFilesInDirectory(gui.TrainingDirName, ext);
             
-            //A: CREATE THE TEMPLATE with UNDEFINED MODEL
+            //A: CREATE THE TEMPLATE according to parameters set in gui.
             var template = Template_CCAuto.Load(appConfigPath, gui, recordingFiles, templateDir, templateFName);
 
             //B: CREATE SERIALISED VERSION OF TEMPLATE
@@ -60,13 +60,19 @@ namespace AudioAnalysis
             string wavDirName; string wavFileName;
             AudioRecording recording;//
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-            //BaseTemplate.VerifyTemplate(template2, recording, templateDir);
 
-            //E: LOAD recogniser, scan and SAVE RESULTS IMAGE
+            //E: LOAD recogniser, SCAN A SINGLE RECORDING and SAVE RESULTS IMAGE
             var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
+            //reset noise reduction type for long recording
+            template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
             var result = recogniser.Analyse(recording);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
+
+            //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
+            string testDir = @"C:\SensorNetworks\Templates\Template_3\TestSet";
+            Main_TestSerialTemplateOnCallFiles.ScanTestFiles(template2, testDir);
+
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();

@@ -14,7 +14,8 @@ namespace AudioAnalysis
         #region Properties
         public string SourceFName { get; set; }
 
-        public int SampleRate { get; set; }
+        public FftConfiguration FftConfig { get; set; }
+        //public int SampleRate { get; set; }
         public TimeSpan Duration { get; set; }
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
@@ -27,7 +28,7 @@ namespace AudioAnalysis
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
         public int? MidFreqBand { get; set; }
-        public bool DisplayFullBandwidthImage { get; set; }
+        public bool DoFullBandwidth { get; set; }
         #endregion
 
 
@@ -102,7 +103,7 @@ namespace AudioAnalysis
         private void Initialize(Configuration config)
         {
             SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
-            FftConfiguration.SetConfig(config);
+            FftConfig = new FftConfiguration(config);
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
@@ -114,9 +115,9 @@ namespace AudioAnalysis
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
             MidFreqBand = MinFreqBand + (delta / 2);
-            DisplayFullBandwidthImage = false;
+            DoFullBandwidth = false;
 
-            EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
+            EndpointDetectionConfiguration.SetConfig(config);
         }
 
 
@@ -131,10 +132,12 @@ namespace AudioAnalysis
 			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
+            if (this.DynamicRange > 1.0)
+                writer.WriteConfigValue(ConfigKeys.Snr.Key_DynamicRange, this.DynamicRange.ToString("F1"));
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
-            FftConfiguration.Save(writer);
+            FftConfig.Save(writer);
 		}
 
 
@@ -145,8 +148,8 @@ namespace AudioAnalysis
 
         public double GetFrameOffset()
         {
-            double frameDuration = GetFrameDuration(this.SampleRate);// Duration of full frame or window in seconds
-            double frameOffset = frameDuration * (1 - WindowOverlap);// Duration of non-overlapped part of window/frame in seconds
+            double frameDuration = GetFrameDuration(this.FftConfig.SampleRate); // Duration of full frame or window in seconds
+            double frameOffset = frameDuration * (1 - WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
             return frameOffset; 
         }
 
@@ -184,7 +187,7 @@ namespace AudioAnalysis
 		public CepstralSonogramConfig(Configuration config) : base(config)
 		{
 			MfccConfiguration = new MfccConfiguration(config);
-            SampleRate   = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
+            //SampleRate   = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
             DeltaT       = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
             var duration = config.GetDoubleNullable("WAV_DURATION");
             if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);

@@ -232,7 +232,7 @@ namespace AudioAnalysis
                     opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
                     featureType = ConfigKeys.Feature_Type.CC_AUTO;
 
-                    DynamicRange = 30.0; //for noise removal
+                    DynamicRange = 40.0; //for noise removal
 
                     //MFCC PARAMETERS
                     frameSize = 512;

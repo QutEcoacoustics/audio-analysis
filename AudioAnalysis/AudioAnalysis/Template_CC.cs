@@ -17,7 +17,6 @@ namespace AudioAnalysis
 		public Template_CC(Configuration config) : base(config)
 		{
             SonogramConfig = new CepstralSonogramConfig(config);
-            EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);
 
@@ -32,7 +31,6 @@ namespace AudioAnalysis
             else if (modelType == LanguageModelType.ONE_PERIODIC_SYLLABLE) LanguageModel = new Model_OnePeriodicSyllable(config);
             else if (modelType == LanguageModelType.MM_TWO_STATE_PERIODIC) LanguageModel = new Model_2StatePeriodic(config);
             else if (modelType == LanguageModelType.MM_ERGODIC)            LanguageModel = new Model_MMErgodic(config);
-
         }
 
         /// <summary>
@@ -103,7 +101,7 @@ namespace AudioAnalysis
         //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
-            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            this.SonogramConfig.DoFullBandwidth = true;
             var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result, hmmResults);
         }

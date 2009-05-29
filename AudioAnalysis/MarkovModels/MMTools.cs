@@ -337,9 +337,9 @@ namespace MarkovModels
         public static List<Vocalisation> ExtractPartialWords(string recordingAsSymbolSequence, double avVocalLength)
         {
             var listOfWholeVocalisations = ExtractWords(recordingAsSymbolSequence);
-            Console.WriteLine("MMTools: whole word count = " + listOfWholeVocalisations.Count);
+            //Console.WriteLine("MMTools: whole word count = " + listOfWholeVocalisations.Count);
             var finalList = ExtractPartialVocalisations(listOfWholeVocalisations, (int)avVocalLength);
-            Console.WriteLine("MMTools: partial word count = " + finalList.Count);
+            //Console.WriteLine("MMTools: partial word count = " + finalList.Count);
             return finalList;
         }
 

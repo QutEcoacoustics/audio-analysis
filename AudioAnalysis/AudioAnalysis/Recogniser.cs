@@ -39,7 +39,12 @@ namespace AudioAnalysis
 		public BaseResult Analyse(AudioRecording recording)
 		{
             Wav = recording.GetWavReader();
-            Template.GenerateSymbolSequence(Wav);
+            //Template.GenerateSymbolSequence(Wav);
+            //var wav = ar.GetWavReader();
+            var avSonogram = new AcousticVectorsSonogram(Template.SonogramConfig, Wav);
+            Template.AcousticModel.GenerateSymbolSequence(avSonogram, Template);
+            Template.AcousticModel.FillGapsInSymbolSequence();
+
             double frameOffset = Template.SonogramConfig.GetFrameOffset();
             BaseResult result = Template.GetBlankResultCard();
 

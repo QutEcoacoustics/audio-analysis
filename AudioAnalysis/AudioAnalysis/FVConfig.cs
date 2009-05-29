@@ -28,6 +28,8 @@ namespace AudioAnalysis
         public FV_Source FVSourceType { get; set; }
 
         public int FVLength { get; set; }
+        public int ExtractionInterval { get; set; }//used for automatic extraction
+
         public string OPDir { get; set; }
         public string[] FVfNames { get; set; }
         public string   FVSourceDir { get; set; }    //used when in AUTO mode
@@ -65,8 +67,13 @@ namespace AudioAnalysis
             this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
 
             CallID = config.GetInt("TEMPLATE_ID");
-            FV_DefaultNoisePath = config.GetPath("FV_DEFAULT_NOISE_FILE");
-
+            FV_DefaultNoisePath = config.GetPath(ConfigKeys.Template.Key_FVDefaultNoiseFile);
+            if (File.Exists(FV_DefaultNoisePath)) DefaultNoiseFV = new FeatureVector(FV_DefaultNoisePath);
+            else
+            {
+                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to read default noise FV file <" + FV_DefaultNoisePath + ">");
+                DefaultNoiseFV = null;
+            }
 
             switch (FeatureExtractionType)
             {
@@ -84,6 +91,7 @@ namespace AudioAnalysis
                 case ConfigKeys.Feature_Type.CC_AUTO:
                     this.FVSourceType = FV_Source.FIXED_INTERVALS;
                     FVSourceDir = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
+                    ExtractionInterval = config.GetInt("FV_EXTRACTION_INTERVAL");
                     FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
                     Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
                     break;
@@ -218,6 +226,7 @@ namespace AudioAnalysis
             writer.WriteConfigValue("FV_DEFAULT_NOISE_FILE", FV_DefaultNoisePath);
             writer.WriteConfigValue("FV_SOURCE", FVSourceType.ToString());
             writer.Flush();
+            writer.WriteConfigValue("FV_EXTRACTION_INTERVAL", ExtractionInterval);
             writer.WriteConfigValue("FEATURE_VECTOR_LENGTH", FVLength);
             writer.WriteConfigValue("FV_COUNT", FVCount);
             writer.Flush();
