@@ -35,7 +35,7 @@ namespace AudioAnalysis
         public double[] DecibelsPerFrame { get { return SnrFrames.Decibels; } protected set {} }//decibels per signal frame
 
         //energy and dB per frame sub-band
-        public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
+       // public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
         protected int subBand_MinHz; //min freq (Hz) of the required subband
         protected int subBand_MaxHz; //max freq (Hz) of the required subband
         public SNR    SnrSubband { get; private set; }
@@ -78,8 +78,9 @@ namespace AudioAnalysis
 
 			this.subBand_MinHz = config.MinFreqBand ?? 0;
 			this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
-            this.ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
-            if (config.DisplayFullBandwidthImage) this.ExtractSubband = false;//if sono only intended for image
+            //this.ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
+             bool ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
+            if (config.DoFullBandwidth) ExtractSubband = false;   //if sono only intended for image
 
 
 			// SIGNAL PRE-EMPHASIS helps with speech signals
@@ -113,7 +114,7 @@ namespace AudioAnalysis
 			//generate the spectra of FFT AMPLITUDES
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
+			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), epsilon);
 			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
@@ -168,8 +169,8 @@ namespace AudioAnalysis
             double[,] frames = DSP.Frames(signal, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(FftConfiguration.WindowFunction), epsilon);
-            this.ExtractSubband = true;
+			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), epsilon);
+            //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
             return ExtractFreqSubband(amplitudeM, minHz, maxHz);
@@ -232,8 +233,8 @@ namespace AudioAnalysis
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double[,] mnr = matrix;
-            mnr = SNR.RemoveModalNoise(mnr);
+            double[,] mnr = matrix; //matrix - noise reduced
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
             mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
             return mnr;
         }
@@ -534,7 +535,7 @@ namespace AudioAnalysis
             for(int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame+i]; 
 
             ////energy and dB per frame sub-band
-            this.ExtractSubband = this.ExtractSubband;
+            //this.ExtractSubband = this.ExtractSubband;
             this.subBand_MinHz  = sg.subBand_MinHz; //min freq (Hz) of the required subband
             this.subBand_MaxHz  = sg.subBand_MaxHz; //max freq (Hz) of the required subband
             //sg.SnrSubband { get; private set; }

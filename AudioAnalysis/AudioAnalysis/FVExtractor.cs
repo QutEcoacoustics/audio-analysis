@@ -20,9 +20,8 @@ namespace AudioAnalysis
             WavReader wav = ar.GetWavReader();
             var sonogram = new CepstralSonogram(sonoConfig, wav);
             //transfer parameters to where required
-            sonoConfig.SampleRate = sonogram.SampleRate;
             sonoConfig.Duration = sonogram.Duration;
-            FftConfiguration.SetSampleRate(sonoConfig.SampleRate);
+            sonoConfig.FftConfig.SampleRate = wav.SampleRate;
 
             //prepare the feature vectors
             FVParams.FVArray = GetFeatureVectorsFromFrames(sonogram, FVParams, sonoConfig);
@@ -91,13 +90,9 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("START FVExtractor.ExtractFVsFromVocalisations()");
             Log.WriteIfVerbose("\tNumber of vocalisations = " + files.Length);
-            int interval = 4; //extract feature vector at this interval +1
+            int interval = FVParams.ExtractionInterval; //extract feature vectors at this interval
 
-            //use next two lines to save image of sonogram
-            //cepstralConfig.SaveSonogramImage = true;
-            //cepstralConfig.ImageDir = files[0].DirectoryName;
             double avFrameCount = 0.0; //to determine average number of frames in training vocalisations
-
             List<FeatureVector> list = new List<FeatureVector>();
             foreach (FileInfo f in files)
             {
@@ -106,8 +101,7 @@ namespace AudioAnalysis
                 AudioRecording recording = new AudioRecording(f.FullName);
                 WavReader wav = recording.GetWavReader();
                 cepstralConfig.SourceFName = Path.GetFileNameWithoutExtension(f.Name);
-                FftConfiguration.SetSampleRate(wav.SampleRate);
-                cepstralConfig.SampleRate = wav.SampleRate; //set in two places
+                cepstralConfig.FftConfig.SampleRate = wav.SampleRate;
 
                //Extract the FVs from each
                 //Log.WriteIfVerbose("\tInit CepstralSonogram(cepstralConfig, wav)"); 
@@ -117,25 +111,28 @@ namespace AudioAnalysis
                 //Log.WriteIfVerbose("Have extracted " + fvs.Count+ " feature vectors.");
                 list.AddRange(fvs);
 
-                //following lines for debug using images
-                //var ss = new SpectralSonogram(cepstralConfig, wav);
-                //var image = new Image_MultiTrack(cs.GetImage(false, false));
-                //string path = ((CepstralSonogramConfig)cs.Configuration).ImageDir + "\\" + cs.Configuration.SourceFName + "ccc.png";
-                //Console.WriteLine("Make(): saving sonogram image to " + path);
+                //use following lines to save image of sonogram for debug purposes
+                //cepstralConfig.SaveSonogramImage = true;
+                //cepstralConfig.ImageDir = files[0].DirectoryName;
+                //var ss      = new SpectralSonogram(cepstralConfig, wav);
+                //var image   = new Image_MultiTrack(ss.GetImage(false, false));
+                //string path = ((CepstralSonogramConfig)ss.Configuration).ImageDir + "\\" + ss.Configuration.SourceFName + ".png";
                 //image.Save(path);
+                //Console.WriteLine("Saved sonogram image to " + path);
+                //Console.WriteLine("");
             } //end of all training vocalisations
 
             avFrameCount /= files.Count();
+            Log.WriteIfVerbose("\nHave extracted " + list.Count + " feature vectors from " + files.Count() + " files.");
+            Log.WriteIfVerbose("\t\tat intervals of " + interval+" frames.");
+            Log.WriteIfVerbose("\tAverage frame count = " + avFrameCount+" per recording or file.");
 
-            //Cluster the FVs
-            Log.WriteIfVerbose("Have extracted "+list.Count+" feature vectors from " + files.Count()+ " files.");
-            Log.WriteIfVerbose(" Average frame count = "+avFrameCount);
+            //Calculate the number of centroids. This will become the number of MM states.
             if (FVParams.FVCount == 0) FVParams.FVCount = (int)(avFrameCount / interval);
-            Log.WriteIfVerbose(" Number of FVs (VQ codebook) = " + FVParams.FVCount);
-            Log.WriteIfVerbose(" Number of FVs (VQ codebook) = " + (int)(avFrameCount / interval));
+            Log.WriteIfVerbose("\tNumber of FVs centroids (size of VQ codebook)= " + FVParams.FVCount);
             // Console.ReadLine();
 
-            //Get the centroids
+            //Apply VECTOR QUANTISATION to get the feature vector centroids
             Log.WriteIfVerbose("\nSTART VECTOR QUANTISATION");
             Cluster cluster = new Cluster(FeatureVector.GetVectors(list));
             VQ vq = new VQ(cluster, FVParams.FVCount);
@@ -149,7 +146,7 @@ namespace AudioAnalysis
             {
                 Log.WriteIfVerbose("   Min error centroid[" + (i + 1) + "] is average of " + vq.Clusters[i].Size + " vectors.");
                 string fvName = "centroid"+(i+1);
-                Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] Name=" + fvName);
+                //Log.WriteIfVerbose("   Init FeatureVector[" + (i + 1) + "] Name=" + fvName);
                 FVParams.FVArray[i] = new FeatureVector(vq.MinErrorCentroids[i], fvName);
                 FVParams.FVArray[i].SourceFile = "Derived from automated VQ"; 
             }
@@ -165,9 +162,9 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("\nFVExtractor.ExtractSymbolSequencesFromVocalisations(): EXTRACTING SYMBOL STRINGS FROM TRAINING VOCALISATIONS");
             int prevVerbosity = Log.Verbosity;
-            Log.Verbosity = 0; //suppress output
+            Log.Verbosity = 1; //suppress output
             CepstralSonogramConfig cepstralConfig = template.SonogramConfig;
-            //FeatureVectorConfig, SonogramConfig
+
             List<String> symbolSequences = new List<String>();
             int id = 0;
             foreach (FileInfo f in files)
@@ -177,15 +174,16 @@ namespace AudioAnalysis
                 AudioRecording recording = new AudioRecording(f.FullName);
                 WavReader wav = recording.GetWavReader();
                 cepstralConfig.SourceFName = Path.GetFileNameWithoutExtension(f.Name);
-                FftConfiguration.SetSampleRate(wav.SampleRate);
+                cepstralConfig.FftConfig.SampleRate = wav.SampleRate;
                 var avSonogram = new AcousticVectorsSonogram(cepstralConfig, wav);
                 template.AcousticModel.GenerateSymbolSequence(avSonogram, template);
-                string sylseq = template.AcousticModel.SyllSymbols;
-                sylseq = Acoustic_Model.TrimSyllableSequence(sylseq);
-                //Log.WriteLine("Seq(" + id + ") =\t" + sylseq);
-                sylseq = Acoustic_Model.FillGaps(sylseq);
+                string sylseq = Acoustic_Model.MassageSyllableSequence(template.AcousticModel.SyllSymbols);
                 symbolSequences.Add(sylseq);
-                //Log.WriteLine("Seq("+id+") =\t"+sylseq);
+                //display output with file name;
+                string opstr = "Seq(" + id + ") =";
+                opstr = opstr.PadRight(11) + sylseq;
+                opstr = opstr.PadRight(50) + " (" + f.Name + ")";
+                Log.WriteLine(opstr);
 
             } //end of all training vocalisations
             template.WordExamples = symbolSequences.ToArray();
@@ -199,6 +197,7 @@ namespace AudioAnalysis
         private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, CepstralSonogramConfig sonoConfig, int interval)
         {
             int fvCount = sonogram.FrameCount;
+            interval -= 1;
 
             //initialise feature vectors for template. Each frame provides one vector in three parts
             int dT = sonoConfig.DeltaT;
@@ -207,7 +206,7 @@ namespace AudioAnalysis
             List<FeatureVector> list = new List<FeatureVector>();
             for (int i = dT; i < fvCount - dT; i++)
             {
-                Console.WriteLine("frame "+i+" dB = "+sonogram.DecibelsPerFrame[i]);
+                //Console.WriteLine("frame "+i+" dB = "+sonogram.DecibelsPerFrame[i]);
                 if (sonogram.DecibelsPerFrame[i] < 7.5) continue; //ignore low dB frames
                 //init vector. Each one contains three acoustic vectors - for T-dT, T and T+dT
                 double[] acousticV = Speech.GetAcousticVector(M, i, dT); //combines  frames T-dT, T and T+dT

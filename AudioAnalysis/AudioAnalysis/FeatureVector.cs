@@ -46,7 +46,7 @@ namespace AudioAnalysis
             FileInfo f = new FileInfo(path);
             SourceFile = f.Name;
             this.name  = f.Name;
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 1: name=" + name + "  length=" + length);
+            //Log.WriteIfVerbose("\tFV CONSTRUCTOR 1: name=" + name + "  length=" + length);
 
             Features = FileTools.ReadDoubles2Vector(path);
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
@@ -62,7 +62,7 @@ namespace AudioAnalysis
             FvLength = vector.Length;
             Features = vector;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 2: name=" + name + "  length=" + FvLength);
+            //Log.WriteIfVerbose("\tFV CONSTRUCTOR 2: name=" + name + "  length=" + FvLength);
         }
 
         public FeatureVector(double[] vector, string name, string sourceFile)
@@ -72,7 +72,7 @@ namespace AudioAnalysis
             FvLength = vector.Length;
             Features = vector;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 3: name=" + name + " sourceFile=" + sourceFile + " length=" + FvLength);
+            //Log.WriteIfVerbose("\tFV CONSTRUCTOR 3: name=" + name + " sourceFile=" + sourceFile + " length=" + FvLength);
         }
 
         /// <summary>
@@ -88,7 +88,7 @@ namespace AudioAnalysis
             Features = FileTools.ReadDoubles2Vector(path);
             FvLength = Features.Length;
             FeaturesNormed = DataTools.DiffFromMean(Features); // Normalise template to difference from mean
-            Log.WriteIfVerbose("\tFV CONSTRUCTOR 4: SourceFile=" + SourceFile + "  length=" + FvLength);
+            //Log.WriteIfVerbose("\tFV CONSTRUCTOR 4: SourceFile=" + SourceFile + "  length=" + FvLength);
 
         }
 
@@ -233,6 +233,9 @@ namespace AudioAnalysis
 			Log.WriteIfVerbose("\tFV[" + id + "] Av Noise Response =" + this.NoiseAv.ToString("F3") + "\xB1" + this.NoiseSd.ToString("F3"));
         } //end SetNoiseResponse
 
+
+
+
         public double[] Scan_CrossCorrelation(double[,] acousticM)
         {
             int fLength = Features.Length;
@@ -250,6 +253,8 @@ namespace AudioAnalysis
 
             return NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);
         }
+
+
 
         public double[] Scan_CrossCorrelation(double[,] acousticM, double[] decibels, double decibelThreshold)
         {

@@ -102,6 +102,7 @@
     <Compile Include="Main_CreateTemplate_Part2.cs" />
     <Compile Include="Main_SNR.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
+    <Compile Include="Main_TestSerialTemplateOnCallFiles.cs" />
     <Compile Include="Model_2SP.cs" />
     <Compile Include="Model_MMErgodic.cs" />
     <Compile Include="FVExtractor.cs" />

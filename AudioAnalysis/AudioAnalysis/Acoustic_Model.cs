@@ -73,7 +73,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE AND GENERATE ACOUSTIC MODEL");
             Log.WriteIfVerbose("\tStep 1: Derive NOISE Feature Vector, FV[0], from the passed SONOGRAM");
             Log.WriteIfVerbose("\t\tSonogram dimensions are rows=" + s.Data.GetLength(0) + "  cols=" + s.Data.GetLength(1)); 
-            var FVs = GetFeatureVectors(fvConfig.FVArray);
+            var FVs = GetFeatureVectors(this.fvConfig.FVArray);
             int fvCount = FVs.Length;
 
             int count;
@@ -82,14 +82,24 @@ namespace AudioAnalysis
             if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file
             {
                 Log.WriteIfVerbose("\tDerive NOISE Feature Vector from default Noise file: ");
-                FVs[0] = fvConfig.DefaultNoiseFV; //
+                FVs[0] = fvConfig.DefaultNoiseFV;
+                if (FVs[0] == null)
+                {
+                    bool fexists = File.Exists(fvConfig.FV_DefaultNoisePath);
+                    string info = "\n Require a default noise FV file. It is expected at:"+fvConfig.FV_DefaultNoisePath;
+                    if(! fexists) info = info + "\nThis file does not exist.";
+                    else          info = info + "\nThis file exists but appear not to have been read into the template.";
+                    throw new Exception("ACOUSTIC_MODEL.GenerateAcousticMatrix(): DefaultNoiseFV = null."+info);
+                }
             }
             else
             if ((template.mode == Mode.CREATE_NEW_TEMPLATE) && (fvConfig.FV_DefaultNoisePath != null)) //Write noise vector to file. Can be used as sample noise vector.
             {
                 Log.WriteIfVerbose("\tSave NOISE Feature Vector to file: " + fvConfig.FV_DefaultNoisePath);
                 fvConfig.DefaultNoiseFV = FVs[0]; //keep this so it can be serialised
-                FVs[0].SaveDataAndImageToFile(fvConfig.FV_DefaultNoisePath, template);
+                //set up path to save a new Noise FV file
+                string noiseFVpath = Path.Combine(Path.GetDirectoryName(fvConfig.FV_DefaultNoisePath),"NoiseFVSavedDuringTemplateCreation.txt");
+                FVs[0].SaveDataAndImageToFile(noiseFVpath, template);
             }
 
             //for debugging can here read in any FVs you like
@@ -105,7 +115,8 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("\n\tStep 2: Obtain noise response for each feature vector");
             double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount);
             //following alternative to above method only gets noise estimate from low energy frames
-            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.Decibels, this.decibelThreshold);
+            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.SnrSubband.Decibels, 6.5);
+            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.SnrFrames.Decibels, 6.5);
 
             for (int i = 0; i < FVs.Length; i++)
                 FVs[i].SetNoiseResponse(noiseM, i);
@@ -134,15 +145,14 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("\n\tStep 3: Obtain ACOUSTIC MATRIX[" + frameCount + "," + fvCount + "] of syllable z-scores");
             double[,] acousticMatrix = new double[frameCount, fvCount];
 
-            for (int n = 0; n < fvCount; n++)  //for all feature vectors
+            for (int col = 0; col < fvCount; col++)  //for all feature vectors
             {
-                Log.WriteIfVerbose("\t... with FV " + n);
+                Log.WriteIfVerbose("\t... with FV " + col);
 
                 //now calculate z-score for each score value
-                double[] zscores = FVs[n].Scan_CrossCorrelation(s.Data);
+                double[] zscores = FVs[col].Scan_CrossCorrelation(s.Data);
                 zscores = DataTools.filterMovingAverage(zscores, Acoustic_Model.ZscoreSmoothingWindow);  //smooth the Z-scores
-
-                for (int i = 0; i < frameCount; i++) acousticMatrix[i, n] = zscores[i];// transfer z-scores to matrix of acoustic z-scores
+                for (int i = 0; i < frameCount; i++) acousticMatrix[i, col] = zscores[i];// transfer z-scores to matrix of acoustic z-scores
             }//end for loop over all feature vectors
 
             #region Make Image of Acoustic Matrix For Debugging Purposes Only
@@ -183,7 +193,7 @@ namespace AudioAnalysis
         FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double maxRefDB, out int count)
         {
             double decibelThreshold = EndpointDetectionConfiguration.K2Threshold;
-            double relativeThreshold = decibelThreshold / decibelThreshold; 
+            double relativeThreshold = decibelThreshold / maxRefDB; 
             int rows = acousticM.GetLength(0);
             int cols = acousticM.GetLength(1);
 
@@ -196,10 +206,9 @@ namespace AudioAnalysis
             int targetCount = rows / 5; // Want a minimum of 20% of frames for a noise estimate
             if (count < targetCount)
             {
-                Log.WriteLine("  TOO FEW LOW ENERGY FRAMES.");
-                Log.WriteLine("  Low energy frame count=" + count + " < targetCount=" + targetCount
+                Log.WriteIfVerbose("  TOO FEW LOW ENERGY FRAMES -- READ DEFAULT NOISE FEATURE VECTOR.");
+                Log.WriteIfVerbose("  Low energy frame count=" + count + " < targetCount=" + targetCount
                     + "   @ decibelThreshold=" + decibelThreshold.ToString("F3") + " = reference+k2threshold.");
-                Log.WriteLine("  TOO FEW LOW ENERGY FRAMES. READ DEFAULT NOISE FEATURE VECTOR.");
                 return null;
             }
             else
@@ -247,6 +256,35 @@ namespace AudioAnalysis
             return noise;
         } //end GetRandomNoiseMatrix()
 
+        /// <summary>
+        /// Returns a matrix of noise vectors. Each noise vector is a random sample from the original sonogram.
+        /// </summary>
+        double[,] GetRandomNoiseMatrix(double[,] dataMatrix, int noiseCount, double[] dBArray, double threshold)
+        {
+            int frameCount = dataMatrix.GetLength(0);
+            int featureCount = dataMatrix.GetLength(1);
+
+            double[,] noise = new double[noiseCount, featureCount];
+            RandomNumber rn;
+            if (BaseTemplate.InTestMode) rn = new RandomNumber(12345); //use seed in test mode
+            else rn = new RandomNumber();
+
+            for (int i = 0; i < noiseCount; i++)
+            {
+                for (int j = 0; j < featureCount; j++)
+                {
+                    int id = rn.GetInt(frameCount);
+                    if (dBArray[id] > threshold)
+                    {
+                        j--;
+                        continue;
+                    }
+                    noise[i, j] = dataMatrix[id, j];
+                }
+            }
+            return noise;
+        } //end GetRandomNoiseMatrix()
+
 
         /// <summary>
         /// Generates a symbol sequence from the acoustic matrix
@@ -277,7 +315,7 @@ namespace AudioAnalysis
                 }
                 char c = 'x';
                 int val = Int32.MaxValue; // Used as integer to represent 'x' or garbage.
-                if (fvScores[maxIndex] >= ZscoreThreshold) // Only set symbol or int if fv score exceeds threshold  
+                if (fvScores[maxIndex] >= ZscoreThreshold) // Only reset symbol or int if fv score exceeds threshold  
                 {
                     c = MMTools.Integer2Char(maxIndex);
                     val = maxIndex;
@@ -297,7 +335,6 @@ namespace AudioAnalysis
             SyllSymbols = sb.ToString();
             SyllableIDs = integerSequence;
         } //end AcousticMatrix2SymbolSequence()
-
 
 
 
@@ -441,6 +478,46 @@ namespace AudioAnalysis
             }
             return gaps;
         } //end of CalculateGaps()
+
+
+        public void MassageSyllableSequence()
+        {
+            this.SyllSymbols = Acoustic_Model.MassageSyllableSequence(SyllSymbols);
+        }
+        /// <summary>
+        /// trims the 'n' and 'x' chars from beginning and end of a syllable sequence
+        /// and then replaces internal blank chars by preceding char.
+        /// </summary>
+        public static string MassageSyllableSequence(string original)
+        {
+            string massaged = Acoustic_Model.TrimSyllableSequence(original);
+            massaged = Acoustic_Model.FillGaps(massaged);
+            return massaged;
+        }
+        public void FillGapsInSymbolSequence()
+        {
+            var sb = new StringBuilder(this.SyllSymbols);
+            //Console.WriteLine(this.SyllSymbols);
+            int end = 0;
+            for (int i = sb.Length - 1; i >= 0; i--) if ((sb[i] == 'x') || (sb[i] == 'n')) sb[i] = ' '; else break;//find index of last non-space char.
+            string str = sb.ToString().Trim();
+
+            //Console.WriteLine(sb.ToString());
+            sb = new StringBuilder(str);
+            for (int i = 1; i < sb.Length; i++)
+            {
+                if ((sb[i] == 'x') && (sb[i - 1] != 'n') && (sb[i - 1] != 'x')) sb[i] = sb[i - 1];
+            }
+            //Console.WriteLine(sb.ToString());
+            var sb2 = new StringBuilder(this.SyllSymbols);
+            for (int i = 1; i < sb.Length - end; i++)
+            {
+                sb2[i] = sb[i];
+            }
+            //Console.WriteLine(sb2.ToString());
+
+            this.SyllSymbols = sb2.ToString();
+        }
 
         /// <summary>
         /// trims the 'x' and 'n' chars from beginning and end of a string.

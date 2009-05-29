@@ -18,7 +18,7 @@ namespace AudioAnalysis
 
 
         #region Properties
-        public Mode mode { get; set; }   //MODE in which the template is operating
+        public Mode mode { get; set; }         //MODE in which the template is operating
         public string AuthorName { get; set; }
         public int CallID { get; set; }
         public string CallName { get; set; }
@@ -89,7 +89,8 @@ namespace AudioAnalysis
 
             Log.WriteIfVerbose("\nSTEP THREE: Verify template and save scanned recording as image");
             //Set up a spectral sonogram for image with symbol sequence track added
-            template.SonogramConfig.DisplayFullBandwidthImage = true;
+            bool existingValue = template.SonogramConfig.DoFullBandwidth; //store current value of this boolean 
+            template.SonogramConfig.DoFullBandwidth = true;
             var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
             spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
 
@@ -115,6 +116,7 @@ namespace AudioAnalysis
                 var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
                 template.SaveSyllablesImage(spectralSono, imagePath);
             }
+            template.SonogramConfig.DoFullBandwidth = existingValue; //restore value of this boolean 
         } //end VerifyTemplate()
 
 
@@ -178,9 +180,6 @@ namespace AudioAnalysis
             config.SetPair("WAV_DIR", gui.WavDirName);           //wavDirName = @"C:\SensorNetworks\WavFiles\";
             config.SetPair("WAV_FILE_NAME", gui.SourceFile);     //file containing source vocalisation.
             config.SetPair("WAV_FILE_PATH", gui.SourcePath);
-            //config.SetPair("NYQUIST_FREQ", gui.); //default value set in appConfig File
-            //config.SetPair("WAV_SAMPLE_RATE",);   //default value set in appConfig File
-            //config.SetPair("WAV_DURATION", gui.); //default value set in appConfig File
 
             //**************** INFO ABOUT FRAMES
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, gui.FrameSize.ToString());
@@ -188,6 +187,7 @@ namespace AudioAnalysis
             //config.SetPair(ConfigKeys.Windowing.Key_SubSample, gui.);
 
             //**************** FEATURE PARAMETERS
+            //config.SetPair("WAV_SAMPLE_RATE",);   //set when recording is loaded
             config.SetPair("FEATURE_TYPE", gui.FeatureType.ToString());
             config.SetPair(ConfigKeys.Snr.Key_DynamicRange, gui.DynamicRange.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_MinFreq, gui.Min_Freq.ToString());
@@ -240,8 +240,6 @@ namespace AudioAnalysis
         public static void LoadDefaultConfig()
         {
             Log.Verbosity = 0;
-            FftConfiguration.WindowFunction = "Hamming";
-            FftConfiguration.NPointSmoothFFT = 3;
             EndpointDetectionConfiguration.K1Threshold = 3.5;
             EndpointDetectionConfiguration.K2Threshold = 6.0;
             EndpointDetectionConfiguration.K1K2Latency = 0.05;
@@ -257,8 +255,6 @@ namespace AudioAnalysis
             //SUBSAMPLE=0
             //WINDOW_OVERLAP=0.5
             //WINDOW_SIZE=512
-            FftConfiguration.WindowFunction  = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-            FftConfiguration.NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT);
             EndpointDetectionConfiguration.K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold);
             EndpointDetectionConfiguration.K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold);
             EndpointDetectionConfiguration.K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);
@@ -274,7 +270,6 @@ namespace AudioAnalysis
         }
 
         #endregion
-
 
 		public BaseTemplate()
 		{
@@ -311,8 +306,8 @@ namespace AudioAnalysis
 
             var featureExtractionName = config.GetString("FEATURE_TYPE");
             this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
- 
-		}
+            EndpointDetectionConfiguration.SetConfig(config);
+        }
 
 
         protected abstract void ExtractTemplateFromRecording(AudioRecording ar);
@@ -344,7 +339,7 @@ namespace AudioAnalysis
             writer.WriteConfigValue("DIR_LOCATION", SourceDir);  //WAV_FILE_PATH=C:\SensorNetworks\WavFiles\
             writer.WriteConfigValue("WAV_FILE_NAME", Path.GetFileName(SourcePath));  //WAV_FILE_PATH=BAC2_20071008-085040.wav
             writer.WriteConfigValue("WAV_DURATION", SonogramConfig.Duration.TotalSeconds);
-            writer.WriteConfigValue("WAV_SAMPLE_RATE", SonogramConfig.SampleRate);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.FftConfig.SampleRate);
             writer.WriteLine("#");
             writer.Flush();
         }
@@ -359,18 +354,22 @@ namespace AudioAnalysis
 
         public void GenerateSymbolSequenceAndSave(AudioRecording ar, string opDir)
         {
-            GenerateSymbolSequence(ar.GetWavReader());
+            //GenerateSymbolSequence(ar.GetWavReader());
+            var wav = ar.GetWavReader();
+            var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
+            this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
             this.AcousticModel.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
         }
 
-        public void GenerateSymbolSequence(WavReader wav)
-        {
-            //generate info about symbol sequence
-            var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
-            this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
-            //Console.WriteLine("End of the Line");
-            //Console.ReadLine();
-        }
+        //public void GenerateSymbolSequence(WavReader wav)
+        //{
+        //    //generate info about symbol sequence
+        //    var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
+        //    this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
+        //    //Console.WriteLine("ss="+this.AcousticModel.SyllSymbols);
+        //    //Console.WriteLine("End of the Line");
+        //    //Console.ReadLine();
+        //}
 
         public void SaveEnergyImage(SpectralSonogram sonogram, string path)
         {
@@ -401,9 +400,11 @@ namespace AudioAnalysis
 
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.SonogramConfig.DoFullBandwidth = true;
             var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result);
+            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
         }
 
         public virtual void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
@@ -419,9 +420,11 @@ namespace AudioAnalysis
 
         public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.SonogramConfig.DoFullBandwidth = true;
             var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveSyllablesAndResultsImage(spectralSono, imagePath, result);
+            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
         }
         public virtual void SaveSyllablesAndResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
         {

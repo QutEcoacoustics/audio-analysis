@@ -90,7 +90,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("\nSTART Model_MMErgodic.ScanSymbolSequenceWithModel()");
             var result = r as Result_MMErgodic;
 
-            List<string> mmMonitor = new List<string>(); // only used when Unit testing
+            List<string> unitTestMonitor = new List<string>(); // only used when Unit testing
 
             //double[,] acousticMatrix = result.AcousticMatrix; //not used for this model
             string symbolSequence = result.SyllSymbols;
@@ -105,10 +105,9 @@ namespace AudioAnalysis
 
             //ANALYSE THE MM RESULTS FOR EACH VOCALISATION - CALCULATE LLR etc
             //init the results variables
-            const double maxDisplayScore = 10.0; //a suitable value for the expected range of LLR and Quality Scores
-            int hitCount = list.Count;
+            result.MaxDisplayScore = 10.0;  //a suitable value for the expected range of LLR and Quality Scores
             double bestHit = -Double.MaxValue;
-            int bestFrame = -1;
+            int bestFrame  = -1;
             double[] scores = new double[frameCount];
 
             for (int i = 0; i < listLength; i++) //
@@ -117,52 +116,57 @@ namespace AudioAnalysis
                 Vocalisation vocalEvent = list[i];
                 int[] array = MMTools.String2IntegerArray('n' + vocalEvent.Sequence + 'n');
 
-                //song duration filter - skip vocalisations that are not of sensible length
+                //song duration filter
                 double durationProb = vocalEvent.DurationProbability;
                 //Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                mmMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
+                unitTestMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
 
                 double llr = vocalEvent.Score - mmResults.probOfAverageTrainingSequenceGivenModel;
 
                 //now SCALE THE SCORE ARRAY so that it can be displayed in range +0 to +10.
-                double displayScore = llr + vocalEvent.QualityScore;
-                result.MaxDisplayScore = maxDisplayScore;
-                displayScore += maxDisplayScore; //add positve value because max score expected to be zero.
-                if (displayScore > maxDisplayScore) displayScore = maxDisplayScore;
+                double? displayScore = llr + vocalEvent.QualityScore;
+                //double displayScore = llr;
+
+                displayScore += result.MaxDisplayScore; //add positve value because max score expected to be zero.
+                if (displayScore > result.MaxDisplayScore) displayScore = result.MaxDisplayScore;
                 if (displayScore < 0) displayScore = 0.0;
                 if (vocalEvent.QualityScore < mmResults.qualityThreshold) displayScore = 0.0;
-                scores[vocalEvent.Start] = displayScore; //assign score to beginning of vocalisation event
+                scores[vocalEvent.Start] = (double)displayScore; //assign score to beginning of vocalisation event
 
                 if (displayScore > bestHit)
                 {
-                    bestHit = displayScore;
+                    bestHit = (double)displayScore;
                     bestFrame = vocalEvent.Start;
                 }
                 //Log.WriteIfVerbose((i + 1).ToString("D2") + " LLR=" + llr.ToString("F2") + " \tQual=" + vocalEvent.QualityScore.ToString("F2") + "\t" + vocalEvent.Sequence);
-                mmMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
+                unitTestMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
             }//end of scanning all vocalisations
 
-            double bestTimePoint = (double)bestFrame * frameOffset;
-            string str1 = String.Format("\n#### VocalCount={0} VocalBest={1:F3} bestFrame={2:D} @ {3:F1}s",
-                                                     hitCount,     bestHit,     bestFrame,     bestTimePoint);
-            Log.WriteIfVerbose(str1);
-            mmMonitor.Add(str1);
-            double llrThreshold     = LLR_THRESHOLD; //LLR_THRESHOLD=Chi2 statistic for DOF=1 and alpha=0.01
-            result.LLRThreshold     = result.MaxDisplayScore - llrThreshold;  //display threshold
-            result.Scores           = scores;
+
+            //LLR_THRESHOLD = Chi2 statistic for DOF=1 and alpha=0.01
+            result.LLRThreshold = result.MaxDisplayScore - LLR_THRESHOLD; //hit threshold
+            //smooth the score array because want to count acoustic events which exceed threshold
+            result.Scores           = DataTools.filterMovingAverage(scores, 5); //smooth the score array
             result.DisplayThreshold = result.LLRThreshold;
 
             //summary scores
-            result.VocalCount       = hitCount;  // number of detected vocalisations
-            result.RankingScoreValue= bestHit;   // the highest score obtained over all vocalisations
+            int hitCount = GetHitCount(result.Scores, (double)result.LLRThreshold);
+            result.VocalCount = hitCount;        // number of detected vocalisations
+            result.RankingScoreValue= bestHit;   // the highest score obtained in recording
             result.FrameWithMaxScore= bestFrame;
-            result.TimeOfMaxScore   = bestTimePoint;
+            double bestTimePoint = (double)bestFrame * frameOffset;
+            result.TimeOfMaxScore = bestTimePoint;
 
+            string str1 = String.Format("\n#### Number of calls recognised={0}", hitCount);
+            if (hitCount > 0) str1 = String.Format("\n#### Number of calls recognised={0}. Highest score={1:F3} at frame {2:D} = {3:F1}s.",
+                                                                                hitCount, bestHit, bestFrame, bestTimePoint);
+            Log.WriteIfVerbose(str1);
+            unitTestMonitor.Add(str1);
 
             if (BaseTemplate.InTestMode)
             {
                 string path = BaseModel.opFolder + "\\markovModelParams.txt";
-                FileTools.WriteTextFile(path, mmMonitor);
+                FileTools.WriteTextFile(path, unitTestMonitor);
                 Log.WriteLine("COMPARE FILES OF INTERMEDIATE MARKOV MODEL PARAMETERS");
                 FunctionalTests.AssertAreEqual(new FileInfo(path), new FileInfo(path + "OLD.txt"), true);
             } //end TEST MODE
@@ -171,6 +175,25 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("END Model_MMErgodic.ScanSymbolSequenceWithModel()");
         } //end ScanSymbolSequenceWithModel()
         #endregion
+
+        /// <summary>
+        /// returns the number of time the score value transits the threshold
+        /// Use this as estimate of number of vocalisations detected in recording.
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="threshold"></param>
+        /// <returns></returns>
+        private int GetHitCount(double[] scores, double threshold)
+        {
+            //Console.WriteLine("threshold=" + threshold);
+            int hits = 0;
+            for (int i = 1; i < scores.Length; i++) 
+            {
+                if ((scores[i-1] < threshold) && (scores[i] >= threshold)) hits++;
+                //if ((scores[i - 1] < threshold) && (scores[i] >= threshold)) Console.WriteLine(scores[i - 1] + ">>" + scores[i]);
+            }
+            return hits;
+        }
 
 
         public override void Save(TextWriter writer)

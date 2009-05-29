@@ -44,7 +44,7 @@ namespace MarkovModels
         public void TrainModel(TrainingSet data)
         {
             Log.WriteIfVerbose("\n\tTRAINING MM_ERGODIC MARKOV MODEL:");
-            if(Log.Verbosity > 0) data.WriteComposition();
+           // if(Log.Verbosity > 0) data.WriteComposition();
             string[] sequences = data.GetSequences();
             this.numberOfWords = sequences.Length;
             this.avWordLength = TrainingSet.AverageSequenceLength(sequences);// length in frames
@@ -209,7 +209,7 @@ namespace MarkovModels
             //initialise a results object with list of vocalisations and return to Model object
             MMResults results = new MMResults(list);
             results.probOfAverageTrainingSequenceGivenModel = this.probOfAverageTrainingSequenceGivenModel;
-            results.qualityThreshold = -4.0;
+            results.qualityThreshold = -3.2;//i.e. 2 * 1.6
             return results;
         }//end ScanSequence()
 

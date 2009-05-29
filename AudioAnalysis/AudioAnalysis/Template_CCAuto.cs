@@ -53,9 +53,10 @@ namespace AudioAnalysis
             this.TrainingDirName = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
             this.TestingDirName  = config.GetString(ConfigKeys.Recording.Key_TestingDirName);
             SonogramConfig       = new CepstralSonogramConfig(config);
-            EndpointDetectionConfiguration.SetEndpointDetectionParams(config);
             FeatureVectorConfig  = new FVConfig(config);
-            AcousticModel        = new Acoustic_Model(config);
+            //TODO: enter this next parameter through GUI
+            FeatureVectorConfig.ExtractionInterval = 5; //extract feature vectors at this interval
+            AcousticModel = new Acoustic_Model(config);
         }
 
         /// <summary>
@@ -88,7 +89,7 @@ namespace AudioAnalysis
             for (int i = 0; i < wordCount; i++)
             {
                 this.WordNames[i] = config.GetString("WORD" + (i + 1) + "_NAME");
-                Console.WriteLine("WORD" + (i + 1) + "_NAME="+this.WordNames[i]);
+                //Log.WriteIfVerbose("WORD" + (i + 1) + "_NAME=" + this.WordNames[i]);
             }
 
             int exampleCount = this.WordExamples.Length;
@@ -136,7 +137,7 @@ namespace AudioAnalysis
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE[s]");
             writer.WriteConfigValue(ConfigKeys.Recording.Key_TrainingDirName, this.TrainingDirName);
             writer.WriteConfigValue(ConfigKeys.Recording.Key_TestingDirName,  this.TestingDirName);
-            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.SampleRate);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.FftConfig.SampleRate);
             writer.WriteLine("#");
             writer.Flush();
 
@@ -171,7 +172,7 @@ namespace AudioAnalysis
         //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
-            this.SonogramConfig.DisplayFullBandwidthImage = true;
+            this.SonogramConfig.DoFullBandwidth = true;
             var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result, hmmResults);
         }

@@ -79,6 +79,7 @@ namespace AudioAnalysis
             public const string Key_TemplateDir  = "TEMPLATE_DIR";
             public const string Key_FVCount      = "FV_COUNT";         //number of feature vectors in acoustic model
             public const string Key_FVType       = "FEATURE_TYPE";     //type of feature vector to be extracted
+            public const string Key_FVDefaultNoiseFile= "FV_DEFAULT_NOISE_FILE"; //location of the deafult noise FV
             public const string Key_ModelType    = "MODEL_TYPE";       //language model
             public const string Key_WordCount    = "NUMBER_OF_WORDS";  //in the language model
             public const string Key_WordNames    = "WORD_NAMES";       //in the language model
@@ -91,43 +92,83 @@ namespace AudioAnalysis
     } //end class ConfigKeys
 
 
+    //[Serializable]
+    //public static class FftConfiguration
+    //{
+
+
+    //    public static void SetConfig(Configuration config)
+    //    {
+    //        int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
+    //        SetSampleRate(sr);
+    //        WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+    //        NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
+    //    }
+
+    //    public static void SetSampleRate(int sr)
+    //    {
+    //        SampleRate = sr;
+    //        NyquistFreq = sr / 2;
+    //    }
+
+    //    public static void Save(TextWriter writer)
+    //    {
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
+    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
+    //        writer.Flush();
+    //    }
+
+    //    #region Properties
+    //    public static int SampleRate { get; set; }
+    //    public static int NyquistFreq { get; set; }
+    //    private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
+    //    public static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+    //    public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
+    //    #endregion
+    //}
+
 
 
     [Serializable]
-    public static class FftConfiguration
+    public class FftConfiguration
 	{
-        
+        #region Properties
+        private int sampleRate = 0;
+        public int SampleRate { get { return sampleRate; } 
+                                set { sampleRate  = value;
+                                      NyquistFreq = value / 2;
+                                    }
+        }
+        public int NyquistFreq { get; private set; }
+        private string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
+        public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
+        private int smoothingWindow = 3;
+        public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
+        #endregion
 
-        public static void SetConfig(Configuration config)
+
+        public FftConfiguration(Configuration config)
 		{
-            int sr = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
-            SetSampleRate(sr);
-            WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
-            NPointSmoothFFT = config.GetIntNullable(ConfigKeys.Mfcc.Key_NPointSmoothFFT) ?? 0;
+            SetConfig(config);
 		}
 
-        public static void SetSampleRate(int sr)
-        {
-            SampleRate = sr;
-            NyquistFreq = sr / 2;
-        }
+        public void SetConfig(Configuration config)
+		{
+            sampleRate = config.GetIntNullable(ConfigKeys.Windowing.Key_SampleRate) ?? 0;
+            //at present time following parameters are preset.
+            //WindowFunction = config.GetString(ConfigKeys.Mfcc.Key_WindowFunction);
+            //NPointSmoothFFT = config.GetInt(ConfigKeys.Mfcc.Key_NPointSmoothFFT); 
+		}
 
-		public static void Save(TextWriter writer)
+		public void Save(TextWriter writer)
 		{
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NyquistFrequency, NyquistFreq);
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_WindowFunction, WindowFunction);
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NPointSmoothFFT, NPointSmoothFFT);
             writer.Flush();
         }
-
-		#region Properties
-        public static int SampleRate { get; set; }
-        public static int NyquistFreq { get; set; }
-        private static string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
-        public  static string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
-		public static int NPointSmoothFFT { get; set; } // Number of points to smooth FFT spectra
-		#endregion
-	}
+    } // end class FftConfiguration
 
     [Serializable]
     public class MfccConfiguration
@@ -140,14 +181,14 @@ namespace AudioAnalysis
         public bool IncludeDoubleDelta { get; set; }
         #endregion
 
-		public MfccConfiguration(Configuration config)
-		{
+        public MfccConfiguration(Configuration config)
+        {
             FilterbankCount = config.GetInt(ConfigKeys.Mfcc.Key_FilterbankCount);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
             CcCount = config.GetInt(ConfigKeys.Mfcc.Key_CcCount); //number of cepstral coefficients
             IncludeDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDelta);
             IncludeDoubleDelta = config.GetBoolean(ConfigKeys.Mfcc.Key_IncludeDoubleDelta);
-		}
+        }
 
 		public void Save(TextWriter writer)
 		{
@@ -169,7 +210,7 @@ namespace AudioAnalysis
     public static class EndpointDetectionConfiguration
 	{
 
-		public static void SetEndpointDetectionParams(Configuration config)
+		public static void SetConfig(Configuration config)
 		{
             K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold); //dB threshold for recognition of vocalisations
             K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold); //dB threshold for recognition of vocalisations
