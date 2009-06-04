@@ -92,6 +92,8 @@ namespace AudioAnalysis
             //                + noiseFV.Features[length + length + i].ToString("F3"));
             //}
             int verbosity = Log.Verbosity;
+            int tpCount = 0;
+            int fnCount = 0;
 
             foreach (FileInfo f in testFiles)
             {
@@ -111,15 +113,22 @@ namespace AudioAnalysis
                 var result = recogniser.Analyse(recording);
                 sb.AppendLine("\tsyls = " + result.SyllSymbols);
                 sb.AppendLine("\thits = " + result.VocalCount);
+                if (result.VocalCount > 0) tpCount++; //keep record of tp and fn
+                else                       fnCount++; // and fn
+
                 string imagePath = Path.Combine(testDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
                 template.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
 
                 Log.Verbosity = verbosity;
             } //end of all training vocalisations
 
-            avDuration /= testFiles.Count();
+            int total = testFiles.Count();
+            avDuration /= total;
             //Log.WriteIfVerbose("\tAverage duration = " + avDuration.ToString("F3") + " per recording or file.");
             sb.AppendLine("\n");
+
+            sb.AppendLine("tp count=" + tpCount + "(" + (tpCount * 100 / total) + "%)  fn count=" + fnCount + "(" + (fnCount * 100 / total) + "%)\n");
+
             sb.AppendLine("Average duration = " + avDuration.ToString("F3") + " per recording or file.");
             string path = Path.Combine(testDir, "TEST_SUMMARY.txt");
             FileTools.WriteTextFile(path, sb.ToString());

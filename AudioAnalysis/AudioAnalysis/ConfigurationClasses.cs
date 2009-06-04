@@ -75,14 +75,15 @@ namespace AudioAnalysis
 
         public struct Template
         {
-            public const string Key_TemplateType = "TEMPLATE_TYPE";
-            public const string Key_TemplateDir  = "TEMPLATE_DIR";
-            public const string Key_FVCount      = "FV_COUNT";         //number of feature vectors in acoustic model
-            public const string Key_FVType       = "FEATURE_TYPE";     //type of feature vector to be extracted
+            public const string Key_ExtractInterval = "EXTRACTION_INTERVAL"; //determines complexity of language model
+            public const string Key_TemplateType    = "TEMPLATE_TYPE";
+            public const string Key_TemplateDir     = "TEMPLATE_DIR";
+            public const string Key_FVCount         = "FV_COUNT";         //number of feature vectors in acoustic model
+            public const string Key_FVType          = "FEATURE_TYPE";     //type of feature vector to be extracted
             public const string Key_FVDefaultNoiseFile= "FV_DEFAULT_NOISE_FILE"; //location of the deafult noise FV
-            public const string Key_ModelType    = "MODEL_TYPE";       //language model
-            public const string Key_WordCount    = "NUMBER_OF_WORDS";  //in the language model
-            public const string Key_WordNames    = "WORD_NAMES";       //in the language model
+            public const string Key_ModelType       = "MODEL_TYPE";       //language model
+            public const string Key_WordCount       = "NUMBER_OF_WORDS";  //in the language model
+            public const string Key_WordNames       = "WORD_NAMES";       //in the language model
         }
 
         public struct ImageSave

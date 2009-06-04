@@ -107,7 +107,7 @@ namespace AudioAnalysis
                 //Log.WriteIfVerbose("\tInit CepstralSonogram(cepstralConfig, wav)"); 
                 var cs = new CepstralSonogram(cepstralConfig, wav);
                 avFrameCount += cs.FrameCount;
-                List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, cepstralConfig, interval);
+                List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, cepstralConfig);
                 //Log.WriteIfVerbose("Have extracted " + fvs.Count+ " feature vectors.");
                 list.AddRange(fvs);
 
@@ -162,7 +162,7 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("\nFVExtractor.ExtractSymbolSequencesFromVocalisations(): EXTRACTING SYMBOL STRINGS FROM TRAINING VOCALISATIONS");
             int prevVerbosity = Log.Verbosity;
-            Log.Verbosity = 1; //suppress output
+            Log.Verbosity = 0; //suppress output
             CepstralSonogramConfig cepstralConfig = template.SonogramConfig;
 
             List<String> symbolSequences = new List<String>();
@@ -194,10 +194,10 @@ namespace AudioAnalysis
         } // end ExtractSymbolSequencesFromVocalisations()
 
 
-        private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, CepstralSonogramConfig sonoConfig, int interval)
+        private static List<FeatureVector> GetFeatureVectorsAtFixedIntervals(CepstralSonogram sonogram, FVConfig FVParams, CepstralSonogramConfig sonoConfig)
         {
             int fvCount = sonogram.FrameCount;
-            interval -= 1;
+            int interval = FVParams.ExtractionInterval - 1;//reduce one because will be added during loop
 
             //initialise feature vectors for template. Each frame provides one vector in three parts
             int dT = sonoConfig.DeltaT;

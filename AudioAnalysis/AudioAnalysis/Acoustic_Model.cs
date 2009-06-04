@@ -60,7 +60,7 @@ namespace AudioAnalysis
             this.FrameOffset = sonogram.FrameOffset;
             this.FramesPerSecond = sonogram.FramesPerSecond;
             AcousticMatrix = GenerateAcousticMatrix(sonogram);
-            AcousticMatrix2SymbolSequence(AcousticMatrix);
+            AcousticMatrix2SymbolSequence(AcousticMatrix, template.SonogramConfig.DeltaT);
         }
 
 
@@ -76,8 +76,7 @@ namespace AudioAnalysis
             var FVs = GetFeatureVectors(this.fvConfig.FVArray);
             int fvCount = FVs.Length;
 
-            int count;
-            FVs[0] = GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference, out count);
+            FVs[0] = GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
             //if (template.mode == Mode.READ_EXISTING_TEMPLATE) FVs[0] = null; //debugging purposes only
             if (FVs[0] == null) // If sonogram does not have sufficient noise frames read default noise FV from file
             {
@@ -90,6 +89,13 @@ namespace AudioAnalysis
                     if(! fexists) info = info + "\nThis file does not exist.";
                     else          info = info + "\nThis file exists but appear not to have been read into the template.";
                     throw new Exception("ACOUSTIC_MODEL.GenerateAcousticMatrix(): DefaultNoiseFV = null."+info);
+                }
+                if (FVs[0].FvLength != FVs[1].FvLength )
+                {
+                    string info = "\n Length of default noise FV = " + FVs[0].FvLength + "\n";
+                    info +=         " Length of other FVs        = " + FVs[1].FvLength + "\n";
+                    info += " The two lengths should be equal. Check that you are using correct noise FV file.\n";
+                    throw new Exception("ACOUSTIC_MODEL.GenerateAcousticMatrix(): DefaultNoiseFV = null." + info);
                 }
             }
             else
@@ -182,6 +188,12 @@ namespace AudioAnalysis
             return retVal;
         }
 
+        public static FeatureVector ExtractNoiseFeatureVector(CepstralSonogramConfig config, WavReader wav)
+        {
+            AcousticVectorsSonogram s = new AcousticVectorsSonogram(config, wav);
+            return GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
+        }
+
 
         /// <summary>
         /// Extracts all those frames from the passed sonogram matrix whose relative signal energy is 
@@ -190,20 +202,21 @@ namespace AudioAnalysis
         /// noise FV from another source.
         /// NOTE: The decibels array must have been previously normalised between 0-1.
         /// </summary>
-        FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double maxRefDB, out int count)
+        public static FeatureVector GetNoiseFeatureVector(double[,] acousticM, double[] decibels, double maxRefDB)
         {
             double decibelThreshold = EndpointDetectionConfiguration.K2Threshold;
-            double relativeThreshold = decibelThreshold / maxRefDB; 
+            double relativeThreshold = decibelThreshold / maxRefDB;
             int rows = acousticM.GetLength(0);
             int cols = acousticM.GetLength(1);
 
             double[] noiseFV = new double[cols];
 
             //use the IEnumerable Interface with a lamda expression in place of function
-            count = decibels.Count(d => (d <= relativeThreshold)); // Number of frames below the noise threshold
+            int count = decibels.Count(d => (d <= relativeThreshold)); // Number of frames below the noise threshold
 
 
-            int targetCount = rows / 5; // Want a minimum of 20% of frames for a noise estimate
+            //int targetCount = rows / 5; // Want a minimum of 20% of frames for a noise estimate
+            int targetCount = 20;
             if (count < targetCount)
             {
                 Log.WriteIfVerbose("  TOO FEW LOW ENERGY FRAMES -- READ DEFAULT NOISE FEATURE VECTOR.");
@@ -211,8 +224,7 @@ namespace AudioAnalysis
                     + "   @ decibelThreshold=" + decibelThreshold.ToString("F3") + " = reference+k2threshold.");
                 return null;
             }
-            else
-                Log.WriteIfVerbose("        NOISE Vector is average of " + count + " frames having energy < " + decibelThreshold.ToString("F2") + " dB. (Total frames=" + rows + ")");
+            Log.WriteIfVerbose("        NOISE Vector is average of " + count + " frames having energy < " + decibelThreshold.ToString("F2") + " dB. (Total frames=" + rows + ")");
 
             // Now transfer low energy frames to noise vector
             for (int i = 0; i < rows; i++)
@@ -289,7 +301,7 @@ namespace AudioAnalysis
         /// <summary>
         /// Generates a symbol sequence from the acoustic matrix
         /// </summary>
-        void AcousticMatrix2SymbolSequence(double[,] acousticMatrix)
+        void AcousticMatrix2SymbolSequence(double[,] acousticMatrix, int deltaT)
         {
             Log.WriteIfVerbose("\n\tStep 4: AcousticMatrix2SymbolSequence()");
             Log.WriteIfVerbose("\t\tThreshold=" + ZscoreThreshold.ToString("F2"));
@@ -298,8 +310,10 @@ namespace AudioAnalysis
             int fvCount    = acousticMatrix.GetLength(1); // Number of feature vectors or syllables types
 
             StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < deltaT; i++) sb.Append('n');       //pad edges with 'n' due to deltaT
+
             int[] integerSequence = new int[frameCount];
-            for (int i = 0; i < frameCount; i++)
+            for (int i = deltaT; i < frameCount - deltaT; i++) //skip edges due to deltaT
             {
                 double[] fvScores = new double[fvCount]; // Init the FV scores
                 for (int n = 0; n < fvCount; n++)
@@ -323,6 +337,8 @@ namespace AudioAnalysis
                 sb.Append(c);
                 integerSequence[i] = val;
             }//end of frames
+
+            for (int i = 0; i < deltaT; i++) sb.Append('n');       //pad end with 'n' due to deltaT
 
             //need to convert the garbage integer in the integer sequence.
             //garbage symbol = 'x' = Int32.MaxValue. Convert Int32 to numberOfStates-1

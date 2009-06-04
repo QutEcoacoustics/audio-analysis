@@ -204,6 +204,7 @@ namespace AudioAnalysis
             config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, gui.DeltaT.ToString());
 
             //**************** FV EXTRACTION OPTIONS **************************
+            config.SetPair(ConfigKeys.Template.Key_ExtractInterval, gui.ExtractionInterval.ToString());
             config.SetPair("NUMBER_OF_SYLLABLES", gui.NumberOfSyllables.ToString());//CC_AUTO option
             config.SetPair("FV_SOURCE", gui.Fv_Source.ToString()); //MFCC option
             //FV INIT is a table of strings. Must deconstruct
