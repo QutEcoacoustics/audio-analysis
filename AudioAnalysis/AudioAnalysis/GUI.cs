@@ -64,6 +64,8 @@ namespace AudioAnalysis
         public int DeltaT { get { return deltaT; } }
 
             //FEATURE VECTOR EXTRACTION PARAMETERS
+        private int extractionInterval = 5;  //determines complexity of acoustic model.
+        public  int ExtractionInterval { get { return extractionInterval; } }
         private int numberOfSyllables;
         public int NumberOfSyllables { get { return numberOfSyllables; } }
         private FV_Source fv_Source = FV_Source.SELECTED_FRAMES;  //FV_Source.MARQUEE;
@@ -222,15 +224,15 @@ namespace AudioAnalysis
                 //************* CALL 3 PARAMETERS ***************
                 if (callID == 3)
                 {
-                    authorName = "Michael Towsey";
-                    callName = "Currawong";
-                    comment = "First attempt at automated extraction of template from multiple recordings of vocalisations";
+                    authorName      = "Michael Towsey";
+                    callName        = "Currawong";
+                    comment         = "First attempt at automated extraction of template from multiple recordings of vocalisations";
                     trainingDirName = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TrainingSet1\";
                     testDirName     = @"C:\SensorNetworks\Templates\Template_" + callID + @"\TestSet\";
-                    wavDirName = @"C:\SensorNetworks\WavFiles\";
-                    WavDirName = wavDirName;
-                    opDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
-                    featureType = ConfigKeys.Feature_Type.CC_AUTO;
+                    wavDirName      = @"C:\SensorNetworks\WavFiles\";
+                    WavDirName      = wavDirName;
+                    opDir           = @"C:\SensorNetworks\Templates\Template_" + callID + "\\";
+                    featureType     = ConfigKeys.Feature_Type.CC_AUTO;
 
                     DynamicRange = 40.0; //for noise removal
 
@@ -240,20 +242,21 @@ namespace AudioAnalysis
                     filterBankCount = 64;
                     doMelConversion = true;
                     noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    //noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
                     ceptralCoeffCount = 12;
-                    includeDeltaFeatures = false;
+                    includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = false;
-                    deltaT = 3; // i.e. + and - three frames gap when constructing feature vector
+                    deltaT = 6; // i.e. + and - 3 frame gap when constructing feature vector
 
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
-                    //numberOfSyllables = 8;
+                    extractionInterval = 5;
                     min_Freq = 800; //Hz
                     max_Freq = 6000; //Hz
 
                     // THRESHOLDS FOR THE ACOUSTIC MODELS ***************
                     zScoreThreshold = 1.98; //options are 1.98, 2.33, 2.56, 3.1
-                    fvDefaultNoiseFile = @"C:\SensorNetworks\Templates\Template_" + callID + "\\template" + callID + "_DefaultNoise.txt";
+                    fvDefaultNoiseFile = wavDirName + @"StBees\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";
 
                     //LANGUAGE MODEL
                     modelType = LanguageModelType.MM_ERGODIC;

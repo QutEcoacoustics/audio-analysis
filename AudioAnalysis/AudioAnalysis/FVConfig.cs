@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using AudioTools;
 using TowseyLib;
 using QutSensors;
 
@@ -68,11 +69,23 @@ namespace AudioAnalysis
 
             CallID = config.GetInt("TEMPLATE_ID");
             FV_DefaultNoisePath = config.GetPath(ConfigKeys.Template.Key_FVDefaultNoiseFile);
-            if (File.Exists(FV_DefaultNoisePath)) DefaultNoiseFV = new FeatureVector(FV_DefaultNoisePath);
+            if (File.Exists(FV_DefaultNoisePath))
+            {
+                Log.WriteLine("CONSTRUCTOR FVConfig: reading wav file for deriving noise FV: <" + FV_DefaultNoisePath + ">");
+                WavReader wav = new WavReader(FV_DefaultNoisePath);
+                var sonoConfig = new CepstralSonogramConfig(config);
+                DefaultNoiseFV = Acoustic_Model.ExtractNoiseFeatureVector(sonoConfig, wav);
+                if(DefaultNoiseFV == null)
+                {
+                    Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to extract suitable noise FV from file <" + FV_DefaultNoisePath + ">");
+                    Log.WriteLine("WARNING!! Check that recording has anough low energy content for noise estimation.");
+                    throw new Exception("Fatal Error");
+                }
+            }
             else
             {
-                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to read default noise FV file <" + FV_DefaultNoisePath + ">");
-                DefaultNoiseFV = null;
+                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to read default noise file <" + FV_DefaultNoisePath + ">");
+                throw new Exception("Fatal Error");
             }
 
             switch (FeatureExtractionType)
@@ -89,11 +102,11 @@ namespace AudioAnalysis
                     }
                     break;
                 case ConfigKeys.Feature_Type.CC_AUTO:
-                    this.FVSourceType = FV_Source.FIXED_INTERVALS;
+                    //this.FVSourceType = FV_Source.FIXED_INTERVALS;
                     FVSourceDir = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
-                    ExtractionInterval = config.GetInt("FV_EXTRACTION_INTERVAL");
-                    FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
-                    Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
+                    this.ExtractionInterval = config.GetInt(ConfigKeys.Template.Key_ExtractInterval); //extract feature vectors at this interval
+                    //FVCount = config.GetInt("NUMBER_OF_SYLLABLES");
+                    //Log.WriteIfVerbose("\tNUMBER_OF_SYLLABLES=" + FVCount);
                     break;
                 case ConfigKeys.Feature_Type.DCT_2D:
                     this.StartTime = config.GetDouble(ConfigKeys.Mfcc.Key_StartTime);

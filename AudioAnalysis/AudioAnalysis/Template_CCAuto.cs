@@ -54,9 +54,7 @@ namespace AudioAnalysis
             this.TestingDirName  = config.GetString(ConfigKeys.Recording.Key_TestingDirName);
             SonogramConfig       = new CepstralSonogramConfig(config);
             FeatureVectorConfig  = new FVConfig(config);
-            //TODO: enter this next parameter through GUI
-            FeatureVectorConfig.ExtractionInterval = 5; //extract feature vectors at this interval
-            AcousticModel = new Acoustic_Model(config);
+            AcousticModel        = new Acoustic_Model(config);
         }
 
         /// <summary>

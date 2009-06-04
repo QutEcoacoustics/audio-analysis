@@ -59,7 +59,7 @@ namespace AudioAnalysis
             //D: VERIFY THE TEMPLATE on selected recording
             string wavDirName; string wavFileName;
             AudioRecording recording;//
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
 
             //E: LOAD recogniser, SCAN A SINGLE RECORDING and SAVE RESULTS IMAGE
             var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
@@ -70,7 +70,9 @@ namespace AudioAnalysis
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
-            string testDir = @"C:\SensorNetworks\Templates\Template_3\TestSet";
+            string testDir = @"C:\SensorNetworks\Templates\Template_3\TestSetTrue";
+            Main_TestSerialTemplateOnCallFiles.ScanTestFiles(template2, testDir);
+            testDir = @"C:\SensorNetworks\Templates\Template_3\TestSetFalse";
             Main_TestSerialTemplateOnCallFiles.ScanTestFiles(template2, testDir);
 
 
