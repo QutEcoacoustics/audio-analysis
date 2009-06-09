@@ -50,31 +50,40 @@ namespace AudioAnalysis
 
             Log.WriteIfVerbose("\nB: GET VOCALISATIONS");
 
-            ScanTestFiles(template, testDir);
+            var directories = new List<string>();
+            directories.Add(testDir);
+            ScanTestDirectories(template, directories);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
 
         }//end Main() method
 
-
-        public static void ScanTestFiles(Template_CCAuto template, string testDir)
+        public static void ScanTestDirectories(Template_CCAuto template, List<string> directories)
         {
-            //B: Get List of Vocalisation Recordings - either paths or URIs
+            //LOAD RECOGNISER
+            var recogniser = new Recogniser(template as Template_CCAuto);
             string ext = ".wav";
+            foreach (String dir in directories)
+            {
+                ScanTestFiles(recogniser, dir, ext);
+            }
+        }
+
+
+        private static void ScanTestFiles(Recogniser recogniser, string testDir, string ext)
+        {
+            //Get List of Vocalisation Recordings - either paths or URIs
             FileInfo[] testFiles = FileTools.GetFilesInDirectory(testDir, ext);
 
-            //C: LOAD RECOGNISER
-            var recogniser = new Recogniser(template as Template_CCAuto);
-
             //D: SCAN VOCALISATIONS and SAVE RESULTS IMAGE
-            Log.WriteIfVerbose("\nC: SCAN VOCALISATIONS");
-            Log.WriteIfVerbose("\tNumber of test vocalisations = " + testFiles.Length);
+            Log.WriteIfVerbose("\nSCAN VOCALISATIONS in dir <" + testDir + ">");
+            Log.WriteIfVerbose("\tNumber of vocalisations = " + testFiles.Length);
 
             double avDuration = 0.0; //to determine average duration test vocalisations
             var sb = new StringBuilder("RESULTS ON TEST FILES\n\n");
-            sb.AppendLine("CallID = " + template.CallID + "(" + template.CallName+")");
-            sb.AppendLine(template.Comment);
+            sb.AppendLine("CallID = " + recogniser.Template.CallID + "(" + recogniser.Template.CallName + ")");
+            sb.AppendLine(recogniser.Template.Comment);
             sb.AppendLine("\nTest directory = " + testDir);
             sb.AppendLine("Number of test vocalisations = " + testFiles.Length);
 
@@ -92,11 +101,12 @@ namespace AudioAnalysis
             //                + noiseFV.Features[length + length + i].ToString("F3"));
             //}
             int verbosity = Log.Verbosity;
-            int tpCount = 0;
-            int fnCount = 0;
+            int posCount = 0;
+            int negCount = 0;
 
             foreach (FileInfo f in testFiles)
             {
+                Log.Verbosity = 0;
                 //Make sonogram of each recording
                 AudioRecording recording = new AudioRecording(f.FullName);
                 WavReader wav = recording.GetWavReader();
@@ -106,18 +116,25 @@ namespace AudioAnalysis
                 sb.AppendLine("\t" + f.Name + "\tTime=" + wav.Time.TotalSeconds.ToString("F3"));
                 Log.Verbosity = 0;
 
-                template.SonogramConfig.FftConfig.SampleRate = wav.SampleRate;
-                template.SonogramConfig.NoiseReductionType   = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                //template.FeatureVectorConfig.DefaultNoiseFV  = new FeatureVector(noisePath);
+                if (recogniser.Template.SonogramConfig.FftConfig.SampleRate != wav.SampleRate)
+                {
+                    //PANIC
+                    Log.WriteIfVerbose("###WARNING! ##### Sample rate of recording not same as that of template. ####");
+                    sb.AppendLine("###WARNING! ##### Sample rate of recording not same as that of template. ####");
+                }
+
+                recogniser.Template.SonogramConfig.FftConfig.SampleRate = wav.SampleRate;
+                recogniser.Template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                //recogniser.Template.FeatureVectorConfig.DefaultNoiseFV  = new FeatureVector(noisePath);
 
                 var result = recogniser.Analyse(recording);
                 sb.AppendLine("\tsyls = " + result.SyllSymbols);
                 sb.AppendLine("\thits = " + result.VocalCount);
-                if (result.VocalCount > 0) tpCount++; //keep record of tp and fn
-                else                       fnCount++; // and fn
+                if (result.VocalCount > 0) posCount++; //keep record of tp and fn
+                else                       negCount++; // and fn
 
                 string imagePath = Path.Combine(testDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-                template.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
+                recogniser.Template.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
 
                 Log.Verbosity = verbosity;
             } //end of all training vocalisations
@@ -127,7 +144,10 @@ namespace AudioAnalysis
             //Log.WriteIfVerbose("\tAverage duration = " + avDuration.ToString("F3") + " per recording or file.");
             sb.AppendLine("\n");
 
-            sb.AppendLine("tp count=" + tpCount + "(" + (tpCount * 100 / total) + "%)  fn count=" + fnCount + "(" + (fnCount * 100 / total) + "%)\n");
+            double posPercent = posCount * 100 / (double)total;
+            double negPercent = negCount * 100 / (double)total;
+            sb.AppendLine(     "pos count=" + posCount + "(" + posPercent.ToString("F1") + "%)  neg count=" + negCount + "(" + negPercent.ToString("F1") + "%)\n");
+            Log.WriteIfVerbose("\tpos count=" + posCount + "(" + posPercent.ToString("F1") + "%)  neg count=" + negCount + "(" + negPercent.ToString("F1") + "%)\n");
 
             sb.AppendLine("Average duration = " + avDuration.ToString("F3") + " per recording or file.");
             string path = Path.Combine(testDir, "TEST_SUMMARY.txt");

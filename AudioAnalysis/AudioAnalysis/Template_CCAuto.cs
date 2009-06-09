@@ -18,6 +18,9 @@ namespace AudioAnalysis
         public string[] WordNames    { get; set; } // name of call or vocalisation 
         public string[] WordExamples { get; set; } // symbolSequences - examples of a single call. Derived from automatic template creation 
 
+
+
+
         /// <summary>
         /// call this Load method when creating a new template from user provided params
         /// using only one line of code!

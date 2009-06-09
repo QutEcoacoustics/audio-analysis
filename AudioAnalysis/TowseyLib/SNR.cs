@@ -26,6 +26,7 @@ namespace TowseyLib
         public double NoiseRange {get; set;}        //difference between min_dB and the modal noise dB
         public double MaxReference_dBWrtNoise {get; set;} //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
         public double Snr { get; set; }             //sig/noise ratio i.e. max dB wrt modal noise = 0.0
+        public double[] ModalNoiseProfile { get; set; }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -243,6 +244,66 @@ namespace TowseyLib
             return E;
         }
 
+        /// <summary>
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduce_Standard(double[,] matrix)
+        {
+            //calculate modal noise for each freq bin
+            double[] modalNoise = SNR.CalculateModalNoise(matrix);     //calculate modal noise profile
+            modalNoise = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
+            return NoiseReduce_Standard(matrix, modalNoise);
+        }
+
+        public static double[,] NoiseReduce_Standard(double[,] matrix, double[] modalNoise)
+        {
+            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double[,] mnr = matrix;
+            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
+            mnr = SNR.RemoveModalNoise(mnr, modalNoise);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            return mnr;
+        }
+
+        /// <summary>
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange)
+        {
+            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double[,] mnr = matrix; //matrix - noise reduced
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            return mnr;
+        }
+
+        public static double[,] NoiseReduce_Standbye(double[,] matrix, double[] modalNoise, double dynamicRange)
+        {
+            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double[,] mnr = matrix;
+            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
+            mnr = SNR.RemoveModalNoise(mnr, modalNoise);
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            return mnr;
+        }
+
+
 
         // #############################################################################################################################
         // ################################# NOISE REDUCTION ALGORITHM #################################################################
@@ -252,13 +313,10 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] RemoveModalNoise(double[,] matrix)
+        public static double[,] RemoveModalNoise(double[,] matrix, double[] modalNoise)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
-            //calculate modal noise for each freq bin
-            double[] modalNoise = CalculateModalNoise(matrix);        //calculate modal noise profile
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 7);//smooth the noise profile
             double[,] outM = new double[rowCount, colCount];          //to contain noise reduced matrix
 
             for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
@@ -272,6 +330,12 @@ namespace TowseyLib
             return outM;
         }// end of RemoveModalNoise()
 
+
+        public static double[] CalculateModalNoise(double[,] matrix, int smoothingWindow)
+        {
+            var m = CalculateModalNoise(matrix);
+            return DataTools.filterMovingAverage(m, smoothingWindow); //smooth the noise profile
+        }
 
         /// <summary>
         /// Calculates the modal noise value for each freq bin.
@@ -322,6 +386,7 @@ namespace TowseyLib
             }//end for all cols
             return modalNoise;
         }// end of CalculateModalNoise(double[,] matrix)
+
 
         /// <summary>
         /// sets the dynamic range in dB for a sonogram. 

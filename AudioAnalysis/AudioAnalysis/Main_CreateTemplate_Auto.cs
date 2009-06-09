@@ -70,10 +70,10 @@ namespace AudioAnalysis
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
-            string testDir = @"C:\SensorNetworks\Templates\Template_3\TestSetTrue";
-            Main_TestSerialTemplateOnCallFiles.ScanTestFiles(template2, testDir);
-            testDir = @"C:\SensorNetworks\Templates\Template_3\TestSetFalse";
-            Main_TestSerialTemplateOnCallFiles.ScanTestFiles(template2, testDir);
+            var testDirectories = new List<String>();
+            testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetTrue");
+            testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetFalse");
+            Main_TestSerialTemplateOnCallFiles.ScanTestDirectories(template2, testDirectories);
 
 
             Console.WriteLine("\nFINISHED!");
