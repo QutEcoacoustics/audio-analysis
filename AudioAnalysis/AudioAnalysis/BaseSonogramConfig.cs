@@ -15,7 +15,6 @@ namespace AudioAnalysis
         public string SourceFName { get; set; }
 
         public FftConfiguration FftConfig { get; set; }
-        //public int SampleRate { get; set; }
         public TimeSpan Duration { get; set; }
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
@@ -204,37 +203,4 @@ namespace AudioAnalysis
 
     } //end class CepstralSonogramConfig
 
-
-
-
-
-    //[Serializable]
-    //public class AVSonogramConfig : CepstralSonogramConfig
-    //{
-
-    //    public new static AVSonogramConfig Load(string configFile)
-    //    {
-    //        var config = new Configuration(configFile);
-    //        return new AVSonogramConfig(config);
-    //    }
-
-    //    public AVSonogramConfig(Configuration config) : base(config)
-    //    {
-    //        var duration = config.GetDoubleNullable("WAV_DURATION");
-    //        if (duration != null)
-    //            Duration = TimeSpan.FromSeconds(duration.Value);
-    //        SampleRate = config.GetInt("WAV_SAMPLE_RATE");
-    //        DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
-    //    }
-
-    //    public override void Save(TextWriter writer)
-    //    {
-    //        base.Save(writer);
-    //        writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
-    //        writer.WriteLine("#");
-    //        writer.Flush();
-    //    }
-
-    //    public int DeltaT { get; set; }
-    //}//end class AVSonogramConfig which is derived from CepstralSonogramConfig
 }

@@ -52,6 +52,8 @@ namespace AudioAnalysis
                 FVCount = value.Length;
             }
         }
+        public double[] DefaultModalNoiseProfile { get; set; } //yet to do this.
+
         #endregion
 
 
@@ -69,22 +71,25 @@ namespace AudioAnalysis
 
             CallID = config.GetInt("TEMPLATE_ID");
             FV_DefaultNoisePath = config.GetPath(ConfigKeys.Template.Key_FVDefaultNoiseFile);
-            if (File.Exists(FV_DefaultNoisePath))
+
+
+            if (! File.Exists(FV_DefaultNoisePath))
             {
-                Log.WriteLine("CONSTRUCTOR FVConfig: reading wav file for deriving noise FV: <" + FV_DefaultNoisePath + ">");
-                WavReader wav = new WavReader(FV_DefaultNoisePath);
-                var sonoConfig = new CepstralSonogramConfig(config);
-                DefaultNoiseFV = Acoustic_Model.ExtractNoiseFeatureVector(sonoConfig, wav);
-                if(DefaultNoiseFV == null)
-                {
-                    Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to extract suitable noise FV from file <" + FV_DefaultNoisePath + ">");
-                    Log.WriteLine("WARNING!! Check that recording has anough low energy content for noise estimation.");
-                    throw new Exception("Fatal Error");
-                }
+                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig: Default noise file does not exist: <" + FV_DefaultNoisePath + ">");
+                throw new Exception("Fatal Error");
             }
-            else
+
+            Log.WriteLine("CONSTRUCTOR FVConfig: reading wav file for deriving noise FV: <" + FV_DefaultNoisePath + ">");
+            WavReader wav = new WavReader(FV_DefaultNoisePath);
+            var sonoConfig = new CepstralSonogramConfig(config);
+            AcousticVectorsSonogram s = new AcousticVectorsSonogram(sonoConfig, wav);
+            this.DefaultModalNoiseProfile = s.SnrFrames.ModalNoiseProfile;
+            DefaultNoiseFV = Acoustic_Model.GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
+
+            if(DefaultNoiseFV == null)
             {
-                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig was not able to read default noise file <" + FV_DefaultNoisePath + ">");
+                Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig: File exists but cannot extract noise FV: <" + FV_DefaultNoisePath + ">");
+                Log.WriteLine("WARNING!! Check that recording has anough low energy content for noise estimation.");
                 throw new Exception("Fatal Error");
             }
 

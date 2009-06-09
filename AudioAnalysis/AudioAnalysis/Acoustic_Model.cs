@@ -119,13 +119,12 @@ namespace AudioAnalysis
             //##################### GENERATE A NOISE MODEL AND THEN SET NOISE RESPONSE FOR EACH feature vector
             //##################### NOISE MODEL CONSISTS OF A MATRIX OF NOISE VECTORS
             Log.WriteIfVerbose("\n\tStep 2: Obtain noise response for each feature vector");
-            double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount);
+            double[,] noiseM = GetRandomisedSonogram(s.Data, NoiseSampleCount);
             //following alternative to above method only gets noise estimate from low energy frames
-            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.SnrSubband.Decibels, 6.5);
-            //double[,] noiseM = GetRandomNoiseMatrix(s.Data, NoiseSampleCount, s.SnrFrames.Decibels, 6.5);
+            //double[,] noiseM = GetRandomisedSonogram(s.Data, NoiseSampleCount, s.SnrSubband.Decibels, 6.5);
+            //double[,] noiseM = GetRandomisedSonogram(s.Data, NoiseSampleCount, s.SnrFrames.Decibels, 6.5);
 
-            for (int i = 0; i < FVs.Length; i++)
-                FVs[i].SetNoiseResponse(noiseM, i);
+            for (int i = 0; i < FVs.Length; i++) FVs[i].SetNoiseResponse(noiseM, i);
 
 
             #region FOR CHECKING OF NOISE RESPONSE ONLY
@@ -188,11 +187,11 @@ namespace AudioAnalysis
             return retVal;
         }
 
-        public static FeatureVector ExtractNoiseFeatureVector(CepstralSonogramConfig config, WavReader wav)
-        {
-            AcousticVectorsSonogram s = new AcousticVectorsSonogram(config, wav);
-            return GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
-        }
+        //public static FeatureVector ExtractNoiseFeatureVector(CepstralSonogramConfig config, WavReader wav)
+        //{
+        //    AcousticVectorsSonogram s = new AcousticVectorsSonogram(config, wav);
+        //    return GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
+        //}
 
 
         /// <summary>
@@ -215,8 +214,8 @@ namespace AudioAnalysis
             int count = decibels.Count(d => (d <= relativeThreshold)); // Number of frames below the noise threshold
 
 
-            //int targetCount = rows / 5; // Want a minimum of 20% of frames for a noise estimate
-            int targetCount = 20;
+            //int targetCount = rows / 5; 
+            int targetCount = 10;   // Want a minimum of 10 frames for a noise estimate
             if (count < targetCount)
             {
                 Log.WriteIfVerbose("  TOO FEW LOW ENERGY FRAMES -- READ DEFAULT NOISE FEATURE VECTOR.");
@@ -245,19 +244,20 @@ namespace AudioAnalysis
 
 
         /// <summary>
-        /// Returns a matrix of noise vectors. Each noise vector is a random sample from the original sonogram.
+        /// Returns a matrix whose rows are frames chosen at random from the passed sonogram data.
+        /// Is used to obtain a "response to noise" value for each FV
         /// </summary>
-        double[,] GetRandomNoiseMatrix(double[,] dataMatrix, int noiseCount)
+        double[,] GetRandomisedSonogram(double[,] dataMatrix, int totalRowCount)
         {
             int frameCount = dataMatrix.GetLength(0);
             int featureCount = dataMatrix.GetLength(1);
 
-            double[,] noise = new double[noiseCount, featureCount];
+            double[,] noise = new double[totalRowCount, featureCount];
             RandomNumber rn;
             if (BaseTemplate.InTestMode) rn = new RandomNumber(12345); //use seed in test mode
             else                         rn = new RandomNumber();
 
-            for (int i = 0; i < noiseCount; i++)
+            for (int i = 0; i < totalRowCount; i++)
             {
                 for (int j = 0; j < featureCount; j++)
                 {
@@ -266,22 +266,22 @@ namespace AudioAnalysis
                 }
             }
             return noise;
-        } //end GetRandomNoiseMatrix()
+        } //end GetRandomisedSonogram()
 
         /// <summary>
         /// Returns a matrix of noise vectors. Each noise vector is a random sample from the original sonogram.
         /// </summary>
-        double[,] GetRandomNoiseMatrix(double[,] dataMatrix, int noiseCount, double[] dBArray, double threshold)
+        double[,] GetRandomisedSonogram(double[,] dataMatrix, int totalRowCount, double[] dBArray, double threshold)
         {
             int frameCount = dataMatrix.GetLength(0);
             int featureCount = dataMatrix.GetLength(1);
 
-            double[,] noise = new double[noiseCount, featureCount];
+            double[,] noise = new double[totalRowCount, featureCount];
             RandomNumber rn;
             if (BaseTemplate.InTestMode) rn = new RandomNumber(12345); //use seed in test mode
             else rn = new RandomNumber();
 
-            for (int i = 0; i < noiseCount; i++)
+            for (int i = 0; i < totalRowCount; i++)
             {
                 for (int j = 0; j < featureCount; j++)
                 {
@@ -295,7 +295,7 @@ namespace AudioAnalysis
                 }
             }
             return noise;
-        } //end GetRandomNoiseMatrix()
+        } //end GetRandomisedSonogram()
 
 
         /// <summary>

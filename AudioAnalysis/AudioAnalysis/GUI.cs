@@ -242,6 +242,7 @@ namespace AudioAnalysis
                     filterBankCount = 64;
                     doMelConversion = true;
                     noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    //noiseReductionType = ConfigKeys.NoiseReductionType.DEFAULT_STANDBY;
                     //noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;

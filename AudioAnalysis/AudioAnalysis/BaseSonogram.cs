@@ -95,6 +95,7 @@ namespace AudioAnalysis
             this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
+
 			// ZERO CROSSINGS
 			//this.zeroCross = DSP.ZeroCrossings(frames);
 
@@ -200,44 +201,6 @@ namespace AudioAnalysis
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
         }
 
-        /// <summary>
-        /// IMPORTANT: Mel scale conversion should be done before noise reduction
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public double[,] NoiseReduce_Standard(double[,] matrix)
-        {
-            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double[,] mnr = matrix;
-            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
-            mnr = SNR.RemoveModalNoise(mnr);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold); 
-            return mnr;
-        }
-
-        /// <summary>
-        /// IMPORTANT: Mel scale conversion should be done before noise reduction
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <returns></returns>
-        public double[,] NoiseReduce_FixedRange(double[,] matrix)
-        {
-            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-            double dynamicRange = this.Configuration.DynamicRange;
-            Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + dynamicRange);
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double[,] mnr = matrix; //matrix - noise reduced
-            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
-            return mnr;
-        }
 
 		public Image GetImage()
 		{
@@ -566,10 +529,28 @@ namespace AudioAnalysis
             if (Configuration.DoMelScale) m = ApplyFilterBank(m);
             //CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m);//convert amplitude spectrogram to dB spectrogram
+
             //NOISE REDUCTION
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)            m = NoiseReduce_Standard(m);
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
+            this.SnrFrames.ModalNoiseProfile = modalNoise;
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
+            {
+                m = SNR.NoiseReduce_Standard(m, modalNoise);
+            }
             else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
+                m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
+            }
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: default standby for short high energy vocalisations");
+                //TODO TODO TODO
+                //modalNoise = have to get at the standby Noise profile currently stored in FVConfig class.
+                //It was put there when initialising the FVConfig class from the DefaultNoise  recording
+                m = SNR.NoiseReduce_Standbye(m, modalNoise, this.Configuration.DynamicRange);
+            }
             
             this.Data = m; //store data matrix
 		}
@@ -636,9 +617,19 @@ namespace AudioAnalysis
             m = Speech.DecibelSpectra(m);
 
             //NOISE REDUCTION
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD) m = NoiseReduce_Standard(m);
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
+            this.SnrFrames.ModalNoiseProfile = modalNoise;
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
+            {
+                m = SNR.NoiseReduce_Standard(m, modalNoise);
+            }
             else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+                if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
+                {
+                    Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
+                    m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
+                }
+            
 
             //calculate cepstral coefficients and normalise
             m = Speech.Cepstra(m, ccCount);
@@ -738,10 +729,21 @@ namespace AudioAnalysis
 		double[,] SobelEdgegram(double[,] matrix)
 		{
 			double[,] m = Speech.DecibelSpectra(matrix);
+
             //NOISE REDUCTION
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD) m = NoiseReduce_Standard(m);
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
+            this.SnrFrames.ModalNoiseProfile = modalNoise;
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
+            {
+                m = SNR.NoiseReduce_Standard(m, modalNoise);
+            }
             else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE) m = NoiseReduce_FixedRange(m);
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
+                m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
+            }
+
             return ImageTools.SobelEdgeDetection(m);
 		}
     }// end SobelEdgeSonogram : BaseSonogram
