@@ -116,22 +116,16 @@ I3tmp(I3<0) = 0;
 % STEP 5: CONVERTS IMAGE TO BLACK AND WHITE USING INTENSITY THRESHOLD
 int_thresh = 9;
 I4 = image_thresh_bw(I3,int_thresh);
-figure(4), clf, imagesc(T,F,I4);
-axis xy; axis tight; colormap(gray); view(0,90);
-xlabel('Time (s)');
-ylabel('Frequency (Hz)');
-colorbar
-set(gca,'XTick',[0:10:tmax],'FontSize',20)
-set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-title('Signal (white) versus Background (black)','FontSize',20)
-ylabel('Frequency (kHz)','FontSize',20)
-xlabel('Time (s)','FontSize',20)
-
-fid = fopen('I4.txt', 'wt');
-fprintf(fid, '%f\n', I4);
-fclose(fid);
-
-return
+% figure(4), clf, imagesc(T,F,I4);
+% axis xy; axis tight; colormap(gray); view(0,90);
+% xlabel('Time (s)');
+% ylabel('Frequency (Hz)');
+% colorbar
+% set(gca,'XTick',[0:10:tmax],'FontSize',20)
+% set(gca,'YTick',[0:2000:fmax],'FontSize',20)
+% title('Signal (white) versus Background (black)','FontSize',20)
+% ylabel('Frequency (kHz)','FontSize',20)
+% xlabel('Time (s)','FontSize',20)
 
 I5=I4;
 
@@ -140,6 +134,12 @@ I5=I4;
 % STEP 6a: JOIN VERTICAL LINES IN IMAGE
 % NOTES: join_vertical_lines.m and join_horizontal_lines.m are my functions
 I6 = join_vertical_lines(I5);
+
+% fid = fopen('I6a.txt', 'wt');
+% fprintf(fid, '%f\n', I6);
+% fclose(fid);
+
+return
 
 % STEP 6b: JOIN HORIZONTAL LINES IN IMAGE
 I6 = join_horizontal_lines(I6);
