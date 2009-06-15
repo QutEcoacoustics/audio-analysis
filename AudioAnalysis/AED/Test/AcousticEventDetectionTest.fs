@@ -1,6 +1,6 @@
 ﻿#light
 
-open AcousticEventDetection
+open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open Common
 open Math.Matrix
 open Util.Array2

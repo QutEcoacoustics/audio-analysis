@@ -1,6 +1,5 @@
 ﻿#light
-
-module Wiener
+module QutSensors.AudioAnalysis.AED.Wiener
 
 (* wiener2 is a Matlab function.
 
