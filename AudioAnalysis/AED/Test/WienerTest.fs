@@ -2,7 +2,7 @@
 
 open Common
 open Util.Array2 // TODO should a2FloatEquals go in Test/Common.fs instead of Array2.fs
-open Wiener
+open QutSensors.AudioAnalysis.AED.Wiener
 open Xunit
 
 [<Fact>]

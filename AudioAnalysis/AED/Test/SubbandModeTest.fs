@@ -2,7 +2,7 @@
 
 open Common
 open Math.Matrix
-open SubbandMode
+open QutSensors.AudioAnalysis.AED.SubbandMode
 open Util.Array2
 open Xunit
 
