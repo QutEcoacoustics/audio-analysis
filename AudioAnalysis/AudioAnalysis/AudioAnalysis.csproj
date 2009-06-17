@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_CreateTemplate_Auto</StartupObject>
+    <StartupObject>AudioAnalysis.Main_ClusterAcousticEvents</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -89,6 +89,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AcousticEvent.cs" />
     <Compile Include="Acoustic_Model.cs" />
     <Compile Include="BaseModel.cs" />
     <Compile Include="ConfigurationClasses.cs" />
@@ -96,6 +97,7 @@
     <Compile Include="BaseTemplate.cs" />
     <Compile Include="BaseResult.cs" />
     <Compile Include="Main_Alfredo1.cs" />
+    <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
