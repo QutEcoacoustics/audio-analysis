@@ -135,11 +135,6 @@ I5=I4;
 % NOTES: join_vertical_lines.m and join_horizontal_lines.m are my functions
 I6 = join_vertical_lines(I5);
 
-% fid = fopen('I6a.txt', 'wt');
-% fprintf(fid, '%f\n', I6);
-% fclose(fid);
-
-return
 
 % STEP 6b: JOIN HORIZONTAL LINES IN IMAGE
 I6 = join_horizontal_lines(I6);
@@ -154,7 +149,11 @@ I6 = join_horizontal_lines(I6);
 % ylabel('Frequency (kHz)','FontSize',20)
 % xlabel('Time (s)','FontSize',20)
 
+% fid = fopen('I6b.txt', 'wt');
+% fprintf(fid, '%f\n', I6);
+% fclose(fid);
 
+return
 
 
 % STEP 7: GET ACOUSTIC EVENTS
