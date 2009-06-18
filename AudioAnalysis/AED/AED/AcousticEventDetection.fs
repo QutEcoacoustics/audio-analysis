@@ -24,5 +24,4 @@ let joinHorizontalLines m =
     let (_,_) = foldi f (m',0) m
     m'
     
-// TODO point free form
-let joinVerticalLines m = transpose m |> joinHorizontalLines |> transpose
+let joinVerticalLines = transpose << joinHorizontalLines << transpose
