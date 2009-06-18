@@ -970,7 +970,7 @@ namespace TowseyLib
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(m2, x, y, out colWidth);
+                    Oblong.Col_Width(m2, x, y, out colWidth);
                     int x2 = x + colWidth; 
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
  
@@ -995,7 +995,7 @@ namespace TowseyLib
                     //int rowWidth; //rowWidth of object
                     //Shape.Row_Width(m2, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.Col_Width(tmpM, x, y, out colWidth);
                     int x2 = x + colWidth;
                     //check to see if object is in blob
                     bool overlapsHighEnergy = false;
@@ -1039,7 +1039,7 @@ namespace TowseyLib
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(m2, x, y, out colWidth);
+                    Oblong.Col_Width(m2, x, y, out colWidth);
                     int x2 = x + colWidth-1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
@@ -1064,7 +1064,7 @@ namespace TowseyLib
                     if (outM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.Col_Width(tmpM, x, y, out colWidth);
 
                     int x2 = x + colWidth;
                     //check to see if object is in high energy region
@@ -1079,7 +1079,7 @@ namespace TowseyLib
                     }//end of ascertaining if line overlapsHighEnergy
                     if (overlapsHighEnergy)
                     {
-                        shapes.Add(new Shape(y, x, y + 1, x2));
+                        shapes.Add(new Oblong(y, x, y + 1, x2));
                         objectCount++;
                         for (int j = x; j < x2; j++) outM[y, j] = 1.0;
                         for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
@@ -1093,18 +1093,18 @@ namespace TowseyLib
             if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 5.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
-            shapes = Shape.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
+            shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
             if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
             //shapes = Shape.RemoveEnclosedShapes(shapes);
-            shapes = Shape.RemoveOverlappingShapes(shapes);
+            shapes = Oblong.RemoveOverlappingShapes(shapes);
             int minArea = 14;
-            shapes = Shape.RemoveSmall(shapes, minArea);
+            shapes = Oblong.RemoveSmall(shapes, minArea);
             if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
 
         /// <summary>
-        /// Returns an ArrayList of rectabgular shapes that represent syllables in the sonogram.
+        /// Returns an ArrayList of rectabgular shapes that represent acoustic events / syllables in the sonogram.
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
@@ -1137,7 +1137,7 @@ namespace TowseyLib
                     if (tmpM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(m2, x, y, out colWidth);
+                    Oblong.Col_Width(m2, x, y, out colWidth);
                     int x2 = x + colWidth - 1;
                     for (int j = x; j < x2; j++) tmpM[y, j] = 1.0;
 
@@ -1162,7 +1162,7 @@ namespace TowseyLib
                     if (outM[y, x] == 1.0) continue; //already have something here
 
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(tmpM, x, y, out colWidth);
+                    Oblong.Col_Width(tmpM, x, y, out colWidth);
 
                     int x2 = x + colWidth;
                     //check to see if object is in high energy region
@@ -1177,7 +1177,7 @@ namespace TowseyLib
                     }//end of ascertaining if line overlapsHighEnergy
                     if (overlapsHighEnergy)
                     {
-                        shapes.Add(new Shape(y, x, y + 1, x2));
+                        shapes.Add(new Oblong(y, x, y + 1, x2));
                         objectCount++;
                         for (int j = x; j < x2; j++) outM[y, j] = 1.0;
                         for (int j = x; j < x2; j++) tmpM[y, j] = 0.0;
@@ -1191,12 +1191,12 @@ namespace TowseyLib
             if (ImageTools.Verbose) Console.WriteLine("Object Count 1 =" + objectCount);
             int dxThreshold = 25; //upper limit on centroid displacement - set higher for fewer bigger shapes
             double widthRatio = 4.0; //upper limit on difference in shape width - set higher for fewer bigger shapes
-            shapes = Shape.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
+            shapes = Oblong.MergeShapesWithAdjacentRows(shapes, dxThreshold, widthRatio);
             if (ImageTools.Verbose) Console.WriteLine("Object Count 2 =" + shapes.Count);
-            shapes = Shape.RemoveEnclosedShapes(shapes);
+            shapes = Oblong.RemoveEnclosedShapes(shapes);
             //shapes = Shape.RemoveOverlappingShapes(shapes);
             int minArea = 30;
-            shapes = Shape.RemoveSmall(shapes, minArea);
+            shapes = Oblong.RemoveSmall(shapes, minArea);
             if (ImageTools.Verbose) Console.WriteLine("Object Count 3 =" + shapes.Count);
             return shapes;
         }
@@ -1304,9 +1304,9 @@ namespace TowseyLib
                     if (M[y, x] == 1.0) continue; //already have something here
 
                     int rowWidth; //rowWidth of object
-                    Shape.Row_Width(m, x, y, out rowWidth);
+                    Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(m, x, y, out colWidth);
+                    Oblong.Col_Width(m, x, y, out colWidth);
                     bool sizeOK = false;
                     if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
 
@@ -1343,9 +1343,9 @@ namespace TowseyLib
                     if (M[y, x] == 1.0) continue; //already have something here
 
                     int rowWidth; //rowWidth of object
-                    Shape.Row_Width(m, x, y, out rowWidth);
+                    Oblong.Row_Width(m, x, y, out rowWidth);
                     int colWidth; //colWidth of object
-                    Shape.Col_Width(m, x, y, out colWidth);
+                    Oblong.Col_Width(m, x, y, out colWidth);
                     bool sizeOK = false;
                     if ((rowWidth >= minRowWidth) && (colWidth >= minColWidth)) sizeOK = true;
 

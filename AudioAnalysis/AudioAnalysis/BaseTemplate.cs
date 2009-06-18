@@ -248,7 +248,7 @@ namespace AudioAnalysis
             EndpointDetectionConfiguration.MinPulseDuration = 0.075;
         }
 
-        public static void LoadStaticConfig(string appConfigFile)
+        public static Configuration LoadStaticConfig(string appConfigFile)
         {
             var config = new Configuration(appConfigFile);
             Log.Verbosity=config.GetInt("VERBOSITY");
@@ -268,6 +268,7 @@ namespace AudioAnalysis
             //INCLUDE_DOUBLE_DELTA=true
             //INCLUDE_DELTA=true
             //DELTA_T=2
+            return config;
         }
 
         #endregion
