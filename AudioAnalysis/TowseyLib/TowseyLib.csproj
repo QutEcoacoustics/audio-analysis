@@ -82,7 +82,7 @@
     <Compile Include="RecordingFetcher.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Shape.cs" />
+    <Compile Include="Oblong.cs" />
     <Compile Include="SNR.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="Statistics.cs" />

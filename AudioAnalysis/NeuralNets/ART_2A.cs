@@ -564,7 +564,7 @@ namespace NeuralNets
         int F2Size = trnSetSize;
         int numberOfRepeats = 1;
         int maxIterations = 100;
-        if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
+        if (Oblong.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  F1Size=" + F1Size + "  F2Size=" + F2Size);
         bool[] uncommittedJ = new bool[F2Size];               // : PtrToArrayOfBool;
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2Neta units}
         int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
@@ -609,7 +609,7 @@ namespace NeuralNets
                 //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
                 //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
                 //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
-                if (Shape.Verbose) Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+                if (Oblong.Verbose) Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
             } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
 
         }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}

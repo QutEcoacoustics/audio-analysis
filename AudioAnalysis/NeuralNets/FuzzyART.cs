@@ -519,7 +519,7 @@ namespace NeuralNets
 
     public static int[] ClusterWithFuzzyART(double[,] trainingData, out int committedNodeCount)
     {
-        FuzzyART.Verbose = Shape.Verbose;
+        FuzzyART.Verbose = Oblong.Verbose;
         if (trainingData == null)
         {
             Console.WriteLine("WARNING: ClusterWithFuzzyART() PASSED NULL TRAINING DATA!");
@@ -536,7 +536,7 @@ namespace NeuralNets
         int F2Size = trnSetSize;
         int numberOfRepeats = 1;
         int maxIterations = 100;
-        if (Shape.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        if (Oblong.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
         int[] noOfCommittedF2 = new int[numberOfRepeats];    // : array[1..MaxRepeatNo] of word;{# committed F2 units}
         int[] iterToConv = new int[numberOfRepeats];         // : array[1..MaxRepeatNo] of word;{for training only}
 
