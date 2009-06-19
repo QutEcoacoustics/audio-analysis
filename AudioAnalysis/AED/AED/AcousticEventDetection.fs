@@ -4,24 +4,14 @@ module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open Math.Matrix
 
 let toBlackAndWhite t = map (fun e -> if e > t then 1.0 else 0.0)
-
-let findRowDist (m:matrix) i j t = 
-    let mutable c = j + 1
-    let mutable n = 0
-    while (c < m.NumCols && c < j + t && m.[i,c] = 0.0) do
-        n <- n + 1
-        c <- c + 1
-    if n = (min (m.NumCols - j - 1) (t - 1)) then 0 else n
     
-let joinHorizontalLines m =
-    let m' = copy m 
-    let g x i j =
-        set x i j 1.0
-        x
-    let f i j (m',n) e = if n > 0 then (g m' i j, n-1)
-                                  else if e = 0.0 then (m',n)
-                                       else (m', findRowDist m' i j 3)
-    let (_,_) = foldi f (m',0) m
-    m'
+let toFillIn (m:matrix) i j t =
+    // TODO right & left should really be generalised to work with sequences? instead of matrix
+    let rec right n = if j + n >= m.NumCols or n > t - 2 then 0 else if m.[i,j+n] = 1.0 then n else right (n+1)
+    let rec left n  = if j - n < 0          or n > t - 2 then 0 else if m.[i,j-n] = 1.0 then n else left (n+1)
+    let l, r = left 1, right 1
+    l > 0 && r > 0 && l + r <= t
+
+let joinHorizontalLines m = mapi (fun i j x -> if x = 1.0 or (toFillIn m i j 3) then 1.0 else 0.0) m
     
 let joinVerticalLines = transpose << joinHorizontalLines << transpose

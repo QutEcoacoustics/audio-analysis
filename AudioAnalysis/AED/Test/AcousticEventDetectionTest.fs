@@ -12,21 +12,20 @@ let testToBlackAndWhite () =
     let i4 = toBlackAndWhite 9.0 (of_array2 i3m) |> to_array2
     let i4m = loadTestFile "I4.txt"
     a2FloatEquals i4 i4m 0.001 |> Assert.True
-    
-[<Fact>]
-let testFindRowDist () =
-    let m = Array2.create 5 10 0.0 |> of_array2
-    Assert.Equal(0, findRowDist m 0 0 3)
-    Assert.Equal(0, findRowDist m 1 9 3)
-    m.[0,1] <- 1.0
-    Assert.Equal(0, findRowDist m 0 0 3)
-    m.[1,2] <- 1.0
-    Assert.Equal(1, findRowDist m 1 0 3)
-    m.[2,8] <- 1.0
-    Assert.Equal(0, findRowDist m 2 8 3)
        
 [<Fact>]
-let testJoinHorizontalLines () =
+let testToFillIn () =
+    let m = Array2.create 5 10 0.0 |> of_array2
+    Assert.False(toFillIn m 0 0 3)
+    Assert.False(toFillIn m 1 9 3)
+    m.[0,1] <- 1.0
+    Assert.False(toFillIn m 0 0 3)
+    Assert.False(toFillIn m 0 2 3)
+    m.[0,3] <- 1.0
+    Assert.True(toFillIn m 0 2 3)
+
+[<Fact>]
+let testJoinHorizontalLinesQuick () =
     let m = Array2.create 5 10 0.0 |> of_array2
     Assert.Equal(m, joinHorizontalLines m)
     m.[0,1] <- 1.0
@@ -37,6 +36,9 @@ let testJoinHorizontalLines () =
     let m' = copy m
     m'.[0,3] <- 1.0
     Assert.Equal(m', joinHorizontalLines m)
+    
+[<Fact>]
+let testJoinHorizontalLines () =
     let i6am = loadTestFile "I6a.txt"
     let i6b = joinHorizontalLines (of_array2 i6am) |> to_array2
     let i6bm = loadTestFile "I6b.txt"
