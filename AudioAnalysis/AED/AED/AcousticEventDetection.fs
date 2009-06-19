@@ -3,6 +3,7 @@ module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
 open Math.Matrix
 
+// TODO should this return a matrix of int
 let toBlackAndWhite t = map (fun e -> if e > t then 1.0 else 0.0)
     
 let toFillIn (m:matrix) i j t =
