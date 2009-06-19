@@ -24,6 +24,11 @@ let testToFillIn () =
     m.[0,3] <- 1.0
     Assert.True(toFillIn m 0 2 3)
 
+(* TODO Investigate using FsCheck instead of xUnit for testJoinHorizontalLinesQuick
+    forall m. forall i in m.NumRows. forall j in m.NumCols. m.[i,j] = 1 => (joinHorizontalLines m).[i,j] = 1
+    m.[i,j] = 0 => [(m.[i,j] in gap => (joinHorizontalLines m).[i,j] = 1] xor (joinHorizontalLines m).[i,j] = 0
+*)
+
 [<Fact>]
 let testJoinHorizontalLinesQuick () =
     let m = Array2.create 5 10 0.0 |> of_array2
