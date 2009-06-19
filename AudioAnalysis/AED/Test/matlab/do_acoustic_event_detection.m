@@ -53,8 +53,6 @@ xlabel('Time (s)','FontSize',20)
 
 
 
-
-
 % convert amplitude to dB
 I1 = 10*log10(abs(P));
 % figure(10), clf, imagesc(T,F,I1);
@@ -149,12 +147,6 @@ I6 = join_horizontal_lines(I6);
 % ylabel('Frequency (kHz)','FontSize',20)
 % xlabel('Time (s)','FontSize',20)
 
-% fid = fopen('I6b.txt', 'wt');
-% fprintf(fid, '%f\n', I6);
-% fclose(fid);
-
-return
-
 
 % STEP 7: GET ACOUSTIC EVENTS
 % NOTES: get_acoustic_events.m is my function; line.m and imagesc.m are
@@ -185,7 +177,11 @@ return
 %     % maximise this image on your screen for optimal viewing
 % end
 
+% fid = fopen('AE.txt', 'wt');
+% fprintf(fid, '%f\n', AE);
+% fclose(fid);
 
+return
 
 % STEP 8: SEPARATE EVENTS THAT ARE TOO LARGE INTO SMALLER EVENTS
 % NOTES: mode_large_area_threshold.m and separate_large_AEs_areas.m are my 
