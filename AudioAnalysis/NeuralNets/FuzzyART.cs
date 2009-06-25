@@ -170,13 +170,15 @@ namespace NeuralNets
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if(FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
+        if (FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
+        if (FuzzyART.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
+
         //repeat //{training set until max iter or trn set learned}
         int iterNum = 0;
         while (!trainSetLearned && (iterNum < maxIter))
         {
             iterNum++;
-            //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
+            if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
             SkippedBecauseFull[repNum] = 0;
 
             //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
@@ -240,7 +242,7 @@ namespace NeuralNets
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
             //remove committed F2 nodes that are not having wins
             for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            //if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
             //Console.ReadLine();
 
             if (trainSetLearned)
@@ -555,9 +557,14 @@ namespace NeuralNets
         //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
         //double theta = 0.05; //threshold for contrast enhancing
 
+        //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
+        //double beta = 0.1;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+        //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        //double theta = 0.0; //threshold for contrast enhancing
+
         double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
-        double beta = 0.1;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
-        double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        double beta = 0.2;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
+        double rho = 0.8;   //vigilance parameter - increasing rho proliferates categories
         double theta = 0.0; //threshold for contrast enhancing
 
         FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size);
@@ -585,7 +592,7 @@ namespace NeuralNets
                 //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
                 //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
                 //if (DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
-                //Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
+                Console.WriteLine("Number Of Committed F2 Nodes after rep" + rep + " = " + noOfCommittedF2[rep]);
             } //end; {for rep   = 1 to norepeats do}       {***** END OF REPEATS *****}
 
         }  //end; {for simul = 1 to noSimulationsInRun do}  {**** END OF SIMULATE *****}

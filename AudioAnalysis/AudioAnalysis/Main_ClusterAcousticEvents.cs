@@ -50,10 +50,8 @@ namespace AudioAnalysis
                 throw new Exception("FATAL ERROR - TERMINATE");
             }
 
-            string eventDir = @"C:\SensorNetworks\AcousticEventData\Bac2 - acoustic events";
-            string outputFolder = eventDir;  //args[2]
+            string outputFolder = @"C:\SensorNetworks\AcousticEventData";  //args[2]
 
-            Console.WriteLine("event  Dir    = " + eventDir);
             Console.WriteLine("output Dir    = " + outputFolder);
             Console.WriteLine("Sample rate   = " + sr);
             Console.WriteLine("Window size   = " + window);
@@ -66,11 +64,13 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("\nA: GET ACOUSTIC EVENTS FROm CSV FILES");
 
             var directories = new List<string>();
-            directories.Add(@"C:\SensorNetworks\AcousticEventData\Bac2 - acoustic events");
-            directories.Add(@"C:\SensorNetworks\AcousticEventData\HoneyMoon Bay - acoustic events");
-            directories.Add(@"C:\SensorNetworks\AcousticEventData\Margaret St - acoustic events");
+            directories.Add(@"C:\SensorNetworks\AcousticEventData\BAC2");
+            directories.Add(@"C:\SensorNetworks\AcousticEventData\HoneymoonBay");
+            directories.Add(@"C:\SensorNetworks\AcousticEventData\MargaretSt");
 
-            List<AcousticEvent> events = ScanDirectories(directories);
+            string ext = "Intensity_Thresh_9dB.csv";
+            List<AcousticEvent> events = ScanDirectories(directories, ext);
+
 
             Console.WriteLine("NUMBER OF EVENTS = "+events.Count);
             var oblongs = new List<Oblong>();
@@ -78,12 +78,13 @@ namespace AudioAnalysis
             foreach (AcousticEvent e in events)
             {
                 count++;
-                Console.WriteLine(count+"  "+ e.WriteProperties());
+                //Console.WriteLine(count+"  "+ e.WriteProperties());
                 oblongs.Add(e.oblong);
+                //if(count > 10000) break;
             }
 
 
-            string opPath1 = @"C:\SensorNetworks\AcousticEventData\eventCentroids1.bmp";
+            string opPath1 = @"C:\SensorNetworks\AcousticEventData\eventsTotal.bmp";
             Color col = Color.Red;
             double[,] m1 = new double[5000, 256];
             Oblong.SaveImageOfCentroids(m1, oblongs, col, opPath1);
@@ -105,6 +106,8 @@ namespace AudioAnalysis
             //cluster the shapes using FuzzyART
             int categoryCount;
             double[,] data = Oblong.FeatureMatrix(oblongs); //derive data set from oblongs
+            NeuralNets.ART.DEBUG = true;
+            NeuralNets.FuzzyART.Verbose = true;
             int[] categories = NeuralNets.FuzzyART.ClusterWithFuzzyART(data, out categoryCount);
             Console.WriteLine("Number of categories = " + categoryCount);
             Oblong.AssignCategories(oblongs, categories);
@@ -121,7 +124,7 @@ namespace AudioAnalysis
 
 
             double[,] m2 = new double[5000,256];
-            string opPath2 = @"C:\SensorNetworks\AcousticEventData\eventCentroids2.bmp";
+            string opPath2 = @"C:\SensorNetworks\AcousticEventData\eventCentroids.bmp";
             //s.SaveImage(m, syllables, col);
             //s.SaveImageOfSolids(m, syllables, col);
             //s.SaveImage(m, categoryAvShapes, col);
@@ -133,11 +136,10 @@ namespace AudioAnalysis
         }//end Main() method
 
 
-        public static List<AcousticEvent> ScanDirectories(List<string> directories)
+        public static List<AcousticEvent> ScanDirectories(List<string> directories, string ext)
         {
             //Init LIST of EVENTS
             var events = new List<AcousticEvent>();
-            string ext = "_Intensity_Thresh_6dB.csv";
             foreach (String dir in directories)
             {
                 ScanFiles(dir, ext, events);
