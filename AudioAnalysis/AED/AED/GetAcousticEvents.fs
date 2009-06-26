@@ -7,8 +7,10 @@ open Set
 // TODO can we do p@(i,j) like Haskell?
 let rec spider (m:matrix) p (v:(int * int) Set) =
     let (i,j) = p
-    if i >= m.NumRows or j < 0 or j >= m.NumCols or m.[i,j] = 0.0 or v.Contains(p) then v
-    else spider m (i+1,j-1) (add p v) |> spider m (i+1,j) |> spider m (i+1,j+1) |> spider m (i,j+1) 
+    if i >= m.NumRows or j < 0 or j >= m.NumCols or i < 0 or i >= m.NumRows or m.[i,j] = 0.0 or v.Contains(p) then v
+    // TODO this is an interesting computation, threading the state through a sequence of identical functions
+    // else spider m (i+1,j-1) (add p v) |> spider m (i+1,j) |> spider m (i+1,j+1) |> spider m (i,j+1) 
+    else List.fold_left (fun z p -> spider m p z) (add p v) [(i-1,j-1);(i-1,j);(i-1,j+1);(i,j-1);(i,j);(i,j+1);(i+1,j-1);(i+1,j);(i+1,j+1)]
     
 let getAcousticEvents m =
     let m' = copy m
