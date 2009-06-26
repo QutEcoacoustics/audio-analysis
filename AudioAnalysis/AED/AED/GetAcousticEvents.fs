@@ -15,8 +15,8 @@ let rec spider (m:matrix) p (v:(int * int) Set) =
 let getAcousticEvents m =
     let m' = copy m
     let g xs = 
-        iter (fun (i,j) -> m'.[i,j] <- 0.0) xs
-        let (rs, cs) = List.unzip (to_list xs)
-        (List.min cs, List.min rs)
+        iter (fun (i,j) -> m'.[i,j] <- 0.0) xs // TODO how can we efficiently not mutate?
+        let (rs, cs) = List.unzip (to_list xs) 
+        (List.min cs, List.min rs)             // TODO what data structure is best here?
     let f i j a x = if x = 0.0 or m'.[i,j] = 0.0 then a else (g(spider m (i,j) Set.empty))::a
     foldi f [] m
