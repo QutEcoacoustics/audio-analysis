@@ -254,7 +254,7 @@ namespace ProcessorUI
 				OnLog("\t{0}-{1}", TimeSpan.FromMilliseconds(i), TimeSpan.FromMilliseconds(i + 60000));
 				using (var converted = DShowConverter.ConvertTo(file.FileName, mimeType, MimeTypes.WavMimeType, i, i + 60000) as BufferedDirectShowStream)
 				{
-                    BaseResult results = recogniser.Analyse(new AudioRecording() { FileName = converted.BufferFile.FileName }) as BaseResult;
+                    BaseResult results = recogniser.Analyse(new AudioRecording(converted.BufferFile.FileName)) as BaseResult;
 
 					//OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBestFrame, result.VocalBestLocation);
 
