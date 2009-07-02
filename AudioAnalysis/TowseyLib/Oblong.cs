@@ -16,6 +16,7 @@ namespace TowseyLib
         public int c1 { get; set; }  //location of top left corner in parent matrix
         public int r2 { get; set; }  //location of bot right corner in parent matrix
         public int c2 { get; set; }  //location of bot right corner in parent matrix
+        public int ColCentroid { get { return c1 + (c2-c1+1)/2; } } 
 
         //private int rowWidth;
         //public int RowWidth { get { row2 - row1 + 1; } }
@@ -31,7 +32,7 @@ namespace TowseyLib
         public  static int countColCentroid_FS = 2;  //number of fuzzy membership values over range of col centroid values 
         int featureCount = countColCentroid_FS + 2;  //centroid location + freqWidth + time duration.
 
-        int[] colCentroid_FS;
+        int[] colCentroid_FS; //FS = fuzzy set
 
 
         /// <summary>
@@ -188,7 +189,16 @@ namespace TowseyLib
         }
         public void WriteProperties()
         {
-            Console.WriteLine("Av duration=" + this.RowWidth + "\tAv freq bandwidth=" + this.ColWidth + "\t ColCentroid=" + this.col_Centroid());
+            Console.WriteLine("Row count=" + this.RowWidth + "\tCol bandwidth=" + this.ColWidth + "\t ColCentroid=" + this.col_Centroid());
+        }
+
+        public static List<Oblong> SortByColumnCentroid(List<Oblong> list1){
+            var list2 = new List<Oblong>();
+            list2.AddRange(list1);
+            list2.Sort(delegate(Oblong x, Oblong y) {
+                return x.ColCentroid.CompareTo(y.ColCentroid);
+            });
+            return list2;
         }
 
         //***********************************************************************************************************************

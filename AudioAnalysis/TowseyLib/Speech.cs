@@ -30,12 +30,12 @@ namespace TowseyLib
         }
 
 
-        public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableDelay, int minPulse, int[] zeroCrossings)
+        public static int[] VocalizationDetection(double[] decibels, double lowerDBThreshold, double upperDBThreshold, int k1_k2delay, int syllableGap, int minPulse, int[] zeroCrossings)
         {
             int L = decibels.Length;
             int[] state = new int[L];
             int lowEnergyID = 0;
-            int hiEnergyID  = 0;
+            int hiEnergyID = -k1_k2delay; //to prevent setting early frames to state=2
             for (int i = 0; i < L; i++)//foreach time step
             {
                 if (decibels[i] < lowerDBThreshold)
@@ -52,12 +52,12 @@ namespace TowseyLib
                     if (delay < k1_k2delay) for (int j = 1; j < delay; j++) state[i - j] = 2;
                     state[i] = 2;
                 }
-            }
+            } //end  foreach time step
 
             // fill in probable inter-syllable gaps
             bool sig = true;
-            int count = 0;
-            for (int i = syllableDelay; i < decibels.Length; i++) //foreach time step
+            int count = syllableGap; //do not want silence before first vocal frame to be treated as gap
+            for (int i = 1; i < decibels.Length; i++) //foreach time step
             {
                 if (state[i] == 0)
                 {
@@ -65,14 +65,14 @@ namespace TowseyLib
                     count++;
                 }
                 else
-                if (state[i] == 2)
-                {
-                    //Console.WriteLine("count["+i+"]="+count);
-                    if ((sig == false) && (count < syllableDelay))
-                        for (int j = 1; j <= count; j++) state[i - j] = 1;//fill gap with state = 1;
-                    sig = true;
-                    count = 0;
-                }
+                    if (state[i] == 2)
+                    {
+                        //Console.WriteLine("count["+i+"]="+count);
+                        if ((sig == false) && (count < syllableGap))
+                            for (int j = 1; j <= count; j++) state[i - j] = 1;//fill gap with state = 1;
+                        sig = true;
+                        count = 0;
+                    }
             }
             return state;
         }

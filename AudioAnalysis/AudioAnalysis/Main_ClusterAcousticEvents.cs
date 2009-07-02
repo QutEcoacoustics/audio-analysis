@@ -80,7 +80,7 @@ namespace AudioAnalysis
                 count++;
                 //Console.WriteLine(count+"  "+ e.WriteProperties());
                 oblongs.Add(e.oblong);
-                //if(count > 10000) break;
+                if(count > 1000) break; //to speed things up
             }
 
 
@@ -117,8 +117,12 @@ namespace AudioAnalysis
             int[] categoryDistribution = Oblong.Distribution(categoryAvShapes, analysisBandCount);
 
             Console.WriteLine("Event count=" + DataTools.Sum(syllableDistribution) + "\tCategory count=" + DataTools.Sum(categoryDistribution));
+            count = 0;
+            categoryAvShapes = Oblong.SortByColumnCentroid(categoryAvShapes);
             foreach (Oblong o in categoryAvShapes)
             {
+                count++;
+                Console.Write(count+"\t");
                 o.WriteProperties();
             }
 

@@ -80,6 +80,6 @@ namespace AudioAnalysis
             Console.ReadLine();
         }
 
-    }//end class Main_CreateTemplate_AutoPart1
+    }//end class Main_CreateTemplate_Auto
 
 }

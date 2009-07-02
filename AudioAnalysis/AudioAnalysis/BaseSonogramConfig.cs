@@ -13,16 +13,18 @@ namespace AudioAnalysis
 
         #region Properties
         public string SourceFName { get; set; }
+        public string CallName { get; set; }//label to use for segmentation of call and silence.
 
         public FftConfiguration FftConfig { get; set; }
         public TimeSpan Duration { get; set; }
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
-        public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
+        public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
         public bool DoMelScale { get; set; }
         public ConfigKeys.NoiseReductionType NoiseReductionType { get; set; }
-        public double DynamicRange { get; set; }
+        public double[] SilenceModel { get; set; }
+        public double   DynamicRange { get; set; }
 
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
@@ -70,7 +72,7 @@ namespace AudioAnalysis
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1K2Latency, "0.05");
-            config.SetPair(ConfigKeys.EndpointDetection.Key_VocalDelay, "0.2");
+            config.SetPair(ConfigKeys.EndpointDetection.Key_VocalGap, "0.2");
             config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
 

@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ClusterAcousticEvents</StartupObject>
+    <StartupObject>AudioAnalysis.Main_CallSegmentation</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -97,6 +97,7 @@
     <Compile Include="BaseTemplate.cs" />
     <Compile Include="BaseResult.cs" />
     <Compile Include="Main_Alfredo1.cs" />
+    <Compile Include="Main_CallSegmentation.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />

@@ -569,6 +569,24 @@ namespace TowseyLib
   }
 
 
+        /// <summary>
+        /// this method written to display silence/noise profile of wav file. May not fit general use.
+        /// Must be shifted and scaled because all values are neg
+        /// </summary>
+        /// <param name="data"></param>
+  public static void writeBarGraph(double[] data)
+  {
+      Console.WriteLine("BAR GRAPH OF DOUBLES DATA");
+      double min;
+      double max;
+      MinMax(data, out min, out max);
+      int[] intdata = new int[data.Length];
+      for(int i=0; i<data.Length; i++) intdata[i] = (int)Math.Round(2*(data[i] - min));//subtract min to remove neg values
+      writeBarGraph(intdata);
+  }
+
+
+
   public static void writeBarGraph(int[] data)
   {
     int min;
