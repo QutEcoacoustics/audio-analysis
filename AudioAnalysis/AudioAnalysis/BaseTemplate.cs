@@ -244,7 +244,7 @@ namespace AudioAnalysis
             EndpointDetectionConfiguration.K1Threshold = 3.5;
             EndpointDetectionConfiguration.K2Threshold = 6.0;
             EndpointDetectionConfiguration.K1K2Latency = 0.05;
-            EndpointDetectionConfiguration.VocalDelay = 0.2;
+            EndpointDetectionConfiguration.VocalGap = 0.2;
             EndpointDetectionConfiguration.MinPulseDuration = 0.075;
         }
 
@@ -259,7 +259,7 @@ namespace AudioAnalysis
             EndpointDetectionConfiguration.K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold);
             EndpointDetectionConfiguration.K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold);
             EndpointDetectionConfiguration.K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);
-            EndpointDetectionConfiguration.VocalDelay = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalDelay);
+            EndpointDetectionConfiguration.VocalGap = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap);
             EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);
             //DO_MELSCALE=false
             //NOISE_REDUCE=false

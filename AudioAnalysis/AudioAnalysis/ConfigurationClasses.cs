@@ -16,7 +16,7 @@ namespace AudioAnalysis
         public enum WindowFunctions { HAMMING };
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
         public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
-        public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, DEFAULT_STANDBY }
+        public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, SILENCE_MODEL, DEFAULT_STANDBY }
 
 
         public struct Recording 
@@ -64,7 +64,7 @@ namespace AudioAnalysis
             public const string Key_K1SegmentationThreshold = "SEGMENTATION_THRESHOLD_K1";
             public const string Key_K2SegmentationThreshold = "SEGMENTATION_THRESHOLD_K2";
             public const string Key_K1K2Latency      = "K1_K2_LATENCY";
-            public const string Key_VocalDelay       = "VOCAL_DELAY";
+            public const string Key_VocalGap         = "VOCAL_GAP";
             public const string Key_MinVocalDuration = "MIN_VOCAL_DURATION";
         }
 
@@ -215,8 +215,8 @@ namespace AudioAnalysis
 		{
             K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold); //dB threshold for recognition of vocalisations
             K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold); //dB threshold for recognition of vocalisations
-            K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);				//seconds delay between signal reaching k1 and k2 thresholds
-            VocalDelay = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalDelay);               //seconds delay required to separate vocalisations 
+            K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);			  //seconds delay between signal reaching k1 and k2 thresholds
+            VocalGap  = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap);                //seconds gap required to separate vocalisations 
             MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);   //minimum length of energy pulse - do not use this - 
         }
 
@@ -226,7 +226,7 @@ namespace AudioAnalysis
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, K1Threshold);
             writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, K2Threshold);
 			//writer.WriteConfigValue("K1_K2_LATENCY", K1K2Latency);
-			//writer.WriteConfigValue("VOCAL_DELAY", VocalDelay);
+            writer.WriteConfigValue(ConfigKeys.EndpointDetection.Key_VocalGap, VocalGap);
 			//writer.WriteConfigValue("MIN_VOCAL_DURATION", MinPulseDuration);
             writer.WriteLine("#");
             writer.Flush();
@@ -262,10 +262,10 @@ namespace AudioAnalysis
         public static int[] DetermineVocalisationEndpoints(double[] dbArray, double frameOffset)
         {
             var k1_k2delay = (int)(K1K2Latency / frameOffset);    //=5  frames delay between signal reaching k1 and k2 thresholds
-            var syllableDelay = (int)(VocalDelay / frameOffset);  //=10 frames delay required to separate vocalisations 
-            var minPulse = (int)(MinPulseDuration / frameOffset); //=2  frames is min vocal length
-            //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableDelay=" + syllableDelay + "  minPulse=" + minPulse);
-            return Speech.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, syllableDelay, minPulse, null);
+            var frameGap   = (int)(VocalGap / frameOffset);  //=10 frames delay required to separate vocalisations 
+            var minPulse   = (int)(MinPulseDuration / frameOffset); //=2  frames is min vocal length
+            //Console.WriteLine("k1_k2delay=" + k1_k2delay + "  syllableGap=" + syllableGap + "  minPulse=" + minPulse);
+            return Speech.VocalizationDetection(dbArray, K1Threshold, K2Threshold, k1_k2delay, frameGap, minPulse, null);
         }
 
 
@@ -276,7 +276,7 @@ namespace AudioAnalysis
 		public static double K1Threshold { get; set; }	// dB threshold for recognition of vocalisations
 		public static double K2Threshold { get; set; }	// dB threshold for recognition of vocalisations
 		public static double K1K2Latency { get; set; }	// Seconds delay between signal reaching k1 and k2 thresholds
-		public static double VocalDelay { get; set; }	// Seconds delay required to separate vocalisations 
+		public static double VocalGap    { get; set; }	// Seconds gap required to separate vocalisations 
 		public static double MinPulseDuration { get; set; }		// Minimum length of energy pulse - do not use this
 		#endregion
 	}

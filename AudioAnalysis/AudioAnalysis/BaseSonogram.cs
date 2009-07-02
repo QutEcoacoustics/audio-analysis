@@ -275,6 +275,51 @@ namespace AudioAnalysis
         }
 
 
+
+        public StringBuilder GetSegmentationText()
+        {
+            StringBuilder sb = new StringBuilder("_LABEL_\tST_FR\tST_SEC\tEND_FR\tEND_SEC\n");
+            int prevState = 0;
+
+            int length = this.SigState.Length;
+
+            //START
+            if (this.SigState[0] == 0) sb.Append("SILENCE\t0\t0.0000");
+            else
+                if (this.SigState[0] > 0)
+                {
+                    prevState = 1;
+                    sb.Append("VOCALISE\t0\t0.0000");
+                }
+
+            double time = 0.0;
+            for (int i = 0; i < length; i++)
+            {
+                if ((this.SigState[i] > 0) && (prevState == 0))
+                {
+                    prevState = 1;
+                    time = i * this.FrameOffset;
+                    sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
+                    sb.Append("VOCALISE\t" + i + "\t" + time.ToString("F4"));
+                }
+                else //come to silence
+                if ((this.SigState[i] == 0) && (prevState > 0))
+                {
+                    prevState = 0;
+                    time = i * this.FrameOffset;
+                    sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
+                    sb.Append("SILENCE\t" + i + "\t" + time.ToString("F4"));
+                }
+            }
+
+            time = length * this.FrameOffset;
+            sb.Append("\t" + (length - 1) + "\t" + time.ToString("F4"));
+
+            return sb;
+        }
+
+
+
         /// <summary>
         /// factor must be an integer. 2 mean image reduced by factor of 2; 3 reduced by factor of 3 etc.
         /// </summary>
@@ -532,9 +577,9 @@ namespace AudioAnalysis
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
-            this.SnrFrames.ModalNoiseProfile = modalNoise;
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
             {
+                this.SnrFrames.ModalNoiseProfile = modalNoise;
                 m = SNR.NoiseReduce_Standard(m, modalNoise);
             }
             else
@@ -543,12 +588,21 @@ namespace AudioAnalysis
                 Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
                 m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
             }
+            else
+            if(Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.SILENCE_MODEL)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: SILENCE MODEL - calculated from a seperate file with sufficient silence.");
+                this.SnrFrames.ModalNoiseProfile = this.Configuration.SilenceModel;
+                m = SNR.NoiseReduce_Standard(m, this.Configuration.SilenceModel);
+            }
+            else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
             {
                 Log.WriteIfVerbose("\tNoise reduction: default standby for short high energy vocalisations");
                 //TODO TODO TODO
                 //modalNoise = have to get at the standby Noise profile currently stored in FVConfig class.
                 //It was put there when initialising the FVConfig class from the DefaultNoise  recording
+                this.SnrFrames.ModalNoiseProfile = modalNoise;
                 m = SNR.NoiseReduce_Standbye(m, modalNoise, this.Configuration.DynamicRange);
             }
             
