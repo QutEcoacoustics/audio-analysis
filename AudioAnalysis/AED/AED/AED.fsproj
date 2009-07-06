@@ -59,6 +59,7 @@
     <Compile Include="AcousticEventDetection.fs" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="GetAcousticEvents.fs" />
+    <Compile Include="LargeEvents.fs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\FSharp\1.0\Microsoft.FSharp.Targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

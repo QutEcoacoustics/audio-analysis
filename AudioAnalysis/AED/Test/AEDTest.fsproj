@@ -58,6 +58,7 @@
     <Compile Include="WienerTest.fs" />
     <Compile Include="AcousticEventDetectionTest.fs" />
     <Compile Include="GetAcousticEventsTest.fs" />
+    <Compile Include="LargeEventsTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AED\AED.fsproj">
