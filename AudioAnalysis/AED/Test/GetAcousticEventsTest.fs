@@ -21,10 +21,10 @@ let getAcousticEventsTestQuick () =
     let m = Array2.create 4 3 0.0 |> of_array2
     Assert.Equal([], getAcousticEvents m)
     m.[0,1] <- 1.0
-    Assert.Equal([{Left=1;Top=0}], (getAcousticEvents m))
+    Assert.Equal([{Left=1;Top=0;Width=1;Height=1}], (getAcousticEvents m))
     m.[1,1] <- 1.0
     m.[1,2] <- 1.0
-    Assert.Equal([{Left=1;Top=0}], (getAcousticEvents m))
+    Assert.Equal([{Left=1;Top=0;Width=2;Height=2}], (getAcousticEvents m))
     m.[3,0] <- 1.0
     Assert.Equal(2, List.length (getAcousticEvents m))
 
@@ -38,5 +38,5 @@ let getAcousticEventsTest () =
     // matlab matrix indicies are 1 based, F# is 0 based
     let aem = loadTestFile2 "AE.txt" 6 MATLAB_LENGTH    
     let dec x = (int x) - 1
-    let m = seq {for i in 0..(MATLAB_LENGTH-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]}}
+    let m = seq {for i in 0..(MATLAB_LENGTH-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
     Assert.Equal(Seq.sort m, Seq.sort ae)
