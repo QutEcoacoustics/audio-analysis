@@ -23,6 +23,7 @@ namespace AudioAnalysis
         public bool DoPreemphasis { get; set; }
         public bool DoMelScale { get; set; }
         public ConfigKeys.NoiseReductionType NoiseReductionType { get; set; }
+        public string SilenceRecordingPath { get; set; }
         public double[] SilenceModel { get; set; }
         public double   DynamicRange { get; set; }
 
@@ -60,7 +61,6 @@ namespace AudioAnalysis
         public SonogramConfig()
         {
             Configuration config = new Configuration();
-
 
             config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
@@ -111,7 +111,8 @@ namespace AudioAnalysis
             DynamicRange = config.GetDouble(ConfigKeys.Snr.Key_DynamicRange);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
-            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce); 
+            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce);
+            SilenceRecordingPath = config.GetString(ConfigKeys.Snr.Key_SilenceRecording);
             MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
