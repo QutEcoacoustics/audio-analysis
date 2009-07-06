@@ -33,13 +33,10 @@ let getAcousticEventsTest () =
     let i6bm = loadTestFile "I6b.txt" |> of_array2
     let ae = getAcousticEvents i6bm
     let MATLAB_LENGTH = 1229
-    let aem = loadTestFile2 "AE.txt" 6 MATLAB_LENGTH
     Assert.Equal(MATLAB_LENGTH, List.length ae)
     
-    // matlab output sorted by top left column, top left row
-    let f x y = if x.Left = y.Left then compare x.Top y.Top else compare x.Left y.Left
-    let inc = (+) 1 // matlab matrix indicies are 1 based, F# is 0 based
-    let MATLAB_LEFT, MATLAB_TOP = 0, 1
-    let g i x = inc x.Left = (int) aem.[MATLAB_LEFT,i] && inc x.Top = (int) aem.[MATLAB_TOP,i]
-    // hack to show the index failed at in the xunit output
-    List.tryfind_index (fun x -> not x) (List.sort f ae |> List.mapi g) |> Option.iter (fun i -> Assert.Equal(-1, i))
+    // matlab matrix indicies are 1 based, F# is 0 based
+    let aem = loadTestFile2 "AE.txt" 6 MATLAB_LENGTH    
+    let dec x = (int x) - 1
+    let m = seq {for i in 0..(MATLAB_LENGTH-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]}}
+    Assert.Equal(Seq.sort m, Seq.sort ae)
