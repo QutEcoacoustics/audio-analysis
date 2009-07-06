@@ -56,6 +56,7 @@ namespace AudioAnalysis
         public struct Snr
         {
             public const string Key_DynamicRange     = "DYNAMIC_RANGE";
+            public const string Key_SilenceRecording = "SILENCE_RECORDING_PATH"; //used to determin silence model.
         }
 
             
@@ -70,7 +71,7 @@ namespace AudioAnalysis
 
         public struct Sonogram
         {
-            public const string Key_SonogramType = "SONOGRAM_TYPE";
+            public const string Key_SonogramType    = "SONOGRAM_TYPE";
         }
 
         public struct Template
