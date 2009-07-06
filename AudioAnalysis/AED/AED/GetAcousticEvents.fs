@@ -12,11 +12,13 @@ let rec spider (m:matrix) p (v:(int * int) Set) =
     // else spider m (i+1,j-1) (add p v) |> spider m (i+1,j) |> spider m (i+1,j+1) |> spider m (i,j+1) 
     else List.fold_left (fun z p -> spider m p z) (add p v) [(i-1,j-1);(i-1,j);(i-1,j+1);(i,j-1);(i,j);(i,j+1);(i+1,j-1);(i+1,j);(i+1,j+1)]
     
+type Rectangle = {Left: int; Top: int;}
+    
 let getAcousticEvents m =
     let m' = copy m
     let g xs = 
         iter (fun (i,j) -> m'.[i,j] <- 0.0) xs // TODO how can we efficiently not mutate?
         let (rs, cs) = List.unzip (to_list xs) 
-        (List.min cs, List.min rs)             // TODO what data structure is best here?
+        {Left = List.min cs; Top = List.min rs}
     let f i j a x = if x = 0.0 or m'.[i,j] = 0.0 then a else (g(spider m (i,j) Set.empty))::a
     foldi f [] m
