@@ -19,6 +19,7 @@ let getAcousticEvents m =
     let g xs = 
         iter (fun (i,j) -> m'.[i,j] <- 0.0) xs // TODO how can we efficiently not mutate?
         let (rs, cs) = List.unzip (to_list xs) 
-        {Left=List.min cs; Top=List.min rs; Width=List.max cs - List.min cs + 1; Height=List.max rs - List.min rs + 1} // TODO memoize the mins
+        let l,t = List.min cs, List.min rs
+        {Left=l; Top=t; Width=List.max cs - l + 1; Height=List.max rs - t + 1}
     let f i j a x = if x = 0.0 or m'.[i,j] = 0.0 then a else (g(spider m (i,j) Set.empty))::a
     foldi f [] m
