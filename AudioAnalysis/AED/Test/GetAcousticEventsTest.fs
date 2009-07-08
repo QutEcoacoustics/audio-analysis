@@ -34,9 +34,5 @@ let getAcousticEventsTest () =
     let ae = getAcousticEvents i6bm
     let MATLAB_LENGTH = 1229
     Assert.Equal(MATLAB_LENGTH, List.length ae)
-    
-    // matlab matrix indicies are 1 based, F# is 0 based
-    let aem = loadTestFile2 "AE.txt" 6 MATLAB_LENGTH    
-    let dec x = (int x) - 1
-    let m = seq {for i in 0..(MATLAB_LENGTH-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
-    Assert.Equal(Seq.sort m, Seq.sort ae)
+    let aem = loadEventsFile "AE.txt" MATLAB_LENGTH    
+    Assert.Equal(Seq.sort aem, Seq.sort ae)
