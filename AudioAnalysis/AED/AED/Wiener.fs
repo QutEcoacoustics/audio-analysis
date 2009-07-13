@@ -1,5 +1,4 @@
-﻿#light
-module QutSensors.AudioAnalysis.AED.Wiener
+﻿module QutSensors.AudioAnalysis.AED.Wiener
 
 (* wiener2 is a Matlab function.
 
@@ -19,11 +18,11 @@ let uncurry4 f (w, x, y, z) = f w x y z
  
 let localMeansVariances a n =
     let f x y _ = 
-        let nba = uncurry4 (Array2.sub a) (neighborhoodBounds a n x y)
+        let nba = uncurry4 (Array2D.sub a) (neighborhoodBounds a n x y)
         let nbs = float (n*n)
         let m = mean nba nbs
         (m, variance nba nbs m)
-    Array2.mapi f a
+    Array2D.mapi f a
     
 let wiener2 a n =
     let lmv = localMeansVariances a n
@@ -31,4 +30,4 @@ let wiener2 a n =
     let f x y e =
         let (m,v) = lmv.[x,y]
         m + ((max 0.0 (v - nv)) / max v nv) * ((float e) - m)
-    Array2.mapi f a
+    Array2D.mapi f a

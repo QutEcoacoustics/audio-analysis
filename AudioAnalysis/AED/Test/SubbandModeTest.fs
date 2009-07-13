@@ -1,6 +1,4 @@
-﻿#light
-
-open Common
+﻿open Common
 open Math.Matrix
 open QutSensors.AudioAnalysis.AED.SubbandMode
 open Util.Array2

@@ -1,6 +1,4 @@
-﻿#light
-
-module Util.Array2
+﻿module Util.Array2
 
 open System
 open System.IO
@@ -57,7 +55,7 @@ let neighborhoodBounds (a:'a[,]) n x y =
  *)
 let fileToMatrix f r c =
     let ls = File.ReadAllLines f
-    let a = Array2.create r c 0.0
+    let a = Array2D.create r c 0.0
     Array.iteri (fun i (s:string) -> a.[i % r, i / r] <- Convert.ToDouble(s)) ls
     a
     

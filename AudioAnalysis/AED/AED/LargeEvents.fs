@@ -1,5 +1,4 @@
-﻿#light
-module QutSensors.AudioAnalysis.AED.LargeEvents
+﻿module QutSensors.AudioAnalysis.AED.LargeEvents
     
 open GetAcousticEvents
     
