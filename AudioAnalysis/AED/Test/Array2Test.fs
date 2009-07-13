@@ -1,11 +1,9 @@
-﻿#light
-
-open Util.Array2
+﻿open Util.Array2
 open Xunit // TODO put dll in project and fix reference?
 
 [<Fact>]
 let testNeighborhoodBounds () =
-    let a = Array2.create 100 100 0
+    let a = Array2D.create 100 100 0
     Assert.Equal(Util.Array2.neighborhoodBounds a 5 0 0, (0, 0, 3, 3))
     Assert.Equal(Util.Array2.neighborhoodBounds a 5 1 0,  (0, 0, 4, 3))
     Assert.Equal(Util.Array2.neighborhoodBounds a 5 2 0, (0, 0, 5, 3))

@@ -1,6 +1,4 @@
-﻿#light
-
-open QutSensors.AudioAnalysis.AED.AcousticEventDetection
+﻿open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open Common
 open Math.Matrix
 open Util.Array2
@@ -15,7 +13,7 @@ let testToBlackAndWhite () =
        
 [<Fact>]
 let testToFillIn () =
-    let m = Array2.create 5 10 0.0 |> of_array2
+    let m = Array2D.create 5 10 0.0 |> of_array2
     Assert.False(toFillIn m 0 0 3)
     Assert.False(toFillIn m 1 9 3)
     m.[0,1] <- 1.0
@@ -31,7 +29,7 @@ let testToFillIn () =
 
 [<Fact>]
 let testJoinHorizontalLinesQuick () =
-    let m = Array2.create 5 10 0.0 |> of_array2
+    let m = Array2D.create 5 10 0.0 |> of_array2
     Assert.Equal(m, joinHorizontalLines m)
     m.[0,1] <- 1.0
     Assert.Equal(m, joinHorizontalLines m)

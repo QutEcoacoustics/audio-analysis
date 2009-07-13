@@ -1,5 +1,4 @@
-﻿#light
-module QutSensors.AudioAnalysis.AED.AcousticEventDetection
+﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
 open Math.Matrix
 

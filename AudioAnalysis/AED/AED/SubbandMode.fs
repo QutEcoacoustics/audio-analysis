@@ -1,5 +1,4 @@
-﻿#light
-module QutSensors.AudioAnalysis.AED.SubbandMode
+﻿module QutSensors.AudioAnalysis.AED.SubbandMode
 
 open Math.Matrix
 open Math.Vector.Generic

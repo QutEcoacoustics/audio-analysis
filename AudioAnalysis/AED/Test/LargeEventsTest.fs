@@ -1,6 +1,4 @@
-﻿#light
-
-open Common
+﻿open Common
 open QutSensors.AudioAnalysis.AED.LargeEvents
 open Xunit
 

@@ -1,6 +1,4 @@
-﻿#light
-
-module Common
+﻿module Common
 
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Util.Array2
