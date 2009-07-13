@@ -16,3 +16,11 @@ let toFillIn (m:matrix) i j t =
 let joinHorizontalLines m = mapi (fun i j x -> if x = 1.0 or (toFillIn m i j 3) then 1.0 else 0.0) m
     
 let joinVerticalLines = transpose << joinHorizontalLines << transpose
+
+let detectEvents a =
+    let i2 = Wiener.wiener2 a 5 |> of_array2 
+    let i3 = SubbandMode.removeSubbandModeIntensities2 i2
+    let i4 = toBlackAndWhite 9.0 i3
+    let i6 = joinVerticalLines i4 |> joinHorizontalLines
+    let ae = GetAcousticEvents.getAcousticEvents i6
+    ae
