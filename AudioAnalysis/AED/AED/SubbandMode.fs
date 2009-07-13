@@ -51,7 +51,7 @@ let removeSubbandModeIntensities2 (m:matrix) =
         let f (mn, mx) x = (min mn x, max mx x)
         foldByRow f (init (m.NumRows)(fun r -> (m.[r,0], m.[r,0]))) m
     let hs = rowHist m ms
-    let mo = to_array hs |> Array.map (fun a -> Array.find_index (fun x -> x= (Array.max a)) a)
+    let mo = to_array hs |> Array.map (fun a -> Array.findIndex (fun x -> x= (Array.max a)) a)
     let modes =
         let f o (mn, mx) = 
             let t = (mn - mx) / 2.0

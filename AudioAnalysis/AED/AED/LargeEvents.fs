@@ -8,7 +8,7 @@ let hist xs cs =
     let a = Array.create (Seq.length ub) 0
     // TODO nasty bit of imperative code
     let f x = 
-        let i = Array.find_index (fun b -> x <= b) ub
+        let i = Array.findIndex (fun b -> x <= b) ub
         a.[i] <- a.[i] + 1
     Seq.iter f xs
     a

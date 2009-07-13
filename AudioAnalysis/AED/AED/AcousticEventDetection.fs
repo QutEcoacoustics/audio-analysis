@@ -1,9 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
-open Math.Matrix
-
 // TODO should this return a matrix of int
-let toBlackAndWhite t = map (fun e -> if e > t then 1.0 else 0.0)
+let toBlackAndWhite t = Math.Matrix.map (fun e -> if e > t then 1.0 else 0.0)
     
 let toFillIn (m:matrix) i j t =
     // TODO right & left should really be generalised to work with sequences? instead of matrix
@@ -12,12 +10,12 @@ let toFillIn (m:matrix) i j t =
     let l, r = left 1, right 1
     l > 0 && r > 0 && l + r <= t
 
-let joinHorizontalLines m = mapi (fun i j x -> if x = 1.0 or (toFillIn m i j 3) then 1.0 else 0.0) m
+let joinHorizontalLines m = Math.Matrix.mapi (fun i j x -> if x = 1.0 or (toFillIn m i j 3) then 1.0 else 0.0) m
     
-let joinVerticalLines = transpose << joinHorizontalLines << transpose
+let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Matrix.transpose
 
 let detectEvents a =
-    let i2 = Wiener.wiener2 a 5 |> of_array2 
+    let i2 = Wiener.wiener2 a 5 |> Math.Matrix.of_array2 
     let i3 = SubbandMode.removeSubbandModeIntensities2 i2
     let i4 = toBlackAndWhite 9.0 i3
     let i6 = joinVerticalLines i4 |> joinHorizontalLines
