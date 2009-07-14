@@ -40,31 +40,36 @@ namespace AudioAnalysis
             FileInfo[] recordingFiles = FileTools.GetFilesInDirectory(gui.TrainingDirName, ext);
             
             //A: CREATE THE TEMPLATE according to parameters set in gui.
+            Console.WriteLine("STEP A: CREATE TEMPLATE");
             var template = Template_CCAuto.Load(appConfigPath, gui, recordingFiles, templateDir, templateFName);
 
             //B: CREATE SERIALISED VERSION OF TEMPLATE
+            Console.WriteLine("STEP B: CREATE SERIALISED VERSION OF TEMPLATE");
             var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
-            Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
+            Console.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
             string serialPath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(templateFName) + ".serialised");
-            Log.WriteLine("\tWriting serialised template to file: " + serialPath);
+            Console.WriteLine("\tWriting serialised template to file: " + serialPath);
             FileTools.WriteSerialisedObject(serialPath, serializedData);
-            serializedData = null; //just to ensure that reading works
-            template = null;
+            serializedData = null; //to ensure that reading works
+            template = null;       //to ensure that reading works
 
             //C: READ IN SERIALISED TEMPLATE
-            Log.WriteLine("\tReading serialised template from file " + serialPath);
+            Console.WriteLine("STEP C: READ SERIALISED VERSION OF TEMPLATE in file " + serialPath);
             var serializedData2 = FileTools.ReadSerialisedObject(serialPath);
             var template2 = QutSensors.Data.Utilities.BinaryDeserialize(serializedData2) as Template_CCAuto;
 
-            //D: VERIFY THE TEMPLATE on selected recording
+            //D: LOAD TEMPLATE INTO RECOGNISER
+            Console.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
+            var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
+            //reset noise reduction type for long recording
+            template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+
+            //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
+            Console.WriteLine("STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + serialPath);
             string wavDirName; string wavFileName;
             AudioRecording recording;//
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
 
-            //E: LOAD recogniser, SCAN A SINGLE RECORDING and SAVE RESULTS IMAGE
-            var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
-            //reset noise reduction type for long recording
-            template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
             var result = recogniser.Analyse(recording);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);

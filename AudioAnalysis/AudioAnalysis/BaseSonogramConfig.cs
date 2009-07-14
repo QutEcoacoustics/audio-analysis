@@ -103,6 +103,7 @@ namespace AudioAnalysis
 
         private void Initialize(Configuration config)
         {
+            CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
             SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
             FftConfig = new FftConfiguration(config);
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);

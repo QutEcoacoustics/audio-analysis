@@ -119,7 +119,7 @@ namespace AudioAnalysis
 
             //Console.WriteLine("\nAv Duration = " + (avDuration / count));
             Console.WriteLine("\nFINISHED!");
-            Console.ReadLine();
+            //Console.ReadLine();
         } //end method Main()
 
 
