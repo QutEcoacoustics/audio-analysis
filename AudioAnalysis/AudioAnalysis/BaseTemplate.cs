@@ -163,12 +163,17 @@ namespace AudioAnalysis
 
         public static Configuration MergeProperties(string appConfigFile, GUI gui)
         {
-            LoadDefaultConfig(); //just in case the appCOnfig does not exist
+            LoadDefaultConfig(); //just in case the appConfig does not exist
 
-            //set up the config table
-            var config = new Configuration();
-            if (File.Exists(appConfigFile)) config = new Configuration(appConfigFile);
+            if (!File.Exists(appConfigFile)) return null;
+ 
+            //read the config table
+            var config = new Configuration(appConfigFile);
 
+            //**************** LOAD STATIC PARAMETERS
+            LoadStaticConfig(config);
+
+            //**************** ID info
             config.SetPair("AUTHOR", gui.AuthorName.ToString());
             config.SetPair("TEMPLATE_ID", gui.CallID.ToString());
             config.SetPair("CALL_NAME", gui.CallName);
@@ -251,7 +256,11 @@ namespace AudioAnalysis
         public static Configuration LoadStaticConfig(string appConfigFile)
         {
             var config = new Configuration(appConfigFile);
-            Log.Verbosity=config.GetInt("VERBOSITY");
+            return LoadStaticConfig(config);
+        }
+        public static Configuration LoadStaticConfig(Configuration config)
+        {
+            Log.Verbosity = config.GetInt("VERBOSITY");
             //SAMPLE_RATE=0
             //SUBSAMPLE=0
             //WINDOW_OVERLAP=0.5
@@ -259,7 +268,7 @@ namespace AudioAnalysis
             EndpointDetectionConfiguration.K1Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold);
             EndpointDetectionConfiguration.K2Threshold = config.GetDouble(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold);
             EndpointDetectionConfiguration.K1K2Latency = config.GetDouble(ConfigKeys.EndpointDetection.Key_K1K2Latency);
-            EndpointDetectionConfiguration.VocalGap = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap);
+            EndpointDetectionConfiguration.VocalGap    = config.GetDouble(ConfigKeys.EndpointDetection.Key_VocalGap);
             EndpointDetectionConfiguration.MinPulseDuration = config.GetDouble(ConfigKeys.EndpointDetection.Key_MinVocalDuration);
             //DO_MELSCALE=false
             //NOISE_REDUCE=false

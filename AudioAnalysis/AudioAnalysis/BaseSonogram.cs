@@ -280,6 +280,7 @@ namespace AudioAnalysis
         {
             StringBuilder sb = new StringBuilder("_LABEL_\tST_FR\tST_SEC\tEND_FR\tEND_SEC\n");
             int prevState = 0;
+            string name = this.Configuration.CallName;
 
             int length = this.SigState.Length;
 
@@ -289,7 +290,7 @@ namespace AudioAnalysis
                 if (this.SigState[0] > 0)
                 {
                     prevState = 1;
-                    sb.Append("VOCALISE\t0\t0.0000");
+                    sb.Append(name+"\t0\t0.0000");
                 }
 
             double time = 0.0;
@@ -300,7 +301,7 @@ namespace AudioAnalysis
                     prevState = 1;
                     time = i * this.FrameOffset;
                     sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
-                    sb.Append("VOCALISE\t" + i + "\t" + time.ToString("F4"));
+                    sb.Append(name + "\t" + i + "\t" + time.ToString("F4"));
                 }
                 else //come to silence
                 if ((this.SigState[i] == 0) && (prevState > 0))

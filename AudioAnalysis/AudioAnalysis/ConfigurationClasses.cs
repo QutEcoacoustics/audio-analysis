@@ -21,6 +21,7 @@ namespace AudioAnalysis
 
         public struct Recording 
         {
+            public const string Key_RecordingCallName = "CALL_NAME";
             public const string Key_RecordingFileName = "WAV_FILE_NAME";
             public const string Key_RecordingDirName  = "WAV_DIR_NAME";
             public const string Key_TrainingDirName   = "TRAIN_DIR_NAME";
@@ -273,7 +274,7 @@ namespace AudioAnalysis
 
 		#region Six Static Properties
         //these should be the same for all threads and processes
-        //these k1 and k2 thresholds are dB above the base line minimum value. Different from values finally used in Sonogram classes
+        //these k1 and k2 thresholds are dB above the base line minimum value.
 		public static double K1Threshold { get; set; }	// dB threshold for recognition of vocalisations
 		public static double K2Threshold { get; set; }	// dB threshold for recognition of vocalisations
 		public static double K1K2Latency { get; set; }	// Seconds delay between signal reaching k1 and k2 thresholds
