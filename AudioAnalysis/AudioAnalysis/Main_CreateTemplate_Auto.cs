@@ -71,6 +71,12 @@ namespace AudioAnalysis
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
 
             var result = recogniser.Analyse(recording);
+            int binCount = template2.SonogramConfig.FreqBinCount;
+            double binWidth = template2.SonogramConfig.FftConfig.NyquistFreq / (double)binCount;
+            int minF = (int)template2.SonogramConfig.MinFreqBand;
+            int maxF = (int)template2.SonogramConfig.MaxFreqBand;
+            double frameOffset = template2.SonogramConfig.GetFrameOffset();
+            var events = result.GetAcousticEvents(binCount, binWidth, minF, maxF, frameOffset);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result);
 

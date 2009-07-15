@@ -6,7 +6,7 @@ using TowseyLib;
 
 namespace AudioAnalysis
 {
-    class AcousticEvent
+    public class AcousticEvent
     {
         public static int    FreqBinCount;
         public static double FreqBinWidth;
@@ -38,7 +38,7 @@ namespace AudioAnalysis
             this.Duration = duration;
             this.MinFreq = (int)minFreq;
             this.MaxFreq = (int)maxFreq;
-            if (FreqBinCount == 0)
+            if (AcousticEvent.FreqBinCount == 0)
             {
                 Console.WriteLine("WARNING!! ######## Frequency bin count has not been set");
                 throw new Exception("FATAL ERROR - TERMINATE");

@@ -88,7 +88,7 @@ namespace AudioAnalysis
         public override void ScanSymbolSequenceWithModel(BaseResult r, double frameOffset)
         {
             Log.WriteIfVerbose("\nSTART Model_MMErgodic.ScanSymbolSequenceWithModel()");
-            var result = r as Result_MMErgodic;
+            var result = r as Result_MMErgodic; //caste to appropriate result type.
 
             List<string> unitTestMonitor = new List<string>(); // only used when Unit testing
 
@@ -96,12 +96,12 @@ namespace AudioAnalysis
             string symbolSequence = result.SyllSymbols;
             int frameCount = symbolSequence.Length;
             
-            //obtain vocalisations that have been scored by the MM
+            //obtain vocalisations that have been detected by the MM
             MMResults mmResults = markovModel.ScoreSequence(symbolSequence);
-
-            //obtain the list of vocalisations represented as symbol strings
-            List<Vocalisation> list = mmResults.VocalList;
+            List<Vocalisation> list = mmResults.VocalList; //each vocalisation represented as symbol string and scores
             int listLength = list.Count;
+
+            result.VocalisationList = list;
 
             //ANALYSE THE MM RESULTS FOR EACH VOCALISATION - CALCULATE LLR etc
             //init the results variables
@@ -114,7 +114,7 @@ namespace AudioAnalysis
             //for (int i = 0; i < 50; i++) //
                 {
                 Vocalisation vocalEvent = list[i];
-                int[] array = MMTools.String2IntegerArray('n' + vocalEvent.Sequence + 'n');
+                int[] array = MMTools.String2IntegerArray('n' + vocalEvent.SymbolSequence + 'n');
 
                 //song duration filter
                 double durationProb = vocalEvent.DurationProbability;
@@ -125,8 +125,6 @@ namespace AudioAnalysis
 
                 //now SCALE THE SCORE ARRAY so that it can be displayed in range +0 to +10.
                 double? displayScore = llr + vocalEvent.QualityScore;
-                //double displayScore = llr;
-
                 displayScore += result.MaxDisplayScore; //add positve value because max score expected to be zero.
                 if (displayScore > result.MaxDisplayScore) displayScore = result.MaxDisplayScore;
                 if (displayScore < 0) displayScore = 0.0;
@@ -139,7 +137,7 @@ namespace AudioAnalysis
                     bestFrame = vocalEvent.Start;
                 }
                 //Log.WriteIfVerbose((i + 1).ToString("D2") + " LLR=" + llr.ToString("F2") + " \tQual=" + vocalEvent.QualityScore.ToString("F2") + "\t" + vocalEvent.Sequence);
-                unitTestMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.Sequence);
+                unitTestMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.SymbolSequence);
             }//end of scanning all vocalisations
 
 

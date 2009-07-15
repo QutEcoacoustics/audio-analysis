@@ -342,7 +342,7 @@ namespace MarkovModels
             {
                 Vocalisation extract = list[i];
                 //Log.WriteIfVerbose.WriteLine(i + " " + extract.Sequence);
-                int[] array = MMTools.String2IntegerArray('n' + extract.Sequence + 'n');
+                int[] array = MMTools.String2IntegerArray('n' + extract.SymbolSequence + 'n');
 
                 //song duration filter - skip vocalisations that are not of sensible length
                 double durationProb = this.songduration.GetSongDurationProb(extract.Length);

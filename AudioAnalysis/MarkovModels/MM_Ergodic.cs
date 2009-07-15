@@ -188,7 +188,7 @@ namespace MarkovModels
             {
                 Vocalisation vocalEvent = list[i];
                 //Log.WriteIfVerbose(i + " " + vocalEvent.Sequence);
-                int[] array = MMTools.String2IntegerArray('n' + vocalEvent.Sequence + 'n');
+                int[] array = MMTools.String2IntegerArray('n' + vocalEvent.SymbolSequence + 'n');
                  
                 vocalEvent.DurationProbability = this.info.GetSongDurationProb(vocalEvent.Length);
                 vocalEvent.LengthZscore     = Math.Abs(vocalEvent.Length          - this.info.AvSeqLength)       / this.info.SdSeqLength;
