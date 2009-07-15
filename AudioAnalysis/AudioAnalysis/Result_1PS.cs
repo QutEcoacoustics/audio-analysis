@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using TowseyLib;
+using MarkovModels;
 
 namespace AudioAnalysis
 {
@@ -54,6 +56,29 @@ namespace AudioAnalysis
             else if (key.Equals(resultItemKeys[2])) return new ResultItem(resultItemKeys[2], TimeOfMaxScore, GetResultInfo(resultItemKeys[2]));
             return null;
         }
+
+
+        //returns a list of acoustic events derived from the list of vocalisations detected by the recogniser.
+        public override List<AcousticEvent> GetAcousticEvents(int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
+        {
+            var list = new List<AcousticEvent>();
+
+            AcousticEvent.FreqBinCount = fBinCount;  //must set this static var before creating Acousticevent objects
+            AcousticEvent.FreqBinWidth = fBinWidth;  //must set this static var before creating Acousticevent objects
+            AcousticEvent.FrameDuration = frameOffset;//must set this static var before creating Acousticevent objects
+
+            foreach (Vocalisation vocalEvent in VocalisationList)
+            {
+                int startFrame = vocalEvent.Start;
+                int endFrame = vocalEvent.End;
+                double startTime = startFrame * frameOffset;
+                double duration = (endFrame - startFrame) * frameOffset;
+                var acouticEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+            }
+
+            return list;
+        }
+
 
         public new static Dictionary<string, string> GetResultInfo(string key)
         {

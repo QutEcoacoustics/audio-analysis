@@ -392,7 +392,7 @@ namespace MarkovModels
                 //    continue;
                 //}
 
-                string seq = vocalEvent.Sequence;
+                string seq = vocalEvent.SymbolSequence;
                 //break events into overlapping parts
                 for (int e = 0; e < seq.Length; e++)
                 {

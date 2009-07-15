@@ -26,17 +26,17 @@ namespace MarkovModels
     /// </summary>
     public class Vocalisation
     {
-        public string Sequence { get; set; }
-        public int Start { get; set; }
-        public int End { get; set; }
-        public int Length { get; set; }
+        public string SymbolSequence { get; set; }
+        public int    Start { get; set; }
+        public int    End { get; set; }
+        public int    Length { get; set; }
         public double LengthZscore { set; get; }
         public double DurationProbability { get; set; }
 
         public int    TransitionCount { set; get; }
         public double TransitionZscore { set; get; }
         public double QualityScore { set; get; }//at present = sum of LengthZscore and TransitionZscore.
-        public double Score { get; set; } //obtained from the MM.
+        public double Score { get; set; }       //obtained from the MM.
 
 
 
@@ -51,7 +51,7 @@ namespace MarkovModels
             this.Start    = start;
             this.End      = end;
             this.Length   = end - start + 1;
-            this.Sequence = sequence;
+            this.SymbolSequence = sequence;
             int count = 0;
             for (int i = 1; i < sequence.Length; i++) if(sequence[i] != sequence[i-1]) count++;
             this.TransitionCount = count;
