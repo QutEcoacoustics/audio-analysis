@@ -63,8 +63,6 @@ namespace AudioAnalysis
             //D: LOAD TEMPLATE INTO RECOGNISER
             Console.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
             var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
-            //reset noise reduction type for long recording
-            //template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
 
             //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
             Console.WriteLine("STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + serialPath);
