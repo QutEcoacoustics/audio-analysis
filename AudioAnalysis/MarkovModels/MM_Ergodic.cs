@@ -206,7 +206,7 @@ namespace MarkovModels
 
             }//end of scanning all vocalisations
 
-            //initialise a results object with list of vocalisations and return to Model object
+            //initialise a results object with list of partial vocalisations and return to Model object
             MMResults results = new MMResults(list);
             results.probOfAverageTrainingSequenceGivenModel = this.probOfAverageTrainingSequenceGivenModel;
             results.qualityThreshold = -3.2;//i.e. 2 * 1.6
