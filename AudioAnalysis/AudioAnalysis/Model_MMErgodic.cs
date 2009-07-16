@@ -96,12 +96,12 @@ namespace AudioAnalysis
             string symbolSequence = result.SyllSymbols;
             int frameCount = symbolSequence.Length;
             
-            //obtain vocalisations that have been detected by the MM
+            //obtain list of partial vocalisations that have been detected by the MM
             MMResults mmResults = markovModel.ScoreSequence(symbolSequence);
-            List<Vocalisation> list = mmResults.VocalList; //each vocalisation represented as symbol string and scores
+            List<Vocalisation> list = mmResults.PartialVocalisations; //each vocalisation represented as symbol string and scores
             int listLength = list.Count;
 
-            result.VocalisationList = list;
+            //result.PartialVocalisations = list;
 
             //ANALYSE THE MM RESULTS FOR EACH VOCALISATION - CALCULATE LLR etc
             //init the results variables

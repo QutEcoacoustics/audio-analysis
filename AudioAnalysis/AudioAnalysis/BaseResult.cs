@@ -22,7 +22,7 @@ namespace AudioAnalysis
         public double[] Scores { get; set; }		    // array of scores derived from arbitrary source
 
         //summary scores
-        public List<Vocalisation> VocalisationList { get; set; }     // list of vocalisations obtained by Markov Model
+        public List<Vocalisation> FullVocalisations { get; set; } // list of vocalisations obtained by recogniser
         public int? VocalCount { get; set; }			// number of vocalisatsions involving a recognised syllable
         public double? RankingScoreValue { get; set; }	// the score used to rank/compare this recording with others
         public double? MaxScore { get; set; }	        // the maximum score obtained with this recording
@@ -42,7 +42,7 @@ namespace AudioAnalysis
             get;
         }
 
-        public abstract List<AcousticEvent> GetAcousticEvents(int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset);
+        public abstract List<AcousticEvent> GetAcousticEvents(bool doMelScale, int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset);
 
         public static Dictionary<string, string> GetResultInfo(string key)
         {

@@ -450,6 +450,28 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(path);
         }
+        public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result, List<AcousticEvent> list)
+        {
+            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.SonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            SaveSyllablesAndResultsImage(spectralSono, imagePath, result, list);
+            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
+        }
+        public virtual void SaveSyllablesAndResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<AcousticEvent> list)
+        {
+            Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)");
+            bool doHighlightSubband = true;
+            bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddEvents(list);
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            int garbageID = this.AcousticModel.FvCount + 2 - 1;
+            image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
+            image.Save(path);
+        }
 
 
         public virtual BaseResult GetBlankResultCard()

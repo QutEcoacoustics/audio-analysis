@@ -59,7 +59,7 @@ namespace AudioAnalysis
 
 
         //returns a list of acoustic events derived from the list of vocalisations detected by the recogniser.
-        public override List<AcousticEvent> GetAcousticEvents(int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
+        public override List<AcousticEvent> GetAcousticEvents(bool doMelScale, int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
         {
             var list = new List<AcousticEvent>();
 
@@ -67,7 +67,7 @@ namespace AudioAnalysis
             AcousticEvent.FreqBinWidth = fBinWidth;  //must set this static var before creating Acousticevent objects
             AcousticEvent.FrameDuration = frameOffset;//must set this static var before creating Acousticevent objects
 
-            foreach (Vocalisation vocalEvent in VocalisationList)
+            foreach (Vocalisation vocalEvent in this.FullVocalisations)
             {
                 int startFrame = vocalEvent.Start;
                 int endFrame = vocalEvent.End;
