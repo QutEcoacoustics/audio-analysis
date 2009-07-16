@@ -16,17 +16,17 @@ namespace AudioAnalysis
 
         //'Start Time (s)' 'Duration (s)' 'Lowest Freq' 'Highest Freq' 'I1 Mean dB' 'I1 Var dB' 'I2 Mean dB' 'I2 Var dB' 'I3 Mean dB' 'I3 Var dB'
 
-        double StartTime { get; set; } // (s),
-        double Duration; // (s),
-        int    MinFreq;  //,
-        int    MaxFreq;  //,
+        public double StartTime { get; set; } // (s),
+        public double Duration; // (s),
+        public int    MinFreq;  //,
+        public int    MaxFreq;  //,
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1VardB;  //,
         //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
         //double I2VardB;  //,
         double I3Mean;   //mean intensity of pixels in the event AFTER noise reduciton 
         double I3Var;    //variance of intensity of pixels in the event.
-        int FreqRange { get { return(MaxFreq - MinFreq + 1); } }
+        public int FreqRange { get { return(MaxFreq - MinFreq + 1); } }
 
         public Oblong oblong { get; private set;} 
 

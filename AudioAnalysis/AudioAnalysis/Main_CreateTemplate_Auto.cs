@@ -42,6 +42,8 @@ namespace AudioAnalysis
             //A: CREATE THE TEMPLATE according to parameters set in gui.
             Console.WriteLine("STEP A: CREATE TEMPLATE");
             var template = Template_CCAuto.Load(appConfigPath, gui, recordingFiles, templateDir, templateFName);
+            //reset noise reduction type for normal use
+            template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
 
             //B: CREATE SERIALISED VERSION OF TEMPLATE
             Console.WriteLine("STEP B: CREATE SERIALISED VERSION OF TEMPLATE");
@@ -62,12 +64,12 @@ namespace AudioAnalysis
             Console.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
             var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
             //reset noise reduction type for long recording
-            template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+            //template2.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
 
             //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
             Console.WriteLine("STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + serialPath);
             string wavDirName; string wavFileName;
-            AudioRecording recording;//
+            AudioRecording recording;// get recording from somewhere
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
 
             var result = recogniser.Analyse(recording);
