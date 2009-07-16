@@ -7,14 +7,13 @@ namespace MarkovModels
 {
     public class MMResults
     {
-
-        public List<Vocalisation> VocalList { get; set; }
+        public List<Vocalisation> PartialVocalisations { get; set; }
         public double probOfAverageTrainingSequenceGivenModel { set; get; }
         public double qualityThreshold { set; get; }
 
         public MMResults(List<Vocalisation> list)
         {
-            this.VocalList = list;
+            this.PartialVocalisations = list;
         }
 
     }//end class MMResults
