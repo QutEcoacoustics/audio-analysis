@@ -15,6 +15,7 @@ namespace AudioAnalysis
 		public Image Image { get; private set; }
 		List<Image_Track> tracks = new List<Image_Track>();
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
+        List<AcousticEvent> EventList { get; set; }
 		#endregion
 
         /// <summary>
@@ -32,6 +33,11 @@ namespace AudioAnalysis
 			tracks.Add(track);
 		}
 
+        public void AddEvents(List<AcousticEvent> list)
+        {
+            this.EventList = list;
+        }
+
 		public void Save(string path)
 		{
             Image image = GetImage();
@@ -46,20 +52,24 @@ namespace AudioAnalysis
 			var height = CalculateImageHeight();
 
             //set up a new image having the correct dimensions
-			var retVal = new Bitmap(Image.Width, height, PixelFormat.Format24bppRgb);
+			var returnImage = new Bitmap(Image.Width, height, PixelFormat.Format24bppRgb);
             //create new graphics canvas and add in the sonogram image
-			using (var g = Graphics.FromImage(retVal))
-				g.DrawImage(Image, 0, 0);
+            using (var g = Graphics.FromImage(returnImage))
+            {
+                g.DrawImage(Image, 0, 0);
+                if (this.EventList != null) DrawEvents(g);
+            }
+
             //now add tracks to the image
 			int offset = Image.Height;
 			foreach (var track in Tracks)
 			{
 				track.topOffset = offset;
                 track.bottomOffset = offset + track.Height-1;
-                track.DrawTrack(retVal);
+                track.DrawTrack(returnImage);
 				offset += track.Height;
 			}
-			return retVal;
+			return returnImage;
 		}
 
 		int CalculateImageHeight()
@@ -69,6 +79,21 @@ namespace AudioAnalysis
                 totalHeight += track.Height;
 			return totalHeight;
 		}
+        
+        void DrawEvents(Graphics g)
+        {
+            Pen p = new Pen(Color.Red);
+            foreach(AcousticEvent e in this.EventList)
+            {
+                int x = e.oblong.r1;
+                int y = 256 - e.oblong.c2;
+                int width  = e.oblong.r2 - x + 1;
+                int height = e.oblong.c2 - e.oblong.c1 + 1;
+                g.DrawRectangle(p, x, y, width, height);
+                //g.DrawLine(p, x, y, e.oblong.r2, y);
+                //break;
+            }
+        }
 
 	} //end class
 }

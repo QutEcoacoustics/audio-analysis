@@ -45,26 +45,54 @@ namespace AudioAnalysis
 
 
         //returns a list of acoustic events derived from the list of vocalisations detected by the recogniser.
-        public override List<AcousticEvent> GetAcousticEvents(int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
+        public override List<AcousticEvent> GetAcousticEvents(bool doMelScale, int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
         {
+            this.FullVocalisations = GetFullVocalisations();
+
+
             var list = new List<AcousticEvent>();
 
             AcousticEvent.FreqBinCount  = fBinCount;  //must set this static var before creating Acousticevent objects
             AcousticEvent.FreqBinWidth  = fBinWidth;  //must set this static var before creating Acousticevent objects
             AcousticEvent.FrameDuration = frameOffset;//must set this static var before creating Acousticevent objects
 
-            foreach (Vocalisation vocalEvent in VocalisationList)
+            foreach (Vocalisation vocalEvent in this.FullVocalisations)
             {
                 int startFrame = vocalEvent.Start;
                 int endFrame   = vocalEvent.End;
                 double startTime = startFrame * frameOffset;
                 double duration = (endFrame - startFrame) * frameOffset; 
-                var acouticEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                var acouticEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq, doMelScale);
                 list.Add(acouticEvent);
             }
-
             return list;
         }
+
+        private List<Vocalisation> GetFullVocalisations()
+        {
+            var list = new List<Vocalisation>();
+            int start = 0;
+
+            for (int i = 1; i < this.Scores.Length; i++)
+            {
+                if ((Scores[i - 1] < this.LLRThreshold) && (Scores[i] >= this.LLRThreshold))
+                {
+                    start = i;
+                }
+                //at end of vocalisatioin
+                if ((Scores[i - 1] >= this.LLRThreshold) && (Scores[i] < this.LLRThreshold))
+                {
+                    int end = i;
+                    int length = end - start + 1;
+                    string sequence = this.SyllSymbols.Substring(start, length);
+                    var vocalisation = new Vocalisation(start, end, sequence);
+                    list.Add(vocalisation);
+                }
+
+            }//end for loop
+            return list;
+        }
+
 
         public override ResultItem GetResultItem(string key)
         {

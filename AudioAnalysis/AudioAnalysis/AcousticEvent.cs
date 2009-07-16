@@ -13,6 +13,7 @@ namespace AudioAnalysis
         public static double FrameDuration;
         public static double FramesPerSecond;
 
+
         //'Start Time (s)' 'Duration (s)' 'Lowest Freq' 'Highest Freq' 'I1 Mean dB' 'I1 Var dB' 'I2 Mean dB' 'I2 Var dB' 'I3 Mean dB' 'I3 Var dB'
 
         double StartTime { get; set; } // (s),
@@ -29,7 +30,7 @@ namespace AudioAnalysis
 
         public Oblong oblong { get; private set;} 
 
-        /// <summary>
+                /// <summary>
         /// CONSTRUCTOR
         /// </summary>
         public AcousticEvent(double startTime, double duration, double minFreq, double maxFreq)
@@ -38,6 +39,20 @@ namespace AudioAnalysis
             this.Duration = duration;
             this.MinFreq = (int)minFreq;
             this.MaxFreq = (int)maxFreq;
+            oblong = null;// have no info to convert time/Hz values to coordinates
+        }
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        public AcousticEvent(double startTime, double duration, double minFreq, double maxFreq, bool doMelscale)
+        {
+            this.StartTime = startTime;
+            this.Duration = duration;
+            this.MinFreq = (int)minFreq;
+            this.MaxFreq = (int)maxFreq;
+
+            //first check that the static variables required to initialise an oblong object have been initialised.
             if (AcousticEvent.FreqBinCount == 0)
             {
                 Console.WriteLine("WARNING!! ######## Frequency bin count has not been set");
@@ -55,14 +70,26 @@ namespace AudioAnalysis
             }
 
             //translate time/freq dimensions to coordinates in a matrix.
-            //rows of matrix are the frames
-            //columns of matrix are the freq bins. Origin is top left - as [per matrix in the sonogram class.
+            //columns of matrix are the freq bins. Origin is top left - as per matrix in the sonogram class.
+            //First translate time dimension = frames = matrix rows.
             int topRow    = (int)Math.Round(StartTime / FrameDuration);
             int bottomRow = (int)Math.Round((StartTime+Duration) / FrameDuration);
             //if (topRow < 0) topRow = 0;
-            int leftCol   = (int)Math.Round(minFreq / FreqBinWidth);
+
+            //Second translate freq dimension = freq bins = matrix columns.
+            int leftCol = (int)Math.Round(minFreq / FreqBinWidth);
             int rightCol  = (int)Math.Round(maxFreq / FreqBinWidth);
-            if (rightCol == FreqBinCount) rightCol = FreqBinCount - 1;
+            if (rightCol >= FreqBinCount) rightCol = FreqBinCount - 1;
+
+            if (doMelscale) //convert min max Hz to mel scale
+            {
+                double nyquistFrequency = AcousticEvent.FreqBinCount * AcousticEvent.FreqBinWidth;
+                double maxMel = Speech.Mel(nyquistFrequency);
+                int melRange = (int)(maxMel - 0 + 1);
+                double pixelPerMel = AcousticEvent.FreqBinCount / (double)melRange;
+                leftCol  = (int)Math.Round((double)Speech.Mel(minFreq) * pixelPerMel);
+                rightCol = (int)Math.Round((double)Speech.Mel(maxFreq) * pixelPerMel);
+            }
             this.oblong   = new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
         public void SetNetIntensityAfterNoiseReduction(double mean, double var)
