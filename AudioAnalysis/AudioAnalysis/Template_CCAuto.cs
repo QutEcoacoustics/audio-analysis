@@ -11,7 +11,7 @@ using QutSensors.Data;
 namespace AudioAnalysis
 {
     [Serializable]
-    class Template_CCAuto : BaseTemplate
+    public class Template_CCAuto : BaseTemplate
     {
         public string TrainingDirName { get; set; }
         public string TestingDirName { get; set; }
