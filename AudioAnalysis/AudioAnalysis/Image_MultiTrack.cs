@@ -85,13 +85,15 @@ namespace AudioAnalysis
             Pen p = new Pen(Color.Red);
             foreach(AcousticEvent e in this.EventList)
             {
+                //double start = e.StartTime;
+                //double duration = e.Duration;
+                //int minF = e.MinFreq;
+                //int maxF = e.MaxFreq;
                 int x = e.oblong.r1;
                 int y = 256 - e.oblong.c2;
                 int width  = e.oblong.r2 - x + 1;
                 int height = e.oblong.c2 - e.oblong.c1 + 1;
                 g.DrawRectangle(p, x, y, width, height);
-                //g.DrawLine(p, x, y, e.oblong.r2, y);
-                //break;
             }
         }
 
