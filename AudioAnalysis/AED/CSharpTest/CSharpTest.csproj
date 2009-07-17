@@ -97,6 +97,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
+      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
+      <Name>TowseyLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AED\AED.fsproj">
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
       <Name>AED</Name>
