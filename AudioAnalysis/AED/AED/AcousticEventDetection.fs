@@ -1,6 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
 open GetAcousticEvents
+open Matlab
 open TowseyLib
 
 // TODO should this return a matrix of int
@@ -16,6 +17,22 @@ let toFillIn (m:matrix) i j t =
 let joinHorizontalLines m = Math.Matrix.mapi (fun i j x -> if x = 1.0 or (toFillIn m i j 3) then 1.0 else 0.0) m
     
 let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Matrix.transpose
+
+let smallFirstMin cs h t =
+    let s = Seq.pairwise h |> Seq.map (fun (x,y) -> x-y) |> Seq.zip cs // TODO almost a copy from LargeEvents.lastMin
+    let l = Seq.tryFind (fun (_,x) -> x < 0 ) s
+    let e = Seq.tryFind (fun (_,x) -> x = 0 ) s // TODO how to make lazy?
+    let (c,_) = if Option.isSome l then Option.get l else if Option.isSome e then Option.get e else (t,0) // TODO do this better
+    c
+
+let smallThreshold rs =
+    let t = 200
+    let cs = seq {for i in 1..19 -> i * 10}
+    let sas = areas rs |> Seq.filter (fun x -> x <= t)
+    let h = hist sas cs
+    t
+
+// let filterOutSmallEvents rs =
 
 let detectEventsMatlab m =
     let i1 = Math.Matrix.to_array2 m
