@@ -1,11 +1,10 @@
 ﻿open Common
-open Math.Matrix
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Xunit
 
 [<Fact>]
 let spiderTest () = 
-    let m = Array2D.create 3 4 0.0 |> of_array2
+    let m = Array2D.create 3 4 0.0 |> Math.Matrix.of_array2
     Assert.Equal(Set.empty, spider m [(0,0)] Set.empty)
     m.[0,2] <- 1.0
     Assert.Equal(Set.of_list[(0,2)], spider m [(0,2)] Set.empty)
@@ -16,7 +15,7 @@ let spiderTest () =
  
 [<Fact>]   
 let getAcousticEventsTestQuick () =
-    let m = Array2D.create 4 3 0.0 |> of_array2
+    let m = Array2D.create 4 3 0.0 |> Math.Matrix.of_array2
     Assert.Equal([], getAcousticEvents m)
     m.[0,1] <- 1.0
     Assert.Equal([{Left=1;Top=0;Width=1;Height=1}], (getAcousticEvents m))
@@ -28,7 +27,7 @@ let getAcousticEventsTestQuick () =
 
 [<Fact>]
 let getAcousticEventsTest () =
-    let i6bm = loadTestFile "I6b.txt" |> of_array2
+    let i6bm = loadTestFile "I6b.txt" |> Math.Matrix.of_array2
     let ae = getAcousticEvents i6bm
     let MATLAB_LENGTH = 1229
     Assert.Equal(MATLAB_LENGTH, List.length ae)
