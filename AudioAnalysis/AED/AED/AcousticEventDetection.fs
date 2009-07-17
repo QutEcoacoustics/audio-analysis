@@ -1,5 +1,8 @@
 ﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
+open GetAcousticEvents
+open TowseyLib
+
 // TODO should this return a matrix of int
 let toBlackAndWhite t = Math.Matrix.map (fun e -> if e > t then 1.0 else 0.0)
     
@@ -14,10 +17,15 @@ let joinHorizontalLines m = Math.Matrix.mapi (fun i j x -> if x = 1.0 or (toFill
     
 let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Matrix.transpose
 
-let detectEvents a =
-    let i2 = Wiener.wiener2 a 5 |> Math.Matrix.of_array2 
+let detectEventsMatlab m =
+    let i1 = Math.Matrix.to_array2 m
+    let i2 = Wiener.wiener2 i1 5 |> Math.Matrix.of_array2 
     let i3 = SubbandMode.removeSubbandModeIntensities2 i2
     let i4 = toBlackAndWhite 9.0 i3
     let i6 = joinVerticalLines i4 |> joinHorizontalLines
     let ae = GetAcousticEvents.getAcousticEvents i6
     ae
+    
+let detectEvents a =
+    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab
+                            |> List.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
