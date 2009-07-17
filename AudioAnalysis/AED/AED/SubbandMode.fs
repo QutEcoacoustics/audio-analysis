@@ -1,6 +1,5 @@
 ﻿module QutSensors.AudioAnalysis.AED.SubbandMode
 
-open Math.Matrix
 open Math.Vector.Generic
 open Util.Array2
 
@@ -42,14 +41,14 @@ let rowHist (m:matrix) v =
         | _ when o > mo                 -> (mn, mx, inc h (int mo))
         | _ when (o - (floor o)) <= 0.5 -> (mn, mx, inc h (int (floor o)))
         | _                             -> (mn, mx, inc h (int (ceil o)))
-    foldByRow f a m |> to_array |> Array.map (fun (_, _, h) -> h) |> of_array 
+    Math.Matrix.foldByRow f a m |> to_array |> Array.map (fun (_, _, h) -> h) |> of_array 
     // TODO this mapping across a vector with f::a-> b, by going via Array is used twice here
     
 // TODO tests
 let removeSubbandModeIntensities2 (m:matrix) =
     let ms = 
         let f (mn, mx) x = (min mn x, max mx x)
-        foldByRow f (init (m.NumRows)(fun r -> (m.[r,0], m.[r,0]))) m
+        Math.Matrix.foldByRow f (init (m.NumRows)(fun r -> (m.[r,0], m.[r,0]))) m
     let hs = rowHist m ms
     let mo = to_array hs |> Array.map (fun a -> Array.findIndex (fun x -> x= (Array.max a)) a)
     let modes =
