@@ -114,7 +114,7 @@ for nw=1:numW
             thisAE(3) = max(tmpy)-min(tmpy)+1; %height
             thisAE(4) = tM; % width
             
-            
+%             
             thisIa = Ia(thisAE(2):(thisAE(2)+thisAE(4)-1),thisAE(1):(thisAE(1)+thisAE(3)-1));
             thisAE(5) = mean(thisIa(:));
             thisAE(6) = var(thisIa(:));

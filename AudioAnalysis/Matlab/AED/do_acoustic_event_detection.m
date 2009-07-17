@@ -151,7 +151,7 @@ I6 = join_horizontal_lines(I6);
 % STEP 7: GET ACOUSTIC EVENTS
 % NOTES: get_acoustic_events.m is my function; line.m and imagesc.m are
 % MATLAB functions
-[AE,L] = get_acoustic_events(I6);
+[AE,L] = get_acoustic_events(I6,I1,I2,I3);
 % alternatively uncomment code below to view image and show time and frequency axis
 % if ~isempty(AE)
 %     [M,N] = size(I1);
@@ -181,7 +181,7 @@ I6 = join_horizontal_lines(I6);
 % fprintf(fid, '%f\n', AE);
 % fclose(fid);
 
-return
+
 
 % STEP 8: SEPARATE EVENTS THAT ARE TOO LARGE INTO SMALLER EVENTS
 % NOTES: mode_large_area_threshold.m and separate_large_AEs_areas.m are my 
@@ -190,7 +190,7 @@ if (~isempty(AE)) % do this next step only if acoustic events have been detected
     big_area_thresh = mode_large_area_threshold(AE); % compute large area threshold for separating acoustic events
     if ~isempty(big_area_thresh)
 %         AE2 = separate_large_AEs_areas_old(AE,L,big_area_thresh,I6); % separate large area events into smaller events
-        AE2 = separate_large_AEs_areas(AE,L,big_area_thresh,I6); % separate large area events into smaller events
+        AE2 = separate_large_AEs_areas(AE,L,big_area_thresh,I6,I1,I2,I3); % separate large area events into smaller events
     else
         AE2 = [];
     end
