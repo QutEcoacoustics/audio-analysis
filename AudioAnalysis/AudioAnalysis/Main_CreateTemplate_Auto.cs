@@ -82,6 +82,14 @@ namespace AudioAnalysis
             var events = result.GetAcousticEvents(doMelScale, binCount, binWidth, minF, maxF, frameOffset);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result, events);
+            int count = 0;
+            foreach (AcousticEvent e in events)
+            {
+                count++;
+                string key = result.RankingScoreName;
+                ResultItem item = result.GetEventProperty(key, e);
+                Console.WriteLine("Hit Event ("+count+")  score="+item.GetValue().ToString());
+            }
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
             var testDirectories = new List<String>();

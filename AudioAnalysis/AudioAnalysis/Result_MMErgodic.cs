@@ -35,6 +35,12 @@ namespace AudioAnalysis
 
 
 
+
+
+        /// <summary>
+        /// CONSTRUCTOR
+        /// </summary>
+        /// <param name="template"></param>
         public Result_MMErgodic(BaseTemplate template)
         {
             Template = template;
@@ -93,6 +99,32 @@ namespace AudioAnalysis
             return list;
         }
 
+
+        public override ResultItem GetEventProperty(string key, AcousticEvent acousticEvent)
+        {
+            if (key.Equals("LLR_VALUE"))
+            {
+                double? score = GetMaxScoreInEvent(acousticEvent);
+                var table = new Dictionary<string, string>();
+                table.Add("UNITS", "LLR");
+                table.Add("COMMENT_ABOUT_EVENT_LLR", "The returned score is the maximum LLR in the event. " +
+                                   "An LLR score is given to each frame in the event." );
+                table.Add("COMMENT_ABOUT_LLR", "The log likelihood ratio, in this case, is interpreted as follows. " +
+                                   "Let v1 be the test vocalisation and let v2 be an 'average' vocalisation used to train the Markov Model. " +
+                                   "Let p1 = p(v1 | MM) and let p2 = p(v2 | MM). Then LLR = log (p1 /p2).  " +
+                                   "Note 1: In theory LLR takes only negative values because p1 < p2. " +
+                                   "Note 2: For same reason, LLR's max value = 0.0 (i.e. test str has same prob has training sample. " +
+                                   "Note 3: In practice, LLR can have positive value when p1 > p2 because p2 is an average.");
+
+                table.Add("THRESHOLD", "-6.64");
+                table.Add("COMMENT_ABOUT_THRESHOLD", "The null hypothesis is that the test sequence is a true positive. " +
+                          "Accept null hypothesis if LLR >= -6.64.  " +
+                          "Reject null hypothesis if LLR <  -6.64.");
+                return new ResultItem("LLR_VALUE", score, table);
+            }
+            return null;
+
+        }
 
         public override ResultItem GetResultItem(string key)
         {
@@ -165,6 +197,18 @@ namespace AudioAnalysis
                 }
             }
             return sb.ToString();
+        }
+
+        double? GetMaxScoreInEvent(AcousticEvent acousticEvent)
+        {
+            int start = acousticEvent.oblong.r1;
+            int end   = acousticEvent.oblong.r2;
+            double max = -Double.MaxValue;
+            for (int i = start; i <= end; i++)
+            {
+                if (this.Scores[i] > max) max = this.Scores[i];
+            }
+            return max - this.MaxDisplayScore;
         }
 
 
