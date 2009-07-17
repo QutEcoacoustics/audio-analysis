@@ -66,7 +66,7 @@ namespace AudioAnalysis
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, false.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, ConfigKeys.NoiseReductionType.NONE.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, ConfigKeys.WindowFunctions.HAMMING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
