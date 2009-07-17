@@ -14,6 +14,8 @@ let rec spider (m:matrix) xs (v:(int * int) Set) =
 type Rectangle = {Left:int; Top:int; Width:int; Height:int;}
 let right r = r.Left + r.Width
 let bottom r = r.Top + r.Height
+let area r = r.Width * r.Height
+let areas rs = Seq.map (fun r -> r.Width * r.Height) rs
     
 let getAcousticEvents m =
     let m' = Math.Matrix.copy m

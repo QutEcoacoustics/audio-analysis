@@ -53,3 +53,10 @@ let TestJoinVerticalLines () =
     let i6a = joinVerticalLines (Math.Matrix.of_array2 i4m) |> Math.Matrix.to_array2
     let i6am = loadTestFile "I6a.txt"
     a2FloatEquals i6a i6am 0.001 |> Assert.True
+    
+[<Fact>]
+let testSmallFirstMin () =
+    let t = 42
+    Assert.Equal(0, smallFirstMin [0..3] [1;2;1;2] t)
+    Assert.Equal(0, smallFirstMin [0..2] [1;1;1] t)
+    Assert.Equal(t, smallFirstMin [0..1] [2;1] t) 
