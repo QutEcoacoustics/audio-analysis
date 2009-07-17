@@ -13,20 +13,7 @@ warning off % this line is included to suppress the warning that MATLAB
             % fit image parameters
 
 
-
-
-% txt = 'Honeymoon Bay - St Bees_20081120-183000'; % test file
-% txt = '20090317-143000[1]';
-% txt = '20090319-070105[1]';
-% txt = '20090320-070105[1]';
-% txt = '20090317-173000[1]'; 
-% txt = '20090319-023000[1]_Nothing';
-% txt = '20090319-040000[1]_bird';
-% txt = 'BAC2_20071011-045040';
-txt = 'BAC2_20071015-045040';
-% txt = 'BAC2_20071005-132040';
-% txt = 'BAC8_20080612-040000';
-
+txt = '..\\..\\AED\\Test\\matlab\\BAC2_20071015-045040';
 
 
 % read audio data
@@ -246,11 +233,5 @@ if (~isempty(AE3))
     xlabel('Time (s)','FontSize',20)
     % maximise this image on your screen for optimal viewing
 
-
 end
-
-
-
-
-
 
