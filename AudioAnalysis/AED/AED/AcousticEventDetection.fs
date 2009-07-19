@@ -28,9 +28,8 @@ let smallFirstMin cs h t =
 let smallThreshold rs =
     let t = 200
     let cs = seq {for i in 1..19 -> i * 10}
-    let sas = areas rs |> Seq.filter (fun x -> x <= t)
-    let h = hist sas cs
-    t
+    let as' = areas rs |> Seq.filter (fun x -> x <= t)
+    smallFirstMin cs (hist as' cs) t
 
 // let filterOutSmallEvents rs =
 
