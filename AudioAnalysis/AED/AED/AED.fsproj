@@ -54,6 +54,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Util.fs" />
     <Compile Include="Array2.fs" />
     <Compile Include="Matlab.fs" />
     <Compile Include="Wiener.fs" />

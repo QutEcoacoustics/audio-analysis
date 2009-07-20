@@ -3,6 +3,7 @@
 open GetAcousticEvents
 open Matlab
 open TowseyLib
+open Util.Core
 
 // TODO should this return a matrix of int
 let toBlackAndWhite t = Math.Matrix.map (fun e -> if e > t then 1.0 else 0.0)
@@ -20,10 +21,8 @@ let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Mat
 
 let smallFirstMin cs h t =
     let s = Seq.pairwise h |> Seq.map (fun (x,y) -> x-y) |> Seq.zip cs // TODO almost a copy from LargeEvents.lastMin
-    let l = Seq.tryFind (fun (_,x) -> x < 0 ) s
-    let e = Seq.tryFind (fun (_,x) -> x = 0 ) s // TODO how to make lazy?
-    let (c,_) = if Option.isSome l then Option.get l else if Option.isSome e then Option.get e else (t,0) // TODO do this better
-    c
+    let tf g = Seq.tryFind (fun (_,x) -> g x) s
+    tf ((>) 0) |? tf ((=) 0) |> Option.map fst |?| t
 
 let smallThreshold rs =
     let t = 200
