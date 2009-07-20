@@ -3,7 +3,7 @@
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Util.Array2
 
-let loadTestFile2 f i j = fileToMatrix (@"matlab\" + f) i j
+let loadTestFile2 f i j = fileToMatrix (@"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\" + f) i j
 
 let loadTestFile f = loadTestFile2 f 256 5188
 
