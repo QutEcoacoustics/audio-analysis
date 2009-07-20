@@ -1,6 +1,6 @@
 ﻿module QutSensors.AudioAnalysis.AED.Matlab
 
-// TODO copied from LargeEvents, remove the version there
+// TODO amalgamate with hist in wiener2
 let hist xs cs =
     let ub = Seq.append (Seq.pairwise cs |> Seq.map (fun (x,y) -> x + ((y - x)/2))) [999999999] |> Seq.to_array // TODO what is MAX_INT?
     let a = Array.create (Seq.length ub) 0
