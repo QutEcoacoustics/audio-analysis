@@ -61,7 +61,13 @@ let testSmallFirstMin () =
     Assert.Equal(0, smallFirstMin [0..2] [1;1;1] t)
     Assert.Equal(t, smallFirstMin [0..1] [2;1] t) 
     
-let testSmallThreshold () =
-    let MATLAB_LENGTH = 1249 // TODO also defined in GetAcousticEventsTest
-    let aem2 = loadEventsFile "AE2.txt" MATLAB_LENGTH    
-    Assert.Equal(200, smallThreshold aem2)
+let ae2m = loadEventsFile "AE2.txt" 1249
+
+[<Fact>]
+let testSmallThreshold () = Assert.Equal(200, smallThreshold ae2m)
+
+[<Fact>]
+let testFilterOutSmallEvents () =
+    let ae3 = filterOutSmallEvents ae2m
+    let ae3m = loadEventsFile "AE3.txt" 97
+    Assert.Equal(Seq.sort ae3m, Seq.sort ae3)

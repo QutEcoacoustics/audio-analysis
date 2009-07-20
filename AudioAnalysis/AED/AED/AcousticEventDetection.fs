@@ -27,11 +27,13 @@ let smallFirstMin cs h t =
 
 let smallThreshold rs =
     let t = 200
-    let cs = seq {for i in 1..19 -> i * 10}
+    let cs = seq {for i in 0..9 -> (i * 20) + 10}
     let as' = areas rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (hist as' cs) t
 
-// let filterOutSmallEvents rs =
+let filterOutSmallEvents rs =
+    let t = smallThreshold rs
+    Seq.filter (fun r -> area r > t) rs
 
 let detectEventsMatlab m =
     let i1 = Math.Matrix.to_array2 m
@@ -40,8 +42,9 @@ let detectEventsMatlab m =
     let i4 = toBlackAndWhite 9.0 i3
     let i6 = joinVerticalLines i4 |> joinHorizontalLines
     let ae = GetAcousticEvents.getAcousticEvents i6
-    ae
+    let ae3 = filterOutSmallEvents ae
+    ae3
     
 let detectEvents a =
     Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab
-                            |> List.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
+                            |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
