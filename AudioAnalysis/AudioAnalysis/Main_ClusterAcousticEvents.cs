@@ -39,10 +39,7 @@ namespace AudioAnalysis
                 sr = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
                 window = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
 
-                AcousticEvent.FrameDuration = window / (double)sr;
-                AcousticEvent.FramesPerSecond = 2 * sr / (double)window; //frames overlap 50%
-                AcousticEvent.FreqBinCount  = window / 2;
-                AcousticEvent.FreqBinWidth  = sr / (double)window;
+                AcousticEvent.SetStaticVariables(sr, window);
             }
             else
             {
