@@ -16,7 +16,7 @@ namespace AudioAnalysis
         public enum WindowFunctions { HAMMING };
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
         public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
-        public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, SILENCE_MODEL, DEFAULT_STANDBY }
+        public enum NoiseReductionType { NONE, FALSE, STANDARD, FIXED_DYNAMIC_RANGE, SILENCE_MODEL, DEFAULT_STANDBY }
 
 
         public struct Recording 
