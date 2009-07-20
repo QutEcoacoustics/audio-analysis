@@ -24,7 +24,7 @@ let localMeansVariances a n =
         (m, variance nba nbs m)
     Array2D.mapi f a
     
-let wiener2 a n =
+let wiener2 n a =
     let lmv = localMeansVariances a n
     let nv = (a2fold (fun z (_, x) -> z + x) 0.0 lmv) / (float (a.GetLength(0) * a.GetLength(1))) // TODO single general mean function?
     let f x y e =

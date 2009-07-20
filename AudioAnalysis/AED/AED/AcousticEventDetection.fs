@@ -36,14 +36,13 @@ let filterOutSmallEvents rs =
     Seq.filter (fun r -> area r > t) rs
 
 let detectEventsMatlab m =
-    let i1 = Math.Matrix.to_array2 m
-    let i2 = Wiener.wiener2 i1 5 |> Math.Matrix.of_array2 
-    let i3 = SubbandMode.removeSubbandModeIntensities2 i2
-    let i4 = toBlackAndWhite 9.0 i3
-    let i6 = joinVerticalLines i4 |> joinHorizontalLines
-    let ae = GetAcousticEvents.getAcousticEvents i6
-    let ae3 = filterOutSmallEvents ae
-    ae3
+    Math.Matrix.to_array2 m |> Wiener.wiener2 5 |> Math.Matrix.of_array2 
+    |> SubbandMode.removeSubbandModeIntensities2
+    |> toBlackAndWhite 9.0
+    |> joinVerticalLines
+    |> joinHorizontalLines
+    |> getAcousticEvents
+    |> filterOutSmallEvents
     
 let detectEvents a =
     Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab
