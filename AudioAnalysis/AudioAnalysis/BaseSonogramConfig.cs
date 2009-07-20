@@ -112,7 +112,7 @@ namespace AudioAnalysis
             DynamicRange = config.GetDouble(ConfigKeys.Snr.Key_DynamicRange);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
-            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce);
+            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce.ToUpperInvariant());
             SilenceRecordingPath = config.GetString(ConfigKeys.Snr.Key_SilenceRecording);
             MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
