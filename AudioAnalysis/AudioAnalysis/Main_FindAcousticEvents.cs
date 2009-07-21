@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
-
+using QutSensors.AudioAnalysis.AED;
 
 namespace AudioAnalysis
 {
@@ -44,7 +44,9 @@ namespace AudioAnalysis
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
-            //IEnumerable<Oblong> oblongs = BradLibrary.GetAcousticEvents(matrix); 
+            Console.WriteLine("START: DETECTION");
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(matrix);
+            Console.WriteLine("END: DETECTION");
 
             //set up static variables for init Acoustic events
             bool doMelScale = config.DoMelScale;
