@@ -44,7 +44,7 @@ namespace AudioAnalysis
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
-            IEnumerable<Oblong> oblongs = BradLibrary.GetAcousticEvents(matrix); 
+            //IEnumerable<Oblong> oblongs = BradLibrary.GetAcousticEvents(matrix); 
 
             //set up static variables for init Acoustic events
             bool doMelScale = config.DoMelScale;
@@ -56,11 +56,11 @@ namespace AudioAnalysis
 
 
             var events = new List<AcousticEvent>();
-            foreach (Oblong o in oblongs)
-            {
-                var e = new AcousticEvent(o);
-                events.Add(e);
-            }
+            //foreach (Oblong o in oblongs)
+            //{
+            //    var e = new AcousticEvent(o);
+            //    events.Add(e);
+            //}
 
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
