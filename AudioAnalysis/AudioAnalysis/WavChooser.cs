@@ -13,7 +13,7 @@ namespace AudioAnalysis
         public static void ChooseWavFile(out string wavDirName, out string wavFileName, out AudioRecording recording)
         {
             //BRISBANE AIRPORT CORP
-            //wavDirName = @"C:\SensorNetworks\WavFiles\";
+            wavDirName = @"C:\SensorNetworks\WavFiles\";
             //wavFileName = "sineSignal";
             //wavFileName = "golden-whistler";
             //wavFileName = "BAC2_20071008-085040";            //Lewin's rail kek keks - source file for template 2.
@@ -24,6 +24,7 @@ namespace AudioAnalysis
             //wavFileName = "BAC2_20071018-143516_speech";
             //wavFileName = "BAC2_20071014-022040nightnoise";  //night with no signal in Kek-kek band.
             //wavFileName = "BAC2_20071008-195040";            //kek-kek track completely clear
+            wavFileName = "BAC2_20071015-045040";              //used by Birgit and Brad for Acoustic event detection
             //wavFileName = "BAC3_20070924-153657_wind";
             //wavFileName = "BAC3_20071002-070657";
             //wavFileName = "BAC3_20071001-203657";
@@ -64,7 +65,7 @@ namespace AudioAnalysis
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
 
             //ST BEES
-            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
@@ -74,7 +75,7 @@ namespace AudioAnalysis
             //wavFileName = "West_Knoll_St_Bees_FlyBirdCicada_20080917-170000";
             //wavFileName = "West_Knoll_St_Bees_Currawong1_20080923-120000";
             //wavFileName = "West_Knoll_St_Bees_Currawong2_20080921-053000";
-            wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for template 3 and 8
+            //wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for template 3 and 8
             //wavFileName = "Top_Knoll_St_Bees_Curlew1_20080922-023000";
             //wavFileName = "Top_Knoll_St_Bees_Curlew2_20080922-030000";
             //wavFileName = "Honeymoon_Bay_St_Bees_Curlew3_20080914-003000";  //source file for template

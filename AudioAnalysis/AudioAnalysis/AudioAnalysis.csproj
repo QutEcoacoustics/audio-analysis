@@ -155,6 +155,10 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\AED\AED\AED.fsproj">
+      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Name>AED</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MarkovModels\MarkovModels.csproj">
       <Project>{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}</Project>
       <Name>MarkovModels</Name>
