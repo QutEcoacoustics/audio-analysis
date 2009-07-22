@@ -57,7 +57,6 @@
     <Compile Include="Array2Test.fs" />
     <Compile Include="MatlabTest.fs" />
     <Compile Include="SubbandModeTest.fs" />
-    <Compile Include="WienerTest.fs" />
     <Compile Include="AcousticEventDetectionTest.fs" />
     <Compile Include="GetAcousticEventsTest.fs" />
     <Compile Include="LargeEventsTest.fs" />
