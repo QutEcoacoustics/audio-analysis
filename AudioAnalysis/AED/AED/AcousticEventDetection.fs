@@ -35,7 +35,7 @@ let filterOutSmallEvents rs =
     Seq.filter (fun r -> area r > t) rs
 
 let detectEventsMatlab m =
-    Matlab.wiener2 5 m |> Math.Matrix.of_array2 
+    Matlab.wiener2 5 m 
     |> SubbandMode.removeSubbandModeIntensities2
     |> toBlackAndWhite 9.0
     |> joinVerticalLines
