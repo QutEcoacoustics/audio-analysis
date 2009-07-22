@@ -49,20 +49,21 @@ namespace AudioAnalysis
             Console.WriteLine("END: DETECTION");
 
             //set up static variables for init Acoustic events
-            bool doMelScale = config.DoMelScale;
-            int binCount    = config.FreqBinCount;
-            double binWidth = config.FftConfig.NyquistFreq / (double)binCount;
-            int minF        = (int)config.MinFreqBand;
-            int maxF        = (int)config.MaxFreqBand;
-            double frameOffset = config.GetFrameOffset();
+            //AcousticEvent.   doMelScale = config.DoMelScale;
+            AcousticEvent.FreqBinCount = config.FreqBinCount;
+            AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            Console.WriteLine("binCount=" + AcousticEvent.FreqBinCount);
+          //  int minF        = (int)config.MinFreqBand;
+          //  int maxF        = (int)config.MaxFreqBand;
+            AcousticEvent.FrameDuration = config.GetFrameOffset();
 
 
             var events = new List<AcousticEvent>();
-            //foreach (Oblong o in oblongs)
-            //{
-            //    var e = new AcousticEvent(o);
-            //    events.Add(e);
-            //}
+            foreach (Oblong o in oblongs)
+            {
+                var e = new AcousticEvent(o);
+                events.Add(e);
+            }
 
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");

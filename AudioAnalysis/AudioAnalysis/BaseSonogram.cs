@@ -70,6 +70,10 @@ namespace AudioAnalysis
         public BaseSonogram(SonogramConfig config, WavReader wav)
 		{
 			Configuration = config;
+            //set config params to the current recording
+            config.Duration = wav.Time;
+            config.FftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
+            //double frameOffset = config.GetFrameOffset();
 
 			SampleRate      = wav.SampleRate;
 			Duration        = wav.Time;
@@ -141,8 +145,6 @@ namespace AudioAnalysis
 			int binCount = (N / 2) + 1;   // = fft.WindowSize/2 +1 for the DC value;
 
 			var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
-
-			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			int smoothingWindow = 3; //to smooth the spectrum 
 
 			double[,] sgM = new double[frameCount, binCount];
@@ -151,6 +153,7 @@ namespace AudioAnalysis
 			{
 				double[] data = DataTools.GetRow(frames, i);
 				double[] f1 = fft.Invoke(data);
+
 				f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //to smooth the spectrum - reduce variance
 				for (int j = 0; j < binCount; j++) //foreach freq bin
 				{

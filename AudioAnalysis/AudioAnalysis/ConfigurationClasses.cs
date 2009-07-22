@@ -13,7 +13,6 @@ namespace AudioAnalysis
     /// </summary>
     public static class ConfigKeys
     {
-        public enum WindowFunctions { HAMMING };
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
         public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
         public enum NoiseReductionType { NONE, FALSE, STANDARD, FIXED_DYNAMIC_RANGE, SILENCE_MODEL, DEFAULT_STANDBY }
@@ -39,7 +38,8 @@ namespace AudioAnalysis
         public struct Mfcc
         {
             public const string Key_WindowFunction   = "WINDOW_FUNCTION";
-            public const string Key_NPointSmoothFFT  = "N_POINT_SMOOTH_FFT";
+            //public const string Key_HammingWindow    = "HAMMING";
+            public const string Key_NPointSmoothFFT = "N_POINT_SMOOTH_FFT";
             public const string Key_NyquistFrequency = "NYQUIST_FREQ";
             public const string Key_StartTime        = "START_TIME";
             public const string Key_EndTime          = "END_TIME";
@@ -144,7 +144,7 @@ namespace AudioAnalysis
                                     }
         }
         public int NyquistFreq { get; private set; }
-        private string windowFunction = ConfigKeys.WindowFunctions.HAMMING.ToString();
+        private string windowFunction = WindowFunctions.HAMMING.ToString();
         public string WindowFunction { get { return windowFunction; } set { windowFunction = value; } }
         private int smoothingWindow = 3;
         public int NPointSmoothFFT { get { return smoothingWindow; } set { smoothingWindow = value; } } // Number of points to smooth FFT spectra
