@@ -57,7 +57,6 @@
     <Compile Include="Util.fs" />
     <Compile Include="Array2.fs" />
     <Compile Include="Matlab.fs" />
-    <Compile Include="Wiener.fs" />
     <Compile Include="SubbandMode.fs" />
     <Compile Include="GetAcousticEvents.fs" />
     <Compile Include="LargeEvents.fs" />
