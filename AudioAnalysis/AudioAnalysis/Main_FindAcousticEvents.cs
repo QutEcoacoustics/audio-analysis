@@ -40,7 +40,7 @@ namespace AudioAnalysis
             Console.WriteLine();
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
-            config.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
@@ -52,7 +52,6 @@ namespace AudioAnalysis
             //AcousticEvent.   doMelScale = config.DoMelScale;
             AcousticEvent.FreqBinCount = config.FreqBinCount;
             AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            Console.WriteLine("binCount=" + AcousticEvent.FreqBinCount);
           //  int minF        = (int)config.MinFreqBand;
           //  int maxF        = (int)config.MaxFreqBand;
             AcousticEvent.FrameDuration = config.GetFrameOffset();
