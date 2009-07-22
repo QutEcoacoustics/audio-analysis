@@ -1,6 +1,5 @@
 ﻿open Common
 open QutSensors.AudioAnalysis.AED.SubbandMode
-open Util.Array2
 open Xunit
 
 [<Fact>]

@@ -1,6 +1,6 @@
 ﻿module QutSensors.AudioAnalysis.AED.Matlab
 
-open Util.Core
+open Util
 
 // TODO amalgamate with hist in subbandmode
 

@@ -12,7 +12,7 @@ namespace CSharpTest
             //Console.WriteLine(r + "");
             //Console.ReadKey();
 
-            double[,] i = Util.Array2.fileToMatrix("Test\\Matlab\\I1.txt", 256, 5188);
+            double[,] i = Util.fileToMatrix("Test\\Matlab\\I1.txt", 256, 5188);
             AcousticEventDetection.detectEvents(i);
         }
     }
