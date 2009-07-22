@@ -21,15 +21,28 @@ let hist xs cs =
 let mean m n = (Math.Matrix.fold (+) 0.0 m) / n
     
 let variance a n m = (Math.Matrix.fold (fun z x -> z + (x*x)) 0.0 a) / n - (m*m)
-       
-let localMeansVariances n m =
-    let a = Math.Matrix.to_array2 m // TODO change Util.Array2.neighborhoodBounds a n x y to accept a matrix instead of an array
+
+// Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element       
+let neighbourhoodBounds n w h x y = // TODO w h might be named oppositely
+    let m = (n-1)/2
+    let subBounds p l =
+        let s = if p < m then 0 else p - m
+        let t = match p with
+                | _ when p < m     -> p + m + 1
+                | _ when p + m < l -> n
+                | _                -> l - s
+        (s, t)
+    let (xs, xl) = subBounds (int x) w
+    let (ys, yl) = subBounds (int y) h
+    (xs, ys, xl, yl)
+    
+let localMeansVariances n (m:matrix) =
     let f x y _ = 
-        let nba = Util.Array2.neighborhoodBounds a n x y |> m.Region
+        let nba = neighbourhoodBounds n (m.NumRows) (m.NumCols) x y |> m.Region
         let nbs = float (n*n)
         let m = mean nba nbs
         (m, variance nba nbs m)
-    Array2D.mapi f a
+    Math.Matrix.to_array2 m |> Array2D.mapi f // TODO does this do an array copy - perhaps write a function to do this better
     
 (* In wiener2.m the local means are calculated using a sum of smaller neighbourhoods around the edges but
    are always divided by a constant neighbourhood size. Implemented the same here.

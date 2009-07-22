@@ -27,22 +27,6 @@ let rowFold f z (a:'a[,]) =
        r.[i] <- x
     done
     r
-     
-// TODO rename to proper spelling     
-let neighborhoodBounds (a:'a[,]) n x y =
-    // Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element
-    let m = (n-1)/2
-    let subBounds p l =
-        let s = if p < m then 0 else p - m
-        let t = match p with
-                | _ when p < m     -> p + m + 1
-                | _ when p + m < l -> n
-                | _                -> l - s
-        (s, t)
-    let (xs, xl) = subBounds (int x) (a.GetLength(0))
-    let (ys, yl) = subBounds (int y) (a.GetLength(1))
-    (xs, ys, xl, yl)
-    
     
 (* This is currently done the easy, inefficient way.
 
