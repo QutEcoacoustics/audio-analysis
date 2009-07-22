@@ -4,8 +4,15 @@ using System.Text;
 
 namespace TowseyLib
 {
+
+    public enum WindowFunctions { NONE, HAMMING };
+
+
+
     public sealed class FFT
     {
+        public const string Key_HammingWindow = "HAMMING";
+
         public delegate double WindowFunc(int n, int N);
 
         //public int WindowSize { get; private set; }
@@ -202,7 +209,7 @@ namespace TowseyLib
         public static FFT.WindowFunc GetWindowFunction(string name)
         {
             //FFT.WindowFunc windowFnc;
-            if (name.StartsWith("Hamming")) return FFT.Hamming;
+            if (name.StartsWith(Key_HammingWindow)) return FFT.Hamming;
             else return null;
         }
     }//end class FFT
