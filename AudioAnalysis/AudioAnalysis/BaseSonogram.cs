@@ -73,7 +73,6 @@ namespace AudioAnalysis
             //set config params to the current recording
             config.Duration = wav.Time;
             config.FftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
-            //double frameOffset = config.GetFrameOffset();
 
 			SampleRate      = wav.SampleRate;
 			Duration        = wav.Time;
