@@ -1,4 +1,4 @@
-﻿module QutSensors.AudioAnalysis.AED.Util.Core
+﻿module QutSensors.AudioAnalysis.AED.Util
 
 (* If the first Option is not empty return it, else return the second.
    Copy of Scala Option.orElse.
@@ -9,6 +9,15 @@ let (|?) o p = if Option.isSome o then o else p
    Copy of Scala Option.getOrElse
 *)
 let (|?|) o d = match o with | Some x -> x | _ -> d
+
+let array2Dfold f z (a:'a[,]) =
+     let mutable x = z
+     for i=0 to (a.GetLength(0)-1) do
+       for j=0 to (a.GetLength(1)-1) do
+         x <- f x (a.[i,j])
+       done
+     done
+     x
 
 // Assume matricies m,n are exactly same dimensions
 let matrixMap2 f (m:matrix) (n:matrix) = Math.Matrix.init m.NumRows m.NumCols (fun i j -> f m.[i,j] n.[i,j])
@@ -29,3 +38,18 @@ let matrixMapi2Unzip f (m:matrix) =
       done
     done
     (r,s) 
+    
+(* This is currently done the easy, inefficient way.
+
+   The following Matlab code will write the matrix I1 to the file I1.txt, with one element per line
+   by descending each column in turn.
+   
+    fid = fopen('I1.txt', 'wt');
+    fprintf(fid, '%f\n', I1);
+    fclose(fid);
+ *)
+let fileToMatrix f r c =
+    let ls = System.IO.File.ReadAllLines f
+    let a = Array2D.create r c 0.0
+    Array.iteri (fun i (s:string) -> a.[i % r, i / r] <- System.Convert.ToDouble(s)) ls
+    a

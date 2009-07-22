@@ -3,7 +3,7 @@
 open GetAcousticEvents
 open Matlab
 open TowseyLib
-open Util.Core
+open Util
 
 // TODO should this return a matrix of int
 let toBlackAndWhite t = Math.Matrix.map (fun e -> if e > t then 1.0 else 0.0)

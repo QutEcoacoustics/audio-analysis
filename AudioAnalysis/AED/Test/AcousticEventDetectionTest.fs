@@ -1,6 +1,5 @@
 ﻿open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open Common
-open Util.Array2
 open Xunit
 
 // TODO there are many matrix/array conversions here

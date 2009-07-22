@@ -1,4 +1,4 @@
-﻿open QutSensors.AudioAnalysis.AED.Util.Core
+﻿open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 
 [<Fact>]

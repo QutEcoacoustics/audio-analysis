@@ -1,7 +1,6 @@
 ﻿module QutSensors.AudioAnalysis.AED.SubbandMode
 
 open Math.Vector.Generic
-open Util.Array2
 
 (* Matlab function.
 yy = smooth(y,span) sets the span of the moving average to span. span must be odd.
