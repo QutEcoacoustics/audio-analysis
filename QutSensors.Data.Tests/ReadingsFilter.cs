@@ -88,7 +88,7 @@ namespace QutSensors.Data.Tests
 			var deployment = CreateDeployment(user, hardware);
 			var reading1 = AddAudioReading(hardware, DateTime.Now);
 			var reading2 = AddAudioReading(hardware, DateTime.Now);
-			reading2.AddTag(db, "test", 0, 10000, user.UserName);
+			reading2.AddTag(db, "test", 0, 10000, 4040, 7070, user.UserName, false);
 
 			Assert.AreEqual(2, db.AudioReadings.Count());
 

@@ -23,7 +23,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "52990"
+		VWDPort = "5390"
 		VWDDynamicPort = "true"
 		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;"
 	EndProjectSection
@@ -51,6 +51,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayer", "SilverlightControls\AudioPlayer\AudioPlayer\AudioPlayer.csproj", "{677A24F2-5643-4960-BD8E-FFD739696099}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayerControl", "SilverlightControls\AudioPlayer\AudioPlayerControl\AudioPlayerControl.csproj", "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED", "AudioAnalysis\AED\AED\AED.fsproj", "{993980A0-8D06-4635-8296-40E9FFF9C301}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -200,6 +202,18 @@ Global
 		{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}.Release|x86.ActiveCfg = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|.NET.ActiveCfg = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.Build.0 = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

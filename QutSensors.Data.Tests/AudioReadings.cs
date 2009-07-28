@@ -101,7 +101,7 @@ namespace QutSensors.Data.Tests
 		{
 			AddAudioReading();
 			var reading = db.AudioReadings.First();
-			reading.AddTag(db, "TEST TAG", 0, 5000, TestUserName);
+			reading.AddTag(db, "TEST TAG", 0, 5000, 0, 2000, TestUserName, false);
 		}
 
 		[TestMethod]
