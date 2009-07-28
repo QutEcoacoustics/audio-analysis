@@ -182,10 +182,10 @@ namespace ProcessorUI
             // Something odd is happening here. foo1 is null yet baz is a Template_CC
             // Revisit how the template was serialized in the first place
             var foo = item.Job.Parameters.BinaryDeserialize();
-            var foo1 = foo as Template_CC;
+            var foo1 = foo as Template_CCAuto;
             byte[] bar = (byte[])foo;
             var baz = bar.BinaryDeserialize();
-            Template_CC template = baz as Template_CC;
+            Template_CCAuto template = baz as Template_CCAuto;
            
             Recogniser recogniser = new Recogniser(template);
 
@@ -257,8 +257,7 @@ namespace ProcessorUI
                     BaseResult results = recogniser.Analyse(new AudioRecording(converted.BufferFile.FileName)) as BaseResult;
 
 					//OnLog("RESULT: {0}, {1}, {2}", result.NumberOfPeriodicHits, result.VocalBestFrame, result.VocalBestLocation);
-
-                    
+                                                                                
                     StringReader reader = new StringReader(results.ToXml().InnerXml);
 
                     XElement element = XElement.Load(reader);
@@ -282,6 +281,11 @@ namespace ProcessorUI
 			}
 			return retVal;
 		}
+
+        private void SerializeResult()
+        {
+
+        }
 
 		#region Events
 		public event GenericHandler<string> Log;
