@@ -26,7 +26,6 @@ let testNeighbourhoodBounds () =
     
 [<Fact>]
 let testWiener2 () = 
-    let i1 = loadTestFile "I1.txt" |> Math.Matrix.of_array2
-    let i2 = wiener2 5 i1 |> Math.Matrix.to_array2
+    let i2 = loadTestFile "I1.txt" |> wiener2 5
     let i2m = loadTestFile "I2.txt"
-    Assert.True (a2FloatEquals i2 i2m 0.00001)
+    Assert.True (matrixFloatEquals i2 i2m 0.00001)

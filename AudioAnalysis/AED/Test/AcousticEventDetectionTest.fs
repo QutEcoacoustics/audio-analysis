@@ -2,13 +2,11 @@
 open Common
 open Xunit
 
-// TODO there are many matrix/array conversions here
 [<Fact>]
 let testToBlackAndWhite () =
-    let i3m = loadTestFile "I3.txt"
-    let i4 = toBlackAndWhite 9.0 (Math.Matrix.of_array2 i3m) |> Math.Matrix.to_array2
+    let i4 = loadTestFile "I3.txt" |> toBlackAndWhite 9.0
     let i4m = loadTestFile "I4.txt"
-    a2FloatEquals i4 i4m 0.001 |> Assert.True
+    matrixFloatEquals i4 i4m 0.001 |> Assert.True
        
 [<Fact>]
 let testToFillIn () =
@@ -41,17 +39,15 @@ let testJoinHorizontalLinesQuick () =
     
 [<Fact>]
 let testJoinHorizontalLines () =
-    let i6am = loadTestFile "I6a.txt"
-    let i6b = joinHorizontalLines (Math.Matrix.of_array2 i6am) |> Math.Matrix.to_array2
+    let i6b = loadTestFile "I6a.txt" |> joinHorizontalLines
     let i6bm = loadTestFile "I6b.txt"
-    a2FloatEquals i6b i6bm 0.001 |> Assert.True
+    matrixFloatEquals i6b i6bm 0.001 |> Assert.True
     
 [<Fact>]
 let TestJoinVerticalLines () =
-    let i4m = loadTestFile "I4.txt"
-    let i6a = joinVerticalLines (Math.Matrix.of_array2 i4m) |> Math.Matrix.to_array2
+    let i6a = loadTestFile "I4.txt" |> joinVerticalLines
     let i6am = loadTestFile "I6a.txt"
-    a2FloatEquals i6a i6am 0.001 |> Assert.True
+    matrixFloatEquals i6a i6am 0.001 |> Assert.True
     
 [<Fact>]
 let testSmallFirstMin () =
