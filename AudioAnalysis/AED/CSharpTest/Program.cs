@@ -13,7 +13,7 @@ namespace CSharpTest
             //Console.ReadKey();
 
             double[,] i = Util.fileToMatrix("Test\\Matlab\\I1.txt", 256, 5188);
-            AcousticEventDetection.detectEvents(i);
+            AcousticEventDetection.detectEvents(Default.intensityThreshold, i);
         }
     }
 }
