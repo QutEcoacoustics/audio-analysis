@@ -27,10 +27,8 @@ let getAcousticEventsTestQuick () =
 
 [<Fact>]
 let getAcousticEventsTest () =
-    let i6bm = loadTestFile "I6b.txt" |> Math.Matrix.of_array2
-    let ae = getAcousticEvents i6bm
+    let ae = loadTestFile "I6b.txt" |> getAcousticEvents
     let MATLAB_LENGTH = 1229
     Assert.Equal(MATLAB_LENGTH, List.length ae)
     let aem = loadEventsFile "AE.txt" MATLAB_LENGTH    
     Assert.Equal(Seq.sort aem, Seq.sort ae)
-    ()
