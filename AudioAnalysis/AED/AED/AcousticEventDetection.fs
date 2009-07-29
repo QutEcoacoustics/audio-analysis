@@ -24,25 +24,26 @@ let smallFirstMin cs h t =
     let tf g = Seq.tryFind (fun (_,x) -> g x) s
     tf ((>) 0) |? tf ((=) 0) |> Option.map fst |?| t
 
-let smallThreshold rs =
-    let t = 200
-    let cs = seq {for i in 0..9 -> (i * 20) + 10}
+let percent p x = (float x) * p |> round |> (int)
+
+let smallThreshold t rs =
+    let cs = seq {for i in 0..9 -> (i * (percent 0.1 t)) + (percent 0.05 t)}
     let as' = areas rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (hist as' cs) t
 
-let filterOutSmallEvents rs =
-    let t = smallThreshold rs
-    Seq.filter (fun r -> area r > t) rs
+let filterOutSmallEvents t rs =
+    let t' = smallThreshold t rs
+    Seq.filter (fun r -> area r > t') rs
 
-let detectEventsMatlab intensityThreshold m =
+let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     Matlab.wiener2 5 m 
     |> SubbandMode.removeSubbandModeIntensities2
     |> toBlackAndWhite intensityThreshold
     |> joinVerticalLines
     |> joinHorizontalLines
     |> getAcousticEvents
-    |> filterOutSmallEvents
+    |> filterOutSmallEvents smallAreaThreshold
     
-let detectEvents intensityThreshold a =
-    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab intensityThreshold
+let detectEvents intensityThreshold smallAreaThreshold a =
+    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab intensityThreshold smallAreaThreshold
                             |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back

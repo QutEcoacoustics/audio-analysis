@@ -45,7 +45,7 @@ namespace AudioAnalysis
             double[,] matrix = sonogram.Data;
 
             Console.WriteLine("START: DETECTION");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(Default.intensityThreshold, matrix);
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(Default.intensityThreshold, Default.smallAreaThreshold, matrix);
             Console.WriteLine("END: DETECTION");
 
             //set up static variables for init Acoustic events
