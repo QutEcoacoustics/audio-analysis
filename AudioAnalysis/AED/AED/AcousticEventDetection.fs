@@ -24,10 +24,9 @@ let smallFirstMin cs h t =
     let tf g = Seq.tryFind (fun (_,x) -> g x) s
     tf ((>) 0) |? tf ((=) 0) |> Option.map fst |?| t
 
-let percent p x = (float x) * p |> round |> (int)
-
 let smallThreshold t rs =
-    let cs = seq {for i in 0..9 -> (i * (percent 0.1 t)) + (percent 0.05 t)}
+    let (%%) x y = (float x) * y |> round |> (int)
+    let cs = seq {for i in 0..9 -> (i * (t %% 0.1)) + (t %% 0.05)}
     let as' = areas rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (hist as' cs) t
 
