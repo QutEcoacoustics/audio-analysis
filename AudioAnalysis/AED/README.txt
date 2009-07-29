@@ -3,7 +3,7 @@ Dependencies
 
 F#
 http://msdn.microsoft.com/en-gb/fsharp/default.aspx
-Version: 1.9.6.2
+Version: 1.9.6.16
 
 xUnit.net
 http://www.codeplex.com/xunit
