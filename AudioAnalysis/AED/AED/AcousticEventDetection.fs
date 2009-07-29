@@ -34,15 +34,15 @@ let filterOutSmallEvents rs =
     let t = smallThreshold rs
     Seq.filter (fun r -> area r > t) rs
 
-let detectEventsMatlab m =
+let detectEventsMatlab intensityThreshold m =
     Matlab.wiener2 5 m 
     |> SubbandMode.removeSubbandModeIntensities2
-    |> toBlackAndWhite 9.0
+    |> toBlackAndWhite intensityThreshold
     |> joinVerticalLines
     |> joinHorizontalLines
     |> getAcousticEvents
     |> filterOutSmallEvents
     
-let detectEvents a =
-    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab
+let detectEvents intensityThreshold a =
+    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab intensityThreshold
                             |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
