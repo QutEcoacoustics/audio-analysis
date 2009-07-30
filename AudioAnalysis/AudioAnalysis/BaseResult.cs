@@ -23,13 +23,14 @@ namespace AudioAnalysis
 
         //summary scores
         public List<Vocalisation> FullVocalisations { get; set; } // list of vocalisations obtained by recogniser
-        public int? VocalCount { get; set; }			// number of vocalisatsions involving a recognised syllable
+        public int? VocalCount { get; set; }			// number of vocalisations that include recognised syllable(s)
         public double? RankingScoreValue { get; set; }	// the score used to rank/compare this recording with others
         public double? MaxScore { get; set; }	        // the maximum score obtained with this recording
         public int? FrameWithMaxScore { get; set; }     // id of frame having top score in recording 
         public double? TimeOfMaxScore { get; set; }	    // time of top score from beginning of recording in seconds 
 
         public double? MaxDisplayScore { get; set; }	// upper limit for diplay of scores 
+        public double? MinDisplayScore { get; set; }	// lower limit for diplay of scores 
         public double? DisplayThreshold { get; set; }	// threshold for diplay of scores
 
         public abstract string RankingScoreName { get; }

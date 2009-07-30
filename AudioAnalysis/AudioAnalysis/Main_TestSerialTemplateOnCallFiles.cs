@@ -33,7 +33,7 @@ namespace AudioAnalysis
             string templateDir = @"C:\SensorNetworks\Templates\Template_" + callID;
             string templateFName = "Template" + callID + ".serialised";
             string serialPath = Path.Combine(templateDir, templateFName);
-            string testDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\TestSet";
+            string testDir = @"C:\SensorNetworks\Templates\Template_" + callID + "\\TestSetTrue";
             string outputFolder = templateDir;  //args[2]
 
             Console.WriteLine("appConfigPath =" + appConfigPath);
@@ -56,8 +56,11 @@ namespace AudioAnalysis
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
-
         }//end Main() method
+
+
+
+
 
         public static void ScanTestDirectories(Template_CCAuto template, List<string> directories)
         {

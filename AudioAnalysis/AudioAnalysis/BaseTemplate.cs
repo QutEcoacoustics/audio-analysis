@@ -425,7 +425,7 @@ namespace AudioAnalysis
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, 0.0, 0.0));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MinDisplayScore, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(path);
         }
 
@@ -447,7 +447,7 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
-            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MinDisplayScore, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(path);
         }
         public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result, List<AcousticEvent> list)
@@ -469,7 +469,7 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
-            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MinDisplayScore, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(path);
         }
 

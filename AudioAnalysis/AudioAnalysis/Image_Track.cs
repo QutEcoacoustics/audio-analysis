@@ -53,7 +53,9 @@ namespace AudioAnalysis
         #region Properties
         public TrackType TrackType { get; set; }
 
-        public double scoreMax = 8.0; //default max score displayed in score track of image
+        public double scoreMin = 0.0; //default min score displayed in score track of image
+        public double ScoreMin { get { return scoreMin; } set { scoreMin = value; } }
+        public double scoreMax = 10.0; //default max score displayed in score track of image
         public double ScoreMax { get { return scoreMax; } set { scoreMax = value; } }
         public double ScoreThreshold { set; get; }
 
@@ -283,14 +285,16 @@ namespace AudioAnalysis
         }
 
         /// <summary>
-        /// This method assumes that the passed data array is of values, min=0.0, max=approx 8-16.
+        /// Displays a score track, normalised to min and max of the data. max=approx 8-16.
         /// </summary>
         public Bitmap DrawScoreArrayTrack(Bitmap bmp)
         {
             //Console.WriteLine("DRAW SCORE TRACK: image ht=" + bmp.Height + "  topOffset = " + topOffset + "   botOffset =" + bottomOffset);
             if (doubleData == null) return bmp;
-            int bmpWidth = bmp.Width;
             int dataLength = this.doubleData.Length;
+            double range = this.scoreMax - this.scoreMin;
+
+            int bmpWidth = bmp.Width;
             int subSample = (int)Math.Round((double)(dataLength / bmp.Width));
             if (subSample < 1) subSample = 1;
 
@@ -308,7 +312,8 @@ namespace AudioAnalysis
                     if (max < doubleData[x]) max = doubleData[x];
                     location = x;
                 }
-                int id = this.Height - 1 - (int)(this.Height * doubleData[w] / this.ScoreMax);
+                double fraction = (doubleData[w] - this.scoreMin) / range;
+                int id = this.Height - 1 - (int)(this.Height * fraction);
                 if (id < 0) id = 0;
                 else if (id > this.Height) id = this.Height;
                 //paint white and leave a black vertical histogram bar
@@ -319,7 +324,10 @@ namespace AudioAnalysis
           //  double thold = 2 * this.ScoreThreshold;
            // if (thold < this.ScoreMax) thold = this.ScoreMax;
           //  int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / thold)));
-            int lineID = (int)(this.Height * (1 - (this.ScoreThreshold / this.ScoreMax)));
+            double f = (this.ScoreThreshold - this.scoreMin) / range;
+            int lineID = this.Height - 1 - (int)(this.Height * f);
+            if (lineID < 0) lineID = 0;
+            else if (lineID > this.Height) lineID = this.Height;
             for (int x = 0; x < bmpWidth; x++) bmp.SetPixel(x, topOffset + lineID, gray);
 
             return bmp;
@@ -530,11 +538,12 @@ namespace AudioAnalysis
             track.GarbageID = garbageID;
             return track;
         }
-        public static Image_Track GetScoreTrack(double[] scores, double? scoreMax, double? scoreThreshold)
+        public static Image_Track GetScoreTrack(double[] scores, double? scoreMin, double? scoreMax, double? scoreThreshold)
         {
             var track = new Image_Track(TrackType.scoreArray, scores);
             track.ScoreThreshold = scoreThreshold ?? 0;
-            track.ScoreMax       = scoreMax ?? 0;
+            track.ScoreMin = scoreMin ?? 0;
+            track.ScoreMax = scoreMax ?? 0;
             return track;
         }
 
