@@ -15,6 +15,9 @@ namespace AudioAnalysis
     {
 
         public const double LLR_THRESHOLD = 6.63; //Chi2 statistic for DOF=1 and alpha=0.01
+        //establish a suitable value for the expected sum of LLR and Quality Scores
+        public const double MaxDisplayScore  =   5.0;  //truncate maximum sum of LLR and Quality Scores
+        public const double MinDisplayScore  = -10.0;  //truncate minimum sum of LLR and Quality Scores
 
 
         #region Properties
@@ -89,6 +92,11 @@ namespace AudioAnalysis
         {
             Log.WriteIfVerbose("\nSTART Model_MMErgodic.ScanSymbolSequenceWithModel()");
             var result = r as Result_MMErgodic; //caste to appropriate result type.
+            //transfer required boundary values and threholds later used for display purposes
+            result.LLRThreshold     = -LLR_THRESHOLD; //hit threshold = Chi2 statistic for DOF=1 and alpha=0.01
+            result.DisplayThreshold = -LLR_THRESHOLD; //hit threshold
+            result.MinDisplayScore  = Model_MMErgodic.MinDisplayScore;
+            result.MaxDisplayScore  = Model_MMErgodic.MaxDisplayScore;
 
             List<string> unitTestMonitor = new List<string>(); // only used when Unit testing
 
@@ -98,67 +106,53 @@ namespace AudioAnalysis
             
             //obtain list of partial vocalisations that have been detected by the MM
             MMResults mmResults = markovModel.ScoreSequence(symbolSequence);
-            List<Vocalisation> list = mmResults.PartialVocalisations; //each vocalisation represented as symbol string and scores
-            int listLength = list.Count;
+            List<Vocalisation> events = mmResults.PartialVocalisations; //each vocalisation represented as symbol string and scores
+            int listLength = events.Count;
 
-            //result.PartialVocalisations = list;
 
             //ANALYSE THE MM RESULTS FOR EACH VOCALISATION - CALCULATE LLR etc
-            //init the results variables
-            result.MaxDisplayScore = 10.0;  //a suitable value for the expected range of LLR and Quality Scores
-            double bestHit = -Double.MaxValue;
+            double bestHit = Model_MMErgodic.MinDisplayScore; //lowest acceptable value
             int bestFrame  = -1;
             double[] scores = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) scores[i] = (double)result.MinDisplayScore; //set baseline
 
-            for (int i = 0; i < listLength; i++) //
-            //for (int i = 0; i < 50; i++) //
+            for (int i = 0; i < listLength; i++) // for every (Vocalisation) vocalEvent
+            //for (int i = 0; i < 50; i++) //for debug
+            {
+                int[] array = MMTools.String2IntegerArray('n' + events[i].SymbolSequence + 'n');
+
+                //song duration
+                Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(duration)=" + events[i].DurationProbability.ToString("F2"));
+                unitTestMonitor.Add((i + 1).ToString("D2") + " Prob(duration)=" + events[i].DurationProbability.ToString("F2"));
+
+                double llr = events[i].Score - mmResults.probOfAverageTrainingSequenceGivenModel;
+                double? finalScore = llr + events[i].QualityScore;   //combine LLR and QULAITY scores
+                //if fail quality test then set score to minimum score
+                if (events[i].QualityScore < mmResults.qualityThreshold) finalScore = (double)result.MinDisplayScore;
+
+                scores[events[i].Start] = (double)finalScore; //assign score to beginning of vocalisation event
+
+                if (finalScore > bestHit)
                 {
-                Vocalisation vocalEvent = list[i];
-                int[] array = MMTools.String2IntegerArray('n' + vocalEvent.SymbolSequence + 'n');
-
-                //song duration filter
-                double durationProb = vocalEvent.DurationProbability;
-                //Log.WriteIfVerbose((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-                unitTestMonitor.Add((i + 1).ToString("D2") + " Prob(Song duration) = " + durationProb.ToString("F3"));
-
-                double llr = vocalEvent.Score - mmResults.probOfAverageTrainingSequenceGivenModel;
-
-                //now SCALE THE SCORE ARRAY so that it can be displayed in range +0 to +10.
-                double? displayScore = llr + vocalEvent.QualityScore;
-                displayScore += result.MaxDisplayScore; //add positve value because max score expected to be zero.
-                if (displayScore > result.MaxDisplayScore) displayScore = result.MaxDisplayScore;
-                if (displayScore < 0) displayScore = 0.0;
-                if (vocalEvent.QualityScore < mmResults.qualityThreshold) displayScore = 0.0;
-                scores[vocalEvent.Start] = (double)displayScore; //assign score to beginning of vocalisation event
-
-                if (displayScore > bestHit)
-                {
-                    bestHit = (double)displayScore;
-                    bestFrame = vocalEvent.Start;
+                    bestHit = (double)finalScore;
+                    bestFrame = events[i].Start;
                 }
                 //Log.WriteIfVerbose((i + 1).ToString("D2") + " LLR=" + llr.ToString("F2") + " \tQual=" + vocalEvent.QualityScore.ToString("F2") + "\t" + vocalEvent.Sequence);
-                unitTestMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + vocalEvent.SymbolSequence);
+                unitTestMonitor.Add((i + 1).ToString("D2") + " LLRScore=" + llr.ToString("F2") + "\t" + events[i].SymbolSequence);
             }//end of scanning all vocalisations
 
 
-            //LLR_THRESHOLD = Chi2 statistic for DOF=1 and alpha=0.01
-            result.LLRThreshold = result.MaxDisplayScore - LLR_THRESHOLD; //hit threshold
             //smooth the score array because want to count acoustic events which exceed threshold
-            result.Scores           = DataTools.filterMovingAverage(scores, 5); //smooth the score array
-            result.DisplayThreshold = result.LLRThreshold;
+            result.Scores = DataTools.filterMovingAverage(scores, 5); //smooth the score array
+            result.VocalCount        = GetHitCount(result.Scores, (double)result.LLRThreshold);// number of detected vocalisations
+            result.RankingScoreValue = bestHit;   // the highest score obtained in recording
+            result.FrameWithMaxScore = bestFrame;
+            result.TimeOfMaxScore    = (double)bestFrame * frameOffset;
 
-            //summary scores
-            int hitCount = GetHitCount(result.Scores, (double)result.LLRThreshold);
-            result.VocalCount = hitCount;        // number of detected vocalisations
-            result.RankingScoreValue= bestHit;   // the highest score obtained in recording
-            result.FrameWithMaxScore= bestFrame;
-            double bestTimePoint = (double)bestFrame * frameOffset;
-            result.TimeOfMaxScore = bestTimePoint;
-
-            string str1 = String.Format("\n#### Number of calls recognised={0}", hitCount);
-            if (hitCount > 0) str1 = String.Format("\n#### Number of calls recognised={0}. Highest score={1:F3} at frame {2:D} = {3:F1}s.",
-                                                                                hitCount, bestHit, bestFrame, bestTimePoint);
-            Log.WriteIfVerbose(str1);
+            string str1 = String.Format("\n# calls recognised={0}. Highest score={1:F3} at frame {2:D} = {3:F1}s.",
+                                              result.VocalCount, bestHit, bestFrame, result.TimeOfMaxScore);
+            //Console.WriteLine(str1);
+            //Log.WriteIfVerbose(str1);
             unitTestMonitor.Add(str1);
 
             if (BaseTemplate.InTestMode)
@@ -173,6 +167,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("END Model_MMErgodic.ScanSymbolSequenceWithModel()");
         } //end ScanSymbolSequenceWithModel()
         #endregion
+
 
         /// <summary>
         /// returns the number of time the score value transits the threshold
@@ -191,6 +186,25 @@ namespace AudioAnalysis
                 //if ((scores[i - 1] < threshold) && (scores[i] >= threshold)) Console.WriteLine(scores[i - 1] + ">>" + scores[i]);
             }
             return hits;
+        }
+
+        /// <summary>
+        /// SCALES THE SCORE ARRAY so that it can be displayed in range -10 to +5.
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <returns></returns>
+        public double[] GetScoresScaledForDisplay(BaseResult r)
+        {
+            var result = r as Result_MMErgodic; //caste to appropriate result type.
+            var scores = result.Scores;
+            double[] scaledScores = new double[scores.Length];
+            for (int i = 1; i < scores.Length; i++)
+            {
+                //scores[i] += (double)result.MaxDisplayScore; 
+                if (scores[i] > result.MaxDisplayScore) scores[i] = (double)result.MaxDisplayScore;
+                if (scores[i] < result.MinDisplayScore) scores[i] = (double)result.MinDisplayScore;
+            }
+            return scaledScores;
         }
 
 

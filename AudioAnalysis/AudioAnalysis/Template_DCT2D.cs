@@ -293,7 +293,7 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
-            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MaxDisplayScore, result.DisplayThreshold));
+            image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MinDisplayScore, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(imagePath);
         }
 
@@ -306,9 +306,10 @@ namespace AudioAnalysis
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
+            double MinDisplayScore  = 0;
             double MaxDisplayScore  = 8;
             double DisplayThreshold = 2;
-            image.AddTrack(Image_Track.GetScoreTrack(this.Scores, MaxDisplayScore, DisplayThreshold));
+            image.AddTrack(Image_Track.GetScoreTrack(this.Scores, MinDisplayScore, MaxDisplayScore, DisplayThreshold));
             image.Save(imagePath);
         }
 

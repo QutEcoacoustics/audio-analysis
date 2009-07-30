@@ -65,7 +65,7 @@ namespace AudioAnalysis
             Console.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
             List<string> hmmResults = FileTools.ReadTextFile(resultsPath);
             double[] hmmScores = ParseHmmScores(hmmResults, sonogram.Duration, sonogram.FrameCount, "CURRAWONG");
-            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 8.0, 1.0));
+            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 0.0, 8.0, 1.0));
 
 
             Console.WriteLine();
