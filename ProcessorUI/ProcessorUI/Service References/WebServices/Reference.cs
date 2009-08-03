@@ -116,6 +116,9 @@ namespace ProcessorUI.WebServices {
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private bool AcousticEventDetectionField;
+        
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int JobIDField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -131,6 +134,19 @@ namespace ProcessorUI.WebServices {
             }
             set {
                 this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public bool AcousticEventDetection {
+            get {
+                return this.AcousticEventDetectionField;
+            }
+            set {
+                if ((this.AcousticEventDetectionField.Equals(value) != true)) {
+                    this.AcousticEventDetectionField = value;
+                    this.RaisePropertyChanged("AcousticEventDetection");
+                }
             }
         }
         
