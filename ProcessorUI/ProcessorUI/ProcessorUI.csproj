@@ -109,9 +109,17 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AudioAnalysis\AED\AED\AED.fsproj">
+      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Name>AED</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
       <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
       <Name>AudioAnalysis</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
+      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
+      <Name>TowseyLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
@@ -120,6 +128,10 @@
     <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Processor\Processor.csproj">
+      <Project>{3580DCAD-213C-400C-88BF-273824E506F7}</Project>
+      <Name>Processor</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -135,9 +147,8 @@
     <None Include="Service References\WebServices\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor.wsdl" />
-    <None Include="Service References\WebServices\Processor.xsd" />
-    <None Include="Service References\WebServices\Processor1.wsdl" />
+    <None Include="Service References\WebServices\Processor3.xsd" />
+    <None Include="Service References\WebServices\Processor31.xsd" />
     <None Include="Service References\WebServices\ProcessorUI.WebServices.ProcessorJobItemDescription.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -147,9 +158,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor.disco" />
-    <None Include="Service References\WebServices\Processor1.xsd" />
-    <None Include="Service References\WebServices\Processor2.xsd" />
+    <None Include="Service References\WebServices\Processor1.disco" />
+    <None Include="Service References\WebServices\Processor2.wsdl" />
+    <None Include="Service References\WebServices\Processor21.wsdl" />
+    <None Include="Service References\WebServices\Processor32.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

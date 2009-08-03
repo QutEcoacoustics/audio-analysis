@@ -27,7 +27,7 @@ namespace QutSensors.Data.Tests
 
 			// Create job
 			var filter = new ReadingsFilter() { FromDate = DateTime.UtcNow.AddHours(-1) };
-			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template, true, true);
+			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template, false, true, true);
 		}
 
 		[TestMethod]

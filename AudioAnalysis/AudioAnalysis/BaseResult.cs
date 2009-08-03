@@ -57,35 +57,5 @@ namespace AudioAnalysis
             return "NO RESULTS AVAILABLE FROM BASE CLASS.";
         }
 
-        public XmlDocument ToXml()
-        {
-            XmlDocument document = new XmlDocument();
-
-            XmlElement firstChild = document.CreateElement("Results");
-
-            foreach (string resultItemKey in this.ResultItemKeys)
-            {
-                XmlElement element = document.CreateElement(resultItemKey);
-
-                ResultItem resultItem = this.GetResultItem(resultItemKey);                
-
-                double resultVal = 0.0;
-
-                try
-                {
-                    resultVal = double.Parse(resultItem.GetValue().ToString());
-                }
-                catch
-                {
-
-                }
-                element.InnerText = resultVal.ToString();
-
-                firstChild.AppendChild(element);
-            }
-
-            document.AppendChild(firstChild);
-            return document;
-        }
     }
 }

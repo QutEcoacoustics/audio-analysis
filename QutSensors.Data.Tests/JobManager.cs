@@ -20,7 +20,7 @@ namespace QutSensors.Data.Tests
 			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter = new ReadingsFilter() {FromDate = DateTime.Today};
-			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template, true, true);
+			var job = JobManager.Instance.Add(db, filter, "TEST JOB", user.UserName, template, false, true, true);
 
 			Assert.AreEqual(0, job.JobItems.Count());
 
@@ -42,9 +42,9 @@ namespace QutSensors.Data.Tests
 			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter1 = new ReadingsFilter() { FromDate = DateTime.Today };
-			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, true, true);
+			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, false, true, true);
 			var filter2 = new ReadingsFilter() { ToDate = DateTime.Today };
-			var job2 = JobManager.Instance.Add(db, filter2, "TEST JOB 2", user.UserName, template, true, true);
+			var job2 = JobManager.Instance.Add(db, filter2, "TEST JOB 2", user.UserName, template, false, true, true);
 
 			Assert.AreEqual(0, job1.JobItems.Count());
 			Assert.AreEqual(0, job2.JobItems.Count());
@@ -74,9 +74,9 @@ namespace QutSensors.Data.Tests
 			var template = JobManager.Instance.AddTemplate(new DummyTemplateParameters(), "TEST TEMPLATE", "This is a template used for testing.", CreateDummyTemplateResults());
 
 			var filter1 = new ReadingsFilter() { };
-			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, false, false);
+			var job1 = JobManager.Instance.Add(db, filter1, "TEST JOB 1", user.UserName, template, false, false, false);
 			var filter2 = new ReadingsFilter() { };
-			var job2 = JobManager.Instance.Add(db, filter2, "TEST JOB 2", user.UserName, template, true, true);
+			var job2 = JobManager.Instance.Add(db, filter2, "TEST JOB 2", user.UserName, template, false, true, true);
 
 			Assert.AreEqual(0, job1.JobItems.Count());
 			Assert.AreEqual(0, job2.JobItems.Count());
