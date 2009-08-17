@@ -17,12 +17,15 @@ let bottom r = r.Top + r.Height
 let area r = r.Width * r.Height
 let areas rs = Seq.map area rs
     
+type AcousticEvent = {Bounds:Rectangle; Elements:(int * int) Set}
+let bounds aes = Seq.map (fun ae -> ae.Bounds) aes
+    
 let getAcousticEvents m =
     let m' = Math.Matrix.copy m
     let g xs = 
         Set.iter (fun (i,j) -> m'.[i,j] <- 0.0) xs // TODO how can we efficiently not mutate?
         let (rs, cs) = List.unzip (Set.to_list xs) 
         let l,t = List.min cs, List.min rs
-        {Left=l; Top=t; Width=List.max cs - l + 1; Height=List.max rs - t + 1}
+        {Bounds={Left=l; Top=t; Width=List.max cs - l + 1; Height=List.max rs - t + 1}; Elements=xs}
     let f i j a x = if x = 0.0 or m'.[i,j] = 0.0 then a else (g(spider m [(i,j)] Set.empty))::a
     Math.Matrix.foldi f [] m

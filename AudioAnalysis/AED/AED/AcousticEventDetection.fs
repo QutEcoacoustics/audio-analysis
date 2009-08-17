@@ -40,7 +40,7 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     |> toBlackAndWhite intensityThreshold
     |> joinVerticalLines
     |> joinHorizontalLines
-    |> getAcousticEvents
+    |> getAcousticEvents |> bounds
     |> filterOutSmallEvents smallAreaThreshold
     
 let detectEvents intensityThreshold smallAreaThreshold a =
