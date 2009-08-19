@@ -14,7 +14,7 @@ areas = AE_old(3,:).*AE_old(4,:);
 areas2 = areas;
 areas2(areas>largest_thresh) = nan;
 
-numbins=linspace(0,180,10)+10;%bin centroids
+numbins=[0:9] * round(largest_thresh*0.1) + round(largest_thresh*0.05); %bin centroids
 [n,loc] = hist(areas2,numbins);
 % figure(11), clf, bar(loc,n)
 % set(gca,'FontSize',30), axis tight
