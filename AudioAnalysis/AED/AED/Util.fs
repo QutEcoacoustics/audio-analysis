@@ -10,6 +10,9 @@ let (|?) o p = if Option.isSome o then o else p
 *)
 let (|?|) o d = match o with | Some x -> x | _ -> d
 
+// TODO: should I/can I fix the overloaded round instead?
+let rnd x = if x - 0.5 = floor x then ceil x else round x
+
 let array2Dfold f z (a:'a[,]) =
      let mutable x = z
      for i=0 to (a.GetLength(0)-1) do
