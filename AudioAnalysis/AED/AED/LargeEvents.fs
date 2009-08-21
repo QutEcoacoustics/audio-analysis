@@ -11,3 +11,14 @@ let threshold rs =
     let t = Matlab.hist (areas rs) cs |> lastMin cs
     let d = 3000
     if t < d then d else t
+    
+let aeToMatrix ae =
+    let r = ae.Bounds
+    Math.Matrix.init r.Height r.Width (fun i j -> if ae.Elements.Contains (r.Top + i, r.Left + j) then 1.0 else 0.0)
+
+let separateLargeEvents aes =
+    let t = bounds aes |> threshold
+    let f ae =
+        let m = aeToMatrix ae
+        ae.Bounds
+    Seq.collect (fun ae -> if area ae.Bounds < t then [ae.Bounds] else [f ae]) aes
