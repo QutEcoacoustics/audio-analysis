@@ -15,10 +15,15 @@ let threshold rs =
 let aeToMatrix ae =
     let r = ae.Bounds
     Math.Matrix.init r.Height r.Width (fun i j -> if ae.Elements.Contains (r.Top + i, r.Left + j) then 1.0 else 0.0)
+    
+let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
 let separateLargeEvents aes =
-    let t = bounds aes |> threshold
+    let areat = bounds aes |> threshold
+    let rowt = 20.0
     let f ae =
         let m = aeToMatrix ae
-        ae.Bounds
-    Seq.collect (fun ae -> if area ae.Bounds < t then [ae.Bounds] else [f ae]) aes
+        let s = sumRows m |> Seq.map (fun x -> x / (float) m.NumRows * 100.0 <= rowt) 
+        let m' = Math.Matrix.mapi (fun i _ x -> if Seq.nth i s then 0.0 else x) m
+        getAcousticEvents m' |> List.map (fun ae -> ae.Bounds) // TODO need a functor
+    Seq.collect (fun ae -> if area ae.Bounds < areat then [ae.Bounds] else f ae) aes
