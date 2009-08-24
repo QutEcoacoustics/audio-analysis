@@ -22,3 +22,9 @@ let testAeToMatrix () =
     let ae = {Bounds={Left=1;Top=0;Width=5;Height=2}; Elements=Set.of_list [(0,1); (1,3)]}
     let m = Math.Matrix.of_list [[1.0; 0.0; 0.0; 0.0; 0.0]; [0.0; 0.0; 1.0; 0.0; 0.0]]
     Assert.Equal(m, aeToMatrix ae)
+    
+[<Fact(Skip="")>]
+let separateLargeEventsTest () =
+    let ae2 = loadTestFile "I6b.txt" |> getAcousticEvents |> separateLargeEvents
+    let ae2m = loadEventsFile "AE2.txt" 1249 // TODO hardcoded in filterSmallEvents test as well
+    Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
