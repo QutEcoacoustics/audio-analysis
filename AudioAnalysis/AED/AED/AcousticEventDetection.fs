@@ -22,7 +22,7 @@ let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Mat
 let smallFirstMin cs h t =
     let s = Seq.pairwise h |> Seq.map (fun (x,y) -> x-y) |> Seq.zip cs // TODO almost a copy from LargeEvents.lastMin
     let tf g = Seq.tryFind (fun (_,x) -> g x) s
-    tf ((>) 0) |? tf ((=) 0) |> Option.map fst |?| t
+    tf ((>) 0) |? lazy tf ((=) 0) |> Option.map fst |?| t
 
 let smallThreshold t rs =
     let (%%) x y = (float x) * y |> rnd |> (int)

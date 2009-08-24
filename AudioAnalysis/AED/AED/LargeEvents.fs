@@ -1,6 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.LargeEvents
     
 open GetAcousticEvents
+open Util
     
 let lastMin cs h = 
     let s = Seq.pairwise h |> Seq.map (fun (x,y) -> y-x) |> Seq.zip ( Seq.skip 1 cs)
@@ -15,8 +16,6 @@ let threshold rs =
 let aeToMatrix ae =
     let r = ae.Bounds
     Math.Matrix.init r.Height r.Width (fun i j -> if ae.Elements.Contains (r.Top + i, r.Left + j) then 1.0 else 0.0)
-    
-let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
 let separateLargeEvents aes =
     let areat = bounds aes |> threshold
