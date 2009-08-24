@@ -1,17 +1,16 @@
 ﻿module QutSensors.AudioAnalysis.AED.Util
 
-(* If the first Option is not empty return it, else return the second.
-   Copy of Scala Option.orElse.
-*)
-let (|?) o p = if Option.isSome o then o else p 
+// If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
+let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
 
-(* If the Option is not empty return its value, otherwise return d.
-   Copy of Scala Option.getOrElse
-*)
-let (|?|) o d = match o with | Some x -> x | _ -> d
+let (|?) = orElse
+
+let (|?|) = defaultArg
 
 // TODO: should I/can I fix the overloaded round instead?
 let rnd x = if x - 0.5 = floor x then ceil x else round x
+
+let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
 let array2Dfold f z (a:'a[,]) =
      let mutable x = z
