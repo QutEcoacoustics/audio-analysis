@@ -1,6 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.LargeEvents
     
 open GetAcousticEvents
+open Matlab
 open Util
     
 let lastMin cs h = 
@@ -9,7 +10,7 @@ let lastMin cs h =
     
 let threshold rs =
     let cs = seq {for i in 0..10 -> i * 1000}
-    let t = Matlab.hist (areas rs) cs |> lastMin cs
+    let t = hist (areas rs) cs |> lastMin cs
     let d = 3000
     if t < d then d else t
     
@@ -22,7 +23,7 @@ let separateLargeEvents aes =
     let f ae =
         let freqt = 20.0
         let m = aeToMatrix ae
-        let s = sumRows m |> Seq.map (fun x -> x / (float) m.NumRows * 100.0 <= freqt) 
+        let s = sumRows m |> Seq.map (fun x -> x / (float) m.NumCols * 100.0 <= freqt) 
         let m1 = Math.Matrix.mapi (fun i _ x -> if Seq.nth i s then 0.0 else x) m
         let rs = getAcousticEvents m1
                  |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in {Left=b1.Left+b2.Left; Top=b1.Top+b2.Top; Width=b2.Width; Height=b2.Height})
