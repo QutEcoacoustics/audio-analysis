@@ -31,6 +31,6 @@ let separateLargeEvents aes =
         let timet = 100.0 / 3.0
         let m2 = m - m1
         rs @ (getAcousticEvents m2
-              |> List.filter (fun x -> (float) x.Bounds.Height >= timet)
+              |> List.filter (fun x -> (float) x.Bounds.Height * 100.0 / (float) m2.NumRows >= timet)
               |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in {Left=b1.Left+b2.Left; Top=b1.Top; Width=b2.Width; Height=b1.Height}))
     Seq.collect (fun ae -> if area ae.Bounds < areat then [ae.Bounds] else f ae) aes
