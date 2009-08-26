@@ -1,6 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.AcousticEventDetection
 
 open GetAcousticEvents
+open LargeEvents
 open Matlab
 open TowseyLib
 open Util
@@ -40,7 +41,8 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     |> toBlackAndWhite intensityThreshold
     |> joinVerticalLines
     |> joinHorizontalLines
-    |> getAcousticEvents |> bounds
+    |> getAcousticEvents
+    |> separateLargeEvents
     |> filterOutSmallEvents smallAreaThreshold
     
 let detectEvents intensityThreshold smallAreaThreshold a =
