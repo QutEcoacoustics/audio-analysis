@@ -23,7 +23,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.ForceOverwrite = "true"
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
-		VWDPort = "1201"
+		VWDPort = "2669"
 		VWDDynamicPort = "true"
 		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;"
 	EndProjectSection
