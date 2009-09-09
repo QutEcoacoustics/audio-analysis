@@ -1,6 +1,56 @@
 ﻿open Common
+open FsCheck
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Xunit
+
+(*
+type NonNegativeInt = NonNegative of int
+
+type ArbitraryModifiers =
+    static member NonNegativeInt () =
+        { new Arbitrary<NonNegativeInt>() with
+            override x.Arbitrary = arbitrary |> fmapGen (NonNegative << abs)
+            override x.CoArbitrary (NonNegative i) = coarbitrary i
+            override x.Shrink (NonNegative i) = shrink i |> Seq.filter ((<) 0) |> Seq.map NonNegative }
+*)
+
+// TODO how to type annotate this version: let nonNeg = arbitrary |> fmapGen abs
+let nonNeg = gen { let! (x:int) = arbitrary
+                   return (abs x) }
+
+let pos = nonNeg |> fmapGen ((+) 1)
+
+let pairGen g1 g2 = gen { let! x = g1
+                          let! y = g2
+                          return (x,y) }
+                          
+let sequenceGen ms =
+    let k m' m = gen { let! x = m
+                       let! xs = m'
+                       return (x::xs)}
+    List.fold k (gen {return []}) ms
+    
+let replicateGenM n g = List.replicate n g |> sequenceGen
+
+// TODO liftGen4
+type ArbitraryModifiers = 
+    static member Rectangle () =
+         { new Arbitrary<Rectangle>() with
+            override x.Arbitrary = gen { let! top = nonNeg 
+                                         let! left = nonNeg
+                                         let! height = pos
+                                         let! width = pos
+                                         return {Left=left;Top=top;Width=width;Height=height} }}
+    static member AcousticEvent () =
+        { new Arbitrary<AcousticEvent>()with
+            override x.Arbitrary = gen { let! rect = arbitrary
+                                         let r = right rect
+                                         let b = bottom rect
+                                         let! c = choose (1, rect.Height * rect.Width)
+                                         // elms <- replicateM c $ pairM (choose (t,b)) (choose (l,r))                                         
+                                         let! elms = pairGen (choose (rect.Top,b)) (choose (rect.Left,r)) |> replicateGenM c 
+                                         // return $ AE rect $ Set.fromList elms
+                                         return {Bounds=rect;Elements=Set.of_list elms}}} 
 
 [<Fact>]
 let spiderTest () = 
