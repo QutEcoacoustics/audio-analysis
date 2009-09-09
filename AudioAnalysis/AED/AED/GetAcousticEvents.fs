@@ -12,8 +12,8 @@ let rec spider (m:matrix) xs (v:(int * int) Set) =
                spider m ps' v'
     
 type Rectangle = {Left:int; Top:int; Width:int; Height:int;}
-let right r = r.Left + r.Width
-let bottom r = r.Top + r.Height
+let right r = r.Left + r.Width - 1
+let bottom r = r.Top + r.Height - 1
 let area r = r.Width * r.Height
 let areas rs = Seq.map area rs
     
