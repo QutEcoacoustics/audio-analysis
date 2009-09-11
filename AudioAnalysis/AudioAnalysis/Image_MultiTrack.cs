@@ -53,9 +53,10 @@ namespace AudioAnalysis
 
             //set up a new image having the correct dimensions
 			var returnImage = new Bitmap(Image.Width, height, PixelFormat.Format24bppRgb);
+
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(returnImage))
-            {
+            {                
                 g.DrawImage(Image, 0, 0);
                 if (this.EventList != null) DrawEvents(g);
             }

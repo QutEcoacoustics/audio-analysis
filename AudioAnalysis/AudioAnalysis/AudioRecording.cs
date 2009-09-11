@@ -142,10 +142,14 @@ namespace AudioAnalysis
             //envelope values should all lie in [-40.0, 0.0].
             double slope = -(1 / dBMin); 
             int halfHeight = imageHeight / 2;
-            Color c = Color.FromArgb(255, 24, 116, 205);
+            Color c = Color.FromArgb(0x6F, 0xa1, 0xdc);
+            Color b = Color.FromArgb(0xd8, 0xeb, 0xff);
 
             //set up min, max, range for normalising of dB values
+            
+            
             Bitmap bmp = new Bitmap(imageWidth, imageHeight, PixelFormat.Format24bppRgb);
+            
             for (int w = 0; w < imageWidth; w++)
             {
                 //Convert log values to interval [0,1]
@@ -153,7 +157,17 @@ namespace AudioAnalysis
                 double maxLinear = (slope * envelope[1, w]) + 1.0;
                 int minID = halfHeight - (int)Math.Round(minLinear * halfHeight);
                 int maxID = halfHeight + (int)Math.Round(maxLinear * halfHeight);
-                for (int z = minID; z < maxID; z++) bmp.SetPixel(w, imageHeight - z - 1, c);
+                for (int z = 0; z < imageHeight; z++)
+                {
+                    if (z >= minID && z < maxID)
+                    {
+                        bmp.SetPixel(w, imageHeight - z - 1, c);
+                    }
+                    else
+                    {
+                        bmp.SetPixel(w, imageHeight - z - 1, b);
+                    }
+                }
                 //Console.WriteLine(envelope[0, w] + " >> " + maxLinear);
                 //Console.ReadLine();
 

@@ -206,7 +206,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>REM copy $(TargetDir)AudioAnalysis.exe ..\..\..\..\Webfrontend\Bin\
-REM copy $(TargetDir)AudioAnalysis.pdb ..\..\..\..\Webfrontend\Bin\</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetDir)AudioAnalysis.exe $(SolutionDir)Webfrontend\Bin\
+copy $(TargetDir)AudioAnalysis.pdb $(SolutionDir)Webfrontend\Bin\</PostBuildEvent>
   </PropertyGroup>
 </Project>
