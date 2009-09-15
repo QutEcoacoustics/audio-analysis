@@ -25,7 +25,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "2669"
 		VWDDynamicPort = "true"
-		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}|ClientBin|false;"
+		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
@@ -59,8 +59,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLShaderEffectLibrary", "SilverlightControls\SLShaderEffectLibrary\SLShaderEffectLibrary.csproj", "{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLTransitionEffects", "SilverlightControls\SLTransitionEffects\SLTransitionEffects.csproj", "{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUpload", "FileUpload\FileUpload.csproj", "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -246,18 +244,6 @@ Global
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|x86.ActiveCfg = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|.NET.ActiveCfg = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
