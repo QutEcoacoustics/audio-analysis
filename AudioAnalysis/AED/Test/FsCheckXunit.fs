@@ -1,18 +1,12 @@
 ﻿module FsCheckXunit
 
-open System 
 open FsCheck.Runner 
 open Xunit 
    
-// TODO property tied to a single test i.e. test name (not property name) given on failure
 let xUnitRunner = 
     { new IRunner with 
-        member x.OnArguments(ntest,args,every) = ()
-          //args |>  
-          //List.iter(function 
-          //  | :? IDisposable as d -> d.Dispose()  
-          //  | _ -> ())    
-        member x.OnShrink(args, everyShrink) = ()
+        member x.OnArguments(_,_,_) = ()  
+        member x.OnShrink(_,_) = ()
         member x.OnFinished(name, result) = 
             match result with 
                 | True data ->
