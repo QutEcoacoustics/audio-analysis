@@ -1,6 +1,4 @@
 ﻿open Common
-open FsCheck
-open FsCheckXunit
 open GetAcousticEventsTest
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.LargeEvents
@@ -21,22 +19,14 @@ let testThreshold () =
     Assert.Equal(9000, threshold aem)
 
 [<Fact>]
-let testAeToMatrixBounds () =   
-    overwriteGenerators<ArbitraryModifiers>() // TODO duplicated
-    let propBounds ae = 
-        let m = aeToMatrix ae
-        m.NumRows = ae.Bounds.Height && m.NumCols = ae.Bounds.Width
-    check config propBounds
+let aeToMatrixBounds () = chk (fun ae -> let m = aeToMatrix ae in m.NumRows = ae.Bounds.Height && m.NumCols = ae.Bounds.Width)
     
 [<Fact>]
-let testAeToMatrixElements () =
-    overwriteGenerators<ArbitraryModifiers>() // TODO duplicated
-    let propElements ae =
-        let f i j x = 
-            let inSet = Set.contains (ae.Bounds.Top+i, ae.Bounds.Left+j) ae.Elements
-            if x = 1.0 then inSet else not inSet
-        aeToMatrix ae |> Math.Matrix.foralli f
-    check config propElements
+let aeToMatrixElements () =
+    let f ae i j x = 
+        let inSet = Set.contains (ae.Bounds.Top+i, ae.Bounds.Left+j) ae.Elements
+        if x = 1.0 then inSet else not inSet
+    chk (fun ae -> aeToMatrix ae |> Math.Matrix.foralli (f ae))
     
 [<Fact>]
 let separateLargeEventsTest () =

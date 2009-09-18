@@ -61,8 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Common.fs" />
     <Compile Include="FsCheckXunit.fs" />
+    <Compile Include="Common.fs" />
     <Compile Include="UtilTest.fs" />
     <Compile Include="MatlabTest.fs" />
     <Compile Include="SubbandModeTest.fs" />
