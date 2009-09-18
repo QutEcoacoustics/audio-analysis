@@ -28,26 +28,13 @@ let matrixFloatEquals (a:matrix) (b:matrix) d =
      done
      true
      
-(*
-type NonNegativeInt = NonNegative of int
+// FsCheck
 
-type ArbitraryModifiers =
-    static member NonNegativeInt () =
-        { new Arbitrary<NonNegativeInt>() with
-            override x.Arbitrary = arbitrary |> fmapGen (NonNegative << abs)
-            override x.CoArbitrary (NonNegative i) = coarbitrary i
-            override x.Shrink (NonNegative i) = shrink i |> Seq.filter ((<) 0) |> Seq.map NonNegative }
-*)
-
-// TODO how to type annotate this version: let nonNeg = arbitrary |> fmapGen abs
-let nonNeg = gen { let! (x:int) = arbitrary
-                   return (abs x) }
+let nonNeg = arbitrary |> fmapGen abs
 
 let pos = nonNeg |> fmapGen ((+) 1)
 
-let pairGen g1 g2 = gen { let! x = g1
-                          let! y = g2
-                          return (x,y) }
+let pairGen = liftGen2 (fun x y -> (x,y))
                           
 let sequenceGen ms =
     let k m' m = gen { let! x = m
@@ -57,24 +44,16 @@ let sequenceGen ms =
     
 let replicateGenM n g = List.replicate n g |> sequenceGen
 
-// TODO liftGen4
 type ArbitraryModifiers = 
     static member Rectangle () =
          { new Arbitrary<Rectangle>() with
-            override x.Arbitrary = gen { let! top = nonNeg 
-                                         let! left = nonNeg
-                                         let! height = pos
-                                         let! width = pos
-                                         return {Left=left;Top=top;Width=width;Height=height} }}
+            override x.Arbitrary = liftGen4 (fun l t w h -> {Left=l;Top=t;Width=w;Height=h}) nonNeg nonNeg pos pos }
     static member AcousticEvent () =
         { new Arbitrary<AcousticEvent>()with
             override x.Arbitrary = gen { let! rect = arbitrary
-                                         let r = right rect
-                                         let b = bottom rect
-                                         let! c = choose (1, rect.Height * rect.Width)
-                                         // elms <- replicateM c $ pairM (choose (t,b)) (choose (l,r))                                         
+                                         let r, b = right rect, bottom rect
+                                         let! c = choose (1, rect.Height * rect.Width)                                    
                                          let! elms = pairGen (choose (rect.Top,b)) (choose (rect.Left,r)) |> replicateGenM c 
-                                         // return $ AE rect $ Set.fromList elms
                                          return {Bounds=rect;Elements=Set.of_list elms}}} 
      
 let chk f = 
