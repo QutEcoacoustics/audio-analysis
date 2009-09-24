@@ -74,11 +74,11 @@ template_top = templateF(end);
 freq_bottom_thresh1 = template_bottom - 500; % HARDCODED 
 freq_bottom_thresh1(freq_bottom_thresh1<0) = 0;
 freq_bottom_thresh2 = template_bottom + 500; % HARDCODED 
-freq_bottom_thresh2(freq_bottom_thresh1>fmax) = fmax;
+freq_bottom_thresh2(freq_bottom_thresh2>fmax) = fmax;
 
 time_start = allAE(:,1);
 time_end = allAE(:,1)+allAE(:,2);
-freq_top = allAE(:,3);
+freq_top = allAE(:,4);
 freq_bottom = allAE(:,3);
 indAE = find( (freq_bottom > freq_bottom_thresh1) & (freq_bottom < freq_bottom_thresh2) );
 lenAE = length(indAE);
