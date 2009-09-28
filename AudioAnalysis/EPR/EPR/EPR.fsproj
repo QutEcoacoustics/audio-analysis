@@ -38,8 +38,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Module1.fs" />
-    <None Include="Script.fsx" />
+    <Compile Include="EventPatternRecog.fs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\AED\AED\AED.fsproj">
+      <Name>AED</Name>
+      <Project>{993980a0-8d06-4635-8296-40e9fff9c301}</Project>
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\FSharp\1.0\Microsoft.FSharp.Targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
