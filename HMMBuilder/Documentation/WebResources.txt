@@ -1,0 +1,5 @@
+VoxForge:
+http://voxforge.org/home/dev/acousticmodels/windows/create/htkjulius/tutorial
+
+Other resources:
+http://www.phon.ucl.ac.uk/resource/sfs/howto/htk.htm

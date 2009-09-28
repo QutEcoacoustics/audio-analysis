@@ -1,0 +1,1 @@
+VocalSegmentation.exe C:\SensorNetworks\Templates\Template_3\TrainingSet1
