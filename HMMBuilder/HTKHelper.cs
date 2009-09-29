@@ -379,159 +379,113 @@ namespace HMMBuilder
         /// Prepares script files that contain lists of other files.
         /// Must prepare two lists of training data, two lists of true test data and two lists of false test data.
         /// Script files have the extention .scp.
-        /// The extracts features from .wav files and stores in .mfc files
+        /// Then extracts features from .wav files and stores in .mfc files
         /// 
         /// </summary>
         /// <param name="optStr"></param>
         /// <param name="htkConfig"></param>
         /// <param name="fvToExtract"></param>
         public static void HCopy(string optStr, HTKConfig htkConfig, bool fvToExtract)
-        //public static void HCopy(string optStr, string mfcConf, string trainF, string cTrainF,
-        //    string cTestFalseF, string tFalseF, string cTestTrueF, string tTrueF, bool fvToExtract)
         {
-            StreamReader stdErr = null;
-            StreamReader stdOut = null;
-            string output = null;
-            string error = null;
-            
-            
-            string options = optStr;
-
-            //extract features 
-            Console.WriteLine("\nHTKHelper.HCopy: fvToExtract=" + fvToExtract + "   options=" + options);
-
-            //ONE - create codetrain file for training set
-            StreamWriter objWriter  = null;
-            StreamWriter objWriter2 = null;
+            //write the script files for training and test data
             try
             {
-                    DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPath);
-                    FileInfo[] FileList = Dir.GetFiles("*"+htkConfig.wavExt, SearchOption.TopDirectoryOnly);
-
-                    objWriter = File.CreateText(htkConfig.cTrainF);//code training script file - list of .wav > .mfc files
-                    objWriter2 = File.CreateText(htkConfig.trainF);//training script file - list of .mfc files
-
-                    string currLine = "";
-                    string fileName = "";
-                    foreach (FileInfo FI in FileList)
-                    {
-                        currLine = htkConfig.trnDirPath + "\\" + FI.Name + " " + htkConfig.trnDirPath + "\\";
-                        fileName = Path.GetFileNameWithoutExtension(FI.FullName);
-                        currLine += fileName + htkConfig.mfcExt;
-                        objWriter.WriteLine(currLine);
-
-                        currLine = htkConfig.trnDirPath + "\\" + Path.GetFileNameWithoutExtension(FI.FullName) + htkConfig.mfcExt;
-                        objWriter2.WriteLine(currLine);
-                    }
-                                        
+                WriteScriptFiles(htkConfig.trnDirPath,      htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.tstTrueDirPath,  htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, htkConfig.wavExt, htkConfig.mfcExt);
             }
             catch (IOException e)
             {
-                    Console.WriteLine("Could not create codetrain file.");
-                    throw (e);
+                Console.WriteLine("Could not create code files.");
+                throw (e);
             }
             catch (Exception e)
             {
-                    Console.WriteLine(e);
-                    throw (e);
+                Console.WriteLine(e);
+                throw (e);
             }
-            finally
-            {
-                if (objWriter != null)
-                {
-                    Console.WriteLine("Writing codetrain script file.");
-                    objWriter.Flush();
-                    objWriter.Close();//write code training script file
-                }
-                if (objWriter2 != null)
-                {
-                    Console.WriteLine("Writing train script file.");
-                    objWriter2.Flush();
-                    objWriter2.Close();//write training script file
-                }
-            }
-
-
-            //TWO - create codetest file for test set
-            objWriter = null;
-            try
-            {
-                    string currLine = "";
-                    string fileName = "";
-                    DirectoryInfo Dir = null;
-                    FileInfo[] FileList = null;
-                    
-                    //True Vocalization Directory
-                    Dir = new DirectoryInfo(htkConfig.tstTrueDirPath);
-                    FileList = Dir.GetFiles("*" + htkConfig.wavExt, SearchOption.TopDirectoryOnly);
-
-                    Console.WriteLine("WRITING TWO \"TRUE  VOCALISATION\" FILE LISTS FOR TESTING");
-                    objWriter  = File.CreateText(htkConfig.cTestTrueF);//code testing script file - list of .wav > .mfc files
-                    objWriter2 = File.CreateText(htkConfig.tTrueF);
-
-                    foreach (FileInfo FI in FileList)
-                    {
-                        currLine = htkConfig.tstTrueDirPath + "\\" + FI.Name + " " + htkConfig.tstTrueDirPath + "\\";
-                        fileName = Path.GetFileNameWithoutExtension(FI.FullName);
-                        currLine += fileName + htkConfig.mfcExt;
-                        objWriter.WriteLine(currLine);
-                        currLine = htkConfig.tstTrueDirPath + "\\" + fileName + htkConfig.mfcExt;
-                        objWriter2.WriteLine(currLine);
-                    }
-
-                    //False Vocalization Directory
-                    Dir = new DirectoryInfo(htkConfig.tstFalseDirPath);
-                    FileList = Dir.GetFiles("*" + htkConfig.wavExt, SearchOption.TopDirectoryOnly);
-
-                    objWriter.Flush();
-                    objWriter2.Flush();
-                    objWriter.Close();
-                    objWriter2.Close();
-
-                    Console.WriteLine("WRITING TWO \"FALSE VOCALISATION\" FILE LISTS FOR TESTING");
-                    objWriter = File.CreateText(htkConfig.cTestFalseF);
-                    objWriter2 = File.CreateText(htkConfig.tFalseF);
-                    
-                    foreach (FileInfo FI in FileList)
-                    {
-                        currLine = htkConfig.tstFalseDirPath + "\\" + FI.Name + " " + htkConfig.tstFalseDirPath + "\\";
-                        fileName = Path.GetFileNameWithoutExtension(FI.FullName);
-                        currLine += fileName + htkConfig.mfcExt;
-                        objWriter.WriteLine(currLine);
-                        currLine = htkConfig.tstFalseDirPath + "\\" + fileName + htkConfig.mfcExt;
-                        objWriter2.WriteLine(currLine);
-                    }
-
-                    objWriter.Flush();
-                    objWriter2.Flush();
-                    objWriter.Close();
-                    objWriter2.Close();
-                }
-                catch (IOException e)
-                {
-                    Console.WriteLine("Could not create codetrain file.");
-                    throw (e);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw (e);
-                }
-
+            //finally
+            //{
+            //    if (objWriter != null)
+            //    {
+            //        Console.WriteLine("Writing codetrain script file.");
+            //        objWriter.Flush();
+            //        objWriter.Close();//write code training script file
+            //    }
+            //    if (objWriter2 != null)
+            //    {
+            //        Console.WriteLine("Writing train script file.");
+            //        objWriter2.Flush();
+            //        objWriter2.Close();//write training script file
+            //    }
+            //}
 
             //THREE - extract feature vectors for train and test sets
             if (fvToExtract)
             {
+                Console.WriteLine("\nHTKHelper.HCopy: fvToExtract=" + fvToExtract + "   options=" + optStr);
                 Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
-                const string HCopyExecutable = "HCopy.exe";
 
-                //Extract feature vectors for train data
-                string commandLineArguments = options + " -C " + htkConfig.MfccConfigFN + " -S " + htkConfig.cTrainF;
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF); //training data
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestTrueF);  //test data
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestFalseF); //test data
 
-                Console.WriteLine("Command Line Arguments=" + commandLineArguments);
+            } //end if do extraction of features
+            //Console.WriteLine("HMMBuilder: GOT TO HERE 1");
+            //Console.ReadLine();
+        } //end Method HCopy()
 
-                try
-                {
+
+
+
+        //call as follows  WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt)
+        public static void WriteScriptFiles(string dirPath, string scriptFN_code, string scriptFN, string sourceExt, string outExt)
+        {                    
+            Console.WriteLine("WRITING TWO SCRIPT FILES");
+
+            DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
+            FileInfo[] FileList = dirInfo.GetFiles("*" + sourceExt, SearchOption.TopDirectoryOnly);
+
+            StreamWriter objWriter  = File.CreateText(scriptFN_code);//list of .wav > .mfc files
+            StreamWriter objWriter2 = File.CreateText(scriptFN);
+
+            foreach (FileInfo FI in FileList)
+            {
+                string currLine = dirPath + "\\" + FI.Name + " " + dirPath + "\\";
+                string fileName = Path.GetFileNameWithoutExtension(FI.FullName);
+                currLine += fileName + outExt;
+                objWriter.WriteLine(currLine);
+                currLine = dirPath + "\\" + fileName + outExt;
+                objWriter2.WriteLine(currLine);
+            }
+
+            objWriter.Flush();
+            objWriter2.Flush();
+            objWriter.Close();
+            objWriter2.Close();
+        } //end method
+
+
+        //call as follows: ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF) 
+        public static void ExtractFeatures(string optStr, string mfccConfigFN, string scriptF) 
+        {
+            Console.WriteLine("\nHTKHelper.ExtractFeatures: options=" + optStr);
+            Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
+            
+            const string HCopyExecutable = "HCopy.exe";
+
+            StreamReader stdErr = null;
+            StreamReader stdOut = null;
+            string output = null;
+            string error = null;
+            //string options = optStr;
+                
+            //Extract feature vectors for train data
+            string commandLineArguments = optStr + " -C " + mfccConfigFN + " -S " + scriptF;
+            Console.WriteLine("  Command Line Arguments=" + commandLineArguments);
+
+            try
+            {
                     Process hcopy = new Process();
                     ProcessStartInfo psI = new ProcessStartInfo(HCopyExecutable);
                     psI.UseShellExecute = false;
@@ -551,87 +505,21 @@ namespace HMMBuilder
                     {
                         throw new Exception();
                     }
-                }
-                catch (Win32Exception e)
-                {
-                    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
-                    {
-                        Console.WriteLine(e.Message + ". Check the path.");
-                    }
-                    throw (e);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(error);
-                    throw (e);
-                }
-
-
-                //Extract feature vectors from test data
-                string commLineTrue = options + " -C " + htkConfig.MfccConfigFN + " -S " + htkConfig.cTestTrueF;
-                string commLineFalse = options + " -C " + htkConfig.MfccConfigFN + " -S " + htkConfig.cTestFalseF;
-                Console.WriteLine("Extracting feature vectors from the true  test.wav files into .mfc files");
-                Console.WriteLine("Extracting feature vectors from the false test.wav files into .mfc files");
-
-                try
-                {
-                    Process hcopy = new Process();
-                    ProcessStartInfo psI = new ProcessStartInfo(HCopyExecutable);
-                    psI.UseShellExecute = false;
-                    psI.RedirectStandardOutput = true;
-                    psI.RedirectStandardError = true;
-                    psI.CreateNoWindow = true;
-                    psI.Arguments = commLineTrue;
-                    hcopy.StartInfo = psI;
-                    hcopy.Start();
-                    //hcopy.WaitForExit();
-                    stdErr = hcopy.StandardError;
-                    stdOut = hcopy.StandardOutput;
-                    output = stdOut.ReadToEnd();
-                    error = stdErr.ReadToEnd();
-                    //Console.WriteLine(output);   //writes contents of the test script file
-                    if (error.Contains("ERROR"))
-                    {
-                        throw new Exception();
-                    }
-                    
-                    psI.Arguments = commLineFalse;
-                    hcopy.StartInfo = psI;
-                    hcopy.Start();
-                    //hcopy.WaitForExit();
-                    stdErr = hcopy.StandardError;
-                    stdOut = hcopy.StandardOutput;
-                    output = stdOut.ReadToEnd();
-                    error = stdErr.ReadToEnd();
-                    //Console.WriteLine(output);   //writes contents of the test script file
-                    if (error.Contains("ERROR"))
-                    {
-                        throw new Exception();
-                    }
-
-                }
-                catch (Win32Exception e)
-                {
-                    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
-                    {
-                        Console.WriteLine(e.Message + ". Check the path.");
-                    }
-                    throw (e);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(error);
-                    throw (e);
-                }
             }
-            //Console.WriteLine("HMMBuilder: GOT TO HERE 1");
-            //Console.ReadLine();
-
-
-        } //end Method HCopy()
-
-
-
+            catch (Win32Exception e)
+            {
+                    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+                    {
+                        Console.WriteLine(e.Message + ". Check the path.");
+                    }
+                    throw (e);
+            }
+            catch (Exception e)
+            {
+                    Console.WriteLine(error);
+                    throw (e);
+            }
+        } //end method ExtractFeatures(string optStr) 
 
 
 
@@ -662,7 +550,7 @@ namespace HMMBuilder
 
                 //Calling HCompV.exe with following arguments creates the proto and vFloors in dir hmms\hmm.0 
                 //HCompV.exe -A -D -T 1 -C config_train -f 0.01 -m -S train.scp -M hmm.0 proto    
-                string commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfigTrainFN + " -f 0.01 -m -S " + htkConfig.trainF 
+                string commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfig2FN + " -f 0.01 -m -S " + htkConfig.trainF 
                                    + " -M " + tgtDir + " " + prototypeHMM;
                 Console.WriteLine("commandLine = "+commandLine);
 
@@ -958,10 +846,6 @@ namespace HMMBuilder
         
 
 
-
-
-        //public static void HERest(int numIters, string aOtpStr,string pOptStr, string tgtDir0, string srcD, 
-        //    string tgtD, string confTrain, string trainF, string monophones)
         public static void HERest(int numIters, string aOtpStr, string pOptStr, HTKConfig htkConfig)
         {
             Console.WriteLine("Model re-estimation: HERest");
@@ -1031,7 +915,7 @@ namespace HMMBuilder
                         //      -M ./hmms/hmm(x+1) ./lists/bcplist
                         
                         string commandLine = "";
-                        commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfigTrainFN + " -I " + htkConfig.wltF +
+                        commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfig2FN + " -I " + htkConfig.wltF +
                                       " " + pOptStr + 
                                       " -S " + htkConfig.trainF +
                                       " -H " + srcDir.ToString() + "\\" + htkConfig.macrosFN +
@@ -1146,10 +1030,19 @@ namespace HMMBuilder
 
 
 
-
         public static void HVite(string confTrain, string tgtDir2, string testF,
                                  string wordNet, string dict, string resultPath, string monophones_test)
         {
+            //Console.WriteLine(
+            //    "\n confTrain      ="+confTrain+
+            //    "\n tgtDir2        =" + tgtDir2 +
+            //    "\n testF          =" + testF +
+            //    "\n wordNet        =" + wordNet +
+            //    "\n dict           =" + dict +
+            //    "\n resultPath     =" + resultPath +
+            //    "\n monophones_test=" + monophones_test
+            //);
+
             string HViteExecutable = "HVite.exe";
 
             //HVite.exe -C ./configs/config_train -H ./hmms/hmm.2/macros -H ./hmms/hmm.2/hmmdefs 

@@ -46,7 +46,7 @@ namespace HMMBuilder
         public string ProtoConfDir      { get { return ConfigDir + "\\protoConfigs"; } }
         public string ConfigFN          { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
         public string MfccConfigFN      { get { return ConfigDir + "\\mfccConfig"; } }
-        public string MfccConfigTrainFN { get { return ConfigDir + "\\mfccConfig_train.txt"; } } //need this copy for training
+        public string MfccConfig2FN     { get { return ConfigDir + "\\mfccConfig.txt"; } } //need this copy for training
         public string SegmentationIniFN { get { return ConfigDir + "\\segmentation.ini"; } }
 
         public string DictFile     { get { return ConfigDir + "\\dict"; } }
@@ -59,6 +59,9 @@ namespace HMMBuilder
         public string LabelSeqF    { get { return ConfigDir + "\\labSeq"; } }
         public string wltF         { get { return ConfigDir + "\\phones.mlf";  } }//file containing segmentation info into SONG SYLLABLES + SILENCE
         public string wordNet      { get { return ConfigDir + "\\phone.net"; } }
+        //for scanning a single test file
+        public string TestFileCode { get { return ConfigDir + "\\Test_CodeSingle.scp"; } }
+        public string TestFile     { get { return ConfigDir + "\\Test_Single.scp"; } }
 
         //lists directory
         public string ListsDir   { get { return ConfigDir + "\\lists"; } }
@@ -77,14 +80,18 @@ namespace HMMBuilder
         public string prototypeHMM { get { return ConfigDir + "\\" + protoFN; } }
 
         //results files
-        public string resultTrue  { get { return ResultsDir + ".\\recountTrue.mlf";} }
-        public string resultFalse { get { return ResultsDir + ".\\recountFalse.mlf"; } }
+        public string resultTrue  { get { return ResultsDir + "\\recountTrue.mlf";} }
+        public string resultFalse { get { return ResultsDir + "\\recountFalse.mlf"; } }
+        public string resultTest  { get { return ResultsDir + "\\TestScan.mlf"; } } //for scanning a single file
 
         // file extentions
         public string mfcExt = ".mfc";
         public string wavExt = ".wav";
         public string labelFileExt = ".lab";
         public string segmentFileExt = ".segmentation.txt";
+
+
+        public string aOptionsStr = "-A -D -T 1"; //options string for HTK HCopy funciton
 
 
         public const int ERROR_FILE_NOT_FOUND = 2;

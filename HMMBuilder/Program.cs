@@ -13,15 +13,15 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            htkConfig.CallName     = "CURLEW1";
-            htkConfig.Comment      = "Parameters for Curlew";
-            htkConfig.LOFREQ       = "600";
-            htkConfig.HIFREQ       = "8000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            //htkConfig.CallName     = "CURLEW1";
+            //htkConfig.Comment      = "Parameters for Curlew";
+            //htkConfig.LOFREQ       = "600";
+            //htkConfig.HIFREQ       = "8000"; //try 6000, 7000 and 8000 Hz as max for Curlew
 
-            //htkConfig.CallName  = "CURRAWONG1";
-            //htkConfig.Comment   = "Parameters for Currawong";
-            //htkConfig.LOFREQ    = "800";
-            //htkConfig.HIFREQ    = "8000"; //try 6000, 7000 and 8000 Hz
+            htkConfig.CallName = "CURRAWONG1";
+            htkConfig.Comment = "Parameters for Currawong";
+            htkConfig.LOFREQ = "800";
+            htkConfig.HIFREQ = "8000"; //try 6000, 7000 and 8000 Hz
 
 
             htkConfig.Author       = "Michael Towsey";
@@ -62,8 +62,8 @@ namespace HMMBuilder
 
             string vocalization = "";
             string tmpVal       = "";
-            string aOptionsStr  = "";
-            string pOptionsStr  = ""; //"-t 150.0"; //pruning option for HErest.exe
+            string aOptionsStr = htkConfig.aOptionsStr;
+            string pOptionsStr = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
             bool good = true;
             int numIters = 0;  //number of training iterations
             #endregion
@@ -107,8 +107,8 @@ namespace HMMBuilder
                     try
                     {
                         Console.WriteLine("Read  MFCC params from file: " + htkConfig.MfccConfigFN);
-                        Console.WriteLine("Write MFCC params to   file: " + htkConfig.MfccConfigTrainFN);
-                        HMMSettings.ReadTCF(htkConfig.ConfigFN, htkConfig.MfccConfigFN, htkConfig.MfccConfigTrainFN);
+                        Console.WriteLine("Write MFCC params to   file: " + htkConfig.MfccConfig2FN);
+                        HMMSettings.ReadTCF(htkConfig.ConfigFN, htkConfig.MfccConfigFN, htkConfig.MfccConfig2FN);
                     }
                     catch
                     {
@@ -138,7 +138,7 @@ namespace HMMBuilder
 
                     if (HMMSettings.ConfigParam.TryGetValue("TRACE_TOOL_CALLS", out tmpVal))
                     {
-                        if (tmpVal.Equals("Y")) aOptionsStr = "-A -D -T 1";
+                        if (tmpVal.Equals("Y")) aOptionsStr = htkConfig.aOptionsStr; //aOptionsStr = "-A -D -T 1";
                     }
 
                     // HCOPY is the HTK tool to parameterise .wav files ie to extract mfcc features
@@ -172,6 +172,7 @@ namespace HMMBuilder
                         }
                     } //end HCOPY
                     #endregion
+                    //Console.ReadLine();
 
 
                     #region Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
@@ -187,6 +188,7 @@ namespace HMMBuilder
                         break; 
                     }
                     #endregion
+
 
 
 
@@ -231,7 +233,6 @@ namespace HMMBuilder
                             numIters = 3;
                         }
 
-                        //HTKHelper.HERest(numIters, aOtpStr, pOptStr, tgtDir0, tgtDir1, tgtDir2, configTrain, trainF, monophones);
                         HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
                     }
                     catch
@@ -261,12 +262,10 @@ namespace HMMBuilder
                             //TO DO: Ask the user for the word network file
                         }
                         //True calls
-                        //HTKHelper.HVite(configTrain, tgtDir2, tTrueF, wordNet, dictFile, resultDir, resultTrue, monophones_test);
-                        HTKHelper.HVite(htkConfig.MfccConfigTrainFN, htkConfig.tgtDir2, htkConfig.tTrueF, htkConfig.wordNet,
+                        HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tTrueF, htkConfig.wordNet,
                                         htkConfig.DictFile, htkConfig.resultTrue, htkConfig.monophones);
                         //False calls
-                        //HTKHelper.HVite(configTrain, tgtDir2, tFalseF, wordNet, dictFile, resultDir, resultFalse, monophones_test);
-                        HTKHelper.HVite(htkConfig.MfccConfigTrainFN, htkConfig.tgtDir2, htkConfig.tFalseF, htkConfig.wordNet,
+                        HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tFalseF, htkConfig.wordNet,
                                         htkConfig.DictFile, htkConfig.resultFalse, htkConfig.monophones);
                     }
                     catch
