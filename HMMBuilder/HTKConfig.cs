@@ -15,6 +15,7 @@ namespace HMMBuilder
         public string Author      { get; set; }
         public string CallName    { get; set; }
         public string Comment     { get; set; }
+        public string numHmmStates { get; set; }
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
@@ -64,8 +65,8 @@ namespace HMMBuilder
         public string TestFile     { get { return ConfigDir + "\\Test_Single.scp"; } }
 
         //lists directory
-        public string ListsDir   { get { return ConfigDir + "\\lists"; } }
-        public string monophones { get { return ListsDir + "\\bcplist"; } } //contains list of syllables to recognise including SIL
+        //public string ListsDir   { get { return ConfigDir + "\\lists"; } }
+        public string monophones { get { return ConfigDir + "\\labelList.txt"; } } //contains list of syllables to recognise including SIL
 
         //HMM files
         public string HmmDir       { get { return ConfigDir + "\\hmms"; } }
@@ -167,7 +168,7 @@ namespace HMMBuilder
                 "<BEGINproto_config_file>\n\n<COMMENT>\n\tThis PCF produces a 3 state prototype system\n\n" +
                 "<BEGINsys_setup>\n\tnStates: 3\n<ENDsys_setup>\n\n" +
                 "<ENDproto_config_file>";
-            WriteTextFile(protoTypeDir+"\\SIL.pcf", content);
+            WriteTextFile(protoTypeDir + "\\SIL.pcf", content);
 
             content =
             "0.000e+0 1.000e+0 0.000e+0 0.000e+0 0.000e+0\n" +
@@ -184,7 +185,7 @@ namespace HMMBuilder
             content =
                 "<BEGINproto_config_file>\n" +
                 "<COMMENT>\n\tThis PCF produces a 8 state prototype system\n" +
-                "<BEGINsys_setup>\n\tnStates: 6\n\tsWidths: 12\n\t#mixes: 1\n\tparmKind: MFCC\n\tvecSize: 12\n\t#outDir: "+protoFN+"\n\n" +
+                "<BEGINsys_setup>\n\tnStates: "+numHmmStates+"\n\tsWidths: 12\n\t#mixes: 1\n\tparmKind: MFCC\n\tvecSize: 12\n\t#outDir: "+protoFN+"\n\n" +
                 "<ENDsys_setup>\n" +
                 "<ENDproto_config_file>\n";
             WriteTextFile(protoTypeDir + "\\" + protoFN + ".pcf", content);

@@ -47,7 +47,12 @@ namespace HMMBuilder
             }
         }
         
-
+        /// <summary>
+        /// Does the segmentation of the training and testing files
+        /// </summary>
+        /// <param name="htkConfig"></param>
+        /// <param name="vocalization"></param>
+        /// <param name="extractLabels"></param>
         public static void CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)
         {
             string SegmentExecutable = "VocalSegmentation.exe";
@@ -71,7 +76,6 @@ namespace HMMBuilder
                 string commandLine = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
 
                 //check that the directory contains a file called "segmentation.ini"`
-//                if (!File.Exists(commandLine + segmentationIniFile))
                 if (!File.Exists(segmentationIniFile))
                 {
                     Console.WriteLine("The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
@@ -80,9 +84,6 @@ namespace HMMBuilder
 
                 commandLine = "\"" + commandLine + "\""; //enclose line in quotes in case have sapce
                 //Console.WriteLine("commandLine=" + commandLine);
-
-                //check that the directory contains a file called "segmentation.ini"`
-                //if(! File.Exists(commandLine+"\\segmentation.ini"))
 
                 try
                 {
@@ -107,7 +108,7 @@ namespace HMMBuilder
                         throw new Exception();
                     }
                     
-                    //TWO - Read segmentation files
+                    //TWO - Read segmentation files and write the PHONES.MLF file
                     //read the labelSeq file containing the label sequence
                     //valid for all files
 
@@ -390,8 +391,8 @@ namespace HMMBuilder
             //write the script files for training and test data
             try
             {
-                WriteScriptFiles(htkConfig.trnDirPath,      htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
-                WriteScriptFiles(htkConfig.tstTrueDirPath,  htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.trnDirPath,      htkConfig.cTrainF,     htkConfig.trainF,  htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.tstTrueDirPath,  htkConfig.cTestTrueF,  htkConfig.tTrueF,  htkConfig.wavExt, htkConfig.mfcExt);
                 WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, htkConfig.wavExt, htkConfig.mfcExt);
             }
             catch (IOException e)
@@ -404,21 +405,6 @@ namespace HMMBuilder
                 Console.WriteLine(e);
                 throw (e);
             }
-            //finally
-            //{
-            //    if (objWriter != null)
-            //    {
-            //        Console.WriteLine("Writing codetrain script file.");
-            //        objWriter.Flush();
-            //        objWriter.Close();//write code training script file
-            //    }
-            //    if (objWriter2 != null)
-            //    {
-            //        Console.WriteLine("Writing train script file.");
-            //        objWriter2.Flush();
-            //        objWriter2.Close();//write training script file
-            //    }
-            //}
 
             //THREE - extract feature vectors for train and test sets
             if (fvToExtract)
