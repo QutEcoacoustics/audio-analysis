@@ -4,7 +4,9 @@ open QutSensors.AudioAnalysis.AED.Util
 
 type Rectangle = {Left:float; Top:float; Right:float; Bottom:float;}
 let left r = r.Left
+let right r = r.Right
 let bottom r = r.Bottom
+let top r = r.Top
 let bottomLeft r = (r.Left, r.Bottom)
 
 let roundUpTo v x = if x < v then v else x
@@ -25,8 +27,7 @@ let centre l r = l + (r - l) / 2.0
 // TODO investigate comprehension notation
 let centroids rs = Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
     
-// TODO broken assumption that the same event will have both bottom and left? Same as matlab?
-let absBottomLeft rs = let minmap f = Seq.min << Seq.map f in (minmap left rs, minmap bottom rs)
+let absLeftAbsBottom rs = let minmap f = Seq.min << Seq.map f in (minmap left rs, minmap bottom rs)
 
 // TODO investigate performance optimisation by normalising individual points in tuple computations
 let centroidsBottomLefts st sf nt nf rs = 
@@ -50,15 +51,22 @@ let overlap (tl, tb) (tct, tcf) (b, l) (ct, cf) =
     if or' < ol || ot < ob then 0.0
         else let oa = or'-ol * ot-ob in 0.5 * ((oa/(tr-tl)*(tt-tb)) + (oa/(r-l)*(t-b)))
         
+let candidates sfr ttd tfr aes =
+    let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
+    let f x = Seq.filter (fun ae -> ae.Left >==< (x.Left, x.Left + ttd) && ae.Bottom >==< (x.Bottom, x.Bottom + tfr)) aes
+    (ss, Seq.map f ss)
+    
+let freqMax = 11025.0
+
+let boundedInterval (p:float) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
+
+let maxMap f = Seq.max << Seq.map f
+        
 let detectGroundParrots t aes =
-    // TODO use bottomLeft here
-    let ttd = Seq.max (Seq.map (fun r -> r.Right) t) - Seq.min (Seq.map (fun r -> r.Left) t) // this is close but not quite exactly the same as matlab
-    let tb = Seq.map (fun r -> r.Bottom) t |> Seq.min
-    let tfr = Seq.max (Seq.map (fun r -> r.Right) t) - tb
-    let fr = (tb - 500.0 |> roundUpTo 0.0, tb + 500.0 |> roundDownTo 11025.0) // TODO hardcoded upper frequency band
-    let ys = Seq.filter (fun r -> r.Bottom >< fr) aes
-                |> Seq.map (fun x -> Seq.filter (fun ae -> ae.Left >==< (x.Left, x.Left + ttd) && ae.Bottom >==< (x.Bottom, x.Bottom + tfr)) aes)
-                
+    let (tl, tb) = absLeftAbsBottom t
+    // template right is close (3 decimal places) but not quite exactly the same as matlab
+    let ttd, tfr = maxMap right t - tl, maxMap top t - tb
+    
     // Template centroids and bottom left corners normalised
     let xl = ttd / 11.0  // TODO correct values
     let yl = tfr / 11025.0 * 256.0 // TODO correct values, fix freq max constant
@@ -67,11 +75,11 @@ let detectGroundParrots t aes =
     let tcbls = Seq.zip tcs tbls
     
     let score tc tbl rs =
-        let (st, sf) = absBottomLeft rs
+        let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
         let (cs, bls) = centroidsBottomLefts st sf xl yl rs // TODO don't need to compute all bottom lefts here
         let i = closestCentroidIndex tc cs
         overlap tbl tc (normaliseTimeFreq st sf xl yl (bottomLeft (Seq.nth i rs))) (Seq.nth i cs)
-    
-    let ss = Seq.map (fun y -> Seq.fold (fun z (tc, tbl) -> z + score tc tbl y) 0.0 tcbls) ys
-    // TODO return sequence AEs where score is higher than ?
-    ss
+        
+    let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
+    let scores = Seq.map (fun c -> Seq.map (fun (tc, tbl) -> score tc tbl c) tcbls |> Seq.sum) cs
+    seq {for (sae,score) in Seq.zip saes scores do if score >= 3.5 then yield sae}    
