@@ -10,6 +10,17 @@ let (|?|) = defaultArg
 // TODO: should I/can I fix the overloaded round instead?
 let rnd x = if x - 0.5 = floor x then ceil x else round x
 
+let roundUpTo v x = if x < v then v else x
+let roundDownTo v x = if x > v then v else x
+
+let (><) x (l,u) = x > l && x < u // in open interval
+let (>==<) x (l,u) = x >= l && x <= u // in closed interval
+
+let boundedInterval (p:float) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
+
+let maxmap f = Seq.max << Seq.map f
+let minmap f = Seq.min << Seq.map f
+
 let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
 let array2Dfold f z (a:'a[,]) =
