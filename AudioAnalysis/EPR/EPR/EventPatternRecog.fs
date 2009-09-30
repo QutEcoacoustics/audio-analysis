@@ -9,12 +9,6 @@ let bottom r = r.Bottom
 let top r = r.Top
 let bottomLeft r = (r.Left, r.Bottom)
 
-let roundUpTo v x = if x < v then v else x
-let roundDownTo v x = if x > v then v else x
-
-let (><) x (l,u) = x > l && x < u // in open interval
-let (>==<) x (l,u) = x >= l && x <= u // in closed interval
-
 let normaliseTimeFreq st sf nt nf (t,f) =
     let g x s l = let x' = rnd ((x - s) / l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
     (g t st nt, g f sf nf)
@@ -27,7 +21,7 @@ let centre l r = l + (r - l) / 2.0
 // TODO investigate comprehension notation
 let centroids rs = Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
     
-let absLeftAbsBottom rs = let minmap f = Seq.min << Seq.map f in (minmap left rs, minmap bottom rs)
+let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
 
 // TODO investigate performance optimisation by normalising individual points in tuple computations
 let centroidsBottomLefts st sf nt nf rs = 
@@ -57,15 +51,11 @@ let candidates sfr ttd tfr aes =
     (ss, Seq.map f ss)
     
 let freqMax = 11025.0
-
-let boundedInterval (p:float) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
-
-let maxMap f = Seq.max << Seq.map f
         
 let detectGroundParrots t aes =
     let (tl, tb) = absLeftAbsBottom t
     // template right is close (3 decimal places) but not quite exactly the same as matlab
-    let ttd, tfr = maxMap right t - tl, maxMap top t - tb
+    let ttd, tfr = maxmap right t - tl, maxmap top t - tb
     
     // Template centroids and bottom left corners normalised
     let xl = ttd / 11.0  // TODO correct values
