@@ -13,15 +13,23 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            //htkConfig.CallName     = "CURLEW1";
-            //htkConfig.Comment      = "Parameters for Curlew";
-            //htkConfig.LOFREQ       = "600";
-            //htkConfig.HIFREQ       = "8000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            //htkConfig.CallName = "CURLEW1";
+            //htkConfig.Comment = "Parameters for Curlew";
+            //htkConfig.LOFREQ = "600";
+            //htkConfig.HIFREQ = "8000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            //float threshold = -2000f;  //default = 1900
+
 
             htkConfig.CallName = "CURRAWONG1";
             htkConfig.Comment = "Parameters for Currawong";
             htkConfig.LOFREQ = "800";
-            htkConfig.HIFREQ = "8000"; //try 6000, 7000 and 8000 Hz
+            htkConfig.HIFREQ = "8000";     //try 6000, 7000 and 8000 Hz
+            htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            float threshold = -1900f;      //magic number for Currawong is -1900f
+
+
+            //==================================================================================================================
+            //==================================================================================================================
 
 
             htkConfig.Author       = "Michael Towsey";
@@ -29,15 +37,17 @@ namespace HMMBuilder
             htkConfig.TARGETKIND   = "MFCC";
 
             //FRAMING PARAMETERS
-            htkConfig.SampleRate = "22050"; //samples per second //this must be put first inlist of framing parameters
-            htkConfig.TARGETRATE = "116100.0"; //x10e-7 seconds
+            htkConfig.SampleRate     = "22050";    //samples per second //this must be put first inlist of framing parameters
+            htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds
+            htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
+
             double tr;
             Double.TryParse(htkConfig.TARGETRATE, out tr);
-            htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
             double wd;
             Double.TryParse(htkConfig.WINDOWDURATION, out wd);
             int sr;
             Int32.TryParse(htkConfig.SampleRate, out sr);
+
             htkConfig.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString(); 
             htkConfig.FrameOverlap = (tr / wd).ToString();
             htkConfig.SAVECOMPRESSED = "T";
@@ -45,17 +55,17 @@ namespace HMMBuilder
 
             //MFCC PARAMETERS
             htkConfig.USEHAMMING = "T";
-            htkConfig.PREEMCOEF = "0.97";
-            htkConfig.NUMCHANS = "26";
-            htkConfig.CEPLIFTER = "22";
-            htkConfig.NUMCEPS = "12";
+            htkConfig.PREEMCOEF  = "0.97";
+            htkConfig.NUMCHANS   = "26";
+            htkConfig.CEPLIFTER  = "22";
+            htkConfig.NUMCEPS    = "12";
 
             htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
             htkConfig.TemplateDir = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
-            htkConfig.DataDir     = htkConfig.TemplateDir + "\\data";
-            htkConfig.ConfigDir   = htkConfig.TemplateDir + "\\config_" + htkConfig.CallName;
-            htkConfig.ResultsDir  = htkConfig.TemplateDir + "\\results";
-            htkConfig.SilenceModelFN = htkConfig.TemplateDir + "\\data\\SilenceModels\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav\n";
+            htkConfig.DataDir     = htkConfig.TemplateDir  + "\\data";
+            htkConfig.ConfigDir   = htkConfig.TemplateDir  + "\\config_" + htkConfig.CallName;
+            htkConfig.ResultsDir  = htkConfig.TemplateDir  + "\\results";
+            htkConfig.SilenceModelFN = htkConfig.ConfigDir + "\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav\n";
             Console.WriteLine("CWD=" + htkConfig.WorkingDir);
             Console.WriteLine("CFG=" + htkConfig.ConfigDir);
             Console.WriteLine("DAT=" + htkConfig.DataDir);
@@ -98,8 +108,6 @@ namespace HMMBuilder
                         break;
                     }        
                     #endregion
-
-
 
 
                     #region TWO: DATA PREPARATION TOOLS:- Read Two Configuration Files and do Feature Extraction
@@ -172,7 +180,6 @@ namespace HMMBuilder
                         }
                     } //end HCOPY
                     #endregion
-                    //Console.ReadLine();
 
 
                     #region Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
@@ -188,8 +195,6 @@ namespace HMMBuilder
                         break; 
                     }
                     #endregion
-
-
 
 
                     #region nTRAINING TOOLS:-  (see manual 2.3.2)
@@ -276,10 +281,10 @@ namespace HMMBuilder
                     }
                     #endregion
 
+
                     #region Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
                 
                     //Read the output files
-                    float threshold = -1900f; //magic number for Currawong is 1900
                     try
                     {
                         float accuracy = Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold);
@@ -297,9 +302,18 @@ namespace HMMBuilder
 
             } //end SWITCH
 
+            //ZIP THE CONFIG DIRECTORY
+            string Dir2Compress = htkConfig.ConfigDir;
+            string OutZipFile   = htkConfig.ConfigDir + ".zip";
+            ZipUnzip.ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
+            Console.WriteLine("Zipped config placed in:- " + OutZipFile);
+
+
+
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
             return good ? 0 : -1;
+
         }// end Main()
 
     } //end CLASS
