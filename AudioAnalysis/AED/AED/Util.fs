@@ -7,6 +7,8 @@ let (|?) = orElse
 
 let (|?|) = defaultArg
 
+let uncurry f (x,y) = f x y
+
 // TODO: should I/can I fix the overloaded round instead?
 let rnd x = if x - 0.5 = floor x then ceil x else round x
 
