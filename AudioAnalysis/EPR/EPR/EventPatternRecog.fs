@@ -10,6 +10,11 @@ let top r = r.Top
 let bottomLeft r = (r.Left, r.Bottom)
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
 
+let indexMinMap f xs =
+    let ys = Seq.map f xs
+    let m = Seq.min ys
+    Seq.findIndex (fun y -> y = m) ys
+    
 // TODO review all the normalising code
 let normaliseTimeFreq st sf td fr nt nf (t,f) =
     let g x s d l = let x' = rnd ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
@@ -25,12 +30,6 @@ let centroidsBottomLefts st sf td fr nt nf rs =
     (centroids rs |> f, Seq.map bottomLeft rs |> f)
     
 let euclidianDist (x1, y1) (x2, y2) = (x1 - x2) ** 2.0 + (y1 - y2) ** 2.0 |> sqrt
-
-// TODO generalise this to indexMinMap?
-let closestCentroidIndex tc cs =
-    let ds = Seq.map (euclidianDist tc) cs
-    let m = Seq.min ds
-    Seq.findIndex (fun d -> d = m) ds
     
 let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     let tr = tl + (tct - tl) * 2.0
@@ -66,7 +65,7 @@ let detectGroundParrots t aes =
         let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
         let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs
         let f tc tbl =
-            let i = closestCentroidIndex tc cs
+            let i = indexMinMap (euclidianDist tc) cs   // index of closest centroid 
             overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
         Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
         
