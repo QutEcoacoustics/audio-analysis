@@ -60,21 +60,14 @@ let detectGroundParrots t aes =
     let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0
     let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0
     
-    // Template centroids and bottom left corners normalised
-    // TODO remove centroidsBottomLefts and inline it here
-    let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
-    let tcbls = Seq.zip tcs tbls  
+    let tcbls = centroidsBottomLefts tl tb ttd tfr xl yl t |> uncurry Seq.zip
         
     let score rs =
         let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
-        let norm = normaliseTimeFreq st sf ttd tfr xl yl
-        let cs = centroids rs |> Seq.map norm
-        // TODO perhaps put centroidsBottomLefts back
-        
+        let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs
         let f tc tbl =
             let i = closestCentroidIndex tc cs
-            overlap tbl tc (norm (bottomLeft (Seq.nth i rs))) (Seq.nth i cs)
-        
+            overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
         Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
         
     let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
