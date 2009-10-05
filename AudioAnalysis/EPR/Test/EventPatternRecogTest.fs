@@ -16,5 +16,7 @@ let loadEventsFile f m n =
 let detectGroundParrotsTest () = 
     let t = loadEventsFile "GroundParrotTemplate.txt" 11 4
     let ae = loadEventsFile "GroundParrotAE.txt" 811 10
-    let r = loadEventsFile "GroundParrotResults.txt" 10 4
-    Assert.Equal(Seq.sort r, detectGroundParrots t ae |> Seq.sort)
+    let m = loadEventsFile "GroundParrotResults.txt" 10 4 |> Seq.sort
+    Assert.Equal(m, detectGroundParrots t ae |> Seq.sort)
+    //let r = detectGroundParrots t ae |> Seq.sort
+    //Assert.True(false, sprintf "\nmatlab: %A\n\n F#: %A" (Seq.nth 9 m) (Seq.nth 9 r))
