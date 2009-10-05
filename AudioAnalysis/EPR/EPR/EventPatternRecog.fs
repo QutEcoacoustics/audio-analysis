@@ -15,10 +15,9 @@ let normaliseTimeFreq st sf td fr nt nf (t,f) =
     let g x s d l = let x' = rnd ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
     (g t st td nt, g f sf fr nf)
     
-// assuming l <= r
-let centre l r = l + (r - l) / 2.0
-
-let centroids rs = Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
+let centroids rs =
+    let centre l r = l + (r - l) / 2.0  // assuming l <= r
+    Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
     
 // TODO investigate performance optimisation by normalising individual points in tuple computations
 let centroidsBottomLefts st sf td fr nt nf rs = 
@@ -33,14 +32,14 @@ let closestCentroidIndex tc cs =
     let m = Seq.min ds
     Seq.findIndex (fun d -> d = m) ds
     
-let overlap (tl, tb) (tct, tcf) (b, l) (ct, cf) =
+let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     let tr = tl + (tct - tl) * 2.0
     let tt = tb + (tcf - tb) * 2.0
     let r = l + (ct - l) * 2.0
     let t = b + (cf - b) * 2.0
-    let ol, or', ob, ot = min tl l, max tr r, max tb b, min tt t
+    let ol, or', ob, ot = max tl l, min tr r, max tb b, min tt t
     if or' < ol || ot < ob then 0.0
-        else let oa = or'-ol * ot-ob in 0.5 * ((oa/(tr-tl)*(tt-tb)) + (oa/(r-l)*(t-b)))
+        else let oa = (or'-ol) * (ot-ob) in 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
         
 let candidates sfr ttd tfr aes =
     let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
@@ -57,20 +56,26 @@ let detectGroundParrots t aes =
     let ttd, tfr = maxmap right t - tl, maxmap top t - tb
     
     // Length of x and y axis' to scale time and frequency back to
+    // TODO investigate these formulas - correct for ground parrot template
     let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0
     let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0
     
     // Template centroids and bottom left corners normalised
+    // TODO remove centroidsBottomLefts and inline it here
     let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
-    let tcbls = Seq.zip tcs tbls
-    
-//    let score tc tbl rs =
-//        let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
-//        let (cs, bls) = centroidsBottomLefts st sf xl yl rs // TODO don't need to compute all bottom lefts here
-//        let i = closestCentroidIndex tc cs
-//        overlap tbl tc (normaliseTimeFreq st sf xl yl (bottomLeft (Seq.nth i rs))) (Seq.nth i cs)
+    let tcbls = Seq.zip tcs tbls  
+        
+    let score rs =
+        let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
+        let norm = normaliseTimeFreq st sf ttd tfr xl yl
+        let cs = centroids rs |> Seq.map norm
+        // TODO perhaps put centroidsBottomLefts back
+        
+        let f tc tbl =
+            let i = closestCentroidIndex tc cs
+            overlap tbl tc (norm (bottomLeft (Seq.nth i rs))) (Seq.nth i cs)
+        
+        Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
         
     let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
-//    let scores = Seq.map (fun c -> Seq.map (fun (tc, tbl) -> score tc tbl c) tcbls |> Seq.sum) cs
-//    seq {for (sae,score) in Seq.zip saes scores do if score >= 3.5 then yield sae}
-    cs
+    seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 3.5 then yield sae}
