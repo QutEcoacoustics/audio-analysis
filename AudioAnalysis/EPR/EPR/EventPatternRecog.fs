@@ -51,15 +51,19 @@ let candidates sfr ttd tfr aes =
     (ss, Seq.map f ss)
     
 let freqMax = 11025.0
+let freqBins = 256.0
+let samplingRate = 22050.0
         
 let detectGroundParrots t aes =
     let (tl, tb) = absLeftAbsBottom t
     // template right is close (3 decimal places) but not quite exactly the same as matlab
     let ttd, tfr = maxmap right t - tl, maxmap top t - tb
     
+    // Length of x and y axis' to scale time and frequency back to
+    let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0
+    let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0
+    
     // Template centroids and bottom left corners normalised
-    let xl = ttd / 11.0  // TODO correct values
-    let yl = tfr / 11025.0 * 256.0 // TODO correct values, fix freq max constant
     let tst = 1.0 // TODO
     let (tcs, tbls) = centroidsBottomLefts tst tb xl yl t
     let tcbls = Seq.zip tcs tbls
