@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ProcessorUI.WebServices {
+namespace QutSensors.Processor.WebServices {
     using System.Runtime.Serialization;
     using System;
     
@@ -26,7 +26,7 @@ namespace ProcessorUI.WebServices {
         private string AudioReadingUrlField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private ProcessorUI.WebServices.ProcessorJobDescription JobField;
+        private QutSensors.Processor.WebServices.ProcessorJobDescription JobField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int JobItemIDField;
@@ -58,7 +58,7 @@ namespace ProcessorUI.WebServices {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public ProcessorUI.WebServices.ProcessorJobDescription Job {
+        public QutSensors.Processor.WebServices.ProcessorJobDescription Job {
             get {
                 return this.JobField;
             }
@@ -116,9 +116,6 @@ namespace ProcessorUI.WebServices {
         private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
-        private bool AcousticEventDetectionField;
-        
-        [System.Runtime.Serialization.OptionalFieldAttribute()]
         private int JobIDField;
         
         [System.Runtime.Serialization.OptionalFieldAttribute()]
@@ -127,6 +124,9 @@ namespace ProcessorUI.WebServices {
         [System.Runtime.Serialization.OptionalFieldAttribute()]
         private byte[] ParametersField;
         
+        [System.Runtime.Serialization.OptionalFieldAttribute()]
+        private string ProcessorTypeSettingsField;
+        
         [global::System.ComponentModel.BrowsableAttribute(false)]
         public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
             get {
@@ -134,19 +134,6 @@ namespace ProcessorUI.WebServices {
             }
             set {
                 this.extensionDataField = value;
-            }
-        }
-        
-        [System.Runtime.Serialization.DataMemberAttribute()]
-        public bool AcousticEventDetection {
-            get {
-                return this.AcousticEventDetectionField;
-            }
-            set {
-                if ((this.AcousticEventDetectionField.Equals(value) != true)) {
-                    this.AcousticEventDetectionField = value;
-                    this.RaisePropertyChanged("AcousticEventDetection");
-                }
             }
         }
         
@@ -185,6 +172,19 @@ namespace ProcessorUI.WebServices {
                 if ((object.ReferenceEquals(this.ParametersField, value) != true)) {
                     this.ParametersField = value;
                     this.RaisePropertyChanged("Parameters");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute()]
+        public string ProcessorTypeSettings {
+            get {
+                return this.ProcessorTypeSettingsField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ProcessorTypeSettingsField, value) != true)) {
+                    this.ProcessorTypeSettingsField = value;
+                    this.RaisePropertyChanged("ProcessorTypeSettings");
                 }
             }
         }
@@ -329,18 +329,18 @@ namespace ProcessorUI.WebServices {
     public interface Processor {
         
         [System.ServiceModel.OperationContractAttribute(Action="sensor.mquter.qut.edu.au/Processor/GetJobItem", ReplyAction="sensor.mquter.qut.edu.au/Processor/GetJobItemResponse")]
-        ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker);
+        QutSensors.Processor.WebServices.ProcessorJobItemDescription GetJobItem(string worker);
         
         [System.ServiceModel.OperationContractAttribute(AsyncPattern=true, Action="sensor.mquter.qut.edu.au/Processor/GetJobItem", ReplyAction="sensor.mquter.qut.edu.au/Processor/GetJobItemResponse")]
         System.IAsyncResult BeginGetJobItem(string worker, System.AsyncCallback callback, object asyncState);
         
-        ProcessorUI.WebServices.ProcessorJobItemDescription EndGetJobItem(System.IAsyncResult result);
+        QutSensors.Processor.WebServices.ProcessorJobItemDescription EndGetJobItem(System.IAsyncResult result);
         
         [System.ServiceModel.OperationContractAttribute(Action="sensor.mquter.qut.edu.au/Processor/SubmitResults", ReplyAction="sensor.mquter.qut.edu.au/Processor/SubmitResultsResponse")]
-        void SubmitResults(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results);
+        void SubmitResults(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results);
         
         [System.ServiceModel.OperationContractAttribute(AsyncPattern=true, Action="sensor.mquter.qut.edu.au/Processor/SubmitResults", ReplyAction="sensor.mquter.qut.edu.au/Processor/SubmitResultsResponse")]
-        System.IAsyncResult BeginSubmitResults(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results, System.AsyncCallback callback, object asyncState);
+        System.IAsyncResult BeginSubmitResults(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results, System.AsyncCallback callback, object asyncState);
         
         void EndSubmitResults(System.IAsyncResult result);
         
@@ -362,7 +362,7 @@ namespace ProcessorUI.WebServices {
     }
     
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "3.0.0.0")]
-    public interface ProcessorChannel : ProcessorUI.WebServices.Processor, System.ServiceModel.IClientChannel {
+    public interface ProcessorChannel : QutSensors.Processor.WebServices.Processor, System.ServiceModel.IClientChannel {
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
@@ -376,17 +376,17 @@ namespace ProcessorUI.WebServices {
             this.results = results;
         }
         
-        public ProcessorUI.WebServices.ProcessorJobItemDescription Result {
+        public QutSensors.Processor.WebServices.ProcessorJobItemDescription Result {
             get {
                 base.RaiseExceptionIfNecessary();
-                return ((ProcessorUI.WebServices.ProcessorJobItemDescription)(this.results[0]));
+                return ((QutSensors.Processor.WebServices.ProcessorJobItemDescription)(this.results[0]));
             }
         }
     }
     
     [System.Diagnostics.DebuggerStepThroughAttribute()]
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "3.0.0.0")]
-    public partial class ProcessorClient : System.ServiceModel.ClientBase<ProcessorUI.WebServices.Processor>, ProcessorUI.WebServices.Processor {
+    public partial class ProcessorClient : System.ServiceModel.ClientBase<QutSensors.Processor.WebServices.Processor>, QutSensors.Processor.WebServices.Processor {
         
         private BeginOperationDelegate onBeginGetJobItemDelegate;
         
@@ -439,7 +439,7 @@ namespace ProcessorUI.WebServices {
         
         public event System.EventHandler<System.ComponentModel.AsyncCompletedEventArgs> ReturnJobWithErrorCompleted;
         
-        public ProcessorUI.WebServices.ProcessorJobItemDescription GetJobItem(string worker) {
+        public QutSensors.Processor.WebServices.ProcessorJobItemDescription GetJobItem(string worker) {
             return base.Channel.GetJobItem(worker);
         }
         
@@ -449,7 +449,7 @@ namespace ProcessorUI.WebServices {
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        public ProcessorUI.WebServices.ProcessorJobItemDescription EndGetJobItem(System.IAsyncResult result) {
+        public QutSensors.Processor.WebServices.ProcessorJobItemDescription EndGetJobItem(System.IAsyncResult result) {
             return base.Channel.EndGetJobItem(result);
         }
         
@@ -459,7 +459,7 @@ namespace ProcessorUI.WebServices {
         }
         
         private object[] OnEndGetJobItem(System.IAsyncResult result) {
-            ProcessorUI.WebServices.ProcessorJobItemDescription retVal = this.EndGetJobItem(result);
+            QutSensors.Processor.WebServices.ProcessorJobItemDescription retVal = this.EndGetJobItem(result);
             return new object[] {
                     retVal};
         }
@@ -489,12 +489,12 @@ namespace ProcessorUI.WebServices {
                         worker}, this.onEndGetJobItemDelegate, this.onGetJobItemCompletedDelegate, userState);
         }
         
-        public void SubmitResults(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results) {
+        public void SubmitResults(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results) {
             base.Channel.SubmitResults(worker, jobItemID, results);
         }
         
         [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Advanced)]
-        public System.IAsyncResult BeginSubmitResults(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results, System.AsyncCallback callback, object asyncState) {
+        public System.IAsyncResult BeginSubmitResults(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results, System.AsyncCallback callback, object asyncState) {
             return base.Channel.BeginSubmitResults(worker, jobItemID, results, callback, asyncState);
         }
         
@@ -506,7 +506,7 @@ namespace ProcessorUI.WebServices {
         private System.IAsyncResult OnBeginSubmitResults(object[] inValues, System.AsyncCallback callback, object asyncState) {
             string worker = ((string)(inValues[0]));
             int jobItemID = ((int)(inValues[1]));
-            ProcessorUI.WebServices.ProcessorJobItemResult[] results = ((ProcessorUI.WebServices.ProcessorJobItemResult[])(inValues[2]));
+            QutSensors.Processor.WebServices.ProcessorJobItemResult[] results = ((QutSensors.Processor.WebServices.ProcessorJobItemResult[])(inValues[2]));
             return this.BeginSubmitResults(worker, jobItemID, results, callback, asyncState);
         }
         
@@ -522,11 +522,11 @@ namespace ProcessorUI.WebServices {
             }
         }
         
-        public void SubmitResultsAsync(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results) {
+        public void SubmitResultsAsync(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results) {
             this.SubmitResultsAsync(worker, jobItemID, results, null);
         }
         
-        public void SubmitResultsAsync(string worker, int jobItemID, ProcessorUI.WebServices.ProcessorJobItemResult[] results, object userState) {
+        public void SubmitResultsAsync(string worker, int jobItemID, QutSensors.Processor.WebServices.ProcessorJobItemResult[] results, object userState) {
             if ((this.onBeginSubmitResultsDelegate == null)) {
                 this.onBeginSubmitResultsDelegate = new BeginOperationDelegate(this.OnBeginSubmitResults);
             }
