@@ -68,7 +68,7 @@
     <Compile Include="OptionsForm.Designer.cs">
       <DependentUpon>OptionsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ProcessorManager.cs" />
+    <Compile Include="PollingSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="MainForm.resx">
@@ -96,17 +96,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Service References\WebServices\Reference.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </Compile>
-    <Compile Include="Settings.cs" />
-    <Compile Include="TempFile.cs" />
-    <Compile Include="Utilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AudioAnalysis\AED\AED\AED.fsproj">
@@ -136,32 +125,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Properties\DataSources\QutSensors.Data.Linq.Processor_JobItem.datasource" />
-  </ItemGroup>
-  <ItemGroup>
-    <WCFMetadataStorage Include="Service References\WebServices\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\WebServices\configuration91.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\WebServices\configuration.svcinfo" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\WebServices\Processor3.xsd" />
-    <None Include="Service References\WebServices\Processor31.xsd" />
-    <None Include="Service References\WebServices\ProcessorUI.WebServices.ProcessorJobItemDescription.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\WebServices\Reference.svcmap">
-      <Generator>WCF Proxy Generator</Generator>
-      <LastGenOutput>Reference.cs</LastGenOutput>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Service References\WebServices\Processor1.disco" />
-    <None Include="Service References\WebServices\Processor2.wsdl" />
-    <None Include="Service References\WebServices\Processor21.wsdl" />
-    <None Include="Service References\WebServices\Processor32.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

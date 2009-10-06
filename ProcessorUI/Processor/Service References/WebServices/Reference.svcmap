@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="e2516278-d9be-4ca0-b60b-5a76b30e24cf" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>true</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost/Processor/Processor.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="Processor.xsd" MetadataType="Schema" ID="b869a50c-d15b-495a-8a1e-0087581c1968" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd2" />
+    <MetadataFile FileName="Processor.wsdl" MetadataType="Wsdl" ID="68b3a0a0-ee81-43b1-82b9-44b7d4882b96" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="Processor1.wsdl" MetadataType="Wsdl" ID="db890fc9-fd23-40b9-b631-54d7a7edcd74" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?wsdl" />
+    <MetadataFile FileName="Processor.disco" MetadataType="Disco" ID="20547c09-f594-4940-bdbf-30b3603269b0" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?disco" />
+    <MetadataFile FileName="Processor1.xsd" MetadataType="Schema" ID="2b8f402f-f92b-4505-9ed4-9126a007a1bd" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd0" />
+    <MetadataFile FileName="Processor2.xsd" MetadataType="Schema" ID="06750b3a-6c55-46a6-a22d-fa292c964e91" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd1" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>

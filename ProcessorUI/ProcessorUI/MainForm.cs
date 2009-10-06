@@ -10,20 +10,22 @@ using AudioAnalysis;
 using System.IO;
 using System.Net;
 using AudioTools;
-using ProcessorUI.WebServices;
+
+using QutSensors.Processor;
+using Settings = QutSensors.Processor.Settings;
 
 namespace ProcessorUI
 {
 	public partial class MainForm : Form
 	{
-		ProcessorManager processor = new ProcessorManager();
+		PollingSystem pollingSystem = new PollingSystem();
 
 		public MainForm()
 		{
 			InitializeComponent();
 
-			processor.Stopped += new EventHandler(processor_Stopped);
-			processor.Log += Log;
+			pollingSystem.Stopped += new EventHandler(processor_Stopped);
+			pollingSystem.Log += Log;
 		}
 
 		protected override void OnCreateControl()
@@ -31,27 +33,27 @@ namespace ProcessorUI
 			base.OnCreateControl();
 
 			txtWorker.Text = Settings.WorkerName;
-			processor.FilesProcessed = Settings.FilesProcessed;
-			processor.TotalDuration = Settings.TotalDuration;
+			pollingSystem.FilesProcessed = Settings.FilesProcessed;
+			pollingSystem.TotalDuration = Settings.TotalDuration;
 		}
 
 		protected override void OnClosing(CancelEventArgs e)
 		{
 			base.OnClosing(e);
 
-			processor.StopAndWait();
+			pollingSystem.StopAndWait();
 		}
 
 		void cmdStart_Click(object sender, EventArgs e)
 		{
-			if (processor.State == ProcessorManager.ProcessorState.Ready)
+			if (pollingSystem.State == PollingSystem.ProcessorState.Ready)
 			{
 				cmdStart.Text = "&Stop";
-				processor.Start();
+				pollingSystem.Start();
 			}
-			else if (processor.State == ProcessorManager.ProcessorState.Running)
+			else if (pollingSystem.State == PollingSystem.ProcessorState.Running)
 			{
-				processor.Stop();
+				pollingSystem.Stop();
 				cmdStart.Enabled = false;
 				cmdStart.Text = "&Start";
 			}
@@ -83,11 +85,11 @@ namespace ProcessorUI
 				txtLog.Text = DateTime.Now.ToString("HH:mm:ss") + ":" + log + "\r\n" + txtLog.Text;
 				if (txtLog.Text.Length > 10000)
 					txtLog.Text = txtLog.Text.Substring(0, 8000);
-				Settings.FilesProcessed = processor.FilesProcessed;
-				Settings.TotalDuration = processor.TotalDuration;
-				statusTotal.Text = "Total: " + processor.FilesProcessed;
-				statusDuration.Text = "Duration: " + processor.TotalDuration;
-				statusThreads.Text = "Threads: " + processor.ThreadsRunning;
+				Settings.FilesProcessed = pollingSystem.FilesProcessed;
+				Settings.TotalDuration = pollingSystem.TotalDuration;
+				statusTotal.Text = "Total: " + pollingSystem.FilesProcessed;
+				statusDuration.Text = "Duration: " + pollingSystem.TotalDuration;
+				statusThreads.Text = "Threads: " + pollingSystem.ThreadsRunning;
 			}
 		}
 

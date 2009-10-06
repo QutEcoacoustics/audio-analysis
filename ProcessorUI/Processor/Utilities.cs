@@ -7,9 +7,9 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
-namespace ProcessorUI
+namespace QutSensors.Processor
 {
-	static class Utilities
+	public static class Utilities
 	{
 		public static string GetTempFileName()
 		{

@@ -8,6 +8,8 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 
+using Settings = QutSensors.Processor.Settings;
+
 namespace ProcessorUI
 {
 	public partial class OptionsForm : Form

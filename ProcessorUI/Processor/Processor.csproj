@@ -35,6 +35,12 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -45,14 +51,76 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProcessorSettings.cs" />
+    <Compile Include="Processors\AEDProcessing.cs" />
+    <Compile Include="Processors\Processor.cs" />
+    <Compile Include="ProcessorFactory.cs" />
+    <Compile Include="Manager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serializers.cs" />
+    <Compile Include="Service References\WebServices\Reference.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </Compile>
+    <Compile Include="Settings.cs" />
+    <Compile Include="TempFile.cs" />
+    <Compile Include="Processors\TemplateProcessing.cs" />
+    <Compile Include="Utilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AudioAnalysis\AED\AED\AED.fsproj">
+      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
+      <Name>AED</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
       <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
       <Name>AudioAnalysis</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
+      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
+      <Name>TowseyLib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
+      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
+      <Name>AudioTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
+      <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
+      <Name>QutSensors.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <WCFMetadataStorage Include="Service References\WebServices\" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\WebServices\configuration91.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\WebServices\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\WebServices\Processor.wsdl" />
+    <None Include="Service References\WebServices\Processor.xsd" />
+    <None Include="Service References\WebServices\Processor1.wsdl" />
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ProcessorJobItemDescription.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\WebServices\Reference.svcmap">
+      <Generator>WCF Proxy Generator</Generator>
+      <LastGenOutput>Reference.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\WebServices\Processor.disco" />
+    <None Include="Service References\WebServices\Processor1.xsd" />
+    <None Include="Service References\WebServices\Processor2.xsd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

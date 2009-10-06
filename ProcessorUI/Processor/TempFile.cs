@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 
-namespace ProcessorUI
+namespace QutSensors.Processor
 {
 	public class TempFile : IDisposable
 	{
