@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_TestSerialTemplateOnCallFiles</StartupObject>
+    <StartupObject>AudioAnalysis.Main_Scan1RecordingWithHTK</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -74,6 +74,15 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="HMMBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <ExecutableExtension>.exe</ExecutableExtension>
+      <HintPath>..\..\HMMBuilder\bin\Debug\HMMBuilder.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\SharpZip\SharpZipLib_0855_Bin\netcf-20\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="QutSensors.Data, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\QutSensors.Data\bin\Debug\QutSensors.Data.dll</HintPath>
@@ -101,6 +110,7 @@
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
     <Compile Include="Main_FindAcousticEvents.cs" />
+    <Compile Include="Main_Scan1RecordingWithHTK.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
     <Compile Include="Main_CreateTemplate_Part2.cs" />
@@ -206,7 +216,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>copy "$(TargetDir)AudioAnalysis.exe" "$(SolutionDir)Webfrontend\Bin\"
-copy "$(TargetDir)AudioAnalysis.pdb" "$(SolutionDir)Webfrontend\Bin\"</PostBuildEvent>
+    <PostBuildEvent>REM copy "$(TargetDir)AudioAnalysis.exe" "$(SolutionDir)Webfrontend\Bin\"
+REM copy "$(TargetDir)AudioAnalysis.pdb" "$(SolutionDir)Webfrontend\Bin\"</PostBuildEvent>
   </PropertyGroup>
 </Project>
