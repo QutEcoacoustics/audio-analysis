@@ -13,19 +13,20 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            //htkConfig.CallName = "CURLEW1";
-            //htkConfig.Comment = "Parameters for Curlew";
-            //htkConfig.LOFREQ = "600";
-            //htkConfig.HIFREQ = "8000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            //float threshold = -2000f;  //default = 1900
-
-
-            htkConfig.CallName = "CURRAWONG1";
-            htkConfig.Comment = "Parameters for Currawong";
-            htkConfig.LOFREQ = "800";
-            htkConfig.HIFREQ = "8000";     //try 6000, 7000 and 8000 Hz
+            htkConfig.CallName = "CURLEW1";
+            htkConfig.Comment = "Parameters for Curlew";
+            htkConfig.LOFREQ = "1000";
+            htkConfig.HIFREQ = "5000"; //try 6000, 7000 and 8000 Hz as max for Curlew
             htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            float threshold = -1900f;      //magic number for Currawong is -1900f
+            float threshold = -5000f;  //default = 1900
+
+
+            //htkConfig.CallName = "CURRAWONG1";
+            //htkConfig.Comment = "Parameters for Currawong";
+            //htkConfig.LOFREQ = "800";
+            //htkConfig.HIFREQ = "8000";     //try 6000, 7000 and 8000 Hz
+            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            //float threshold = -1900f;      //magic number for Currawong is -1900f
 
 
             //==================================================================================================================
@@ -60,12 +61,16 @@ namespace HMMBuilder
             htkConfig.CEPLIFTER  = "22";
             htkConfig.NUMCEPS    = "12";
 
-            htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
-            htkConfig.TemplateDir = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
-            htkConfig.DataDir     = htkConfig.TemplateDir  + "\\data";
-            htkConfig.ConfigDir   = htkConfig.TemplateDir  + "\\config_" + htkConfig.CallName;
-            htkConfig.ResultsDir  = htkConfig.TemplateDir  + "\\results";
-            htkConfig.SilenceModelFN = htkConfig.ConfigDir + "\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav\n";
+            //htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
+            htkConfig.WorkingDir  = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
+            htkConfig.HTKDir      = "C:\\SensorNetworks\\Software\\HTK";
+            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
+            htkConfig.DataDir     = htkConfig.WorkingDir + "\\data";
+            htkConfig.ConfigDir   = htkConfig.WorkingDir  + "\\" + htkConfig.CallName;
+            htkConfig.ResultsDir  = htkConfig.WorkingDir  + "\\results";
+            htkConfig.SilenceModelPath = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + htkConfig.noiseModelExt;
+            
             Console.WriteLine("CWD=" + htkConfig.WorkingDir);
             Console.WriteLine("CFG=" + htkConfig.ConfigDir);
             Console.WriteLine("DAT=" + htkConfig.DataDir);
@@ -96,9 +101,11 @@ namespace HMMBuilder
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
-                        htkConfig.WriteSegmentationIniFile(htkConfig.SegmentationIniFN);
-                        string fn = System.IO.Path.GetFileName(htkConfig.SegmentationIniFN);
-                        System.IO.File.Copy(htkConfig.SegmentationIniFN, htkConfig.trnDirPath + "\\" + fn,true);
+                        //segmentation ini file
+                        string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                        htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                        string fn = System.IO.Path.GetFileName(segmentationIniFile);
+                        System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
                         //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                     }
                     catch
@@ -108,6 +115,7 @@ namespace HMMBuilder
                         break;
                     }        
                     #endregion
+
 
 
                     #region TWO: DATA PREPARATION TOOLS:- Read Two Configuration Files and do Feature Extraction
@@ -120,6 +128,7 @@ namespace HMMBuilder
                     }
                     catch
                     {
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HMMSettings.ReadTCF()");
                         good = false;
                         break;
                     }
@@ -142,7 +151,7 @@ namespace HMMBuilder
                     {
                         numIters = 3;
                     }
-                    Console.WriteLine("Number of iterations for training set = " + numIters);
+                    Console.WriteLine("\n\nNumber of iterations for training set = " + numIters);
 
                     if (HMMSettings.ConfigParam.TryGetValue("TRACE_TOOL_CALLS", out tmpVal))
                     {
@@ -161,6 +170,7 @@ namespace HMMBuilder
                             }
                             catch
                             {
+                                Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HTKHelper.HCopy(aOptionsStr, htkConfig, true)");
                                 //Console.WriteLine(ex.ToString());
                                 good = false;
                                 break; 
@@ -174,6 +184,7 @@ namespace HMMBuilder
                             }
                             catch
                             {
+                                Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HTKHelper.HCopy(aOptionsStr, htkConfig, false)");
                                 good = false;
                                 break; 
                             }
@@ -187,12 +198,26 @@ namespace HMMBuilder
                     {
                         bool extractLabels = true;
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
+                    }
+                    catch
+                    {
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE Data Preparation Region");
+                        good = false;
+                        break; 
+                    }
+                    #endregion
+
+
+                    #region WriteDictionary consisting of PHONE LABELS
+                    try
+                    {
                         HTKHelper.WriteDictionary(htkConfig);
                     }
                     catch
                     {
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE Write Dicitonary Region");
                         good = false;
-                        break; 
+                        break;
                     }
                     #endregion
 
@@ -206,10 +231,12 @@ namespace HMMBuilder
                     }
                     catch(Exception ex)
                     {
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE TRAINING TOOLS Region");
                         Console.WriteLine(ex.ToString());
                         good = false;
                         break; 
                     }
+
 
                     Console.WriteLine("\nTRAINING: INITIALISE SYSTEM FILES");
                     try
@@ -242,20 +269,21 @@ namespace HMMBuilder
                     }
                     catch
                     {
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig)");
                         good = false;
                         break; 
                     }
                     #endregion
 
 
-                    #region Test the HMMs
+                    #region THREE Test the HMMs
                     try
                     {
                         if (HMMSettings.ConfigParam.TryGetValue("HBUILD", out tmpVal))
                         {
                             if (tmpVal.Equals("Y")) //Generate the network file
                             {
-                                HTKHelper.HBuild(htkConfig.monophones, htkConfig.wordNet);
+                                HTKHelper.HBuild(htkConfig.monophones, htkConfig.wordNet, htkConfig.HBuildExecutable);
                             }
                             else
                             {
@@ -268,14 +296,14 @@ namespace HMMBuilder
                         }
                         //True calls
                         HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tTrueF, htkConfig.wordNet,
-                                        htkConfig.DictFile, htkConfig.resultTrue, htkConfig.monophones);
+                                        htkConfig.DictFile, htkConfig.resultTrue, htkConfig.monophones, htkConfig.HViteExecutable);
                         //False calls
                         HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tFalseF, htkConfig.wordNet,
-                                        htkConfig.DictFile, htkConfig.resultFalse, htkConfig.monophones);
+                                        htkConfig.DictFile, htkConfig.resultFalse, htkConfig.monophones, htkConfig.HViteExecutable);
                     }
                     catch
                     {
-                        //Console.WriteLine(ex.ToString());
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HVite()");
                         good = false;
                         break; 
                     }
@@ -287,8 +315,27 @@ namespace HMMBuilder
                     //Read the output files
                     try
                     {
-                        float accuracy = Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold);
-                        Console.WriteLine("System Accuracy: {0}%", accuracy*100);
+                        float tppercent = 0.0f;
+                        float tnpercent = 0.0f;
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold-2000, out tppercent, out tnpercent);
+                        float accuracy = tppercent + tnpercent;
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold - 2000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 1000, out tppercent, out tnpercent);
+                        accuracy = tppercent + tnpercent;
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold - 1000);
+                        
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold, out tppercent, out tnpercent);
+                        accuracy = tppercent + tnpercent;
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold);
+                        
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 1000, out tppercent, out tnpercent);
+                        accuracy = tppercent + tnpercent;
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold + 1000);
+                        
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 2000, out tppercent, out tnpercent);
+                        accuracy = tppercent + tnpercent;
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold + 2000);
                     }
                     catch 
                     {
@@ -298,15 +345,75 @@ namespace HMMBuilder
 
                     #endregion
 
+
+
+                    #region SET UP THE TEMPLATE ZIP FILE
+                    //COPY SILENCE MODEL FILES TO CONFIG DIR
+                    string newSilenceDir = htkConfig.ConfigDir + "\\SilenceModel";
+                    Directory.CreateDirectory(newSilenceDir);
+                    string silenceWavFN = Path.GetFileName(htkConfig.SilenceModelPath);
+                    string newSilencePath = newSilenceDir + "\\" + silenceWavFN;
+                    File.Copy(htkConfig.SilenceModelPath, newSilencePath, true);
+
+                    string oldNoiseDir  = Path.GetDirectoryName(htkConfig.SilenceModelPath);
+                    string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
+                    string ext = htkConfig.noiseModelExt;
+                    string oldNoiseModel = oldNoiseDir   + "\\" + noiseModelFN + ext;
+                    string newNoiseModel = newSilenceDir + "\\" + noiseModelFN + ext;
+                    File.Copy(oldNoiseModel, newNoiseModel, true);
+
+                    //COPY SEGMENTATION FILES TO CONFIG DIR
+                    string oldSegmentDir = htkConfig.SegmentationDir;
+                    string newSegmentDir = htkConfig.ConfigDir + "\\Segmentation";
+                    string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
+                    string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
+                    string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
+                    string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
+                    Directory.CreateDirectory(newSegmentDir);
+                    File.Copy(oldSegmentExePath, newSegmentExePath, true);
+                    File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
+
+
+                    Console.WriteLine("WRITE HTK FILES");
+                    try
+                    {
+                        //COPY HTK FILES ACROSS TO CONFIG DIR.
+                        string oldHTKDir = htkConfig.HTKDir;
+                        string newHTKDir = htkConfig.ConfigDir + "\\HTK";
+                        //if (!Directory.Exists(newHTKDir)) 
+                        string hcopyFN = Path.GetFileName(htkConfig.HCopyExecutable);
+                        Directory.CreateDirectory(newHTKDir);
+                        string oldHcopyFN = oldHTKDir + "\\" + hcopyFN;
+                        string newHcopyFN = newHTKDir + "\\" + hcopyFN;
+                        File.Copy(oldHcopyFN, newHcopyFN, true);
+                        string hviteFN = Path.GetFileName(htkConfig.HViteExecutable);
+                        string oldHviteFN = oldHTKDir + "\\" + hviteFN;
+                        string newHviteFN = newHTKDir + "\\" + hviteFN;
+                        File.Copy(oldHviteFN, newHviteFN, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
+                        Console.WriteLine(ex.ToString());
+                        good = false;
+                        //break;
+                    }
+
+                
+                //ZIP THE CONFIG DIRECTORY
+                    string Dir2Compress = htkConfig.ConfigDir;
+                    string OutZipFile = htkConfig.ConfigDir + ".zip";
+                    ZipUnzip.ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
+                    Console.WriteLine("Zipped config placed in:- " + OutZipFile);
+                    
+                    #endregion
+
                     break;
 
             } //end SWITCH
 
-            //ZIP THE CONFIG DIRECTORY
-            string Dir2Compress = htkConfig.ConfigDir;
-            string OutZipFile   = htkConfig.ConfigDir + ".zip";
-            ZipUnzip.ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
-            Console.WriteLine("Zipped config placed in:- " + OutZipFile);
+
+
 
 
 
