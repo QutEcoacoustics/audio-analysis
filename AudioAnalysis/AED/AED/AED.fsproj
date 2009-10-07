@@ -62,6 +62,7 @@
     <Compile Include="Default.fs" />
     <Compile Include="AcousticEventDetection.fs" />
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="EventPatternRecog.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
