@@ -10,7 +10,7 @@ namespace QutSensors.Processor
 	{
 		public static string WorkerName
 		{
-			get { return Load("WorkerName", ""); }
+			get { return Load("WorkerName", (string)null); }
 			set { Save("WorkerName", value); }
 		}
 
@@ -22,7 +22,7 @@ namespace QutSensors.Processor
 
 		public static string Server
 		{
-			get { return Load("Server", "http://localhost:2669/WebFrontend/Processor/Processor.svc"); }
+			get { return Load("Server", "http://131.181.206.250/Processor/Processor.svc"); }
 			set { Save("Server", value); }
 		}
 
