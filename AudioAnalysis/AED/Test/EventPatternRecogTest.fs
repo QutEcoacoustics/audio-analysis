@@ -1,5 +1,5 @@
-﻿open QutSensors.AudioAnalysis.AED.Util
-open QutSensors.AudioAnalysis.EPR.EventPatternRecog
+﻿open QutSensors.AudioAnalysis.AED.EventPatternRecog
+open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 
 

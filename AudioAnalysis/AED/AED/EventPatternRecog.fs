@@ -1,6 +1,6 @@
-﻿module QutSensors.AudioAnalysis.EPR.EventPatternRecog
+﻿module QutSensors.AudioAnalysis.AED.EventPatternRecog
 
-open QutSensors.AudioAnalysis.AED.Util
+open Util
 
 type Rectangle = {Left:float; Top:float; Right:float; Bottom:float;}
 let left r = r.Left
