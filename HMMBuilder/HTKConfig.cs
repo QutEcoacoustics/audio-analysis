@@ -7,11 +7,13 @@ namespace HMMBuilder
 {
     public class HTKConfig
     {
-        public string WorkingDir  { get; set; }
-        public string TemplateDir { get; set; }
+        //public string WorkingDir  { get; set; }
+        public string WorkingDir { get; set; }
         public string DataDir     { get; set; }
         public string ConfigDir   { get; set; }
-        public string ResultsDir  { get; set; }
+        public string HTKDir      { get; set; }
+        public string SegmentationDir { get; set; }
+        public string ResultsDir { get; set; }
         public string Author      { get; set; }
         public string CallName    { get; set; }
         public string Comment     { get; set; }
@@ -19,7 +21,8 @@ namespace HMMBuilder
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
-        public string SilenceModelFN { get; set; }
+        public string SilenceModelPath { get; set; } // the silence .wav recording
+        public string NoiseModelFN { get; set; }     // noise model is derived from the silence .wav recording
 
         //Following parameters names used by HTK in the MFCC file.
         public string SOURCEFORMAT { get; set; }
@@ -38,7 +41,6 @@ namespace HMMBuilder
         public string HIFREQ { get; set; }
 
 
-        public string SegmentationDir { get { return WorkingDir + "\\VocalSegmentation\\"; } }
 
         public string trnDirPath      { get { return DataDir + "\\train"; } }
         public string tstFalseDirPath { get { return DataDir + "\\test\\testFalse"; } }
@@ -48,7 +50,7 @@ namespace HMMBuilder
         public string ConfigFN          { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
         public string MfccConfigFN      { get { return ConfigDir + "\\mfccConfig"; } }
         public string MfccConfig2FN     { get { return ConfigDir + "\\mfccConfig.txt"; } } //need this copy for training
-        public string SegmentationIniFN { get { return ConfigDir + "\\segmentation.ini"; } }
+
 
         public string DictFile     { get { return ConfigDir + "\\dict"; } }
         public string cTrainF      { get { return ConfigDir + "\\codetrain.scp"; } }
@@ -86,11 +88,21 @@ namespace HMMBuilder
         public string resultTest  { get { return ResultsDir + "\\TestScan.mlf"; } } //for scanning a single file
 
         // file extentions
-        public string mfcExt = ".mfc";
-        public string wavExt = ".wav";
+        public string mfcExt       = ".mfc";
+        public string wavExt       = ".wav";
         public string labelFileExt = ".lab";
-        public string segmentFileExt = ".segmentation.txt";
+        public string segmentFileExt    = ".segmentation.txt";
+        public string noiseModelExt     = ".noiseModel";
+        public string segmentationIniFN = "segmentation.ini";
+        public string segmentationExe   = "VocalSegmentation.exe";
 
+        //HTK executable files
+        public string HBuildExecutable { get { return HTKDir + "\\HBuild.exe"; } }
+        public string HCompVExecutable { get { return HTKDir + "\\HCompV.exe"; } }
+        public string HCopyExecutable  { get { return HTKDir + "\\HCopy.exe"; } }
+        public string HERestExecutable { get { return HTKDir + "\\HERest.exe"; } }
+        public string HInitExecutable  { get { return HTKDir + "\\HInit.exe"; } }
+        public string HViteExecutable  { get { return HTKDir + "\\HVite.exe"; } }
 
         public string aOptionsStr = "-A -D -T 1"; //options string for HTK HCopy funciton
 
@@ -215,7 +227,7 @@ namespace HMMBuilder
                 "COMMENT="  + this.Comment+"\n" +
                 "#\n" +
                 "#**************** INFO ABOUT ORIGINAL .WAV FILE[s]\n" +
-                "#WAV_DIR_NAME="+TemplateDir+"\\data\\train\n" +
+                "#WAV_DIR_NAME="+WorkingDir+"\\data\\train\n" +
                 "SAMPLE_RATE="  +SampleRate+"\n" +
                 "#\n" +
                 "#**************** INFO ABOUT FRAMES\n" +
@@ -229,7 +241,7 @@ namespace HMMBuilder
                 "MIN_FREQ = " + LOFREQ + "\n" +
                 "MAX_FREQ = " + HIFREQ + "\n" +
                 "NOISE_REDUCTION_TYPE=SILENCE_MODEL\n" +
-                "SILENCE_RECORDING_PATH="+SilenceModelFN + "\n" +
+                "SILENCE_RECORDING_PATH="+SilenceModelPath + "\n" +
                 "#\n" +
                 "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
                 "# See Lamel et al 1981.\n" +

@@ -55,18 +55,20 @@ namespace HMMBuilder
         /// <param name="extractLabels"></param>
         public static void CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)
         {
-            string SegmentExecutable = "VocalSegmentation.exe";
+            string SegmentExecutable      = "VocalSegmentation.exe";
             string segmentationExecutable = htkConfig.SegmentationDir + "\\" + SegmentExecutable;
-            string segmentationIniFile    = htkConfig.SegmentationIniFN;
+            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
             string segmentationFileExt    = htkConfig.segmentFileExt;
             string labelFileExt           = htkConfig.labelFileExt;
 
-            string txtLine = "";
 
+
+            string txtLine = "";
 
             if(extractLabels)
             {
                 //TO DO: extract labels from wav files
+                Console.WriteLine("\nABOUT TO SEGMENT WAV FILE");
 
                 //ONE - Call 'VocalSegmentation' tool
                 StreamReader stdErr = null;
@@ -76,10 +78,21 @@ namespace HMMBuilder
                 string commandLine = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
 
                 //check that the directory contains a file called "segmentation.ini"`
-                if (!File.Exists(segmentationIniFile))
+                if (File.Exists(segmentationIniFile))
                 {
-                    Console.WriteLine("The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
-                    throw new Exception("The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
+                    Console.WriteLine(" Found segmentIni file: " + segmentationIniFile);
+                } else
+                {
+                    Console.WriteLine(" The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
+                    throw new Exception(" The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
+                }
+                if (File.Exists(segmentationExecutable))
+                {
+                    Console.WriteLine(" Found executable file: " + segmentationExecutable);
+                } else
+                {
+                    Console.WriteLine(" Cannot find Executable: " + segmentationExecutable);
+                    //throw new Exception("The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
                 }
 
                 commandLine = "\"" + commandLine + "\""; //enclose line in quotes in case have sapce
@@ -193,7 +206,7 @@ namespace HMMBuilder
                 }
                 catch (Win32Exception e)
                 {
-                    Console.WriteLine("BLOODY PROBLEM 1");
+                    Console.WriteLine("ERROR 1: FAILED TO COMPLETE METHOD: CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)");
                     if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
                     {
                         Console.WriteLine(e.Message + ". Check the path.");
@@ -202,7 +215,7 @@ namespace HMMBuilder
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("BLOODY PROBLEM 2");
+                    Console.WriteLine("ERROR 2: FAILED TO COMPLETE METHOD: CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)");
                     Console.WriteLine(error);
                     throw (e);
                 }
@@ -412,9 +425,9 @@ namespace HMMBuilder
                 Console.WriteLine("\nHTKHelper.HCopy: fvToExtract=" + fvToExtract + "   options=" + optStr);
                 Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
 
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF); //training data
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestTrueF);  //test data
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestFalseF); //test data
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF,    htkConfig.HCopyExecutable); //training data
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestTrueF, htkConfig.HCopyExecutable);  //test data
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestFalseF,htkConfig.HCopyExecutable); //test data
 
             } //end if do extraction of features
             //Console.WriteLine("HMMBuilder: GOT TO HERE 1");
@@ -453,12 +466,12 @@ namespace HMMBuilder
 
 
         //call as follows: ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF) 
-        public static void ExtractFeatures(string optStr, string mfccConfigFN, string scriptF) 
+        public static void ExtractFeatures(string optStr, string mfccConfigFN, string scriptF, string HCopyExecutable) 
         {
             Console.WriteLine("\nHTKHelper.ExtractFeatures: options=" + optStr);
             Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
             
-            const string HCopyExecutable = "HCopy.exe";
+            //const string HCopyExecutable = "HCopy.exe";
 
             StreamReader stdErr = null;
             StreamReader stdOut = null;
@@ -469,6 +482,11 @@ namespace HMMBuilder
             //Extract feature vectors for train data
             string commandLineArguments = optStr + " -C " + mfccConfigFN + " -S " + scriptF;
             Console.WriteLine("  Command Line Arguments=" + commandLineArguments);
+            if (File.Exists(mfccConfigFN)) Console.WriteLine("  Found Script file=" + scriptF);
+            else                           Console.WriteLine("  WARNING Could NOT FIND Script file=" + scriptF);
+            //look for HTK.HCopy file
+            if (File.Exists(HCopyExecutable)) Console.WriteLine("  Found HCopy.exe file=" + HCopyExecutable);
+            else                              Console.WriteLine("  WARNING Could NOT FIND file=" + HCopyExecutable);
 
             try
             {
@@ -496,7 +514,8 @@ namespace HMMBuilder
             {
                     if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
                     {
-                        Console.WriteLine(e.Message + ". Check the path.");
+                        Console.WriteLine(error);
+                        Console.WriteLine(e.Message + "..... Check the path.");
                     }
                     throw (e);
             }
@@ -515,7 +534,7 @@ namespace HMMBuilder
             string prototypeHMM = htkConfig.prototypeHMM;
             string tgtDir       = htkConfig.tgtDir0;
 
-            string HCompVExecutable = "HCompV.exe";
+            string HCompVExecutable = htkConfig.HTKDir + "\\HCompV.exe";
             StreamReader stdErr = null;
             StreamReader stdOut = null;
             string output = null;
@@ -836,7 +855,7 @@ namespace HMMBuilder
         {
             Console.WriteLine("Model re-estimation: HERest");
 
-            string HERestExecutable = "HERest.exe";
+            string HERestExecutable = htkConfig.HTKDir + "\\HERest.exe";
 
             //tgtDir1 == srcD
             //tgtDir2 == tgtD
@@ -963,10 +982,8 @@ namespace HMMBuilder
 
 
 
-        public static void HBuild(string monophones_test, string wordNet)
+        public static void HBuild(string monophones_test, string wordNet, string HBuildExecutable)
         {
-            string HBuildExecutable = "HBuild.exe";
-
             //./HBuild ./configs/monophones_test ./configs/phone.net
             StreamReader stdErr = null;
             StreamReader stdOut = null;
@@ -999,12 +1016,14 @@ namespace HMMBuilder
             {
                 if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
                 {
+                    Console.WriteLine("ERROR 1!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");                    
                     Console.WriteLine(e.Message + ". Check the path.");
                 }
                 throw(e);
             }
             catch (Exception e)
             {
+                Console.WriteLine("ERROR 2!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");
                 Console.WriteLine(error);
                 throw (e);
             }
@@ -1017,7 +1036,7 @@ namespace HMMBuilder
 
 
         public static void HVite(string confTrain, string tgtDir2, string testF,
-                                 string wordNet, string dict, string resultPath, string monophones_test)
+                                 string wordNet, string dict, string resultPath, string monophones_test, string HViteExecutable)
         {
             //Console.WriteLine(
             //    "\n confTrain      ="+confTrain+
@@ -1029,7 +1048,13 @@ namespace HMMBuilder
             //    "\n monophones_test=" + monophones_test
             //);
 
-            string HViteExecutable = "HVite.exe";
+            //const string HViteExecutable = "HVite.exe";
+            //string exePath = htkDir + "\\" + HViteExecutable;
+
+            //look for HTK.HVite file
+            if (File.Exists(HViteExecutable)) Console.WriteLine("  Found HVite.exe file=" + HViteExecutable);
+            else                              Console.WriteLine("  WARNING! Could NOT FIND HVite=" + HViteExecutable);
+
 
             //HVite.exe -C ./configs/config_train -H ./hmms/hmm.2/macros -H ./hmms/hmm.2/hmmdefs 
             //  -S ./configs/testfalse.scp -i ./results/recountFalse.mlf -w ./configs/phone.net 

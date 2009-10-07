@@ -8,10 +8,9 @@ namespace HMMBuilder
 {
     class Helper
     {
-        public static float ComputeAccuracy(string resultTrue, string resultFalse, ref string vocalization, float threshold)
+        public static void ComputeAccuracy(string resultTrue, string resultFalse, ref string vocalization, float threshold,
+                             out float tppercent, out float tnpercent)
         {
-            float accuracy = 0;
-
             //TO DO: check if the files exists
 
             StreamReader trueReader = null;
@@ -70,8 +69,9 @@ namespace HMMBuilder
                 }
 
                 int tnCount = falseSCount - fpCount;
-
-                accuracy = (float)(tpCount + tnCount) / (trueSCount + falseSCount);
+                tppercent = (float)(tpCount) / (trueSCount + falseSCount);
+                tnpercent = (float)(tnCount) / (trueSCount + falseSCount);
+                //Console.WriteLine("tp%=" + tppercent + "   tn%=" + tnpercent);
             }
             catch (Exception e)
             {
@@ -88,9 +88,8 @@ namespace HMMBuilder
                 {
                     falseReader.Close();
                 }
-            }
+            } //end finally
+        } //end method ComputeAccuracy()
 
-            return accuracy;
-        }
-    }
-}
+    } //end class
+} //namespace
