@@ -76,8 +76,7 @@
   <ItemGroup>
     <Reference Include="HMMBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <HintPath>..\..\HMMBuilder\bin\Debug\HMMBuilder.dll</HintPath>
+      <HintPath>..\..\HMMBuilder\HMMBuilder.exe</HintPath>
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
