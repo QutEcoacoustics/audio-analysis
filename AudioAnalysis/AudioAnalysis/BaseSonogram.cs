@@ -599,6 +599,12 @@ namespace AudioAnalysis
                 m = SNR.NoiseReduce_Standard(m, this.Configuration.SilenceModel);
             }
             else
+            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.PEAK_TRACKING)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING.");
+                m = SNR.NoiseReduce_PeakTracking(m);
+            }
+            else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
             {
                 Log.WriteIfVerbose("\tNoise reduction: default standby for short high energy vocalisations");

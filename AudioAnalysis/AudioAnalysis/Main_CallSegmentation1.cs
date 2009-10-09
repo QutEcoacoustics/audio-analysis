@@ -9,7 +9,7 @@ using AudioTools;
 
 namespace AudioAnalysis
 {
-    class Main_CallSegmentation
+    class Main_CallSegmentation1
     {
 
 
@@ -17,7 +17,6 @@ namespace AudioAnalysis
         {
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Console.WriteLine("");
-            Usage();
 
 
             //#######################################################################################################
@@ -25,12 +24,14 @@ namespace AudioAnalysis
             //Log.Verbosity = 1;
             //#######################################################################################################
 
-            string wavDirName = @"C:\SensorNetworks\Templates\Template_3\TrainingSet1";
+            //string wavDirName = @"C:\SensorNetworks\Templates\Template_3\TrainingSet1";
+            string wavDirName = @"C:\SensorNetworks\Templates\Template_CURLEW1\data\train";
             if (args.Length == 0) 
             {
                 if (!Directory.Exists(wavDirName))
                 {
                     Console.WriteLine("YOU NEED A COMMAND LINE ARGUEMENT!");
+                    Usage();
                     throw new Exception("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                 }
             }
@@ -40,6 +41,7 @@ namespace AudioAnalysis
                     wavDirName = args[0];
                     if (!Directory.Exists(wavDirName))
                     {
+                        Usage();
                         Console.WriteLine("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                         throw new Exception("DIRECTORY DOES NOT EXIST:" + wavDirName + "  FATAL ERROR!");
                     }
@@ -49,54 +51,76 @@ namespace AudioAnalysis
             string segmentIniPath = wavDirName + "\\segmentation.ini";
             if (!File.Exists(segmentIniPath))
             {
+                Usage();
                 throw new Exception(".INI FILE DOES NOT EXIST:" + segmentIniPath + "  FATAL ERROR!");
             }
 
             //A: SET UP THE CONFIG VALUES.
-            var config1 = new SonogramConfig(new Configuration(segmentIniPath));
+            SonogramConfig config1 = null; 
+            Console.WriteLine("INIT SONOGRAM CONFIG: " + segmentIniPath);
+            try
+            {
+                config1 = new SonogramConfig(new Configuration(segmentIniPath));
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine("ERROR: Error initialising the SonogramConfig() class");
+                Console.WriteLine(e.ToString());
+            }
+
+            Console.WriteLine("SEEKING SILENCE FILE: " + config1.SilenceRecordingPath);
             if (!File.Exists(config1.SilenceRecordingPath))
             {
                 throw new Exception("FILE FOR SILENCE MODEL DOES NOT EXIST:<" + config1.SilenceRecordingPath + ">  FATAL ERROR!");
             }
+
             //B: set up file name to store noise model 
-            Console.WriteLine("Noise/silence model to be derived from file: " + config1.SilenceRecordingPath);
+            Console.WriteLine("Noise/silence model to be derived from a .wav file");
             string noiseFileDir = Path.GetDirectoryName(config1.SilenceRecordingPath);
             if (noiseFileDir == wavDirName)
             {
-                Console.WriteLine("WARNING! IT IS PREFERABLE NOT TO HAVE THE NOISE/SILENCE FILE IN SAME DIRECTORY AS VOCALISATIONS.");
+                Console.WriteLine("WARNING! DO NOT PLACE THE NOISE/SILENCE FILE IN SAME DIRECTORY AS VOCALISATIONS.");
                 throw new Exception("  SHIFT NOISE FILE TO DIFFERENT DIRECTORY. FATAL ERROR!");
             }
 
-            string noiseModelPath = noiseFileDir + "\\" + Path.GetFileNameWithoutExtension(config1.SilenceRecordingPath) + ".noiseModel";
+            string noiseModelExt = ".noiseModel";
+            string noiseModelPath = noiseFileDir + "\\" + Path.GetFileNameWithoutExtension(config1.SilenceRecordingPath) + noiseModelExt;
             Console.WriteLine("segmentIniPath  =" + segmentIniPath);
             Console.WriteLine("wav Dir         =" + wavDirName);
             Console.WriteLine("outputDir       =" + outputDir);
             Console.WriteLine("noise Model File=" + config1.SilenceRecordingPath);
 
 
-            //C: EXTRACT THE NOISE MODEL FROM FILE.
-            ConfigKeys.NoiseReductionType requestedNoiseReductionType = config1.NoiseReductionType;//store requested noise reduction type
-            config1.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+            //C: EXTRACT THE NOISE MODEL FROM SILENCE AUDIO FILE IF .noisemodel file does not exist.
+            if (!File.Exists(noiseModelPath))
+            {
+                ConfigKeys.NoiseReductionType requestedNoiseReductionType = config1.NoiseReductionType;//store requested noise reduction type
+                config1.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
 
-            Console.WriteLine("READING WAV FILE");
-            var wr = new WavReader(config1.SilenceRecordingPath);
-            Console.WriteLine("MAKING SONOGRAM");
-            var s = new SpectralSonogram(config1, wr);
+                Console.WriteLine("READING WAV FILE");
+                var wr = new WavReader(config1.SilenceRecordingPath);
+                Console.WriteLine("MAKING SONOGRAM");
+                var s = new SpectralSonogram(config1, wr);
 
-            //D: Make noise/silence model , write to file and store in config
-            FileInfo f1 = new FileInfo(config1.SilenceRecordingPath);
-            var noiseModel = s.SnrFrames.ModalNoiseProfile;
-            //DataTools.writeBarGraph(noiseModel);
-            Console.WriteLine("SILENCE MODEL IN " + noiseModelPath);
-            FileTools.WriteArray2File_Formatted(noiseModel, noiseModelPath, "F6");
+                //C1: Make noise/silence model, write to file and store in config
+                FileInfo f1 = new FileInfo(config1.SilenceRecordingPath);
+                var noiseModel = s.SnrFrames.ModalNoiseProfile;
+                //DataTools.writeBarGraph(noiseModel);
+                Console.WriteLine("SILENCE MODEL IN " + noiseModelPath);
+                FileTools.WriteArray2File_Formatted(noiseModel, noiseModelPath, "F6");
 
-            //E: change CONFIGURATION to the SILENCE MODEL
-            config1.NoiseReductionType = requestedNoiseReductionType;
-            config1.SilenceModel       = FileTools.ReadDoubles2Vector(noiseModelPath);
-            //show consequence of the noise model on file from which model derived
-            Segment(f1, config1, noiseFileDir);
+                //C2: change CONFIGURATION to the SILENCE MODEL
+                config1.NoiseReductionType = requestedNoiseReductionType;
 
-            //F: NOISE REDUCE ALL RECORDINGS IN DIR
+                //show consequence of the noise model on file from which model derived
+                config1.SilenceModel = FileTools.ReadDoubles2Vector(noiseModelPath);
+                Segment(f1, config1, noiseFileDir);
+            }
+
+            //D: READ FILE CONTAINING NOISE PROFILE
+            config1.SilenceModel = FileTools.ReadDoubles2Vector(noiseModelPath);
+
+            //E: NOISE REDUCE ALL RECORDINGS IN DIR
             //Get List of Vocalisation Recordings - either paths or URIs
             string ext = ".wav";
             FileInfo[] recordingFiles = FileTools.GetFilesInDirectory(wavDirName, ext);
@@ -106,19 +130,19 @@ namespace AudioAnalysis
             }
 
             Console.WriteLine("Number of recordings = " + recordingFiles.Length);
+            Log.Verbosity = 0;
             int count = 0;
             //double avDuration = 0.0; //to determine average duration test vocalisations
             foreach (FileInfo f in recordingFiles)
             {
                 Log.Verbosity = 1;
                 count++;
-                Log.WriteIfVerbose("\n" + count + " #####################  RECORDING= " + f.Name);
+                Log.WriteIfVerbose("\n" + count + " ######  RECORDING= " + f.Name);
                 Segment(f, config1, outputDir);
-                //Log.Verbosity = verbosity;
             } //end of all training vocalisations
 
             //Console.WriteLine("\nAv Duration = " + (avDuration / count));
-            Console.WriteLine("\nFINISHED!");
+            Console.WriteLine("\nFINISHED AUDIO SEGMENTATION!");
             //Console.ReadLine();
         } //end method Main()
 
@@ -144,7 +168,7 @@ namespace AudioAnalysis
 
         public static void Usage()
         {
-            Console.WriteLine("USAGE: CallSegmentation.exe VocalisationDirectory");
+            Console.WriteLine("USAGE: VocalSegmentation.exe VocalisationDirectory");
             Console.WriteLine("\t where VocalisationDirectory is the directory containing the vocalisations to be segmented.");
             Console.WriteLine("\t The VocalisationDirectory must ALSO contain a file called 'segmentation.ini' ");
             Console.WriteLine("\n\t The segmentation.ini file must contain all the parameters for segmentation, as shown in example file given.");
