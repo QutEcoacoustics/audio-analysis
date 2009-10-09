@@ -470,7 +470,8 @@ namespace HMMBuilder
                     psI.UseShellExecute = false;
                     psI.RedirectStandardOutput = true;
                     psI.RedirectStandardError = true;
-                    psI.CreateNoWindow = false;
+                    psI.CreateNoWindow = true;
+                    psI.WindowStyle = ProcessWindowStyle.Hidden;
                     psI.Arguments = commandLineArguments;
                     hcopy.StartInfo = psI;
                     hcopy.Start();
@@ -540,6 +541,7 @@ namespace HMMBuilder
                 psI.RedirectStandardOutput = true;
                 psI.RedirectStandardError = true;
                 psI.CreateNoWindow = true;
+                psI.WindowStyle = ProcessWindowStyle.Hidden;
                 psI.Arguments = commandLine;
                 hcompv.StartInfo = psI;
                 hcompv.Start();
@@ -1107,6 +1109,7 @@ namespace HMMBuilder
                 Process vSegment = new Process();
                 ProcessStartInfo psI = new ProcessStartInfo(exePath);
                 psI.UseShellExecute = false;
+                psI.WindowStyle = ProcessWindowStyle.Hidden;
                 //psI.WorkingDirectory = "";
                 //psI.RedirectStandardOutput = true;
                 psI.RedirectStandardError = true;
