@@ -45,85 +45,61 @@ namespace HMMBuilder
                     target.CreateSubdirectory(diSourceSubDir.Name);
                 CopyAll(diSourceSubDir, nextTargetSubDir);
             }
+        } //end method CopyAll()
+
+
+
+        public static void SegmentDataFiles(HTKConfig htkConfig, ref string vocalization)
+        {
+            string segmentationExecutable = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationExe;
+            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+
+            string cmdLineArgument = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
+            cmdLineArgument = "\"" + cmdLineArgument + "\""; //enclose line in quotes in case have sapce
+            //Console.WriteLine(" commandLine=" + cmdLineArgument);
+
+            //check that the directory contains a file called "segmentation.ini"`
+            if (File.Exists(segmentationIniFile))
+            {
+                Console.WriteLine(" Found segmentIni file: " + segmentationIniFile);
+            }
+            else
+              throw new Exception(" The directory <" + cmdLineArgument + "> must contain a file called " + segmentationIniFile);
+            
+            if (File.Exists(segmentationExecutable))
+            {
+                Console.WriteLine(" Found executable file: " + segmentationExecutable);
+            }
+            else
+            {
+                Console.WriteLine(" Cannot find Executable: " + segmentationExecutable);
+                throw new Exception(" Cannot find Executable: " + segmentationExecutable);
+            }
+
+            //segment all wav files in data dir.
+            CallProcess(segmentationExecutable, cmdLineArgument);
         }
+
         
         /// <summary>
-        /// Does the segmentation of the training and testing files
+        /// Writes the Segmentation info files showing how wav files are segmented
         /// </summary>
         /// <param name="htkConfig"></param>
         /// <param name="vocalization"></param>
-        /// <param name="extractLabels"></param>
+        /// <param name="extractLabels">True by default - i.e. always do it</param>
         public static void CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)
         {
-            string SegmentExecutable      = "VocalSegmentation.exe";
-            string segmentationExecutable = htkConfig.SegmentationDir + "\\" + SegmentExecutable;
-            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
-            string segmentationFileExt    = htkConfig.segmentFileExt;
-            string labelFileExt           = htkConfig.labelFileExt;
-
-
-
+            string segmentationFileExt = htkConfig.segmentFileExt;
+            string labelFileExt = htkConfig.labelFileExt;
             string txtLine = "";
 
-            if(extractLabels)
+            if (extractLabels) //True by default - i.e. always do this
             {
-                //TO DO: extract labels from wav files
-                Console.WriteLine("\nABOUT TO SEGMENT WAV FILE");
-
-                //ONE - Call 'VocalSegmentation' tool
-                StreamReader stdErr = null;
-                //StreamReader stdOut = null;
-                //string output = null;
                 string error = null;
-                string commandLine = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
-
-                //check that the directory contains a file called "segmentation.ini"`
-                if (File.Exists(segmentationIniFile))
-                {
-                    Console.WriteLine(" Found segmentIni file: " + segmentationIniFile);
-                } else
-                {
-                    Console.WriteLine(" The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
-                    throw new Exception(" The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
-                }
-                if (File.Exists(segmentationExecutable))
-                {
-                    Console.WriteLine(" Found executable file: " + segmentationExecutable);
-                } else
-                {
-                    Console.WriteLine(" Cannot find Executable: " + segmentationExecutable);
-                    //throw new Exception("The directory <" + commandLine + "> must contain a file called " + segmentationIniFile);
-                }
-
-                commandLine = "\"" + commandLine + "\""; //enclose line in quotes in case have sapce
-                //Console.WriteLine("commandLine=" + commandLine);
-
                 try
                 {
-                    Process vSegment = new Process();
-                    ProcessStartInfo psI = new ProcessStartInfo(segmentationExecutable);
-                    psI.UseShellExecute = false;
-                    //psI.RedirectStandardOutput = true;
-                    psI.RedirectStandardError = true;
-                    psI.CreateNoWindow = false;
-                    psI.Arguments = commandLine;
-                    vSegment.StartInfo = psI;
-                    vSegment.Start();
-                    vSegment.WaitForExit();
-                    stdErr = vSegment.StandardError;
-
-                    //stdOut = vSegment.StandardOutput;
-                    //output = stdOut.ReadToEnd();
-                    error = stdErr.ReadToEnd();
-                    //Console.WriteLine(output);
-                    if (error.Contains("ERROR"))
-                    {
-                        throw new Exception();
-                    }
-                    
                     //TWO - Read segmentation files and write the PHONES.MLF file
                     //read the labelSeq file containing the label sequence
-                    //valid for all files
 
                     StreamReader wltReader = null;
                     StreamWriter wltWriter = null;
@@ -226,7 +202,6 @@ namespace HMMBuilder
             else //DO NOT EXTRACT LABELS
             {
                 //read the labSeq file containing the label sequence
-                //valid for all files
                 
                 StreamReader wltReader = null;
                 StreamWriter wltWriter = null;
@@ -1113,7 +1088,63 @@ namespace HMMBuilder
             {
 
             }
-        }
+        } //end HVite
         #endregion
+
+
+
+        public static void CallProcess(string exePath, string cmdLineArguments)
+        {
+            StreamReader stdErr = null;
+            //StreamReader stdOut = null;
+            //string output = null;
+            string error = null;
+            try
+            {
+                //Process currentProcess = Process.GetCurrentProcess();
+                //String currentExePath = currentProcess.StartInfo.FileName;
+
+                Process vSegment = new Process();
+                ProcessStartInfo psI = new ProcessStartInfo(exePath);
+                psI.UseShellExecute = false;
+                //psI.WorkingDirectory = "";
+                //psI.RedirectStandardOutput = true;
+                psI.RedirectStandardError = true;
+                psI.CreateNoWindow = false;
+                psI.Arguments = cmdLineArguments;
+                vSegment.StartInfo = psI;
+                vSegment.Start();
+                vSegment.WaitForExit();
+                stdErr = vSegment.StandardError;
+
+                //stdOut = vSegment.StandardOutput;
+                //output = stdOut.ReadToEnd();
+                error = stdErr.ReadToEnd();
+                //Console.WriteLine(output);
+                if (error.Contains("ERROR"))
+                {
+                    throw new Exception();
+                }
+            }
+            catch (Win32Exception e)
+            {
+                if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+                {
+                    Console.WriteLine(e.Message + ". Check the path.");
+                }
+                throw (e);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(error);
+                throw (e);
+            }
+            finally
+            {
+                Console.WriteLine(" Finished executable: " + Path.GetFileNameWithoutExtension(exePath));
+            }
+
+        } //end method CallProcess()
+
     }
 }
