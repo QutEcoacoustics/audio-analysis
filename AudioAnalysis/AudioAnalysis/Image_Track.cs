@@ -165,7 +165,7 @@ namespace AudioAnalysis
 
         public void DrawTrack(Bitmap bmp)
         {
-            Log.WriteIfVerbose("\tDrawing track type =" + TrackType);
+            //Log.WriteIfVerbose("\tDrawing track type =" + TrackType);
             switch (TrackType)
             {
                 case TrackType.timeTics:
