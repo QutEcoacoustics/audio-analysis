@@ -9,70 +9,62 @@ namespace HMMBuilder
     class Helper
     {
         public static void ComputeAccuracy(string resultTrue, string resultFalse, ref string vocalization, float threshold,
-                             out float tppercent, out float tnpercent)
+                             out float tpPercent, out float tnPercent, out float accuracy, out float avTPScore, out float avFPScore)
         {
-            //TO DO: check if the files exists
-
-            StreamReader trueReader = null;
-            StreamReader falseReader = null;
-
             int tpCount = 0;  //true positives
             int fpCount = 0;  //false positives
-            int trueSCount = 0;
+            int trueSCount  = 0;
             int falseSCount = 0;
+            avTPScore = 0.0f;
+            avFPScore = 0.0f;
+
+            CountHits(resultTrue,  ref vocalization, threshold, out tpCount, out trueSCount,  out avTPScore);
+            CountHits(resultFalse, ref vocalization, threshold, out fpCount, out falseSCount, out avFPScore);
+
+            int tnCount = falseSCount - fpCount;
+            tpPercent = (float)(tpCount) * 100 / (trueSCount + falseSCount);
+            tnPercent = (float)(tnCount) * 100 / (trueSCount + falseSCount);
+            accuracy = tpPercent + tnPercent;
+        } //end method ComputeAccuracy()
+
+
+
+
+        public static void CountHits(string resultFile, ref string vocalization, float threshold, out int hits, out int total, out float avScore)
+        {
+            //TO DO: check if the file exists
+            StreamReader reader = null;
+            hits  = 0;
+            total = 0;
+            avScore = 0.0f;
 
             string txtLine = null;
             try
             {
-                trueReader = new StreamReader(resultTrue);
-                falseReader = new StreamReader(resultFalse);
+                reader = new StreamReader(resultFile);
                 bool valid = true;
-                while ((txtLine = trueReader.ReadLine()) != null)
-                {                    
-                    if (Regex.IsMatch(txtLine, @"^\d+\s+\d+\s+\w+") &&
-                        valid)
-                    {
-                        string[] param = Regex.Split(txtLine, @"\s+");
-                        if(param[2].Equals(vocalization) &&
-                            float.Parse(param[3]) >= threshold)
-                        {
-                            tpCount++;
-                            valid = false;
-                        }
-                    }
-                    if(Regex.IsMatch(txtLine, @"^\.$"))
-                    {
-                        trueSCount++;
-                        valid = true;
-                    }
-                }
-                valid = true;
-
-                while ((txtLine = falseReader.ReadLine()) != null)
+                while ((txtLine = reader.ReadLine()) != null)
                 {
                     if (Regex.IsMatch(txtLine, @"^\d+\s+\d+\s+\w+") &&
                         valid)
                     {
                         string[] param = Regex.Split(txtLine, @"\s+");
+                        float score = float.Parse(param[3]);
                         if (param[2].Equals(vocalization) &&
                             float.Parse(param[3]) >= threshold)
                         {
-                            fpCount++;
+                            avScore += score;
+                            hits++;
                             valid = false;
                         }
                     }
-                    if(Regex.IsMatch(txtLine, @"^\.$"))
+                    if (Regex.IsMatch(txtLine, @"^\.$"))
                     {
-                        falseSCount++;
+                        total++;
                         valid = true;
                     }
                 }
-
-                int tnCount = falseSCount - fpCount;
-                tppercent = (float)(tpCount) / (trueSCount + falseSCount);
-                tnpercent = (float)(tnCount) / (trueSCount + falseSCount);
-                //Console.WriteLine("tp%=" + tppercent + "   tn%=" + tnpercent);
-            }
+            }// end try
             catch (Exception e)
             {
                 Console.WriteLine(e);
@@ -80,16 +72,12 @@ namespace HMMBuilder
             }
             finally
             {
-                if (trueReader != null)
-                {
-                    trueReader.Close();
-                }
-                if (trueReader != null)
-                {
-                    falseReader.Close();
-                }
+                avScore /= hits;
+                //Console.WriteLine("hits=" + hits + "/" + total + "   avScore=" + avScore);
+                if (reader != null) reader.Close();
             } //end finally
-        } //end method ComputeAccuracy()
+        } //end Mehtod CountHits()
 
-    } //end class
+
+    } //end class Helper
 } //namespace

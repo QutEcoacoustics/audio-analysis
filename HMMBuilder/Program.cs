@@ -17,7 +17,7 @@ namespace HMMBuilder
             htkConfig.Comment = "Parameters for Curlew";
             htkConfig.LOFREQ = "1000";
             htkConfig.HIFREQ = "5000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            htkConfig.numHmmStates = "5";  //number of hmm states for call model
             float threshold = -5000f;  //default = 1900
 
 
@@ -25,8 +25,8 @@ namespace HMMBuilder
             //htkConfig.Comment = "Parameters for Currawong";
             //htkConfig.LOFREQ = "800";
             //htkConfig.HIFREQ = "8000";     //try 6000, 7000 and 8000 Hz
-            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            //float threshold = -1900f;      //magic number for Currawong is -1900f
+            //htkConfig.numHmmStates = "5";  //number of hmm states for call model
+            //float threshold = -5000f;      //magic number for Currawong is -1900f
 
 
             //==================================================================================================================
@@ -104,8 +104,6 @@ namespace HMMBuilder
                         //segmentation ini file
                         string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
                         htkConfig.WriteSegmentationIniFile(segmentationIniFile);
-                        string fn = System.IO.Path.GetFileName(segmentationIniFile);
-                        System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
                         //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                     }
                     catch
@@ -197,6 +195,15 @@ namespace HMMBuilder
                     try
                     {
                         bool extractLabels = true;
+                        if (extractLabels) //True by default - i.e. always segment the training data files
+                        {
+                            Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");
+                            //copy segmentation ini file to the data directory.
+                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                            string fn = System.IO.Path.GetFileName(segmentationIniFile);
+                            System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
+                            HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
+                        }
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
                     }
                     catch
@@ -317,25 +324,30 @@ namespace HMMBuilder
                     {
                         float tppercent = 0.0f;
                         float tnpercent = 0.0f;
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold-2000, out tppercent, out tnpercent);
-                        float accuracy = tppercent + tnpercent;
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold - 2000);
+                        float accuracy  = 0.0f;
+                        float avTPScore = 0.0f;
+                        float avFPScore = 0.0f;
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 1000, out tppercent, out tnpercent);
-                        accuracy = tppercent + tnpercent;
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold - 1000);
-                        
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold, out tppercent, out tnpercent);
-                        accuracy = tppercent + tnpercent;
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold);
-                        
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 1000, out tppercent, out tnpercent);
-                        accuracy = tppercent + tnpercent;
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold + 1000);
-                        
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 2000, out tppercent, out tnpercent);
-                        accuracy = tppercent + tnpercent;
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc= {2:f1}%   at threshold={3}", tppercent * 100, tnpercent * 100, accuracy * 100, threshold + 2000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 3000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 3000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 2000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 2000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 1000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 1000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 1000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 1000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 2000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 2000);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 3000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 3000);
                     }
                     catch 
                     {
@@ -348,28 +360,23 @@ namespace HMMBuilder
 
 
                     #region SET UP THE TEMPLATE ZIP FILE
-                    //COPY SILENCE MODEL FILES TO CONFIG DIR
-                    string newSilenceDir = htkConfig.ConfigDir + "\\SilenceModel";
-                    Directory.CreateDirectory(newSilenceDir);
-                    string silenceWavFN = Path.GetFileName(htkConfig.SilenceModelPath);
-                    string newSilencePath = newSilenceDir + "\\" + silenceWavFN;
-                    File.Copy(htkConfig.SilenceModelPath, newSilencePath, true);
+                    string oldSegmentDir = htkConfig.SegmentationDir;
+                    string newSegmentDir = htkConfig.ConfigDir + "\\Segmentation";
+                    Directory.CreateDirectory(newSegmentDir);
 
-                    string oldNoiseDir  = Path.GetDirectoryName(htkConfig.SilenceModelPath);
+                    //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
+                    string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
                     string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
                     string ext = htkConfig.noiseModelExt;
                     string oldNoiseModel = oldNoiseDir   + "\\" + noiseModelFN + ext;
-                    string newNoiseModel = newSilenceDir + "\\" + noiseModelFN + ext;
+                    string newNoiseModel = newSegmentDir + "\\" + noiseModelFN + ext;
                     File.Copy(oldNoiseModel, newNoiseModel, true);
 
-                    //COPY SEGMENTATION FILES TO CONFIG DIR
-                    string oldSegmentDir = htkConfig.SegmentationDir;
-                    string newSegmentDir = htkConfig.ConfigDir + "\\Segmentation";
+                    //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
                     string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
                     string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
                     string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
                     string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
-                    Directory.CreateDirectory(newSegmentDir);
                     File.Copy(oldSegmentExePath, newSegmentExePath, true);
                     File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
 

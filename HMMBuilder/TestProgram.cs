@@ -45,9 +45,9 @@ namespace HMMBuilder
             htkConfig.DataDir         = htkConfig.WorkingDir + "\\data";
             htkConfig.ConfigDir       = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
             htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
-            htkConfig.SilenceModelPath = htkConfig.ConfigDir + "\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             htkConfig.HTKDir          = htkConfig.ConfigDir  + "\\HTK"; 
             htkConfig.SegmentationDir = htkConfig.ConfigDir  + "\\Segmentation";
+            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             
         
             //Console.WriteLine("CWD=" + htkConfig.WorkingDir);
@@ -93,7 +93,7 @@ namespace HMMBuilder
             List<string> hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);
 
             Console.WriteLine("\nPreparing sonogram");
-            AudioAnalysis.BaseSonogramConfig sonoConfig = new BaseSonogramConfig();
+            AudioAnalysis.SonogramConfig sonoConfig = new SonogramConfig();
             AudioRecording ar = new AudioRecording(testWavFile);
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, ar.GetWavReader());
             Console.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
@@ -105,7 +105,7 @@ namespace HMMBuilder
             double thresholdFraction = 0.2;
             double[] hmmScores = ParseHmmScores(hmmResults, sonogram.Duration, sonogram.FrameCount, htkConfig.CallName,
                                                 threshold, thresholdFraction);
-            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 1.0, 0.2));
+            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 0.0, 1.0, 0.2));
 
 
             Console.WriteLine();
