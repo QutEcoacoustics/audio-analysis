@@ -21,7 +21,9 @@ namespace QutSensors.Processor
                 case "template":
                     return new TemplateProcessing(settings);
 
-                case "htk":
+                case "hmm":
+                    return new HMMProcessing(settings);
+
                 case "epr":
                 default:
                     return null;

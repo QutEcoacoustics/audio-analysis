@@ -53,6 +53,7 @@
   <ItemGroup>
     <Compile Include="ProcessorSettings.cs" />
     <Compile Include="Processors\AEDProcessing.cs" />
+    <Compile Include="Processors\HMMProcessing.cs" />
     <Compile Include="Processors\Processor.cs" />
     <Compile Include="ProcessorFactory.cs" />
     <Compile Include="Manager.cs" />
@@ -64,6 +65,7 @@
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
     <Compile Include="Settings.cs" />
+    <Compile Include="TempDirectory.cs" />
     <Compile Include="TempFile.cs" />
     <Compile Include="Processors\TemplateProcessing.cs" />
     <Compile Include="Utilities.cs" />
@@ -84,6 +86,10 @@
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\HMMBuilder\HMMBuilder.csproj">
+      <Project>{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}</Project>
+      <Name>HMMBuilder</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
