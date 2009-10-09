@@ -289,6 +289,26 @@ namespace TowseyLib
             return mnr;
         }
 
+        /// <summary>
+        /// IMPORTANT: Mel scale conversion should be done before noise reduction
+        /// The passed matrix is a sonogram with values in dB. wrt 0dB.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduce_PeakTracking(double[,] matrix)
+        {
+            double[,] mnr = ImageTools.WienerFilter(matrix); //has slight blurring effect and so decide not to use
+
+            //double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
+            //double minIntensity; // min value in matrix
+            //double maxIntensity; // max value in matrix
+            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
+            //double[,] mnr = matrix; //matrix - noise reduced
+            double[,] peaks = SNR.IdentifyPeaks(mnr);
+            //mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            return peaks;
+        }
+
         public static double[,] NoiseReduce_Standbye(double[,] matrix, double[] modalNoise, double dynamicRange)
         {
             double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
@@ -474,6 +494,86 @@ namespace TowseyLib
             }
             return outM;
         }// end RemoveBackgroundNoise()
+
+
+        public static double[,] IdentifyPeaks(double[,] matrix)
+        {
+            double dbThreshold = 0.05;   //SETS MIN DECIBEL BOUND
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            minIntensity += 20.0;    //typical background noise is 20 dB above min
+            double threshold = ((maxIntensity - minIntensity) / 2.5) + minIntensity;
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL PEAKS
+            double[,] binary = new double[rows, cols];
+            for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
+            {
+                double[] row = DataTools.GetRow(matrix, r);
+                row = DataTools.filterMovingAverage(row, 9);
+                for (int c = 1; c < cols-1; c++)
+                {
+                    //identify a peak
+                    if ((row[c] > (row[c - 1] + dbThreshold)) && (row[c] > (row[c + 1] + dbThreshold)) && (row[c] > threshold)) 
+                         binary[r, c] = 1.0; //maxIntensity;
+                    else binary[r, c] = 0.0; // minIntensity;
+                } //end for every col
+                binary[r, 0] = 0; // minIntensity;
+                binary[r, cols - 1] = 0; //minIntensity;
+            } //end for every row
+
+            //B: REMOVE ORPHAN PEAKS
+            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (binary[r, c] == 0.0) continue;
+                    if ((binary[r-1, c] == 0.0) && (binary[r + 1, c] == 0.0) &&
+                        (binary[r+1, c+1]==0.0) && (binary[r, c+1]==0.0) && (binary[r-1, c+1]==0.0) &&
+                        (binary[r+1, c-1]==0.0) && (binary[r, c-1]==0.0) && (binary[r-1, c-1]==0.0) ) 
+                    binary[r, c] = 0.0;
+                }
+            }
+
+            //C: CONVERT binary matrix to output matrix
+            double localdb;
+            int rNH = 5;
+            int cNH = 1;
+            double[,] outM = new double[rows, cols];
+            for (int r = 0; r < rows; r++) //init matrix to min
+            {
+                for (int c = 0; c < cols; c++) outM[r, c] = minIntensity; //init output matrix to min value
+            }
+            for (int r = rNH; r < rows - rNH; r++) //row at a time, each row = one frame.
+            {
+                for (int c = cNH; c < cols - cNH; c++)
+                {
+                    if (binary[r, c] == 0.0)
+                    {
+                        //outM[r, c] = minIntensity;
+                        continue;
+                    }
+                    localdb = matrix[r, c] - 3.0; //local lower bound
+                    //scan neighbourhood
+                    for (int i = r - rNH; i <= (r + rNH); i++)
+                    {
+                        for (int j = c - cNH; j <= (c + cNH); j++)
+                        {
+                            if (matrix[i, j] > localdb) outM[i, j] = matrix[i, j];
+                            //else outM[i, j] = minIntensity;
+                            if (outM[i, j] < minIntensity) outM[i, j] = minIntensity;
+                        }
+                    }//end local NH
+                }
+            }
+            return outM;
+        }
+
+
 
 
     }// end class
