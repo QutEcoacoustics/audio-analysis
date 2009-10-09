@@ -77,6 +77,11 @@ namespace QutSensors.Processor
             return document;
         }
 
+        public static XmlDocument SerializeHMMResult(List<AcousticEvent> events)
+        {
+            return SerializeAEDResult(events);
+        }
+
         private static XmlElement SerializeAcousticEvents(List<AcousticEvent> events, XmlDocument document, BaseResult result)
         {
             XmlElement eventsWrapper = document.CreateElement("Events");
