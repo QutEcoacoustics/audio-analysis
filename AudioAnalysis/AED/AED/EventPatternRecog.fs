@@ -1,5 +1,6 @@
 ﻿module QutSensors.AudioAnalysis.AED.EventPatternRecog
 
+open AudioAnalysis
 open Util
 
 type Rectangle = {Left:float; Top:float; Right:float; Bottom:float;}
@@ -9,6 +10,19 @@ let bottom r = r.Bottom
 let top r = r.Top
 let bottomLeft r = (r.Left, r.Bottom)
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
+
+let groundParrotTemplate =
+    [ {Left=13.359148; Right=13.591436; Bottom=3545.294118; Top=3977.647059};
+      {Left=14.242014; Right=14.381387; Bottom=3631.764706; Top=4064.117647};
+      {Left=14.497580; Right=14.787940; Bottom=3847.941176; Top=4237.058824};
+      {Left=14.811229; Right=14.962216; Bottom=3977.647059; Top=4323.529412};
+      {Left=15.043562; Right=15.287464; Bottom=4020.882353; Top=4366.764706};
+      {Left=15.380445; Right=15.531432; Bottom=4107.352941; Top=4539.705882};
+      {Left=16.263311; Right=16.495599; Bottom=4280.294118; Top=4712.647059};
+      {Left=16.588577; Right=16.774407; Bottom=4366.764706; Top=4712.647059};
+      {Left=17.134560; Right=17.320390; Bottom=4323.529412; Top=4755.882353};
+      {Left=17.703775; Right=17.866377; Bottom=4366.764706; Top=4842.352941};
+      {Left=17.889642; Right=18.354218; Bottom=4237.058824; Top=4885.588235}]
 
 let indexMinMap f xs =
     let ys = Seq.map f xs
@@ -49,7 +63,8 @@ let freqMax = 11025.0
 let freqBins = 256.0
 let samplingRate = 22050.0
         
-let detectGroundParrots t aes =
+let detectGroundParrots' aes =
+    let t = groundParrotTemplate
     let (tl, tb) = absLeftAbsBottom t
     // template right is close (3 decimal places) but not quite exactly the same as matlab
     let ttd, tfr = maxmap right t - tl, maxmap top t - tb
@@ -71,3 +86,9 @@ let detectGroundParrots t aes =
         
     let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 3.5 then yield sae}
+    
+// TODO This adds a circular dependency back to AudioAnalysis
+let detectGroundParrots aes =
+    Seq.map (fun (ae:AcousticEvent) -> {Left=ae.StartTime; Right=ae.StartTime + ae.Duration; Bottom=(float) ae.MinFreq; Top=(float) ae.MaxFreq}) aes
+        |> detectGroundParrots'
+        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top))
