@@ -15,6 +15,10 @@ namespace QutSensors.Processor
             this.settings = settings;
         }
 
+        protected void OnLog()
+        {
+            Console.WriteLine();
+        }
         protected void OnLog(string format, params object[] args)
         {
             Console.WriteLine(format, args);

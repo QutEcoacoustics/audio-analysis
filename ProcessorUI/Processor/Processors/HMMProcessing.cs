@@ -34,6 +34,7 @@ namespace QutSensors.Processor
 
             // settings file defines which label or labels we are interested in (Labels=foo,bar)
             string[] desiredLabels = (settings["Labels"] ?? "").Split(',');
+            int? threshold = settings.HasSetting("Threshold") ? (int?)int.Parse(settings["Threshold"]) : null;
 
             // process the file
             using (var temporaryDirectory = new TempDirectory()) { 
@@ -106,14 +107,17 @@ namespace QutSensors.Processor
                             TimeSpan end = TimeSpan.FromTicks(long.Parse(match.Groups[2].Value));
                             double score = double.Parse(match.Groups[4].Value);
 
-                            events.Add(
-                                new AcousticEvent(
-                                    start.TotalSeconds,
-                                    end.Subtract(start).TotalSeconds,
-                                    minFrequency,
-                                    maxFrequency
-                                )
-                            );
+                            if (threshold.HasValue && score > threshold.Value)
+                            {
+                                events.Add(
+                                    new AcousticEvent(
+                                        start.TotalSeconds,
+                                        end.Subtract(start).TotalSeconds,
+                                        minFrequency,
+                                        maxFrequency
+                                    )
+                                );
+                            }
                         }
                     }
                 }
