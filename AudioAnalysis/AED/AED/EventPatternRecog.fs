@@ -1,6 +1,5 @@
 ﻿module QutSensors.AudioAnalysis.AED.EventPatternRecog
 
-open AudioAnalysis
 open Util
 
 type Rectangle = {Left:float; Top:float; Right:float; Bottom:float;}
@@ -63,7 +62,7 @@ let freqMax = 11025.0
 let freqBins = 256.0
 let samplingRate = 22050.0
         
-let detectGroundParrots' aes =
+let detectGroundParrots aes =
     let t = groundParrotTemplate
     let (tl, tb) = absLeftAbsBottom t
     // template right is close (3 decimal places) but not quite exactly the same as matlab
@@ -88,7 +87,7 @@ let detectGroundParrots' aes =
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 3.5 then yield sae}
     
 // TODO This adds a circular dependency back to AudioAnalysis
-let detectGroundParrots aes =
-    Seq.map (fun (ae:AcousticEvent) -> {Left=ae.StartTime; Right=ae.StartTime + ae.Duration; Bottom=(float) ae.MinFreq; Top=(float) ae.MaxFreq}) aes
-        |> detectGroundParrots'
-        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false))
+//let detectGroundParrots aes =
+//    Seq.map (fun (ae:AcousticEvent) -> {Left=ae.StartTime; Right=ae.StartTime + ae.Duration; Bottom=(float) ae.MinFreq; Top=(float) ae.MaxFreq}) aes
+//        |> detectGroundParrots'
+//        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false))

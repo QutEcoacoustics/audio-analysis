@@ -55,21 +55,23 @@ namespace AudioAnalysis
             AcousticEvent.FrameDuration = config.GetFrameOffset();
 
 
-            var events = new List<AcousticEvent>();
+            var events = new List<EventPatternRecog.Rectangle>();
             foreach (Oblong o in oblongs)
             {
                 var e = new AcousticEvent(o);
-                events.Add(e);
+                events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
             Console.WriteLine("START: EPR");
-            IEnumerable<AcousticEvent> hits = EventPatternRecog.detectGroundParrots(events);
+            IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
             Console.WriteLine("END: EPR");
 
-            var hs = hits.ToList();
-            foreach (AcousticEvent ae in hits)
+            var eprEvents = new List<AcousticEvent>();
+            foreach (EventPatternRecog.Rectangle r in eprRects)
             {
+                var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false);
                 Console.WriteLine(ae.WriteProperties());
+                eprEvents.Add(ae);
             }
 
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
@@ -79,7 +81,7 @@ namespace AudioAnalysis
             //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(hs);
+            image.AddEvents(eprEvents);
             image.Save(outputFolder + wavFileName + ".png");
 
             Console.WriteLine("\nFINISHED!");
