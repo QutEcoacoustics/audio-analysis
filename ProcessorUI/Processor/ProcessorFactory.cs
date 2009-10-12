@@ -25,6 +25,8 @@ namespace QutSensors.Processor
                     return new HMMProcessing(settings);
 
                 case "epr":
+                    return new EPRProcessing(settings);
+
                 default:
                     return null;
             }

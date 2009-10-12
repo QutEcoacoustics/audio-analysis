@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Xml.Linq;
+using System.Linq;
+using System.IO;
+using System.Text;
+
+using AudioAnalysis;
+using AudioTools;
+using QutSensors.AudioAnalysis.AED;
+using QutSensors.Processor.WebServices;
+using TowseyLib;
+
+namespace QutSensors.Processor
+{
+    public class EPRProcessing : Processor
+    {
+        public EPRProcessing(ProcessorSettings settings)
+            : base(settings)
+        {
+        }
+
+        public override IEnumerable<ProcessorJobItemResult> Process(TempFile inputFile, ProcessorJobItemDescription item, out TimeSpan? duration)
+        {
+            duration = DShowConverter.GetDuration(inputFile.FileName, item.MimeType);
+            if (duration == null)
+            {
+                OnLog("Unable to calculate length");
+                throw new Exception("Unable to calculate length");
+            }
+
+            OnLog("DATE AND TIME:" + DateTime.Now);
+            OnLog("DETECTION OF ACOUSTIC EVENTS IN RECORDING\n");
+
+            using (var converted = DShowConverter.ConvertTo(inputFile.FileName, item.MimeType, MimeTypes.WavMimeType, null, null) as BufferedDirectShowStream)
+            {
+                string appConfigPath = "";
+                //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
+
+                string wavPath = converted.BufferFile.FileName;
+                AudioRecording recording = new AudioRecording(wavPath);
+
+                OnLog("appConfigPath =" + appConfigPath);
+                OnLog("wav File Path =" + wavPath);
+                OnLog();
+
+                SonogramConfig config = SonogramConfig.Load(appConfigPath);
+                config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+                BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
+                double[,] matrix = sonogram.Data;
+
+                OnLog("START: AED");
+                IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
+                OnLog("END: AED");
+
+                //set up static variables for init Acoustic events
+                //AcousticEvent.   doMelScale = config.DoMelScale;
+                AcousticEvent.FreqBinCount = config.FreqBinCount;
+                AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+                //  int minF        = (int)config.MinFreqBand;
+                //  int maxF        = (int)config.MaxFreqBand;
+                AcousticEvent.FrameDuration = config.GetFrameOffset();
+
+
+                var events = new List<EventPatternRecog.Rectangle>();
+                foreach (Oblong o in oblongs)
+                {
+                    var e = new AcousticEvent(o);
+                    events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double)e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+                    //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
+                }
+                OnLog("START: EPR");
+                IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
+                OnLog("END: EPR");
+
+                var eprEvents = new List<AcousticEvent>();
+                foreach (EventPatternRecog.Rectangle r in eprRects)
+                {
+                    var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false);
+                    OnLog(ae.WriteProperties());
+                    eprEvents.Add(ae);
+                }
+
+                StringReader reader = new StringReader(ResultSerializer.SerializeEPRResult(eprEvents).InnerXml);
+                XElement element = XElement.Load(reader);
+                
+                var retVal = new List<ProcessorJobItemResult>();
+                retVal.Add(new ProcessorJobItemResult()
+                {
+                    Start = 0,
+                    Stop = (int)duration.Value.TotalMilliseconds,
+                    Results = element,
+                    RankingScoreValue = eprEvents.Count,
+                    RankingScoreName = "Event Count",
+                    RankingScoreLocation = 0.0
+                }
+                );
+
+                OnLog("\nFINISHED!");
+
+                return retVal;
+            }
+        }
+    }
+}

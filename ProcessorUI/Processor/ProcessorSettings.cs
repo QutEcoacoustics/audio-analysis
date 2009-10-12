@@ -41,6 +41,11 @@ namespace QutSensors.Processor
             }
         }
 
+        public bool HasSetting(string key)
+        {
+            return values.ContainsKey(key.ToLower());
+        }
+
         public override string ToString()
         {
             string result = "";
