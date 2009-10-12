@@ -85,9 +85,3 @@ let detectGroundParrots aes =
         
     let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 3.5 then yield sae}
-    
-// TODO This adds a circular dependency back to AudioAnalysis
-//let detectGroundParrots aes =
-//    Seq.map (fun (ae:AcousticEvent) -> {Left=ae.StartTime; Right=ae.StartTime + ae.Duration; Bottom=(float) ae.MinFreq; Top=(float) ae.MaxFreq}) aes
-//        |> detectGroundParrots'
-//        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false))
