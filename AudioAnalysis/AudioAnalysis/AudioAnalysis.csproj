@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_CallSegmentation2</StartupObject>
+    <StartupObject>AudioAnalysis.Main_EPR</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -110,6 +110,7 @@
     <Compile Include="Main_CallSegmentation2.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
+    <Compile Include="Main_EPR.cs" />
     <Compile Include="Main_FindAcousticEvents.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
