@@ -91,4 +91,4 @@ let detectGroundParrots' aes =
 let detectGroundParrots aes =
     Seq.map (fun (ae:AcousticEvent) -> {Left=ae.StartTime; Right=ae.StartTime + ae.Duration; Bottom=(float) ae.MinFreq; Top=(float) ae.MaxFreq}) aes
         |> detectGroundParrots'
-        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top))
+        |> Seq.map (fun r -> new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false))
