@@ -107,7 +107,7 @@ namespace QutSensors.Processor
                             TimeSpan end = TimeSpan.FromTicks(long.Parse(match.Groups[2].Value));
                             double score = double.Parse(match.Groups[4].Value);
 
-                            if (threshold.HasValue && score > threshold.Value)
+                            if (!threshold.HasValue || score > threshold.Value)
                             {
                                 events.Add(
                                     new AcousticEvent(
