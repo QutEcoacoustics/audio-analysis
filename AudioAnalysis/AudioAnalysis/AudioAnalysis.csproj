@@ -76,6 +76,7 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="FSharp.Core, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
     <Reference Include="HMMBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\HMMBuilder\HMMBuilder.exe</HintPath>
