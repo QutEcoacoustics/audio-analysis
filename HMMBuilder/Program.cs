@@ -19,7 +19,7 @@ namespace HMMBuilder
             htkConfig.Comment = "Parameters for Curlew";
             htkConfig.LOFREQ = "1000";
             htkConfig.HIFREQ = "5000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            htkConfig.numHmmStates = "5";  //number of hmm states for call model
+            htkConfig.numHmmStates = "6";  //number of hmm states for call model
             float threshold = -5000f;  //default = 1900
 
 
@@ -204,7 +204,11 @@ namespace HMMBuilder
                             string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
                             string fn = System.IO.Path.GetFileName(segmentationIniFile);
                             System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
-                            HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
+
+                            //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
+                            //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
+                            int verbosity = 0;
+                            Main_CallSegmentation2.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
                         }
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
                     }
@@ -212,7 +216,7 @@ namespace HMMBuilder
                     {
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE Data Preparation Region");
                         good = false;
-                        break; 
+                        break;
                     }
                     #endregion
 
@@ -422,16 +426,31 @@ namespace HMMBuilder
             } //end SWITCH
 
 
-
-
-
-
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
             //return good ? 0 : -1;
 
         }// end Main()
 
+
+
+
+
+
+
+
+
+
+
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        // DARRYL iS WORKING ON THIS METHOD
+        // PLEASE LEAVE
         public static void Execute(string workingDirectory, string templateFN, string WavFile)
         {
             Console.WriteLine("Executing HMMBuilder - scanning a .wav file");
