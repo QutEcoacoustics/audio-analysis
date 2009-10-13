@@ -43,10 +43,14 @@ namespace QutSensors.Processor
             {
                 File.WriteAllBytes(tempModelFile.FileName, (byte[])item.Job.Parameters.BinaryDeserialize());
 
-                HMMBuilder.Program.Execute(
+                HMMBuilder.TestProgram.Execute(
                     temporaryDirectory.DirectoryName,       // temporary directory
                     tempModelFile.FileName,                 // model file
-                    converted.BufferFile.FileName           // input file
+
+                    // input file
+                    // ----------
+                    // this is a crap hack which needs fixing - if we are tying to convert from WAV -> WAV, converted == null
+                    converted == null ? inputFile.FileName : converted.BufferFile.FileName           
                 );
 
                 // output we are interested in will be in [x axis time component];
