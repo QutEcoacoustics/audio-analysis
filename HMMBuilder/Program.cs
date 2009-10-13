@@ -427,7 +427,7 @@ namespace HMMBuilder
 
 
             Console.WriteLine("FINISHED!");
-            //Console.ReadLine();
+            Console.ReadLine();
             //return good ? 0 : -1;
 
         }// end Main()
@@ -440,7 +440,7 @@ namespace HMMBuilder
             HTKConfig htkConfig = new HTKConfig();
             htkConfig.WorkingDir = workingDirectory;
             
-            float threshold = -2500f;
+            //float threshold = -2500f;
             htkConfig.CallName = Path.GetFileNameWithoutExtension(templateFN);
 
             //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
