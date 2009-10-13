@@ -103,6 +103,7 @@ namespace TowseyLib
         /// <summary>
         /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
         /// algorithm described in Lamel et al, 1981.
+        /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
         /// NOTE: noiseThreshold is passed as decibels
         /// energy array is log energy ie not yet converted to decibels.
         /// Return energy converted to decibels i.e. multiply by 10.
@@ -259,18 +260,19 @@ namespace TowseyLib
 
         public static double[,] NoiseReduce_Standard(double[,] matrix, double[] modalNoise)
         {
-            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
+            double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             double[,] mnr = matrix;
-            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
             mnr = SNR.RemoveModalNoise(mnr, modalNoise);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
+            mnr = SNR.RemoveBackgroundNoise(mnr, backgroundThreshold);
             return mnr;
         }
 
+        public static double[,] NoiseReduce_Standbye(double[,] matrix, double[] modalNoise, double dynamicRange)
+        {
+            double[,] mnr = NoiseReduce_Standard(matrix, modalNoise);
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+            return mnr;
+        }
 
         /// <summary>
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
@@ -279,13 +281,8 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange)
         {
-            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double[,] mnr = matrix; //matrix - noise reduced
+            double[,] mnr = SNR.NoiseReduce_Standard(matrix);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
             return mnr;
         }
 
@@ -295,42 +292,29 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] NoiseReduce_PeakTracking(double[,] matrix)
+        public static double[,] NoiseReduce_PeakTracking(double[,] matrix, double dynamicRange)
         {
-            double[,] mnr = ImageTools.WienerFilter(matrix); //has slight blurring effect and so decide not to use
-
-            //double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-            //double minIntensity; // min value in matrix
-            //double maxIntensity; // max value in matrix
-            //DataTools.MinMax(mnr, out minIntensity, out maxIntensity);
-            //double[,] mnr = matrix; //matrix - noise reduced
-            double[,] peaks = SNR.IdentifyPeaks(mnr);
-            //mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
-            return peaks;
-        }
-
-        public static double[,] NoiseReduce_Standbye(double[,] matrix, double[] modalNoise, double dynamicRange)
-        {
-            double decibelThreshold = 6.5;   //SETS MIN DECIBEL BOUND
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
             double[,] mnr = matrix;
-            //mnr = ImageTools.WienerFilter(mnr); //has slight blurring effect and so decide not to use
-            mnr = SNR.RemoveModalNoise(mnr, modalNoise);
+            int startFrameCount = 9;
+            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            int smoothingWindow = 7;
+            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
+
+            mnr = NoiseReduce_Standard(matrix, modalNoise);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
-            mnr = SNR.RemoveBackgroundNoise(mnr, decibelThreshold);
-            return mnr;
+
+            double[,] peaks = SNR.IdentifySpectralRidges(mnr);
+            double[,] outM = SpectralRidges2Intensity(peaks, mnr);
+            return outM;
         }
 
 
 
         // #############################################################################################################################
-        // ################################# NOISE REDUCTION ALGORITHM #################################################################
+        // ################################# NOISE REDUCTION METHODS #################################################################
 
         /// <summary>
-        /// Calculates the modal noise value for each freq bin and subtracts same.
+        /// Removes the supplied modal noise value for each freq bin and sets negative values to zero.
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -407,6 +391,25 @@ namespace TowseyLib
             }//end for all cols
             return modalNoise;
         }// end of CalculateModalNoise(double[,] matrix)
+
+
+        public static double[] CalculateModalNoiseUsingStartFrames(double[,] matrix, int frameCount)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[] modalNoise = new double[colCount];
+
+            for (int row = 0; row < frameCount; row++) //for firt N rows
+            {
+                for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+                {
+                    modalNoise[col] += matrix[row, col];
+                }
+            }//end for all cols
+            for (int col = 0; col < colCount; col++) modalNoise[col] /= frameCount;
+            
+            return modalNoise;
+        }
 
 
         /// <summary>
@@ -496,75 +499,111 @@ namespace TowseyLib
         }// end RemoveBackgroundNoise()
 
 
-        public static double[,] IdentifyPeaks(double[,] matrix)
+        public static double[,] IdentifySpectralRidges(double[,] matrix)
         {
-            double dbThreshold = 0.05;   //SETS MIN DECIBEL BOUND
-
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            minIntensity += 20.0;    //typical background noise is 20 dB above min
-            double threshold = ((maxIntensity - minIntensity) / 2.5) + minIntensity;
-
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
-            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL PEAKS
+            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
             double[,] binary = new double[rows, cols];
             for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
             {
                 double[] row = DataTools.GetRow(matrix, r);
-                row = DataTools.filterMovingAverage(row, 9);
-                for (int c = 1; c < cols-1; c++)
+                row = DataTools.filterMovingAverage(row, 3);
+                for (int c = 2; c < cols-2; c++)
                 {
                     //identify a peak
-                    if ((row[c] > (row[c - 1] + dbThreshold)) && (row[c] > (row[c + 1] + dbThreshold)) && (row[c] > threshold)) 
+                    if ((row[c] > row[c - 2]) && (row[c] > row[c + 2])) 
                          binary[r, c] = 1.0; //maxIntensity;
                     else binary[r, c] = 0.0; // minIntensity;
                 } //end for every col
                 binary[r, 0] = 0; // minIntensity;
+                binary[r, 1] = 0; // minIntensity;
+                binary[r, cols - 2] = 0; //minIntensity;
                 binary[r, cols - 1] = 0; //minIntensity;
             } //end for every row
 
-            //B: REMOVE ORPHAN PEAKS
+            //B: JOIN DISCONNECTED RIDGES
+            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 1; c < cols - 2; c++)
+                {
+                    if (binary[r, c] == 0.0) continue;
+                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
+                    if (binary[r + 1, c - 1] == 1.0) continue;
+                    if (binary[r + 1, c + 1] == 1.0) continue;
+                    if (binary[r + 1, c]     == 1.0) continue;
+
+                    if ((binary[r + 2, c]     == 1.0)) binary[r + 1, c] = 1.0; //fill gap
+                    if ((binary[r + 2, c - 2] == 1.0)) binary[r + 2, c - 1] = 1.0; //fill gap
+                    if ((binary[r + 2, c + 2] == 1.0)) binary[r + 2, c+1] = 1.0; //fill gap
+                    if ((binary[r + 3, c] == 1.0))
+                    {
+                        binary[r + 1, c] = 1.0; //fill gap
+                        binary[r + 2, c] = 1.0; //fill gap
+                    }
+
+                    if (binary[r + 1, c + 2] == 1.0) binary[r + 1, c + 1] = 1.0;
+                    if (binary[r + 1, c - 2] == 1.0) binary[r + 1, c - 1] = 1.0;
+                }
+            }
+
+            //C: REMOVE ORPHAN PEAKS
             for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
                     if (binary[r, c] == 0.0) continue;
-                    if ((binary[r-1, c] == 0.0) && (binary[r + 1, c] == 0.0) &&
-                        (binary[r+1, c+1]==0.0) && (binary[r, c+1]==0.0) && (binary[r-1, c+1]==0.0) &&
-                        (binary[r+1, c-1]==0.0) && (binary[r, c-1]==0.0) && (binary[r-1, c-1]==0.0) ) 
-                    binary[r, c] = 0.0;
+                    if (//(binary[r-1, c] == 0.0) && (binary[r + 1, c] == 0.0) &&  //not needed in same column
+                        (binary[r + 1, c + 1] == 0.0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
+                        (binary[r + 1, c - 1] == 0.0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
+                        binary[r, c] = 0.0;
                 }
             }
 
-            //C: CONVERT binary matrix to output matrix
-            double localdb;
+            return binary;
+        }
+
+        /// <summary>
+        /// CONVERTs a binary matrix of spectral peak tracks to an output matrix containing the acoustic intensity
+        /// in the neighbourhood of those peak tracks.
+        /// </summary>
+        /// <param name="binary">The spectral peak tracks</param>
+        /// <param name="matrix">The original sonogram</param>
+        /// <returns></returns>
+        public static double[,] SpectralRidges2Intensity(double[,] binary, double[,] sonogram)
+        {
+            //speak track neighbourhood
             int rNH = 5;
             int cNH = 1;
+
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(sonogram, out minIntensity, out maxIntensity);
+
+            int rows = sonogram.GetLength(0);
+            int cols = sonogram.GetLength(1);
             double[,] outM = new double[rows, cols];
+            //initialise the output matrix/sonogram to the minimum acoustic intensity
             for (int r = 0; r < rows; r++) //init matrix to min
             {
                 for (int c = 0; c < cols; c++) outM[r, c] = minIntensity; //init output matrix to min value
             }
+
+            double localdb;
             for (int r = rNH; r < rows - rNH; r++) //row at a time, each row = one frame.
             {
                 for (int c = cNH; c < cols - cNH; c++)
                 {
-                    if (binary[r, c] == 0.0)
-                    {
-                        //outM[r, c] = minIntensity;
-                        continue;
-                    }
-                    localdb = matrix[r, c] - 3.0; //local lower bound
+                    if (binary[r, c] == 0.0)   continue;
+                    
+                    localdb = sonogram[r, c] - 3.0; //local lower bound = twice min perceptible difference
                     //scan neighbourhood
                     for (int i = r - rNH; i <= (r + rNH); i++)
                     {
                         for (int j = c - cNH; j <= (c + cNH); j++)
                         {
-                            if (matrix[i, j] > localdb) outM[i, j] = matrix[i, j];
-                            //else outM[i, j] = minIntensity;
+                            if (sonogram[i, j] > localdb) outM[i, j] = sonogram[i, j];
                             if (outM[i, j] < minIntensity) outM[i, j] = minIntensity;
                         }
                     }//end local NH
@@ -572,7 +611,6 @@ namespace TowseyLib
             }
             return outM;
         }
-
 
 
 
