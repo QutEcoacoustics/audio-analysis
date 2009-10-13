@@ -602,7 +602,8 @@ namespace AudioAnalysis
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.PEAK_TRACKING)
             {
                 Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING.");
-                m = SNR.NoiseReduce_PeakTracking(m);
+                double dynamicRange = 40;        //sets the the max dB
+                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
             }
             else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
