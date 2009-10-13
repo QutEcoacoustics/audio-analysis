@@ -9,7 +9,7 @@ using AudioAnalysis;
 
 namespace HMMBuilder
 {
-    class TestProgram
+    public class TestProgram
     {
 
         static void Main(string[] args)
