@@ -114,7 +114,8 @@ namespace HMMBuilder
         {
             string content = 
                          "SOURCEFORMAT = WAV\n" +
-                         "TARGETKIND   = MFCC\n" +
+                         //"TARGETKIND   = MFCC\n" +
+                         "TARGETKIND   = MFCC_E_D\n" +   //##################################################
                          "TARGETRATE = " + TARGETRATE + "\n" +
                          "SAVECOMPRESSED = T\n" +
                          "SAVEWITHCRC = T\n" +
@@ -197,7 +198,12 @@ namespace HMMBuilder
             content =
                 "<BEGINproto_config_file>\n" +
                 "<COMMENT>\n\tThis PCF produces a 8 state prototype system\n" +
-                "<BEGINsys_setup>\n\tnStates: "+numHmmStates+"\n\tsWidths: 12\n\t#mixes: 1\n\tparmKind: MFCC\n\tvecSize: 12\n\t#outDir: "+protoFN+"\n\n" +
+                "<BEGINsys_setup>\n\tnStates: "+numHmmStates+"\n"+
+                   "\tsWidths: 13\n"+  
+                   "\t#mixes: 1\n"+
+                   "\tparmKind: MFCC_E_D\n" +  //#################################################
+                   "\tvecSize: 26\n" +       //#################################################
+                   "\t#outDir: "+protoFN+"\n\n" +
                 "<ENDsys_setup>\n" +
                 "<ENDproto_config_file>\n";
             WriteTextFile(protoTypeDir + "\\" + protoFN + ".pcf", content);
