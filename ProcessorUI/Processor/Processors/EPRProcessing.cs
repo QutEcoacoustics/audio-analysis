@@ -37,7 +37,9 @@ namespace QutSensors.Processor
                 string appConfigPath = "";
                 //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
 
-                string wavPath = converted.BufferFile.FileName;
+                // this is a crap hack which needs fixing - if we are tying to convert from WAV -> WAV, converted == null
+                string wavPath = converted == null ? inputFile.FileName : converted.BufferFile.FileName;
+
                 AudioRecording recording = new AudioRecording(wavPath);
 
                 OnLog("appConfigPath =" + appConfigPath);
