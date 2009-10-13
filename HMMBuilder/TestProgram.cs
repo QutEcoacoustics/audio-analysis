@@ -172,5 +172,73 @@ namespace HMMBuilder
 
 
 
-    }
+
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+        //##########################################################################################################
+       
+        public static void Execute(string workingDirectory, string templateFN, string WavFile)
+        {
+            Console.WriteLine("Executing HMMBuilder - scanning a .wav file");
+
+            #region Variables
+            HTKConfig htkConfig = new HTKConfig();
+            htkConfig.WorkingDir = workingDirectory;
+
+            //float threshold = -2500f;
+            htkConfig.CallName = Path.GetFileNameWithoutExtension(templateFN);
+
+            //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
+            htkConfig.DataDir = htkConfig.WorkingDir + "\\data";
+            htkConfig.ConfigDir = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
+            htkConfig.ResultsDir = htkConfig.WorkingDir + "\\results";
+            htkConfig.HTKDir = htkConfig.ConfigDir + "\\HTK";
+            htkConfig.SegmentationDir = htkConfig.ConfigDir + "\\Segmentation";
+            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+
+
+            //Console.WriteLine("CWD=" + htkConfig.WorkingDir);
+            Console.WriteLine("CFG=" + htkConfig.ConfigDir);
+            Console.WriteLine("DAT=" + htkConfig.DataDir);
+            Console.WriteLine("RSL=" + htkConfig.ResultsDir);
+
+            #endregion
+
+            //create the working directory if it does not exist
+            if (!Directory.Exists(htkConfig.WorkingDir)) Directory.CreateDirectory(htkConfig.WorkingDir);
+            //delete data directory if it exists
+            if (Directory.Exists(htkConfig.DataDir)) Directory.Delete(htkConfig.DataDir, true);
+            Directory.CreateDirectory(htkConfig.DataDir);
+
+            //shift template to working directory and unzip
+            string zipFile = htkConfig.WorkingDir + "\\" + Path.GetFileName(templateFN);
+            string target = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
+            File.Copy(templateFN, zipFile, true);
+            Console.WriteLine("zipFile=" + zipFile + "  target=" + target);
+
+            ZipUnzip.UnZip(target, zipFile, true);
+
+            //move the data/TEST file to its own directory
+            Directory.CreateDirectory(htkConfig.DataDir);
+            string dataFN = Path.GetFileName(WavFile);
+            File.Copy(WavFile, htkConfig.DataDir + "\\" + dataFN, true);
+
+            //PREPARE THE TEST FILE AND EXTRACT FEATURES
+            //write script files
+            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, htkConfig.wavExt, htkConfig.mfcExt);
+            //extract features from the test file
+            HTKHelper.ExtractFeatures(htkConfig.aOptionsStr, htkConfig.MfccConfigFN, htkConfig.TestFileCode, htkConfig.HCopyExecutable); //test data
+            //scan the file with HTK HMM
+            HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.TestFile, htkConfig.wordNet,
+                            htkConfig.DictFile, htkConfig.resultTest, htkConfig.monophones, htkConfig.HViteExecutable);
+
+            Console.WriteLine("FINISHED!");
+        }
+
+
+    }//end class
 }
