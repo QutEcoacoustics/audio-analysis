@@ -42,9 +42,23 @@ namespace AudioAnalysis
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
+            // This is a quick and dirty test to identify differences in matlab vs C# sonogram input to AED
+
+            // I1.txt contains the sonogram matrix produced by matlab
+            string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
+            double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
+
+            Console.WriteLine(matrix[0,0] + " vs " + matlabMatrix[0,0]);
+            Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[0, 1]);
+            Console.WriteLine(matrix[1, 0] + " vs " + matlabMatrix[1, 0]);
+
+            // TODO put this back once sonogram issues resolved
+
+            /*
             Console.WriteLine("START: AED");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
             Console.WriteLine("END: AED");
+
 
             //set up static variables for init Acoustic events
             //AcousticEvent.   doMelScale = config.DoMelScale;
@@ -62,6 +76,9 @@ namespace AudioAnalysis
                 events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
+
+            Console.WriteLine("# AED events: " + events.Count);
+
             Console.WriteLine("START: EPR");
             IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
             Console.WriteLine("END: EPR");
@@ -85,6 +102,7 @@ namespace AudioAnalysis
             image.Save(outputFolder + wavFileName + ".png");
 
             Console.WriteLine("\nFINISHED!");
+             */
         }
     }
 }
