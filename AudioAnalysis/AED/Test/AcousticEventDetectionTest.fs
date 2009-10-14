@@ -4,9 +4,14 @@ open Xunit
 
 [<Fact>]
 let testToBlackAndWhite () =
-    let i4 = loadTestFile "I3.txt" |> toBlackAndWhite 9.0
-    let i4m = loadTestFile "I4.txt"
-    matrixFloatEquals i4 i4m 0.001 |> Assert.True
+    let f t d i j =
+        let i4 = loadTestFile3 d "I3.txt" i j |> toBlackAndWhite t
+        let i4m = loadTestFile3 d "I4.txt" i j
+        matrixFloatEquals i4 i4m 0.001 |> Assert.True
+    // TODO duplicated with Common
+    f 9.0 "BAC2_20071015-045040" 256 5188
+    f 3.0 "GParrots_JB2_20090607-173000.wav_minute_3" 256 5166
+    
        
 [<Fact>]
 let testToFillIn () =
