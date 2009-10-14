@@ -8,7 +8,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		SccLocalPath = ""
 		SccProvider = ""
 		TargetFramework = "3.5"
-		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.dll;"
+		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.dll;{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}|SLShaderEffectLibrary.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
 		Debug.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
@@ -24,8 +24,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.FixedNames = "false"
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "2669"
-		VWDDynamicPort = "true"
-		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}|ClientBin|false;"
+		VWDDynamicPort = "false"
+		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}|ClientBin|false;{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}|ClientBin|false;"
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
@@ -59,6 +59,12 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLShaderEffectLibrary", "SilverlightControls\SLShaderEffectLibrary\SLShaderEffectLibrary.csproj", "{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLTransitionEffects", "SilverlightControls\SLTransitionEffects\SLTransitionEffects.csproj", "{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloudControl", "SilverlightControls\TagCloud\TagCloudControl\TagCloudControl.csproj", "{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloud", "TagCloud\TagCloud.csproj", "{FB088810-E5A8-4A22-9598-5BA99A963D5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight", "{1078E05E-D251-4225-AEC0-B8077B0ABB75}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUpload", "FileUpload\FileUpload.csproj", "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}"
 EndProject
@@ -246,6 +252,30 @@ Global
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Release|x86.ActiveCfg = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|.NET.ActiveCfg = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Release|x86.ActiveCfg = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|.NET.ActiveCfg = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Release|x86.ActiveCfg = Release|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -265,5 +295,9 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407} = {E9A5C60A-ADD0-4667-A099-1BE9DC3155BE}
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783} = {E9A5C60A-ADD0-4667-A099-1BE9DC3155BE}
+		{677A24F2-5643-4960-BD8E-FFD739696099} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
+		{36AE7049-A84A-43B1-8CE4-4A63F993A0A3} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
 	EndGlobalSection
 EndGlobal
