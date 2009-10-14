@@ -64,14 +64,23 @@ let testSmallFirstMin () =
     Assert.Equal(0, smallFirstMin [0..3] [1;2;1;2] t)
     Assert.Equal(0, smallFirstMin [0..2] [1;1;1] t)
     Assert.Equal(t, smallFirstMin [0..1] [2;1] t) 
-    
-//let ae2m = loadEventsFile "AE2.txt" 1249
 
-//[<Fact(Skip="TODO")>]
-//let testSmallThreshold () = Assert.Equal(200, smallThreshold 200 ae2m)
+[<Fact>]
+let testSmallThreshold () =
+    let f d l t r =
+        let ae2m = loadEventsFile d "AE2.txt" l
+        Assert.Equal(r, smallThreshold t ae2m)
+    // TODO duplicated with LargeEventsTest
+    f "BAC2_20071015-045040" 1249 200 200
+    f "GParrots_JB2_20090607-173000.wav_minute_3" 5291 100 55
 
-//[<Fact>]
-//let testFilterOutSmallEvents () =
-//    let ae3 = filterOutSmallEvents 200 ae2m
-//    let ae3m = loadEventsFile "AE3.txt" 97
-//    Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
+[<Fact>]
+let testFilterOutSmallEvents () =
+    let f d l2 t l3 =
+        let ae2m = loadEventsFile d "AE2.txt" l2
+        let ae3 = filterOutSmallEvents t ae2m
+        let ae3m = loadEventsFile d "AE3.txt" l3
+        Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
+    // TODO duplicated with testSmallThreshold
+    f "BAC2_20071015-045040" 1249 200 97
+    f "GParrots_JB2_20090607-173000.wav_minute_3" 5291 100 811
