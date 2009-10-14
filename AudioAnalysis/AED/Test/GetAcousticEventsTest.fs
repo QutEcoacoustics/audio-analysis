@@ -27,8 +27,11 @@ let getAcousticEventsTestQuick () =
 
 [<Fact>]
 let getAcousticEventsTest () =
-    let ae = loadTestFile "I6b.txt" |> getAcousticEvents |> bounds
-    let MATLAB_LENGTH = 1229
-    Assert.Equal(MATLAB_LENGTH, Seq.length ae)
-    let aem = loadEventsFile "AE.txt" MATLAB_LENGTH    
-    Assert.Equal(Seq.sort aem, Seq.sort ae)
+    let f d i j ael =
+        let ae = loadTestFile3 d "I6b.txt" i j |> getAcousticEvents |> bounds
+        Assert.Equal(ael, Seq.length ae)
+        let aem = loadEventsFile d "AE.txt" ael    
+        Assert.Equal(Seq.sort aem, Seq.sort ae)
+    // TODO duplicated with Common
+    f "BAC2_20071015-045040" 256 5188 1229
+    f "GParrots_JB2_20090607-173000.wav_minute_3" 256 5166 5229

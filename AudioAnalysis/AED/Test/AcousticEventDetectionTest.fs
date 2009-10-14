@@ -65,13 +65,13 @@ let testSmallFirstMin () =
     Assert.Equal(0, smallFirstMin [0..2] [1;1;1] t)
     Assert.Equal(t, smallFirstMin [0..1] [2;1] t) 
     
-let ae2m = loadEventsFile "AE2.txt" 1249
+//let ae2m = loadEventsFile "AE2.txt" 1249
 
-[<Fact>]
-let testSmallThreshold () = Assert.Equal(200, smallThreshold 200 ae2m)
+//[<Fact(Skip="TODO")>]
+//let testSmallThreshold () = Assert.Equal(200, smallThreshold 200 ae2m)
 
-[<Fact>]
-let testFilterOutSmallEvents () =
-    let ae3 = filterOutSmallEvents 200 ae2m
-    let ae3m = loadEventsFile "AE3.txt" 97
-    Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
+//[<Fact>]
+//let testFilterOutSmallEvents () =
+//    let ae3 = filterOutSmallEvents 200 ae2m
+//    let ae3m = loadEventsFile "AE3.txt" 97
+//    Assert.Equal(Seq.sort ae3m, Seq.sort ae3)

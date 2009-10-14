@@ -16,9 +16,9 @@ let loadTestFile3 d f i j = loadTestFile2 (d + @"\" + f) i j
 
 let loadTestFile f = loadTestFile2 f 256 5188
 
-let loadEventsFile f j =
+let loadEventsFile d f j =
     // matlab matrix indicies are 1 based, F# is 0 based
-    let aem = loadTestFile2 f 10 j
+    let aem = loadTestFile3 d f 10 j
     let dec x = (int x) - 1
     seq {for i in 0..(j-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
     
