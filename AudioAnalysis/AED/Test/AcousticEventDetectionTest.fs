@@ -44,15 +44,19 @@ let testJoinHorizontalLinesQuick () =
     
 [<Fact>]
 let testJoinHorizontalLines () =
-    let i6b = loadTestFile "I6a.txt" |> joinHorizontalLines
-    let i6bm = loadTestFile "I6b.txt"
-    matrixFloatEquals i6b i6bm 0.001 |> Assert.True
+    let f d i j =
+        let i6b = loadTestFile3 d "I6a.txt" i j |> joinHorizontalLines
+        let i6bm = loadTestFile3 d "I6b.txt" i j
+        matrixFloatEquals i6b i6bm 0.001 |> Assert.True
+    test f
     
 [<Fact>]
-let TestJoinVerticalLines () =
-    let i6a = loadTestFile "I4.txt" |> joinVerticalLines
-    let i6am = loadTestFile "I6a.txt"
-    matrixFloatEquals i6a i6am 0.001 |> Assert.True
+let testJoinVerticalLines () =
+    let f d i j =
+        let i6a = loadTestFile3 d "I4.txt" i j |> joinVerticalLines
+        let i6am = loadTestFile3 d "I6a.txt" i j
+        matrixFloatEquals i6a i6am 0.001 |> Assert.True
+    test f
     
 [<Fact>]
 let testSmallFirstMin () =
