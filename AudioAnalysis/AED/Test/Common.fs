@@ -4,8 +4,15 @@ open FsCheck
 open FsCheckXunit
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
-    
+
+// TODO uncurry3                
+let test f = Seq.iter (fun (d, i, j) -> f d i j) [("BAC2_20071015-045040", 256, 5188);
+                                                  ("GParrots_JB2_20090607-173000.wav_minute_3", 256, 5166)
+                                                  ]
+                
 let loadTestFile2 f i j = fileToMatrix (@"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\" + f) i j |> Math.Matrix.of_array2
+
+let loadTestFile3 d f i j = loadTestFile2 (d + @"\" + f) i j
 
 let loadTestFile f = loadTestFile2 f 256 5188
 

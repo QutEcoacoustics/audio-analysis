@@ -25,7 +25,9 @@ let testNeighbourhoodBounds () =
     f (97, 0, 3, 3) 99 0
     
 [<Fact>]
-let testWiener2 () = 
-    let i2 = loadTestFile "I1.txt" |> wiener2 5
-    let i2m = loadTestFile "I2.txt"
-    Assert.True (matrixFloatEquals i2 i2m 0.00001)
+let wiener2 () = 
+    let f d i j = 
+        let i2 = loadTestFile3 d "I1.txt" i j |> wiener2 5
+        let i2m = loadTestFile3 d "I2.txt" i j 
+        Assert.True (matrixFloatEquals i2 i2m 0.00001)
+    test f
