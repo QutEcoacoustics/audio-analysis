@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace HMMBuilder
 {
@@ -39,8 +40,13 @@ namespace HMMBuilder
         public string NUMCEPS { get; set; }
         public string LOFREQ { get; set; }
         public string HIFREQ { get; set; }
-
-
+        public int VecSize { get; set; }
+        
+        /// <summary>
+        /// Table used for computing feature vectors size 
+        /// </summary>
+        private Dictionary<string, int> smFeatureDict = new Dictionary<string, int>();
+      
 
         public string trnDirPath      { get { return DataDir + "\\train"; } }
         public string tstFalseDirPath { get { return DataDir + "\\test\\testFalse"; } }
@@ -109,17 +115,95 @@ namespace HMMBuilder
 
         public const int ERROR_FILE_NOT_FOUND = 2;
 
+        /// <summary>
+        /// Compute Feature Vectors size given a specific TARGETKIND, 
+        /// Current TARGETKIND types allowed: 
+        ///     MFCC, 0, _E, _D, _A 
+        /// </summary>
+        /// <returns>Void</returns>        
+        public void ComputeFVSize()
+        {
+            try
+            {
+                string tmpTargetKind = "";
+                
+                if (TARGETKIND.Length == 0)
+                    throw new Exception("Parameter TARGETKIND unspecified.");
+                else //Enter the state machine mechanism
+                {
+                    if (NUMCEPS.Length == 0)
+                    {
+                        Console.WriteLine("Parameter NUMCEPS unspecified, 12 ceptral coefficients will be used.");
+                        NUMCEPS = "12";
+                    }
 
+                    int fvLength = int.Parse(NUMCEPS);
+
+                    string[] param = Regex.Split(TARGETKIND, @"_");
+
+                    List<string> checkList = new List<string>();
+                    int tmpGroup = 0;
+                    int group1 = 0;
+                    int group2 = 0;
+                    int group3 = 0;
+                    foreach (string match in param)
+                    {
+                        if (!smFeatureDict.TryGetValue(match, out tmpGroup))
+                        {
+                            Console.WriteLine("Could not recognize parameter '{0}': ignored.", match);
+                            continue;
+                        }
+                        
+                        if (checkList.Contains(match))
+                        {
+                            throw new Exception("Malformed TARGETKIND string: repeated qualifiers.");
+                        }
+                        checkList.Add(match);
+
+                        switch (tmpGroup)
+                        {
+                            case 1:
+                                group1++;
+                                break;
+                            case 2:
+                                group2++;
+                                break;
+                            case 3:                                
+                                group3++;
+                                break;
+                        }
+                        tmpTargetKind += match + "_";
+                    }
+                    if ((group1 > 1) || (group2 > 1))
+                    {
+                        throw new Exception("Ambiguous selection of features. Are you trying to use both 0 and E qualifiers?");
+                    }
+                    fvLength += group2;
+                    fvLength *= (1+group3);
+
+                    VecSize = fvLength;
+                    Console.WriteLine("Original TARGETKIND: {0}", TARGETKIND);
+                    TARGETKIND = tmpTargetKind.Remove(tmpTargetKind.Length-1);                    
+                    Console.WriteLine("Filtered TARGETKIND: {0}", TARGETKIND);
+                }
+            }
+            catch (Exception e)
+            {
+                    Console.WriteLine(e);
+                    throw (e);
+            }
+        }
+        
         public void WriteMfccConfigFile(string filename)
         {
             string content = 
                          "SOURCEFORMAT = WAV\n" +
-                         "TARGETKIND   = MFCC\n" +
+                         "TARGETKIND   = " + TARGETKIND + "\n" +
                          //"TARGETKIND   = MFCC_E_D\n" +   //##################################################
                          "TARGETRATE = " + TARGETRATE + "\n" +
                          "SAVECOMPRESSED = T\n" +
                          "SAVEWITHCRC = T\n" +
-                         "WINDOWSIZE = " + WINDOWDURATION+"\n" +
+                         "WINDOWSIZE = " + WINDOWDURATION + "\n" +
                          "USEHAMMING = T\n" +
                          "PREEMCOEF = 0.97\n" +
                          "NUMCHANS = 26\n" +
@@ -199,10 +283,10 @@ namespace HMMBuilder
                 "<BEGINproto_config_file>\n" +
                 "<COMMENT>\n\tThis PCF produces a 8 state prototype system\n" +
                 "<BEGINsys_setup>\n\tnStates: "+numHmmStates+"\n"+
-                   "\tsWidths: 12\n" + //################################################# 
+                   "\tsWidths: " + VecSize + "\n" +      //################################################# 
                    "\t#mixes: 1\n"+
-                   "\tparmKind: MFCC\n" +  //#################################################
-                   "\tvecSize: 12\n" +       //#################################################
+                   "\tparmKind: " + TARGETKIND + "\n" +  //#################################################
+                   "\tvecSize: " + VecSize + "\n" +      //#################################################
                    "\t#outDir: "+protoFN+"\n\n" +
                 "<ENDsys_setup>\n" +
                 "<ENDproto_config_file>\n";
@@ -295,6 +379,18 @@ namespace HMMBuilder
             }// end finally
         }
 
+
+        #region Constructor
+        public HTKConfig()
+        {
+            //initialize dictionary
+            smFeatureDict.Add("MFCC", 1);
+            smFeatureDict.Add("0", 2);
+            smFeatureDict.Add("E", 2);
+            smFeatureDict.Add("D", 3);
+            smFeatureDict.Add("A", 3);
+        }
+        #endregion
 
     }//end class
 
