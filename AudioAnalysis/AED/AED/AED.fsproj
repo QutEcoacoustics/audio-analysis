@@ -32,6 +32,10 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <Optimize>true</Optimize>
+    <OutputPath>C:\SensorNetworks\Software\Binaries\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <OutputPath>C:\SensorNetworks\Software\Binaries\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809">
