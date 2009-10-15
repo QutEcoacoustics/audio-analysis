@@ -18,17 +18,17 @@ namespace HMMBuilder
             htkConfig.CallName = "CURLEW1";
             htkConfig.Comment = "Parameters for Curlew";
             htkConfig.LOFREQ = "1000";
-            htkConfig.HIFREQ = "5000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
             htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            float threshold = -5000f;  //default = 1900
+            float threshold = -4000f;  //default = 1900
 
 
             //htkConfig.CallName = "CURRAWONG1";
             //htkConfig.Comment = "Parameters for Currawong";
             //htkConfig.LOFREQ = "800";
-            //htkConfig.HIFREQ = "8000";     //try 6000, 7000 and 8000 Hz
-            //htkConfig.numHmmStates = "5";  //number of hmm states for call model
-            //float threshold = -5000f;      //magic number for Currawong is -1900f
+            //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
+            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            //float threshold = -4000f;      //magic number for Currawong is -1900f
 
 
             //==================================================================================================================
@@ -334,27 +334,28 @@ namespace HMMBuilder
                         float accuracy  = 0.0f;
                         float avTPScore = 0.0f;
                         float avFPScore = 0.0f;
+                        int step = 200; //to step the threshold
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 3000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 3000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - (3*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (3 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 2000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 2000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - (2*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (2 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - 1000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - 1000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - step);
 
                         Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold);
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 1000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 1000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + step);
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 2000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 2000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + (2*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (2 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + 3000, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + 3000);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + (3*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (3 * step));
                     }
                     catch 
                     {

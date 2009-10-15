@@ -48,12 +48,19 @@ namespace HMMBuilder
                     if (Regex.IsMatch(txtLine, @"^\d+\s+\d+\s+\w+") &&
                         valid)
                     {
+                        //Console.WriteLine(txtLine);
                         string[] param = Regex.Split(txtLine, @"\s+");
+                        long start  = long.Parse(param[0]);
+                        long end    = long.Parse(param[1]);
                         float score = float.Parse(param[3]);
-                        if (param[2].Equals(vocalization) &&
-                            float.Parse(param[3]) >= threshold)
+                        double duration  = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
+                        double normScore = score / duration;
+                        //if (param[2].Equals(vocalization) && score >= threshold)
+                        if (param[2].Equals(vocalization) && normScore >= threshold)
                         {
-                            avScore += score;
+                            //Console.WriteLine("duration=" + duration + "   normScore=" + normScore);
+                            //avScore += score;
+                            avScore += (float)normScore;
                             hits++;
                             valid = false;
                         }
@@ -72,6 +79,8 @@ namespace HMMBuilder
             }
             finally
             {
+                if (hits == 0) avScore = 0.0f;
+                else 
                 avScore /= hits;
                 //Console.WriteLine("hits=" + hits + "/" + total + "   avScore=" + avScore);
                 if (reader != null) reader.Close();
