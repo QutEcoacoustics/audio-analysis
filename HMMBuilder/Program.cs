@@ -94,10 +94,11 @@ namespace HMMBuilder
                 //    break;
 
                 default:
-                    #region ONE: WRITE Two Configuration Files
+                    #region ONE: Write Configuration Files
                     Console.WriteLine("WRITE FIVE CONFIGURATION FILES");
                     try
                     {
+                        htkConfig.ComputeFVSize(); //Compute Feature Vectors size given htkConfig.TARGETKIND
                         if(! Directory.Exists(htkConfig.ConfigDir))   Directory.CreateDirectory(htkConfig.ConfigDir);
                         if(! Directory.Exists(htkConfig.ProtoConfDir))Directory.CreateDirectory(htkConfig.ProtoConfDir);
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
