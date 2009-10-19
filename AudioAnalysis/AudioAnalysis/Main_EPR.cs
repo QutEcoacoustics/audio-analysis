@@ -42,15 +42,21 @@ namespace AudioAnalysis
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
-            // This is a quick and dirty test to identify differences in matlab vs C# sonogram input to AED
+            Console.WriteLine("This is a quick and dirty test to identify differences in matlab vs C# sonogram input to AED");
+            Console.WriteLine("SampleRate=" + sonogram.SampleRate);
 
             // I1.txt contains the sonogram matrix produced by matlab
-            string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
+            string matlabFile = @"C:\SensorNetworks\Software\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
             double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
+            Console.WriteLine("sonogr dims = " + matlabMatrix.GetLength(0) + " x " + matlabMatrix.GetLength(1));
+            Console.WriteLine("matlab dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
 
-            Console.WriteLine(matrix[0,0] + " vs " + matlabMatrix[0,0]);
-            Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[0, 1]);
-            Console.WriteLine(matrix[1, 0] + " vs " + matlabMatrix[1, 0]);
+            //Console.WriteLine(matrix[0,0] + " vs " + matlabMatrix[0,0]);
+            //Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[0, 1]);
+            //Console.WriteLine(matrix[1, 0] + " vs " + matlabMatrix[1, 0]);
+            Console.WriteLine(matrix[0, 0] + " vs " + matlabMatrix[255, 0]);
+            Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[255, 1]);
+            Console.WriteLine(matrix[1, 0] + " vs " + matlabMatrix[1, 255]);
 
             // TODO put this back once sonogram issues resolved
 
@@ -100,9 +106,11 @@ namespace AudioAnalysis
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(eprEvents);
             image.Save(outputFolder + wavFileName + ".png");
+             */
+
 
             Console.WriteLine("\nFINISHED!");
-             */
+            Console.ReadLine();
         }
     }
 }
