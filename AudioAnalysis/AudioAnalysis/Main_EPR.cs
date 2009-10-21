@@ -44,36 +44,42 @@ namespace AudioAnalysis
 
             Console.WriteLine("This is a quick and dirty test to identify differences in matlab vs C# sonogram input to AED");
             Console.WriteLine("SampleRate=" + sonogram.SampleRate);
-            int myRows = matrix.GetLength(0);
-            int myCols = matrix.GetLength(1);
 
             // I1.txt contains the sonogram matrix produced by matlab
-            string matlabFile = @"C:\SensorNetworks\Software\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
+            string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
             double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
             Console.WriteLine("\nmatlab dims = " + matlabMatrix.GetLength(0) + " x " + matlabMatrix.GetLength(1));
-            Console.WriteLine("sonogr dims = " + myRows + " x " + myCols);
+            Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
             Console.WriteLine("\nsonogram     vs     matlab");
 
-            //Console.WriteLine(matrix[0,0] + " vs " + matlabMatrix[0,0]);
-            //Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[0, 1]);
-            //Console.WriteLine(matrix[1, 0] + " vs " + matlabMatrix[1, 0]);
-            Console.WriteLine(matrix[0, 0] + " vs " + matlabMatrix[0, 0]);
-            Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[1, 0]);
-            Console.WriteLine(matrix[0, 2] + " vs " + matlabMatrix[2, 0]);
-            Console.WriteLine(matrix[0, 3] + " vs " + matlabMatrix[3, 0]);
-            Console.WriteLine(matrix[0, 4] + " vs " + matlabMatrix[4, 0]);
-            //            Console.WriteLine(matrix[0, myCols - 1] + " vs " + matlabMatrix[255, 0]);
-//            Console.WriteLine(matrix[myRows-1, 0] + " vs " + matlabMatrix[0, 5165]);
-//            Console.WriteLine(matrix[myRows-1, myCols - 1] + " vs " + matlabMatrix[255, 5165]);
+            for (int c=0; c<10; c++)
+            {
+                Console.WriteLine(matrix[0, c] + " vs " + matlabMatrix[c, 0]);
+            }
+
+            // transpose matlab
+            double[,] matlabMatrixT = new double[matlabMatrix.GetLength(1), matlabMatrix.GetLength(0)];
+            for (int x = 0; x < matlabMatrix.GetLength(0); x++)
+            {
+                for (int y = 0; y < matlabMatrix.GetLength(1); y++)
+                {
+                    matlabMatrixT[y, x] = matlabMatrix[x, y];
+                }
+            }
+
+            // max difference
+            double md = 0;
+            for (int x = 0; x < matrix.GetLength(0); x++)
+            {
+                for (int y = 0; y < matrix.GetLength(1); y++)
+                {
+                    double d = Math.Abs(matlabMatrixT[x, y]) - Math.Abs(matrix[x, y]);
+                    if (d > md) md = d;
+                }
+            }
+            Console.WriteLine("\nMax Difference: " + md);
             
-
-
-            //Console.WriteLine(matrix[0, 2] + " vs " + matlabMatrix[254, 0]);
-            //Console.WriteLine(matrix[0, 3] + " vs " + matlabMatrix[253, 0]);
-
-            // TODO put this back once sonogram issues resolved
-
-            /*
+            
             Console.WriteLine("START: AED");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
             Console.WriteLine("END: AED");
@@ -97,7 +103,7 @@ namespace AudioAnalysis
             }
 
             Console.WriteLine("# AED events: " + events.Count);
-
+            
             Console.WriteLine("START: EPR");
             IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
             Console.WriteLine("END: EPR");
@@ -119,11 +125,10 @@ namespace AudioAnalysis
             //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(eprEvents);
             image.Save(outputFolder + wavFileName + ".png");
-             */
-
-
+            
             Console.WriteLine("\nFINISHED!");
-            Console.ReadLine();
+            //Console.ReadLine();
+            
         }
     }
 }
