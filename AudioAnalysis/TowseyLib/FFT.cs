@@ -180,7 +180,8 @@ namespace TowseyLib
         public static readonly WindowFunc Hamming = delegate(int n, int N)
         {
             double x = 2.0 * Math.PI * n / (N - 1);
-            return 0.53836 - 0.46164 * Math.Cos(x);
+            //return 0.53836 - 0.46164 * Math.Cos(x);
+            return 0.54 - 0.46 * Math.Cos(x); //MATLAB code uses these value and says it is better!
         };
 
         public static WindowFunc Gauss(double sigma)
