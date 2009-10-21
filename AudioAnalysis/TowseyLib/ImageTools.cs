@@ -374,11 +374,16 @@ namespace TowseyLib
         } //end getNoise()
 
 
-
         public static double[,] WienerFilter(double[,] matrix)
         {
-            int M = 3;
-            int N = 3;
+            int NH = 3;
+            return WienerFilter(matrix, NH);
+        }
+
+        public static double[,] WienerFilter(double[,] matrix, int NH)
+        {
+            int M = NH;
+            int N = NH;
             int rNH = M / 2;
             int cNH = N / 2;
 
@@ -494,6 +499,81 @@ namespace TowseyLib
                 }
 
             double threshold = min + (max - min) / 5;
+
+            for (int y = 1; y < mRows - 1; y++)
+                for (int x = 1; x < mCols - 1; x++)
+                    if (newMatrix[y, x] > threshold) newMatrix[y, x] = 1.0;
+                    else newMatrix[y, x] = 0.0;
+
+            return newMatrix;
+        }
+
+        /// <summary>
+        /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
+        /// which includes C code.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[,] SobelRidgeDetection(double[,] m)
+        {
+            //define indices into grid using Lindley notation
+            const int a = 0; const int b = 1; const int c = 2; const int d = 3; const int e = 4;
+            const int f = 5; const int g = 6; const int h = 7; const int i = 8;
+            int mRows = m.GetLength(0);
+            int mCols = m.GetLength(1);
+            double[,] normM = DataTools.normalise(m);
+            double[,] newMatrix = new double[mRows, mCols];//init new matrix to return
+            double[] grid = new double[9]; //to represent 3x3 grid
+            double min = Double.MaxValue; double max = -Double.MaxValue;
+
+            for (int y = 1; y < mRows - 1; y++)
+                for (int x = 1; x < mCols - 1; x++)
+                {
+                    grid[a] = normM[y - 1, x - 1];
+                    grid[b] = normM[y, x - 1];
+                    grid[c] = normM[y + 1, x - 1];
+                    grid[d] = normM[y - 1, x];
+                    grid[e] = normM[y, x];
+                    grid[f] = normM[y + 1, x];
+                    grid[g] = normM[y - 1, x + 1];
+                    grid[h] = normM[y, x + 1];
+                    grid[i] = normM[y + 1, x + 1];
+                    double[] differences = new double[4];
+                    double DivideAEI_avBelow = (grid[d] + grid[g] + grid[h]) / (double)3;
+                    double DivideAEI_avAbove = (grid[b] + grid[c] + grid[f]) / (double)3;
+                    //differences[0] = Math.Abs(DivideAEI_avAbove - DivideAEI_avBelow);
+                    differences[0] = (grid[e] - DivideAEI_avAbove) + (grid[e] - DivideAEI_avBelow);
+                    if (differences[0] < 0.0) differences[0] = 0.0;
+
+                    double DivideBEH_avBelow = (grid[a] + grid[d] + grid[g]) / (double)3;
+                    double DivideBEH_avAbove = (grid[c] + grid[f] + grid[i]) / (double)3;
+                    //differences[1] = Math.Abs(DivideBEH_avAbove - DivideBEH_avBelow);
+                    differences[1] = (grid[e] - DivideBEH_avBelow) + (grid[e] - DivideBEH_avAbove);
+                    if (differences[1] < 0.0) differences[1] = 0.0;
+
+                    double DivideCEG_avBelow = (grid[f] + grid[h] + grid[i]) / (double)3;
+                    double DivideCEG_avAbove = (grid[a] + grid[b] + grid[d]) / (double)3;
+                    //differences[2] = Math.Abs(DivideCEG_avAbove - DivideCEG_avBelow);
+                    differences[2] = (grid[e] - DivideCEG_avBelow) + (grid[e] - DivideCEG_avAbove);
+                    if (differences[2] < 0.0) differences[2] = 0.0;
+
+                    double DivideDEF_avBelow = (grid[g] + grid[h] + grid[i]) / (double)3;
+                    double DivideDEF_avAbove = (grid[a] + grid[b] + grid[c]) / (double)3;
+                    //differences[3] = Math.Abs(DivideDEF_avAbove - DivideDEF_avBelow);
+                    differences[3] = (grid[e] - DivideDEF_avBelow) + (grid[e] - DivideDEF_avAbove);
+                    if (differences[3] < 0.0) differences[3] = 0.0;
+
+
+
+                    double diffMin; double diffMax;
+                    DataTools.MinMax(differences, out diffMin, out diffMax);
+
+                    newMatrix[y, x] = diffMax;
+                    if (min > diffMin) min = diffMin; //store minimum difference value of entire matrix
+                    if (max < diffMax) max = diffMax; //store maximum difference value of entire matrix
+                }
+
+            double threshold = min + (max - min) / 4; //threshold is 1/5th of range above min
 
             for (int y = 1; y < mRows - 1; y++)
                 for (int x = 1; x < mCols - 1; x++)

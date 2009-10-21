@@ -60,12 +60,12 @@ namespace AudioAnalysis
             //string wavFileName = "raven";
 
             //KOALA recordings  - training files etc
-            //const string wavDirName = @"C:\SensorNetworks\Koala\";
-            //const string opDirName  = @"C:\SensorNetworks\Koala\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\Koala\";
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
+            //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
 
             //ST BEES
-            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
@@ -75,7 +75,7 @@ namespace AudioAnalysis
             //wavFileName = "West_Knoll_St_Bees_FlyBirdCicada_20080917-170000";
             //wavFileName = "West_Knoll_St_Bees_Currawong1_20080923-120000";
             //wavFileName = "West_Knoll_St_Bees_Currawong2_20080921-053000";
-            wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for template 3 and 8
+            //wavFileName = "West_Knoll_St_Bees_Currawong3_20080919-060000"; //source file for template 3 and 8
             //wavFileName = "Top_Knoll_St_Bees_Curlew1_20080922-023000";
             //wavFileName = "Top_Knoll_St_Bees_Curlew2_20080922-030000";
             //wavFileName = "Honeymoon_Bay_St_Bees_Curlew3_20080914-003000";  //source file for template
@@ -95,6 +95,7 @@ namespace AudioAnalysis
             //BRIDGECREEK
             //wavDirName = @"C:\SensorNetworks\WavFiles\BridgeCreek\";
             //wavFileName = "cabin_earlyMorning";
+            //wavFileName = "cabin_earlyMorning_StormBird_file0131";
             //wavFileName = "file0044_22kHz";
             //wavFileName = "file0026_22kHz16bit";
 
@@ -102,6 +103,17 @@ namespace AudioAnalysis
             //wavDirName = @"C:\SensorNetworks\WavFiles\Barakula\";
             //wavFileName = "20090508-071000.palm";
             //wavFileName = "20090508-071000.dopod";
+
+
+            //GROUND PARROTS - SCOTT BURNETT
+            //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
+            //wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
+
+            //MISCELLANEOUS
+            wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
+            wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
+
+            //--------------------------------------------------------------------------------------------------------------
 
             string wavPath = wavDirName + wavFileName + ".wav";
             recording = new AudioRecording(wavPath);

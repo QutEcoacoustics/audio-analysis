@@ -8,7 +8,12 @@ namespace TowseyLib
     {
 
 
-
+        /// <summary>
+        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
+        /// This method does not account for power of the window if one is used.
+        /// </summary>
+        /// <param name="amplitudeM"></param>
+        /// <returns></returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM)
         {
             int frameCount = amplitudeM.GetLength(0);
@@ -21,8 +26,35 @@ namespace TowseyLib
                 for (int j = 0; j < binCount; j++) //foreach freq bin
                 {
                     double amplitude = amplitudeM[i, j];
+                    //double power = amplitude * amplitude;
                     double power = 20 * Math.Log10(amplitude); //convert amplitude to decibels dB = 10*log(amplitude ^2)
-                    ////NOTE: the decibels calculation should be a ratio. Here the ratio is implied.
+                    spectra[i, j] = power;
+                }
+            } //end of all frames
+            return spectra;
+        }
+
+        /// <summary>
+        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
+        /// dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window.
+        /// </summary>
+        /// <param name="amplitudeM"></param>
+        /// <returns></returns>
+        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate)
+        {
+            int frameCount = amplitudeM.GetLength(0);
+            int binCount = amplitudeM.GetLength(1);
+
+            double[,] spectra = new double[frameCount, binCount];
+
+            for (int i = 0; i < frameCount; i++)//foreach time step
+            {
+                for (int j = 0; j < binCount; j++) //foreach freq bin
+                {
+                    double amplitude = amplitudeM[i, j];
+                    //double power = amplitude * amplitude / windowPower;
+                    //convert amplitude to decibels, normalising for Hamming Window power and sample rate.
+                    double power = 10 * Math.Log10(amplitude * amplitude / windowPower / sampleRate); 
                     spectra[i, j] = power;
                 }
             } //end of all frames

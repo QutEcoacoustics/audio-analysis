@@ -19,6 +19,7 @@ namespace AudioAnalysis
         public TimeSpan Duration { get; set; }
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
+        public double WindowPower   { get; set; } // Power of the Hamming Window
         public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
         public bool DoMelScale { get; set; }
