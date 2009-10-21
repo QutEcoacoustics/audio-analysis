@@ -61,7 +61,7 @@ namespace AudioAnalysis
             Console.WriteLine(matrix[0, 1] + " vs " + matlabMatrix[1, 0]);
             Console.WriteLine(matrix[0, 2] + " vs " + matlabMatrix[2, 0]);
             Console.WriteLine(matrix[0, 3] + " vs " + matlabMatrix[3, 0]);
-            Console.WriteLine(matrix[0, 4] + " vs " + matlabMatrix[3, 0]);
+            Console.WriteLine(matrix[0, 4] + " vs " + matlabMatrix[4, 0]);
             //            Console.WriteLine(matrix[0, myCols - 1] + " vs " + matlabMatrix[255, 0]);
 //            Console.WriteLine(matrix[myRows-1, 0] + " vs " + matlabMatrix[0, 5165]);
 //            Console.WriteLine(matrix[myRows-1, myCols - 1] + " vs " + matlabMatrix[255, 5165]);
