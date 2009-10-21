@@ -68,6 +68,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUpload", "FileUpload\FileUpload.csproj", "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataExtractor", "DataExtractor\DataExtractor.csproj", "{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Website.vsmdi
@@ -288,6 +290,18 @@ Global
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.Release|x86.ActiveCfg = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|.NET.ActiveCfg = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{4393BE4E-98FF-4E0D-8BBC-2ED49F3C3D20}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
