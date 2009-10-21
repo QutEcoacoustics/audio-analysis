@@ -47,7 +47,7 @@ namespace AudioAnalysis
 
         public int[] SigState { get; protected set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
-		public double[,] Data { get; protected set; } //the spectrogram data matrix
+		public double[,] Data { get; set; } //the spectrogram data matrix, AFTER conversion to dB and noise removal 
 		#endregion
 
         /// <summary>
@@ -141,28 +141,26 @@ namespace AudioAnalysis
 		{
 			int frameCount = frames.GetLength(0);
 			int N = frames.GetLength(1);  // = FFT windowSize 
-			int binCount = (N / 2) + 1;   // = fft.WindowSize/2 +1 for the DC value;
+			int coeffCount = N / 2;       // = fft.WindowSize/2;
+            int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
 			var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
-			int smoothingWindow = 3; //to smooth the spectrum 
+            this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
+            double[,] amplitudeSg = new double[frameCount, coeffCount]; //init amplitude sonogram
 
-			double[,] sgM = new double[frameCount, binCount];
-
-			for (int i = 0; i < frameCount; i++)//foreach time step
+			for (int i = 0; i < frameCount; i++)//foreach frame or time step
 			{
-				double[] data = DataTools.GetRow(frames, i);
-				double[] f1 = fft.Invoke(data);
+                double[] f1 = fft.Invoke(DataTools.GetRow(frames, i), coeffCount); //returns fft amplitude spectrum
 
-				f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //to smooth the spectrum - reduce variance
-				for (int j = 0; j < binCount; j++) //foreach freq bin
+                if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+                for (int j = 0; j < coeffCount; j++) //foreach freq bin
 				{
-					double amplitude = f1[j];
-					if (amplitude < epsilon)
-						amplitude = epsilon; // to prevent possible log of a very small number
-					sgM[i, j] = amplitude;
+					amplitudeSg[i, j] = f1[j]; //transfer amplitude
+					if (amplitudeSg[i, j] < epsilon)
+                        amplitudeSg[i, j] = epsilon; // to prevent possible log of a very small number
 				}
 			} //end of all frames
-			return sgM;
+			return amplitudeSg;
 		}
 
 
@@ -524,6 +522,13 @@ namespace AudioAnalysis
 		public SpectralSonogram(SonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
+
+        /// <summary>
+        /// use this constructor to cut out a portion of a spectrum from start to end time.
+        /// </summary>
+        /// <param name="sg"></param>
+        /// <param name="startTime"></param>
+        /// <param name="endTime"></param>
         public SpectralSonogram(SpectralSonogram sg, double startTime, double endTime)
             : base(sg.Configuration)
         {
@@ -574,12 +579,16 @@ namespace AudioAnalysis
 		protected override void Make(double[,] amplitudeM)
 		{
             double[,] m = amplitudeM;
+
+            //APPLY FILTER BANK
             if (Configuration.DoMelScale) m = ApplyFilterBank(m);
+
             //CONVERT AMPLITUDES TO DECIBELS
-            m = Speech.DecibelSpectra(m);//convert amplitude spectrogram to dB spectrogram
+            //convert amplitude spectrogram to dB spectrogram
+            m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate);
 
             //NOISE REDUCTION
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and store for later use
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
             {
                 this.SnrFrames.ModalNoiseProfile = modalNoise;
@@ -588,7 +597,7 @@ namespace AudioAnalysis
             else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
             {
-                Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
+                Log.WriteIfVerbose("\tNoise reduction: DYNAMIC RANGE = " + this.Configuration.DynamicRange);
                 m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
             }
             else

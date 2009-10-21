@@ -296,19 +296,60 @@ namespace TowseyLib
         {
             double[,] mnr = matrix;
             int startFrameCount = 9;
-            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             int smoothingWindow = 7;
-            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
 
+            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             mnr = NoiseReduce_Standard(matrix, modalNoise);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
             double[,] peaks = SNR.IdentifySpectralRidges(mnr);
-            double[,] outM = SpectralRidges2Intensity(peaks, mnr);
-            return outM;
+            //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
+            //return outM;
+            return peaks;
+        }
+
+        public static double[,] NoiseReduce_Peaks(double[,] matrix, double dynamicRange)
+        {
+            double[,] mnr = matrix;
+            int startFrameCount = 9;
+            int smoothingWindow = 7;
+
+            int NH = 11;
+            mnr = ImageTools.WienerFilter(mnr, NH);
+
+            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
+            mnr = NoiseReduce_Standard(matrix, modalNoise);
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+
+            double[,] peaks = SNR.IdentifySpectralPeaks(mnr);
+            //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
+            //return outM;
+            return peaks;
         }
 
 
+        public static double[,] NoiseReduce_Sobel(double[,] matrix, double dynamicRange)
+        {
+            double[,] mnr = matrix;
+            int startFrameCount = 9;
+            int smoothingWindow = 7;
+
+            //int NH = 11;
+            //mnr = ImageTools.WienerFilter(mnr, NH);
+
+            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
+            mnr = NoiseReduce_Standard(matrix, modalNoise);
+            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+
+            double[,] outM = ImageTools.SobelRidgeDetection(mnr);
+            outM = JoinDisconnectedRidgesInBinaryMatrix(outM);
+            outM = SNR.RemoveOrphanOnesInBinaryMatrix(outM);
+            //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
+            return outM;
+        }
 
         // #############################################################################################################################
         // ################################# NOISE REDUCTION METHODS #################################################################
@@ -510,10 +551,13 @@ namespace TowseyLib
             {
                 double[] row = DataTools.GetRow(matrix, r);
                 row = DataTools.filterMovingAverage(row, 3);
-                for (int c = 2; c < cols-2; c++)
+                for (int c = 3; c < cols-3; c++)
                 {
                     //identify a peak
-                    if ((row[c] > row[c - 2]) && (row[c] > row[c + 2])) 
+                    if ((   row[c] > row[c - 1]) && (row[c] > row[c + 1]) 
+                        && (row[c] > row[c - 2]) && (row[c] > row[c + 2])
+                        && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
+                        ) 
                          binary[r, c] = 1.0; //maxIntensity;
                     else binary[r, c] = 0.0; // minIntensity;
                 } //end for every col
@@ -530,18 +574,23 @@ namespace TowseyLib
                 {
                     if (binary[r, c] == 0.0) continue;
                     // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
+                    if (binary[r + 1, c]     == 1.0) continue;
                     if (binary[r + 1, c - 1] == 1.0) continue;
                     if (binary[r + 1, c + 1] == 1.0) continue;
-                    if (binary[r + 1, c]     == 1.0) continue;
+
+                    if ((binary[r + 3, c] == 1.0))     binary[r + 2, c] = 1.0; //fill gap
+
+                    if ((binary[r + 2, c - 3] == 1.0)) binary[r + 1, c - 2] = 1.0; //fill gap
+                    if ((binary[r + 2, c + 3] == 1.0)) binary[r + 1, c + 2] = 1.0; //fill gap
+
 
                     if ((binary[r + 2, c]     == 1.0)) binary[r + 1, c] = 1.0; //fill gap
-                    if ((binary[r + 2, c - 2] == 1.0)) binary[r + 2, c - 1] = 1.0; //fill gap
-                    if ((binary[r + 2, c + 2] == 1.0)) binary[r + 2, c+1] = 1.0; //fill gap
-                    if ((binary[r + 3, c] == 1.0))
-                    {
-                        binary[r + 1, c] = 1.0; //fill gap
-                        binary[r + 2, c] = 1.0; //fill gap
-                    }
+                    if ((binary[r + 2, c - 2] == 1.0)) binary[r + 1, c - 1] = 1.0; //fill gap
+                    if ((binary[r + 2, c + 2] == 1.0)) binary[r + 1, c + 1] = 1.0; //fill gap
+
+                    if ((binary[r + 1, c - 2] == 1.0)) binary[r + 1, c - 1] = 1.0; //fill gap
+                    if ((binary[r + 1, c + 2] == 1.0)) binary[r + 1, c + 1] = 1.0; //fill gap
+
 
                     if (binary[r + 1, c + 2] == 1.0) binary[r + 1, c + 1] = 1.0;
                     if (binary[r + 1, c - 2] == 1.0) binary[r + 1, c - 1] = 1.0;
@@ -564,6 +613,116 @@ namespace TowseyLib
             return binary;
         }
 
+
+    /// <summary>
+    ///JOINS DISCONNECTED RIDGES
+    /// </summary>
+    /// <returns></returns>
+        public static double[,] JoinDisconnectedRidgesInBinaryMatrix(double[,] binary)
+        {
+        int rows = binary.GetLength(0);
+        int cols = binary.GetLength(1);
+        double[,] newM = new double[rows, cols];
+        
+            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 3; c < cols - 3; c++)
+                {
+                    if (binary[r, c] == 0.0) continue;
+
+                    newM[r, c] = 1.0;
+                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
+                    if (binary[r + 1, c]     == 1.0) continue;
+                    if (binary[r + 1, c - 1] == 1.0) continue;
+                    if (binary[r + 1, c + 1] == 1.0) continue;
+
+                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1.0; //fill gap
+
+                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1.0; //fill gap
+                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1.0; //fill gap
+
+
+                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1.0; //fill gap
+                    if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1.0; //fill gap
+                    if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1.0; //fill gap
+
+                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1.0; //fill gap
+                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1.0; //fill gap
+
+
+                    if (binary[r + 1, c + 2] == 1.0) newM[r + 1, c + 1] = 1.0;
+                    if (binary[r + 1, c - 2] == 1.0) newM[r + 1, c - 1] = 1.0;
+                }
+            }
+            return newM;
+    }
+
+        /// <summary>
+        /// REMOVE ORPHAN PEAKS
+        /// </summary>
+        /// <param name="binary"></param>
+        /// <returns></returns>
+        public static double[,] RemoveOrphanOnesInBinaryMatrix(double[,] binary)
+        {
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+            double[,] newM = new double[rows,cols];
+            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    if (binary[r, c] == 0.0) continue;
+                    newM[r, c] = 1.0;
+                    if ((binary[r - 1, c] == 0.0)     && (binary[r + 1, c] == 0.0) &&  
+                        (binary[r + 1, c + 1] == 0.0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
+                        (binary[r + 1, c - 1] == 0.0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
+                         newM[r, c] = 0.0;
+                }
+            }
+            return newM;
+        }
+
+
+        public static double[,] IdentifySpectralPeaks(double[,] matrix)
+        {
+            double buffer = 3.0; //dB peak requirement
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL PEAKS
+            double[,] binary = new double[rows, cols];
+            for (int r = 2; r < rows-2; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 2; c < cols - 2; c++)
+                {
+                    //identify a peak
+                    if ((matrix[r, c] > matrix[r, c - 2] + buffer) && (matrix[r, c] > matrix[r, c + 2] + buffer) //same row
+                     && (matrix[r, c] > matrix[r - 2, c] + buffer) && (matrix[r, c] > matrix[r + 2, c] + buffer) //same col
+                     && (matrix[r, c] > matrix[r - 1, c - 1] + buffer) && (matrix[r, c] > matrix[r + 1, c + 1] + buffer) //diagonal
+                     && (matrix[r, c] > matrix[r - 1, c + 1] + buffer) && (matrix[r, c] > matrix[r + 1, c - 1] + buffer))//other diag
+                    {
+                        binary[r, c] = 1.0; // maxIntensity;
+                        binary[r-1, c-1] = 1.0; // maxIntensity;
+                        binary[r+1, c+1] = 1.0; // maxIntensity;
+                        binary[r-1, c+1] = 1.0; // maxIntensity;
+                        binary[r + 1, c - 1] = 1.0; // maxIntensity;
+                        binary[r, c - 1] = 1.0; // maxIntensity;
+                        binary[r, c + 1] = 1.0; // maxIntensity;
+                        binary[r - 1, c] = 1.0; // maxIntensity;
+                        binary[r + 1, c] = 1.0; // maxIntensity;
+                    }
+                    //else binary[r, c] = 0.0; // minIntensity;
+                } //end for every col
+                //binary[r, 0] = 0; // minIntensity;
+                //binary[r, 1] = 0; // minIntensity;
+                //binary[r, cols - 2] = 0; //minIntensity;
+                //binary[r, cols - 1] = 0; //minIntensity;
+            } //end for every row
+
+            return binary;
+        }
+
+        
         /// <summary>
         /// CONVERTs a binary matrix of spectral peak tracks to an output matrix containing the acoustic intensity
         /// in the neighbourhood of those peak tracks.

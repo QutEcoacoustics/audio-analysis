@@ -25,7 +25,8 @@ namespace TowseyLib
             if (step > windowSize)
                 throw new ArgumentException("Frame Step must be <=" + windowSize);
 
-            int framecount = (data.Length - windowSize) / step; //this truncates residual samples
+            int overlap = windowSize - step;
+            int framecount = (data.Length - overlap) / step; //this truncates residual samples
             if (framecount < 2) throw new ArgumentException("Sonogram width must be at least 2");
 
             int offset = 0;

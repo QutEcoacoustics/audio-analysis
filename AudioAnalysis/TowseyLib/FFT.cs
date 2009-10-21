@@ -15,11 +15,12 @@ namespace TowseyLib
 
         public delegate double WindowFunc(int n, int N);
 
-        //public int WindowSize { get; private set; }
+        private double windowPower; //power of the window
+        public double WindowPower { get { return windowPower; } private set { windowPower = value; } }
+
         private int windowSize;
         public int WindowSize { get { return windowSize; } private set { windowSize = value; } }
 
-        //public double[] WindowWeights { get; private set; }
         private double[] windowWeights;
         public double[] WindowWeights { get { return windowWeights; } private set { windowWeights = value; } }
 
@@ -34,37 +35,55 @@ namespace TowseyLib
             this.WindowSize = windowSize;
             if (w != null)
             {
+                //set up the FFT window
                 this.WindowWeights = new double[windowSize];
+                for (int i = 0; i < windowSize; i++) this.WindowWeights[i] = w(i, windowSize);
+
+                //calculate power of the FFT window
+                double power = 0.0;
                 for (int i = 0; i < windowSize; i++)
-                    this.WindowWeights[i] = w(i, windowSize);
+                {
+                    power += (this.WindowWeights[i] * this.WindowWeights[i]);
+                }
+                this.windowPower = power;
             }
         }
 
+
         /// <summary>
-        /// Invokes an FFT on the given data array
+        /// Invokes an FFT on the given data array.
+        /// cdata contains the real and imaginary terms of the coefficients representing cos and sin components respectively.
+        /// cdata is symmetrical about terms 512 & 513. Can ignore all coefficients 512 and above .
         /// </summary>
-        /// <param name="data"></param>
+        /// <param name="data">a single frame of signal values</param>
+        /// <param name="coeffCount">number of coefficients to return</param>
         /// <returns></returns>
-        public double[] Invoke(double[] data)
+        public double[] Invoke(double[] data, int coeffCount)
         {
-            double[] cdata = new double[2 * WindowSize];
+            double[] cdata = new double[2 * WindowSize];//to contain the complex coefficients 
+
+            //apply the window
             if (WindowWeights != null)
-                for (int i = 0; i < WindowSize; i++)
-                    cdata[2 * i] = WindowWeights[i] * data[i];
+                for (int i = 0; i < WindowSize; i++) cdata[2 * i] = WindowWeights[i] * data[i]; //window
             else
-                for (int i = 0; i < WindowSize; i++)
-                    cdata[2 * i] = data[i];
+                for (int i = 0; i < WindowSize; i++) cdata[2 * i] = data[i];  //no window or rectangular window.
 
-            four1(cdata);
+            //for (int i = 0; i < WindowSize; i++) Console.WriteLine(i+"   "+WindowWeights[i]);
+            //Console.ReadLine(); //pause to see window values
 
-            double[] f = new double[WindowSize / 2 + 1];
-            for (int i = 0; i < WindowSize / 2 + 1; i++)
-                f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
+            four1(cdata); //does the FFT
+
+            double[] f = new double[coeffCount]; //array to contain amplitude data
+            for (int i = 0; i < coeffCount; i++)
+                //f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
+                //f[i] = (cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]);
+                f[i] = Math.Sqrt((cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]));
+
             return f;
         }
 
 
-        public double[] Invoke(double[] data, int offset)
+        public double[] Invoke(double[] data, int coeffCount, int offset)
         {
             double[] cdata = new double[2 * WindowSize];
             if (WindowWeights != null)
@@ -76,8 +95,8 @@ namespace TowseyLib
 
             four1(cdata);
 
-            double[] f = new double[WindowSize / 2 + 1];
-            for (int i = 0; i < WindowSize / 2 + 1; i++)
+            double[] f = new double[coeffCount];
+            for (int i = 0; i < coeffCount; i++)
                 f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
             return f;
         }
