@@ -18,7 +18,7 @@ namespace AudioAnalysis
 		public string FileName { get; private set; }
         public string FilePath { get; private set; }
         public byte[] Bytes { get; set; }
-        public int SamplingRate  { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
+        public int SampleRate    { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
         public int BitsPerSample { get { if (wavReader != null) return wavReader.BitsPerSample; else return -999; } }
         #endregion
 
@@ -28,9 +28,9 @@ namespace AudioAnalysis
         /// <param name="bytes"></param>
         public AudioRecording(byte[] bytes)
         {
+            this.FilePath = "UNKNOWN";
             this.Bytes = bytes;
             if (Bytes != null) this.wavReader = new WavReader(bytes);
-            this.FilePath = "UNKNOWN";
         }
         public AudioRecording(string path)
         {
@@ -40,10 +40,11 @@ namespace AudioAnalysis
         }
         public AudioRecording(byte[] bytes, string name)
         {
-            this.Bytes = bytes;
-            if (Bytes != null) this.wavReader = new WavReader(bytes);
             this.FilePath = name;
             this.FileName = Path.GetFileNameWithoutExtension(name);
+            this.Bytes    = bytes;
+            if (Bytes != null) 
+                this.wavReader = new WavReader(bytes);
         }
 
         public AudioRecording(WavReader wavReader)
@@ -56,11 +57,40 @@ namespace AudioAnalysis
             return wavReader;
 		}
 
+        /// <summary>
+        /// Reduces the signal sample rate to 22050Hz. 
+        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
+        /// </summary>
+        public void ConvertSampleRate22kHz()
+        {
+            WavReader signal = GetWavReader();
+            int sr = signal.SampleRate;
+            if(sr == 22050) return; //signal already has required sr
+            sr /= 2;
+            if (sr == 22050)
+            {
+                signal.SubSample(2);
+                return;
+            }
+            sr /= 2;
+            if (sr == 22050)
+            {
+                signal.SubSample(4);
+                return;
+            }
+            Console.WriteLine("WARNING: Cannot reduce signal sample rate to 22050Hz.");
+        }
 
+        /// <summary>
+        /// returns the wave form representation of the signal
+        /// </summary>
+        /// <param name="length"></param>
+        /// <returns></returns>
         public double[,] GetWaveForm(int length)
         {
             double[,] envelope = new double[2, length];
 
+            //get the signal samples
             var wavData = GetWavReader();
             var data = wavData.Samples;
             int sampleCount = data.GetLength(0); // Number of samples in signal
@@ -193,8 +223,8 @@ namespace AudioAnalysis
         public AudioRecording ExportSignal(double startTime, double endTime)
         {
             Console.WriteLine("AudioRecording.Extract()");
-            int startIndex = (int)(startTime * this.SamplingRate);
-            int endIndex   = (int)(endTime   * this.SamplingRate);
+            int startIndex = (int)(startTime * this.SampleRate);
+            int endIndex   = (int)(endTime   * this.SampleRate);
             Console.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
             Console.WriteLine("end  =" + endTime.ToString("F1")  + "s = " + endIndex);
             int sampleCount = endIndex - startIndex + 1;
@@ -203,7 +233,7 @@ namespace AudioAnalysis
             for (int i = 0; i < sampleCount; i++) signal[i] = this.wavReader.Samples[startIndex+i] * 32768; //65536
             //for (int i = 0; i < 100; i++) Console.WriteLine(signal[i]); //debug check for integers
             int channels = 1;
-            WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SamplingRate);
+            WavReader wav = new WavReader(signal, channels, this.BitsPerSample, this.SampleRate);
             var ar = new AudioRecording(wav);
             return ar;
         }
@@ -215,7 +245,7 @@ namespace AudioAnalysis
             //int[] harmonics = { 500, 1000, 2000, 4000 };
             //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
             //WavWriter.WriteWavFile(signal2, sampleRate, path);
-            WavWriter.WriteWavFile(this.wavReader.Samples, this.SamplingRate, path);
+            WavWriter.WriteWavFile(this.wavReader.Samples, this.SampleRate, path);
         }
 
     }// end class AudioRecording

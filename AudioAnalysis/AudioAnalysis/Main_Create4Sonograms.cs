@@ -31,7 +31,8 @@ namespace AudioAnalysis
             //wavPath = wavDirName + wavFileName + ".mp3";
             //recording = new AudioRecording(wavPath);
             //#######################################################################################################
-
+            Console.WriteLine("Original signal Sample Rate=" + recording.SampleRate);
+            //recording.ConvertSampleRate22kHz();
 
             string outputFolder = @"C:\SensorNetworks\Output\"; //default 
             string appConfigPath = "";
@@ -94,9 +95,6 @@ namespace AudioAnalysis
             fn = outputFolder + wavFileName + "_sobel.png";
             image.Save(fn);
             Console.WriteLine("Sobel sonogram to file: " + fn);
-
-            Console.ReadLine();
-
             
             
             

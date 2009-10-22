@@ -35,8 +35,11 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// NOTE: the decibels value is a ratio. Here the ratio is implied.
-        /// dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window.
+        /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
+        /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
+        /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
+        /// NOTE 3: The decibels value is a ratio. Here the ratio is implied.
+        ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
         /// </summary>
         /// <param name="amplitudeM"></param>
         /// <returns></returns>

@@ -93,11 +93,12 @@ namespace AudioAnalysis
             //wavFileName = "BAC10_20081101-045000";
 
             //BRIDGECREEK
-            //wavDirName = @"C:\SensorNetworks\WavFiles\BridgeCreek\";
-            //wavFileName = "cabin_earlyMorning";
+            wavDirName = @"C:\SensorNetworks\WavFiles\BridgeCreek\";
+            wavFileName = "cabin_earlyMorning";
             //wavFileName = "cabin_earlyMorning_StormBird_file0131";
             //wavFileName = "file0044_22kHz";
             //wavFileName = "file0026_22kHz16bit";
+            //wavFileName = "butcherBird6";
 
             //BARAKULA
             //wavDirName = @"C:\SensorNetworks\WavFiles\Barakula\";
@@ -106,8 +107,8 @@ namespace AudioAnalysis
 
 
             //GROUND PARROTS - SCOTT BURNETT
-            wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
-            wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
+            //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
+            //wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
 
             //MISCELLANEOUS
             //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
