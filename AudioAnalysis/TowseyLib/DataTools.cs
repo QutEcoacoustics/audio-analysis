@@ -295,6 +295,7 @@ namespace TowseyLib
 
 
 
+
         /// <summary>
         /// returns the min and max percentile values of the values in passed matrix.
         /// Must have previously calculated the min and max values in the matrix.
@@ -965,18 +966,57 @@ namespace TowseyLib
 			return (ret);
 		}
 
-        public static double[,] MatrixTranspose(double[,] m)
+        //public static double[,] MatrixTranspose(double[,] m)
+        //{
+        //    int rows = m.GetLength(0);
+        //    int cols = m.GetLength(1);
+        //    double[,] ret = new double[cols, rows];
+        //    for (int i = 0; i < rows; i++)
+        //    {
+        //        for (int j = 0; j < cols; j++)
+        //            ret[j, i] = m[i, j];
+        //    }
+        //    return (ret);
+        //}
+        /// <summary>
+        /// performs a matrix transform
+        /// </summary>
+        /// <param name="M">the matrix to transform</param>
+        /// <returns></returns>
+        public static double[,] MatrixTranspose(double[,] M)
         {
- 			int rows = m.GetLength(0);
-			int cols = m.GetLength(1);
-            double[,] ret = new double[cols, rows];
-            for (int i = 0; i < rows; i++)
-            {
-                for (int j = 0; j < cols; j++)
-                    ret[j, i] = m[i, j];
-            }
-            return (ret);
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            double[,] Mt = new double[cols, rows];
+
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                {
+                    Mt[c, r] = M[r, c];
+                }
+            return Mt;
         }
+        /// <summary>
+        /// performs a matrix transform
+        /// </summary>
+        /// <param name="M">the matrix to transform</param>
+        /// <returns></returns>
+        public static byte[,] MatrixTranspose(byte[,] M)
+        {
+            int rows = M.GetLength(0);
+            int cols = M.GetLength(1);
+            byte[,] Mt = new byte[cols, rows];
+
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                {
+                    Mt[c, r] = M[r, c];
+                }
+            return Mt;
+        }
+
+
+
 
 
         /// <summary>

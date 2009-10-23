@@ -303,10 +303,9 @@ namespace TowseyLib
             mnr = NoiseReduce_Standard(matrix, modalNoise);
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
-            double[,] peaks = SNR.IdentifySpectralRidges(mnr);
-            //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
-            //return outM;
-            return peaks;
+            byte[,] binary = SNR.IdentifySpectralRidges(mnr);
+            double[,] op = SNR.SpectralRidges2Intensity(binary, mnr);
+            return op;
         }
 
         public static double[,] NoiseReduce_Peaks(double[,] matrix, double dynamicRange)
@@ -330,26 +329,26 @@ namespace TowseyLib
         }
 
 
-        public static double[,] NoiseReduce_Sobel(double[,] matrix, double dynamicRange)
-        {
-            double[,] mnr = matrix;
-            int startFrameCount = 9;
-            int smoothingWindow = 7;
+        //public static double[,] NoiseReduce_Sobel(double[,] matrix, double dynamicRange)
+        //{
+        //    double[,] mnr = matrix;
+        //    int startFrameCount = 9;
+        //    int smoothingWindow = 7;
 
-            //int NH = 11;
-            //mnr = ImageTools.WienerFilter(mnr, NH);
+        //    //int NH = 11;
+        //    //mnr = ImageTools.WienerFilter(mnr, NH);
 
-            double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
-            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
-            mnr = NoiseReduce_Standard(matrix, modalNoise);
-            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+        //    double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
+        //    modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
+        //    mnr = NoiseReduce_Standard(matrix, modalNoise);
+        //    mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
 
-            double[,] outM = ImageTools.SobelRidgeDetection(mnr);
-            outM = JoinDisconnectedRidgesInBinaryMatrix(outM);
-            outM = SNR.RemoveOrphanOnesInBinaryMatrix(outM);
-            //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
-            return outM;
-        }
+        //    double[,] outM = ImageTools.SobelRidgeDetection(mnr);
+        //    outM = JoinDisconnectedRidgesInBinaryMatrix(outM);
+        //    outM = SNR.RemoveOrphanOnesInBinaryMatrix(outM);
+        //    //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
+        //    return outM;
+        //}
 
         // #############################################################################################################################
         // ################################# NOISE REDUCTION METHODS #################################################################
@@ -540,76 +539,91 @@ namespace TowseyLib
         }// end RemoveBackgroundNoise()
 
 
-        public static double[,] IdentifySpectralRidges(double[,] matrix)
+        public static byte[,] IdentifySpectralRidges(double[,] matrix)
+        {
+            var m1 = matrix;
+            //var m1 = ImageTools.WienerFilter(matrix, 3);
+
+            var binary1 = IdentifySpectralRidgesInTemporalDirection(m1);
+            binary1 = JoinDisconnectedRidgesInBinaryMatrix(binary1);
+
+            var m2 = DataTools.MatrixTranspose(m1);
+            var binary2 = IdentifySpectralRidgesInFreqDirection(m2);
+            binary2 = JoinDisconnectedRidgesInBinaryMatrix(binary2);
+            binary2 = DataTools.MatrixTranspose(binary2);
+
+            //merge the two binary matrices
+            int rows = binary1.GetLength(0);
+            int cols = binary1.GetLength(1);
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                {
+                    if (binary2[r, c] == 1) binary1[r, c] = 1;
+                }
+
+            //int rows = matrix.GetLength(0);
+            //int cols = matrix.GetLength(1);
+            //byte[,] binary1 = new byte[rows,cols];
+            //for (int r = 0; r < rows; r++)
+            //    for (int c = 0; c < cols; c++)
+            //    {
+            //        if ((r % 3 == 0) && (c % 3 == 0)) binary1[r, c] = 1;
+            //    }
+
+            return binary1;
+        }
+
+        public static byte[,] IdentifySpectralRidgesInFreqDirection(double[,] matrix)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
 
             //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
-            double[,] binary = new double[rows, cols];
+            var binary = new byte[rows, cols];
             for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
             {
                 double[] row = DataTools.GetRow(matrix, r);
-                row = DataTools.filterMovingAverage(row, 3);
-                for (int c = 3; c < cols-3; c++)
+                row = DataTools.filterMovingAverage(row, 5);//## SMOOTH FREQ BIN - high value breaks up vertical tracks
+                for (int c = 3; c < cols - 3; c++)
+                {
+                    double d1 = row[c] - row[c - 1];
+                    double d2 = row[c] - row[c + 1];
+                    double d3 = row[c] - row[c - 2];
+                    double d4 = row[c] - row[c + 2];
+                    //identify a peak
+                    if ((d1 > 0.0) && (d2 > 0.0)
+                        && (d3 > 0.0) && (d4 > 0.0)
+                        && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
+                        //&& (d1 > d2)
+                        )
+                        binary[r, c] = 1;
+                } //end for every col
+            } //end for every row
+            return binary;
+        }
+        public static byte[,] IdentifySpectralRidgesInTemporalDirection(double[,] matrix)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            //A: CONVERT MATRIX to BINARY FORM INDICATING SPECTRAL RIDGES
+            var binary = new byte[rows, cols];
+            for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
+            {
+                double[] row = DataTools.GetRow(matrix, r);
+                row = DataTools.filterMovingAverage(row, 5);//## SMOOTH FRAME SPECTRUM - high value breaks up horizontal tracks
+                for (int c = 5; c < cols - 4; c++)
                 {
                     //identify a peak
-                    if ((   row[c] > row[c - 1]) && (row[c] > row[c + 1]) 
+                    if ((row[c] > row[c - 1]) && (row[c] > row[c + 1])
                         && (row[c] > row[c - 2]) && (row[c] > row[c + 2])
                         && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
-                        ) 
-                         binary[r, c] = 1.0; //maxIntensity;
-                    else binary[r, c] = 0.0; // minIntensity;
+                        //&& (row[c] > row[c - 4]) && (row[c] > row[c + 4])
+                        //&& (row[c] > row[c - 4]) && (row[c] > row[c - 5])
+                        )
+                        binary[r, c] = 1;
                 } //end for every col
-                binary[r, 0] = 0; // minIntensity;
-                binary[r, 1] = 0; // minIntensity;
-                binary[r, cols - 2] = 0; //minIntensity;
-                binary[r, cols - 1] = 0; //minIntensity;
             } //end for every row
-
-            //B: JOIN DISCONNECTED RIDGES
-            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
-            {
-                for (int c = 1; c < cols - 2; c++)
-                {
-                    if (binary[r, c] == 0.0) continue;
-                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
-                    if (binary[r + 1, c]     == 1.0) continue;
-                    if (binary[r + 1, c - 1] == 1.0) continue;
-                    if (binary[r + 1, c + 1] == 1.0) continue;
-
-                    if ((binary[r + 3, c] == 1.0))     binary[r + 2, c] = 1.0; //fill gap
-
-                    if ((binary[r + 2, c - 3] == 1.0)) binary[r + 1, c - 2] = 1.0; //fill gap
-                    if ((binary[r + 2, c + 3] == 1.0)) binary[r + 1, c + 2] = 1.0; //fill gap
-
-
-                    if ((binary[r + 2, c]     == 1.0)) binary[r + 1, c] = 1.0; //fill gap
-                    if ((binary[r + 2, c - 2] == 1.0)) binary[r + 1, c - 1] = 1.0; //fill gap
-                    if ((binary[r + 2, c + 2] == 1.0)) binary[r + 1, c + 1] = 1.0; //fill gap
-
-                    if ((binary[r + 1, c - 2] == 1.0)) binary[r + 1, c - 1] = 1.0; //fill gap
-                    if ((binary[r + 1, c + 2] == 1.0)) binary[r + 1, c + 1] = 1.0; //fill gap
-
-
-                    if (binary[r + 1, c + 2] == 1.0) binary[r + 1, c + 1] = 1.0;
-                    if (binary[r + 1, c - 2] == 1.0) binary[r + 1, c - 1] = 1.0;
-                }
-            }
-
-            //C: REMOVE ORPHAN PEAKS
-            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
-            {
-                for (int c = 1; c < cols - 1; c++)
-                {
-                    if (binary[r, c] == 0.0) continue;
-                    if (//(binary[r-1, c] == 0.0) && (binary[r + 1, c] == 0.0) &&  //not needed in same column
-                        (binary[r + 1, c + 1] == 0.0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
-                        (binary[r + 1, c - 1] == 0.0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
-                        binary[r, c] = 0.0;
-                }
-            }
-
             return binary;
         }
 
@@ -618,11 +632,11 @@ namespace TowseyLib
     ///JOINS DISCONNECTED RIDGES
     /// </summary>
     /// <returns></returns>
-        public static double[,] JoinDisconnectedRidgesInBinaryMatrix(double[,] binary)
+        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary)
         {
         int rows = binary.GetLength(0);
         int cols = binary.GetLength(1);
-        double[,] newM = new double[rows, cols];
+        byte[,] newM = new byte[rows, cols];
         
             for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
             {
@@ -630,28 +644,26 @@ namespace TowseyLib
                 {
                     if (binary[r, c] == 0.0) continue;
 
-                    newM[r, c] = 1.0;
+                    newM[r, c] = 1;
                     // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
-                    if (binary[r + 1, c]     == 1.0) continue;
-                    if (binary[r + 1, c - 1] == 1.0) continue;
-                    if (binary[r + 1, c + 1] == 1.0) continue;
+                    if (binary[r + 1, c]     == 1) continue;
+                    if (binary[r + 1, c - 1] == 1) continue;
+                    if (binary[r + 1, c + 1] == 1) continue;
 
-                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1.0; //fill gap
+                    //fill in the same column
+                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1; //fill gap
+                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1; //fill gap
 
-                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1.0; //fill gap
-                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1.0; //fill gap
-
-
-                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1.0; //fill gap
-                    if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1.0; //fill gap
-                    if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1.0; //fill gap
-
-                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1.0; //fill gap
-                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1.0; //fill gap
+                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1; //fill gap
+                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1; //fill gap
 
 
-                    if (binary[r + 1, c + 2] == 1.0) newM[r + 1, c + 1] = 1.0;
-                    if (binary[r + 1, c - 2] == 1.0) newM[r + 1, c - 1] = 1.0;
+                    //if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
+                    //if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+
+                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
+                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+
                 }
             }
             return newM;
@@ -662,24 +674,43 @@ namespace TowseyLib
         /// </summary>
         /// <param name="binary"></param>
         /// <returns></returns>
-        public static double[,] RemoveOrphanOnesInBinaryMatrix(double[,] binary)
+        public static byte[,] RemoveOrphanOnesInBinaryMatrix(byte[,] binary)
         {
             int rows = binary.GetLength(0);
             int cols = binary.GetLength(1);
-            double[,] newM = new double[rows,cols];
+            byte[,] newM = new byte[rows, cols];
             for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
             {
                 for (int c = 1; c < cols - 1; c++)
                 {
                     if (binary[r, c] == 0.0) continue;
-                    newM[r, c] = 1.0;
-                    if ((binary[r - 1, c] == 0.0)     && (binary[r + 1, c] == 0.0) &&  
-                        (binary[r + 1, c + 1] == 0.0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
-                        (binary[r + 1, c - 1] == 0.0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
-                         newM[r, c] = 0.0;
+                    newM[r, c] = 1;
+                    if ((binary[r - 1, c] == 0)     && (binary[r + 1, c] == 0.0) &&  
+                        (binary[r + 1, c + 1] == 0) && (binary[r, c + 1] == 0.0) && (binary[r - 1, c + 1] == 0.0) &&
+                        (binary[r + 1, c - 1] == 0) && (binary[r, c - 1] == 0.0) && (binary[r - 1, c - 1] == 0.0))
+                         newM[r, c] = 0;
                 }
             }
             return newM;
+        }
+
+        public static byte[,] ThresholdBinarySpectrum(byte[,] binary, double[,] m, double threshold)
+        {
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+            byte[,] mOut = new byte[rows, cols];
+            for (int r = 1; r < rows - 1; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 1; c < cols - 1; c++)
+                {
+                    //Console.WriteLine("m[r, c]=" + m[r, c]);
+                    if (binary[r, c] == 0) continue;
+                    if (m[r, c] < threshold) { mOut[r, c] = 0;
+                    }
+                    else mOut[r, c] = 1;
+                }
+            }
+            return mOut;
         }
 
 
@@ -730,7 +761,7 @@ namespace TowseyLib
         /// <param name="binary">The spectral peak tracks</param>
         /// <param name="matrix">The original sonogram</param>
         /// <returns></returns>
-        public static double[,] SpectralRidges2Intensity(double[,] binary, double[,] sonogram)
+        public static double[,] SpectralRidges2Intensity(byte[,] binary, double[,] sonogram)
         {
             //speak track neighbourhood
             int rNH = 5;
@@ -769,6 +800,79 @@ namespace TowseyLib
                 }
             }
             return outM;
+        }
+
+
+        public static byte[,] PickOutLines(byte[,] binary)
+        {
+            int N = 7;
+            int L = N - 1;
+            int side = N / 2;
+            int threshold = N-1; //6 out 7 matches required
+
+            //initialise the syntactic elements - four straight line segments
+            int[,] LH00 = new int[2,L];     //{ {0,0,0,0,0,0 }, {-3,-2,-1,1,2,3 } };
+            for (int i = 0; i < L; i++) LH00[0, i] = 0;
+            for (int i = 0; i < side; i++) LH00[1, i] = i-side;
+            for (int i = 0; i < side; i++) LH00[1, side+i] = i+1;
+
+            int[,] LV90 = new int[2, L];     // = { { -3, -2, -1, 1, 2, 3 }, { 0, 0, 0, 0, 0, 0 } };
+            for (int i = 0; i < L; i++)    LV90[1, i] = 0;
+            for (int i = 0; i < side; i++) LV90[0, i] = i - side;
+            for (int i = 0; i < side; i++) LV90[0, side + i] = i + 1;
+
+
+            int[,] Lp45 = { { 3, 2, 1, -1, -2, -3 }, { -3, -2, -1, 1, 2, 3 } };
+            int[,] Lm45 = { { -3, -2, -1, 1, 2, 3 }, { -3, -2, -1, 1, 2, 3 } };
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+
+            byte[,] op = new byte[rows, cols];
+            for (int r = side; r < rows - side; r++) //row at a time, each row = one frame.
+            {
+                for (int c = side; c < cols - side; c++)
+                {
+                    int HL00sum = binary[r, c];
+                    int VL90sum = binary[r, c];
+                    int Lm45sum = binary[r, c];
+                    int Lp45sum = binary[r, c];
+
+                    for (int i = 0; i < L; i++)
+                    {
+                        if (binary[r + LH00[0, i], c + LH00[1, i]] == 1) HL00sum++;
+                        if (binary[r + LV90[0, i], c + LV90[1, i]] == 1) VL90sum++;
+                  //      if (binary[r + Lm45[0, i], c + Lm45[1, i]] == 1) Lm45sum++;
+                  //      if (binary[r + Lp45[0, i], c + Lp45[1, i]] == 1) Lp45sum++;
+                    }
+
+                    int[] scores = new int[4];
+                    scores[0] = HL00sum;
+                    scores[1] = Lp45sum;
+                    scores[2] = VL90sum;
+                    scores[3] = Lm45sum;
+                    int maxIndex = 0;
+                    DataTools.getMaxIndex(scores, out maxIndex);
+
+                    if ((maxIndex == 0) && (HL00sum >= threshold))
+                    {
+                        for (int i = 0; i < L; i++) op[r + LH00[0, i], c + LH00[1, i]] = 1;
+                    }
+                    //if ((maxIndex == 1) && (Lp45sum >= threshold))
+                    //{
+                    //    for (int i = 0; i < L; i++) op[r + Lp45[0, i], c + Lp45[1, i]] = 1;
+                    //}
+                    if ((maxIndex == 2) && (VL90sum >= threshold))
+                    {
+                        for (int i = 0; i < L; i++) op[r + LV90[0, i], c + LV90[1, i]] = 1;
+                    }
+                    //if ((maxIndex == 3) && (Lm45sum >= threshold))
+                    //{
+                    //    for (int i = 0; i < L; i++) op[r + Lm45[0, i], c + Lm45[1, i]] = 1;
+                    //}
+
+                }
+            }
+            return op;
         }
 
 
