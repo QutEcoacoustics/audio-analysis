@@ -202,6 +202,19 @@ namespace AudioAnalysis
         }
 
 
+        public void SetBinarySpectrum(byte[,] binary)
+        {
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+            var m = new double[rows, cols];
+            for (int r = 0; r < rows; r++) //init matrix to min
+            {
+                for (int c = 0; c < cols; c++) m[r, c] = (double)binary[r, c]; 
+            }
+
+            this.Data = m;
+        }
+
 		public Image GetImage()
 		{
 			return GetImage(1, false, false);
