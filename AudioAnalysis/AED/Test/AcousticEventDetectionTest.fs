@@ -68,7 +68,7 @@ let aeToMatrixElements () =
     chk (fun ae -> aeToMatrix ae |> Math.Matrix.foralli (f ae))
     
 [<Fact>]
-let separateLargeEventsTest () =
+let testSeparateLargeEvents () =
     let f md =
         let ae2 = loadTestFile "I6b.txt" md |> getAcousticEvents |> separateLargeEvents
         let ae2m = loadEventsFile "AE2.txt" md md.AE2len
