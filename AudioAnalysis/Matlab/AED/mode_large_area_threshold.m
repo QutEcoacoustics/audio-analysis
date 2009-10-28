@@ -33,7 +33,7 @@ if length(numbins)>1
     end
     
     tmploc2 = find(tmp2>0);
-    if (~isempty(tmploc2) & (tmploc2>1))
+    if (~isempty(tmploc2) & (tmploc2>1)) % TODO this is broken
         large_area_thresh = loc2(tmploc2(1)-1); %first minimum in reversed histogram
     end
     

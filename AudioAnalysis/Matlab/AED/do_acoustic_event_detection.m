@@ -174,7 +174,7 @@ I6 = join_horizontal_lines(I6);
 % NOTES: mode_large_area_threshold.m and separate_large_AEs_areas.m are my 
 % functions; isempty.m is a MATLAB function
 if (~isempty(AE)) % do this next step only if acoustic events have been detected
-    big_area_thresh = mode_large_area_threshold(AE); % compute large area threshold for separating acoustic events
+    big_area_thresh = 3000;
     if ~isempty(big_area_thresh)
 %         AE2 = separate_large_AEs_areas_old(AE,L,big_area_thresh,I6); % separate large area events into smaller events
         AE2 = separate_large_AEs_areas(AE,L,big_area_thresh,I6,I1,I2,I3); % separate large area events into smaller events
