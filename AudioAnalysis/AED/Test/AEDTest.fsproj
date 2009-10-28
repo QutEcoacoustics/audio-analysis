@@ -62,6 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FsCheckXunit.fs" />
+    <Compile Include="FsCheckArbs.fs" />
     <Compile Include="Common.fs" />
     <Compile Include="UtilTest.fs" />
     <Compile Include="MatlabTest.fs" />

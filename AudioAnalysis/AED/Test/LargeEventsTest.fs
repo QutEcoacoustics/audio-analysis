@@ -1,5 +1,5 @@
 ﻿open Common
-open GetAcousticEventsTest
+open FsCheckArbs
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.LargeEvents
 open Xunit

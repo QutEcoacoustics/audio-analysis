@@ -4,13 +4,11 @@ open Xunit
 
 [<Fact>]
 let testToBlackAndWhite () =
-    let f t d i j =
-        let i4 = loadTestFile3 d "I3.txt" i j |> toBlackAndWhite t
-        let i4m = loadTestFile3 d "I4.txt" i j
+    let f md =
+        let i4 = loadTestFile4 "I3.txt" md |> toBlackAndWhite md.BWthresh
+        let i4m = loadTestFile4 "I4.txt" md
         matrixFloatEquals i4 i4m 0.001 |> Assert.True
-    // TODO duplicated with Common
-    f 9.0 "BAC2_20071015-045040" 256 5188
-    f 3.0 "GParrots_JB2_20090607-173000.wav_minute_3" 256 5166
+    testAll f
     
        
 [<Fact>]
@@ -44,19 +42,19 @@ let testJoinHorizontalLinesQuick () =
     
 [<Fact>]
 let testJoinHorizontalLines () =
-    let f d i j =
-        let i6b = loadTestFile3 d "I6a.txt" i j |> joinHorizontalLines
-        let i6bm = loadTestFile3 d "I6b.txt" i j
+    let f md =
+        let i6b = loadTestFile4 "I6a.txt" md |> joinHorizontalLines
+        let i6bm = loadTestFile4 "I6b.txt" md
         matrixFloatEquals i6b i6bm 0.001 |> Assert.True
-    test f
+    testAll f
     
 [<Fact>]
 let testJoinVerticalLines () =
-    let f d i j =
-        let i6a = loadTestFile3 d "I4.txt" i j |> joinVerticalLines
-        let i6am = loadTestFile3 d "I6a.txt" i j
+    let f md =
+        let i6a = loadTestFile4 "I4.txt" md |> joinVerticalLines
+        let i6am = loadTestFile4 "I6a.txt" md
         matrixFloatEquals i6a i6am 0.001 |> Assert.True
-    test f
+    testAll f
     
 [<Fact>]
 let testSmallFirstMin () =

@@ -27,11 +27,9 @@ let getAcousticEventsTestQuick () =
 
 [<Fact>]
 let getAcousticEventsTest () =
-    let f d i j ael =
-        let ae = loadTestFile3 d "I6b.txt" i j |> getAcousticEvents |> bounds
-        Assert.Equal(ael, Seq.length ae)
-        let aem = loadEventsFile d "AE.txt" ael    
+    let f md =
+        let ae = loadTestFile4 "I6b.txt" md |> getAcousticEvents |> bounds
+        Assert.Equal(md.AElen, Seq.length ae)
+        let aem = loadEventsFile2 "AE.txt" md    
         Assert.Equal(Seq.sort aem, Seq.sort ae)
-    // TODO duplicated with Common
-    f "BAC2_20071015-045040" 256 5188 1229
-    f "GParrots_JB2_20090607-173000.wav_minute_3" 256 5166 5229
+    testAll f

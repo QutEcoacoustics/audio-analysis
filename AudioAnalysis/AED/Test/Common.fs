@@ -1,7 +1,5 @@
 ﻿module Common
 
-open FsCheck
-open FsCheckXunit
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
 
@@ -9,10 +7,19 @@ open QutSensors.AudioAnalysis.AED.Util
 let test f = Seq.iter (fun (d, i, j) -> f d i j) [("BAC2_20071015-045040", 256, 5188);
                                                   ("GParrots_JB2_20090607-173000.wav_minute_3", 256, 5166)
                                                   ]
+                       
+type TestMetadata = {Dir:string; Irows:int; Icols:int; BWthresh:double; AElen:int}
+let BAC2_20071015_045040 = {Dir="BAC2_20071015-045040"; Irows=256; Icols=5188; BWthresh=9.0; AElen=1229}
+let GParrots_JB2_20090607_173000_wav_minute_3 =
+    {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; Irows=256; Icols=5166; BWthresh=3.0; AElen=5229}
+                          
+let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
 let loadTestFile2 f i j = fileToMatrix (@"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\" + f) i j |> Math.Matrix.of_array2
 
 let loadTestFile3 d f i j = loadTestFile2 (d + @"\" + f) i j
+
+let loadTestFile4 f md = loadTestFile3 md.Dir f md.Irows md.Icols
 
 let loadTestFile f = loadTestFile2 f 256 5188
 
@@ -21,6 +28,12 @@ let loadEventsFile d f j =
     let aem = loadTestFile3 d f 10 j
     let dec x = (int x) - 1
     seq {for i in 0..(j-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
+    
+let loadEventsFile2 f md =
+    // matlab matrix indicies are 1 based, F# is 0 based
+    let aem = loadTestFile3 md.Dir f 10 md.AElen
+    let dec x = (int x) - 1
+    seq {for i in 0..(md.AElen-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
     
 let floatEquals f1 f2 d = abs(f1 - f2) <= d
         
@@ -35,34 +48,3 @@ let matrixFloatEquals (a:matrix) (b:matrix) d =
      done
      true
      
-// FsCheck
-
-let nonNeg = arbitrary |> fmapGen abs
-
-let pos = nonNeg |> fmapGen ((+) 1)
-
-let pairGen = liftGen2 (fun x y -> (x,y))
-                          
-let sequenceGen ms =
-    let k m' m = gen { let! x = m
-                       let! xs = m'
-                       return (x::xs)}
-    List.fold k (gen {return []}) ms
-    
-let replicateGenM n g = List.replicate n g |> sequenceGen
-
-type ArbitraryModifiers = 
-    static member Rectangle () =
-         { new Arbitrary<Rectangle>() with
-            override x.Arbitrary = liftGen4 (fun l t w h -> {Left=l;Top=t;Width=w;Height=h}) nonNeg nonNeg pos pos }
-    static member AcousticEvent () =
-        { new Arbitrary<AcousticEvent>()with
-            override x.Arbitrary = gen { let! rect = arbitrary
-                                         let r, b = right rect, bottom rect
-                                         let! c = choose (1, rect.Height * rect.Width)                                    
-                                         let! elms = pairGen (choose (rect.Top,b)) (choose (rect.Left,r)) |> replicateGenM c 
-                                         return {Bounds=rect;Elements=Set.of_list elms}}} 
-     
-let chk f = 
-    overwriteGenerators<ArbitraryModifiers>()
-    check config f
