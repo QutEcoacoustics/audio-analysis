@@ -7,8 +7,8 @@ open Xunit
 [<Fact>]
 let testToBlackAndWhite () =
     let f md =
-        let i4 = loadTestFile4 "I3.txt" md |> toBlackAndWhite md.BWthresh
-        let i4m = loadTestFile4 "I4.txt" md
+        let i4 = loadTestFile "I3.txt" md |> toBlackAndWhite md.BWthresh
+        let i4m = loadTestFile "I4.txt" md
         matrixFloatEquals i4 i4m 0.001 |> Assert.True
     testAll f
     
@@ -44,16 +44,16 @@ let testJoinHorizontalLinesQuick () =
 [<Fact>]
 let testJoinHorizontalLines () =
     let f md =
-        let i6b = loadTestFile4 "I6a.txt" md |> joinHorizontalLines
-        let i6bm = loadTestFile4 "I6b.txt" md
+        let i6b = loadTestFile "I6a.txt" md |> joinHorizontalLines
+        let i6bm = loadTestFile "I6b.txt" md
         matrixFloatEquals i6b i6bm 0.001 |> Assert.True
     testAll f
     
 [<Fact>]
 let testJoinVerticalLines () =
     let f md =
-        let i6a = loadTestFile4 "I4.txt" md |> joinVerticalLines
-        let i6am = loadTestFile4 "I6a.txt" md
+        let i6a = loadTestFile "I4.txt" md |> joinVerticalLines
+        let i6am = loadTestFile "I6a.txt" md
         matrixFloatEquals i6a i6am 0.001 |> Assert.True
     testAll f
 
@@ -69,14 +69,12 @@ let aeToMatrixElements () =
     
 [<Fact>]
 let separateLargeEventsTest () =
-    let f d i j ael =
-        let ae2 = loadTestFile3 d "I6b.txt" i j |> getAcousticEvents |> separateLargeEvents
-        let ae2m = loadEventsFile d "AE2.txt" ael
+    let f md =
+        let ae2 = loadTestFile "I6b.txt" md |> getAcousticEvents |> separateLargeEvents
+        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
         Assert.Equal(Seq.length ae2m, Seq.length ae2)
         Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
-    // TODO duplicated with GetAcousticEventsTest
-    f "BAC2_20071015-045040" 256 5188 1249 // TODO this had previously used a threshold of 9000
-    f "GParrots_JB2_20090607-173000.wav_minute_3" 256 5166 5291    
+    testAll f        
     
 [<Fact>]
 let testSmallFirstMin () =
@@ -87,20 +85,16 @@ let testSmallFirstMin () =
 
 [<Fact>]
 let testSmallThreshold () =
-    let f d l t r =
-        let ae2m = loadEventsFile d "AE2.txt" l
-        Assert.Equal(r, smallThreshold t ae2m)
-    // TODO duplicated with LargeEventsTest
-    f "BAC2_20071015-045040" 1249 200 200
-    f "GParrots_JB2_20090607-173000.wav_minute_3" 5291 100 55
+    let f md =
+        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
+        Assert.Equal(md.smallThreshOut, smallThreshold md.smallThreshIn ae2m)
+    testAll f
 
 [<Fact>]
 let testFilterOutSmallEvents () =
-    let f d l2 t l3 =
-        let ae2m = loadEventsFile d "AE2.txt" l2
-        let ae3 = filterOutSmallEvents t ae2m
-        let ae3m = loadEventsFile d "AE3.txt" l3
+    let f md =
+        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
+        let ae3 = filterOutSmallEvents md.smallThreshIn ae2m
+        let ae3m = loadEventsFile "AE3.txt" md md.AE3len
         Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
-    // TODO duplicated with testSmallThreshold
-    f "BAC2_20071015-045040" 1249 200 97
-    f "GParrots_JB2_20090607-173000.wav_minute_3" 5291 100 811
+    testAll f

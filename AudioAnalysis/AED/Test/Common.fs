@@ -2,38 +2,25 @@
 
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
-
-// TODO uncurry3                
-let test f = Seq.iter (fun (d, i, j) -> f d i j) [("BAC2_20071015-045040", 256, 5188);
-                                                  ("GParrots_JB2_20090607-173000.wav_minute_3", 256, 5166)
-                                                  ]
                        
-type TestMetadata = {Dir:string; Irows:int; Icols:int; BWthresh:double; AElen:int}
-let BAC2_20071015_045040 = {Dir="BAC2_20071015-045040"; Irows=256; Icols=5188; BWthresh=9.0; AElen=1229}
+type TestMetadata = {Dir:string; Irows:int; Icols:int; BWthresh:double; AElen:int; AE2len:int; smallThreshIn:int; smallThreshOut:int; AE3len:int}
+let BAC2_20071015_045040 =
+    {Dir="BAC2_20071015-045040"; Irows=256; Icols=5188; BWthresh=9.0; AElen=1229; AE2len=1249; smallThreshIn=200; smallThreshOut=200; AE3len=97}
 let GParrots_JB2_20090607_173000_wav_minute_3 =
-    {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; Irows=256; Icols=5166; BWthresh=3.0; AElen=5229}
+    {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; Irows=256; Icols=5166; BWthresh=3.0; AElen=5229; AE2len=5291; smallThreshIn=100; smallThreshOut=55; AE3len=811}
                           
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
-let loadTestFile2 f i j = fileToMatrix (@"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\" + f) i j |> Math.Matrix.of_array2
+// Expects the current directory to be trunk\AudioAnalysis\AED\Test
+let loadTestFile2 d f i j = fileToMatrix (@"matlab\" + d + @"\" + f) i j |> Math.Matrix.of_array2
 
-let loadTestFile3 d f i j = loadTestFile2 (d + @"\" + f) i j
+let loadTestFile f md = loadTestFile2 md.Dir f md.Irows md.Icols
 
-let loadTestFile4 f md = loadTestFile3 md.Dir f md.Irows md.Icols
-
-let loadTestFile f = loadTestFile2 f 256 5188
-
-let loadEventsFile d f j =
+let loadEventsFile f md j =
     // matlab matrix indicies are 1 based, F# is 0 based
-    let aem = loadTestFile3 d f 10 j
+    let aem = loadTestFile2 md.Dir f 10 j
     let dec x = (int x) - 1
     seq {for i in 0..(j-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
-    
-let loadEventsFile2 f md =
-    // matlab matrix indicies are 1 based, F# is 0 based
-    let aem = loadTestFile3 md.Dir f 10 md.AElen
-    let dec x = (int x) - 1
-    seq {for i in 0..(md.AElen-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
     
 let floatEquals f1 f2 d = abs(f1 - f2) <= d
         
