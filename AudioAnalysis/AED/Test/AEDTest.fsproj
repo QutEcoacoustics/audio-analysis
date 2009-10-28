@@ -69,7 +69,6 @@
     <Compile Include="SubbandModeTest.fs" />
     <Compile Include="AcousticEventDetectionTest.fs" />
     <Compile Include="GetAcousticEventsTest.fs" />
-    <Compile Include="LargeEventsTest.fs" />
     <Compile Include="EventPatternRecogTest.fs" />
   </ItemGroup>
   <ItemGroup>
