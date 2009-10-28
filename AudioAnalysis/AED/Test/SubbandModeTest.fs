@@ -12,7 +12,7 @@ let testRowHist () =
 [<Fact>]
 let testRemoveSubbandModeIntensities2 () =
     let f md =
-        let i3 = loadTestFile4 "I2.txt" md |> removeSubbandModeIntensities2
-        let i3m = loadTestFile4 "I3.txt" md
+        let i3 = loadTestFile "I2.txt" md |> removeSubbandModeIntensities2
+        let i3m = loadTestFile "I3.txt" md
         matrixFloatEquals i3 i3m 0.001 |> Assert.True
     testAll f
