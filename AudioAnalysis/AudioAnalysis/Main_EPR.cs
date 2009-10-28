@@ -52,11 +52,6 @@ namespace AudioAnalysis
             Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
             Console.WriteLine("\nsonogram     vs     matlab");
 
-            for (int c=0; c<10; c++)
-            {
-                Console.WriteLine(matrix[0, c] + " vs " + matlabMatrix[c, 0]);
-            }
-
             // transpose matlab
             double[,] matlabMatrixT = new double[matlabMatrix.GetLength(1), matlabMatrix.GetLength(0)];
             for (int x = 0; x < matlabMatrix.GetLength(0); x++)
@@ -67,15 +62,33 @@ namespace AudioAnalysis
                 }
             }
 
+            Console.WriteLine("\nFirst column");
+            for (int c = 0; c < 5; c++)
+                Console.WriteLine(matrix[c, 0] + " vs " + matlabMatrixT[c, 0]);
+
+            Console.WriteLine("\nSecond column");
+            for (int c = 0; c < 5; c++)
+                Console.WriteLine(matrix[c, 1] + " vs " + matlabMatrixT[c, 1]);
+
+            Console.WriteLine("\n Column 245");
+            for (int c = 0; c < 5; c++)
+                Console.WriteLine(matrix[c, 245] + " vs " + matlabMatrixT[c, 245]);
+
+            Console.WriteLine();
+
             // max difference
             double md = 0;
-            for (int x = 0; x < matrix.GetLength(0); x++)
+            for (int f = 0; f < 256; f++)
             {
-                for (int y = 0; y < matrix.GetLength(1); y++)
+                double sum = 0;
+                for (int t = 0; t < 5166; t++)
                 {
-                    double d = Math.Abs(matlabMatrixT[x, y]) - Math.Abs(matrix[x, y]);
+                    double d = Math.Abs(matlabMatrixT[t, f] - matrix[t, f]);
                     if (d > md) md = d;
+                    sum += d;
+                    //if (d > 30) Console.WriteLine("(" + t + "," + f + ")\t" + matrix[t,f] + " vs " + matlabMatrixT[t,f]);
                 }
+                //Console.WriteLine("f=" + f + "\t" + sum / 5166);
             }
             Console.WriteLine("\nMax Difference: " + md);
             
