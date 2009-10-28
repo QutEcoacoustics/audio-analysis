@@ -5,7 +5,7 @@ open QutSensors.AudioAnalysis.AED.Util
                        
 type TestMetadata = {Dir:string; Irows:int; Icols:int; BWthresh:double; AElen:int; AE2len:int; smallThreshIn:int; smallThreshOut:int; AE3len:int}
 let BAC2_20071015_045040 =
-    {Dir="BAC2_20071015-045040"; Irows=256; Icols=5188; BWthresh=9.0; AElen=1229; AE2len=1249; smallThreshIn=200; smallThreshOut=200; AE3len=97}
+    {Dir="BAC2_20071015-045040"; Irows=256; Icols=5188; BWthresh=9.0; AElen=1229; AE2len=1253; smallThreshIn=200; smallThreshOut=200; AE3len=97}
 let GParrots_JB2_20090607_173000_wav_minute_3 =
     {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; Irows=256; Icols=5166; BWthresh=3.0; AElen=5229; AE2len=5291; smallThreshIn=100; smallThreshOut=55; AE3len=811}
                           
