@@ -8,6 +8,20 @@ namespace HMMBuilder
 {
     class Helper
     {
+        /// <summary>
+        /// Computes accuracy of HTK test.
+        /// The method calls CountHits() which normalises the HTK output score. the HTK score is normalised to time duration in seconds. 
+        /// IT SHOULD be normalised to frame count i.e. sequence length. 
+        /// </summary>
+        /// <param name="resultTrue"></param>
+        /// <param name="resultFalse"></param>
+        /// <param name="vocalization"></param>
+        /// <param name="threshold"></param>
+        /// <param name="tpPercent"></param>
+        /// <param name="tnPercent"></param>
+        /// <param name="accuracy"></param>
+        /// <param name="avTPScore"></param>
+        /// <param name="avFPScore"></param>
         public static void ComputeAccuracy(string resultTrue, string resultFalse, ref string vocalization, float threshold,
                              out float tpPercent, out float tnPercent, out float accuracy, out float avTPScore, out float avFPScore)
         {

@@ -20,7 +20,7 @@ namespace HMMBuilder
             htkConfig.LOFREQ = "1000";
             htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
             htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            float threshold = -4000f;  //default = 1900
+            float threshold = -4000f;        //default = 1900
 
 
             //htkConfig.CallName = "CURRAWONG1";
@@ -37,11 +37,11 @@ namespace HMMBuilder
 
             htkConfig.Author       = "Michael Towsey";
             htkConfig.SOURCEFORMAT = "WAV";
-            htkConfig.TARGETKIND   = "MFCC";
+            htkConfig.TARGETKIND   = "MFCC"; //components to include in feature vector
 
             //FRAMING PARAMETERS
             htkConfig.SampleRate     = "22050";    //samples per second //this must be put first inlist of framing parameters
-            htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds
+            htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds - that is a frame every 11.6 millisconds.
             htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
 
             double tr;
@@ -58,10 +58,10 @@ namespace HMMBuilder
 
             //MFCC PARAMETERS
             htkConfig.USEHAMMING = "T";
-            htkConfig.PREEMCOEF  = "0.97";
-            htkConfig.NUMCHANS   = "26";
+            htkConfig.PREEMCOEF  = "0.97"; //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
+            htkConfig.NUMCHANS   = "26";   //size of filter bank
             htkConfig.CEPLIFTER  = "22";
-            htkConfig.NUMCEPS    = "12";
+            htkConfig.NUMCEPS    = "12";   //number of cepstral coefficients
 
             //htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
             htkConfig.WorkingDir  = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
