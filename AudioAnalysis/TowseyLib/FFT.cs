@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+//using MathNet.Numerics;
+using MathNet.Numerics.Transformations;
+
 
 namespace TowseyLib
 {
@@ -11,6 +14,8 @@ namespace TowseyLib
 
     public sealed class FFT
     {
+        RealFourierTransformation rft; //only used if calling the .NET numerical math library
+
         public const string Key_HammingWindow = "HAMMING";
 
         public delegate double WindowFunc(int n, int N);
@@ -27,6 +32,8 @@ namespace TowseyLib
         public FFT(int windowSize) : this(windowSize, null)
         {
         }
+
+
 
         public FFT(int windowSize, WindowFunc w)
         {
@@ -49,6 +56,32 @@ namespace TowseyLib
             }
         }
 
+
+
+        public FFT(int windowSize, WindowFunc w, Boolean dotNetVersion)
+        {
+            if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
+
+            //rft = new RealFourierTransformation();
+            rft = new RealFourierTransformation(TransformationConvention.Matlab);
+
+
+            this.WindowSize = windowSize;
+            if (w != null)
+            {
+                //set up the FFT window
+                this.WindowWeights = new double[windowSize];
+                for (int i = 0; i < windowSize; i++) this.WindowWeights[i] = w(i, windowSize);
+
+                //calculate power of the FFT window
+                double power = 0.0;
+                for (int i = 0; i < windowSize; i++)
+                {
+                    power += (this.WindowWeights[i] * this.WindowWeights[i]);
+                }
+                this.windowPower = power;
+            }
+        }
 
         /// <summary>
         /// Invokes an FFT on the given data array.
@@ -171,6 +204,32 @@ namespace TowseyLib
             }
             return false;
         }
+
+        /// <summary>
+        /// This .NET FFT library was downloaded from  http://www.mathdotnet.com/Iridium.aspx
+        /// The documentation and various examples of code are available at http://www.mathdotnet.com/doc/IridiumFFT.ashx
+        /// 
+        /// NOTE: Although we use a parameter which is supposed to simulate 
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        public double[] InvokeDotNetFFT(double[] data)
+        {
+            if (this.WindowSize != data.Length) return null;
+            int half = WindowSize >> 1;
+
+            if (WindowWeights != null) //apply the window
+                for (int i = 0; i < WindowSize; i++) data[i] = WindowWeights[i] * data[i]; //window
+
+            double[] freqReal, freqImag;
+            rft.TransformForward(data, out freqReal, out freqImag);
+
+            double[] amplitude = new double[half];
+            for (int i = 0; i < half; i++)
+                amplitude[i] = Math.Sqrt((freqReal[i] * freqReal[i]) + (freqImag[i] * freqImag[i]));
+            return amplitude;
+        }
+
 
 
 

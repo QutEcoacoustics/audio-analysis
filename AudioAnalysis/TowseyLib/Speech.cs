@@ -43,22 +43,30 @@ namespace TowseyLib
         /// </summary>
         /// <param name="amplitudeM"></param>
         /// <returns></returns>
-        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate)
+        public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
         {
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
 
             double[,] spectra = new double[frameCount, binCount];
 
-            for (int i = 0; i < frameCount; i++)//foreach time step
+            for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
-                for (int j = 0; j < binCount; j++) //foreach freq bin
+                if (amplitudeM[i, 0] < epsilon)
+                    spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                else
+                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower;
+
+                for (int j = 1; j < binCount; j++) //foreach freq bin
                 {
-                    double amplitude = amplitudeM[i, j];
-                    //double power = amplitude * amplitude / windowPower;
+                    
                     //convert amplitude to decibels, normalising for Hamming Window power and sample rate.
-                    double power = 10 * Math.Log10(amplitude * amplitude / windowPower / sampleRate); 
-                    spectra[i, j] = power;
+                    if (amplitudeM[i, j] < epsilon) 
+                        spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate); 
+                    else
+                        spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
+                        //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower;
                 }
             } //end of all frames
             return spectra;

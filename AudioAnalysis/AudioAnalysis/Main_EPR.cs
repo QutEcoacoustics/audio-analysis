@@ -46,7 +46,7 @@ namespace AudioAnalysis
             Console.WriteLine("SampleRate=" + sonogram.SampleRate);
 
             // I1.txt contains the sonogram matrix produced by matlab
-            string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
+            string matlabFile = @"C:\SensorNetworks\Software\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.txt";
             double[,] matlabMatrix = Util.fileToMatrix(matlabFile, 256, 5166);
             Console.WriteLine("\nmatlab dims = " + matlabMatrix.GetLength(0) + " x " + matlabMatrix.GetLength(1));
             Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
@@ -77,20 +77,23 @@ namespace AudioAnalysis
             Console.WriteLine();
 
             // max difference
-            double md = 0;
-            for (int f = 0; f < 256; f++)
-            {
-                double sum = 0;
-                for (int t = 0; t < 5166; t++)
-                {
-                    double d = Math.Abs(matlabMatrixT[t, f] - matrix[t, f]);
-                    if (d > md) md = d;
-                    sum += d;
-                    //if (d > 30) Console.WriteLine("(" + t + "," + f + ")\t" + matrix[t,f] + " vs " + matlabMatrixT[t,f]);
-                }
-                //Console.WriteLine("f=" + f + "\t" + sum / 5166);
-            }
-            Console.WriteLine("\nMax Difference: " + md);
+            //double md = 0;
+            //for (int f = 0; f < 256; f++)
+            //{
+            //    double sum = 0;
+            //    for (int t = 0; t < 5166; t++)
+            //    {
+            //        double d = Math.Abs(matlabMatrixT[t, f] - matrix[t, f]);
+            //        if (d > md) md = d;
+            //        sum += d;
+            //        //if (d > 30) Console.WriteLine("(" + t + "," + f + ")\t" + matrix[t,f] + " vs " + matlabMatrixT[t,f]);
+            //    }
+            //    //Console.WriteLine("f=" + f + "\t" + sum / 5166);
+            //}
+            //Console.WriteLine("\nMax Difference: " + md);
+
+            Console.WriteLine("\nFINISHED!");
+            if (true) Console.ReadLine();
             
             
             Console.WriteLine("START: AED");
