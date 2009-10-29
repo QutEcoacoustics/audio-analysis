@@ -326,6 +326,26 @@ namespace HMMBuilder
 
                     #region Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
                 
+                    
+                    double mean = 0.0f;
+                    double variance = 0.0f;
+                    
+                    try
+                    {
+                        //Compute PDF on the lenght of the specific 'vocalization'
+                        Helper.ComputePDF(htkConfig.wltF, 
+                                            ref htkConfig.meanDuration, 
+                                            ref htkConfig.varianceDuration, 
+                                            vocalization);
+                        //Computed P(voc) = P(voc|HTM)*P(voc.lenght|PDF)
+
+                    }
+                    catch 
+                    {
+
+                        good = false;
+                        break;
+                    }
                     //Read the output files
                     try
                     {
@@ -336,25 +356,28 @@ namespace HMMBuilder
                         float avFPScore = 0.0f;
                         int step = 200; //to step the threshold
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - (3*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        htkConfig.meanDuration.TryGetValue(vocalization, out mean);
+                        htkConfig.varianceDuration.TryGetValue(vocalization, out variance);
+
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - (3 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (3 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - (2*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - (2 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (2 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold - step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - step);
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold);
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + step);
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + (2*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + (2 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (2 * step));
 
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, threshold + (3*step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + (3 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                         Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (3 * step));
                     }
                     catch 
