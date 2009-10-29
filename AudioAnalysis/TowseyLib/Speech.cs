@@ -7,7 +7,6 @@ namespace TowseyLib
     public class Speech
     {
 
-
         /// <summary>
         /// NOTE: the decibels value is a ratio. Here the ratio is implied.
         /// This method does not account for power of the window if one is used.
@@ -34,11 +33,14 @@ namespace TowseyLib
             return spectra;
         }
 
+
         /// <summary>
         /// Converts spectral amplitudes directly to dB, normalising for window power and sample rate.
         /// NOTE 1: The window contributes power to the signal which must subsequently be removed from the spectral power.
         /// NOTE 2: Spectral power must be normaliesd for sample rate. Effectively calculate freq power per sample.
-        /// NOTE 3: The decibels value is a ratio. Here the ratio is implied.
+        /// NOTE 3: The power in all freq bins except f=0 must be doubled because the power spectrum is an even function about f=0;
+        ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
+        /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
         /// </summary>
         /// <param name="amplitudeM"></param>
@@ -56,17 +58,15 @@ namespace TowseyLib
                     spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
                 else
                     spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
-                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower;
+                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
 
-                for (int j = 1; j < binCount; j++) //foreach freq bin
-                {
-                    
-                    //convert amplitude to decibels, normalising for Hamming Window power and sample rate.
+                for (int j = 1; j < binCount; j++) //foreach freq bin convert amplitude to dB, normalising for Window power and sample rate.
+                {                     
                     if (amplitudeM[i, j] < epsilon) 
                         spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate); 
                     else
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
-                        //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower;
+                        //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
                 }
             } //end of all frames
             return spectra;
