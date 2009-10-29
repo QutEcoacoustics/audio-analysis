@@ -43,7 +43,7 @@ namespace AudioAnalysis
 
         public double[] DecibelsNormalised { get; protected set; }
         public double Max_dBReference { get; protected set; } // Used to normalise the dB values for MFCCs
-
+        public double epsilon { get; protected set; }         //small value to prevent log of zero value
 
         public int[] SigState { get; protected set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
@@ -78,6 +78,9 @@ namespace AudioAnalysis
 			Duration        = wav.Time;
 			MaxAmplitude    = wav.CalculateMaximumAmplitude();
             double[] signal = wav.Samples;
+            //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
+            epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+
 
 			this.subBand_MinHz = config.MinFreqBand ?? 0;
 			this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
@@ -116,9 +119,7 @@ namespace AudioAnalysis
 			}
 
 			//generate the spectra of FFT AMPLITUDES
-			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
-			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), epsilon);
+			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
 			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
 
 			//EXTRACT REQUIRED FREQUENCY BAND
@@ -137,31 +138,32 @@ namespace AudioAnalysis
 
 
 
-		double[,] MakeAmplitudeSpectra(double[,] frames, TowseyLib.FFT.WindowFunc w, double epsilon)
+		double[,] MakeAmplitudeSpectra(double[,] frames, TowseyLib.FFT.WindowFunc w)
 		{
 			int frameCount = frames.GetLength(0);
 			int N = frames.GetLength(1);  // = FFT windowSize 
 			int coeffCount = N / 2;       // = fft.WindowSize/2;
             int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
-			var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+			//var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+            var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
             this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
             double[,] amplitudeSg = new double[frameCount, coeffCount]; //init amplitude sonogram
 
 			for (int i = 0; i < frameCount; i++)//foreach frame or time step
 			{
-                double[] f1 = fft.Invoke(DataTools.GetRow(frames, i), coeffCount); //returns fft amplitude spectrum
+                double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i), coeffCount); //returns fft amplitude spectrum
 
                 if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
                 for (int j = 0; j < coeffCount; j++) //foreach freq bin
 				{
 					amplitudeSg[i, j] = f1[j]; //transfer amplitude
-					if (amplitudeSg[i, j] < epsilon)
-                        amplitudeSg[i, j] = epsilon; // to prevent possible log of a very small number
 				}
 			} //end of all frames
 			return amplitudeSg;
 		}
+
 
 
         public double[,] ExtractFreqSubband(WavReader wav, int minHz, int maxHz)
@@ -170,7 +172,7 @@ namespace AudioAnalysis
             double[,] frames = DSP.Frames(signal, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), epsilon);
+			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
@@ -597,8 +599,7 @@ namespace AudioAnalysis
             if (Configuration.DoMelScale) m = ApplyFilterBank(m);
 
             //CONVERT AMPLITUDES TO DECIBELS
-            //convert amplitude spectrogram to dB spectrogram
-            m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate);
+            m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.epsilon);
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and store for later use
@@ -699,7 +700,8 @@ namespace AudioAnalysis
             //NOTE!!!! The decibel array has been normalised in 0 - 1.
             Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
 
-            double[,] m = ApplyFilterBank(matrix);//also does mel scale conversion
+            double[,] m = matrix;
+            if (Configuration.DoMelScale) m = ApplyFilterBank(m);
             m = Speech.DecibelSpectra(m);
 
             //NOISE REDUCTION
