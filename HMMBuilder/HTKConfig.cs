@@ -41,6 +41,9 @@ namespace HMMBuilder
         public string LOFREQ { get; set; }
         public string HIFREQ { get; set; }
         public int VecSize { get; set; }
+        //Statistical Data: duration mean and variation of vocalizations in the training set
+        public Dictionary<string, double> meanDuration = new Dictionary<string, double>();
+        public Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
         
         /// <summary>
         /// Table used for computing feature vectors size 
