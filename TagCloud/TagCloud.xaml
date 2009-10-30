@@ -1,0 +1,40 @@
+﻿<UserControl
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:controlsToolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Toolkit" xmlns:layoutToolkit="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls.Layout.Toolkit" mc:Ignorable="d" xmlns:controls="clr-namespace:System.Windows.Controls;assembly=System.Windows.Controls" x:Class="TagCloud.TagCloud"
+    Background="Black" d:DesignWidth="240" d:DesignHeight="190" >
+	<UserControl.Resources>
+		<ResourceDictionary>
+			<ResourceDictionary.MergedDictionaries>
+				<ResourceDictionary Source="ProjectDataSources.xaml"/>
+			</ResourceDictionary.MergedDictionaries>
+			
+			<DataTemplate x:Key="TagTemplate" >
+				<StackPanel Orientation="Horizontal">
+					<TextBlock  HorizontalAlignment="Left" VerticalAlignment="Bottom"  Text="(" TextWrapping="Wrap"/>
+					<TextBlock  HorizontalAlignment="Left" VerticalAlignment="Bottom"   TextWrapping="Wrap" Text="{Binding Weighting, Mode=OneWay}"/>
+					<TextBlock  HorizontalAlignment="Left" VerticalAlignment="Bottom"  Text=")" TextWrapping="Wrap"/>
+					<TextBlock  HorizontalAlignment="Left" VerticalAlignment="Bottom"  Text="{Binding Name, Mode=OneWay}" TextWrapping="Wrap"/>
+				</StackPanel>
+			</DataTemplate>
+		</ResourceDictionary>
+	</UserControl.Resources>
+    
+	<UserControl.DataContext>
+		<Binding Mode="OneWay" Source="{StaticResource SampleDataSource}"/>
+	</UserControl.DataContext>
+    <Grid x:Name="LayoutRoot" Background="Transparent">
+    	<controls:TabControl>
+    		<controls:TabItem Header="Cloud">
+    			<Grid>
+    				<Canvas x:Name="CloudCanvas" Background="#FFBB9090"/>
+    			</Grid>
+    		</controls:TabItem>
+    		<controls:TabItem x:Name="ListtabItem" Header="List">
+    			<Grid x:Name="grid">
+    				<ListBox ItemsSource="{Binding Collection, Mode=OneWay}" ItemTemplate="{StaticResource TagTemplate}"/>
+    			</Grid>
+    		</controls:TabItem>
+    	</controls:TabControl>
+    </Grid>
+</UserControl>
