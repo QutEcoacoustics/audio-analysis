@@ -13,7 +13,7 @@ working_path = pwd;
 % OTHER PARAMETERS - hardcoded for the moment
 window = 512; % hamming window using 512 samples
 noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2-1; % yield 512 frequency bins
+nfft = 256*2; % yield 512 frequency bins
 
 
 
