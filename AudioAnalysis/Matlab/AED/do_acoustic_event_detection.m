@@ -26,7 +26,7 @@ fmax = 11025;
 % STEP 1: GENERATE SPECTROGRAM
 window = 512; % hamming window using 512 samples
 noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2-1; % yield 512 frequency bins
+nfft = 256*2; % yield 512 frequency bins
 [S,F,T,P] = spectrogram(y,window,noverlap,nfft,fs);
 figure(1), clf, imagesc(T,F,10*log10(abs(P)));
 axis xy; axis tight; colormap(gray); view(0,90);
