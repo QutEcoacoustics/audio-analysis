@@ -30,15 +30,14 @@ namespace HMMBuilder
 
             //*******************************************************************************************************************
             //COMMENT THESE LINES BEFORE DEPLOYMENT
-            templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               //ARG 1
-            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
+            //templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               //ARG 1
+            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
-            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //*******************************************************************************************************************
 
 
-            float threshold = -2500f;
             htkConfig.CallName = Path.GetFileNameWithoutExtension(templateFN);
 
             //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
@@ -92,6 +91,12 @@ namespace HMMBuilder
             Console.WriteLine("HTK DONE");
             //Console.ReadLine();
 
+            string key = "HTK_THRESHOLD";
+            string thresholdStr = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
+            //float threshold = -2500f;
+            float threshold = float.Parse(thresholdStr);
+            Console.WriteLine("threshold= " + threshold);
+
 
             Console.WriteLine("\n\nParsing the HMM results file");
             Console.WriteLine(" There must be ONE AND ONLY ONE header line.");
@@ -107,10 +112,10 @@ namespace HMMBuilder
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
-            double thresholdFraction = 0.2;
+            double thresholdFraction = 0.2;//for display purposes only. Fraction of the score track devoted to sub-threshold scores
             double[] hmmScores = ParseHmmScores(hmmResults, sonogram.Duration, sonogram.FrameCount, htkConfig.CallName,
                                                 threshold, thresholdFraction);
-            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 0.0, 1.0, 0.2));
+            image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 0.0, 1.0, thresholdFraction));
 
 
             string fName = Path.GetFileNameWithoutExtension(testWavFile);
@@ -141,7 +146,7 @@ namespace HMMBuilder
             double offset = (thresholdFraction * threshold) / (1 - thresholdFraction);
             //Console.WriteLine("offset=" + offset);
             double min = threshold + offset;
-            //Console.WriteLine("min=" + min);
+            Console.WriteLine("min=" + min);
 
             //Console.WriteLine("duration.TotalSeconds=" + duration.TotalSeconds);
             double[] scores = new double[frameCount];
@@ -151,25 +156,29 @@ namespace HMMBuilder
                 //Console.WriteLine(i+ "  " + results[i]);
                 if ((results[i] == "") || (results[i].StartsWith("."))) continue;
                 if ((results[i].StartsWith("\"")) || (results[i].StartsWith("#"))) continue;
-                string[] words = results[i].Split(' ');
-                long start = long.Parse(words[0]);
+                long start;
+                long end;
+                string className;
+                double score;
+                Helper.ParseResultLine(results[i], out start, out end, out className, out score);
                 double startSec = start / (double)10000000;  //start in seconds
-                long end = long.Parse(words[1]);
                 double endSec = end / (double)10000000;  //start in seconds
-                string className = words[2];
-                double score = Double.Parse(words[3]);
 
-                score = (score - min) / Math.Abs(min); //normalise score between 0 - 1.
-                if (score < min) score = min;
+                double normScore = (score - min) / Math.Abs(min); //normalise score between 0 - 1.
+                if (normScore < min) normScore = min;
 
                 int startFrame = (int)((startSec / (double)duration.TotalSeconds) * frameCount);
                 int endFrame = (int)((endSec / (double)duration.TotalSeconds) * frameCount);
-                //Console.WriteLine("startSec=" + startSec + "    endSec=" + endSec + "  startFrame=" + startFrame + "    endFrame=" + endFrame);
                 if (className.StartsWith(targetClass))
+                {
+                    Console.WriteLine("sec=" + startSec.ToString("f1") + " - " + endSec.ToString("f1") +
+                                      "  frames=" + startFrame + "-" + endFrame + "  score=" + score.ToString("f0") + "  normScore=" + normScore.ToString("f2"));
+
                     for (int s = startFrame; s <= endFrame; s++)
                     {
                         scores[s] = score;
                     }
+                }
             }
             return scores;
         }
