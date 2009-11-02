@@ -342,15 +342,12 @@ namespace HMMBuilder
                     if (Regex.IsMatch(txtLine, @"^\d+\s+\d+\s+\w+") &&
                         valid)
                     {
-                        //Console.WriteLine(txtLine);
-                        string[] param = Regex.Split(txtLine, @"\s+");
-                        long start = long.Parse(param[0]);
-                        long end = long.Parse(param[1]);
-                        float score = float.Parse(param[3]);
-                        double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
-                        double normScore = score / duration;
-                        //if (param[2].Equals(vocalization) && score >= threshold)
-                        if (param[2].Equals(vocalization) && normScore >= threshold)
+                        long start;
+                        long end;
+                        string name;
+                        double normScore;
+                        ParseResultLine(txtLine, out start, out end, out name, out normScore);
+                        if (name.Equals(vocalization) && normScore >= threshold)
                         {
                             //Console.WriteLine("duration=" + duration + "   normScore=" + normScore);
                             //avScore += score;
@@ -382,7 +379,16 @@ namespace HMMBuilder
         } //end Mehtod CountHits()
 
 
-
+        public static void ParseResultLine(string txtLine, out long  start, out long  end, out string vocalName, out double normScore)
+        {
+            string[] param = Regex.Split(txtLine, @"\s+");
+            start     = long.Parse(param[0]);
+            end       = long.Parse(param[1]);
+            vocalName = param[2];
+            float score = float.Parse(param[3]);
+            double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
+            normScore = score / duration; //IMPORTANT!!!! NORMALISE SCORE FOR DURATION
+        }
 
 
 
