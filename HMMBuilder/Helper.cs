@@ -186,7 +186,18 @@ namespace HMMBuilder
             accuracy = tpPercent + tnPercent;
         } //end method ComputeAccuracy()
 
-
+        /// <summary>
+        /// New version of CountHits() made by Alfredo .
+        /// It also computes a QULAITY SCORE based on hit duration
+        /// </summary>
+        /// <param name="resultFile"></param>
+        /// <param name="vocalization"></param>
+        /// <param name="mean"></param>
+        /// <param name="variance"></param>
+        /// <param name="threshold"></param>
+        /// <param name="hits"></param>
+        /// <param name="total"></param>
+        /// <param name="avScore"></param>
         public static void CountHits(string resultFile, ref string vocalization, 
                                      double mean , double variance,
                                      float threshold, out int hits, out int total, out float avScore)
@@ -304,7 +315,15 @@ namespace HMMBuilder
         } //end method ComputeAccuracy()
 
 
-
+        /// <summary>
+        /// old verison of CountHits before ALfredo made a 9 argument version.
+        /// </summary>
+        /// <param name="resultFile"></param>
+        /// <param name="vocalization"></param>
+        /// <param name="threshold"></param>
+        /// <param name="hits"></param>
+        /// <param name="total"></param>
+        /// <param name="avScore"></param>
         public static void CountHits(string resultFile, ref string vocalization, float threshold, out int hits, out int total, out float avScore)
         {
             //TO DO: check if the file exists
