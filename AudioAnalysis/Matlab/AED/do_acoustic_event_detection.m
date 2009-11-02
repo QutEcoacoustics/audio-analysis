@@ -15,7 +15,10 @@ warning off % this line is included to suppress the warning that MATLAB
 addpath('../Common')
 [y,fs,S,F,T,P,fmax,tmax] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
 
-figure(1), clf, imagesc(T,F,10*log10(abs(P)));
+% convert amplitude to dB
+I1 = 10*log10(abs(P));
+
+figure(1), clf, imagesc(T,F,I1);
 axis xy; axis tight; colormap(gray); view(0,90);
 colorbar
 set(gca,'XTick',[0:10:tmax],'FontSize',20)
@@ -24,21 +27,6 @@ title('Original Image','FontSize',20)
 ylabel('Frequency (kHz)','FontSize',20)
 xlabel('Time (s)','FontSize',20)
 % maximise this image on your screen for optimal viewing
-
-
-% convert amplitude to dB
-I1 = 10*log10(abs(P));
-% figure(10), clf, imagesc(T,F,I1);
-% axis xy; axis tight; colormap(gray); view(0,90);
-% xlabel('Time (s)');
-% ylabel('Frequency (Hz)');
-% colorbar
-% set(gca,'XTick',[0:10:tmax],'FontSize',20)
-% set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-% title('Original Image with Marqueed Acoustic Events','FontSize',20)
-% ylabel('Frequency (kHz)','FontSize',20)
-% xlabel('Time (s)','FontSize',20)
-% % maximise this image on your screen for optimal viewing
 
 
 % STEP 2: WIENER FILTERING
@@ -220,4 +208,3 @@ if (~isempty(AE3))
     % maximise this image on your screen for optimal viewing
 
 end
-
