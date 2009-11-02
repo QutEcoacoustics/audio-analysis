@@ -64,7 +64,7 @@ namespace AudioAnalysis
 
             //Second translate freq dimension = freq bins = matrix columns.
             int leftCol; int rightCol;
-            Freq2ColumnIDs(doMelscale, this.MinFreq, this.MaxFreq, out leftCol, out rightCol);
+            Freq2BinIDs(doMelscale, this.MinFreq, this.MaxFreq, out leftCol, out rightCol);
 
             this.oblong   = new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
@@ -81,7 +81,7 @@ namespace AudioAnalysis
             this.StartTime = startTime;
             this.Duration = duration;
             int minF; int maxF;
-            ColumnIDs2Freq(o.c1, o.c2, out minF, out maxF);
+            BinIDs2Freq(o.c1, o.c2, out minF, out maxF);
             this.MinFreq = minF;
             this.MaxFreq = maxF;
         }
@@ -128,32 +128,37 @@ namespace AudioAnalysis
         /// <param name="maxF"></param>
         /// <param name="leftCol"></param>
         /// <param name="rightCol"></param>
-        public static void Freq2ColumnIDs(bool doMelscale, int minFreq, int maxFreq, out int leftCol, out int rightCol)
+        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, out int leftCol, out int rightCol)
         {
-            leftCol  = (int)Math.Round(minFreq / FreqBinWidth);
-            rightCol = (int)Math.Round(maxFreq / FreqBinWidth);
-            if (rightCol >= FreqBinCount) rightCol = FreqBinCount - 1;
+            Freq2BinIDs(doMelscale, minFreq, maxFreq, AcousticEvent.FreqBinCount, AcousticEvent.FreqBinWidth, out leftCol, out rightCol);
+        }
+        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int binCount, double binWidth, 
+            out int leftCol, out int rightCol)
+        {
+            leftCol  = (int)Math.Round(minFreq / binWidth);
+            rightCol = (int)Math.Round(maxFreq / binWidth);
+            if (rightCol >= binCount) rightCol = binCount - 1;
 
             if (doMelscale) //convert min max Hz to mel scale
             {
-                double nyquistFrequency = AcousticEvent.FreqBinCount * AcousticEvent.FreqBinWidth;
-                double maxMel = Speech.Mel(nyquistFrequency);
-                int melRange = (int)(maxMel - 0 + 1);
-                double pixelPerMel = AcousticEvent.FreqBinCount / (double)melRange;
-                leftCol = (int)Math.Round((double)Speech.Mel(minFreq) * pixelPerMel);
+                double nyquistFrequency = binCount * binWidth;
+                double maxMel = Speech.Mel(binCount * binWidth); // the Nyquist Frequency
+                int melRange  = (int)(maxMel - 0 + 1);
+                double pixelPerMel = binCount / (double)melRange;
+                leftCol  = (int)Math.Round((double)Speech.Mel(minFreq) * pixelPerMel);
                 rightCol = (int)Math.Round((double)Speech.Mel(maxFreq) * pixelPerMel);
             }
 
         }
         /// <summary>
         /// converts left and right column IDs to min and max frequency bounds of an event
-        /// WARNING!!! ONLY WORKS FOR LINEAR FREQ SCALE> NEED TO REWRITE FOR MEL SCALE #########################################################
+        /// WARNING!!! ONLY WORKS FOR LINEAR FREQ SCALE> NEED TO REWRITE FOR MEL SCALE ##############################################
         /// </summary>
         /// <param name="leftCol"></param>
         /// <param name="rightCol"></param>
         /// <param name="minFreq"></param>
         /// <param name="maxFreq"></param>
-        public static void ColumnIDs2Freq(int leftCol, int rightCol, out int minFreq, out int maxFreq)
+        public static void BinIDs2Freq(int leftCol, int rightCol, out int minFreq, out int maxFreq)
         {
             minFreq = (int)Math.Round(leftCol  * FreqBinWidth);
             maxFreq = (int)Math.Round(rightCol * FreqBinWidth);
@@ -171,7 +176,7 @@ namespace AudioAnalysis
 
         public static void Time2RowIDs(double startTime, double duration, out int topRow, out int bottomRow)
         {
-            topRow = (int)Math.Round(startTime / AcousticEvent.FrameDuration);
+            topRow    = (int)Math.Round(startTime / AcousticEvent.FrameDuration);
             bottomRow = (int)Math.Round((startTime + duration) / AcousticEvent.FrameDuration);
             //if (topRow < 0) topRow = 0;
         }
