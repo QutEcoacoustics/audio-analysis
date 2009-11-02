@@ -325,6 +325,14 @@ namespace TowseyLib
 
         } //end of WriteArray2File_Formatted
 
+        public static string ReadPropertyFromFile(string fName, string key)
+        {
+            Dictionary<string, string> dict = ReadPropertiesFile(fName);
+            string value;
+            dict.TryGetValue(key, out value);
+            return value;
+        }           
+            
         public static Dictionary<string, string> ReadPropertiesFile(string fName)
         {
 			var table = new Dictionary<string, string>();
