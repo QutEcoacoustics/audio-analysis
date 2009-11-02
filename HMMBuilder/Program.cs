@@ -15,20 +15,18 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            htkConfig.CallName = "CURLEW1";
-            htkConfig.Comment = "Parameters for Curlew";
-            htkConfig.LOFREQ = "1000";
-            htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            float threshold = -4000f;        //default = 1900
-
-
-            //htkConfig.CallName = "CURRAWONG1";
-            //htkConfig.Comment = "Parameters for Currawong";
-            //htkConfig.LOFREQ = "800";
-            //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
+            //htkConfig.CallName = "CURLEW1";
+            //htkConfig.Comment = "Parameters for Curlew";
+            //htkConfig.LOFREQ = "1000";
+            //htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            //float threshold = -4000f;      //magic number for Currawong is -1900f
+
+
+            htkConfig.CallName = "CURRAWONG1";
+            htkConfig.Comment = "Parameters for Currawong";
+            htkConfig.LOFREQ = "800";
+            htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
+            htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
 
             //==================================================================================================================
@@ -326,27 +324,8 @@ namespace HMMBuilder
 
                     #region Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
                 
-                    
-                    double mean = 0.0f;
-                    double variance = 0.0f;
-                    
-                    try
-                    {
-                        //Compute PDF on the lenght of the specific 'vocalization'
-                        Helper.ComputePDF(htkConfig.wltF, 
-                                            ref htkConfig.meanDuration, 
-                                            ref htkConfig.varianceDuration, 
-                                            vocalization);
-                        //Computed P(voc) = P(voc|HTM)*P(voc.lenght|PDF)
-
-                    }
-                    catch 
-                    {
-
-                        good = false;
-                        break;
-                    }
                     //Read the output files
+                    int optimumThreshold = -Int32.MaxValue;
                     try
                     {
                         float tppercent = 0.0f;
@@ -354,31 +333,21 @@ namespace HMMBuilder
                         float accuracy  = 0.0f;
                         float avTPScore = 0.0f;
                         float avFPScore = 0.0f;
+                        float threshold = -4000f;      //set a central threshold value suitable to create a ROC curve  
                         int step = 200; //to step the threshold
-
-                        htkConfig.meanDuration.TryGetValue(vocalization, out mean);
-                        htkConfig.varianceDuration.TryGetValue(vocalization, out variance);
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - (3 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (3 * step));
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - (2 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - (2 * step));
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold - step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold - step);
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold);
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + step, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + step);
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + (2 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (2 * step));
-
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, ref vocalization, threshold + (3 * step), out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, threshold + (3 * step));
+                        double maxScore = -Double.MaxValue;
+                        for (int i = -5; i <= 6; i++)
+                        {
+                            float t = threshold - (i * step);
+                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, t, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                            Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
+                            if (accuracy > maxScore)
+                            {
+                                maxScore = accuracy;
+                                optimumThreshold = (int)t;
+                            }
+                        }
+                        Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
                     }
                     catch 
                     {
@@ -392,8 +361,8 @@ namespace HMMBuilder
 
                     #region SET UP THE TEMPLATE ZIP FILE
                     string oldSegmentDir = htkConfig.SegmentationDir;
-                    string newSegmentDir = htkConfig.ConfigDir + "\\Segmentation";
-                    Directory.CreateDirectory(newSegmentDir);
+                    string newSegmentDir = htkConfig.ConfigDir;
+                    //Directory.CreateDirectory(newSegmentDir);
 
                     //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
                     string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
@@ -404,12 +373,14 @@ namespace HMMBuilder
                     File.Copy(oldNoiseModel, newNoiseModel, true);
 
                     //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
-                    string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
-                    string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
+                    //string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
+                    //string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
                     string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
                     string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
-                    File.Copy(oldSegmentExePath, newSegmentExePath, true);
+                    //File.Copy(oldSegmentExePath, newSegmentExePath, true);
                     File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
+                    //Append optimum threshold to segmentation ini file
+                    FileTools.Append2TextFile(newSegmentIniPath, "HTK_THRESHOLD=" + optimumThreshold, false);
 
 
                     Console.WriteLine("WRITE HTK FILES");
