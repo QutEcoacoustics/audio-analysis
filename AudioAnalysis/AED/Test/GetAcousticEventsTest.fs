@@ -28,8 +28,8 @@ let getAcousticEventsTestQuick () =
 [<Fact>]
 let getAcousticEventsTest () =
     let f md =
-        let ae = loadTestFile "I6b.txt" md |> getAcousticEvents |> bounds
-        Assert.Equal(md.AElen, Seq.length ae)
-        let aem = loadEventsFile "AE.txt" md md.AElen  
+        let ae = loadTestFile "I6.csv" md |> getAcousticEvents |> bounds
+        let aem = loadEventsFile "AE1.csv" md  
+        Assert.Equal(Seq.length aem, Seq.length ae)
         Assert.Equal(Seq.sort aem, Seq.sort ae)
     testAll f
