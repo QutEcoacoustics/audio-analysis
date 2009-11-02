@@ -12,6 +12,7 @@ function do_acoustic_event_detection
 w = 5; %window length of wxw window used in wiener filtering
 int_thresh = 9; % intensity threshold
 big_area_thresh = 3000;
+small_area_thresh = 200; % maximum cut-off point for area size
 ctmp = colormap(gray); c = flipud(ctmp); %colormap for plotting in grayscale
 
 
@@ -48,7 +49,7 @@ end
 % STEP 9: KEEP LARGE EVENTS ONLY
 AE3 = [];
 if (~isempty(AE2))
-    [AE3,small_area_thresh] = mode_small_area_threshold(AE2); % compute small area threshold for culling acoustic events & cull small events
+    AE3 = mode_small_area_threshold(AE2, small_area_thresh); % compute small area threshold for culling acoustic events & cull small events
 end
 
 % STEP 10: CONVERT ACOUSTIC EVENTS TO TIME AND FREQUENCY
