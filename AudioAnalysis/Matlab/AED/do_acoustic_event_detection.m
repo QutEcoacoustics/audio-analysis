@@ -12,22 +12,9 @@ warning off % this line is included to suppress the warning that MATLAB
             % flashes everytime it displays a sonogram that's too large to 
             % fit image parameters
 
+addpath('../Common')
+[y,fs,S,F,T,P,fmax,tmax] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
 
-txt = '..\\..\\AED\\Test\\matlab\\BAC2_20071015-045040';
-
-
-% read audio data
-[y, fs, nbits, opts] = wavread(strcat(txt,'.wav'));
-% figure(1), plot(y)
-tmax = length(y)/fs; %length of signal in seconds
-fmax = 11025;
-
-
-% STEP 1: GENERATE SPECTROGRAM
-window = 512; % hamming window using 512 samples
-noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2; % yield 512 frequency bins
-[S,F,T,P] = spectrogram(y,window,noverlap,nfft,fs);
 figure(1), clf, imagesc(T,F,10*log10(abs(P)));
 axis xy; axis tight; colormap(gray); view(0,90);
 colorbar
@@ -37,7 +24,6 @@ title('Original Image','FontSize',20)
 ylabel('Frequency (kHz)','FontSize',20)
 xlabel('Time (s)','FontSize',20)
 % maximise this image on your screen for optimal viewing
-
 
 
 % convert amplitude to dB
