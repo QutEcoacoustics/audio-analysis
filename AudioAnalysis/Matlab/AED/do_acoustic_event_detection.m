@@ -25,7 +25,7 @@ show_image(c,I1,T,F,1);
 I2 = wiener2(I1, [w w]);
 
 % STEP 3: GET MODAL INTENSITIES OF SUBBBANDS and REMOVE FROM IMAGE
-I3 = subband_mode_intensities(I2);
+I3 = withoutSubbandModeIntensities(I2);
 
 % STEP 4: CONVERTS IMAGE TO BLACK AND WHITE USING INTENSITY THRESHOLD
 I4 = image_thresh_bw(I3,int_thresh);
