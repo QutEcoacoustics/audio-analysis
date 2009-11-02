@@ -1,4 +1,4 @@
-function show_image(c,I1,T,F,fig_num,AE1)
+function showImage(c,I1,T,F,fig_num,AE1)
 
 
 warning off % this line is included to suppress the warning that MATLAB 

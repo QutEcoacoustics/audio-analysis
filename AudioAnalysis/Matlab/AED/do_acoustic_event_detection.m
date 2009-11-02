@@ -19,7 +19,7 @@ ctmp = colormap(gray); c = flipud(ctmp); %colormap for plotting in grayscale
 addpath('../Common')
 [y,fs,I1,F,T,] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
 [M,N] = size(I1);
-show_image(c,I1,T,F,1);
+showImage(c,I1,T,F,1);
 
 % STEP 2: WIENER FILTERING
 I2 = wiener2(I1, [w w]);
@@ -61,4 +61,4 @@ if (~isempty(AE3))
     AE4(:,3) = F([AE3(2,:)]);
     AE4(:,4) = F([AE3(2,:) + AE3(4,:) - 1]);
 end
-show_image(c,I3,T,F,2,AE4);
+showImage(c,I3,T,F,2,AE4);
