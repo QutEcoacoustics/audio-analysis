@@ -68,3 +68,9 @@ let fileToMatrix f r c =
     let a = Array2D.create r c 0.0
     Array.iteri (fun i (s:string) -> a.[i % r, i / r] <- System.Convert.ToDouble(s)) ls
     a
+    
+let csvToMatrix f =
+    let ls = System.IO.File.ReadAllLines f
+    let xs = Array.map (List.to_array << String.split [',']) ls    
+    let m = Math.Matrix.init (ls.GetLength 0) (Array.length xs.[0]) (fun i j -> System.Convert.ToDouble(xs.[i].[j]))
+    m

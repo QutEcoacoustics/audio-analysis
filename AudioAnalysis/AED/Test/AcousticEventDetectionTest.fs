@@ -7,8 +7,8 @@ open Xunit
 [<Fact>]
 let testToBlackAndWhite () =
     let f md =
-        let i4 = loadTestFile "I3.txt" md |> toBlackAndWhite md.BWthresh
-        let i4m = loadTestFile "I4.txt" md
+        let i4 = loadTestFile "I3.csv" md |> toBlackAndWhite md.BWthresh
+        let i4m = loadTestFile "I4.csv" md
         matrixFloatEquals i4 i4m 0.001 |> Assert.True
     testAll f
     
@@ -44,16 +44,16 @@ let testJoinHorizontalLinesQuick () =
 [<Fact>]
 let testJoinHorizontalLines () =
     let f md =
-        let i6b = loadTestFile "I6a.txt" md |> joinHorizontalLines
-        let i6bm = loadTestFile "I6b.txt" md
+        let i6b = loadTestFile "I5.csv" md |> joinHorizontalLines
+        let i6bm = loadTestFile "I6.csv" md
         matrixFloatEquals i6b i6bm 0.001 |> Assert.True
     testAll f
     
 [<Fact>]
 let testJoinVerticalLines () =
     let f md =
-        let i6a = loadTestFile "I4.txt" md |> joinVerticalLines
-        let i6am = loadTestFile "I6a.txt" md
+        let i6a = loadTestFile "I4.csv" md |> joinVerticalLines
+        let i6am = loadTestFile "I5.csv" md
         matrixFloatEquals i6a i6am 0.001 |> Assert.True
     testAll f
 
@@ -70,8 +70,8 @@ let aeToMatrixElements () =
 [<Fact>]
 let testSeparateLargeEvents () =
     let f md =
-        let ae2 = loadTestFile "I6b.txt" md |> getAcousticEvents |> separateLargeEvents
-        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
+        let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents
+        let ae2m = loadEventsFile "AE2.csv" md
         Assert.Equal(Seq.length ae2m, Seq.length ae2)
         Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
     testAll f        
@@ -86,15 +86,15 @@ let testSmallFirstMin () =
 [<Fact>]
 let testSmallThreshold () =
     let f md =
-        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
+        let ae2m = loadEventsFile "AE2.csv" md
         Assert.Equal(md.smallThreshOut, smallThreshold md.smallThreshIn ae2m)
     testAll f
 
 [<Fact>]
 let testFilterOutSmallEvents () =
     let f md =
-        let ae2m = loadEventsFile "AE2.txt" md md.AE2len
+        let ae2m = loadEventsFile "AE2.csv" md
         let ae3 = filterOutSmallEvents md.smallThreshIn ae2m
-        let ae3m = loadEventsFile "AE3.txt" md md.AE3len
+        let ae3m = loadEventsFile "AE3.csv" md
         Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
     testAll f
