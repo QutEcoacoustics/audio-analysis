@@ -7,10 +7,9 @@ type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThresh
 let BAC2_20071015_045040 =
     {Dir="BAC2_20071015-045040"; BWthresh=9.0; smallThreshIn=200; smallThreshOut=130}
 let GParrots_JB2_20090607_173000_wav_minute_3 =
-    {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; BWthresh=3.0; smallThreshIn=100; smallThreshOut=55}
+    {Dir="GParrots_JB2_20090607-173000.wav_minute_3"; BWthresh=3.0; smallThreshIn=100; smallThreshOut=35}
                           
-//let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
-let testAll f = Seq.iter f [BAC2_20071015_045040]
+let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
 // Expects the current directory to be trunk\AudioAnalysis\AED\Test
 let loadTestFile2 d f = csvToMatrix (@"matlab\" + d + @"\" + f) 
