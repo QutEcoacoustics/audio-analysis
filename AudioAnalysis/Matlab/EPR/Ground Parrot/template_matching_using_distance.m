@@ -1,23 +1,20 @@
-function template_matching_using_distance(name, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, template_name)
+function template_matching_using_distance(name, int_thresh, small_events_thresh, xlsfile, template_name)
 % do template matching on AEs in specific frequency band
-% bmp 20090917
+% bmp 20091102
 
 
 
-working_path = pwd;
+%paths
+addpath('../../Common')
 
 
-% OTHER PARAMETERS - hardcoded for the moment
-window = 512; % hamming window using 512 samples
-noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2; % yield 512 frequency bins
-
+% get acoustic events
+[this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
+allAE = this_results(:,1:4); % all acoustic events
 
 
 % get AEs in a specific freq band
-cd(results_path)
 [all_results,all_txt] = xlsread(xlsfile);
-cd(working_path)
 num_g = size(all_results,1);
 
 
@@ -25,10 +22,9 @@ num_g = size(all_results,1);
 % LOAD AND MANIPULATE TEMPLATE
 % load template
 load(strcat(template_name,'.mat'))
-I3_template = template.I;
-templateAE = template.AE;
 templateT = template.T;
 templateF = template.F;
+templateAE = template.AE;
 lenT = length(templateT);
 lenF = length(templateF);
 
@@ -38,7 +34,6 @@ num_t = size(AE1,1);
 AE1(:,1) = templateAE(:,1)-min(templateAE(:,1));
 AE1(:,3) = templateAE(:,3)-min(templateAE(:,3));
 AE1(:,4) = templateAE(:,4)-min(templateAE(:,3));
-plotAE1 = AE1';
 
 % centroids
 tcAE1 = AE1(:,1) + AE1(:,2)/2; %time domain centroids 
@@ -62,79 +57,34 @@ fsAE1_pixels = round(fsAE1/(templateF(end)-templateF(1))*lenF);
 fsAE1_pixels(fsAE1_pixels<1) = 1;
 fsAE1_pixels(fsAE1_pixels>lenF) = lenF;
 
-
-last_name = [];
+% initialise
+keep_overlap = zeros(num_g,1);
 for ng = 1:num_g
     
-    % variables below are for plotting - later in code
-%    [M,N] = size(I1);
-%    tmax = length(y)/fs; %length of signal in seconds
-%    fmax = 11025;
-%    T = linspace(0,tmax,N);
-%    F = linspace(0,fmax,M);    
-    
-    % GET ACOUSTIC EVENTS
-    cd(file_path_acoustic_events)
-    [this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
-    cd(working_path)
-    allAE = this_results(:,1:4); % all acoustic events
-    % show_image(I2,T,F,tmax,fmax,1,allAE')
-    
     % get AEs in specific freq band - computed in scan_image_for_AEs.m
-    num_d = (all_results(ng,6));
+    num_d = (all_results(ng,5));
     if num_d==1
-        AE_inds = all_results(ng,7);
+        AE_inds = all_results(ng,6);
     else
         dstring = '';
         for nd = 1:num_d;
             dstring = strcat(dstring,'%d');
         end
-        tmp1 = str2mat(all_txt(ng+1,8));
+        tmp1 = str2mat(all_txt(ng+1,6));
         tmp2 = textscan(tmp1, dstring, 1);
         AE_inds = cell2mat(tmp2);
     end
     num_a = length(AE_inds);
     thisAE = allAE(AE_inds,:);
     
-%     show_image(I2,T,F,tmax,fmax,4,allAE')
-%     show_image(I2,T,F,tmax,fmax,4,thisAE',1)
- 
     % find closest centroids when laying image and template on top of each
     % other
-    
-    
-    
-    
-    
-    % UNCOMMENT figure(5), clf and 'hold on' lines to see template
-    %   also
-    % UNCOMMENT figure(5), and 'hold on' lines to see image segments being tested
-    %   also
-    % UNCOMMENT pause after disp(total_overlap), to pause between each new matching test
-    
-    
-    
-    
-    
-    
-    % template AEs - centroid shifted
-%     figure(5), clf
-%     hold on, line([plotAE1(1,:); plotAE1(1,:)+plotAE1(2,:)], [plotAE1(3,:); plotAE1(3,:)],'Color','k')
-%     hold on, line([plotAE1(1,:); plotAE1(1,:)+plotAE1(2,:)], [plotAE1(4,:); plotAE1(4,:)],'Color','k')
-%     hold on, line([plotAE1(1,:); plotAE1(1,:)], [plotAE1(3,:); plotAE1(4,:)],'Color','k')
-%     hold on, line([plotAE1(1,:)+plotAE1(2,:); plotAE1(1,:)+plotAE1(2,:)], [plotAE1(3,:); plotAE1(4,:)],'Color','k')
 
     % test AEs - centroid shifted
     AE2 = thisAE;
     AE2(:,1) = thisAE(:,1)-min(thisAE(:,1));
     AE2(:,3) = thisAE(:,3)-min(thisAE(:,3));
     AE2(:,4) = thisAE(:,4)-min(thisAE(:,3));
-    plotAE2 = AE2';
-%     figure(5), 
-%     hold on, line([plotAE2(1,:); plotAE2(1,:)+plotAE2(2,:)], [plotAE2(3,:); plotAE2(3,:)],'Color','r')
-%     hold on, line([plotAE2(1,:); plotAE2(1,:)+plotAE2(2,:)], [plotAE2(4,:); plotAE2(4,:)],'Color','r')
-%     hold on, line([plotAE2(1,:); plotAE2(1,:)], [plotAE2(3,:); plotAE2(4,:)],'Color','r')
-%     hold on, line([plotAE2(1,:)+plotAE2(2,:); plotAE2(1,:)+plotAE2(2,:)], [plotAE2(3,:); plotAE2(4,:)],'Color','r')
 
     tcAE2 = AE2(:,1) + AE2(:,2)/2; %time domain centroids 
     fcAE2 = AE2(:,3) + (AE2(:,4)-AE2(:,3))/2; %freq domain centroids 
@@ -213,76 +163,12 @@ for ng = 1:num_g
 %         pause
         
     end
-        
-    % store total_overlap
-    cntr = ng+1
-    cd(results_path)
-    xlswrite(xlsfile, total_overlap, strcat('I',num2str(cntr),':I',num2str(cntr)))
-    cd(working_path)
+    keep_overlap(ng) = total_overlap;
     
     disp(total_overlap)
 %     pause
 end
 
-
-function show_image(I1,T1,F1,tmax,fmax,fig_num,AE1,holdonyes)
-
-c = colormap(gray);
-% c = flipud(c);
-
-if nargin ==6
+% store total_overlap
+xlswrite(xlsfile, keep_overlap, strcat('G',num2str(2),':G',num2str(num_g+1)))
     
-    figure(fig_num), clf, imagesc(T1,F1,I1);
-    axis xy; axis tight; colormap(c); view(0,90);
-    ylabel('Frequency (kHz)','FontSize',20)
-    xlabel('Time (s)','FontSize',20)
-    set(gca,'XTick',[0:10:tmax],'FontSize',20)
-        set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-        colorbar
-   
-elseif nargin ==7 
-    
-    if isempty(AE1)
-
-        figure(fig_num), clf, imagesc(T1,F1,I1);
-        axis xy; axis tight; colormap(c); view(0,90);
-        ylabel('Frequency (kHz)','FontSize',20)
-        xlabel('Time (s)','FontSize',20)
-        set(gca,'XTick',[0:10:tmax],'FontSize',20)
-        set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-        colorbar
-    
-    else
-
-        figure(fig_num), clf, imagesc(T1,F1,I1);
-        axis xy; axis tight; colormap(c); view(0,90);
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)+AE1(2,:)], [AE1(3,:); AE1(3,:)],'Color','b')
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)+AE1(2,:)], [AE1(4,:); AE1(4,:)],'Color','b')
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)], [AE1(3,:); AE1(4,:)],'Color','b')
-        figure(fig_num), hold on, line([AE1(1,:)+AE1(2,:); AE1(1,:)+AE1(2,:)], [AE1(3,:); AE1(4,:)],'Color','b')
-        set(gca,'XTick',[0:10:tmax],'FontSize',20)
-        set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-        title('Filtered Image with Marqueed Acoustic Events AE1','FontSize',20)
-        ylabel('Frequency (kHz)','FontSize',20)
-        xlabel('Time (s)','FontSize',20)
-        colorbar
-    end    
-    
-    elseif nargin ==8 
-    
-    if ( ~isempty(AE1) & (holdonyes==1) )
-
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)+AE1(2,:)], [AE1(3,:); AE1(3,:)],'Color','r')
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)+AE1(2,:)], [AE1(4,:); AE1(4,:)],'Color','r')
-        figure(fig_num), hold on, line([AE1(1,:); AE1(1,:)], [AE1(3,:); AE1(4,:)],'Color','r')
-        figure(fig_num), hold on, line([AE1(1,:)+AE1(2,:); AE1(1,:)+AE1(2,:)], [AE1(3,:); AE1(4,:)],'Color','r')
-        set(gca,'XTick',[0:10:tmax],'FontSize',20)
-        set(gca,'YTick',[0:2000:fmax],'FontSize',20)
-        title('Filtered Image with Marqueed Acoustic Events AE1','FontSize',20)
-        ylabel('Frequency (kHz)','FontSize',20)
-        xlabel('Time (s)','FontSize',20)
-        colorbar
-    end    
-end
-
-

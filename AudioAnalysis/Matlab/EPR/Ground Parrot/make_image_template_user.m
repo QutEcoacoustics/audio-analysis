@@ -30,7 +30,7 @@ I3 = withoutSubbandModeIntensities(I2);
 % GET ACOUSTIC EVENTS
 [this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
 allAE = this_results(:,1:4); % all acoustic events
-show_image(c,I3,T,F,1,allAE);
+showImage(c,I3,T,F,1,allAE);
 
 
 
@@ -67,8 +67,8 @@ else
     keepAE = [];
     indAE2 = [];
     for aa=1:numAE
-        show_image(c,I3_seg,thisT1,thisF1,2,AE)
-        show_image(c,I3_seg,thisT1,thisF1,3,AE(aa,:))
+        showImage(c,I3_seg,thisT1,thisF1,2,AE)
+        showImage(c,I3_seg,thisT1,thisF1,3,AE(aa,:))
         user_entry2 = input('Keep acoustic event (if yes hit enter/if no type n)?','s');
         if ~issame(user_entry2,'n')
             keepAE = [keepAE; AE(aa,:)];
@@ -92,7 +92,7 @@ else
     Itemplate = I3_seg(tbottom:ttop,tleft:tright);
     thisT = thisT(tleft:tright);
     thisF = thisF(tbottom:ttop);
-    show_image(c,Itemplate,thisT,thisF,4,keepAE)
+    showImage(c,Itemplate,thisT,thisF,4,keepAE)
     
     
 
