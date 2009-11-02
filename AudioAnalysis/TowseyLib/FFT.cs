@@ -25,6 +25,8 @@ namespace TowseyLib
 
         private int windowSize;
         public int WindowSize { get { return windowSize; } private set { windowSize = value; } }
+        private int coeffCount;
+        public int CoeffCount { get { return coeffCount; } private set { coeffCount = value; } }
 
         private double[] windowWeights;
         public double[] WindowWeights { get { return windowWeights; } private set { windowWeights = value; } }
@@ -40,6 +42,10 @@ namespace TowseyLib
             if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");
 
             this.WindowSize = windowSize;
+            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist  
+
+            //calculate the window weights and power
+            this.WindowPower = windowSize; //the default power of a rectangular window.
             if (w != null)
             {
                 //set up the FFT window
@@ -65,8 +71,11 @@ namespace TowseyLib
             //rft = new RealFourierTransformation();
             rft = new RealFourierTransformation(TransformationConvention.Matlab);
 
-
             this.WindowSize = windowSize;
+            this.CoeffCount = (windowSize / 2) + 1; //f[0]=DC;  f[256]=Nyquist  
+
+            //calculate the window weights and power
+            this.WindowPower = windowSize; //the default power of a rectangular window.
             if (w != null)
             {
                 //set up the FFT window
@@ -91,23 +100,20 @@ namespace TowseyLib
         /// <param name="data">a single frame of signal values</param>
         /// <param name="coeffCount">number of coefficients to return</param>
         /// <returns></returns>
-        public double[] Invoke(double[] data, int coeffCount)
+        public double[] Invoke(double[] data)
         {
-            double[] cdata = new double[2 * WindowSize];//to contain the complex coefficients 
+            double[] cdata = new double[2 * this.WindowSize];//to contain the complex coefficients 
 
             //apply the window
-            if (WindowWeights != null)
-                for (int i = 0; i < WindowSize; i++) cdata[2 * i] = WindowWeights[i] * data[i]; //window
+            if (this.WindowWeights != null)
+                for (int i = 0; i < this.WindowSize; i++) cdata[2 * i] = this.WindowWeights[i] * data[i];
             else
-                for (int i = 0; i < WindowSize; i++) cdata[2 * i] = data[i];  //no window or rectangular window.
+                for (int i = 0; i < this.WindowSize; i++) cdata[2 * i] = data[i];
+            //do the FFT
+            four1(cdata); //array contains real and imaginary values
 
-            //for (int i = 0; i < WindowSize; i++) Console.WriteLine(i+"   "+WindowWeights[i]);
-            //Console.ReadLine(); //pause to see window values
-
-            four1(cdata); //does the FFT
-
-            double[] f = new double[coeffCount]; //array to contain amplitude data
-            for (int i = 0; i < coeffCount; i++)
+            double[] f = new double[this.coeffCount]; //array to contain amplitude data
+            for (int i = 0; i < this.coeffCount; i++) //calculate amplitude
                 //f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
                 //f[i] = (cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]);
                 f[i] = Math.Sqrt((cdata[2 * i] * cdata[2 * i]) + (cdata[2 * i + 1] * cdata[2 * i + 1]));
@@ -116,21 +122,22 @@ namespace TowseyLib
         }
 
 
-        public double[] Invoke(double[] data, int coeffCount, int offset)
+        public double[] Invoke(double[] data, int offset)
         {
-            double[] cdata = new double[2 * WindowSize];
-            if (WindowWeights != null)
-                for (int i = 0; i < WindowSize; i++)
-                    cdata[2 * i] = WindowWeights[i] * data[offset + i];
-            else
-                for (int i = 0; i < WindowSize; i++)
-                    cdata[2 * i] = data[offset + i];
+            double[] cdata = new double[2 * this.WindowSize];//to contain the complex coefficients
 
+            //apply the window
+            if (this.WindowWeights != null)
+                for (int i = 0; i < this.WindowSize; i++) cdata[2 * i] = this.WindowWeights[i] * data[offset + i];
+            else
+                for (int i = 0; i < this.WindowSize; i++) cdata[2 * i] = data[offset + i];
+            //do the FFT
             four1(cdata);
 
-            double[] f = new double[coeffCount];
-            for (int i = 0; i < coeffCount; i++)
+            double[] f = new double[coeffCount]; //array to contain amplitude data
+            for (int i = 0; i < coeffCount; i++) //calculate amplitude
                 f[i] = hypot(cdata[2 * i], cdata[2 * i + 1]);
+
             return f;
         }
 
@@ -209,15 +216,16 @@ namespace TowseyLib
         /// This .NET FFT library was downloaded from  http://www.mathdotnet.com/Iridium.aspx
         /// The documentation and various examples of code are available at http://www.mathdotnet.com/doc/IridiumFFT.ashx
         /// 
-        /// NOTE: Although we use a parameter which is supposed to simulate 
         /// </summary>
         /// <param name="data"></param>
         /// <returns></returns>
         public double[] InvokeDotNetFFT(double[] data)
         {
             if (this.WindowSize != data.Length) return null;
-            int half = WindowSize >> 1;
+            //int half = WindowSize >> 1; //original dot net code returns N/2 coefficients.
+            int half = this.CoeffCount;
 
+            //apply the window
             if (WindowWeights != null) //apply the window
                 for (int i = 0; i < WindowSize; i++) data[i] = WindowWeights[i] * data[i]; //window
 
