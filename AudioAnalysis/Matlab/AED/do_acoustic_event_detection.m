@@ -13,10 +13,7 @@ warning off % this line is included to suppress the warning that MATLAB
             % fit image parameters
 
 addpath('../Common')
-[y,fs,S,F,T,P,fmax,tmax] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
-
-% convert amplitude to dB
-I1 = 10*log10(abs(P));
+[y,fs,I1,F,T,fmax,tmax] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
 
 figure(1), clf, imagesc(T,F,I1);
 axis xy; axis tight; colormap(gray); view(0,90);
