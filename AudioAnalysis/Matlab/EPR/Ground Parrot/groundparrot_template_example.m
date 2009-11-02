@@ -28,6 +28,6 @@ scan_image_for_AEs(name, F, int_thresh, small_events_thresh, xlsfile, template_n
 template_matching_using_distance(name, int_thresh, small_events_thresh, xlsfile, template_name)
 
 
-% % check out results
-% score = 3.5; % rate every score higher than 1.5 (out of 4 if above template is used) as a match
-% examine_all_AE_results(name, y, fs, I1, I2, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, score)
+% check out results
+score = 3.5; % rate every score higher than 1.5 (out of 4 if above template is used) as a match
+examine_all_AE_results(name, I3, T, F, int_thresh, small_events_thresh, xlsfile, score)

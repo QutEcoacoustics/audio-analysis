@@ -1,37 +1,26 @@
-function examine_all_AE_results(name, y, fs, I1, I2, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, match_score)
+function examine_all_AE_results(name, I3, T, F, int_thresh, small_events_thresh, xlsfile, match_score)
 % check out matching results
 % bmp 20090917
 
 
-working_path = pwd;
-
-
-% OTHER PARAMETERS - hardcoded for the moment
-window = 512; % hamming window using 512 samples
-noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2; % yield 512 frequency bins
+ctmp = colormap(gray);
+c = flipud(ctmp);
 
 
 
-[M,N] = size(I1);
-tmax = length(y)/fs; %length of signal in seconds
-fmax = 11025;
-T = linspace(0,tmax,N);
-F = linspace(0,fmax,M);
+[M,N] = size(I3);
+tmax = max(T); %length of signal in seconds
+fmax = max(F);
 
 
 % GET ACOUSTIC EVENTS
-cd(file_path_acoustic_events)
 [this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
-cd(working_path)
 allAE = this_results(:,1:4); % all acoustic events
 num_AE = size(allAE,1);
 
 
 % to read in AEs from a specific pattern...
-cd(results_path)
 [all_results,all_txt] = xlsread(xlsfile);
-cd(working_path)
 num_g = size(all_results,1);
 this_results_list = char(all_txt(2:end,1));
     
@@ -45,39 +34,33 @@ notAE = [];
 isAE = [];
 for ng=1:num_g
 
-    minlen = min(length(name),length(this_results_list(ng,1:end-1)));
-
-    if issame(this_results_list(ng,1:minlen),name(1:minlen))
-
-        % get specific events
-        num_d = (all_results(ng,6));
-        if num_d==1
-            AE_inds = all_results(ng,7);
-        else
-            dstring = '';
-            for nd = 1:num_d;
-                dstring = strcat(dstring,'%d');
-            end
-            tmp1 = str2mat(all_txt(ng+1,8));
-            tmp2 = textscan(tmp1, dstring, 1);
-            AE_inds = cell2mat(tmp2);
+    % get specific events
+    num_d = (all_results(ng,5));
+    if num_d==1
+        AE_inds = all_results(ng,6);
+    else
+        dstring = '';
+        for nd = 1:num_d;
+            dstring = strcat(dstring,'%d');
         end
-        num_a = length(AE_inds);
-        thisAE = allAE(AE_inds,:);
+        tmp1 = str2mat(all_txt(ng+1,6));
+        tmp2 = textscan(tmp1, dstring, 1);
+        AE_inds = cell2mat(tmp2);
+    end
+    num_a = length(AE_inds);
+    thisAE = allAE(AE_inds,:);
 
-        score =  all_results(ng,8);
-        if score < match_score
-            notAE = [notAE; thisAE(1,:)];
-        else
-            isAE = [isAE; thisAE(1,:)];
-        end
+    score =  all_results(ng,7);
+    if score < match_score
+        notAE = [notAE; thisAE(1,:)];
+    else
+        isAE = [isAE; thisAE(1,:)];
     end
 end
 
-
-show_image(I2,T,F,tmax,fmax,6,allAE',name)
-show_image(I2,T,F,tmax,fmax,6,isAE',name,1)
-show_image(I2,T,F,tmax,fmax,6,notAE',name,2)
+showImage(c,I3,T,F,1,allAE)
+showImage(c,I3,T,F,2,isAE)
+showImage(c,I3,T,F,3,notAE)
     
     
     
