@@ -24,15 +24,15 @@ namespace HMMBuilder
             string testWavFile   = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav"; //ARG 2
 
             //GET THE COMMAND LINE ARGUMENTS
-            if (args.Length >= 1) htkConfig.WorkingDir = args[0];
-            if (args.Length >= 2) templateFN           = args[1];
-            if (args.Length == 3) testWavFile          = args[2];
+            if (args.Length >= 1) htkConfig.WorkingDir = args[0]; //where to place output
+            if (args.Length >= 2) templateFN           = args[1]; //template file name
+            if (args.Length == 3) testWavFile          = args[2]; //wav file to process
 
             //*******************************************************************************************************************
             //COMMENT THESE LINES BEFORE DEPLOYMENT
-            templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               // ARG 1
-            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav"; //ARG 2
-            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";       //ARG 2
+            templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               //ARG 1
+            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
+            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //*******************************************************************************************************************
@@ -76,6 +76,9 @@ namespace HMMBuilder
             string dataFN = Path.GetFileName(testWavFile);
             File.Copy(testWavFile, htkConfig.DataDir+"\\"+ dataFN, true);
 
+            Console.WriteLine("RESOURCES IN POSITION");
+            //Console.ReadLine();
+
             //PREPARE THE TEST FILE AND EXTRACT FEATURES
             //write script files
             HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, htkConfig.wavExt, htkConfig.mfcExt);
@@ -86,6 +89,8 @@ namespace HMMBuilder
                             htkConfig.DictFile, htkConfig.resultTest, htkConfig.monophones, htkConfig.HViteExecutable);
 
 
+            Console.WriteLine("HTK DONE");
+            //Console.ReadLine();
 
 
             Console.WriteLine("\n\nParsing the HMM results file");
@@ -108,10 +113,9 @@ namespace HMMBuilder
             image_mt.AddTrack(Image_Track.GetScoreTrack(hmmScores, 0.0, 1.0, 0.2));
 
 
-            Console.WriteLine();
             string fName = Path.GetFileNameWithoutExtension(testWavFile);
             string opFile = htkConfig.ResultsDir + "\\" + fName + ".png";
-            Console.WriteLine("Sonogram will be written to file: " + opFile);
+            Console.WriteLine("\nSonogram will be written to file: " + opFile);
             image_mt.Save(opFile);
             //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults); //WITH HMM SCORE
 
