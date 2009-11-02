@@ -252,8 +252,8 @@ namespace AudioAnalysis
 
                 //bottom axis tick marks
                 for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
-                bmp.SetPixel(x, topOffset, white);                    // top line of scale
-                bmp.SetPixel(x, topOffset - timeScaleHt + 1, white);  // bottom line of scale
+                bmp.SetPixel(x, topOffset, black);                    // top line of scale
+                bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
             } //end of adding time grid
             return bmp;
         }

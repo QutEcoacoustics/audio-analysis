@@ -58,6 +58,7 @@ namespace AudioAnalysis
 
         /// <summary>
         /// Default Constructor
+        /// Initialises a configuration with the default values
         /// </summary>
         public SonogramConfig()
         {
