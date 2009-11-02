@@ -107,12 +107,12 @@ namespace AudioAnalysis
 
 
             //GROUND PARROTS - SCOTT BURNETT
-            //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
-            //wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
+            wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
+            wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
 
             //MISCELLANEOUS
-            wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
-            wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
+            //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
+            //wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
 
             //--------------------------------------------------------------------------------------------------------------
 

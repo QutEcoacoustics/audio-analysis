@@ -58,21 +58,24 @@ namespace AudioAnalysis
 
             //1: prepare image of original sonogram    
             string fn = outputFolder + wavFileName + ".png";
-            if(! File.Exists(fn))
-            {
+          //  if(! File.Exists(fn))
+          //  {
                 image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.Save(fn);
                 Console.WriteLine("Ordinary sonogram to file: " + fn);
-            }
+          //  }
 
             //2: NOISE REMOVAL
             double[,] originalSg = sonogram.Data;
             double[,] mnr        = sonogram.Data;
+            mnr = ImageTools.WienerFilter(mnr, 3);
+
             int smoothingWindow = 7;
 
+            //mnr = SNR.RemoveEcho(mnr);
             //int startFrameCount = 9;
             //double[] modalNoise = SNR.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             //modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
@@ -87,7 +90,7 @@ namespace AudioAnalysis
             byte[,] binary = SNR.IdentifySpectralRidges(mnr);
             binary = SNR.ThresholdBinarySpectrum(binary, mnr, 10);
             binary = SNR.RemoveOrphanOnesInBinaryMatrix(binary);
-            binary = SNR.PickOutLines(binary);
+            //binary = SNR.PickOutLines(binary); //syntactic approach
 
             sonogram.SetBinarySpectrum(binary);
             //sonogram.Data = SNR.SpectralRidges2Intensity(binary, originalSg);

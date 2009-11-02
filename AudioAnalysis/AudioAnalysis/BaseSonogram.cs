@@ -21,14 +21,15 @@ namespace AudioAnalysis
 
 		public double MaxAmplitude { get; private set; }
 		public int SampleRate { get; protected set; }
-		public int NyquistFrequency { get { return SampleRate / 2; } }
         public TimeSpan Duration { get; protected set; }
 
-		public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } } // Duration of full frame or window in seconds
-		public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
-		public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }
+        //following values are dependent on sampling rate.
+        public int NyquistFrequency { get { return SampleRate / 2; } }
+        public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     // Duration of full frame or window in seconds
+		public double FrameOffset   { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
+        public double FBinWidth     { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
 		public double FramesPerSecond { get { return 1 / FrameOffset; } }
-        public int FrameCount { get; protected set; } // Originally temporarily set to (int)(Duration.TotalSeconds / FrameOffset) then reset later
+        public int FrameCount       { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         //energy and dB per frame
         public SNR SnrFrames { get; private set; }
@@ -142,21 +143,20 @@ namespace AudioAnalysis
 		{
 			int frameCount = frames.GetLength(0);
 			int N = frames.GetLength(1);  // = FFT windowSize 
-			int coeffCount = N / 2;       // = fft.WindowSize/2;
             int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
 			//var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
             var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
             this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
-            double[,] amplitudeSg = new double[frameCount, coeffCount]; //init amplitude sonogram
+            double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
 
 			for (int i = 0; i < frameCount; i++)//foreach frame or time step
 			{
                 double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i), coeffCount); //returns fft amplitude spectrum
+                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
                 if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
-                for (int j = 0; j < coeffCount; j++) //foreach freq bin
+                for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
 				{
 					amplitudeSg[i, j] = f1[j]; //transfer amplitude
 				}
@@ -187,8 +187,10 @@ namespace AudioAnalysis
 
         public double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz)
         {
-            int c1 = (int)(minHz / FBinWidth);
-            int c2 = (int)(maxHz / FBinWidth);
+            bool doMelscale = this.Configuration.DoMelScale;
+            int c1;
+            int c2;
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, this.Configuration.FreqBinCount, this.FBinWidth, out c1, out c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
 
@@ -596,7 +598,10 @@ namespace AudioAnalysis
             double[,] m = amplitudeM;
 
             //APPLY FILTER BANK
-            if (Configuration.DoMelScale) m = ApplyFilterBank(m);
+            if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
+            {
+                m = Speech.MelFilterBank(m, Configuration.FreqBinCount, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
+            }
 
             //CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.epsilon);
@@ -642,6 +647,16 @@ namespace AudioAnalysis
             this.Data = m; //store data matrix
 		}
 
+
+        //double[,] ApplyFilterBank(double[,] matrix)
+        //{
+        //    //Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
+        //    int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+        //    double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
+        //    return m;
+        //} //end ApplyFilterBank(double[,] matrix)
+
+
         /// <summary>
         /// Normalise the dynamic range of spectrogram between 0dB and value of DynamicRange.
         /// Also must adjust the SNR.DecibelsInSubband and this.DecibelsNormalised
@@ -663,15 +678,6 @@ namespace AudioAnalysis
                 }
             this.Data = newMatrix;
         }
-
-
-        double[,] ApplyFilterBank(double[,] matrix)
-        {
-            //Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
-            int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
-            double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
-            return m;
-        } //end ApplyFilterBank(double[,] matrix)
     
    } //end of class SpectralSonogram : BaseSonogram
 
@@ -728,23 +734,23 @@ namespace AudioAnalysis
 
         double[,] ApplyFilterBank(double[,] matrix)
         {
-            Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
+            Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
+
             //error check that filterBankCount < FFTbins
             int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
             var config = Configuration as CepstralSonogramConfig;
-            if (config.MfccConfiguration.FilterbankCount > FFTbins)
-                throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + config.MfccConfiguration.FilterbankCount + " > " + FFTbins + ")\n\n");
+            int bandCount = config.MfccConfiguration.FilterbankCount;
+            if (bandCount > FFTbins)
+                throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + bandCount + " > " + FFTbins + ")\n\n");
 
             //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
-            int bandCount = config.MfccConfiguration.FilterbankCount;
             double[,] m = matrix;
-            Log.WriteIfVerbose("\tDim prior to filter bank  =" + m.GetLength(1));
 
             if (config.MfccConfiguration.DoMelScale)
                 m = Speech.MelFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency); // using the Greg integral
             else
                 m = Speech.LinearFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency);
-            Log.WriteIfVerbose("\tDim after use of filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
+            Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
 
             return m;
         } //end ApplyFilterBank(double[,] matrix)
