@@ -43,7 +43,10 @@ namespace TowseyLib
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
         /// </summary>
-        /// <param name="amplitudeM"></param>
+        /// <param name="amplitudeM">the amplitude spectra</param>
+        /// <param name="windowPower">value for window power normalisation</param>
+        /// <param name="sampleRate">to normalise for the sampling rate</param>
+        /// <param name="epsilon">small value to avoid log of zero.</param>
         /// <returns></returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
         {
@@ -54,12 +57,14 @@ namespace TowseyLib
 
             for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
+                //calculate power of the DC value
                 if (amplitudeM[i, 0] < epsilon)
                     spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
                 else
                     spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
                     //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
 
+                //calculate power in frequency bins
                 for (int j = 1; j < binCount; j++) //foreach freq bin convert amplitude to dB, normalising for Window power and sample rate.
                 {                     
                     if (amplitudeM[i, j] < epsilon) 
