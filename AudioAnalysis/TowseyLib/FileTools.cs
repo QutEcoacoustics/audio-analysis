@@ -163,10 +163,19 @@ namespace TowseyLib
             }
         }
 
-
         public static void WriteTextFile(string path, List<string> array)
         {
             if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
+
+            int count = array.Count;
+            using (TextWriter writer = new StreamWriter(path))
+                foreach (string line in array)
+                    writer.WriteLine(line);
+        }// end WriteTextFile()
+
+        public static void WriteTextFile(string path, List<string> array, bool saveExistingFile)
+        {
+            if ((File.Exists(path)) && (saveExistingFile)) File.Copy(path, path + "OLD.txt", true); //overwrite
 
             int count = array.Count;
             using (TextWriter writer = new StreamWriter(path))
@@ -183,12 +192,17 @@ namespace TowseyLib
             }//end using
         }// end WriteTextFile()
 
-
         public static void Append2TextFile(string fPath, string line)
+        {
+            bool saveExistingFile = true;
+            Append2TextFile(fPath, line, saveExistingFile);
+        }// end Append2TextFile()
+
+        public static void Append2TextFile(string fPath, string line, bool saveExistingFile)
         {
 			var list = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             list.Add(line);
-            WriteTextFile(fPath, list);
+            WriteTextFile(fPath, list, saveExistingFile);
         }// end Append2TextFile()
 
         public static void Append2TextFile(string fPath, List<string> list)
