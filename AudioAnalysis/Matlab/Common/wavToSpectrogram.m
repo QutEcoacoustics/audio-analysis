@@ -1,18 +1,18 @@
-function [y,fs,I1,F,T,fmax,tmax] = wavToSpectrogram(pathToFile)
+function [y,fs,I1,F2,T] = wavToSpectrogram(pathToFile)
 
 [y, fs, nbits, opts] = wavread(pathToFile);
 
-%TODO should this be T(end)+T(1)
-tmax = length(y)/fs; %length of signal in seconds
-
 window = 512; % hamming window using 512 samples
 noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2; % yield 512 frequency bins
+nfft = 256*2; % yield 257 frequency bins to be consistent with C# libraries
 [S,F,T,P] = spectrogram(y,window,noverlap,nfft,fs);
 
-% TODO which fmax?
-fmax = F(end);
-%fmax = 11025;
+% P matrix has 257 rows and values of F vector go from 0 to 11025.
+% Assuming first row are DC values and first frequencey bin is row 2.
+% Chop off DC values so we have a 1-1 correspondence between pixel and
+% freq/time co-ordinate systems.
+P2 = P(2:257,:);
+F2 = F(2:257);
 
 % convert amplitude to dB
-I1 = 10*log10(abs(P));
+I1 = 10*log10(abs(P2));

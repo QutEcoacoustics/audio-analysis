@@ -15,10 +15,9 @@ big_area_thresh = 3000;
 ctmp = colormap(gray); c = flipud(ctmp); %colormap for plotting in grayscale
 
 
-
 % STEP 1: COMPUTE SPECTROGRAM
 addpath('../Common')
-[y,fs,I1,F,T,fmax,tmax] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
+[y,fs,I1,F,T,] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
 [M,N] = size(I1);
 show_image(c,I1,T,F,1);
 
