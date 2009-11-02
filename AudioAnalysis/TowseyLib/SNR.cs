@@ -542,14 +542,13 @@ namespace TowseyLib
         public static byte[,] IdentifySpectralRidges(double[,] matrix)
         {
             var m1 = matrix;
-            //var m1 = ImageTools.WienerFilter(matrix, 3);
 
             var binary1 = IdentifySpectralRidgesInTemporalDirection(m1);
-            binary1 = JoinDisconnectedRidgesInBinaryMatrix(binary1);
+            binary1 = JoinDisconnectedRidgesInBinaryMatrix1(binary1, m1);
 
             var m2 = DataTools.MatrixTranspose(m1);
             var binary2 = IdentifySpectralRidgesInFreqDirection(m2);
-            binary2 = JoinDisconnectedRidgesInBinaryMatrix(binary2);
+            binary2 = JoinDisconnectedRidgesInBinaryMatrix1(binary2, m2);
             binary2 = DataTools.MatrixTranspose(binary2);
 
             //merge the two binary matrices
@@ -583,7 +582,7 @@ namespace TowseyLib
             for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
             {
                 double[] row = DataTools.GetRow(matrix, r);
-                row = DataTools.filterMovingAverage(row, 5);//## SMOOTH FREQ BIN - high value breaks up vertical tracks
+                row = DataTools.filterMovingAverage(row, 3);//## SMOOTH FREQ BIN - high value breaks up vertical tracks
                 for (int c = 3; c < cols - 3; c++)
                 {
                     double d1 = row[c] - row[c - 1];
@@ -611,11 +610,11 @@ namespace TowseyLib
             for (int r = 0; r < rows; r++) //row at a time, each row = one frame.
             {
                 double[] row = DataTools.GetRow(matrix, r);
-                row = DataTools.filterMovingAverage(row, 5);//## SMOOTH FRAME SPECTRUM - high value breaks up horizontal tracks
-                for (int c = 5; c < cols - 4; c++)
+                row = DataTools.filterMovingAverage(row, 3);//## SMOOTH FRAME SPECTRUM - high value breaks up horizontal tracks
+                for (int c = 3; c < cols - 3; c++)
                 {
                     //identify a peak
-                    if ((row[c] > row[c - 1]) && (row[c] > row[c + 1])
+                    if (   (row[c] > row[c - 1]) && (row[c] > row[c + 1])
                         && (row[c] > row[c - 2]) && (row[c] > row[c + 2])
                         && (row[c] > row[c - 3]) && (row[c] > row[c + 3])
                         //&& (row[c] > row[c - 4]) && (row[c] > row[c + 4])
@@ -632,8 +631,9 @@ namespace TowseyLib
     ///JOINS DISCONNECTED RIDGES
     /// </summary>
     /// <returns></returns>
-        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary)
+        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix(byte[,] binary, double[,] matrix)
         {
+            double threshold = 20.0; 
         int rows = binary.GetLength(0);
         int cols = binary.GetLength(1);
         byte[,] newM = new byte[rows, cols];
@@ -642,10 +642,15 @@ namespace TowseyLib
             {
                 for (int c = 3; c < cols - 3; c++)
                 {
-                    if (binary[r, c] == 0.0) continue;
+                    if (binary[r, c] == 0)   continue;       //no peak to join
+                    if (matrix[r, c] < threshold)
+                    {
+                        binary[r, c] = 0;
+                        continue; //peak too weak to join
+                    }
 
-                    newM[r, c] = 1;
-                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
+                    newM[r, c] = 1; //pixel r,c = 1.0
+                    // skip if adjacent pixels in next row also = 1.0
                     if (binary[r + 1, c]     == 1) continue;
                     if (binary[r + 1, c - 1] == 1) continue;
                     if (binary[r + 1, c + 1] == 1) continue;
@@ -663,12 +668,49 @@ namespace TowseyLib
 
                     if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
                     if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
-
                 }
             }
             return newM;
     }
 
+        public static byte[,] JoinDisconnectedRidgesInBinaryMatrix1(byte[,] binary, double[,] matrix)
+        {
+            int rows = binary.GetLength(0);
+            int cols = binary.GetLength(1);
+            byte[,] newM = new byte[rows, cols];
+
+            for (int r = 0; r < rows - 3; r++) //row at a time, each row = one frame.
+            {
+                for (int c = 3; c < cols - 3; c++)
+                {
+                    if (binary[r, c] == 0.0) continue;
+
+                    newM[r, c] = 1;
+                    // pixel r,c = 1.0 - skip if adjacent pixels in next row also = 1.0
+                    if (binary[r + 1, c] == 1) continue;
+                    if (binary[r + 1, c - 1] == 1) continue;
+                    if (binary[r + 1, c + 1] == 1) continue;
+
+                    //fill in the same column
+                    if ((binary[r + 3, c] == 1.0)) newM[r + 2, c] = 1; //fill gap
+                    if ((binary[r + 2, c] == 1.0)) newM[r + 1, c] = 1; //fill gap
+
+                    if ((binary[r + 2, c - 3] == 1.0)) newM[r + 1, c - 2] = 1; //fill gap
+                    if ((binary[r + 2, c + 3] == 1.0)) newM[r + 1, c + 2] = 1; //fill gap
+
+
+                    //if ((binary[r + 2, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
+                    //if ((binary[r + 2, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+
+                    if ((binary[r + 1, c - 2] == 1.0)) newM[r + 1, c - 1] = 1; //fill gap
+                    if ((binary[r + 1, c + 2] == 1.0)) newM[r + 1, c + 1] = 1; //fill gap
+                }
+            }
+            return newM;
+        }
+
+        
+        
         /// <summary>
         /// REMOVE ORPHAN PEAKS
         /// </summary>
@@ -875,6 +917,38 @@ namespace TowseyLib
             return op;
         }
 
+
+        public static double[,] RemoveEcho(double[,] sonogram)
+        {
+            double minIntensity; // min value in matrix
+            double maxIntensity; // max value in matrix
+            DataTools.MinMax(sonogram, out minIntensity, out maxIntensity);
+            double range = maxIntensity = minIntensity;
+
+            int rows = sonogram.GetLength(0);
+            int cols = sonogram.GetLength(1);
+            double[,] outM = new double[rows, cols];
+            double momentum;
+
+            //initialise the output matrix/sonogram to the minimum acoustic intensity
+            for (int c = 0; c < cols; c++)
+            {
+                outM[rows - 1, c] = sonogram[rows - 1, c];
+                for (int r = rows-2; r >=0 ; r--) //init matrix to min
+                {
+                    if (sonogram[r, c] < sonogram[r+1, c]) //ie positive slope ie rising towards peak
+                    {
+                        outM[r, c] = sonogram[r, c];
+                        continue;
+                    }
+                    momentum = (maxIntensity - sonogram[r, c]) / range;
+                    outM[r, c] = (momentum * sonogram[r, c]) + ((1 - momentum) * outM[r + 1, c]); //init output matrix to min value
+                    //Console.WriteLine("m=" + momentum.ToString("f2") + "  ip[r, c]=" + sonogram[r, c] + "  op[r+1, c]=" + outM[r + 1, c] + "  outM[r, c]=" + outM[r, c]);
+                }
+            }
+
+            return outM;
+        } //end of method RemoveEcho()
 
 
     }// end class
