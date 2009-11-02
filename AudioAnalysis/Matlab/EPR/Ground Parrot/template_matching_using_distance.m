@@ -1,4 +1,4 @@
-function template_matching_using_distance(name, file_path_audio, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, template_name)
+function template_matching_using_distance(name, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, template_name)
 % do template matching on AEs in specific frequency band
 % bmp 20090917
 
@@ -66,28 +66,12 @@ fsAE1_pixels(fsAE1_pixels>lenF) = lenF;
 last_name = [];
 for ng = 1:num_g
     
-    % GENERATE SPECTROGRAM
-    % read audio data
-    cd(file_path_audio)
-    [y, fs, nbits, opts] = wavread(name);
-    cd(working_path)
-    leny = length(y);
-
-    % get original image
-    [S,F,T,P] = spectrogram(y,window,noverlap,nfft,fs);
-    I1 = 10*log10(abs(P)); % convert amplitude to dB
     % variables below are for plotting - later in code
-    [M,N] = size(I1);
-    tmax = length(y)/fs; %length of signal in seconds
-    fmax = 11025;
-    T = linspace(0,tmax,N);
-    F = linspace(0,fmax,M);
-    % wiener filtering
-    w = 5; %window length of wxw window used in wiener filtering
-    I2 = wiener2(I1, [w w]);
-    % remove subband noise
-    I3 = subband_mode_intensities(I2); 
-    
+%    [M,N] = size(I1);
+%    tmax = length(y)/fs; %length of signal in seconds
+%    fmax = 11025;
+%    T = linspace(0,tmax,N);
+%    F = linspace(0,fmax,M);    
     
     % GET ACOUSTIC EVENTS
     cd(file_path_acoustic_events)

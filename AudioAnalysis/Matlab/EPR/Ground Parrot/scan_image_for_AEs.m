@@ -1,4 +1,4 @@
-function scan_image_for_AEs(name, file_path_audio, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, template_name)
+function scan_image_for_AEs(name, y, fs, I2, I3, file_path_acoustic_events, results_path, int_thresh, small_events_thresh, xlsfile, template_name)
 % Get all AEs where the min freq is within a specific freq band (fband_min,fband_max) 
 %
 % Match image (size of template with AE situated in bottom left hand
@@ -10,35 +10,13 @@ function scan_image_for_AEs(name, file_path_audio, file_path_acoustic_events, re
 working_path = pwd;
 
 
-% OTHER PARAMETERS - hardcoded for the moment
-window = 512; % hamming window using 512 samples
-noverlap = round(0.5*window); % 50% overlap between frames
-nfft = 256*2; % yield 512 frequency bins
-
-
-
 % GENERATE SPECTROGRAM
-% read audio data
-cd(file_path_audio)
-[y, fs, nbits, opts] = wavread(name);
-cd(working_path)
-leny = length(y);
-
-% get original image
-[S,F,T,P] = spectrogram(y,window,noverlap,nfft,fs);
-I1 = 10*log10(abs(P)); % convert amplitude to dB
 % variables below are for plotting - later in code
-[M,N] = size(I1);
+[M,N] = size(I3);
 tmax = length(y)/fs; %length of signal in seconds
 fmax = 11025;
 T = linspace(0,tmax,N);
 F = linspace(0,fmax,M);
-% wiener filtering
-w = 5; %window length of wxw window used in wiener filtering
-I2 = wiener2(I1, [w w]);
-% remove subband noise
-I3 = subband_mode_intensities(I2);
-
 
 
 % GET ACOUSTIC EVENTS
@@ -47,7 +25,6 @@ cd(file_path_acoustic_events)
 cd(working_path)
 allAE = this_results(:,1:4); % all acoustic events
 % show_image(I2,T,F,tmax,fmax,1,allAE')
-
 
 
 % AE SEARCH/MATCHING
