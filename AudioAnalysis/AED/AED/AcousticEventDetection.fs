@@ -64,6 +64,11 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     |> separateLargeEvents
     |> filterOutSmallEvents smallAreaThreshold
     
+// TODO it would be nicer if this returned an Option/Either rather than an exception
 let detectEvents intensityThreshold smallAreaThreshold a =
-    Math.Matrix.of_array2 a |> Math.Matrix.transpose |> detectEventsMatlab intensityThreshold smallAreaThreshold
-                            |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
+    let m = Math.Matrix.of_array2 a |> Math.Matrix.transpose
+    if m.NumRows = 257 then
+        let m' = m.Region (1, 0, 256, m.NumCols) // remove first row (DC values) like in matlab
+        detectEventsMatlab intensityThreshold smallAreaThreshold m'
+            |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
+        else failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
