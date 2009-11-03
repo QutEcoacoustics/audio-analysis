@@ -42,6 +42,7 @@ namespace TowseyLib
         ///         This is due to the fact that the spectrum actually consists of 512 + 1 values, the centre value being for f=0.
         /// NOTE 4: The decibels value is a ratio. Here the ratio is implied.
         ///         dB = 10*log(amplitude ^2) but in this method adjust power to account for power of Hamming window and SR.
+        /// NOTE 5: THIS METHOD ASSUMES THAT THE LAST BIN IS THE NYQUIST FREQ BIN        
         /// </summary>
         /// <param name="amplitudeM">the amplitude spectra</param>
         /// <param name="windowPower">value for window power normalisation</param>
@@ -55,25 +56,43 @@ namespace TowseyLib
 
             double[,] spectra = new double[frameCount, binCount];
 
+            //calculate power of the DC value - first column of matrix
             for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
-                //calculate power of the DC value
                 if (amplitudeM[i, 0] < epsilon)
-                    spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                       spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
                 else
-                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
-                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+                       spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                       //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+            }
 
-                //calculate power in frequency bins
-                for (int j = 1; j < binCount; j++) //foreach freq bin convert amplitude to dB, normalising for Window power and sample rate.
-                {                     
+
+            //calculate power in frequency bins - must multiply by 2 to accomodate two spectral components, ie positive and neg freq.
+            for (int j = 1; j < binCount-1; j++) 
+            {                     
+                for (int i = 0; i < frameCount; i++)//foreach time step or frame
+                {
                     if (amplitudeM[i, j] < epsilon) 
                         spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate); 
                     else
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
                         //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
-                }
-            } //end of all frames
+                }//end of all frames
+            } //end of all freq bins
+
+
+            //calculate power of the Nyquist freq bin - last column of matrix
+            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            {
+                //calculate power of the DC value
+                if (amplitudeM[i, binCount - 1] < epsilon)
+                    spectra[i, binCount - 1] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                else
+                    spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
+                //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+            }
+
+            
             return spectra;
         }
 
