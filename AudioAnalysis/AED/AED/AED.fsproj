@@ -37,6 +37,10 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>C:\SensorNetworks\Software\Binaries\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'SilverlightOnly' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\SilverlightOnly\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809">
       <Name>FSharp.Core</Name>
