@@ -9,42 +9,36 @@ namespace HMMBuilder
     class Helper
     {
 
-        private static readonly double OneOverRoot2Pi = 1.0 / Math.Sqrt(2 * Math.PI);       
-        
-        /// <summary>
-        /// Returns the probability density function evaluated at a given value. 
-        /// </summary>
-        /// <returns>Void</returns> 
-        public static double PDF(double x, double mean, double variance)
+
+        public static void AverageCallDuration(string file, string regex, string vocalization, out double mean, out double sd)
         {
-            if (variance <= 0.0)
-            {
-                string msg = string.Format("Expected variance > 0 in NormalDistribution. Found variance = {0}", variance);
-                throw new Exception(msg);
-            }
-
-            double sigma = Math.Sqrt(variance);
-            double oneOverSigma = 1.0 / sigma;
-            double oneOverSigmaSqr = oneOverSigma * oneOverSigma;
-            double c = oneOverSigma * OneOverRoot2Pi;
-
-            
-            double y = (x - mean);
-            double xMinusMuSqr = y * y;
-
-            return c * Math.Exp(-0.5 * xMinusMuSqr * oneOverSigmaSqr);
+            Dictionary<string, double> meanDuration = new Dictionary<string, double>();
+            Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
+            Helper.ComputePDF(file, regex, ref meanDuration, ref varianceDuration, vocalization);
+            double vari;
+            meanDuration.TryGetValue(vocalization, out mean);
+            varianceDuration.TryGetValue(vocalization, out vari);
+            sd = Math.Sqrt(vari);
         }
-        
-        
+
+       
         /// <summary>
         /// Compute Probability Distribution 
         /// </summary>
         /// <returns>Void</returns>   
         public static void ComputePDF(string masterLabelFile, 
-                                        ref Dictionary<string,double> meanDuration,
-                                        ref Dictionary<string,double> varianceDuration,
-                                        string vocalization)
-        { 
+                                      string matchStr,
+                                      ref Dictionary<string,double> meanDuration,
+                                      ref Dictionary<string,double> varianceDuration,
+                                      string vocalization)
+        {
+            //this regex is to match numbers with exponents: [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
+            string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+\s?$";
+            //string regex = vocalisation;
+            if (matchStr != null) regex = matchStr;
+
+
+
             //check if the mlf exists
             StreamReader mlfReader = null;
             string txtLine = null;
@@ -58,9 +52,7 @@ namespace HMMBuilder
 
                 while ((txtLine = mlfReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
                 {
-                    //this regex is to match numbers with exponents: [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
-                    //if (Regex.IsMatch(txtLine, @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+\s?$"))
-                    if (Regex.IsMatch(txtLine, vocalization))
+                    if (Regex.IsMatch(txtLine, regex))
                     {
                         string[] param = Regex.Split(txtLine, @"\s+");
                         if (param[2].Equals(vocalization))
@@ -68,7 +60,6 @@ namespace HMMBuilder
                             long start = long.Parse(param[0],System.Globalization.NumberStyles.Float);
                             long end = long.Parse(param[1], System.Globalization.NumberStyles.Float);
                             durations.Add(TimeSpan.FromTicks(end - start).TotalSeconds); //duration in seconds
-                            //Console.
                         }
                     }
                 }
@@ -148,17 +139,6 @@ namespace HMMBuilder
         }
 
 
-
-        public static void AverageCallDuration(string file, string vocalization, out double mean, out double sd)
-        {
-            Dictionary<string, double> meanDuration = new Dictionary<string, double>();
-            Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
-            Helper.ComputePDF(file, ref meanDuration, ref varianceDuration, vocalization);
-            double vari;
-            meanDuration.TryGetValue(vocalization, out mean);
-            varianceDuration.TryGetValue(vocalization, out vari);
-            sd = Math.Sqrt(vari);
-        }
 
 
         /// <summary>
@@ -293,6 +273,33 @@ namespace HMMBuilder
             } //end finally
         } //end Mehtod CountHits()
 
+        private static readonly double OneOverRoot2Pi = 1.0 / Math.Sqrt(2 * Math.PI);
+
+
+
+        /// <summary>
+        /// Returns the probability density function evaluated at a given value. 
+        /// </summary>
+        /// <returns>Void</returns> 
+        public static double PDF(double x, double mean, double variance)
+        {
+            if (variance <= 0.0)
+            {
+                string msg = string.Format("Expected variance > 0 in NormalDistribution. Found variance = {0}", variance);
+                throw new Exception(msg);
+            }
+
+            double sigma = Math.Sqrt(variance);
+            double oneOverSigma = 1.0 / sigma;
+            double oneOverSigmaSqr = oneOverSigma * oneOverSigma;
+            double c = oneOverSigma * OneOverRoot2Pi;
+
+
+            double y = (x - mean);
+            double xMinusMuSqr = y * y;
+
+            return c * Math.Exp(-0.5 * xMinusMuSqr * oneOverSigmaSqr);
+        }
 
 
         /// <summary>
