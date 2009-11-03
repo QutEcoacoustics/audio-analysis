@@ -25,4 +25,10 @@
     <StartArguments>
     </StartArguments>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SilverlightOnly|AnyCPU' ">
+    <StartArguments>"C:\SensorNetworks\Templates\Template_8\Alfredo_results\TestMichael.wav" "C:\SensorNetworks\Templates\Template_8\Alfredo_results\results_TestMichael.mlf"</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'SilverlightOnly|x86' ">
+    <StartArguments>"C:\SensorNetworks\Templates\sonogram.ini"  "C:\SensorNetworks\WavFiles\BAC2_20071008-085040.wav" "C:\SensorNetworks\Output\Test1"</StartArguments>
+  </PropertyGroup>
 </Project>
