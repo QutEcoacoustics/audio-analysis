@@ -59,7 +59,8 @@ namespace HMMBuilder
                 while ((txtLine = mlfReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
                 {
                     //this regex is to match numbers with exponents: [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
-                    if (Regex.IsMatch(txtLine, @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+\s?$"))
+                    //if (Regex.IsMatch(txtLine, @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+\s?$"))
+                    if (Regex.IsMatch(txtLine, vocalization))
                     {
                         string[] param = Regex.Split(txtLine, @"\s+");
                         if (param[2].Equals(vocalization))
@@ -67,6 +68,7 @@ namespace HMMBuilder
                             long start = long.Parse(param[0],System.Globalization.NumberStyles.Float);
                             long end = long.Parse(param[1], System.Globalization.NumberStyles.Float);
                             durations.Add(TimeSpan.FromTicks(end - start).TotalSeconds); //duration in seconds
+                            //Console.
                         }
                     }
                 }
@@ -145,6 +147,18 @@ namespace HMMBuilder
             else { return (double)nums[0]; }
         }
 
+
+
+        public static void AverageCallDuration(string file, string vocalization, out double mean, out double sd)
+        {
+            Dictionary<string, double> meanDuration = new Dictionary<string, double>();
+            Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
+            Helper.ComputePDF(file, ref meanDuration, ref varianceDuration, vocalization);
+            double vari;
+            meanDuration.TryGetValue(vocalization, out mean);
+            varianceDuration.TryGetValue(vocalization, out vari);
+            sd = Math.Sqrt(vari);
+        }
 
 
         /// <summary>

@@ -324,6 +324,17 @@ namespace HMMBuilder
 
                     #region Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
                 
+                    //calculate the mean and sd of the training call durations
+                    string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
+                    double mean;
+                    double sd;
+                    Helper.AverageCallDuration(masterLabelFile, vocalization, out mean, out sd);
+                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds\n");
+                    masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
+                    Helper.AverageCallDuration(masterLabelFile, vocalization, out mean, out sd);
+                    Console.WriteLine("Testing song durations = " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds\n");
+
+
                     //Read the output files
                     int optimumThreshold = -Int32.MaxValue;
                     try
@@ -379,8 +390,16 @@ namespace HMMBuilder
                     string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
                     //File.Copy(oldSegmentExePath, newSegmentExePath, true);
                     File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
-                    //Append optimum threshold to segmentation ini file
-                    FileTools.Append2TextFile(newSegmentIniPath, "HTK_THRESHOLD=" + optimumThreshold, false);
+                    //Append optimum threshold and duration threshold info to segmentation ini file
+                    string line = "#CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
+                                  "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
+                                  "#    NOTE 2: Duration values in seconds.\n" +
+                                  "#    NOTE 3: SD thrshold = number of SD either side of mean. 1.96=95% confidence\n" +
+                                  "HTK_THRESHOLD=" + optimumThreshold+"\n"+
+                                  "DURATION_MEAN=" + mean.ToString("f6") + "\n" +
+                                  "DURATION_SD=" + sd.ToString("f6")  + "\n" +
+                                  "SD_THRESHOLD=1.96";
+                    FileTools.Append2TextFile(newSegmentIniPath, line, false);
 
 
                     Console.WriteLine("WRITE HTK FILES");

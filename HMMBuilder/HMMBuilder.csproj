@@ -15,7 +15,7 @@
     <ApplicationRevision>0</ApplicationRevision>
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
-    <StartupObject>HMMBuilder.TestProgram</StartupObject>
+    <StartupObject>HMMBuilder.Program</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
