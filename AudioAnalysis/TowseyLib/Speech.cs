@@ -51,7 +51,6 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] DecibelSpectra(double[,] amplitudeM, double windowPower, int sampleRate, double epsilon)
         {
-            Console.WriteLine("epsilon=" + epsilon);
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
 
