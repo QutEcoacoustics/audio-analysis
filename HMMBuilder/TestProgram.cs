@@ -31,10 +31,10 @@ namespace HMMBuilder
             //*******************************************************************************************************************
             //COMMENT THESE LINES BEFORE DEPLOYMENT
             //templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               //ARG 1
-            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
+            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
-            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //*******************************************************************************************************************
 
 
@@ -99,16 +99,16 @@ namespace HMMBuilder
             Console.WriteLine("HTKThreshold= " + HTKThreshold);
             key = "DURATION_MEAN";
             str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
-            float DurationMean = float.Parse(str);
-            Console.WriteLine("DurationMean= " + DurationMean);
+            float QualityMean = float.Parse(str);
+            Console.WriteLine("DurationMean= " + QualityMean);
             key = "DURATION_SD";
             str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
-            float DurationSD = float.Parse(str);
-            Console.WriteLine("DurationSD= " + DurationSD);
+            float QualitySD = float.Parse(str);
+            Console.WriteLine("DurationSD= " + QualitySD);
             key = "SD_THRESHOLD";
             str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
-            float SD_THRESHOLD = float.Parse(str);
-            Console.WriteLine("SD_THRESHOLD= " + SD_THRESHOLD);
+            float QualityThreshold = float.Parse(str);
+            Console.WriteLine("SD_THRESHOLD= " + QualityThreshold);
 
 
             Console.WriteLine("\n\nParsing the HMM results file");
@@ -125,13 +125,16 @@ namespace HMMBuilder
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
-            double[] hmmScores = ParseHmmScores(hmmResults, sonogram.Duration, sonogram.FrameCount, htkConfig.CallName);
-            Console.WriteLine();
-            double[] qualityScores = ParseQualityScores(hmmResults, sonogram.Duration, sonogram.FrameCount, htkConfig.CallName,
-                                                        DurationMean, DurationSD);
+            //can reset thresholds here for experimentation
+            HTKThreshold = -100.0f;
+            //QualityThreshold = 40.0f;
+
+            Console.WriteLine("HTKThreshold=" + HTKThreshold + "    QualityThreshold=" + QualityThreshold + "   frameRate=" + sonogram.FramesPerSecond);
+            double[] scores = ParseHmmScores(hmmResults, sonogram.FrameCount, sonogram.FramesPerSecond, htkConfig.CallName,
+                                             HTKThreshold, QualityMean, QualitySD, QualityThreshold);
 
             double thresholdFraction = 0.2;//for display purposes only. Fraction of the score track devoted to sub-threshold scores
-            double[] finalScores = MergeScores(hmmScores, qualityScores, HTKThreshold, thresholdFraction, SD_THRESHOLD);
+            double[] finalScores = NormaliseScores(scores, HTKThreshold, thresholdFraction);
             image_mt.AddTrack(Image_Track.GetScoreTrack(finalScores, 0.0, 1.0, thresholdFraction));
 
 
@@ -155,12 +158,18 @@ namespace HMMBuilder
         /// <param name="frameCount">number of frames in the recording</param>
         /// <param name="targetClass">Name of the target class as shown in the HTK results file</param>
         /// <returns>array of hmm scores ONLY WHERE THERE ARE HITS. All other values are set as NaN</returns>
-        public static double[] ParseHmmScores(List<string> results, TimeSpan duration, int frameCount, string targetClass)
+        public static double[] ParseHmmScores(List<string> results, int frameCount, double frameRate, string targetClass,
+                                              double scoreThreshold, double qualityMean, double qualitySD, double qualityThreshold)
         {
             double[] scores = new double[frameCount];
             for (int i = 0; i < frameCount; i++) scores[i] = Double.NaN; //init to NaNs.
-            int hitCount = results.Count;
-            for (int i = 1; i < hitCount; i++)
+            int count = results.Count;
+
+            double avScore = 0.0;
+            double avDuration = 0.0;
+            int hitCount = 0;
+
+            for (int i = 0; i < count; i++)
             {
                 if ((results[i] == "")            || (results[i].StartsWith("."))) continue;
                 if ((results[i].StartsWith("\"")) || (results[i].StartsWith("#"))) continue;
@@ -169,83 +178,51 @@ namespace HMMBuilder
                 string className;
                 double score;
                 Helper.ParseResultLine(results[i], out start, out end, out className, out score);
+                if (!className.StartsWith(targetClass)) continue; //skip irrelevant lines
+
+                hitCount++; //count hits
+
+                //calculate hmm and quality scores
+                double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
+                double normScore, qualityScore;
+                bool isHit;
+                Helper.ComputeHit(score, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
+                                  out normScore, out qualityScore, out isHit);
+
                 double startSec = start / (double)10000000;  //start in seconds
                 double endSec   = end   / (double)10000000;  //end   in seconds
+                Console.WriteLine("sec=" + startSec.ToString("f1") + "-" + endSec.ToString("f1") +
+                                  "\t duration=" + (endSec - startSec).ToString("f2") +
+                                  "\t score=" + score.ToString("f1") +
+                                  "\t normScore=" + normScore.ToString("f1")+
+                                  "\t qualityScore=" + qualityScore.ToString("f1") + "\t HIT=" + isHit);
 
-                int startFrame = (int)((startSec / (double)duration.TotalSeconds) * frameCount);
-                int endFrame   = (int)((endSec   / (double)duration.TotalSeconds) * frameCount);
-                if (className.StartsWith(targetClass))
-                {
-                    Console.WriteLine("sec=" + startSec.ToString("f1") + " - " + endSec.ToString("f1") +
-                                      "  frames=" + startFrame + "-" + endFrame + "  score=" + score.ToString("f0"));
+                avScore += normScore;
+                avDuration += (endSec - startSec);
 
-                    for (int s = startFrame; s <= endFrame; s++) scores[s] = score;
-                }
-            }
+                if(! isHit) continue;
+                int startFrame = (int)(startSec * frameRate);
+                int endFrame   = (int)(endSec   * frameRate);
+                for (int s = startFrame; s <= endFrame; s++) scores[s] = normScore;
+            }//end for all hits
+            Console.WriteLine("avNormScore=" + (avScore / hitCount));
+            Console.WriteLine("av Duration=" + (avDuration / hitCount));
             return scores;
         }
 
-        /// <summary>
-        /// Parses the HMM scores returned by HTK and returns a set of scores in 0-1 suitable for display as a score track.
-        /// </summary>
-        /// <param name="results">the HTK results</param>
-        /// <param name="duration">the duration of a frame</param>
-        /// <param name="frameCount">number of frames in the recording</param>
-        /// <param name="targetClass">Name of the target class as shown in the HTK results file</param>
-        /// <param name="threshold">the HTK score threshold</param>
-        /// <param name="thresholdFraction">threshold fraction between 0.0-1.0. Helps with display of score track.</param>
-        /// <returns></returns>
-        public static double[] ParseQualityScores(List<string> results, TimeSpan duration, int frameCount, string targetClass,
-                                                  float mean, float sd)
+
+        public static double[] NormaliseScores(double[] scores, float threshold, double thresholdFraction)
         {
-            double[] quality = new double[frameCount]; //to store quality scores
-            int hitCount = results.Count;
-            for (int i = 1; i < hitCount; i++)
-            {
-                //Console.WriteLine(i+ "  " + results[i]);
-                if ((results[i] == "") || (results[i].StartsWith("."))) continue;
-                if ((results[i].StartsWith("\"")) || (results[i].StartsWith("#"))) continue;
-                long start;
-                long end;
-                string className;
-                double score; //ignored - just want time duration of the hit
-                Helper.ParseResultLine(results[i], out start, out end, out className, out score);
-                double startSec = start / (double)10000000;  //start in seconds
-                double endSec = end / (double)10000000;  //start in seconds
-                double span = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
+            double offset = (thresholdFraction * threshold) / (1 - thresholdFraction);
+            double min = threshold + offset;
 
-                double zscore = (span - mean) / sd;
-
-                int startFrame = (int)((startSec / (double)duration.TotalSeconds) * frameCount);
-                int endFrame = (int)((endSec / (double)duration.TotalSeconds) * frameCount);
-                if (className.StartsWith(targetClass))
-                {
-                    Console.WriteLine("sec=" + startSec.ToString("f1") + " - " + endSec.ToString("f1") +
-                                      "  frames=" + startFrame + "-" + endFrame + "  score=" + score.ToString("f0") + "  zscore=" + zscore.ToString("f3"));
-
-                    for (int s = startFrame; s <= endFrame; s++)
-                    {
-                        quality[s] = zscore;
-                    }
-                }
-            }
-            return quality;
-        }
-
-        public static double[] MergeScores(double[] hmmScores, double[] qualityScores, float htkThreshold, double thresholdFraction, float qualityThreshold)
-        {
-            double offset = (thresholdFraction * htkThreshold) / (1 - thresholdFraction);
-            //Console.WriteLine("offset=" + offset);
-            double min = htkThreshold + offset;
-            Console.WriteLine("\nmin=" + min);
-
-            int frameCount = hmmScores.Length;
+            int frameCount = scores.Length;
             double[] normScores = new double[frameCount]; //the final normalised scores
             for (int i = 0; i < frameCount; i++)
             {
                 //normalise score between 0 - 1. Assume max score=0.000
-                if (Double.IsNaN(hmmScores[i])) normScores[i] = 0.0;
-                else                            normScores[i] = (hmmScores[i] - min) / Math.Abs(min); 
+                if (Double.IsNaN(scores[i])) normScores[i] = 0.0;
+                else normScores[i] = (scores[i] - min) / Math.Abs(min);
             }
             return normScores;
         }

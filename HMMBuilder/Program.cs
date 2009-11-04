@@ -116,7 +116,6 @@ namespace HMMBuilder
                     #endregion
 
 
-
                     #region TWO: DATA PREPARATION TOOLS:- Read Two Configuration Files and do Feature Extraction
                     Console.WriteLine("DATA PREPARATION TOOLS:- READ TWO CONFIGURATION FILES");
                     try
@@ -192,7 +191,7 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
+                    #region THREE: Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
                     try
                     {
                         bool extractLabels = true;
@@ -220,7 +219,7 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region WriteDictionary consisting of PHONE LABELS
+                    #region FOUR: WriteDictionary consisting of PHONE LABELS
                     try
                     {
                         HTKHelper.WriteDictionary(htkConfig);
@@ -234,7 +233,7 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region nTRAINING TOOLS:-  (see manual 2.3.2)
+                    #region FIVE: TRAINING TOOLS:-  (see manual 2.3.2)
                     Console.WriteLine("\nTRAINING: READING THE PROTOTYPE CONFIGURATION FILES");
                     try
                     {
@@ -288,7 +287,7 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region THREE Test the HMMs
+                    #region SIX: Test the HMMs
                     try
                     {
                         if (HMMSettings.ConfigParam.TryGetValue("HBUILD", out tmpVal))
@@ -322,21 +321,31 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
-                
+                    #region SEVEN: Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
+
+                    //calculate frame rate = 1sec / frame duration
+                    double frameRate = 10000000 / double.Parse(htkConfig.TARGETRATE);
+                    Console.WriteLine("\nFrame rate = "+ frameRate+"\n");
+
                     //calculate the mean and sd of the training call durations
                     string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
                     double mean;
                     double sd;
-                    Helper.AverageCallDuration(masterLabelFile, vocalization, out mean, out sd);
+                    string regex = null;
+                    Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean, out sd);
                     Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds\n");
+                    //calculate the mean and sd of the testing call durations
                     masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
-                    Helper.AverageCallDuration(masterLabelFile, vocalization, out mean, out sd);
-                    Console.WriteLine("Testing song durations = " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds\n");
+                    double mean2;
+                    double sd2;
+                    regex = @"^\d+\s+\d+\s+\w+";
+                    Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean2, out sd2);
+                    Console.WriteLine("Testing song durations = " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds\n");
 
 
                     //Read the output files
                     int optimumThreshold = -Int32.MaxValue;
+                    double variance = sd * sd;
                     try
                     {
                         float tppercent = 0.0f;
@@ -344,21 +353,26 @@ namespace HMMBuilder
                         float accuracy  = 0.0f;
                         float avTPScore = 0.0f;
                         float avFPScore = 0.0f;
-                        float threshold = -4000f;      //set a central threshold value suitable to create a ROC curve  
-                        int step = 200; //to step the threshold
+                        float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
+                        int step = 2; //to step the threshold
                         double maxScore = -Double.MaxValue;
-                        for (int i = -5; i <= 6; i++)
+                        for (int i = 9; i >= -8; i--)
                         {
                             float t = threshold - (i * step);
-                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, ref vocalization, t, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                            Console.WriteLine("TP={0:f1} TN={1:f1} Acc={2:f1}% avTPscore={3:f0} avFPscore={4:f0}  (threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
+                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate, 
+                                              ref vocalization, t, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                            Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
                             if (accuracy > maxScore)
                             {
                                 maxScore = accuracy;
                                 optimumThreshold = (int)t;
                             }
                         }
+                        //calculate optimum so can save best data.
                         Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
+                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                               ref vocalization, optimumThreshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+
                     }
                     catch 
                     {
@@ -370,7 +384,7 @@ namespace HMMBuilder
 
 
 
-                    #region SET UP THE TEMPLATE ZIP FILE
+                    #region EIGHT: SET UP THE TEMPLATE ZIP FILE
                     string oldSegmentDir = htkConfig.SegmentationDir;
                     string newSegmentDir = htkConfig.ConfigDir;
                     //Directory.CreateDirectory(newSegmentDir);
