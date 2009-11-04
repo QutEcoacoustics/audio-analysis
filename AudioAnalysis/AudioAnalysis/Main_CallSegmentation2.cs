@@ -115,7 +115,7 @@ namespace AudioAnalysis
             var image = new Image_MultiTrack(ss.GetImage(false, false));
             image.AddTrack(Image_Track.GetTimeTrack(ss.Duration));
             image.AddTrack(Image_Track.GetSegmentationTrack(ss));
-            string path1 = outputDir + "\\" + Path.GetFileNameWithoutExtension(f.Name) + "_o.png";
+            string path1 = outputDir + "\\" + Path.GetFileNameWithoutExtension(f.Name) + ".png";
             image.Save(path1);
 
             string path2 = outputDir + "\\" + Path.GetFileNameWithoutExtension(f.Name) + ".segmentation.txt";
