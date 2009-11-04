@@ -297,10 +297,10 @@ namespace HMMBuilder
                             //normalise the score
                             double duration   = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
                             double qualityThreshold = 1.96;
-                            double normScore, durationScore;
+                            double normScore, durationScore, frameLength;
                             bool isHit;
                             ComputeHit(score, duration, frameRate, mean, stddev, scoreThreshold, qualityThreshold, 
-                                       out normScore, out durationScore, out isHit);
+                                       out frameLength, out normScore, out durationScore, out isHit);
 
                             if (isHit)
                             {
@@ -350,11 +350,11 @@ namespace HMMBuilder
 
 
         public static void ComputeHit(double score, double duration, double frameRate, double mean, double sd,
-                                      double scoreThreshold, double qualityThreshold, 
+                                      double scoreThreshold, double qualityThreshold, out double frameCount,
                                       out double normScore, out double qualityScore, out bool isHit)
         {
             //normalise the score
-            double frameCount = duration * frameRate;
+            frameCount = duration * frameRate;
             normScore = score / frameCount;
             //qualityScore = PDFvalue(duration, mean, sd);
             qualityScore = Math.Abs((duration - mean) / sd);
