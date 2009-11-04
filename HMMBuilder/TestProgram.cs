@@ -167,6 +167,7 @@ namespace HMMBuilder
 
             double avScore = 0.0;
             double avDuration = 0.0;
+            double avFrames = 0.0;
             int hitCount = 0;
 
             for (int i = 0; i < count; i++)
@@ -184,29 +185,34 @@ namespace HMMBuilder
 
                 //calculate hmm and quality scores
                 double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
-                double normScore, qualityScore;
+                double normScore, qualityScore, frameLength;
                 bool isHit;
                 Helper.ComputeHit(score, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
-                                  out normScore, out qualityScore, out isHit);
+                                  out frameLength, out normScore, out qualityScore, out isHit);
 
                 double startSec = start / (double)10000000;  //start in seconds
                 double endSec   = end   / (double)10000000;  //end   in seconds
+                int startFrame = (int)(startSec * frameRate);
+                int endFrame = (int)(endSec * frameRate);
+                //double frameLength = (endSec - startSec) * frameRate;
+
                 Console.WriteLine("sec=" + startSec.ToString("f1") + "-" + endSec.ToString("f1") +
                                   "\t duration=" + (endSec - startSec).ToString("f2") +
+                                  "\t frames=" + frameLength.ToString("f0") +
                                   "\t score=" + score.ToString("f1") +
                                   "\t normScore=" + normScore.ToString("f1")+
                                   "\t qualityScore=" + qualityScore.ToString("f1") + "\t HIT=" + isHit);
 
                 avScore += normScore;
                 avDuration += (endSec - startSec);
+                avFrames += frameLength;
 
                 if(! isHit) continue;
-                int startFrame = (int)(startSec * frameRate);
-                int endFrame   = (int)(endSec   * frameRate);
                 for (int s = startFrame; s <= endFrame; s++) scores[s] = normScore;
             }//end for all hits
-            Console.WriteLine("avNormScore=" + (avScore / hitCount));
-            Console.WriteLine("av Duration=" + (avDuration / hitCount));
+            Console.WriteLine("avNormScore=" + (avScore / hitCount).ToString("f2"));
+            Console.WriteLine("av Duration=" + (avDuration / hitCount).ToString("f3"));
+            Console.WriteLine("av   Frames=" + (avFrames / hitCount).ToString("f1"));
             return scores;
         }
 

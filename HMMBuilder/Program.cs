@@ -333,14 +333,17 @@ namespace HMMBuilder
                     double sd;
                     string regex = null;
                     Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean, out sd);
-                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds\n");
+                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds");
+                    Console.WriteLine("\tav frame count = " + (mean * frameRate).ToString("f1") + "\n");
+
                     //calculate the mean and sd of the testing call durations
                     masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
                     double mean2;
                     double sd2;
                     regex = @"^\d+\s+\d+\s+\w+";
                     Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean2, out sd2);
-                    Console.WriteLine("Testing song durations = " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds\n");
+                    Console.WriteLine("Testing song durations = " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds");
+                    Console.WriteLine("\tav frame count = " + (mean2 * frameRate).ToString("f1") + "\n");
 
 
                     //Read the output files
