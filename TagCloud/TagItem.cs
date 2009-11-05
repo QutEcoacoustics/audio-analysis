@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Windows;
+using System.Windows.Browser;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Ink;
@@ -12,11 +13,12 @@ using System.ComponentModel;
 
 namespace TagCloud
 {
+    [ScriptableType]
     public class TagItem : INotifyPropertyChanged
     {
         private int _weight = 1;
         private bool _selected = false;
-        private string _name;
+        private string _name = String.Empty;
 
         public string Name
         {
