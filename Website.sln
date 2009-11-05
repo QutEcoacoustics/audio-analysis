@@ -62,7 +62,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLTransitionEffects", "Silv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloudControl", "SilverlightControls\TagCloud\TagCloudControl\TagCloudControl.csproj", "{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloud", "TagCloud\TagCloud.csproj", "{FB088810-E5A8-4A22-9598-5BA99A963D5B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloud", "SilverlightControls\TagCloud\TagCloud\TagCloud.csproj", "{FB088810-E5A8-4A22-9598-5BA99A963D5B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight", "{1078E05E-D251-4225-AEC0-B8077B0ABB75}"
 EndProject
