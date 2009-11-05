@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
+using System.Text.RegularExpressions;
 using TowseyLib;
 using AudioAnalysis;
 
@@ -18,10 +19,13 @@ namespace HMMBuilder
 
             #region Variables
             HTKConfig htkConfig = new HTKConfig();
-            //SET DEFAULT VALUES FOR HTE COMMAND LINE ARGUMENTS
+            //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
+
+            //SET THESE DEFAULT VALUES FOR THE COMMAND LINE ARGUMENTS
             htkConfig.WorkingDir = "C:\\SensorNetworks\\temp"; //set default working directory              // ARG 0  
-            string templateFN    = "C:\\SensorNetworks\\Templates\\Template_CURRAWONG1\\CURRAWONG1.zip";    // ARG 1
-            string testWavFile   = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav"; //ARG 2
+            //string templateFN    = "C:\\SensorNetworks\\Templates\\Template_CURRAWONG1\\CURRAWONG1.zip";    // ARG 1
+            string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";    // ARG 1
+            string testWavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav"; //ARG 2
 
             //GET THE COMMAND LINE ARGUMENTS
             if (args.Length >= 1) htkConfig.WorkingDir = args[0]; //where to place output
@@ -31,16 +35,15 @@ namespace HMMBuilder
             //*******************************************************************************************************************
             //COMMENT THESE LINES BEFORE DEPLOYMENT
             //templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";                               //ARG 1
-            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
+            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
-            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //*******************************************************************************************************************
 
 
             htkConfig.CallName = Path.GetFileNameWithoutExtension(templateFN);
 
-            //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
             htkConfig.DataDir         = htkConfig.WorkingDir + "\\data";
             htkConfig.ConfigDir       = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
             htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
@@ -94,7 +97,6 @@ namespace HMMBuilder
             //GET THRESHOLDS FROM INI FILE
             string key = "HTK_THRESHOLD";
             string str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
-            //float threshold = -2500f;
             float HTKThreshold = float.Parse(str);
             Console.WriteLine("HTKThreshold= " + HTKThreshold);
             key = "DURATION_MEAN";
@@ -111,9 +113,8 @@ namespace HMMBuilder
             Console.WriteLine("SD_THRESHOLD= " + QualityThreshold);
 
 
-            Console.WriteLine("\n\nParsing the HMM results file");
-            Console.WriteLine(" There must be ONE AND ONLY ONE header line.");
-            List<string> hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);
+            Console.WriteLine("\nParsing the HMM results file");
+            List<string> hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);//There must be ONE AND ONLY ONE header line.
 
             Console.WriteLine("\nPreparing sonogram");
             AudioAnalysis.SonogramConfig sonoConfig = new SonogramConfig();
@@ -126,7 +127,7 @@ namespace HMMBuilder
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
             //can reset thresholds here for experimentation
-            HTKThreshold = -100.0f;
+            //HTKThreshold = -100.0f;
             //QualityThreshold = 40.0f;
 
             Console.WriteLine("HTKThreshold=" + HTKThreshold + "    QualityThreshold=" + QualityThreshold + "   frameRate=" + sonogram.FramesPerSecond);
@@ -142,7 +143,6 @@ namespace HMMBuilder
             string opFile = htkConfig.ResultsDir + "\\" + fName + ".png";
             Console.WriteLine("\nSonogram will be written to file: " + opFile);
             image_mt.Save(opFile);
-            //template.SaveResultsImage(recording.GetWavData(), imagePath, result, hmmResults); //WITH HMM SCORE
 
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
@@ -174,12 +174,14 @@ namespace HMMBuilder
             {
                 if ((results[i] == "")            || (results[i].StartsWith("."))) continue;
                 if ((results[i].StartsWith("\"")) || (results[i].StartsWith("#"))) continue;
-                long start;
-                long end;
-                string className;
-                double score;
-                Helper.ParseResultLine(results[i], out start, out end, out className, out score);
-                if (!className.StartsWith(targetClass)) continue; //skip irrelevant lines
+                //Helper.ParseResultLine(results[i], out start, out end, out className, out score);
+                string[] param = Regex.Split(results[i], @"\s+");
+                long start       = long.Parse(param[0]);
+                long end         = long.Parse(param[1]);
+                string vocalName = param[2];
+                float score      = float.Parse(param[3]);
+
+                if (!vocalName.StartsWith(targetClass)) continue; //skip irrelevant lines
 
                 hitCount++; //count hits
 
@@ -197,7 +199,7 @@ namespace HMMBuilder
                 //double frameLength = (endSec - startSec) * frameRate;
 
                 Console.WriteLine("sec=" + startSec.ToString("f1") + "-" + endSec.ToString("f1") +
-                                  "\t duration=" + (endSec - startSec).ToString("f2") +
+                                  "\t " + (endSec - startSec).ToString("f2") +"s"+
                                   "\t frames=" + frameLength.ToString("f0") +
                                   "\t score=" + score.ToString("f1") +
                                   "\t normScore=" + normScore.ToString("f1")+
@@ -207,20 +209,26 @@ namespace HMMBuilder
                 avDuration += (endSec - startSec);
                 avFrames += frameLength;
 
-                if(! isHit) continue;
+                if (!isHit)
+                {
+                    normScore = scoreThreshold + (normScore / 5);
+                    //continue;
+                }
                 for (int s = startFrame; s <= endFrame; s++) scores[s] = normScore;
             }//end for all hits
             Console.WriteLine("avNormScore=" + (avScore / hitCount).ToString("f2"));
-            Console.WriteLine("av Duration=" + (avDuration / hitCount).ToString("f3"));
-            Console.WriteLine("av   Frames=" + (avFrames / hitCount).ToString("f1"));
+            Console.WriteLine("av Duration=" + (avDuration / hitCount).ToString("f3") +" or " + (avFrames/hitCount).ToString("f1")+" frames.");
             return scores;
         }
 
 
         public static double[] NormaliseScores(double[] scores, float threshold, double thresholdFraction)
         {
+
+            double maxscore = -10;//maximum
             double offset = (thresholdFraction * threshold) / (1 - thresholdFraction);
             double min = threshold + offset;
+            double range = Math.Abs(maxscore - min);
 
             int frameCount = scores.Length;
             double[] normScores = new double[frameCount]; //the final normalised scores
@@ -228,7 +236,8 @@ namespace HMMBuilder
             {
                 //normalise score between 0 - 1. Assume max score=0.000
                 if (Double.IsNaN(scores[i])) normScores[i] = 0.0;
-                else normScores[i] = (scores[i] - min) / Math.Abs(min);
+                else normScores[i] = (scores[i] - min) / range;
+                if (normScores[i] > 1.0) normScores[i] = 1.0;
             }
             return normScores;
         }
