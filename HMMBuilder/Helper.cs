@@ -392,19 +392,5 @@ namespace HMMBuilder
             return c * Math.Exp(-0.5 * xMinusMuSqr * oneOverSigmaSqr);
         }
 
-
-
-        public static void ParseResultLine(string txtLine, out long  start, out long  end, out string vocalName, out double normScore)
-        {
-            string[] param = Regex.Split(txtLine, @"\s+");
-            start     = long.Parse(param[0]);
-            end       = long.Parse(param[1]);
-            vocalName = param[2];
-            float score = float.Parse(param[3]);
-            double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
-            normScore = score / duration; //IMPORTANT!!!! NORMALISE SCORE FOR DURATION
-        }
-
-
     } //end class Helper
 } //namespace

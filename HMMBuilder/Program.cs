@@ -15,18 +15,18 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            //htkConfig.CallName = "CURLEW1";
-            //htkConfig.Comment = "Parameters for Curlew";
-            //htkConfig.LOFREQ = "1000";
-            //htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
-
-
-            htkConfig.CallName = "CURRAWONG1";
-            htkConfig.Comment = "Parameters for Currawong";
-            htkConfig.LOFREQ = "800";
-            htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
+            htkConfig.CallName = "CURLEW1";
+            htkConfig.Comment = "Parameters for Curlew";
+            htkConfig.LOFREQ = "1000";
+            htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
             htkConfig.numHmmStates = "6";  //number of hmm states for call model
+
+
+            //htkConfig.CallName = "CURRAWONG1";
+            //htkConfig.Comment = "Parameters for Currawong";
+            //htkConfig.LOFREQ = "800";
+            //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
+            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
 
             //==================================================================================================================
@@ -333,8 +333,8 @@ namespace HMMBuilder
                     double sd;
                     string regex = null;
                     Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean, out sd);
-                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds");
-                    Console.WriteLine("\tav frame count = " + (mean * frameRate).ToString("f1") + "\n");
+                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds or " +
+                                      (mean * frameRate).ToString("f1") + " frames\n");
 
                     //calculate the mean and sd of the testing call durations
                     masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
@@ -342,8 +342,8 @@ namespace HMMBuilder
                     double sd2;
                     regex = @"^\d+\s+\d+\s+\w+";
                     Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean2, out sd2);
-                    Console.WriteLine("Testing song durations = " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds");
-                    Console.WriteLine("\tav frame count = " + (mean2 * frameRate).ToString("f1") + "\n");
+                    Console.WriteLine("Testing song durations= " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds or "+
+                                      (mean2 * frameRate).ToString("f1") + " frames\n");
 
 
                     //Read the output files
@@ -415,7 +415,7 @@ namespace HMMBuilder
                                   "HTK_THRESHOLD=" + optimumThreshold+"\n"+
                                   "DURATION_MEAN=" + mean.ToString("f6") + "\n" +
                                   "DURATION_SD=" + sd.ToString("f6")  + "\n" +
-                                  "SD_THRESHOLD=1.96";
+                                  "SD_THRESHOLD=2.57";  //1.96 for p=95% :: 2.57 for p=99%
                     FileTools.Append2TextFile(newSegmentIniPath, line, false);
 
 
