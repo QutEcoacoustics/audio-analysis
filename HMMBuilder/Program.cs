@@ -15,12 +15,11 @@ namespace HMMBuilder
 
             HTKConfig htkConfig = new HTKConfig();
 
-            htkConfig.CallName = "CURLEW1";
-            htkConfig.Comment = "Parameters for Curlew";
-            htkConfig.LOFREQ = "1000";
-            htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            htkConfig.numHmmStates = "6";  //number of hmm states for call model
-
+            //htkConfig.CallName = "CURLEW1";
+            //htkConfig.Comment = "Parameters for Curlew";
+            //htkConfig.LOFREQ = "1000";
+            //htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
             //htkConfig.CallName = "CURRAWONG1";
             //htkConfig.Comment = "Parameters for Currawong";
@@ -28,6 +27,11 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
+            htkConfig.CallName = "WHIPBIRD1";
+            htkConfig.Comment = "Parameters for whip bird";
+            htkConfig.LOFREQ = "500";
+            htkConfig.HIFREQ = "9000"; 
+            htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
             //==================================================================================================================
             //==================================================================================================================

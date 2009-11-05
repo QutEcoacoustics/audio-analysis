@@ -22,9 +22,10 @@ namespace HMMBuilder
             //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
 
             //SET THESE DEFAULT VALUES FOR THE COMMAND LINE ARGUMENTS
-            htkConfig.WorkingDir = "C:\\SensorNetworks\\temp"; //set default working directory              // ARG 0  
-            //string templateFN    = "C:\\SensorNetworks\\Templates\\Template_CURRAWONG1\\CURRAWONG1.zip";    // ARG 1
-            string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";    // ARG 1
+            htkConfig.WorkingDir = "C:\\SensorNetworks\\temp"; //set default working directory             // ARG 0  
+            //string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURRAWONG1\\CURRAWONG1.zip";    // ARG 1
+            //string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";          // ARG 1
+            string templateFN = "C:\\SensorNetworks\\Templates\\Template_WHIPBIRD1\\WHIPBIRD1.zip";    // ARG 1
             string testWavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav"; //ARG 2
 
             //GET THE COMMAND LINE ARGUMENTS
@@ -38,7 +39,8 @@ namespace HMMBuilder
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";   //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
-            testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+            //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+            testWavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
             //*******************************************************************************************************************
 
 
