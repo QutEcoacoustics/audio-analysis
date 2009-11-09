@@ -46,6 +46,7 @@ namespace HMMBuilder
             htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds - that is a frame every 11.6 millisconds.
             htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
 
+            //parse all the above strings to ints or reals
             double tr;
             Double.TryParse(htkConfig.TARGETRATE, out tr);
             double wd;
