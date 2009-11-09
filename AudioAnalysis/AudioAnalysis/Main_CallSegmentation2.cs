@@ -110,6 +110,9 @@ namespace AudioAnalysis
         {
             //Make sonogram of each recording
             AudioRecording recording = new AudioRecording(f.FullName);
+
+            recording.ConvertSampleRate22kHz();
+
             var wr = recording.GetWavReader();
             var ss = new SpectralSonogram(config, wr);
             var image = new Image_MultiTrack(ss.GetImage(false, false));
