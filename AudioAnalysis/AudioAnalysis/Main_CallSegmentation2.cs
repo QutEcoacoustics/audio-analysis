@@ -9,6 +9,10 @@ using AudioTools;
 
 namespace AudioAnalysis
 {
+
+    /// <summary>
+    /// this version of segmentation uses Spectral Peak tracking to remove noise
+    /// </summary>
     public class Main_CallSegmentation2
     {
 
@@ -111,6 +115,7 @@ namespace AudioAnalysis
             //Make sonogram of each recording
             AudioRecording recording = new AudioRecording(f.FullName);
 
+            //convert all recordings to SR=22050 to get spectrogram with correct range 0-11025 Hz.
             recording.ConvertSampleRate22kHz();
 
             var wr = recording.GetWavReader();
