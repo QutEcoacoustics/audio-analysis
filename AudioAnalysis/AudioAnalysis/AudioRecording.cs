@@ -66,19 +66,20 @@ namespace AudioAnalysis
             WavReader signal = GetWavReader();
             int sr = signal.SampleRate;
             if(sr == 22050) return; //signal already has required sr
-            sr /= 2;
-            if (sr == 22050)
+
+            if (sr == 44100)
             {
                 signal.SubSample(2);
+                Console.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
                 return;
-            }
-            sr /= 2;
-            if (sr == 22050)
+            }else
+            if (sr == 88200)
             {
                 signal.SubSample(4);
+                Console.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
                 return;
             }
-            Console.WriteLine("WARNING: Cannot reduce signal sample rate to 22050Hz.");
+            Console.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
         }
 
         /// <summary>
