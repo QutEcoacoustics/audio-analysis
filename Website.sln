@@ -68,6 +68,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUpload", "FileUpload\FileUpload.csproj", "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCode", "SharedCode\SharedCode.csproj", "{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Website.vsmdi
@@ -387,6 +389,24 @@ Global
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|Any CPU
 		{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}.SilverlightOnly|x86.ActiveCfg = SilverlightOnly|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|.NET.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.Release|x86.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -397,6 +417,7 @@ Global
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
 		{677A24F2-5643-4960-BD8E-FFD739696099} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17} = {1078E05E-D251-4225-AEC0-B8077B0ABB75}
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407} = {E9A5C60A-ADD0-4667-A099-1BE9DC3155BE}
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783} = {E9A5C60A-ADD0-4667-A099-1BE9DC3155BE}
 	EndGlobalSection
