@@ -38,18 +38,22 @@ namespace Expression.Blend.SampleData.SampleDataSource
 			}
 		}
 
-		private ItemCollection _Collection = new ItemCollection();
+		private Items _Items = new Items();
 
-		public ItemCollection Collection
+		public Items Items
 		{
 			get
 			{
-				return this._Collection;
+				return this._Items;
 			}
 		}
 	}
 
-	public class Item : System.ComponentModel.INotifyPropertyChanged
+	public class Items : System.Collections.ObjectModel.ObservableCollection<ItemsItem>
+	{ 
+	}
+
+	public class ItemsItem : System.ComponentModel.INotifyPropertyChanged
 	{
 		public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
 
@@ -117,10 +121,6 @@ namespace Expression.Blend.SampleData.SampleDataSource
 				}
 			}
 		}
-	}
-
-	public class ItemCollection : System.Collections.ObjectModel.ObservableCollection<Item>
-	{ 
 	}
 #endif
 }
