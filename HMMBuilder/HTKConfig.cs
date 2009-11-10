@@ -346,8 +346,8 @@ namespace HMMBuilder
                 "# K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds\n" +
                 "# VOCAL_GAP = gap (in seconds) required to separate vocalisations \n" +
                 "# MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.\n" +
-                "SEGMENTATION_THRESHOLD_K1=3.5\n" +
-                "SEGMENTATION_THRESHOLD_K2=6.0\n" +
+                "SEGMENTATION_THRESHOLD_K1=3.0\n" +
+                "SEGMENTATION_THRESHOLD_K2=5.0\n" +
                 "K1_K2_LATENCY=0.05\n" +
                 "VOCAL_GAP=0.2\n" +
                 "MIN_VOCAL_DURATION=0.075";
