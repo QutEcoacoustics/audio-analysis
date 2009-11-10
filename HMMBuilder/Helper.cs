@@ -228,14 +228,12 @@ namespace HMMBuilder
         public static void ComputeAccuracy(string resultTrue, string resultFalse, 
                                             double mean, double variance, double frameRate,
                                             ref string vocalization, float threshold,
+                                            out int tpCount,     out int fpCount,
+                                            out int trueSCount,  out int falseSCount,
                                             out float tpPercent, out float tnPercent, 
-                                            out float accuracy, out float avTPScore, 
+                                            out float accuracy,  out float avTPScore, 
                                             out float avFPScore)
-        {
-            int tpCount = 0;  //true positives
-            int fpCount = 0;  //false positives
-            int trueSCount  = 0;
-            int falseSCount = 0;
+        {            
             avTPScore = 0.0f;
             avFPScore = 0.0f;
 
@@ -243,9 +241,9 @@ namespace HMMBuilder
             CountHits(resultFalse, ref vocalization, mean, variance, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
 
             int tnCount = falseSCount - fpCount;
-            tpPercent = (float)(tpCount) * 100 / (trueSCount + falseSCount);
-            tnPercent = (float)(tnCount) * 100 / (trueSCount + falseSCount);
-            accuracy = tpPercent + tnPercent;
+            tpPercent = tpCount * 100 / (float)trueSCount;
+            tnPercent = tnCount * 100 / (float)falseSCount;
+            accuracy = (tpCount + tnCount) * 100 / (float)(trueSCount + falseSCount);
         } //end method ComputeAccuracy()
 
         
@@ -297,24 +295,25 @@ namespace HMMBuilder
                             //normalise the score
                             double duration   = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
                             double qualityThreshold = 1.96;
-                            double normScore, durationScore, frameLength;
+                            double normScore, qualityScore, frameLength;
                             bool isHit;
                             ComputeHit(score, duration, frameRate, mean, stddev, scoreThreshold, qualityThreshold, 
-                                       out frameLength, out normScore, out durationScore, out isHit);
+                                       out frameLength, out normScore, out qualityScore, out isHit);
 
+                            txtLine += " " + normScore.ToString("f1") + "  " + qualityScore.ToString("f5");
                             if (isHit)
                             {
                                 //Console.WriteLine("duration=" + duration.ToString("f3") + " (p=" + lengthProb.ToString("f3") + ")   normScore=" + normScore.ToString("f0"));
                                 avScore += (float)normScore;
                                 hits++;
                                 valid = false;
-                                txtLine += " " + normScore.ToString("f1") + "  " + durationScore.ToString("f5") + "  ###HIT!! scorethreshold=" + scoreThreshold.ToString("f1");
+                                txtLine += " " + "  ##TP HIT!! Thresholds: score=" + scoreThreshold.ToString("f1") + "  quality=" + qualityThreshold.ToString("f2");
                             }
-                            else
-                            {
-                                txtLine += " " + normScore.ToString("f1") + "  " + durationScore.ToString("f5") + "  ##MISS!!";
+                            //else
+                            //{
+                            //    txtLine += " " + normScore.ToString("f1") + "  " + qualityScore.ToString("f5") + "  ##TN MISS";
 
-                            }
+                            //}
                         } //end if vocalisation
                     }
                     writer.WriteLine(txtLine);
