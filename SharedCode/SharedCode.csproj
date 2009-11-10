@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CanvasHelpers.cs" />
+    <Compile Include="DesignTime.cs" />
     <Compile Include="DiscreteSlider.cs" />
     <Compile Include="ListExtentions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
