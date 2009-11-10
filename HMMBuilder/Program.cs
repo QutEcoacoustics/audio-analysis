@@ -27,11 +27,17 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
-            htkConfig.CallName = "WHIPBIRD1";
-            htkConfig.Comment = "Parameters for whip bird";
+            //htkConfig.CallName = "WHIPBIRD1";
+            //htkConfig.Comment = "Parameters for whip bird";
+            //htkConfig.LOFREQ = "500";
+            //htkConfig.HIFREQ = "9000"; 
+            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+
+            htkConfig.CallName = "KOALAFEMALE1";
+            htkConfig.Comment = "Parameters for female koala";
             htkConfig.LOFREQ = "500";
-            htkConfig.HIFREQ = "9000"; 
-            htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            htkConfig.HIFREQ = "7000";
+            htkConfig.numHmmStates = "14";  //number of hmm states for call model
 
             //==================================================================================================================
             //==================================================================================================================
@@ -49,10 +55,10 @@ namespace HMMBuilder
             //parse all the above strings to ints or reals
             double tr;
             Double.TryParse(htkConfig.TARGETRATE, out tr);
-            double wd;
+            double wd; //window duration
             Double.TryParse(htkConfig.WINDOWDURATION, out wd);
-            int sr;
-            Int32.TryParse(htkConfig.SampleRate, out sr);
+            int sr;  //not actually used - HTK does not need. Segmentation requires only framing info derived from SR below.
+            Int32.TryParse(htkConfig.SampleRate, out sr); 
 
             htkConfig.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString(); 
             htkConfig.FrameOverlap = (tr / wd).ToString();
@@ -71,8 +77,8 @@ namespace HMMBuilder
             htkConfig.HTKDir      = "C:\\SensorNetworks\\Software\\HTK";
             htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
             htkConfig.DataDir     = htkConfig.WorkingDir + "\\data";
-            htkConfig.ConfigDir   = htkConfig.WorkingDir  + "\\" + htkConfig.CallName;
-            htkConfig.ResultsDir  = htkConfig.WorkingDir  + "\\results";
+            htkConfig.ConfigDir   = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
+            htkConfig.ResultsDir  = htkConfig.WorkingDir + "\\results";
             htkConfig.SilenceModelPath = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + htkConfig.noiseModelExt;
             
@@ -354,6 +360,10 @@ namespace HMMBuilder
                     //Read the output files
                     int optimumThreshold = -Int32.MaxValue;
                     double variance = sd * sd;
+                    int tpCount = 0;  //true positives
+                    int fpCount = 0;  //false positives
+                    int trueSCount  = 0;
+                    int falseSCount = 0;
                     try
                     {
                         float tppercent = 0.0f;
@@ -364,22 +374,34 @@ namespace HMMBuilder
                         float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
                         int step = 2; //to step the threshold
                         double maxScore = -Double.MaxValue;
+                        int maxTpCount = 0;
+                        int maxTnCount = 0;
                         for (int i = 9; i >= -8; i--)
                         {
+                            trueSCount = 0;
+                            falseSCount = 0;
                             float t = threshold - (i * step);
                             Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate, 
-                                              ref vocalization, t, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                                              ref vocalization, t, out tpCount, out fpCount, out trueSCount,  out falseSCount,
+                                              out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                             Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
                             if (accuracy > maxScore)
                             {
                                 maxScore = accuracy;
                                 optimumThreshold = (int)t;
+                                maxTpCount = tpCount;
+                                maxTnCount = falseSCount-fpCount;
                             }
                         }
                         //calculate optimum so can save best data.
                         Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
+                        Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
+                        Console.WriteLine("FN=" + (trueSCount - maxTpCount)  + "     FP=" + (falseSCount - maxTnCount));
+                        //repeat in order to print the PDF file of individual results
                         Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
-                               ref vocalization, optimumThreshold, out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                               ref vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                               out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                        Console.WriteLine("You can check individual hits in the template's results directory.");
 
                     }
                     catch 
@@ -424,7 +446,7 @@ namespace HMMBuilder
                     FileTools.Append2TextFile(newSegmentIniPath, line, false);
 
 
-                    Console.WriteLine("WRITE HTK FILES");
+                    Console.WriteLine("\n\nWRITE HTK FILES");
                     try
                     {
                         //COPY HTK FILES ACROSS TO CONFIG DIR.
