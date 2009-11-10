@@ -14,9 +14,9 @@ using System.ComponentModel;
 namespace TagCloud
 {
     [ScriptableType]
-    public class TagItem : INotifyPropertyChanged
+    public class TagItem : INotifyPropertyChanged, IEquatable<TagItem>
     {
-        private int _weight = 1;
+        private double _weight = 1;
         private bool _selected = false;
         private string _name = String.Empty;
 
@@ -52,7 +52,7 @@ namespace TagCloud
             }
         }
 
-        public int Weighting
+        public double Weighting
         {
             get
             {
@@ -82,5 +82,14 @@ namespace TagCloud
                 propertyChanged(this, new PropertyChangedEventArgs(propertyName));
             }
         }
+
+        #region IEquatable<TagItem> Members
+
+        public bool Equals(TagItem other)
+        {
+            return this._name.Equals(other.Name);
+        }
+
+        #endregion
     }
 }

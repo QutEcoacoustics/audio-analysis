@@ -24,7 +24,7 @@ namespace TagCloud.TagService {
         
         private string NameField;
         
-        private int WeightField;
+        private double WeightField;
         
         [System.Runtime.Serialization.DataMemberAttribute()]
         public bool IsSelected {
@@ -53,7 +53,8 @@ namespace TagCloud.TagService {
         }
         
         [System.Runtime.Serialization.DataMemberAttribute()]
-        public int Weight {
+        public double Weight
+        {
             get {
                 return this.WeightField;
             }

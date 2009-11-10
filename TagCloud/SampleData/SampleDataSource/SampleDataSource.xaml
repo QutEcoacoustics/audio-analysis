@@ -4,16 +4,36 @@
       changes to this file can cause errors.
 -->
 <SampleData:SampleDataSource xmlns:SampleData="clr-namespace:Expression.Blend.SampleData.SampleDataSource" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-  <SampleData:SampleDataSource.Collection>
-    <SampleData:Item Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting="100" />
-    <SampleData:Item Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting="101" />
-    <SampleData:Item Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting="102" />
-    <SampleData:Item Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting="103" />
-    <SampleData:Item Name="Sagittis senectus sociosqu suscipit" IsSelected="True" Weighting="104" />
-    <SampleData:Item Name="Torquent ultrices vehicula volutpat" IsSelected="False" Weighting="105" />
-    <SampleData:Item Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting="106" />
-    <SampleData:Item Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting="107" />
-    <SampleData:Item Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting="108" />
-    <SampleData:Item Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting="109" />
-  </SampleData:SampleDataSource.Collection>
+  <SampleData:SampleDataSource.Items>
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".956" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting="1" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".321" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".007" />
+    <SampleData:ItemsItem Name="Sagittis senectus sociosqu suscipit" IsSelected="True" Weighting=".0001" />
+    <SampleData:ItemsItem Name="Torquent ultrices vehicula volutpat" IsSelected="False" Weighting=".742" />
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".326" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting=".458" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".852" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".112" />
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".956" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting="1" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".321" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".007" />
+    <SampleData:ItemsItem Name="Sagittis senectus sociosqu suscipit" IsSelected="True" Weighting=".0001" />
+    <SampleData:ItemsItem Name="Torquent ultrices vehicula volutpat" IsSelected="False" Weighting=".742" />
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".326" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting=".458" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".852" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".112" />
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".956" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting="1" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".321" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".007" />
+    <SampleData:ItemsItem Name="Sagittis senectus sociosqu suscipit" IsSelected="True" Weighting=".0001" />
+    <SampleData:ItemsItem Name="Torquent ultrices vehicula volutpat" IsSelected="False" Weighting=".742" />
+    <SampleData:ItemsItem Name="Maecenas praesent accumsan bibendum" IsSelected="True" Weighting=".326" />
+    <SampleData:ItemsItem Name="Dictumst eleifend facilisi faucibus" IsSelected="False" Weighting=".458" />
+    <SampleData:ItemsItem Name="Habitant inceptos interdum lobortis" IsSelected="True" Weighting=".852" />
+    <SampleData:ItemsItem Name="Nascetur pharetra placerat pulvinar" IsSelected="False" Weighting=".112" />
+  </SampleData:SampleDataSource.Items>
 </SampleData:SampleDataSource>
