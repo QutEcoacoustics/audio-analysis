@@ -48,19 +48,15 @@ namespace AudioAnalysis
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(Default.intensityThreshold, Default.smallAreaThreshold, matrix);
             Console.WriteLine("END: DETECTION");
 
-            //set up static variables for init Acoustic events
-            //AcousticEvent.   doMelScale = config.DoMelScale;
-            AcousticEvent.FreqBinCount = config.FreqBinCount;
-            AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-          //  int minF        = (int)config.MinFreqBand;
-          //  int maxF        = (int)config.MaxFreqBand;
-            AcousticEvent.FrameDuration = config.GetFrameOffset();
+            //get the time and freq scales
+            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double frameOffset  = config.GetFrameOffset();
 
 
             var events = new List<AcousticEvent>();
             foreach (Oblong o in oblongs)
             {
-                var e = new AcousticEvent(o);
+                var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
                 events.Add(e);
             }
 
