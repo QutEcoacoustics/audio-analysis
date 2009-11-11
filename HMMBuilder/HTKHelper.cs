@@ -111,53 +111,73 @@ namespace HMMBuilder
                         Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltF+">");
                         wltWriter = File.CreateText(htkConfig.wltF);
                         wltWriter.WriteLine(heading);
-                        DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPath);
-                        FileInfo[] FileList = Dir.GetFiles("*" + htkConfig.wavExt, SearchOption.TopDirectoryOnly);
-                        string currLine = "";
-                        string word = "";
-                        string srtTime = "";
-                        float sTime = 0f;
-                        string endTime = "";
-                        float eTime = 0f;
 
-                        foreach (FileInfo FI in FileList)
+                        List<string> trnDirList = new List<string>();
+                        if (htkConfig.multiSyllableList.Count == 0)
                         {
-                            
-                            currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
-                            wltWriter.WriteLine(currLine);
-                            //read related label file
-                            string segFile = Path.GetFileNameWithoutExtension(FI.FullName) + segmentationFileExt;
-                            wltReader = new StreamReader(htkConfig.trnDirPath + "\\" + segFile);
-                            wltReader.ReadLine(); //remove first line
-                            while ((txtLine = wltReader.ReadLine()) != null)
+                            //the list will only have one element
+                            trnDirList.Add(htkConfig.trnDirPath);
+                        }
+                        else
+                        {
+                            //full path of all training directories
+                            foreach (string word in htkConfig.multiSyllableList)
                             {
-                                param = Regex.Split(txtLine, @"\s+");
-                                if (param[0].StartsWith("SIL"))
-                                    word = "SIL";
-                                else
+                                trnDirList.Add(htkConfig.trnDirPath + "\\" + word);
+                            }
+                        }
+
+                        foreach (string currTrnDir in trnDirList)
+                        {
+                            DirectoryInfo Dir = new DirectoryInfo(currTrnDir);
+                            FileInfo[] FileList = Dir.GetFiles("*" + htkConfig.wavExt, SearchOption.TopDirectoryOnly);
+                            string currLine = "";
+                            string word = "";
+                            string srtTime = "";
+                            float sTime = 0f;
+                            string endTime = "";
+                            float eTime = 0f;
+
+                            foreach (FileInfo FI in FileList)
+                            {
+
+                                currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
+
+                                wltWriter.WriteLine(currLine);
+                                //read related label file
+                                string segFile = Path.GetFileNameWithoutExtension(FI.FullName) + segmentationFileExt;
+                                wltReader = new StreamReader(currTrnDir + "\\" + segFile);
+                                wltReader.ReadLine(); //remove first line
+                                while ((txtLine = wltReader.ReadLine()) != null)
                                 {
-                                    word = param[0];
-                                    vocalization = word;
+                                    param = Regex.Split(txtLine, @"\s+");
+                                    if (param[0].StartsWith("SIL"))
+                                        word = "SIL";
+                                    else
+                                    {
+                                        word = param[0];
+                                        vocalization = word;
+                                    }
+
+                                    //add word to word list
+                                    if (!syllableList.Contains(word))
+                                        syllableList.Add(word);
+
+                                    sTime = float.Parse(param[2]);
+                                    sTime *= 1e+7f; //conversion to HTK units
+                                    srtTime = sTime.ToString();
+                                    eTime = float.Parse(param[4]);
+                                    eTime *= 1e+7f; //conversion to HTK units
+                                    endTime = eTime.ToString();
+                                    currLine = srtTime + " " + endTime + " " + word;
+                                    wltWriter.WriteLine(currLine);
                                 }
 
-                                //add word to word list
-                                if (!syllableList.Contains(word))
-                                    syllableList.Add(word);
-
-                                sTime = float.Parse(param[2]);
-                                sTime *= 1e+7f; //conversion to HTK units
-                                srtTime = sTime.ToString();
-                                eTime = float.Parse(param[4]);
-                                eTime *= 1e+7f; //conversion to HTK units
-                                endTime = eTime.ToString();
-                                currLine = srtTime + " " + endTime + " " + word;
-                                wltWriter.WriteLine(currLine);
+                                wltWriter.WriteLine(".");
                             }
 
-                            wltWriter.WriteLine(".");
+                            //TO DO: check if each entry of labParam has a related .pcf file
                         }
-                        
-                        //TO DO: check if each entry of labParam has a related .pcf file
 
                     }
                     catch (Exception e)
@@ -192,7 +212,7 @@ namespace HMMBuilder
                 catch (Exception e)
                 {
                     Console.WriteLine("ERROR 2: FAILED TO COMPLETE METHOD: CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)");
-                    Console.WriteLine(error);
+                    Console.WriteLine(e.Message);
                     throw (e);
                 }
 
@@ -286,7 +306,8 @@ namespace HMMBuilder
         public static void WriteDictionary(HTKConfig htkConfig)
         {            
             //THREE: generate dictionary file 'dict' and monophones file 'monophones'
-            Console.WriteLine("HMMBuilder: Generate dictionary file 'dict' and monophones file 'monophones'");
+            Console.WriteLine("HMMBuilder: Generate dictionary file '{0}' and monophones file '{1}'",
+                                                            htkConfig.DictFile, htkConfig.monophones);
             StreamReader dictionaryStreamReader = null;
             try
             {
@@ -362,6 +383,21 @@ namespace HMMBuilder
         } //end WriteDictionary()
 
 
+        /// <summary>
+        /// Parses the grammar file.
+        /// </summary>
+        /// <param name="source grammar file"></param>
+        /// <param name="destination word network"></param>
+        /// <param name="htkConfig"></param>
+        /// <returns>Void</returns> 
+        public static void HParse(string sourceF, string destF, HTKConfig htkConfig)
+        {         
+            string commandLineArguments = sourceF + " " + destF;
+            Console.WriteLine("\nHTKHelper.HParse");
+            Console.WriteLine("  Command Line Arguments = " + commandLineArguments);
+
+            CallProcess(htkConfig.HParseExecutable, commandLineArguments);
+        }
 
 
         /// <summary>
@@ -379,8 +415,28 @@ namespace HMMBuilder
             //write the script files for training and test data
             try
             {
-                WriteScriptFiles(htkConfig.trnDirPath,      htkConfig.cTrainF,     htkConfig.trainF,  htkConfig.wavExt, htkConfig.mfcExt);
-                WriteScriptFiles(htkConfig.tstTrueDirPath,  htkConfig.cTestTrueF,  htkConfig.tTrueF,  htkConfig.wavExt, htkConfig.mfcExt);
+                //check if the call is multisyllabic
+                if (htkConfig.multiSyllableList.Count == 0)
+                {
+                    WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                }
+                else
+                {
+                    bool firtWord = true;
+                    foreach (string word in htkConfig.multiSyllableList)
+                    {
+                        string trnDir = htkConfig.trnDirPath + "\\" + word;
+                        if (firtWord)
+                        {
+                            WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                            firtWord = false;
+                        }
+                        else
+                            AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                    }
+                }
+                
+                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);
                 WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, htkConfig.wavExt, htkConfig.mfcExt);
             }
             catch (IOException e)
@@ -409,7 +465,30 @@ namespace HMMBuilder
             //Console.ReadLine();
         } //end Method HCopy()
 
+   
+        public static void AppendScriptFiles(string dirPath, string scriptFN_code, string scriptFN, string sourceExt, string outExt)
+        {
+            DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
+            FileInfo[] FileList = dirInfo.GetFiles("*" + sourceExt, SearchOption.TopDirectoryOnly);
 
+            StreamWriter objWriter = File.AppendText(scriptFN_code);//list of .wav > .mfc files
+            StreamWriter objWriter2 = File.AppendText(scriptFN);
+
+            foreach (FileInfo FI in FileList)
+            {
+                string currLine = dirPath + "\\" + FI.Name + " " + dirPath + "\\";
+                string fileName = Path.GetFileNameWithoutExtension(FI.FullName);
+                currLine += fileName + outExt;
+                objWriter.WriteLine(currLine);
+                currLine = dirPath + "\\" + fileName + outExt;
+                objWriter2.WriteLine(currLine);
+            }
+
+            objWriter.Flush();
+            objWriter2.Flush();
+            objWriter.Close();
+            objWriter2.Close();
+        } //end method
 
 
         //call as follows  WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt)
