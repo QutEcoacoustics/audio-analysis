@@ -60,6 +60,10 @@ namespace HMMBuilder
         public string MfccConfigFN      { get { return ConfigDir + "\\mfccConfig"; } }
         public string MfccConfig2FN     { get { return ConfigDir + "\\mfccConfig.txt"; } } //need this copy for training
 
+        //grammar file for multisyllabic calls
+        public string gramF { get { return ConfigDir + "\\gram.bnf"; } }
+        //syllable list for multisyllabic calls
+        public List<string> multiSyllableList = new List<string>();
 
         public string DictFile     { get { return ConfigDir + "\\dict"; } }
         public string cTrainF      { get { return ConfigDir + "\\codetrain.scp"; } }
@@ -112,6 +116,7 @@ namespace HMMBuilder
         public string HERestExecutable { get { return HTKDir + "\\HERest.exe"; } }
         public string HInitExecutable  { get { return HTKDir + "\\HInit.exe"; } }
         public string HViteExecutable  { get { return HTKDir + "\\HVite.exe"; } }
+        public string HParseExecutable { get { return HTKDir + "\\HParse.exe"; } }
 
         public string aOptionsStr = "-A -D -T 1"; //options string for HTK HCopy funciton
 
@@ -196,6 +201,44 @@ namespace HMMBuilder
                     throw (e);
             }
         }
+
+        /// <summary>
+        /// Populate the list of syllables read from the parsed grammar file (WORD NETWORK file).
+        /// Syllables 'SIL', 'SENTENCE_START' and 'SENTENCE_END' will not be included.
+        /// </summary>
+        /// <returns>Void</returns>
+        public void PopulateSyllableList(string wordNetworkF)
+        {
+            string txtLine = "";
+            try
+            {
+                StreamReader fileReader = new StreamReader(wordNetworkF);
+                while ((txtLine = fileReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
+                {
+                    if(!txtLine.StartsWith("I="))
+                        continue;
+
+                    string[] param = Regex.Split(txtLine, @"\s+[wW]=[^\w]*");
+                    //remove white character at the end of the string
+                    string word = Regex.Replace(param[1], @"\s+", "");
+                    if (!word.Equals("SIL") &&
+                        !word.Equals("SENT_START") &&
+                        !word.Equals("SENT_END") &&
+                        !word.Equals("NULL"))
+                        {
+                            if (!multiSyllableList.Contains(word))
+                                multiSyllableList.Add(word);
+                        }
+                    
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw (e);
+            }        
+        }
         
         public void WriteMfccConfigFile(string filename)
         {
@@ -275,7 +318,7 @@ namespace HMMBuilder
             "0.000e+0 4.000e-1 2.000e-1 4.000e-1 0.000e+0\n" +
             "0.000e+0 0.000e+0 6.000e-1 4.000e-1 0.000e+0\n" +
             "0.000e+0 4.000e-1 0.000e+0 3.000e-1 3.000e-1\n" +
-            "0.000e+0 0.000e+0 0.000e+0 0.000e+0 0.000e+0\n";
+            "0.000e+0 0.000e+0 0.000e+0 0.000e+0 0.000e+0";
             WriteTextFile(protoTypeDir+"\\SIL", content);
 
             //- proto.pcf
@@ -284,8 +327,8 @@ namespace HMMBuilder
             //that is supposed to contain the related transition matrix of size (nStates+2)x(nStates+2)
             content =
                 "<BEGINproto_config_file>\n" +
-                "<COMMENT>\n\tThis PCF produces a 8 state prototype system\n" +
-                "<BEGINsys_setup>\n\tnStates: "+numHmmStates+"\n"+
+                "<COMMENT>\n\tThis PCF produces a " + numHmmStates + " state prototype system\n" +
+                "<BEGINsys_setup>\n\tnStates: " + numHmmStates + "\n"+
                    "\tsWidths: " + VecSize + "\n" +      //################################################# 
                    "\t#mixes: 1\n"+
                    "\tparmKind: " + TARGETKIND + "\n" +  //#################################################
@@ -381,7 +424,6 @@ namespace HMMBuilder
 
             }// end finally
         }
-
 
         #region Constructor
         public HTKConfig()
