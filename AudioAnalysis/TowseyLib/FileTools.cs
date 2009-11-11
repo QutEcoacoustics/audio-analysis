@@ -347,8 +347,8 @@ namespace TowseyLib
                     if (trimmed.StartsWith("#")) continue;
                     string[] words = trimmed.Split('=');
                     if (words.Length == 1) continue;
-                    string key = words[0];
-                    string value = words[1];
+                    string key = words[0].Trim(); //trim because may have spaces around the = sign i.e. ' = '
+                    string value = words[1].Trim();
                     if(! table.ContainsKey(key)) table.Add(key, value); //this may not be a good idea!
                 }//end while
             }//end using

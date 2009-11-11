@@ -181,6 +181,11 @@ namespace TowseyLib
             else return 0.0;
         }
 
+        /// <summary>
+        /// returns a Mel value for the passed Herz value
+        /// </summary>
+        /// <param name="f"></param>
+        /// <returns></returns>
         public static double Mel(double f)
         {
             if (f <= 1000) return f; //linear below 1 kHz
