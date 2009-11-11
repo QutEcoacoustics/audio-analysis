@@ -71,15 +71,17 @@ namespace AudioAnalysis
             string wavDirName; string wavFileName;
             AudioRecording recording;// get recording from somewhere
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
-
             var result = recogniser.Analyse(recording);
-            bool doMelScale = template2.SonogramConfig.DoMelScale;
-            int binCount = template2.SonogramConfig.FreqBinCount;
-            double binWidth = template2.SonogramConfig.FftConfig.NyquistFreq / (double)binCount;
-            int minF = (int)template2.SonogramConfig.MinFreqBand;
-            int maxF = (int)template2.SonogramConfig.MaxFreqBand;
-            double frameOffset = template2.SonogramConfig.GetFrameOffset();
-            var events = result.GetAcousticEvents(doMelScale, binCount, binWidth, minF, maxF, frameOffset);
+
+
+            int samplingRate = template2.SonogramConfig.FftConfig.SampleRate;
+            int windowSize   = template2.SonogramConfig.WindowSize;
+            int windowOffset = (int)Math.Floor(windowSize * template2.SonogramConfig.WindowOverlap); 
+            bool doMelScale  = template2.SonogramConfig.DoMelScale;
+            int minF         = (int)template2.SonogramConfig.MinFreqBand;
+            int maxF         = (int)template2.SonogramConfig.MaxFreqBand;
+
+            var events = result.GetAcousticEvents(samplingRate, windowSize, windowOffset, doMelScale, minF, maxF);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
             template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result, events);
             int count = 0;
