@@ -33,11 +33,11 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "9000"; 
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
-            htkConfig.CallName = "KOALAFEMALE1";
+            htkConfig.CallName = "KOALA1";
             htkConfig.Comment = "Parameters for female koala";
             htkConfig.LOFREQ = "500";
             htkConfig.HIFREQ = "7000";
-            htkConfig.numHmmStates = "14";  //number of hmm states for call model
+            htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
             //==================================================================================================================
             //==================================================================================================================
@@ -103,6 +103,29 @@ namespace HMMBuilder
                 //    break;
 
                 default:
+
+                    #region ZERO: Determine if the vocalization is monosyllabic
+                    // If the file 'gram.txt' is found in ... the vocalization is assumed
+                    // to be multisyllabic. 
+                    bool multisyllabic = false;
+                    if (Directory.Exists(htkConfig.ConfigDir))
+                        if (File.Exists(htkConfig.gramF))
+                        {
+                            multisyllabic = true;
+                            //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
+                            try
+                            {
+                                HTKHelper.HParse(htkConfig.gramF, htkConfig.wordNet, htkConfig);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("ERROR! FAILED TO CREATE NETWORK FILE: {0}", htkConfig.wordNet);
+                                good = false;
+                                break;
+                            }  
+                        }
+                    #endregion
+
                     #region ONE: Write Configuration Files
                     Console.WriteLine("WRITE FIVE CONFIGURATION FILES");
                     try
@@ -114,9 +137,35 @@ namespace HMMBuilder
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
                         //segmentation ini file
-                        string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
-                        htkConfig.WriteSegmentationIniFile(segmentationIniFile);
-                        //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
+                        if(!multisyllabic)
+                        {
+                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                            htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                            //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
+                        }
+                        else
+                        {   
+                            // 1. Populate syllable list
+                            htkConfig.PopulateSyllableList(htkConfig.wordNet);
+                            // 2. Create as many segmentationIniFiles as the number of syllables.
+                            //    Each, specifying the related vocalization to use for segmentation                            
+                            foreach (string word in htkConfig.multiSyllableList)
+                            {
+                                //check if the training folder exists
+                                string trnDir = htkConfig.trnDirPath + "\\" + word;
+                                if (!Directory.Exists(trnDir))
+                                {
+                                    Console.WriteLine("ERROR! Could not find folder '{0}'", trnDir);
+                                    throw new Exception();
+                                }
+
+                                string segmentationIniFile = trnDir + "\\" + htkConfig.segmentationIniFN;
+                                string tmpString = htkConfig.CallName;
+                                htkConfig.CallName = word;
+                                htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                                htkConfig.CallName = tmpString;
+                            }                        
+                        }
                     }
                     catch
                     {
@@ -172,7 +221,7 @@ namespace HMMBuilder
                     if (HMMSettings.ConfigParam.TryGetValue("HCOPY", out tmpVal))
                     {
                         if (tmpVal.Equals("Y"))//feature vectors have not been extracted yet 
-                        {                            
+                        {
                             try
                             {
                                 HTKHelper.HCopy(aOptionsStr, htkConfig, true);
@@ -182,7 +231,7 @@ namespace HMMBuilder
                                 Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HTKHelper.HCopy(aOptionsStr, htkConfig, true)");
                                 //Console.WriteLine(ex.ToString());
                                 good = false;
-                                break; 
+                                break;
                             }
                         }
                         else //feature vectors have already been extracted
@@ -205,20 +254,35 @@ namespace HMMBuilder
                     #region THREE: Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
                     try
                     {
+                        Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");
                         bool extractLabels = true;
-                        if (extractLabels) //True by default - i.e. always segment the training data files
-                        {
-                            Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");
-                            //copy segmentation ini file to the data directory.
-                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
-                            string fn = System.IO.Path.GetFileName(segmentationIniFile);
-                            System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
 
-                            //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
-                            //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
-                            int verbosity = 0;
-                            Main_CallSegmentation2.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
+                        if (!multisyllabic)
+                        {   
+                            if (extractLabels) //True by default - i.e. always segment the training data files
+                            {
+                                //copy segmentation ini file to the data directory.
+                                string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                                string fn = System.IO.Path.GetFileName(segmentationIniFile);
+                                System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
+
+                                //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
+                                //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
+                                int verbosity = 0;
+                                Main_CallSegmentation2.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
+                            }
+
                         }
+                        else // multisyllabic call
+                        {
+                            int verbosity = 0;
+                            foreach (string word in htkConfig.multiSyllableList)
+                            {
+                                string trnDir = htkConfig.trnDirPath + "\\" + word;   
+                                Main_CallSegmentation2.Execute(trnDir, trnDir, verbosity);
+                            }                        
+                        }
+
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
                     }
                     catch
@@ -305,11 +369,15 @@ namespace HMMBuilder
                         {
                             if (tmpVal.Equals("Y")) //Generate the network file
                             {
-                                HTKHelper.HBuild(htkConfig.monophones, htkConfig.wordNet, htkConfig.HBuildExecutable);
+                                if (!multisyllabic)
+                                    HTKHelper.HBuild(htkConfig.monophones, htkConfig.wordNet, htkConfig.HBuildExecutable);
                             }
                             else
                             {
-                                //TO DO: Ask the user for the word network file
+                                if (!multisyllabic)
+                                {
+                                    //TO DO: Ask the user for the word network file
+                                }
                             }
                         }
                         else
