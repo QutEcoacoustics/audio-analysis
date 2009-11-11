@@ -51,16 +51,16 @@ namespace AudioAnalysis
 
 
         //returns a list of acoustic events derived from the list of vocalisations detected by the recogniser.
-        public override List<AcousticEvent> GetAcousticEvents(bool doMelScale, int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset)
+        public override List<AcousticEvent> GetAcousticEvents(int samplingRate, int windowSize, int windowOffset,
+                                                              bool doMelScale, int minFreq, int maxFreq)
         {
+            double frameDuration, frameOffset, framesPerSecond;
+            AcousticEvent.CalculateTimeScale(samplingRate, windowSize, windowOffset,
+                                             out frameDuration, out frameOffset, out framesPerSecond);
+
             this.FullVocalisations = GetFullVocalisations();
 
-
             var list = new List<AcousticEvent>();
-
-            AcousticEvent.FreqBinCount  = fBinCount;  //must set this static var before creating Acousticevent objects
-            AcousticEvent.FreqBinWidth  = fBinWidth;  //must set this static var before creating Acousticevent objects
-            AcousticEvent.FrameDuration = frameOffset;//must set this static var before creating Acousticevent objects
 
             foreach (Vocalisation vocalEvent in this.FullVocalisations)
             {
@@ -68,11 +68,13 @@ namespace AudioAnalysis
                 int endFrame   = vocalEvent.End;
                 double startTime = startFrame * frameOffset;
                 double duration = (endFrame - startFrame) * frameOffset; 
-                var acouticEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq, doMelScale);
+                var acouticEvent = new AcousticEvent(startTime, duration, minFreq, maxFreq);
+                acouticEvent.SetTimeAndFreqScales(samplingRate, windowSize, windowOffset);
                 list.Add(acouticEvent);
             }
             return list;
-        }
+        } //end method GetAcousticEvents()
+
 
         private List<Vocalisation> GetFullVocalisations()
         {
