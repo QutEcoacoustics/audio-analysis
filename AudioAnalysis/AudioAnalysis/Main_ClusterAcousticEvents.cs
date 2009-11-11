@@ -27,35 +27,35 @@ namespace AudioAnalysis
             int analysisBandCount = 16;
             //#######################################################################################################
 
+            string outputFolder  = @"C:\SensorNetworks\AcousticEventData";  //args[2]
             string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
             if (args.Length > 0) appConfigPath = args[0];
 
-            int sr = 0;
-            int window = 0;
             if (File.Exists(appConfigPath))
-            {
-                Configuration config = BaseTemplate.LoadStaticConfig(appConfigPath); ;
-                Console.WriteLine("Loading config file: " + appConfigPath);
-                sr = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
-                window = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
-
-                AcousticEvent.SetStaticVariables(sr, window);
-            }
-            else
             {
                 Console.WriteLine("Cannot find config file: " + appConfigPath);
                 throw new Exception("FATAL ERROR - TERMINATE");
             }
 
-            string outputFolder = @"C:\SensorNetworks\AcousticEventData";  //args[2]
+            int binCount;
+            double binWidth;
+            double frameDuration, frameOffset, framesPerSecond;
+            Configuration config = BaseTemplate.LoadStaticConfig(appConfigPath); ;
+            int sr = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
+            int windowSize   = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
+            double overlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
+            int windowOffset = (int)Math.Floor(windowSize * overlap);
+            AcousticEvent.CalculateTimeScale(sr, windowSize, windowOffset, out frameDuration, out frameOffset, out framesPerSecond);
+            AcousticEvent.CalculateFreqScale(sr, windowSize, out binCount, out binWidth);
 
+ 
             Console.WriteLine("output Dir    = " + outputFolder);
             Console.WriteLine("Sample rate   = " + sr);
-            Console.WriteLine("Window size   = " + window);
-            Console.WriteLine("FrameDuration = " + AcousticEvent.FrameDuration);
-            Console.WriteLine("Frames /sec   = " + AcousticEvent.FramesPerSecond);
-            Console.WriteLine("Freq BinCount = " + AcousticEvent.FreqBinCount);
-            Console.WriteLine("Freq BinWidth = " + AcousticEvent.FreqBinWidth);
+            Console.WriteLine("Window size   = " + windowSize);
+            Console.WriteLine("FrameDuration = " + frameDuration);
+            Console.WriteLine("Frames /sec   = " + framesPerSecond);
+            Console.WriteLine("Freq BinCount = " + binCount);
+            Console.WriteLine("Freq BinWidth = " + binWidth);
 
 
             Log.WriteIfVerbose("\nA: GET ACOUSTIC EVENTS FROm CSV FILES");
@@ -91,8 +91,8 @@ namespace AudioAnalysis
             Oblong.Verbose = true;
             Oblong.MaxCol = 256;
             int[] syllableDistribution = Oblong.Distribution(oblongs, analysisBandCount);
-            //if (true)
-            if (false)
+            bool pause = true;
+            if (pause)
             {
                 //s.SaveImage(m, oblongs, col); 
                 Console.WriteLine("Finished acoustic event extraction");
