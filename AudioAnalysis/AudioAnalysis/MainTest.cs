@@ -13,8 +13,8 @@ namespace AudioAnalysis
 	{
 		public static void Main(string[] args)
 		{
-            MakeImageReducedSonogram();
-            return;
+            //MakeImageReducedSonogram();
+            //return;
 
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Console.WriteLine("");
@@ -270,8 +270,8 @@ namespace AudioAnalysis
             SonogramConfig config = new SonogramConfig();
 
             BaseSonogram sonogram = new SpectralSonogram(config, new WavReader(wavPath));
-            bool doHighlightSubband = false;
-            bool add1kHzLines = true;
+            //bool doHighlightSubband = false;
+            //bool add1kHzLines = true;
             //var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             //image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             ////image_mt.AddTrack(Image_Track.GetDecibelTrack(sonogram));
