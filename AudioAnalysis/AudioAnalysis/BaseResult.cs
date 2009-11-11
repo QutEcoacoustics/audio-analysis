@@ -43,7 +43,8 @@ namespace AudioAnalysis
             get;
         }
 
-        public abstract List<AcousticEvent> GetAcousticEvents(bool doMelScale, int fBinCount, double fBinWidth, int minFreq, int maxFreq, double frameOffset);
+        public abstract List<AcousticEvent> GetAcousticEvents(int samplingRate, int windowSize, int windowOffset,
+                                                              bool doMelScale, int minFreq, int maxFreq);
 
         public abstract ResultItem GetEventProperty(string key, AcousticEvent acousticEvent);
 
