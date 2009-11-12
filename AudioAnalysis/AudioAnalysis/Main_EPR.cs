@@ -97,18 +97,11 @@ namespace AudioAnalysis
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
             Console.WriteLine("END: AED");
 
-            //set up static variables for init Acoustic events
-            //AcousticEvent.   doMelScale = config.DoMelScale;
-            AcousticEvent.FreqBinCount = config.FreqBinCount;
-            AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            //  int minF        = (int)config.MinFreqBand;
-            //  int maxF        = (int)config.MaxFreqBand;
-            AcousticEvent.FrameDuration = config.GetFrameOffset();
 
             var events = new List<EventPatternRecog.Rectangle>();
             foreach (Oblong o in oblongs)
             {
-                var e = new AcousticEvent(o);
+                var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
                 events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
@@ -122,7 +115,7 @@ namespace AudioAnalysis
             var eprEvents = new List<AcousticEvent>();
             foreach (EventPatternRecog.Rectangle r in eprRects)
             {
-                var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false);
+                var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top);
                 Console.WriteLine(ae.WriteProperties());
                 eprEvents.Add(ae);
             }
