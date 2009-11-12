@@ -83,7 +83,8 @@ namespace AudioAnalysis
         
         void DrawEvents(Graphics g)
         {
-            Pen p = new Pen(Color.Red);
+            Pen p1 = new Pen(Color.LightGreen);
+            Pen p2 = new Pen(Color.Red);
             foreach(AcousticEvent e in this.EventList)
             {
                 //double start = e.StartTime;
@@ -94,7 +95,14 @@ namespace AudioAnalysis
                 int y = 256 - e.oblong.c2;
                 int width  = e.oblong.r2 - x + 1;
                 int height = e.oblong.c2 - e.oblong.c1 + 1;
-                g.DrawRectangle(p, x, y, width, height);
+                g.DrawRectangle(p1, x, y, width, height);
+                int scoreHt = (int)Math.Round(height * e.NormalisedScore);
+                int y1 = y + height;
+                int y2 = y1 - scoreHt;
+                g.DrawLine(p2, x,     y1, x,     y2);
+                g.DrawLine(p2, x + 1, y1, x + 1, y2);
+                g.DrawLine(p2, x + 2, y1, x + 2, y2);
+                g.DrawLine(p2, x + 3, y1, x + 3, y2);
             }
         }
 
