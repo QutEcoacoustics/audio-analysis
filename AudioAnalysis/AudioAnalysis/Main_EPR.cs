@@ -97,6 +97,9 @@ namespace AudioAnalysis
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
             Console.WriteLine("END: AED");
 
+            //get the time and freq scales
+            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double frameOffset  = config.GetFrameOffset();
 
             var events = new List<EventPatternRecog.Rectangle>();
             foreach (Oblong o in oblongs)
