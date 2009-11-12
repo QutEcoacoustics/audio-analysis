@@ -30,16 +30,20 @@ namespace HMMBuilder
             //string templateName = "CURLEW1";
             //string templateName = "WHIPBIRD1";
             //string templateName = "CURRAWONG1";
-            string templateName = "KOALAFEMALE1";
-            string templateFN = templateDir+templateName+"\\"+templateName+".zip";  // ARG 1
+            //string templateName = "KOALAFEMALE1";
+            string templateName = "KOALAFEMALE2";
+            string templateFN = templateDir + templateName + "\\" + templateName + ".zip";  // ARG 1
             //*******************************************************************************************************************
             //THE WAV FILE TO PROCESS
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav";          //ARG 2
-            string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";       //ARG 2
+            //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";       //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";           //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav";   //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //string wavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
+            string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
+            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees_20081216-213000.wav";
+            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees3_20090907-053000.wav";//mix of curlew,currawong, koalas
             //*******************************************************************************************************************
 
             //GET THE COMMAND LINE ARGUMENTS
@@ -65,14 +69,14 @@ namespace HMMBuilder
             GetSampleRate(iniFile, out sampleRate, out windowSize);//should be same as used to train the HMM
 
             //can reset thresholds here for experimentation
-            //HTKThreshold = -100.0f;
-            //QualityThreshold = 40.0f;
-            //Console.WriteLine("HTKThreshold=" + HTKThreshold + "  QualityThreshold=" + QualityThreshold);
+            scoreThreshold   = -40.0f;
+            qualityThreshold = 1.96f;
+            Console.WriteLine("HTK Threshold=" + scoreThreshold + "  Quality Threshold=" + qualityThreshold);
 
 
             //B: GET FRAMING PARAMETERS USED TO MAKE HMM
             string configFile = target + "\\mfccConfig.txt";
-            double WindowDuration, WindowOffset; //100 nano-second units
+            double WindowDuration, WindowOffset; //in seconds
             int FreqMin, FreqMax;
             GetFramingParameters(configFile, out WindowDuration, out WindowOffset, out FreqMin, out FreqMax);
 
@@ -153,11 +157,12 @@ namespace HMMBuilder
         {
             string key = "WINDOWSIZE";    //actually window duration in 100 nano-sec units
             string str = FileTools.ReadPropertyFromFile(configFile, key);
-            WindowSize = Double.Parse(str);
+            WindowSize = Double.Parse(str) / (double)10000000;   //convert 100ns units to seconds
+
             Console.WriteLine("WINDOW SIZE  = " + WindowSize);
-            key = "TARGETRATE";              //actually window offset duration in 100 nano-sec units
+            key = "TARGETRATE";           //actually window offset duration in 100 nano-sec units
             str = FileTools.ReadPropertyFromFile(configFile, key);
-            WindowOffset = Double.Parse(str);
+            WindowOffset = Double.Parse(str) / (double)10000000; //convert 100ns units to seconds
             Console.WriteLine("WINDOW-OFFSET OR TARGET-RATE= " + WindowOffset);
             key = "LOFREQ";
             str = FileTools.ReadPropertyFromFile(configFile, key);
@@ -180,7 +185,7 @@ namespace HMMBuilder
             List<AcousticEvent> events = new List<AcousticEvent>();
             int count = results.Count; //number of lines in results file
 
-            double frameRate       = 10000000 / windowOffset;
+            double frameRate       = 1 / windowOffset; //frames per second
             int windowSize         = (int)Math.Floor(windowDuration * sampleRate);
             int windowSampleOffset = (int)Math.Floor(windowOffset   * sampleRate);
             int hitCount = 0;
@@ -211,7 +216,7 @@ namespace HMMBuilder
                 {
                     double startSec = start / (double)10000000;  //convert start(100ns units) to seconds
                     var acEvent = new AcousticEvent(startSec, duration, FreqMin, FreqMax);
-                    acEvent.Score = normScore;
+                    acEvent.SetNormalisedScore(normScore, scoreThreshold, -20);
                     acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
                     events.Add(acEvent);
                 }
@@ -241,7 +246,7 @@ namespace HMMBuilder
                                               double scoreThreshold, double qualityMean, double qualitySD, double qualityThreshold)
         {
 
-            double frameRate = 10000000 / windowOffset;
+            double frameRate = 1 / windowOffset; //frames per second
 
             double[] scores = new double[frameCount];
             for (int i = 0; i < frameCount; i++) scores[i] = Double.NaN; //init to NaNs.
