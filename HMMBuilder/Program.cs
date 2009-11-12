@@ -33,8 +33,14 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "9000"; 
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
-            htkConfig.CallName = "KOALA1";
-            htkConfig.Comment = "Parameters for female koala";
+            htkConfig.CallName = "KOALAFEMALE1";
+            htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
+            htkConfig.LOFREQ = "500";
+            htkConfig.HIFREQ = "7000";
+            htkConfig.numHmmStates = "10";  //number of hmm states for call model
+
+            htkConfig.CallName = "KOALAFEMALE2";
+            htkConfig.Comment = "Trained on female koala calls with clear structure of stacked formants and duration > 0.5s";
             htkConfig.LOFREQ = "500";
             htkConfig.HIFREQ = "7000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
