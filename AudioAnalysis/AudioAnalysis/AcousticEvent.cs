@@ -27,6 +27,7 @@ namespace AudioAnalysis
 
         //PROPERTIES OF THE EVENTS I.E. SCORE ETC
         public double Score { get; set; }
+        public double NormalisedScore { get; private set; }
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1Var;  //,
         //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
@@ -125,6 +126,14 @@ namespace AudioAnalysis
             Freq2BinIDs(this.IsMelscale, this.MinFreq, this.MaxFreq, this.FreqBinCount, this.FreqBinWidth, out leftCol, out rightCol);
 
             return new Oblong(topRow, leftCol, bottomRow, rightCol);
+        }
+
+        public void SetNormalisedScore(double score, double min, double max)
+        {
+            this.Score = score;
+            this.NormalisedScore = (score - min) / (max - min);
+            if (this.NormalisedScore > 1.0) this.NormalisedScore = 1.0;
+            if (this.NormalisedScore < 0.0) this.NormalisedScore = 0.0;
         }
 
         public string WriteProperties()
