@@ -184,6 +184,8 @@ namespace HMMBuilder
 
             string pcfWildCard = "*.pcf";
 
+            int maxStates =  int.MinValue;
+
             StreamReader objReader = null;
             try
             {
@@ -211,6 +213,10 @@ namespace HMMBuilder
                             string[] param = Regex.Split(txtLine, separator);
                             Match m = Regex.Match(param[0].ToUpper(), @"\b\w+\b");
                             parameter = m.ToString();
+
+                            if (parameter.Equals("NSTATES"))
+                                if (int.Parse(param[1]) > maxStates)
+                                    maxStates = int.Parse(param[1]);
 
                             string value = "";
                             if (confProto.TryGetValue(parameter, out value))
@@ -249,6 +255,11 @@ namespace HMMBuilder
                     confProtoDict.Add(Path.GetFileNameWithoutExtension(FI.FullName), confProto);
 
                 } //end FOREACH PCF file in the protoConfig directory
+
+                //makes sure that 'proto', if exsists, contains the biggest number of states among all pcf files
+                if (!confProtoDict.ContainsKey("proto"))
+                    throw new Exception("Prototype file 'proto' not found in '" + protoCfgDir + "'.");
+                confProtoDict["proto"]["NSTATES"] = maxStates.ToString();
 
             }
             catch (Exception e)
