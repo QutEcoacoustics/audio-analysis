@@ -39,8 +39,14 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "7000";
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
-            htkConfig.CallName = "KOALAFEMALE2";
-            htkConfig.Comment = "Trained on female koala calls with clear structure of stacked formants and duration > 0.5s";
+            //htkConfig.CallName = "KOALAFEMALE2";
+            //htkConfig.Comment = "Trained on female koala calls with clear structure of stacked formants and duration > 0.5s";
+            //htkConfig.LOFREQ = "500";
+            //htkConfig.HIFREQ = "7000";
+            //htkConfig.numHmmStates = "10";  //number of hmm states for call model
+
+            htkConfig.CallName = "KOALAMALE1";
+            htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
             htkConfig.LOFREQ = "500";
             htkConfig.HIFREQ = "7000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
@@ -131,6 +137,7 @@ namespace HMMBuilder
                             }  
                         }
                     #endregion
+
 
                     #region ONE: Write Configuration Files
                     Console.WriteLine("WRITE FIVE CONFIGURATION FILES");
@@ -414,137 +421,240 @@ namespace HMMBuilder
 
                     //calculate the mean and sd of the training call durations
                     string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
-                    double mean;
-                    double sd;
+                    double mean = 0;
+                    double sd = 0;
                     string regex = null;
-                    Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean, out sd);
-                    Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds or " +
-                                      (mean * frameRate).ToString("f1") + " frames\n");
-
-                    //calculate the mean and sd of the testing call durations
-                    masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
-                    double mean2;
-                    double sd2;
-                    regex = @"^\d+\s+\d+\s+\w+";
-                    Helper.AverageCallDuration(masterLabelFile, regex, vocalization, out mean2, out sd2);
-                    Console.WriteLine("Testing song durations= " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds or "+
-                                      (mean2 * frameRate).ToString("f1") + " frames\n");
-
-
-                    //Read the output files
-                    int optimumThreshold = -Int32.MaxValue;
-                    double variance = sd * sd;
-                    int tpCount = 0;  //true positives
-                    int fpCount = 0;  //false positives
-                    int trueSCount  = 0;
-                    int falseSCount = 0;
-                    try
+                    int optimumThreshold = -Int32.MaxValue; //to be removed from here
+                    if (!multisyllabic)
                     {
-                        float tppercent = 0.0f;
-                        float tnpercent = 0.0f;
-                        float accuracy  = 0.0f;
-                        float avTPScore = 0.0f;
-                        float avFPScore = 0.0f;
-                        float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
-                        int step = 2; //to step the threshold
-                        double maxScore = -Double.MaxValue;
-                        int maxTpCount = 0;
-                        int maxTnCount = 0;
-                        for (int i = 9; i >= -8; i--)
+                        Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, vocalization, out mean, out sd);
+
+                        Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds or " +
+                                          (mean * frameRate).ToString("f1") + " frames\n");
+
+                        //calculate the mean and sd of the testing call durations
+                        masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
+                        double mean2;
+                        double sd2;
+                        regex = @"^\d+\s+\d+\s+\w+";
+                        Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, vocalization, out mean2, out sd2);
+                        Console.WriteLine("Testing song durations= " + mean2.ToString("f4") + "+/-" + sd2.ToString("f4") + " seconds or " +
+                                          (mean2 * frameRate).ToString("f1") + " frames\n");
+
+
+                        //Read the output files
+                        //int optimumThreshold = -Int32.MaxValue;
+                        double variance = sd * sd;
+                        int tpCount = 0;  //true positives
+                        int fpCount = 0;  //false positives
+                        int trueSCount = 0;
+                        int falseSCount = 0;
+                        try
                         {
-                            trueSCount = 0;
-                            falseSCount = 0;
-                            float t = threshold - (i * step);
-                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate, 
-                                              ref vocalization, t, out tpCount, out fpCount, out trueSCount,  out falseSCount,
-                                              out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                            Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
-                            if (accuracy > maxScore)
+                            float tppercent = 0.0f;
+                            float tnpercent = 0.0f;
+                            float accuracy = 0.0f;
+                            float avTPScore = 0.0f;
+                            float avFPScore = 0.0f;
+                            float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
+                            int step = 2; //to step the threshold
+                            double maxScore = -Double.MaxValue;
+                            int maxTpCount = 0;
+                            int maxTnCount = 0;
+                            for (int i = 9; i >= -8; i--)
                             {
-                                maxScore = accuracy;
-                                optimumThreshold = (int)t;
-                                maxTpCount = tpCount;
-                                maxTnCount = falseSCount-fpCount;
+                                trueSCount = 0;
+                                falseSCount = 0;
+                                float t = threshold - (i * step);
+                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                                                  vocalization, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                                  out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                                Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
+                                if (accuracy > maxScore)
+                                {
+                                    maxScore = accuracy;
+                                    optimumThreshold = (int)t;
+                                    maxTpCount = tpCount;
+                                    maxTnCount = falseSCount - fpCount;
+                                }
                             }
+                            //calculate optimum so can save best data.
+                            Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
+                            Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
+                            Console.WriteLine("FN=" + (trueSCount - maxTpCount) + "     FP=" + (falseSCount - maxTnCount));
+                            //repeat in order to print the PDF file of individual results
+                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                                   vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                   out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                            Console.WriteLine("You can check individual hits in the template's results directory.");
+
                         }
-                        //calculate optimum so can save best data.
-                        Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
-                        Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
-                        Console.WriteLine("FN=" + (trueSCount - maxTpCount)  + "     FP=" + (falseSCount - maxTnCount));
-                        //repeat in order to print the PDF file of individual results
-                        Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
-                               ref vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
-                               out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
-                        Console.WriteLine("You can check individual hits in the template's results directory.");
-
+                        catch
+                        {
+                            good = false;
+                            return;
+                        }
                     }
-                    catch 
+                    else //multisillabic case
                     {
-                        good = false;
-                        break;  
-                    }
+                        
+                        foreach (string word in htkConfig.multiSyllableList)
+                        {
+                            
+                            //TO DO: manage acc meas for multisillabic calls
+                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, word, out mean, out sd);
+                            Console.WriteLine("Training song durations for '" + word + "' = " 
+                                                    + mean.ToString("f4") + "+/-" 
+                                                    + sd.ToString("f4") 
+                                                    + " seconds or " 
+                                                    + (mean * frameRate).ToString("f1") + " frames\n");
+                            
+                            //calculate the mean and sd of the testing call durations
+                            string tmpMlf = masterLabelFile;
+                            masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
+                            double mean2;
+                            double sd2;
+                            regex = @"^\d+\s+\d+\s+\w+";
+                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, word, out mean2, out sd2);
+                            
+                            Console.WriteLine("Testing song durations for '" + word + "' = " 
+                                                    + mean2.ToString("f4") + "+/-" 
+                                                    + sd2.ToString("f4") 
+                                                    + " seconds or " 
+                                                    + (mean2 * frameRate).ToString("f1") + " frames\n");
 
+                            masterLabelFile = tmpMlf;
+                            //Read the output files
+                            //int optimumThreshold = -Int32.MaxValue;
+                            double variance = sd * sd;
+                            int tpCount = 0;  //true positives
+                            int fpCount = 0;  //false positives
+                            int trueSCount = 0;
+                            int falseSCount = 0;
+                            try
+                            {
+                                float tppercent = 0.0f;
+                                float tnpercent = 0.0f;
+                                float accuracy = 0.0f;
+                                float avTPScore = 0.0f;
+                                float avFPScore = 0.0f;
+                                //float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
+                                //check if the threshold has been defined
+                                int threshold = 0;
+                                if (!htkConfig.threshold.TryGetValue(word, out threshold))
+                                    throw new Exception("No Score Threshold defined for '{"+word+"}'");
+                                    
+                                int step = 2; //to step the threshold
+                                double maxScore = -Double.MaxValue;
+                                int maxTpCount = 0;
+                                int maxTnCount = 0;
+                                for (int i = 9; i >= -8; i--)
+                                {
+                                    trueSCount = 0;
+                                    falseSCount = 0;
+                                    float t = threshold - (i * step);
+
+                                    
+                                    Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                                                      word, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                                      out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                                    Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
+                                    if (accuracy > maxScore)
+                                    {
+                                        maxScore = accuracy;
+                                        optimumThreshold = (int)t; //########################################
+                                        maxTpCount = tpCount;
+                                        maxTnCount = falseSCount - fpCount;
+                                    }
+                                }
+                                //calculate optimum so can save best data.
+                                Console.WriteLine("Max score = " + maxScore + "  at threshold= " + optimumThreshold);
+                                Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
+                                Console.WriteLine("FN=" + (trueSCount - maxTpCount) + "     FP=" + (falseSCount - maxTnCount));
+                                //repeat in order to print the PDF file of individual results
+
+                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                                       word, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                       out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+
+                                Console.WriteLine("You can check individual hits in the template's results directory.");
+
+                            }
+                            catch
+                            {
+                                good = false;
+                                return;
+                            }
+
+                        }
+                    }
                     #endregion
 
 
 
                     #region EIGHT: SET UP THE TEMPLATE ZIP FILE
-                    string oldSegmentDir = htkConfig.SegmentationDir;
-                    string newSegmentDir = htkConfig.ConfigDir;
-                    //Directory.CreateDirectory(newSegmentDir);
-
-                    //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
-                    string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
-                    string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
-                    string ext = htkConfig.noiseModelExt;
-                    string oldNoiseModel = oldNoiseDir   + "\\" + noiseModelFN + ext;
-                    string newNoiseModel = newSegmentDir + "\\" + noiseModelFN + ext;
-                    File.Copy(oldNoiseModel, newNoiseModel, true);
-
-                    //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
-                    //string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
-                    //string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
-                    string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
-                    string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
-                    //File.Copy(oldSegmentExePath, newSegmentExePath, true);
-                    File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
-                    //Append optimum threshold and duration threshold info to segmentation ini file
-                    string line = "#CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
-                                  "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
-                                  "#    NOTE 2: Duration values in seconds.\n" +
-                                  "#    NOTE 3: SD thrshold = number of SD either side of mean. 1.96=95% confidence\n" +
-                                  "HTK_THRESHOLD=" + optimumThreshold+"\n"+
-                                  "DURATION_MEAN=" + mean.ToString("f6") + "\n" +
-                                  "DURATION_SD=" + sd.ToString("f6")  + "\n" +
-                                  "SD_THRESHOLD=2.57";  //1.96 for p=95% :: 2.57 for p=99%
-                    FileTools.Append2TextFile(newSegmentIniPath, line, false);
-
-
-                    Console.WriteLine("\n\nWRITE HTK FILES");
-                    try
+                    if (!multisyllabic)
                     {
-                        //COPY HTK FILES ACROSS TO CONFIG DIR.
-                        string oldHTKDir = htkConfig.HTKDir;
-                        string newHTKDir = htkConfig.ConfigDir + "\\HTK";
-                        //if (!Directory.Exists(newHTKDir)) 
-                        string hcopyFN = Path.GetFileName(htkConfig.HCopyExecutable);
-                        Directory.CreateDirectory(newHTKDir);
-                        string oldHcopyFN = oldHTKDir + "\\" + hcopyFN;
-                        string newHcopyFN = newHTKDir + "\\" + hcopyFN;
-                        File.Copy(oldHcopyFN, newHcopyFN, true);
-                        string hviteFN = Path.GetFileName(htkConfig.HViteExecutable);
-                        string oldHviteFN = oldHTKDir + "\\" + hviteFN;
-                        string newHviteFN = newHTKDir + "\\" + hviteFN;
-                        File.Copy(oldHviteFN, newHviteFN, true);
-                    }
-                    catch (IOException ex)
-                    {
-                        Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
-                        Console.WriteLine(ex.ToString());
-                        good = false;
-                        //break;
-                    }
+                        string oldSegmentDir = htkConfig.SegmentationDir;
+                        string newSegmentDir = htkConfig.ConfigDir;
+                        //Directory.CreateDirectory(newSegmentDir);
 
+                        //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
+                        string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
+                        string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
+                        string ext = htkConfig.noiseModelExt;
+                        string oldNoiseModel = oldNoiseDir + "\\" + noiseModelFN + ext;
+                        string newNoiseModel = newSegmentDir + "\\" + noiseModelFN + ext;
+                        File.Copy(oldNoiseModel, newNoiseModel, true);
+
+                        //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
+                        //string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
+                        //string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
+                        string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
+                        string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
+                        //File.Copy(oldSegmentExePath, newSegmentExePath, true);
+                        File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
+                        //Append optimum threshold and duration threshold info to segmentation ini file
+                        string line = "#CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
+                                      "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
+                                      "#    NOTE 2: Duration values in seconds.\n" +
+                                      "#    NOTE 3: SD thrshold = number of SD either side of mean. 1.96=95% confidence\n" +
+                                      "HTK_THRESHOLD=" + optimumThreshold + "\n" +
+                                      "DURATION_MEAN=" + mean.ToString("f6") + "\n" +
+                                      "DURATION_SD=" + sd.ToString("f6") + "\n" +
+                                      "SD_THRESHOLD=2.57";  //1.96 for p=95% :: 2.57 for p=99%
+                        FileTools.Append2TextFile(newSegmentIniPath, line, false);
+
+
+                        Console.WriteLine("\n\nWRITE HTK FILES");
+                        try
+                        {
+                            //COPY HTK FILES ACROSS TO CONFIG DIR.
+                            string oldHTKDir = htkConfig.HTKDir;
+                            string newHTKDir = htkConfig.ConfigDir + "\\HTK";
+                            //if (!Directory.Exists(newHTKDir)) 
+                            string hcopyFN = Path.GetFileName(htkConfig.HCopyExecutable);
+                            Directory.CreateDirectory(newHTKDir);
+                            string oldHcopyFN = oldHTKDir + "\\" + hcopyFN;
+                            string newHcopyFN = newHTKDir + "\\" + hcopyFN;
+                            File.Copy(oldHcopyFN, newHcopyFN, true);
+                            string hviteFN = Path.GetFileName(htkConfig.HViteExecutable);
+                            string oldHviteFN = oldHTKDir + "\\" + hviteFN;
+                            string newHviteFN = newHTKDir + "\\" + hviteFN;
+                            File.Copy(oldHviteFN, newHviteFN, true);
+                        }
+                        catch (IOException ex)
+                        {
+                            Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
+                            Console.WriteLine(ex.ToString());
+                            good = false;
+                            //break;
+                        }
+                    }
+                    else //multisillabic case
+                    {
+                        //TO DO
+                    }
                 
                 //ZIP THE CONFIG DIRECTORY
                     string Dir2Compress = htkConfig.ConfigDir;
