@@ -44,6 +44,7 @@ namespace HMMBuilder
         //Statistical Data: duration mean and variation of vocalizations in the training set
         public Dictionary<string, double> meanDuration = new Dictionary<string, double>();
         public Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
+        public Dictionary<string, int> threshold = new Dictionary<string, int>();
         
         /// <summary>
         /// Table used for computing feature vectors size 
