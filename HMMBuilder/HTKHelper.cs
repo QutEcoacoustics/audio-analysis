@@ -419,6 +419,7 @@ namespace HMMBuilder
                 if (htkConfig.multiSyllableList.Count == 0)
                 {
                     WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                    
                 }
                 else
                 {
@@ -426,18 +427,26 @@ namespace HMMBuilder
                     foreach (string word in htkConfig.multiSyllableList)
                     {
                         string trnDir = htkConfig.trnDirPath + "\\" + word;
+                        string tstTrueDir = htkConfig.tstTrueDirPath + "\\" + word;
+                        string tstFalseDir = htkConfig.tstFalseDirPath + "\\" + word;
+
                         if (firtWord)
                         {
                             WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                            //WriteScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
                             firtWord = false;
                         }
                         else
+                        {
                             AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                            //AppendScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
+                        }
                     }
                 }
                 
-                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                    
                 WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, htkConfig.wavExt, htkConfig.mfcExt);
+               
             }
             catch (IOException e)
             {
@@ -671,7 +680,7 @@ namespace HMMBuilder
                 
                 foreach(string match in syllableList)
                 {
-                    Console.WriteLine("syllable=" + match + " in syllableList");
+                    Console.WriteLine("syllable = " + match + " in syllableList");
 
                     //check if there are other .pcf files
                     Dictionary<string, string> tmpWordDict = new Dictionary<string, string>();
@@ -679,8 +688,19 @@ namespace HMMBuilder
                         protoWordPresent = true;
                     else 
                         protoWordPresent = false;
+                    
+                    //Score Threshold defined?  
+                    int tmpThr = 0;
+                    string strScoreThr = "";
+                    if (protoWordPresent && tmpWordDict.TryGetValue("SCORETHR", out strScoreThr))
+                    {
+                        if(htkConfig.threshold.TryGetValue(match, out tmpThr))
+                            htkConfig.threshold[match] = tmpThr; //override the old value
+                        else
+                            htkConfig.threshold.Add(match, int.Parse(strScoreThr));
+                    }
 
-
+                    
                     int maxStates = int.MaxValue;
                     string strMaxStates = "";
                     if (protoWordPresent && tmpWordDict.TryGetValue("NSTATES", out strMaxStates))
@@ -755,11 +775,43 @@ namespace HMMBuilder
                                         }
                                         else
                                         {
-                                            Console.WriteLine("A file containing the transition matrix is required in order to build the prototype for {0}", match);
-                                            throw new Exception();
+                                            //Console.WriteLine("A file containing the transition matrix is required in order to build the prototype for {0}", match);
+                                            //throw new Exception();
 
-                                            //TO DO: alternatively you can build a standard 
-                                            //       <NUMSTATES>x<NUMSTATES> transition matrix
+                                            //DONE: alternatively build a standard <NUMSTATES>x<NUMSTATES> transition matrix
+
+                                            //write Transition Matrix
+                                            Console.WriteLine("Difference found between {0} and the prototype: number of states. As no transition matrix is given a standard matrix will be used.", match);
+
+                                            for (int i = 1; i <= maxStates + 2; i++)
+                                            {
+                                                string tmpLine = null;
+                                                for (int j = 1; j <= maxStates + 2; j++)
+                                                {
+                                                    if ((i == 1) && (j == 2))
+                                                    {
+                                                        tmpLine += "  1.000e+0";
+                                                    }
+                                                    else
+                                                        if ((i == j) && (i != 1) && (i != maxStates + 2))
+                                                        {
+                                                            if (i != maxStates + 1) tmpLine += "  6.000e-1";
+                                                            else tmpLine += "  7.000e-1";
+                                                        }
+                                                        else
+                                                            if (i == (j - 1))
+                                                            {
+                                                                if (i != maxStates + 1) tmpLine += "  4.000e-1";
+                                                                else tmpLine += "  3.000e-1";
+                                                            }
+                                                            else
+                                                            {
+                                                                tmpLine += "  0.000e+0";
+                                                            }
+                                                }
+                                                hmmDefsQueue.Enqueue(tmpLine);
+                                            }
+
                                         }
                                     }
                                     else
@@ -1121,6 +1173,12 @@ namespace HMMBuilder
             string error = null;
             try
             {
+                ////check if the call is multisyllabic
+                //if (htkConfig.multiSyllableList.Count == 0)
+                //{ 
+                
+                //}                
+                
                 //Check for results directory
                 string resultsDir = Path.GetDirectoryName(resultPath);
                 if (!Directory.Exists(resultsDir))
