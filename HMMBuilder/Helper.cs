@@ -10,14 +10,14 @@ namespace HMMBuilder
     {
 
 
-        public static void AverageCallDuration(string file, string regex, string vocalization, out double mean, out double sd)
+        public static void AverageCallDuration(HTKConfig htkConfig, string file, string regex, string vocalization, out double mean, out double sd)
         {
-            Dictionary<string, double> meanDuration = new Dictionary<string, double>();
-            Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
-            Helper.ComputePDF(file, regex, ref meanDuration, ref varianceDuration, vocalization);
+            //Dictionary<string, double> meanDuration = new Dictionary<string, double>();
+            //Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
+            Helper.ComputePDF(file, regex, ref htkConfig.meanDuration, ref htkConfig.varianceDuration, vocalization);
             double vari;
-            meanDuration.TryGetValue(vocalization, out mean);
-            varianceDuration.TryGetValue(vocalization, out vari);
+            htkConfig.meanDuration.TryGetValue(vocalization, out mean);
+            htkConfig.varianceDuration.TryGetValue(vocalization, out vari);
             sd = Math.Sqrt(vari);
         }
 
@@ -33,9 +33,9 @@ namespace HMMBuilder
                                       string vocalization)
         {
             //this regex is to match numbers with exponents: [-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?
-            string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+\s?$";
+            string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+";
             //string regex = vocalisation;
-            if (matchStr != null) regex = matchStr;
+            //if (matchStr != null) regex = matchStr;
 
 
 
@@ -68,9 +68,17 @@ namespace HMMBuilder
                 mean = getMean(durations);
                 variance = getVariance(durations);
                 stdDev = getStandardDeviation(variance);
-                                
-                meanDuration.Add(vocalization, mean);
-                varianceDuration.Add(vocalization, variance);            
+
+                double tmpVal = 0.0f;
+                if (!meanDuration.TryGetValue(vocalization, out tmpVal))
+                    meanDuration.Add(vocalization, mean);
+                else //overwrite
+                    meanDuration[vocalization] = mean;
+                
+                if (!varianceDuration.TryGetValue(vocalization, out tmpVal))
+                    varianceDuration.Add(vocalization, variance);
+                else
+                    varianceDuration[vocalization] = variance;
             }
             catch (IOException e)
             {
@@ -227,7 +235,7 @@ namespace HMMBuilder
         /// <param name="avFPScore"></param>
         public static void ComputeAccuracy(string resultTrue, string resultFalse, 
                                             double mean, double variance, double frameRate,
-                                            ref string vocalization, float threshold,
+                                            string vocalization, float threshold,
                                             out int tpCount,     out int fpCount,
                                             out int trueSCount,  out int falseSCount,
                                             out float tpPercent, out float tnPercent, 
@@ -237,8 +245,8 @@ namespace HMMBuilder
             avTPScore = 0.0f;
             avFPScore = 0.0f;
 
-            CountHits(resultTrue,  ref vocalization, mean, variance, frameRate, threshold, out tpCount, out trueSCount,  out avTPScore);
-            CountHits(resultFalse, ref vocalization, mean, variance, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
+            CountHits(resultTrue,  vocalization, mean, variance, frameRate, threshold, out tpCount, out trueSCount,  out avTPScore);
+            CountHits(resultFalse, vocalization, mean, variance, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
 
             int tnCount = falseSCount - fpCount;
             tpPercent = tpCount * 100 / (float)trueSCount;
@@ -259,7 +267,7 @@ namespace HMMBuilder
         /// <param name="hits">number of hits recorded over all instances</param>
         /// <param name="total">number off instances</param>
         /// <param name="avScore">average score the hits</param>
-        public static void CountHits(string resultFile, ref string vocalization, 
+        public static void CountHits(string resultFile, string vocalization, 
                                      double mean , double variance, double frameRate, 
                                      float scoreThreshold, out int hits, out int total, out float avScore)
         {
@@ -275,12 +283,16 @@ namespace HMMBuilder
             string txtLine = null;
             try
             {
+                
                 reader = new StreamReader(resultFile);
-                writer = new StreamWriter(Path.ChangeExtension(resultFile, "PDF.txt"));
+
+                writer = new StreamWriter(Path.ChangeExtension(resultFile, vocalization));
+
                 bool valid = true;
                 while ((txtLine = reader.ReadLine()) != null)
                 {
-                    if (Regex.IsMatch(txtLine, @"^\d+\s+\d+\s+\w+") && valid)
+                    if (Regex.IsMatch(txtLine, @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+") 
+                        && valid)
                     {
                         //Console.WriteLine(txtLine);
                         string[] param = Regex.Split(txtLine, @"\s+");
@@ -336,13 +348,15 @@ namespace HMMBuilder
                 else 
                 avScore /= hits;
                 //Console.WriteLine("hits=" + hits + "/" + total + "   avScore=" + avScore);
-                if (reader != null) reader.Close();
+                if (reader != null) 
+                    reader.Close();
 
                 if (writer != null)
                 {
                     writer.Flush();
                     writer.Close();
                 }
+
             } //end finally
         } //end Method CountHits()
 
@@ -360,7 +374,8 @@ namespace HMMBuilder
 
             //if (normScore > scoreThreshold) isHit = true; else isHit = false;  //ignore quality score
             //use of quality score gives better result on false test instances
-            if ((normScore > scoreThreshold) && (qualityScore < qualityThreshold)) isHit = true; else isHit = false;
+            if ((normScore > scoreThreshold) && (qualityScore < qualityThreshold)) isHit = true; 
+            else isHit = false;
         }
 
         
