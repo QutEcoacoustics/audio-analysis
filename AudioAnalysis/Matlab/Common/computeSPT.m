@@ -11,7 +11,7 @@ function peaksI3 = computeSPT(I1,F,T,peaks_int_thresh)
 % PARAMETERS
 peaks_dist_thresh = 2;
 smooth_par = 3;
-% ctmp = colormap(gray); c = flipud(ctmp); % for greyscale plotting
+ctmp = colormap(gray); c = flipud(ctmp); % for greyscale plotting
 
 
 
@@ -46,7 +46,7 @@ for ii=1:N
     I3c(locs_M(pks_M>=peaks_int_thresh),ii) = pks_M(pks_M>=peaks_int_thresh);
     
 end
-% showImage(c,I3c,T,F,1)
+% showImage(c,I3c,T,F,2)
 
 peaksI3_h = zeros(size(I3)); % init
 for ii=1:N-1
@@ -76,7 +76,7 @@ for ii=1:N-1
 %     pause
 end
 peaksI3_h(peaksI3_h>1)=1;
-% showImage(c,peaksI3_h,T,F,2)
+% showImage(c,peaksI3_h,T,F,3)
 
 
 
@@ -123,16 +123,20 @@ for jj=1:M-1
 %     pause
 end
 peaksI3_v(peaksI3_v>1)=1;
-% showImage(c,peaksI3_v,T,F,3)
+% showImage(c,peaksI3_v,T,F,4)
 
 
 
 
-% combine horizontal and verticl peak tracks
+% combine horizontal and vertical peak tracks
 peaksI3 = peaksI3_h + peaksI3_v;
 peaksI3(peaksI3>1)=1;
 
 
+% dilate area around peaks and fill tracks and neighbouring regions with I3 image data
+dilateI3 = peaksI3;
+se = strel('square',3);
+dilateI3 = imdilate(dilateI3,se);
 
 % discard small tracks
 L = bwlabel(peaksI3,8);
@@ -148,13 +152,6 @@ for ll=1:max(L(:))
 end
 
 
-
-% dilate area around peaks and fill tracks and neighbouring regions with I3 image data
-dilateI3 = peaksI3;
-se = strel('square',3);
-dilateI3 = imdilate(dilateI3,se);
-
-
 peaksI3(dilateI3==1) = I3(dilateI3==1);
 peaksI3(peaksI3<peaks_int_thresh) = 0;
-% showImage(c,peaksI3,T,F,4)
+% showImage(c,peaksI3,T,F,5)
