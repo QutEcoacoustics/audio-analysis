@@ -98,7 +98,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AudioTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="FSharp.Core, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
     <Reference Include="FSharp.PowerPack, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
     <Reference Include="HMMBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
@@ -188,6 +187,10 @@
     <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
+      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
+      <Name>AudioTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
       <Name>AED</Name>
