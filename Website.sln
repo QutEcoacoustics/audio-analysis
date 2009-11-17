@@ -68,7 +68,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileUpload", "FileUpload\FileUpload.csproj", "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCode", "SharedCode\SharedCode.csproj", "{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedCode", "SilverlightControls\SharedCode\SharedCode.csproj", "{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -404,8 +404,8 @@ Global
 		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
 		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
 		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
-		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|Mixed Platforms.Build.0 = Release|Any CPU
 		{A1D9D08B-B8B0-44A1-ACF7-175BF1F65C17}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
