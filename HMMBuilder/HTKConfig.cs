@@ -50,16 +50,24 @@ namespace HMMBuilder
         /// Table used for computing feature vectors size 
         /// </summary>
         private Dictionary<string, int> smFeatureDict = new Dictionary<string, int>();
-      
 
-        public string trnDirPath      { get { return DataDir + "\\train"; } }
-        public string tstFalseDirPath { get { return DataDir + "\\test\\testFalse"; } }
-        public string tstTrueDirPath  { get { return DataDir + "\\test\\testTrue"; } }
+        //file names
+        public static string segmentationIniFN = "segmentation.ini";
+        public static string segmentationExe   = "VocalSegmentation.exe";
+        public static string mfccConfigFN      = "mfccConfig.txt";
+        public static string labelListFN       = "labelList.txt";
 
-        public string ProtoConfDir      { get { return ConfigDir + "\\protoConfigs"; } }
-        public string ConfigFN          { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
-        public string MfccConfigFN      { get { return ConfigDir + "\\mfccConfig"; } }
-        public string MfccConfig2FN     { get { return ConfigDir + "\\mfccConfig.txt"; } } //need this copy for training
+
+        //dir and path names
+        public string trnDirPath      { get { return DataDir   + "\\train"; } }
+        public string tstFalseDirPath { get { return DataDir   + "\\test\\testFalse"; } }
+        public string tstTrueDirPath  { get { return DataDir   + "\\test\\testTrue"; } }
+
+        public string ProtoConfDir    { get { return ConfigDir + "\\protoConfigs"; } }
+        public string ConfigFN        { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
+        public string MfccConfigFN    { get { return ConfigDir + "\\mfccConfig"; } }
+        public string MfccConfig2FN   { get { return ConfigDir + "\\" + mfccConfigFN; } } //need this copy for training
+
 
         //grammar file for multisyllabic calls
         public string gramF { get { return ConfigDir + "\\gram.bnf"; } }
@@ -82,7 +90,7 @@ namespace HMMBuilder
 
         //lists directory
         //public string ListsDir   { get { return ConfigDir + "\\lists"; } }
-        public string monophones { get { return ConfigDir + "\\labelList.txt"; } } //contains list of syllables to recognise including SIL
+        public string monophones   { get { return ConfigDir + "\\" + labelListFN; } } //contains list of syllables to recognise including SIL
 
         //HMM files
         public string HmmDir       { get { return ConfigDir + "\\hmms"; } }
@@ -102,13 +110,11 @@ namespace HMMBuilder
         public string resultTest  { get { return ResultsDir + "\\TestScan.mlf"; } } //for scanning a single file
 
         // file extentions
-        public string mfcExt       = ".mfc";
-        public string wavExt       = ".wav";
-        public string labelFileExt = ".lab";
-        public string segmentFileExt    = ".segmentation.txt";
-        public string noiseModelExt     = ".noiseModel";
-        public string segmentationIniFN = "segmentation.ini";
-        public string segmentationExe   = "VocalSegmentation.exe";
+        public static string mfcExt       = ".mfc";
+        public static string wavExt       = ".wav";
+        public static string labelFileExt = ".lab";
+        public static string segmentFileExt    = ".segmentation.txt";
+        public static string noiseModelExt     = ".noiseModel";
 
         //HTK executable files
         public string HBuildExecutable { get { return HTKDir + "\\HBuild.exe"; } }
@@ -278,7 +284,7 @@ namespace HMMBuilder
                     "#Context: M\n" +
                     "#TiedState: n\n" +
                     "#VQ_clust: L\n" +
-                    "HERest_Iter: 5\n" +
+                    "HERest_Iter: 3\n" +
                     "#HERest_par_mode: n\n" +
                     "#Clean_up: n\n" +
                     "Trace_tool_calls: y\n\n" +
@@ -425,6 +431,41 @@ namespace HMMBuilder
 
             }// end finally
         }
+
+
+        public static List<string> GetSyllableNames(string fileName)
+        {
+            string txtLine = "";
+            List<string> list = new List<string>();
+            try
+            {
+                StreamReader fileReader = new StreamReader(fileName);
+                while ((txtLine = fileReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
+                {
+                    //if(!txtLine.StartsWith("I=")) continue;
+
+                    //string[] param = Regex.Split(txtLine, @"\s+[wW]=[^\w]*");
+                    //remove white character at the end of the string
+                    //string word = Regex.Replace(param[1], @"\s+", "");
+                    string word = txtLine.Trim();
+                    if (word.Equals("SIL")) continue;
+                        //&& !word.Equals("SENT_START") &&
+                        //!word.Equals("SENT_END") &&
+                        //!word.Equals("NULL")
+                    if (!list.Contains(word)) list.Add(word);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw (e);
+            }
+            return list;
+        }//end method GetSyllableNames()
+
+
+
 
         #region Constructor
         public HTKConfig()
