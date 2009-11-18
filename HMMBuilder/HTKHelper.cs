@@ -51,8 +51,8 @@ namespace HMMBuilder
 
         public static void SegmentDataFiles(HTKConfig htkConfig, ref string vocalization)
         {
-            string segmentationExecutable = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationExe;
-            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+            string segmentationExecutable = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationExe;
+            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
 
             string cmdLineArgument = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
             cmdLineArgument = "\"" + cmdLineArgument + "\""; //enclose line in quotes in case have sapce
@@ -89,8 +89,8 @@ namespace HMMBuilder
         /// <param name="extractLabels">True by default - i.e. always do it</param>
         public static void CreateWLT(HTKConfig htkConfig, ref string vocalization, bool extractLabels)
         {
-            string segmentationFileExt = htkConfig.segmentFileExt;
-            string labelFileExt = htkConfig.labelFileExt;
+            string segmentationFileExt = HTKConfig.segmentFileExt;
+            string labelFileExt = HTKConfig.labelFileExt;
             string txtLine = "";
 
             if (extractLabels) //True by default - i.e. always do this
@@ -130,7 +130,7 @@ namespace HMMBuilder
                         foreach (string currTrnDir in trnDirList)
                         {
                             DirectoryInfo Dir = new DirectoryInfo(currTrnDir);
-                            FileInfo[] FileList = Dir.GetFiles("*" + htkConfig.wavExt, SearchOption.TopDirectoryOnly);
+                            FileInfo[] FileList = Dir.GetFiles("*" + HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
                             string currLine = "";
                             string word = "";
                             string srtTime = "";
@@ -247,7 +247,7 @@ namespace HMMBuilder
                         }
 
                         DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPath);
-                        FileInfo[] FileList = Dir.GetFiles("*"+htkConfig.wavExt, SearchOption.TopDirectoryOnly);
+                        FileInfo[] FileList = Dir.GetFiles("*"+HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
 
                         string currLine = "";
                         
@@ -418,7 +418,7 @@ namespace HMMBuilder
                 //check if the call is multisyllabic
                 if (htkConfig.multiSyllableList.Count == 0)
                 {
-                    WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                    WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
                     
                 }
                 else
@@ -432,20 +432,20 @@ namespace HMMBuilder
 
                         if (firtWord)
                         {
-                            WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                            WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
                             //WriteScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
                             firtWord = false;
                         }
                         else
                         {
-                            AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, htkConfig.wavExt, htkConfig.mfcExt);
+                            AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
                             //AppendScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
                         }
                     }
                 }
                 
-                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                    
-                WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, htkConfig.wavExt, htkConfig.mfcExt);
+                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, HTKConfig.wavExt, HTKConfig.mfcExt);                    
+                WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, HTKConfig.wavExt, HTKConfig.mfcExt);
                
             }
             catch (IOException e)

@@ -31,17 +31,19 @@ namespace HMMBuilder
             //string templateName = "WHIPBIRD1";
             //string templateName = "CURRAWONG1";
             //string templateName = "KOALAFEMALE1";
-            string templateName = "KOALAFEMALE2";
+            //string templateName = "KOALAFEMALE2";
+            string templateName = "KOALAMALE1";
+
             string templateFN = templateDir + templateName + "\\" + templateName + ".zip";  // ARG 1
             //*******************************************************************************************************************
             //THE WAV FILE TO PROCESS
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav";          //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";       //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";           //ARG 2
-            //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav";   //ARG 2
+            string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav";   //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //string wavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
-            string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
+            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
             //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees_20081216-213000.wav";
             //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees3_20090907-053000.wav";//mix of curlew,currawong, koalas
             //*******************************************************************************************************************
@@ -56,35 +58,40 @@ namespace HMMBuilder
 
             Execute(workingDirectory, templateFN, wavFile, out resultsPath);
             Console.WriteLine("FINISHED HTK SCAN OF FILE");
-            //Console.ReadLine();
             
    
             //GATHER PARAMETERS FOR SCORING AND PRESENTATION OF RESULTS
             //A: GET THRESHOLDS FROM INI FILE
             string target  = workingDirectory + "\\" + templateName;
-            string iniFile = target + "\\segmentation.ini";
+            string iniFile = target + "\\" + HTKConfig.segmentationIniFN;
             float scoreThreshold, qualityMean, qualitySD, qualityThreshold;
             GetScoringParameters(iniFile, out scoreThreshold, out qualityMean, out qualitySD, out qualityThreshold);
-            int sampleRate, windowSize;
-            GetSampleRate(iniFile, out sampleRate, out windowSize);//should be same as used to train the HMM
 
             //can reset thresholds here for experimentation
-            scoreThreshold   = -40.0f;
-            qualityThreshold = 1.96f;
+            scoreThreshold   = -50.0f;
+            qualityThreshold =   2.56f;   //1.96 for p=0.05;  2.56 for p=0.01
             Console.WriteLine("HTK Threshold=" + scoreThreshold + "  Quality Threshold=" + qualityThreshold);
 
 
             //B: GET FRAMING PARAMETERS USED TO MAKE HMM
-            string configFile = target + "\\mfccConfig.txt";
+            int sampleRate, windowSize;
+            GetSampleRate(iniFile, out sampleRate, out windowSize);  //should be same as used to train the HMM
+            string configFile = target + "\\" + HTKConfig.mfccConfigFN;
             double WindowDuration, WindowOffset; //in seconds
-            int FreqMin, FreqMax;
+            int FreqMin, FreqMax;                //in Herz
             GetFramingParameters(configFile, out WindowDuration, out WindowOffset, out FreqMin, out FreqMax);
 
             //C: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
             Console.WriteLine("\nParse the HMM results file and return Acoustic Events");
-            List<AcousticEvent> events = GetAcousticEvents(resultsPath, templateName, 
+            string syllableFile = target + "\\" + HTKConfig.labelListFN;
+            List<string> sylNames = HTKConfig.GetSyllableNames(syllableFile);
+            List < AcousticEvent > events = GetAcousticEvents(resultsPath, sylNames, 
                                                            sampleRate, WindowDuration, WindowOffset, FreqMin, FreqMax,
                                                            qualityMean, qualitySD, scoreThreshold, qualityThreshold);
+
+
+
+
 
 
 
@@ -97,16 +104,17 @@ namespace HMMBuilder
             var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image_mt.AddEvents(events);
 
             //D: PARSE THE RESULTS FILE To GET SCORE ARRAY
-            List<string> hmmResults = FileTools.ReadTextFile(resultsPath);
-            double[] scores = ParseHmmScores(hmmResults, sonogram.FrameCount, WindowOffset, templateName,
-                                             scoreThreshold, qualityMean, qualitySD, qualityThreshold);
-
-            double thresholdFraction = 0.2;//for display purposes only. Fraction of the score track devoted to sub-threshold scores
-            double[] finalScores = NormaliseScores(scores, scoreThreshold, thresholdFraction);
-            image_mt.AddTrack(Image_Track.GetScoreTrack(finalScores, 0.0, 1.0, thresholdFraction));
-            image_mt.AddEvents(events);
+            foreach (string name in sylNames)
+            {
+                double[] scores = ExtractScoreArray(events, sonogram.FrameCount, WindowOffset, name,
+                                                    scoreThreshold, qualityMean, qualitySD, qualityThreshold);
+                double thresholdFraction = 0.2; //for display purposes only. Fraction of the score track devoted to sub-threshold scores
+                //double[] finalScores = NormaliseScores(scores, scoreThreshold, thresholdFraction);
+                image_mt.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, thresholdFraction));
+            }
 
 
             string resultsDir = workingDirectory + "\\results";
@@ -176,7 +184,7 @@ namespace HMMBuilder
 
 
 
-        static List<AcousticEvent> GetAcousticEvents(string resultsPath, string targetClass, int sampleRate,
+        static List<AcousticEvent> GetAcousticEvents(string resultsPath, List<string> targetClasses, int sampleRate,
                                                      double windowDuration, double windowOffset, int FreqMin, int FreqMax,
                                                      double qualityMean, double qualitySD, double scoreThreshold, double qualityThreshold)
         {
@@ -199,32 +207,34 @@ namespace HMMBuilder
                 long start = long.Parse(param[0]);
                 long end = long.Parse(param[1]);
                 string vocalName = param[2];
-                float score = float.Parse(param[3]);
+                float callScore = float.Parse(param[3]);
 
-                if (!vocalName.StartsWith(targetClass)) continue; //skip irrelevant lines
+                if (!targetClasses.Contains(vocalName)) continue; //skip irrelevant lines
+
                 hitCount++; //count hits
-
-                double duration  = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
+                double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
 
                 //calculate hmm and quality scores
-                double normScore, qualityScore, frameLength;
+                double frameScore, qualityScore, frameLength;
                 bool isHit;
-                Helper.ComputeHit(score, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
-                                  out frameLength, out normScore, out qualityScore, out isHit);
+                Helper.ComputeHit(callScore, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
+                                  out frameLength, out frameScore, out qualityScore, out isHit);
 
-                if (isHit) //init an acoustic event
-                {
-                    double startSec = start / (double)10000000;  //convert start(100ns units) to seconds
-                    var acEvent = new AcousticEvent(startSec, duration, FreqMin, FreqMax);
-                    acEvent.SetNormalisedScore(normScore, scoreThreshold, -20);
-                    acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
-                    events.Add(acEvent);
-                }
+                if (!isHit) continue;  //ignore non-hits
+                double startSec = start / (double)10000000;  //convert start(100ns units) to seconds
+                var acEvent = new AcousticEvent(startSec, duration, FreqMin, FreqMax);
+                acEvent.Name = vocalName;
+                if (! isHit) frameScore = scoreThreshold + (frameScore / 5); //reduce score below threshold
+                acEvent.SetNormalisedScore(frameScore, scoreThreshold, -20);
+                    
+                acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
+                acEvent.Display = isHit;
+                events.Add(acEvent);
 
-                Console.WriteLine("hitCount=" + hitCount +
+                Console.WriteLine("hitCount=" + hitCount + "\t name=" + vocalName +
                                   "\t frames=" + frameLength.ToString("f0") +
-                                  "\t score=" + score.ToString("f1") +
-                                  "\t normScore=" + normScore.ToString("f1") +
+                                  "\t Call Score=" + callScore.ToString("f1") +
+                                  "\t Av Score/frame=" + frameScore.ToString("f1") +
                                   "\t qualityScore=" + qualityScore.ToString("f1") + "\t HIT=" + isHit);
 
 
@@ -232,6 +242,46 @@ namespace HMMBuilder
             return events;
         }
 
+        /// <summary>
+        /// extracts an array of scores from a list of events
+        /// </summary>
+        /// <param name="events"></param>
+        /// <param name="frameCount">the size of the array to return</param>
+        /// <param name="windowOffset"></param>
+        /// <param name="targetClass"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <param name="qualityMean"></param>
+        /// <param name="qualitySD"></param>
+        /// <param name="qualityThreshold"></param>
+        /// <returns></returns>
+        public static double[] ExtractScoreArray(List<AcousticEvent> events, int arraySize, double windowOffset, string targetName,
+                                                 double scoreThreshold, double qualityMean, double qualitySD, double qualityThreshold)
+        {
+            double frameRate = 1 / windowOffset; //frames per second
+
+            double[] scores = new double[arraySize];
+            //for (int i = 0; i < arraySize; i++) scores[i] = Double.NaN; //init to NaNs.
+            int count = events.Count;
+
+            //double avScore = 0.0;
+            //double avDuration = 0.0;
+            //double avFrames = 0.0;
+            for (int i = 0; i < count; i++)
+            {
+                if (!events[i].Name.Equals(targetName)) continue; //skip irrelevant events
+
+                int startFrame     = (int)(events[i].StartTime * frameRate);
+                int endFrame       = (int)((events[i].StartTime + events[i].Duration) * frameRate);
+                double frameLength = events[i].Duration * frameRate;
+
+                //avScore    += events[i].Score;
+                //avDuration += events[i].Duration;
+                //avFrames   += frameLength;
+
+                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].NormalisedScore;
+            }
+            return scores;
+        } //end method
 
 
         /// <summary>
@@ -281,8 +331,8 @@ namespace HMMBuilder
 
                 double startSec = start / (double)10000000;  //start in seconds
                 double endSec   = end   / (double)10000000;  //end   in seconds
-                int startFrame = (int)(startSec * frameRate);
-                int endFrame = (int)(endSec * frameRate);
+                int startFrame  = (int)(startSec * frameRate);
+                int endFrame    = (int)(endSec * frameRate);
                 //double frameLength = (endSec - startSec) * frameRate;
 
                 Console.WriteLine("sec=" + startSec.ToString("f1") + "-" + endSec.ToString("f1") +
@@ -380,7 +430,7 @@ namespace HMMBuilder
 
             //PREPARE THE TEST FILE AND EXTRACT FEATURES
             //write script files
-            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, htkConfig.wavExt, htkConfig.mfcExt);
+            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, HTKConfig.wavExt, HTKConfig.mfcExt);
             //extract features from the test file
             HTKHelper.ExtractFeatures(htkConfig.aOptionsStr, htkConfig.MfccConfigFN, htkConfig.TestFileCode, htkConfig.HCopyExecutable); //test data
             //scan the file with HTK HMM

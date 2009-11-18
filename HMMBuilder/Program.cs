@@ -46,9 +46,9 @@ namespace HMMBuilder
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
             htkConfig.CallName = "KOALAMALE1";
-            htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
-            htkConfig.LOFREQ = "500";
-            htkConfig.HIFREQ = "7000";
+            htkConfig.Comment = "Trained on separate inhale and exhale syllables";
+            htkConfig.LOFREQ = "100";
+            htkConfig.HIFREQ = "2000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
             //==================================================================================================================
@@ -80,7 +80,7 @@ namespace HMMBuilder
             //MFCC PARAMETERS
             htkConfig.USEHAMMING = "T";
             htkConfig.PREEMCOEF  = "0.97"; //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
-            htkConfig.NUMCHANS   = "26";   //size of filter bank
+            htkConfig.NUMCHANS   = "26";   //size of filter bank default = 26
             htkConfig.CEPLIFTER  = "22";
             htkConfig.NUMCEPS    = "12";   //number of cepstral coefficients
 
@@ -92,7 +92,7 @@ namespace HMMBuilder
             htkConfig.ConfigDir   = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
             htkConfig.ResultsDir  = htkConfig.WorkingDir + "\\results";
             htkConfig.SilenceModelPath = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
-            htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + htkConfig.noiseModelExt;
+            htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + HTKConfig.noiseModelExt;
             
             Console.WriteLine("CWD=" + htkConfig.WorkingDir);
             Console.WriteLine("CFG=" + htkConfig.ConfigDir);
@@ -152,7 +152,7 @@ namespace HMMBuilder
                         //segmentation ini file
                         if(!multisyllabic)
                         {
-                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
                             htkConfig.WriteSegmentationIniFile(segmentationIniFile);
                             //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                         }
@@ -172,7 +172,7 @@ namespace HMMBuilder
                                     throw new Exception();
                                 }
 
-                                string segmentationIniFile = trnDir + "\\" + htkConfig.segmentationIniFN;
+                                string segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
                                 string tmpString = htkConfig.CallName;
                                 htkConfig.CallName = word;
                                 htkConfig.WriteSegmentationIniFile(segmentationIniFile);
@@ -275,7 +275,7 @@ namespace HMMBuilder
                             if (extractLabels) //True by default - i.e. always segment the training data files
                             {
                                 //copy segmentation ini file to the data directory.
-                                string segmentationIniFile = htkConfig.SegmentationDir + "\\" + htkConfig.segmentationIniFN;
+                                string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
                                 string fn = System.IO.Path.GetFileName(segmentationIniFile);
                                 System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
 
@@ -593,16 +593,16 @@ namespace HMMBuilder
 
 
                     #region EIGHT: SET UP THE TEMPLATE ZIP FILE
-                    if (!multisyllabic)
-                    {
-                        string oldSegmentDir = htkConfig.SegmentationDir;
-                        string newSegmentDir = htkConfig.ConfigDir;
-                        //Directory.CreateDirectory(newSegmentDir);
+
+
+                    string oldSegmentDir = htkConfig.SegmentationDir;
+                    string newSegmentDir = htkConfig.ConfigDir;
+                    //Directory.CreateDirectory(newSegmentDir);
 
                         //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
                         string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
                         string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
-                        string ext = htkConfig.noiseModelExt;
+                        string ext = HTKConfig.noiseModelExt;
                         string oldNoiseModel = oldNoiseDir + "\\" + noiseModelFN + ext;
                         string newNoiseModel = newSegmentDir + "\\" + noiseModelFN + ext;
                         File.Copy(oldNoiseModel, newNoiseModel, true);
@@ -610,8 +610,8 @@ namespace HMMBuilder
                         //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
                         //string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
                         //string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
-                        string oldSegmentIniPath = oldSegmentDir + "\\" + htkConfig.segmentationIniFN;
-                        string newSegmentIniPath = newSegmentDir + "\\" + htkConfig.segmentationIniFN;
+                        string oldSegmentIniPath = oldSegmentDir + "\\" + HTKConfig.segmentationIniFN;
+                        string newSegmentIniPath = newSegmentDir + "\\" + HTKConfig.segmentationIniFN;
                         //File.Copy(oldSegmentExePath, newSegmentExePath, true);
                         File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
                         //Append optimum threshold and duration threshold info to segmentation ini file
@@ -626,37 +626,37 @@ namespace HMMBuilder
                         FileTools.Append2TextFile(newSegmentIniPath, line, false);
 
 
-                        Console.WriteLine("\n\nWRITE HTK FILES");
-                        try
-                        {
-                            //COPY HTK FILES ACROSS TO CONFIG DIR.
-                            string oldHTKDir = htkConfig.HTKDir;
-                            string newHTKDir = htkConfig.ConfigDir + "\\HTK";
-                            //if (!Directory.Exists(newHTKDir)) 
-                            string hcopyFN = Path.GetFileName(htkConfig.HCopyExecutable);
-                            Directory.CreateDirectory(newHTKDir);
-                            string oldHcopyFN = oldHTKDir + "\\" + hcopyFN;
-                            string newHcopyFN = newHTKDir + "\\" + hcopyFN;
-                            File.Copy(oldHcopyFN, newHcopyFN, true);
-                            string hviteFN = Path.GetFileName(htkConfig.HViteExecutable);
-                            string oldHviteFN = oldHTKDir + "\\" + hviteFN;
-                            string newHviteFN = newHTKDir + "\\" + hviteFN;
-                            File.Copy(oldHviteFN, newHviteFN, true);
-                        }
-                        catch (IOException ex)
-                        {
-                            Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
-                            Console.WriteLine(ex.ToString());
-                            good = false;
-                            //break;
-                        }
-                    }
-                    else //multisillabic case
+                    if (multisyllabic) //multisillabic case
                     {
                         //TO DO
                     }
-                
-                //ZIP THE CONFIG DIRECTORY
+
+                    Console.WriteLine("\n\nWRITE HTK FILES");
+                    try
+                    {
+                        //COPY HTK FILES ACROSS TO CONFIG DIR.
+                        string oldHTKDir = htkConfig.HTKDir;
+                        string newHTKDir = htkConfig.ConfigDir + "\\HTK";
+                        //if (!Directory.Exists(newHTKDir)) 
+                        string hcopyFN = Path.GetFileName(htkConfig.HCopyExecutable);
+                        Directory.CreateDirectory(newHTKDir);
+                        string oldHcopyFN = oldHTKDir + "\\" + hcopyFN;
+                        string newHcopyFN = newHTKDir + "\\" + hcopyFN;
+                        File.Copy(oldHcopyFN, newHcopyFN, true);
+                        string hviteFN = Path.GetFileName(htkConfig.HViteExecutable);
+                        string oldHviteFN = oldHTKDir + "\\" + hviteFN;
+                        string newHviteFN = newHTKDir + "\\" + hviteFN;
+                        File.Copy(oldHviteFN, newHviteFN, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
+                        Console.WriteLine(ex.ToString());
+                        good = false;
+                        //break;
+                    }
+
+                    //ZIP THE CONFIG DIRECTORY
                     string Dir2Compress = htkConfig.ConfigDir;
                     string OutZipFile = htkConfig.ConfigDir + ".zip";
                     ZipUnzip.ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
