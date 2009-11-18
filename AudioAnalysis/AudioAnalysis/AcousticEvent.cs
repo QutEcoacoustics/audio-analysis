@@ -18,16 +18,17 @@ namespace AudioAnalysis
         public bool   IsMelscale { get; set; } 
         public Oblong oblong { get; private set;}
 
-        public int FreqBinCount { get; private set;}     //required for conversions to & from MEL scale
-        public double FreqBinWidth { get; private set; } //required for freq-binID conversions
-        public double FrameDuration;    //frame duration in seconds
-        public double FrameOffset;      //time between frame starts in seconds
-        public double FramesPerSecond;  //inverse of the frame offset
+        public int    FreqBinCount  { get; private set;}     //required for conversions to & from MEL scale
+        public double FreqBinWidth  { get; private set; }    //required for freq-binID conversions
+        public double FrameDuration { get; private set; }    //frame duration in seconds
+        public double FrameOffset   { get; private set; }    //time between frame starts in seconds
+        public double FramesPerSecond { get; private set; }  //inverse of the frame offset
 
 
-        //PROPERTIES OF THE EVENTS I.E. SCORE ETC
+        //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
+        public string Name  { get; set; }
         public double Score { get; set; }
-        public double NormalisedScore { get; private set; }
+        public double NormalisedScore { get; private set; } //score normalised in range [0,1].
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1Var;  //,
         //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
@@ -35,8 +36,11 @@ namespace AudioAnalysis
         double I3Mean;   //mean intensity of pixels in the event AFTER noise reduciton 
         double I3Var;    //variance of intensity of pixels in the event.
 
+        public bool Display { get; set; } //use this if want to filter a list for display
 
-                /// <summary>
+
+
+        /// <summary>
         /// CONSTRUCTOR
         /// </summary>
         public AcousticEvent(double startTime, double duration, double minFreq, double maxFreq)
@@ -49,24 +53,9 @@ namespace AudioAnalysis
             oblong = null;// have no info to convert time/Hz values to coordinates
         }
 
-        ///// <summary>
-        ///// CONSTRUCTOR
-        ///// </summary>
-        //public AcousticEvent(double startTime, double duration, double minFreq, double maxFreq, bool doMelscale)
-        //{
-        //    this.StartTime = startTime;
-        //    this.Duration = duration;
-        //    this.MinFreq = (int)minFreq;
-        //    this.MaxFreq = (int)maxFreq;
-        //    this.IsMelscale = doMelscale;
-
-        //    //first check that the static variables required to initialise an oblong object have been initialised.
-        //    CheckIfStaticsAreInitialised();
-        //    this.oblong   = ConvertEvent2Oblong();
-        //}
 
         /// <summary>
-        /// This constructor works ONLY for linear Herz scale events
+        /// This constructor currently works ONLY for linear Herz scale events
         /// </summary>
         /// <param name="o"></param>
         /// <param name="binWidth"></param>
@@ -112,7 +101,11 @@ namespace AudioAnalysis
 
         }
 
-
+        /// <summary>
+        /// calculates the matrix/image indices of the acoustic event, when given the time/freq scales.
+        /// This method called only by previous method:- SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
+        /// </summary>
+        /// <returns></returns>
         public Oblong ConvertEvent2Oblong()
         {
             //translate time/freq dimensions to coordinates in a matrix.
@@ -128,6 +121,13 @@ namespace AudioAnalysis
             return new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
 
+        /// <summary>
+        /// Converts a score to a value normalised between a min and a max value.
+        /// The reutrned value is normalised between 0 and 1.
+        /// </summary>
+        /// <param name="score"></param>
+        /// <param name="min"></param>
+        /// <param name="max"></param>
         public void SetNormalisedScore(double score, double min, double max)
         {
             this.Score = score;
