@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
+using TowseyLib;
 
 namespace HMMBuilder
 {
@@ -129,6 +130,8 @@ namespace HMMBuilder
 
 
         public const int ERROR_FILE_NOT_FOUND = 2;
+        public const double  qualityThreshold = 2.57; // 1.96 for p=95% :: 2.57 for p=99%
+
 
         /// <summary>
         /// Compute Feature Vectors size given a specific TARGETKIND, 
@@ -465,6 +468,23 @@ namespace HMMBuilder
         }//end method GetSyllableNames()
 
 
+        public void AppendThresholdInfo2IniFile(string syllName, double htkThreshold, double durationMean, double durationSD)
+        {
+            Console.WriteLine("######################################################################################");
+            //Append optimum threshold and duration threshold info to segmentation ini file
+            string ToAppend = "################################CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
+                      "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
+                      "#    NOTE 2: Duration values in seconds.\n" +
+                      "#    NOTE 3: SD threshold = number of SD either side of mean. 1.96=95% confidence\n" +
+                      "#            that you are NOT excluding a call with a valid duration.\n" +
+                      syllName+"_HTK_THRESHOLD=" + htkThreshold + "\n" +
+                      syllName + "_DURATION_MEAN=" + durationMean.ToString("f6") + "\n" +
+                      syllName + "_DURATION_SD=" + durationSD.ToString("f6") + "\n" +
+                      "SD_THRESHOLD=" + qualityThreshold;  //1.96 for p=95% :: 2.57 for p=99%
+
+            string iniPath = this.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
+            FileTools.Append2TextFile(iniPath, ToAppend, true);
+        }
 
 
         #region Constructor

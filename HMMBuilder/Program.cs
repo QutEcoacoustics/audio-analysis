@@ -47,8 +47,8 @@ namespace HMMBuilder
 
             htkConfig.CallName = "KOALAMALE1";
             htkConfig.Comment = "Trained on separate inhale and exhale syllables";
-            htkConfig.LOFREQ = "100";
-            htkConfig.HIFREQ = "2000";
+            htkConfig.LOFREQ = "200";
+            htkConfig.HIFREQ = "6000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
             //==================================================================================================================
@@ -110,15 +110,11 @@ namespace HMMBuilder
 
             switch (args.Length)
             {
-                //case 0:
-                //    Console.WriteLine("USAGE: HMMBuilder ConfigFile");
-                //    break;
 
                 default:
 
                     #region ZERO: Determine if the vocalization is monosyllabic
-                    // If the file 'gram.txt' is found in ... the vocalization is assumed
-                    // to be multisyllabic. 
+                    // If the file 'gram.txt' is found in ... the vocalization is assumed to be multisyllabic. 
                     bool multisyllabic = false;
                     if (Directory.Exists(htkConfig.ConfigDir))
                         if (File.Exists(htkConfig.gramF))
@@ -140,7 +136,7 @@ namespace HMMBuilder
 
 
                     #region ONE: Write Configuration Files
-                    Console.WriteLine("WRITE FIVE CONFIGURATION FILES");
+                    Console.WriteLine("WRITE ALL CONFIGURATION FILES");
                     try
                     {
                         htkConfig.ComputeFVSize(); //Compute Feature Vectors size given htkConfig.TARGETKIND
@@ -149,18 +145,18 @@ namespace HMMBuilder
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
-                        //segmentation ini file
-                        if(!multisyllabic)
+
+                        //write the segmentation ini file
+                        string segmentationIniFile = htkConfig.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
+                        htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+
+                        //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
+                        //           ALSO COPY INI FILE TO THE TRAINING DATA DIRECTORIES
+                        if (multisyllabic)
                         {
-                            string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
-                            htkConfig.WriteSegmentationIniFile(segmentationIniFile);
-                            //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
-                        }
-                        else
-                        {   
                             // 1. Populate syllable list
                             htkConfig.PopulateSyllableList(htkConfig.wordNet);
-                            // 2. Create as many segmentationIniFiles as the number of syllables.
+                            // 2. Create as many iniFiles as the number of syllables.
                             //    Each, specifying the related vocalization to use for segmentation                            
                             foreach (string word in htkConfig.multiSyllableList)
                             {
@@ -172,7 +168,7 @@ namespace HMMBuilder
                                     throw new Exception();
                                 }
 
-                                string segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
+                                segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
                                 string tmpString = htkConfig.CallName;
                                 htkConfig.CallName = word;
                                 htkConfig.WriteSegmentationIniFile(segmentationIniFile);
@@ -422,14 +418,14 @@ namespace HMMBuilder
                     //calculate the mean and sd of the training call durations
                     string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
                     double mean = 0;
-                    double sd = 0;
+                    double trnSD = 0;
                     string regex = null;
                     int optimumThreshold = -Int32.MaxValue; //to be removed from here
                     if (!multisyllabic)
                     {
-                        Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, vocalization, out mean, out sd);
+                        Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, vocalization, out mean, out trnSD);
 
-                        Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + sd.ToString("f4") + " seconds or " +
+                        Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + trnSD.ToString("f4") + " seconds or " +
                                           (mean * frameRate).ToString("f1") + " frames\n");
 
                         //calculate the mean and sd of the testing call durations
@@ -443,8 +439,6 @@ namespace HMMBuilder
 
 
                         //Read the output files
-                        //int optimumThreshold = -Int32.MaxValue;
-                        double variance = sd * sd;
                         int tpCount = 0;  //true positives
                         int fpCount = 0;  //false positives
                         int trueSCount = 0;
@@ -466,7 +460,7 @@ namespace HMMBuilder
                                 trueSCount = 0;
                                 falseSCount = 0;
                                 float t = threshold - (i * step);
-                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
                                                   vocalization, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                                   out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                                 Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
@@ -483,10 +477,13 @@ namespace HMMBuilder
                             Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
                             Console.WriteLine("FN=" + (trueSCount - maxTpCount) + "     FP=" + (falseSCount - maxTnCount));
                             //repeat in order to print the PDF file of individual results
-                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
+                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
                                    vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                    out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                             Console.WriteLine("You can check individual hits in the template's results directory.");
+
+                            //Append threshold and quality info to ini file
+                            htkConfig.AppendThresholdInfo2IniFile(vocalization, optimumThreshold, mean, trnSD);
 
                         }
                         catch
@@ -498,14 +495,14 @@ namespace HMMBuilder
                     else //multisillabic case
                     {
                         
-                        foreach (string word in htkConfig.multiSyllableList)
+                        foreach (string syllName in htkConfig.multiSyllableList)
                         {
                             
-                            //TO DO: manage acc meas for multisillabic calls
-                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, word, out mean, out sd);
-                            Console.WriteLine("Training song durations for '" + word + "' = " 
+                            //TO DO: manage acc meas for multisyllabic calls
+                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, syllName, out mean, out trnSD);
+                            Console.WriteLine("Training song durations for '" + syllName + "' = " 
                                                     + mean.ToString("f4") + "+/-" 
-                                                    + sd.ToString("f4") 
+                                                    + trnSD.ToString("f4") 
                                                     + " seconds or " 
                                                     + (mean * frameRate).ToString("f1") + " frames\n");
                             
@@ -515,9 +512,9 @@ namespace HMMBuilder
                             double mean2;
                             double sd2;
                             regex = @"^\d+\s+\d+\s+\w+";
-                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, word, out mean2, out sd2);
+                            Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, syllName, out mean2, out sd2);
                             
-                            Console.WriteLine("Testing song durations for '" + word + "' = " 
+                            Console.WriteLine("Testing song durations for '" + syllName + "' = " 
                                                     + mean2.ToString("f4") + "+/-" 
                                                     + sd2.ToString("f4") 
                                                     + " seconds or " 
@@ -525,8 +522,6 @@ namespace HMMBuilder
 
                             masterLabelFile = tmpMlf;
                             //Read the output files
-                            //int optimumThreshold = -Int32.MaxValue;
-                            double variance = sd * sd;
                             int tpCount = 0;  //true positives
                             int fpCount = 0;  //false positives
                             int trueSCount = 0;
@@ -541,8 +536,8 @@ namespace HMMBuilder
                                 //float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
                                 //check if the threshold has been defined
                                 int threshold = 0;
-                                if (!htkConfig.threshold.TryGetValue(word, out threshold))
-                                    throw new Exception("No Score Threshold defined for '{"+word+"}'");
+                                if (!htkConfig.threshold.TryGetValue(syllName, out threshold))
+                                    throw new Exception("No Score Threshold defined for '{"+syllName+"}'");
                                     
                                 int step = 2; //to step the threshold
                                 double maxScore = -Double.MaxValue;
@@ -555,8 +550,8 @@ namespace HMMBuilder
                                     float t = threshold - (i * step);
 
                                     
-                                    Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
-                                                      word, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                    Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
+                                                      syllName, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                                       out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
                                     Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
                                     if (accuracy > maxScore)
@@ -573,11 +568,14 @@ namespace HMMBuilder
                                 Console.WriteLine("FN=" + (trueSCount - maxTpCount) + "     FP=" + (falseSCount - maxTnCount));
                                 //repeat in order to print the PDF file of individual results
 
-                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, variance, frameRate,
-                                       word, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
+                                       syllName, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                        out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
 
-                                Console.WriteLine("You can check individual hits in the template's results directory.");
+                                Console.WriteLine("Check individual hits in the template's results directory.####################");
+
+                                //Append threshold and quality info to ini file
+                                htkConfig.AppendThresholdInfo2IniFile(syllName, optimumThreshold, mean, trnSD);
 
                             }
                             catch
@@ -586,7 +584,7 @@ namespace HMMBuilder
                                 return;
                             }
 
-                        }
+                        } //end multi-syllable list
                     }
                     #endregion
 
@@ -597,8 +595,9 @@ namespace HMMBuilder
 
                     string oldSegmentDir = htkConfig.SegmentationDir;
                     string newSegmentDir = htkConfig.ConfigDir;
-                    //Directory.CreateDirectory(newSegmentDir);
 
+                    try
+                    {
                         //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
                         string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
                         string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
@@ -608,23 +607,16 @@ namespace HMMBuilder
                         File.Copy(oldNoiseModel, newNoiseModel, true);
 
                         //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
-                        //string oldSegmentExePath = oldSegmentDir + "\\" + htkConfig.segmentationExe;
-                        //string newSegmentExePath = newSegmentDir + "\\" + htkConfig.segmentationExe;
                         string oldSegmentIniPath = oldSegmentDir + "\\" + HTKConfig.segmentationIniFN;
                         string newSegmentIniPath = newSegmentDir + "\\" + HTKConfig.segmentationIniFN;
-                        //File.Copy(oldSegmentExePath, newSegmentExePath, true);
                         File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
-                        //Append optimum threshold and duration threshold info to segmentation ini file
-                        string line = "#CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
-                                      "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
-                                      "#    NOTE 2: Duration values in seconds.\n" +
-                                      "#    NOTE 3: SD thrshold = number of SD either side of mean. 1.96=95% confidence\n" +
-                                      "HTK_THRESHOLD=" + optimumThreshold + "\n" +
-                                      "DURATION_MEAN=" + mean.ToString("f6") + "\n" +
-                                      "DURATION_SD=" + sd.ToString("f6") + "\n" +
-                                      "SD_THRESHOLD=2.57";  //1.96 for p=95% :: 2.57 for p=99%
-                        FileTools.Append2TextFile(newSegmentIniPath, line, false);
-
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine("ERROR! FAILED TO COPY SILENCE AND SEGMENTATION FILES");
+                        Console.WriteLine(ex.ToString());
+                        good = false;
+                    }
 
                     if (multisyllabic) //multisillabic case
                     {
@@ -653,7 +645,6 @@ namespace HMMBuilder
                         Console.WriteLine("ERROR! FAILED TO WRITE HTK FILES");
                         Console.WriteLine(ex.ToString());
                         good = false;
-                        //break;
                     }
 
                     //ZIP THE CONFIG DIRECTORY

@@ -233,8 +233,8 @@ namespace HMMBuilder
         /// <param name="accuracy"></param>
         /// <param name="avTPScore"></param>
         /// <param name="avFPScore"></param>
-        public static void ComputeAccuracy(string resultTrue, string resultFalse, 
-                                            double mean, double variance, double frameRate,
+        public static void ComputeAccuracy(string resultTrue, string resultFalse,
+                                            double mean, double SD, double frameRate,
                                             string vocalization, float threshold,
                                             out int tpCount,     out int fpCount,
                                             out int trueSCount,  out int falseSCount,
@@ -245,8 +245,8 @@ namespace HMMBuilder
             avTPScore = 0.0f;
             avFPScore = 0.0f;
 
-            CountHits(resultTrue,  vocalization, mean, variance, frameRate, threshold, out tpCount, out trueSCount,  out avTPScore);
-            CountHits(resultFalse, vocalization, mean, variance, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
+            CountHits(resultTrue,  vocalization, mean, SD, frameRate, threshold, out tpCount, out trueSCount, out avTPScore);
+            CountHits(resultFalse, vocalization, mean, SD, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
 
             int tnCount = falseSCount - fpCount;
             tpPercent = tpCount * 100 / (float)trueSCount;
@@ -268,14 +268,13 @@ namespace HMMBuilder
         /// <param name="total">number off instances</param>
         /// <param name="avScore">average score the hits</param>
         public static void CountHits(string resultFile, string vocalization, 
-                                     double mean , double variance, double frameRate, 
+                                     double mean , double SD, double frameRate, 
                                      float scoreThreshold, out int hits, out int total, out float avScore)
         {
             //TO DO: check if the file exists
             StreamReader reader = null;
             StreamWriter writer = null;
             //double lengthProb = 0.0f;
-            double stddev = Math.Sqrt(variance);
             hits  = 0;
             total = 0;
             avScore = 0.0f;
@@ -309,7 +308,7 @@ namespace HMMBuilder
                             double qualityThreshold = 1.96;
                             double normScore, qualityScore, frameLength;
                             bool isHit;
-                            ComputeHit(score, duration, frameRate, mean, stddev, scoreThreshold, qualityThreshold, 
+                            ComputeHit(score, duration, frameRate, mean, SD, scoreThreshold, qualityThreshold, 
                                        out frameLength, out normScore, out qualityScore, out isHit);
 
                             txtLine += " " + normScore.ToString("f1") + "  " + qualityScore.ToString("f5");
