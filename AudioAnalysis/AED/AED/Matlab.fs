@@ -46,11 +46,13 @@ let localMeansVariances n (m:matrix) =
         (m, variance nba nbs m)
     matrixMapi2Unzip f m
     
+let sz (m:matrix) = (m.NumRows, m.NumCols)
+    
 (* In wiener2.m the local means are calculated using a sum of smaller neighbourhoods around the edges but
    are always divided by a constant neighbourhood size. Implemented the same here.
 *)
 let wiener2 n m =
     let (ms, vs) = localMeansVariances n m
-    let nv = mean vs ((float) (m.NumRows * m.NumCols))
-    let f e m v = m + ((max 0.0 (v - nv)) / max v nv) * ((float e) - m)
-    matrixMap3 f m ms vs // TODO can this be done by the build in matrix arithmetic functions?
+    let mv = mean vs ((float) (m.NumRows * m.NumCols))
+    let vs' = Math.Matrix.map (fun v -> (max 0.0 (v - mv)) / max v mv) vs
+    ms + (vs' .* (m - ms))
