@@ -74,3 +74,8 @@ let csvToMatrix f =
     let xs = Array.map (List.to_array << String.split [',']) ls    
     let m = Math.Matrix.init (ls.GetLength 0) (Array.length xs.[0]) (fun i j -> System.Convert.ToDouble(xs.[i].[j]))
     m
+    
+// TODO this is very slow
+let matrixToCsv (m:matrix) f =
+    let g i = m.Row i |> Seq.map (sprintf "%A") |> String.concat ","
+    System.IO.File.WriteAllLines(f, Array.init m.NumRows g)
