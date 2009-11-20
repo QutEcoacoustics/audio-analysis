@@ -20,9 +20,9 @@ let hist xs cs =
     a
     
     
-let mean m n = (Math.Matrix.fold (+) 0.0 m) / n
+let mean m n = Math.Matrix.sum m / n
     
-let variance a n m = (Math.Matrix.fold (fun z x -> z + (x*x)) 0.0 a) / n - (m*m)
+let variance a n m = Math.Matrix.sum (a .* a) / n - (m*m)
 
 // Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element       
 let neighbourhoodBounds n h w x y =
