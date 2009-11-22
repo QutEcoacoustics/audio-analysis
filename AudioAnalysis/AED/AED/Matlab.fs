@@ -39,14 +39,12 @@ let neighbourhoodBounds n h w x y =
     (is, js, il, jl)
        
 let localMeansVariances n (m:matrix) =
+    let nbs = float (n*n)
     let f x y _ = 
         let nba = neighbourhoodBounds n (m.NumRows) (m.NumCols) x y |> m.Region
-        let nbs = float (n*n)
         let m = mean nba nbs
         (m, variance nba nbs m)
     matrixMapi2Unzip f m
-    
-let sz (m:matrix) = (m.NumRows, m.NumCols)
     
 (* In wiener2.m the local means are calculated using a sum of smaller neighbourhoods around the edges but
    are always divided by a constant neighbourhood size. Implemented the same here.
