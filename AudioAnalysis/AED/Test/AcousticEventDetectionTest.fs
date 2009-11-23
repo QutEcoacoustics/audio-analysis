@@ -14,7 +14,7 @@ let testToBlackAndWhite () =
     
 [<Fact>]
 let testToFillIn () =
-    let m = Array2D.create 5 10 0.0 |> Math.Matrix.of_array2
+    let m = Array2D.create 5 10 0.0 |> Math.Matrix.ofArray2D
     Assert.False(toFillIn m 0 0 3)
     Assert.False(toFillIn m 1 9 3)
     m.[0,1] <- 1.0
@@ -30,7 +30,7 @@ let testToFillIn () =
 
 [<Fact>]
 let testJoinHorizontalLinesQuick () =
-    let m = Array2D.create 5 10 0.0 |> Math.Matrix.of_array2
+    let m = Math.Matrix.zero 5 10 
     Assert.Equal(m, joinHorizontalLines m)
     m.[0,1] <- 1.0
     Assert.Equal(m, joinHorizontalLines m)

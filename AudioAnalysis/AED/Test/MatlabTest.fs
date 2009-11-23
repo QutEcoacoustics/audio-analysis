@@ -8,7 +8,7 @@ let testHist () =
     Assert.Equal([|2; 1; 0; 0; 0; 0; 0; 0; 0; 0; 1|], hist [1;500;501;20000] cs)
     
 [<Fact>]
-let testMean () = Assert.Equal(2.5, mean (Math.Matrix.of_list [[1.0; 2.0]; [3.0; 4.0]]) 4.0)
+let testMean () = Assert.Equal(2.5, mean (Math.Matrix.ofList [[1.0; 2.0]; [3.0; 4.0]]) 4.0)
 
 [<Fact>]
 let testNeighbourhoodBounds () =

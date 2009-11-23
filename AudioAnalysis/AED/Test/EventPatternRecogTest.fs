@@ -4,7 +4,7 @@ open Xunit
 
 
 // TODO copied and modified from AED test - generalise
-let loadTestFile2 f i j = fileToMatrix (@"matlab\" + f) i j |> Math.Matrix.of_array2
+let loadTestFile2 f i j = fileToMatrix (@"matlab\" + f) i j |> Math.Matrix.ofArray2D
 
 // TODO copied and modified from AED test - generalise
 // Format: time start, time duration, freq start, freq end
