@@ -132,6 +132,41 @@ namespace HMMBuilder
         public const int ERROR_FILE_NOT_FOUND = 2;
         public const double  qualityThreshold = 2.57; // 1.96 for p=95% :: 2.57 for p=99%
 
+        //KEYS USED IN PARAMETERS AND INI FILES
+//DATE=2009-07-02
+//AUTHOR=Michael Towsey
+//CALL_NAME=KOALAMALE1
+//COMMENT=Trained on separate inhale and exhale syllables
+//SAMPLE_RATE=22050
+//FRAME_SIZE=512
+//FRAME_OVERLAP=0.5
+//WINDOW_FUNCTION=HAMMING
+//N_POINT_SMOOTH_FFT=3
+//DO_MEL_CONVERSION=false
+//MIN_FREQ = 150
+//MAX_FREQ = 6000
+//NOISE_REDUCTION_TYPE=SILENCE_MODEL
+//SILENCE_RECORDING_PATH=etc
+//SEGMENTATION_THRESHOLD_K1=3.0
+//SEGMENTATION_THRESHOLD_K2=5.0
+//K1_K2_LATENCY=0.05
+//VOCAL_GAP=0.2
+//MIN_VOCAL_DURATION=0.075
+//KOALA1_I_HTK_THRESHOLD=-46
+//KOALA1_I_DURATION_MEAN=0.286677
+//KOALA1_I_DURATION_SD=0.132726
+//KOALA1_E_HTK_THRESHOLD=-48
+//KOALA1_E_DURATION_MEAN=0.745611
+//KOALA1_E_DURATION_SD=0.311209
+//SD_THRESHOLD=2.57
+        public static string Key_SAMPLE_RATE   = "SAMPLE_RATE";
+        public static string Key_HTK_THRESHOLD = "HTK_THRESHOLD";
+        public static string Key_DURATION_MEAN = "DURATION_MEAN";
+        public static string Key_DURATION_SD   = "DURATION_SD";
+        public static string Key_SD_THRESHOLD  = "SD_THRESHOLD";
+        
+
+
 
         /// <summary>
         /// Compute Feature Vectors size given a specific TARGETKIND, 
@@ -287,7 +322,7 @@ namespace HMMBuilder
                     "#Context: M\n" +
                     "#TiedState: n\n" +
                     "#VQ_clust: L\n" +
-                    "HERest_Iter: 3\n" +
+                    "HERest_Iter: 7\n" + //################ NUMBER OF ITERATIONS #############################
                     "#HERest_par_mode: n\n" +
                     "#Clean_up: n\n" +
                     "Trace_tool_calls: y\n\n" +
@@ -470,9 +505,8 @@ namespace HMMBuilder
 
         public void AppendThresholdInfo2IniFile(string syllName, double htkThreshold, double durationMean, double durationSD)
         {
-            Console.WriteLine("######################################################################################");
             //Append optimum threshold and duration threshold info to segmentation ini file
-            string ToAppend = "################################CALL THRESHOLDS FOR HMM AND QUALITY/DURATION\n" +
+            string ToAppend = "#\n#**************** CALL THRESHOLDS FOR " + syllName + " HMM AND QUALITY/DURATION\n" +
                       "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
                       "#    NOTE 2: Duration values in seconds.\n" +
                       "#    NOTE 3: SD threshold = number of SD either side of mean. 1.96=95% confidence\n" +
@@ -483,7 +517,7 @@ namespace HMMBuilder
                       "SD_THRESHOLD=" + qualityThreshold;  //1.96 for p=95% :: 2.57 for p=99%
 
             string iniPath = this.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
-            FileTools.Append2TextFile(iniPath, ToAppend, true);
+            FileTools.Append2TextFile(iniPath, ToAppend, false);
         }
 
 
