@@ -88,7 +88,7 @@ namespace AudioAnalysis
             CalculateTimeScale(samplingRate, windowSize, windowOffset,
                                          out frameDuration, out frameOffset, out framesPerSecond);
             this.FrameDuration  = frameDuration;    //frame duration in seconds
-            this.FrameOffset    = frameOffset;
+            this.FrameOffset    = frameOffset;      //frame offset in seconds
             this.FramesPerSecond= framesPerSecond;  //inverse of the frame offset
 
             int binCount;
