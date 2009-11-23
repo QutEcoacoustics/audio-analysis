@@ -1,4 +1,6 @@
-﻿open Common
+﻿module GetAcousticEventsTest
+
+open Common
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Xunit
 

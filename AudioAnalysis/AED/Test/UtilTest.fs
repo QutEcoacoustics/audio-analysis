@@ -1,4 +1,6 @@
-﻿open QutSensors.AudioAnalysis.AED.Util
+﻿module UtilTest
+
+open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 
 [<Fact>]

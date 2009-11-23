@@ -1,4 +1,6 @@
-﻿open QutSensors.AudioAnalysis.AED.AcousticEventDetection
+﻿module AcousticEventDetectionTest
+
+open QutSensors.AudioAnalysis.AED.AcousticEventDetection
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open Common
 open FsCheckArbs
