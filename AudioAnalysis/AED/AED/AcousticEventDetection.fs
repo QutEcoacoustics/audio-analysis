@@ -55,23 +55,23 @@ let filterOutSmallEvents t rs =
     Seq.filter (fun r -> area r > t') rs
 
 let detectEventsMatlab intensityThreshold smallAreaThreshold m =
-    let start = System.DateTime.Now.TimeOfDay
+    //let start = System.DateTime.Now.TimeOfDay
     let m1 = Matlab.wiener2 5 m 
-    printfn "wiener2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "wiener2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m2 = SubbandMode.removeSubbandModeIntensities2 m1
-    printfn "removeSubbandModeIntensities2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "removeSubbandModeIntensities2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m3 = toBlackAndWhite intensityThreshold m2
-    printfn "toBlackAndWhite: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "toBlackAndWhite: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m4 = joinVerticalLines m3
-    printfn "joinVerticalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "joinVerticalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m5 = joinHorizontalLines m4
-    printfn "joinHorizontalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "joinHorizontalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m6 = getAcousticEvents m5
-    printfn "getAcousticEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "getAcousticEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m7 = separateLargeEvents m6
-    printfn "separateLargeEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "separateLargeEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m8 = filterOutSmallEvents smallAreaThreshold m7
-    printfn "filterOutSmallEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
+    //printfn "filterOutSmallEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     m8
     
 // TODO it would be nicer if this returned an Option/Either rather than an exception
@@ -80,5 +80,5 @@ let detectEvents intensityThreshold smallAreaThreshold a =
     if m.NumRows = 257 then
         let m' = m.Region (1, 0, 256, m.NumCols) // remove first row (DC values) like in matlab
         detectEventsMatlab intensityThreshold smallAreaThreshold m'
-            |> Seq.map (fun r -> new Oblong(r.Left, r.Top, right r, bottom r)) // transpose results back
+            |> Seq.map (fun r -> new Oblong(r.Left, r.Top+1, right r, bottom r + 1)) // transpose results back & compensate for removing first row
         else failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
