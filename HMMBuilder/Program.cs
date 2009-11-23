@@ -47,7 +47,7 @@ namespace HMMBuilder
 
             htkConfig.CallName = "KOALAMALE1";
             htkConfig.Comment = "Trained on separate inhale and exhale syllables";
-            htkConfig.LOFREQ = "200";
+            htkConfig.LOFREQ = "150";
             htkConfig.HIFREQ = "6000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
@@ -105,8 +105,6 @@ namespace HMMBuilder
             bool good = true;
             int numIters = 0;  //number of training iterations
             #endregion
-
-
 
             switch (args.Length)
             {
@@ -592,35 +590,21 @@ namespace HMMBuilder
 
                     #region EIGHT: SET UP THE TEMPLATE ZIP FILE
 
-
-                    string oldSegmentDir = htkConfig.SegmentationDir;
-                    string newSegmentDir = htkConfig.ConfigDir;
-
                     try
                     {
-                        //COPY SILENCE MODEL FILES TO CONFIG\\SEGMENTATION DIR
+                        //COPY SILENCE MODEL FILES TO CONFIG DIR
                         string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
                         string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
                         string ext = HTKConfig.noiseModelExt;
                         string oldNoiseModel = oldNoiseDir + "\\" + noiseModelFN + ext;
-                        string newNoiseModel = newSegmentDir + "\\" + noiseModelFN + ext;
+                        string newNoiseModel = htkConfig.ConfigDir + "\\" + noiseModelFN + ext;
                         File.Copy(oldNoiseModel, newNoiseModel, true);
-
-                        //COPY SEGMENTATION FILES TO CONFIG\\SEGMENTATION DIR
-                        string oldSegmentIniPath = oldSegmentDir + "\\" + HTKConfig.segmentationIniFN;
-                        string newSegmentIniPath = newSegmentDir + "\\" + HTKConfig.segmentationIniFN;
-                        File.Copy(oldSegmentIniPath, newSegmentIniPath, true);
                     }
                     catch (IOException ex)
                     {
-                        Console.WriteLine("ERROR! FAILED TO COPY SILENCE AND SEGMENTATION FILES");
+                        Console.WriteLine("ERROR! FAILED TO COPY SILENCE FILES");
                         Console.WriteLine(ex.ToString());
                         good = false;
-                    }
-
-                    if (multisyllabic) //multisillabic case
-                    {
-                        //TO DO
                     }
 
                     Console.WriteLine("\n\nWRITE HTK FILES");
