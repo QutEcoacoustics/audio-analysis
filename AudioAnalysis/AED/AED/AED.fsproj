@@ -68,7 +68,6 @@
     <Compile Include="GetAcousticEvents.fs" />
     <Compile Include="Default.fs" />
     <Compile Include="AcousticEventDetection.fs" />
-    <Compile Include="AssemblyInfo.fs" />
     <Compile Include="EventPatternRecog.fs" />
   </ItemGroup>
   <ItemGroup>

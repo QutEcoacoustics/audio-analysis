@@ -1,4 +1,6 @@
-﻿open Common
+﻿module SubbandModeTest
+
+open Common
 open QutSensors.AudioAnalysis.AED.SubbandMode
 open Xunit
 

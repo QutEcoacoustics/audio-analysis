@@ -1,4 +1,6 @@
-﻿open Common
+﻿module MatlabTest
+
+open Common
 open QutSensors.AudioAnalysis.AED.Matlab
 open Xunit
 

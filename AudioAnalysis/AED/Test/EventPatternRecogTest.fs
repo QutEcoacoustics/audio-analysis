@@ -1,4 +1,6 @@
-﻿open QutSensors.AudioAnalysis.AED.EventPatternRecog
+﻿module EventPatternRecogTest
+
+open QutSensors.AudioAnalysis.AED.EventPatternRecog
 open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 

@@ -71,7 +71,7 @@ let fileToMatrix f r c =
     
 let csvToMatrix f =
     let ls = System.IO.File.ReadAllLines f
-    let xs = Array.map (List.to_array << String.split [',']) ls    
+    let xs = Array.map (List.toArray << String.split [',']) ls    
     let m = Math.Matrix.init (ls.GetLength 0) (Array.length xs.[0]) (fun i j -> System.Convert.ToDouble(xs.[i].[j]))
     m
     
