@@ -28,7 +28,7 @@ type ArbitraryModifiers =
                                          let r, b = right rect, bottom rect
                                          let! c = choose (1, rect.Height * rect.Width)                                    
                                          let! elms = pairGen (choose (rect.Top,b)) (choose (rect.Left,r)) |> replicateGenM c 
-                                         return {Bounds=rect;Elements=Set.of_list elms}}} 
+                                         return {Bounds=rect;Elements=Set.ofList elms}}} 
      
 let chk f = 
     overwriteGenerators<ArbitraryModifiers>()

@@ -36,11 +36,8 @@
     <Optimize>true</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FsCheck, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
-      <Name>FsCheck</Name>
-      <AssemblyName>FsCheck.dll</AssemblyName>
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\..\..\software\FsCheck0.6.1\FsCheck.dll</HintPath>
+    <Reference Include="FsCheck">
+      <HintPath>C:\Documents and Settings\Brad\software\FsCheck0.6.2\FsCheck.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809">
