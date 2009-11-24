@@ -27,6 +27,7 @@ namespace AudioAnalysis
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
         public string Name  { get; set; }
+        public string SourceFile { get; set; }
         public double Score { get; set; }
         public double NormalisedScore { get; private set; } //score normalised in range [0,1].
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
@@ -122,13 +123,12 @@ namespace AudioAnalysis
         }
 
         /// <summary>
-        /// Converts a score to a value normalised between a min and a max value.
-        /// The reutrned value is normalised between 0 and 1.
+        /// Sets the passed score and also a value normalised between a min and a max.
         /// </summary>
         /// <param name="score"></param>
         /// <param name="min"></param>
         /// <param name="max"></param>
-        public void SetNormalisedScore(double score, double min, double max)
+        public void SetScores(double score, double min, double max)
         {
             this.Score = score;
             this.NormalisedScore = (score - min) / (max - min);
