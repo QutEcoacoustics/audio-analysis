@@ -74,6 +74,13 @@ namespace HMMBuilder
             string opFile = workingDirectory + "\\results\\eventData.txt";
             FileTools.WriteTextFile(opFile, list, true);
 
+            string labelsPath = @"C:\SensorNetworks\WavFiles\KoalaTestData\KoalaTestData.txt";
+            int tp, fp, fn; 
+            double precision, recall, accuracy;
+            CalculateAccuracy(opFile, labelsPath, out tp, out fp, out fn, out precision, out recall, out accuracy);
+
+            Console.WriteLine("\n\nRecall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
+
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }// end Main()
@@ -94,7 +101,6 @@ namespace HMMBuilder
             //B: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
             if (TestHTKRecogniser.Verbose == true)
             {
-                Console.WriteLine("\n###########################################################################################");
                 Console.WriteLine("Parse the HMM results file and return Acoustic Events");
             }
             string templateDir = workingDirectory + "\\" + templateName; //template has been shifted
@@ -103,7 +109,6 @@ namespace HMMBuilder
             //C: DISPLAY IN SONOGRAM
             if (TestHTKRecogniser.Verbose == true)
             {
-                Console.WriteLine("\n###########################################################################################");
                 Console.WriteLine(" Extracted " + events.Count + " events.   Preparing sonogram to display events");
             }
             DisplayAcousticEvents(wavFile, events, templateDir, workingDirectory);
@@ -332,7 +337,8 @@ namespace HMMBuilder
                 var sb = new StringBuilder();
                 double endtime = ae.StartTime + ae.Duration;
                 sb.Append(ae.Name + "\t" + ae.StartTime.ToString("f4") + "\t" +
-                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t");
+                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" +
+                          ae.SourceFile);
                 list.Add(sb.ToString());
             }
             return list;
@@ -405,7 +411,7 @@ namespace HMMBuilder
             string syllableFile = target + "\\" + HTKConfig.labelListFN;
             List<string> targetClasses = HTKConfig.GetSyllableNames(syllableFile);
 
-            //read in the threshold values from the .ini file
+            //set up Config class and read in the threshold values from the .ini file
             string[] files = new string[1];
             files[0] = iniFile;
             Configuration config = new Configuration(files);
@@ -418,8 +424,22 @@ namespace HMMBuilder
 
 
             //read in the results file
-            List<string> results = FileTools.ReadTextFile(resultsPath);
-            int count = results.Count; //number of lines in results file
+            List<string> results = null;
+            int count = 0;
+            string sourceFile = null; 
+            try
+            {
+                results = FileTools.ReadTextFile(resultsPath);
+                string secondLine = results[1].Substring(1, results[1].Length - 2);//read name of source file and remove quotes
+                sourceFile = Path.GetFileNameWithoutExtension(secondLine);
+                count = results.Count; //number of lines in results file
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("ERROR IN METHOD TestHTKRecogniser.GetAcousticEventsFromHTKResults(string resultsPath, string target)");
+                Console.WriteLine("Failed to read header of results file: " + resultsPath);
+                Console.WriteLine(e.ToString());
+            }
 
             //init a list of events
             List<AcousticEvent> events = new List<AcousticEvent>();
@@ -430,7 +450,7 @@ namespace HMMBuilder
             int windowSampleOffset = (int)Math.Floor(windowOffset * sampleRate);
             int hitCount = 0;
 
-            //header
+            //write header line to Console
             if (TestHTKRecogniser.Verbose == true) Console.WriteLine("#\tcallName\tframes\tscore\tsc/fr\tquality\thit?");
 
             for (int i = 0; i < count; i++)
@@ -444,7 +464,7 @@ namespace HMMBuilder
                 string vocalName = param[2];
                 float callScore = float.Parse(param[3]);
 
-                if (!targetClasses.Contains(vocalName)) continue; //skip irrelevant lines
+                if (!targetClasses.Contains(vocalName)) continue; //skip irrelevant lines of HTK results file
 
                 hitCount++; //count hits
                 double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
@@ -470,8 +490,8 @@ namespace HMMBuilder
                 var acEvent = new AcousticEvent(startSec, duration, FreqMin, FreqMax);
                 acEvent.Name = vocalName;
                 if (!isHit) frameScore = scoreThreshold + (frameScore / 5); //reduce score below threshold
-                acEvent.SetNormalisedScore(frameScore, scoreThreshold, -20);
-
+                acEvent.SetScores(frameScore, scoreThreshold, -20);
+                acEvent.SourceFile = sourceFile;
                 acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
                 acEvent.Display = isHit;
                 events.Add(acEvent);
@@ -521,6 +541,38 @@ namespace HMMBuilder
             if (TestHTKRecogniser.Verbose == true) Console.WriteLine("\nSonogram will be written to file: " + opFile);
             image_mt.Save(opFile); 
 
+        }
+
+
+
+
+        public static void CalculateAccuracy(string resultsPath, string labelsPath, out int tp, out int fp, out int fn, 
+                                                 out double precision, out double recall, out double accuracy)
+        {
+            List<string> results = FileTools.ReadTextFile(resultsPath);
+            List<string> labels  = FileTools.ReadTextFile(labelsPath);
+
+            //init  values
+            tp = 0;
+            fp = 0;
+            fn = 0;
+            foreach (string line in results)
+            {
+                string[] words = Regex.Split(line, @"\t");
+                //Console.WriteLine(line);
+                string name  = words[0];
+                double start = Double.Parse(words[1]);
+                double end   = Double.Parse(words[2]);
+                double score = Double.Parse(words[3]);
+                string file  = words[4];
+                Console.WriteLine("{0}\ttime={1%f1}-{2:f1},\tscore={3:f1}", name, start, end, score);
+            }
+
+            if (((tp + fp) == 0)) precision = 0.0;
+            else                  precision = tp / (tp + fp);
+            if (((tp + fn) == 0)) recall    = 0.0;
+            else                  recall    = tp / (tp + fn);
+            accuracy = (precision + recall) / (float)2;
         }
 
     }//end class
