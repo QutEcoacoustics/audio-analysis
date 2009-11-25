@@ -69,6 +69,7 @@
     <Compile Include="Default.fs" />
     <Compile Include="AcousticEventDetection.fs" />
     <Compile Include="EventPatternRecog.fs" />
+    <Compile Include="SpectralPeakTrack.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
