@@ -1,4 +1,4 @@
-function peaksI3 = computeSPT(I1,F,T,peaks_int_thresh)
+function [peaksI3,peaksI3_h,peaksI3_v] = computeSPT(I1,F,T,peaks_int_thresh)
 % compute and return spectrogram peaktracks
 % 
 % IT TAKES ABOUT 60 sec TO COMPUTE PEAK TRACKS FOR A 1-min recording
