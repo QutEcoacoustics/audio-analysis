@@ -1,26 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.SubbandMode
 
+open Matlab
 open Math.Vector.Generic
-
-(* Matlab function.
-yy = smooth(y,span) sets the span of the moving average to span. span must be odd.
-
-yy(1) = y(1)
-yy(2) = (y(1) + y(2) + y(3))/3
-yy(3) = (y(1) + y(2) + y(3) + y(4) + y(5))/5
-yy(4) = (y(2) + y(3) + y(4) + y(5) + y(6))/5
-...
-*)
-// TODO: can this be made generic 
-let smooth (a:'a[]) s = 
-    let n = (s - 1) / 2
-    let f i _ =
-        let (b, l) = match i with
-                     | _ when i < n                  -> (0, i*2+1)
-                     | _ when i + n < a.GetLength(0) -> (i-n, s)
-                     | _                             -> (i-(a.GetLength(0)-1-i), (a.GetLength(0)-1-i)*2+1)
-        Array.sum (Array.sub a b l) / (float l)
-    Array.mapi f a
 
 (* This is one particular variation of the Matlab hist function, from the help:
     N = HIST(Y,X), where X is a vector, returns the distribution of Y among bins with centers

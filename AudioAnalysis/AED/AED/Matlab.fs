@@ -19,6 +19,25 @@ let hist xs cs =
     Seq.iter f xs
     a
     
+(* 
+yy = smooth(y,span) sets the span of the moving average to span. span must be odd.
+
+If span = 5 then the first few elements of yy are given by:
+yy(1) = y(1)
+yy(2) = (y(1) + y(2) + y(3))/3
+yy(3) = (y(1) + y(2) + y(3) + y(4) + y(5))/5
+yy(4) = (y(2) + y(3) + y(4) + y(5) + y(6))/5
+...
+*)
+let smooth (a:float []) s = 
+    let n = (s - 1) / 2
+    let f i _ =
+        let (b, l) = match i with
+                     | _ when i < n                  -> (0, i*2+1)
+                     | _ when i + n < a.GetLength(0) -> (i-n, s)
+                     | _                             -> (i-(a.GetLength(0)-1-i), (a.GetLength(0)-1-i)*2+1)
+        Array.sum (Array.sub a b l) / (float l)
+    Array.mapi f a
     
 let mean m n = Math.Matrix.sum m / n
     
