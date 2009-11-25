@@ -1,4 +1,4 @@
-function [y,fs,I1,F2,T] = wavToSpectrogram(pathToFile)
+function [y,fs,I1,F2,T2] = wavToSpectrogram(pathToFile)
 
 [y, fs, nbits, opts] = wavread(pathToFile);
 
@@ -13,6 +13,12 @@ nfft = 256*2; % yield 257 frequency bins to be consistent with C# libraries
 % freq/time co-ordinate systems.
 P2 = P(2:257,:);
 F2 = F(2:257);
+
+% We want the time vector to start from zero, i.e. the beginning of each
+% time frame rather than the end. So when we convert to acoustic events
+% from pixel co-ordinates to time/freq it is consistent with the F#/C#
+% code.
+T2 = T - T(1);
 
 % convert amplitude to dB
 I1 = 10*log10(abs(P2));
