@@ -12,6 +12,7 @@ namespace AudioAnalysis
         //DIMENSIONS OF THE EVENT
         public double StartTime { get; set; } // (s),
         public double Duration; // in secondss
+        public double EndTime { get; private set; } // (s),
         public int    MinFreq;  //
         public int    MaxFreq;  //
         public int    FreqRange { get { return(MaxFreq - MinFreq + 1); } }
@@ -37,7 +38,9 @@ namespace AudioAnalysis
         double I3Mean;   //mean intensity of pixels in the event AFTER noise reduciton 
         double I3Var;    //variance of intensity of pixels in the event.
 
-        public bool Display { get; set; } //use this if want to filter a list for display
+        public int Intensity { get; set; } //subjective assesment of event intenisty
+        public int Quality { get; set; }   //subjective assessment of event quality
+        public bool Tag { get; set; } //use this if want to filter or tag some members of a list for some purpose
 
 
 
@@ -48,6 +51,7 @@ namespace AudioAnalysis
         {
             this.StartTime = startTime;
             this.Duration = duration;
+            this.EndTime = startTime + duration;
             this.MinFreq = (int)minFreq;
             this.MaxFreq = (int)maxFreq;
             this.IsMelscale = false;
@@ -71,6 +75,7 @@ namespace AudioAnalysis
             RowIDs2Time(o.r1, o.r2, frameOffset, out startTime, out duration);
             this.StartTime = startTime;
             this.Duration = duration;
+            this.EndTime = startTime + duration;
             int minF; int maxF;
             HerzBinIDs2Freq(o.c1, o.c2, binWidth, out minF, out maxF);
             this.MinFreq = minF;
@@ -141,7 +146,39 @@ namespace AudioAnalysis
             return " min-max=" + MinFreq + "-" + MaxFreq + ",  " + oblong.c1 + "-" + oblong.c2;
         }
 
+        /// <summary>
+        /// Returns the first event in the passed list which overlaps with this one.
+        /// If no event overlaps return null.
+        /// IMPORTANT!!! This method assumes that all events in the passed list are from the same recording/file
+        /// as this one.
+        /// </summary>
+        /// <param name="events"></param>
+        /// <returns></returns>
+        public AcousticEvent OverlapsEventInList(List<AcousticEvent> events)
+        {
+            foreach (AcousticEvent ae in events)
+            {
+                if (this.Overlaps(ae)) return ae;
+            }
+            return null;
+        }
 
+        /// <summary>
+        /// Returns true/false if this event time-overlaps the passed event.
+        /// Overlap in frequency dimension is ignored.
+        /// The overlap determination is made on the start and end time points.
+        /// There are two possible overlaps to be checked
+        /// </summary>
+        /// <param name="ae"></param>
+        /// <returns></returns>
+        public bool Overlaps(AcousticEvent ae)
+        {
+            if ((this.StartTime < ae.EndTime) && (this.EndTime > ae.StartTime)) 
+                return true;
+            if ((ae.StartTime < this.EndTime) && (ae.EndTime > this.StartTime)) 
+                return true;
+            return false;
+        }
 
         //#################################################################################################################
         //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS 
@@ -239,6 +276,22 @@ namespace AudioAnalysis
             binWidth = samplingRate / (double)windowSize; //= Nyquist / binCount
         }
 
+
+        /// <summary>
+        /// returns all the events in a list that occur in the recording with passed file name.
+        /// </summary>
+        /// <param name="eventList"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
+        public static List<AcousticEvent> GetEventsInFile(List<AcousticEvent> eventList, string fileName)
+        {
+            var events = new List<AcousticEvent>();
+            foreach (AcousticEvent ae in eventList)
+            {
+                if(ae.SourceFile.Equals(fileName)) events.Add(ae);
+            }
+            return events;
+        } // end method GetEventsInFile(List<AcousticEvent> eventList, string fileName)
 
     }
 }
