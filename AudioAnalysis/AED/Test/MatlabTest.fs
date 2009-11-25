@@ -1,6 +1,7 @@
 ﻿module MatlabTest
 
 open Common
+open FsCheckArbs
 open QutSensors.AudioAnalysis.AED.Matlab
 open Xunit
 
@@ -8,6 +9,14 @@ open Xunit
 let testHist () =
     let cs = seq {for i in 0..10 -> i * 1000}
     Assert.Equal([|2; 1; 0; 0; 0; 0; 0; 0; 0; 0; 1|], hist [1;500;501;20000] cs)
+    
+[<Fact>]
+let testFindPeaks () =
+    let p (a:int []) = 
+        let r = findPeaks a
+        if r.Length = 0 then true
+            else List.min r > 0 && List.max r < (a.GetLength(0)-1) && List.forall (fun i -> a.[i] > a.[i-1] && a.[i] > a.[i+1]) r
+    chk p
     
 [<Fact>]
 let testMean () = Assert.Equal(2.5, mean (Math.Matrix.ofList [[1.0; 2.0]; [3.0; 4.0]]) 4.0)
@@ -25,8 +34,6 @@ let testNeighbourhoodBounds () =
     f (95, 0, 5, 3) 97 0
     f (96, 0, 4, 3) 98 0
     f (97, 0, 3, 3) 99 0
-    
-
     
 [<Fact>]
 let wiener2 () = 
