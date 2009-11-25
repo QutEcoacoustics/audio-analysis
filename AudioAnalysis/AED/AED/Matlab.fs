@@ -36,8 +36,16 @@ let smooth (a:float []) s =
                      | _ when i < n                  -> (0, i*2+1)
                      | _ when i + n < a.GetLength(0) -> (i-n, s)
                      | _                             -> (i-(a.GetLength(0)-1-i), (a.GetLength(0)-1-i)*2+1)
-        Array.sum (Array.sub a b l) / (float l)
+        Array.sum (Array.sub a b l) / (float l) // TODO try Array.average here
     Array.mapi f a
+    
+let findPeaks (a:'a[]) =
+    let rec f z i =
+        if i >= a.GetLength(0) || (i+1) = a.GetLength(0) then z
+            else if a.[i] > a.[i-1] && a.[i] > a.[i+1]
+                    then f (i::z) (i+2)
+                    else f z (i+1)
+    if a.GetLength(0) > 2 then f [] 1 else []
     
 let mean m n = Math.Matrix.sum m / n
     
