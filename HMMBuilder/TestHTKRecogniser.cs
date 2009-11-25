@@ -79,7 +79,8 @@ namespace HMMBuilder
             double precision, recall, accuracy;
             CalculateAccuracy(opFile, labelsPath, out tp, out fp, out fn, out precision, out recall, out accuracy);
 
-            Console.WriteLine("\n\nRecall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
+            Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
+            Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
@@ -111,7 +112,7 @@ namespace HMMBuilder
             {
                 Console.WriteLine(" Extracted " + events.Count + " events.   Preparing sonogram to display events");
             }
-            DisplayAcousticEvents(wavFile, events, templateDir, workingDirectory);
+            //DisplayAcousticEvents(wavFile, events, templateDir, workingDirectory);
 
         } //end method Execute()
 
@@ -493,7 +494,7 @@ namespace HMMBuilder
                 acEvent.SetScores(frameScore, scoreThreshold, -20);
                 acEvent.SourceFile = sourceFile;
                 acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
-                acEvent.Display = isHit;
+                acEvent.Tag = isHit;
                 events.Add(acEvent);
 
                 if (TestHTKRecogniser.Verbose == true)
@@ -540,7 +541,6 @@ namespace HMMBuilder
             string opFile = resultsDir + "\\" + fName + ".png";
             if (TestHTKRecogniser.Verbose == true) Console.WriteLine("\nSonogram will be written to file: " + opFile);
             image_mt.Save(opFile); 
-
         }
 
 
@@ -549,31 +549,108 @@ namespace HMMBuilder
         public static void CalculateAccuracy(string resultsPath, string labelsPath, out int tp, out int fp, out int fn, 
                                                  out double precision, out double recall, out double accuracy)
         {
-            List<string> results = FileTools.ReadTextFile(resultsPath);
-            List<string> labels  = FileTools.ReadTextFile(labelsPath);
+            List<AcousticEvent> results = GetAcousticEventsFromResultsFile(resultsPath);
+            List<AcousticEvent> labels  = GetAcousticEventsFromLabelsFile(labelsPath);
 
             //init  values
             tp = 0;
             fp = 0;
             fn = 0;
-            foreach (string line in results)
+            //header
+            string space = " ";
+            int count = 0;
+            Console.WriteLine("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,1}", space);
+            foreach (AcousticEvent ae in results)
             {
-                string[] words = Regex.Split(line, @"\t");
-                //Console.WriteLine(line);
-                string name  = words[0];
-                double start = Double.Parse(words[1]);
-                double end   = Double.Parse(words[2]);
-                double score = Double.Parse(words[3]);
-                string file  = words[4];
-                Console.WriteLine("{0}\ttime={1%f1}-{2:f1},\tscore={3:f1}", name, start, end, score);
+                count++;
+                double end = ae.StartTime + ae.Duration;
+                var events = AcousticEvent.GetEventsInFile(labels, ae.SourceFile);//get only events in same file as ae
+                AcousticEvent overlapEvent = ae.OverlapsEventInList(events);
+                if (overlapEvent == null)
+                {
+                    fp++;
+                    Console.WriteLine("False positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                } else
+                {
+                    tp++;
+                    overlapEvent.Tag = true; //tag because later need to determine fn
+                    Console.WriteLine("True  positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                }
             }
 
+            //now calculate the fn. These are the labelled events not tagged in previous search.
+            foreach (AcousticEvent ae in labels)
+                if (ae.Tag == false)
+                {
+                    fn++;
+                    Console.WriteLine("False NEGative:         {0:f1} ... {1:f1}", ae.StartTime, ae.EndTime);
+                }
+
             if (((tp + fp) == 0)) precision = 0.0;
-            else                  precision = tp / (tp + fp);
+            else                  precision = tp / (double)(tp + fp);
             if (((tp + fn) == 0)) recall    = 0.0;
-            else                  recall    = tp / (tp + fn);
+            else                  recall = tp / (double)(tp + fn);
             accuracy = (precision + recall) / (float)2;
         }
+
+
+        public static List<AcousticEvent> GetAcousticEventsFromResultsFile(string path)
+        {
+            var events = new List<AcousticEvent>();
+            List<string> lines = FileTools.ReadTextFile(path);
+            int minFreq = 0; //dummy value - never to be used
+            int maxfreq = 0; //dummy value - never to be used
+            foreach (string line in lines)
+            {
+                string[] words = Regex.Split(line, @"\t");
+                string name = words[0];
+                double start = Double.Parse(words[1]);
+                double end = Double.Parse(words[2]);
+                double score = Double.Parse(words[3]);
+                string file = words[4];
+                //Console.WriteLine("{0,10}{1,6:f1} ...{2,6:f1}{3,10:f1}", name, start, end, score);
+                var ae   = new AcousticEvent(start, (end - start), minFreq, maxfreq);
+                ae.Score = score;
+                ae.Name  = name;
+                ae.SourceFile = file;
+                events.Add(ae);
+            }
+            return events;
+        } //end method GetLabelsInFile(List<string> labels, string file)
+
+
+        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path)
+        {
+            var events = new List<AcousticEvent>();
+            List<string> lines = FileTools.ReadTextFile(path);
+            int minFreq = 0; //dummy value - never to be used
+            int maxfreq = 0; //dummy value - never to be used
+            Console.WriteLine("\nList of labelled events in file: "+Path.GetFileName(path));
+            Console.WriteLine(" #  tag \tstart  ...   end  intensity quality  file");
+            for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
+            {
+                string[] words = Regex.Split(lines[i], @"\t");
+                string file = words[0];
+                string date = words[1];
+                string time = words[2];
+
+                double start  = Double.Parse(words[3]);
+                double end    = Double.Parse(words[4]);
+                string tag    = words[5];
+                int quality   = Int32.Parse(words[6]);
+                int intensity = Int32.Parse(words[7]);
+                Console.WriteLine("{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}", i, tag, start, end, intensity, quality, file);
+                //Console.WriteLine(("").PadRight(24, '-'));
+
+                var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
+                ae.Score = intensity;
+                ae.Name = tag;
+                ae.SourceFile = file;
+                events.Add(ae);
+            }
+            return events;
+        } //end method GetLabelsInFile(List<string> labels, string file)
+
 
     }//end class
 }
