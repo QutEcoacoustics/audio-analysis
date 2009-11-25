@@ -1,4 +1,4 @@
-﻿using Microsoft.FSharp.Math;
+﻿//using Microsoft.FSharp.Math;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,68 +48,68 @@ namespace AudioAnalysis
             
             // I1.csv contains the sonogram matrix produced by matlab
             string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.csv";
-            Matrix<double> matlabMatrix =  Util.csvToMatrix(matlabFile).Transpose;
-            Console.WriteLine("\nmatlab dims = " + matlabMatrix.NumRows + " x " + matlabMatrix.NumCols);
-            Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
-            Console.WriteLine("\nsonogram     vs     matlab");
+            //Matrix<double> matlabMatrix =  Util.csvToMatrix(matlabFile).Transpose;
+            //Console.WriteLine("\nmatlab dims = " + matlabMatrix.NumRows + " x " + matlabMatrix.NumCols);
+            //Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
+            //Console.WriteLine("\nsonogram     vs     matlab");
 
-            //Matrix<double> matrix2 = Matrix.of_array matrix
-            double[,] matrix2 = new double[matlabMatrix.NumRows, matlabMatrix.NumCols];
-            for (int i = 0; i < matlabMatrix.NumRows; i++)
-            {
-                for (int j = 0; j < matlabMatrix.NumCols; j++)
-                {
-                    matrix2[i, j] = matrix[i, j + 1];
-                }
-            }
+            ////Matrix<double> matrix2 = Matrix.of_array matrix
+            //double[,] matrix2 = new double[matlabMatrix.NumRows, matlabMatrix.NumCols];
+            //for (int i = 0; i < matlabMatrix.NumRows; i++)
+            //{
+            //    for (int j = 0; j < matlabMatrix.NumCols; j++)
+            //    {
+            //        matrix2[i, j] = matrix[i, j + 1];
+            //    }
+            //}
 
-            Console.WriteLine("\nFirst column");
-            for (int c = 0; c < 5; c++)
-                Console.WriteLine(matrix2[c, 0] + " vs " + matlabMatrix[c, 0]);
+            //Console.WriteLine("\nFirst column");
+            //for (int c = 0; c < 5; c++)
+            //    Console.WriteLine(matrix2[c, 0] + " vs " + matlabMatrix[c, 0]);
 
-            Console.WriteLine("\nSecond column");
-            for (int c = 0; c < 5; c++)
-                Console.WriteLine(matrix2[c, 1] + " vs " + matlabMatrix[c, 1]);
+            //Console.WriteLine("\nSecond column");
+            //for (int c = 0; c < 5; c++)
+            //    Console.WriteLine(matrix2[c, 1] + " vs " + matlabMatrix[c, 1]);
 
-            Console.WriteLine("\n Column 245");
-            for (int c = 0; c < 5; c++)
-                Console.WriteLine(matrix2[c, 245] + " vs " + matlabMatrix[c, 245]);
+            //Console.WriteLine("\n Column 245");
+            //for (int c = 0; c < 5; c++)
+            //    Console.WriteLine(matrix2[c, 245] + " vs " + matlabMatrix[c, 245]);
 
-            Console.WriteLine();
+            //Console.WriteLine();
             
-            // max difference
-            double md = 0;
-            for (int f = 0; f < 256; f++)
-            {
-                double sum = 0;
-                for (int t = 0; t < 5166; t++)
-                {
-                    double d = Math.Abs(matlabMatrix[t, f] - matrix2[t, f]);
-                    if (d > md) md = d;
-                    sum += d;
-                    //if (d > 0.1) Console.WriteLine("(" + t + "," + f + ")\t" + matrix2[t,f] + " vs " + matlabMatrix[t,f]);
-                }
-            }
-            Console.WriteLine("\nMax Difference: " + md);
-            // end test matrix comparision code
+            //// max difference
+            //double md = 0;
+            //for (int f = 0; f < 256; f++)
+            //{
+            //    double sum = 0;
+            //    for (int t = 0; t < 5166; t++)
+            //    {
+            //        double d = Math.Abs(matlabMatrix[t, f] - matrix2[t, f]);
+            //        if (d > md) md = d;
+            //        sum += d;
+            //        //if (d > 0.1) Console.WriteLine("(" + t + "," + f + ")\t" + matrix2[t,f] + " vs " + matlabMatrix[t,f]);
+            //    }
+            //}
+            //Console.WriteLine("\nMax Difference: " + md);
+            //// end test matrix comparision code
 
-            Console.WriteLine("START: AED");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
-            Console.WriteLine("END: AED");
+            //Console.WriteLine("START: AED");
+            //IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
+            //Console.WriteLine("END: AED");
 
-            //get the time and freq scales
-            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            double frameOffset  = config.GetFrameOffset();
+            ////get the time and freq scales
+            //double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            //double frameOffset  = config.GetFrameOffset();
 
-            var events = new List<EventPatternRecog.Rectangle>();
-            foreach (Oblong o in oblongs)
-            {
-                var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
-                events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
-                //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
-            }
+            //var events = new List<EventPatternRecog.Rectangle>();
+            //foreach (Oblong o in oblongs)
+            //{
+            //    var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
+            //    events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+            //    //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
+            //}
 
-            Console.WriteLine("# AED events: " + events.Count);
+            //Console.WriteLine("# AED events: " + events.Count);
             /*
             Console.WriteLine("START: EPR");
             IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
