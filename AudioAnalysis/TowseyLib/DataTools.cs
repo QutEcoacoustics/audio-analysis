@@ -232,6 +232,25 @@ namespace TowseyLib
             return Vnorm;
         }
 
+        /// <summary>
+        /// subtracts the mean from each value of an array 
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] SubtractMean(double[] v)
+        {
+            double mean = 0.0;
+            for (int i = 0; i < v.Length; i++) mean += v[i];
+            mean /= v.Length;
+            double[] vOut = new double[v.Length];
+            for (int i = 0; i < v.Length; i++) vOut[i] = v[i] - mean;
+            return vOut;
+        }
+
+
+
+
+
 //=============================================================================
 
 
