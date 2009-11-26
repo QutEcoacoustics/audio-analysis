@@ -65,9 +65,9 @@ namespace AudioAnalysis
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
 
             //ST BEES
-            //wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
-            //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
+            wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
             //wavFileName = "West_Knoll_St_Bees_FarDistantKoala_20080919-000000";
             //wavFileName = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
@@ -82,6 +82,10 @@ namespace AudioAnalysis
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet1_20080918-080000";
             //wavFileName = "West_Knoll_St_Bees_RainbowLorikeet2_20080916-160000";
             //wavFileName = "Honeymoon_Bay_St_Bees_20090312-060000_PheasantCoucal";
+
+            //KOALA short training clips - i.e. < 1 sec long
+            //wavDirName = @"C:\SensorNetworks\Templates\Template_KOALAMALE1\data\train\KOALA1_E\";
+            //wavFileName = "koalaE_006";
 
 
             //JENNIFER'S CD
@@ -107,8 +111,8 @@ namespace AudioAnalysis
 
 
             //GROUND PARROTS - SCOTT BURNETT
-            wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
-            wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
+            //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\GroundParrot\";
+            //wavFileName = "GParrots_JB2_20090607-173000.wav_minute_3";
 
             //MISCELLANEOUS
             //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
