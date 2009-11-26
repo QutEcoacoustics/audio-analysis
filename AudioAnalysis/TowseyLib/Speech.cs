@@ -7,6 +7,45 @@ namespace TowseyLib
     public class Speech
     {
 
+        public static void Main(string[] args)
+        {
+            int DCTLength = 32;
+            int coeffCount = 32;
+
+            double[,] cosines = Speech.Cosines(DCTLength, coeffCount + 1); //set up the cosine coefficients
+
+            var array = new double[DCTLength];
+
+            //linear spectrum
+//            for (int i = 0; i < DCTLength; i++) if((i % 16)==0) array[i] = 10;
+            //sinusoid spectrum
+            int k = 4;
+            double kPiOnM = k * 2 * Math.PI / DCTLength;
+            for (int i = 0; i < DCTLength; i++) // spectral bin
+            {
+                array[i] = 10 * Math.Cos(kPiOnM * (i + 0.5)); //can also be Cos(kPiOnM * (m - 0.5)
+            }
+
+
+
+            //array = DataTools.SubtractMean(array);
+            array = DataTools.normalise2UnitLength(array);
+            //array = DataTools.normalise(array);
+            DataTools.writeBarGraph(array);
+
+
+            double[] dct = Speech.DCT(array, cosines);
+            for (int i = 0; i < dct.Length; i++) dct[i] = Math.Abs(dct[i]*10);
+            dct[0] = 0.0; //dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0;
+            //int maxIndex = DataTools.GetMaxIndex(dct);
+            //double max = dct[maxIndex]; 
+            //DataTools.MinMax(dct, out min, out max);
+            DataTools.writeBarGraph(dct);
+            Console.WriteLine("FINISHED");
+            Console.ReadLine();
+        }
+
+
         /// <summary>
         /// NOTE: the decibels value is a ratio. Here the ratio is implied.
         /// This method does not account for power of the window if one is used.
@@ -532,6 +571,7 @@ namespace TowseyLib
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
+
             //following two lines write bmp image of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
