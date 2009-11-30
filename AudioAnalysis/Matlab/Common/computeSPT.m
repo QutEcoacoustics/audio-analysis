@@ -26,9 +26,7 @@ I2 = wiener2(I1, [w w]);
 I3 = withoutSubbandModeIntensities(I2);
 [M,N] = size(I3);
 % showImage(c,I3,T,F,1)
-
-
-
+% csvout('I3.csv', I3)
 
 
 %%% COMPUTING PEAK TRACKS ON I3 %%%
@@ -47,6 +45,7 @@ for ii=1:N
     
 end
 % showImage(c,I3c,T,F,2)
+% csvout('I3c.csv', I3c)
 
 peaksI3_h = zeros(size(I3)); % init
 for ii=1:N-1
@@ -77,7 +76,6 @@ for ii=1:N-1
 end
 peaksI3_h(peaksI3_h>1)=1;
 % showImage(c,peaksI3_h,T,F,3)
-
 
 
 % look for peaks in y direction
@@ -126,8 +124,6 @@ peaksI3_v(peaksI3_v>1)=1;
 % showImage(c,peaksI3_v,T,F,4)
 
 
-
-
 % combine horizontal and vertical peak tracks
 peaksI3 = peaksI3_h + peaksI3_v;
 peaksI3(peaksI3>1)=1;
@@ -155,3 +151,8 @@ end
 peaksI3(dilateI3==1) = I3(dilateI3==1);
 peaksI3(peaksI3<peaks_int_thresh) = 0;
 % showImage(c,peaksI3,T,F,5)
+end
+
+function csvout(name, M)
+    dlmwrite(name, M, 'precision', 8)
+end
