@@ -37,6 +37,6 @@ let removeSubbandModeIntensities2 (m:matrix) =
             let mode = mn + (float o)
             if mode > t then t else mode
         Array.map2 f mo (toArray ms)
-    let smoothModes = smooth modes 11  
+    let smoothModes = smooth 11 modes  
     //let (modes:Math.Vector<float>) = Math.Vector.Generic.map g ms
     Math.Matrix.mapi (fun r _ x -> x - smoothModes.[r]) m

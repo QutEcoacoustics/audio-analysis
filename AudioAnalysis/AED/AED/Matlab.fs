@@ -29,7 +29,7 @@ yy(3) = (y(1) + y(2) + y(3) + y(4) + y(5))/5
 yy(4) = (y(2) + y(3) + y(4) + y(5) + y(6))/5
 ...
 *)
-let smooth (a:float []) s = 
+let smooth s (a:float []) = 
     let n = (s - 1) / 2
     let f i _ =
         let (b, l) = match i with
