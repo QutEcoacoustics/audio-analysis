@@ -16,6 +16,7 @@ namespace AudioAnalysis
 		List<Image_Track> tracks = new List<Image_Track>();
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
         List<AcousticEvent> EventList { get; set; }
+        double[,] SuperimposedMatrix {get; set;}
 		#endregion
 
         /// <summary>
@@ -38,7 +39,12 @@ namespace AudioAnalysis
             this.EventList = list;
         }
 
-		public void Save(string path)
+        public void AddSuperimposedMatrix(Double[,] m)
+        {
+            this.SuperimposedMatrix = m;
+        }
+
+        public void Save(string path)
 		{
             Image image = GetImage();
             if (image == null) 
@@ -59,6 +65,7 @@ namespace AudioAnalysis
             {                
                 g.DrawImage(Image, 0, 0);
                 if (this.EventList != null) DrawEvents(g);
+                if (this.SuperimposedMatrix != null) Superimpose(g);
             }
 
             //now add tracks to the image
@@ -104,6 +111,61 @@ namespace AudioAnalysis
                 g.DrawLine(p2, x + 2, y1, x + 2, y2);
                 g.DrawLine(p2, x + 3, y1, x + 3, y2);
             }
+        }
+
+        void Superimpose(Graphics g)
+        {
+            Pen p1 = new Pen(Color.Red);
+            Pen p2 = new Pen(Color.Orange);
+            Pen p3 = new Pen(Color.Yellow);
+            Pen p4 = new Pen(Color.Green);
+            Pen p5 = new Pen(Color.Blue);
+            Pen p6 = new Pen(Color.Indigo);
+            Pen p7 = new Pen(Color.Violet);
+            var pens = new List<Pen>(); 
+            pens.Add(p1);
+            pens.Add(p2);
+            pens.Add(p3);
+            pens.Add(p4);
+            pens.Add(p5);
+            pens.Add(p6);
+            pens.Add(p7);
+
+            int rows = this.SuperimposedMatrix.GetLength(0);
+            int cols = this.SuperimposedMatrix.GetLength(1);
+            int imageHt = this.Image.Height;
+            //int maxValue = 64;
+
+            for (int c = 0; c < cols; c++)//traverse columns - skip DC column
+            {
+                for (int r = 0; r < rows; r++)
+                {
+                    if (this.SuperimposedMatrix[r, c] == 0.0) continue;
+
+                    if ((this.SuperimposedMatrix[r, c] > 0.0) && (this.SuperimposedMatrix[r, c] <= 8))
+                        g.DrawLine(pens[0], r, imageHt - c, r + 1, imageHt - c);
+                    else
+                        if ((this.SuperimposedMatrix[r, c] > 8.0) && (this.SuperimposedMatrix[r, c] < 12))
+                            g.DrawLine(pens[1], r, imageHt - c, r + 1, imageHt - c);
+                        else
+                            if ((this.SuperimposedMatrix[r, c] > 12.0) && (this.SuperimposedMatrix[r, c] < 16))
+                                g.DrawLine(pens[2], r, imageHt - c, r + 1, imageHt - c);
+                            else
+                                if ((this.SuperimposedMatrix[r, c] > 16.0) && (this.SuperimposedMatrix[r, c] < 20))
+                                    g.DrawLine(pens[3], r, imageHt - c, r + 1, imageHt - c);
+                                else
+                                    if ((this.SuperimposedMatrix[r, c] > 20.0) && (this.SuperimposedMatrix[r, c] < 24))
+                                        g.DrawLine(pens[4], r, imageHt - c, r + 1, imageHt - c);
+                                    else
+                                        if ((this.SuperimposedMatrix[r, c] > 24.0) && (this.SuperimposedMatrix[r, c] < 28))
+                                            g.DrawLine(pens[5], r, imageHt - c, r + 1, imageHt - c);
+                                        else
+                                            if ((this.SuperimposedMatrix[r, c] > 28.0) && (this.SuperimposedMatrix[r, c] < 32))
+                                                g.DrawLine(pens[6], r, imageHt - c, r + 1, imageHt - c);
+                }
+            }
+
+
         }
 
 	} //end class
