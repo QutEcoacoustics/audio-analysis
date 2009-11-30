@@ -18,11 +18,12 @@ let verticalPeaks' m t =
     byCol f m
 *)
 
-let verticalPeaks (m:matrix) t =
+let verticalPeaks t (m:matrix) =
     let m' = Math.Matrix.zero m.NumRows m.NumCols
-    for j=0 to m.NumCols do
+    for j=0 to (m.NumCols-1) do
         let a = m.Column j |> Math.Vector.toArray
-        smooth a 3 |> findPeaks |> List.iter (fun i -> if a.[i] > t then m'.[i,j] <- a.[i])
+        let s = smooth a 3 // TODO flip args here?
+        findPeaks s |> List.iter (fun i -> if s.[i] > t then m'.[i,j] <- s.[i])
     done
     m'
 
