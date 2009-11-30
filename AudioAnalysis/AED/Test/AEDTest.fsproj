@@ -67,6 +67,7 @@
     <Compile Include="AcousticEventDetectionTest.fs" />
     <Compile Include="GetAcousticEventsTest.fs" />
     <Compile Include="EventPatternRecogTest.fs" />
+    <Compile Include="SpectralPeakTrackTest.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AED\AED.fsproj">
