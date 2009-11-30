@@ -1,5 +1,4 @@
-﻿//using Microsoft.FSharp.Math;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,23 +14,13 @@ namespace AudioAnalysis
         public static void Main(string[] args)
         {
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("DETECTION OF ACOUSTIC EVENTS IN RECORDING\n");
-
             Log.Verbosity = 1;
-
-            //#######################################################################################################
-            // KEY PARAMETERS TO CHANGE
             string wavDirName; string wavFileName;
             AudioRecording recording;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-            //#######################################################################################################
-
             string appConfigPath = "";
-            //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
-
             string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
             string outputFolder = @"C:\SensorNetworks\Output\"; //default 
-
 
             Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
             Log.WriteIfVerbose("wav File Path =" + wavPath);
@@ -43,73 +32,26 @@ namespace AudioAnalysis
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
 
-            Console.WriteLine("This is a quick and dirty test to identify differences in matlab vs C# sonogram input to AED");
-            Console.WriteLine("SampleRate=" + sonogram.SampleRate);
-            
-            // I1.csv contains the sonogram matrix produced by matlab
-            string matlabFile = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\AED\Test\matlab\GParrots_JB2_20090607-173000.wav_minute_3\I1.csv";
-            //Matrix<double> matlabMatrix =  Util.csvToMatrix(matlabFile).Transpose;
-            //Console.WriteLine("\nmatlab dims = " + matlabMatrix.NumRows + " x " + matlabMatrix.NumCols);
-            //Console.WriteLine("sonogr dims = " + matrix.GetLength(0) + " x " + matrix.GetLength(1));
-            //Console.WriteLine("\nsonogram     vs     matlab");
+            Console.WriteLine("START: AED");
+            TimeSpan start = DateTime.Now.TimeOfDay;
+            //Enumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(9.0, 200, matrix);
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
+            Console.WriteLine("Elapsed time:" + DateTime.Now.TimeOfDay.Subtract(start));
+            Console.WriteLine("END: AED");
 
-            ////Matrix<double> matrix2 = Matrix.of_array matrix
-            //double[,] matrix2 = new double[matlabMatrix.NumRows, matlabMatrix.NumCols];
-            //for (int i = 0; i < matlabMatrix.NumRows; i++)
-            //{
-            //    for (int j = 0; j < matlabMatrix.NumCols; j++)
-            //    {
-            //        matrix2[i, j] = matrix[i, j + 1];
-            //    }
-            //}
+            //get the time and freq scales
+            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double frameOffset  = config.GetFrameOffset();
 
-            //Console.WriteLine("\nFirst column");
-            //for (int c = 0; c < 5; c++)
-            //    Console.WriteLine(matrix2[c, 0] + " vs " + matlabMatrix[c, 0]);
+            var events = new List<EventPatternRecog.Rectangle>();
+            foreach (Oblong o in oblongs)
+            {
+                var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
+                events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+                //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
+            }
+            Console.WriteLine("# AED events: " + events.Count);
 
-            //Console.WriteLine("\nSecond column");
-            //for (int c = 0; c < 5; c++)
-            //    Console.WriteLine(matrix2[c, 1] + " vs " + matlabMatrix[c, 1]);
-
-            //Console.WriteLine("\n Column 245");
-            //for (int c = 0; c < 5; c++)
-            //    Console.WriteLine(matrix2[c, 245] + " vs " + matlabMatrix[c, 245]);
-
-            //Console.WriteLine();
-            
-            //// max difference
-            //double md = 0;
-            //for (int f = 0; f < 256; f++)
-            //{
-            //    double sum = 0;
-            //    for (int t = 0; t < 5166; t++)
-            //    {
-            //        double d = Math.Abs(matlabMatrix[t, f] - matrix2[t, f]);
-            //        if (d > md) md = d;
-            //        sum += d;
-            //        //if (d > 0.1) Console.WriteLine("(" + t + "," + f + ")\t" + matrix2[t,f] + " vs " + matlabMatrix[t,f]);
-            //    }
-            //}
-            //Console.WriteLine("\nMax Difference: " + md);
-            //// end test matrix comparision code
-
-            //Console.WriteLine("START: AED");
-            //IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
-            //Console.WriteLine("END: AED");
-
-            ////get the time and freq scales
-            //double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            //double frameOffset  = config.GetFrameOffset();
-
-            //var events = new List<EventPatternRecog.Rectangle>();
-            //foreach (Oblong o in oblongs)
-            //{
-            //    var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
-            //    events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
-            //    //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
-            //}
-
-            //Console.WriteLine("# AED events: " + events.Count);
             /*
             Console.WriteLine("START: EPR");
             IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
@@ -134,7 +76,6 @@ namespace AudioAnalysis
             image.Save(outputFolder + wavFileName + ".png");
             
             Console.WriteLine("\nFINISHED!");
-            //Console.ReadLine();
             */
         }
     }
