@@ -107,6 +107,19 @@ namespace AudioAnalysis
 
         }
 
+        public void SetTimeAndFreqScales(double framesPerSec, double freqBinWidth)
+        {
+            //this.FrameDuration = frameDuration;     //frame duration in seconds
+            this.FramesPerSecond = framesPerSec;      //inverse of the frame offset
+            this.FrameOffset     = 1 / framesPerSec;  //frame offset in seconds
+
+            //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
+            this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
+
+            if (this.oblong == null) this.oblong = ConvertEvent2Oblong();
+        }
+
+
         /// <summary>
         /// calculates the matrix/image indices of the acoustic event, when given the time/freq scales.
         /// This method called only by previous method:- SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
