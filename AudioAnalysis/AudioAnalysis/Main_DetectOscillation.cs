@@ -31,7 +31,7 @@ namespace AudioAnalysis
             string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
             string outputFolder = @"C:\SensorNetworks\Output\"; //default 
             //min and max of required sub-band
-            int minHz = 0; int maxHz = 8000;
+            //int minHz = 0; int maxHz = 8000;
 
 
 
