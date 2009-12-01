@@ -130,11 +130,13 @@ namespace AudioAnalysis
             pens.Add(p5);
             pens.Add(p6);
             pens.Add(p7);
+            Pen pen = null;
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
-            int imageHt = this.Image.Height;
-            //int maxValue = 64;
+            int imageHt = this.Image.Height-1; //subtract 1 because indices start at zero
+            //int[] bounds = {0,7,14,21,28,35,42,49}; //for max value around 50
+            int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
 
             for (int c = 0; c < cols; c++)//traverse columns - skip DC column
             {
@@ -142,26 +144,21 @@ namespace AudioAnalysis
                 {
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
-                    if ((this.SuperimposedMatrix[r, c] > 0.0) && (this.SuperimposedMatrix[r, c] <= 8))
-                        g.DrawLine(pens[0], r, imageHt - c, r + 1, imageHt - c);
+                    if ((this.SuperimposedMatrix[r, c] > bounds[0]) && (this.SuperimposedMatrix[r, c] <= bounds[1])) pen = pens[0];
                     else
-                        if ((this.SuperimposedMatrix[r, c] > 8.0) && (this.SuperimposedMatrix[r, c] < 12))
-                            g.DrawLine(pens[1], r, imageHt - c, r + 1, imageHt - c);
-                        else
-                            if ((this.SuperimposedMatrix[r, c] > 12.0) && (this.SuperimposedMatrix[r, c] < 16))
-                                g.DrawLine(pens[2], r, imageHt - c, r + 1, imageHt - c);
-                            else
-                                if ((this.SuperimposedMatrix[r, c] > 16.0) && (this.SuperimposedMatrix[r, c] < 20))
-                                    g.DrawLine(pens[3], r, imageHt - c, r + 1, imageHt - c);
-                                else
-                                    if ((this.SuperimposedMatrix[r, c] > 20.0) && (this.SuperimposedMatrix[r, c] < 24))
-                                        g.DrawLine(pens[4], r, imageHt - c, r + 1, imageHt - c);
-                                    else
-                                        if ((this.SuperimposedMatrix[r, c] > 24.0) && (this.SuperimposedMatrix[r, c] < 28))
-                                            g.DrawLine(pens[5], r, imageHt - c, r + 1, imageHt - c);
-                                        else
-                                            if ((this.SuperimposedMatrix[r, c] > 28.0) && (this.SuperimposedMatrix[r, c] < 32))
-                                                g.DrawLine(pens[6], r, imageHt - c, r + 1, imageHt - c);
+                    if ((this.SuperimposedMatrix[r, c] > bounds[1]) && (this.SuperimposedMatrix[r, c] <= bounds[2])) pen = pens[1];
+                    else
+                    if ((this.SuperimposedMatrix[r, c] > bounds[2]) && (this.SuperimposedMatrix[r, c] <= bounds[3])) pen = pens[2];
+                    else
+                    if ((this.SuperimposedMatrix[r, c] > bounds[3]) && (this.SuperimposedMatrix[r, c] <= bounds[4])) pen = pens[3];
+                    else
+                    if ((this.SuperimposedMatrix[r, c] > bounds[4]) && (this.SuperimposedMatrix[r, c] <= bounds[5])) pen = pens[4];
+                    else
+                    if ((this.SuperimposedMatrix[r, c] > bounds[5]) && (this.SuperimposedMatrix[r, c] <= bounds[6])) pen = pens[5];
+                    else
+                    if ((this.SuperimposedMatrix[r, c] > bounds[6]) && (this.SuperimposedMatrix[r, c] <= bounds[7])) pen = pens[6];
+
+                    g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
                 }
             }
 

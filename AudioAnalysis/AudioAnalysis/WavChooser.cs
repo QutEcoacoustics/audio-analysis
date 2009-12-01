@@ -66,12 +66,12 @@ namespace AudioAnalysis
 
             //ST BEES
             wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
-            wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
+            //wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
             //wavFileName = "West_Knoll_St_Bees_FarDistantKoala_20080919-000000";
             //wavFileName = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
-            //wavFileName = "West_Knoll_St_Bees_KoalaBellowFaint_20080919-010000";
+            wavFileName = "West_Knoll_St_Bees_KoalaBellowFaint_20080919-010000";
             //wavFileName = "West_Knoll_St_Bees_FlyBirdCicada_20080917-170000";
             //wavFileName = "West_Knoll_St_Bees_Currawong1_20080923-120000";
             //wavFileName = "West_Knoll_St_Bees_Currawong2_20080921-053000";
