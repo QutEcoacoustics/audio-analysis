@@ -14,8 +14,6 @@ smooth_par = 3;
 ctmp = colormap(gray); c = flipud(ctmp); % for greyscale plotting
 
 
-
-
 %%% IMAGE PROCESSING %%%
 % wiener filtering 
 w = 5; %window length of wxw window used in wiener filtering
@@ -123,16 +121,9 @@ end
 peaksI3_v(peaksI3_v>1)=1;
 % showImage(c,peaksI3_v,T,F,4)
 
-
 % combine horizontal and vertical peak tracks
 peaksI3 = peaksI3_h + peaksI3_v;
 peaksI3(peaksI3>1)=1;
-
-
-% dilate area around peaks and fill tracks and neighbouring regions with I3 image data
-dilateI3 = peaksI3;
-se = strel('square',3);
-dilateI3 = imdilate(dilateI3,se);
 
 % discard small tracks
 L = bwlabel(peaksI3,8);
@@ -147,6 +138,10 @@ for ll=1:max(L(:))
 %     pause
 end
 
+% dilate area around peaks and fill tracks and neighbouring regions with I3 image data
+dilateI3 = peaksI3;
+se = strel('square',3);
+dilateI3 = imdilate(dilateI3,se);
 
 peaksI3(dilateI3==1) = I3(dilateI3==1);
 peaksI3(peaksI3<peaks_int_thresh) = 0;
