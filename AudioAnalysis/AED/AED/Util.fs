@@ -34,6 +34,10 @@ let array2Dfold f z (a:'a[,]) =
      done
      x
 
+let mTranspose = Math.Matrix.transpose
+
+let mapByCol f (m:matrix) = seq{m.NumCols-1..-1..0} |> Seq.fold (fun z j -> f (m.Column j) ::z) [] |> Math.Vector.Generic.ofList
+
 // Assume matricies m,n are exactly same dimensions
 let matrixMap2 f (m:matrix) (n:matrix) = Math.Matrix.init m.NumRows m.NumCols (fun i j -> f m.[i,j] n.[i,j])
 

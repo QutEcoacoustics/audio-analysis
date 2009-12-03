@@ -37,3 +37,9 @@ let testHorizontalTracks () =
     let peaksI3_h = horizontalTracks v |> colIndicesToMatrix (Array.length (fst v.[0])) v.Length
     let peaksI3_hm = loadTestFile2 "SPT" "peaksI3_h.csv" 
     Assert.True (matrixFloatEquals peaksI3_hm peaksI3_h 0.0001)
+    
+[<Fact>]
+let testAllPeaks () =
+    let peaksI3 = loadTestFile2 "SPT" "I3.csv" |> allPeaks |> Math.Matrix.map (fun x -> if x = 0.0 then 0.0 else 1.0)
+    let peaksI3m = loadTestFile2 "SPT" "peaksI3.csv" 
+    Assert.True (matrixFloatEquals peaksI3m peaksI3 0.0001)
