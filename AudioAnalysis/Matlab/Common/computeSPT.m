@@ -65,7 +65,7 @@ for ii=1:N-1
         if ~isempty(locs_keep1)
             [tmp,locs_keep2] = max(pks_r(locs_keep1));
             peaksI3_h(locs_l(pp),ii) = peaksI3_h(locs_l(pp),ii) + 1;
-            peaksI3_h(locs_r(locs_keep2),ii+1) = peaksI3_h(locs_r(locs_keep2),ii+1) + 1;
+            peaksI3_h(locs_r(locs_keep1(locs_keep2)),ii+1) = peaksI3_h(locs_r(locs_keep1(locs_keep2)),ii+1) + 1;
         end
         
     end
@@ -74,7 +74,7 @@ for ii=1:N-1
 end
 peaksI3_h(peaksI3_h>1)=1;
 % showImage(c,peaksI3_h,T,F,3)
-
+% csvout('peaksI3_h.csv', peaksI3_h)
 
 % look for peaks in y direction
 I3r = zeros(M,N);
@@ -111,7 +111,7 @@ for jj=1:M-1
         if ~isempty(locs_keep1)
             [tmp,locs_keep2] = max(pks_t(locs_keep1));
             peaksI3_v(jj,locs_b(pp)) = peaksI3_v(jj,locs_b(pp)) + 1;
-            peaksI3_v(jj+1,locs_t(locs_keep2)) = peaksI3_v(jj+1,locs_t(locs_keep2)) + 1;
+            peaksI3_v(jj+1,locs_t(locs_keep1(locs_keep2))) = peaksI3_v(jj+1,locs_t(locs_keep1(locs_keep2))) + 1;
         end
         
     end
@@ -120,6 +120,7 @@ for jj=1:M-1
 end
 peaksI3_v(peaksI3_v>1)=1;
 % showImage(c,peaksI3_v,T,F,4)
+% csvout('peaksI3_v.csv', peaksI3_v)
 
 % combine horizontal and vertical peak tracks
 peaksI3 = peaksI3_h + peaksI3_v;
