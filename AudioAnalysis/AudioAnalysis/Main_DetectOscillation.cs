@@ -20,16 +20,23 @@ namespace AudioAnalysis
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            string wavDirName; string wavFileName;
-            AudioRecording recording;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+
+            //string wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            string wavDirName  = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
+            string wavFileName = "HoneymoonBay_StBees_20080905-001000";
+
+            string wavPath = wavDirName + wavFileName + ".wav";
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             //#######################################################################################################
 
             string appConfigPath = "";
             //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
 
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\Output\OscillationDetectionImages\"; //default 
+            //string outputFolder = @"C:\SensorNetworks\Output\OscillationDetectionImages\"; //default 
+            string outputFolder = wavDirName;     //default 
+            string opPath = outputFolder + wavFileName + ".png";
+            string labelsPath = outputFolder+ "KoalaTestData.txt";
 
 
 
@@ -54,8 +61,11 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("output folder =" + outputFolder);
             Console.WriteLine();
 
+
+
+
             var config = new SonogramConfig();//default values config
-            config.WindowOverlap  = 0.75; //default=0.50;   use 0.75 for koalas
+            config.WindowOverlap  = 0.75; //default=0.50;   use 0.75 for koalas //#### IMPORTANT PARAMETER
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
             Console.WriteLine("\nSIGNAL PARAMETERS");
@@ -75,42 +85,91 @@ namespace AudioAnalysis
 
             Console.WriteLine("\nENERGY PARAMETERS");
             Console.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
-            Console.WriteLine("Minimum Log Energy       =" + sonogram.SnrFrames.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
-            Console.WriteLine("Maximum Log Energy       =" + sonogram.SnrFrames.LogEnergy.Max().ToString("F2"));
             Console.WriteLine("Minimum dB / frame       =" + sonogram.SnrFrames.Min_dB.ToString("F2") + "  (See Note 4)");
             Console.WriteLine("Maximum dB / frame       =" + sonogram.SnrFrames.Max_dB.ToString("F2"));
 
-            Console.WriteLine("\ndB NOISE SUBTRACTION");
-            Console.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFrames.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
-            double noiseSpan = sonogram.SnrFrames.NoiseRange;
-            Console.WriteLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
-            Console.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFrames.Snr.ToString("F2") + " dB   (See Note 7)");
 
-            //DETECT OSCILLATIONS
+            //=============================================================================
+            //DETECT OSCILLATIONS - SET MAIN PARAMETERS
             int minHz = 100;  //koalas range = 100-2000
             int maxHz = 2000;
-            Double[,] hits = DetectOscillations(sonogram.Data, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth);
-            hits = RemoveIsolatedOscillations(hits);
+            double dctDuration  = 0.25;  //duration of DCT in seconds 
+            int dctIndex        = 9;   //bounding index i.e. ignore oscillations with lower freq
+            double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
+            //=============================================================================
 
-            //EXTRACT SCORES AND ACOUSTIC EVENTS
-            double[] scores = GetScores(hits, minHz, maxHz, sonogram.FBinWidth);
-            double threshold = 0.2;
-            List<AcousticEvent> events = ConvertScores2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, threshold);
+            Console.WriteLine("\nDCT: IMPORTANT PARAMETERS");
+            Console.WriteLine("Duration={0}  #frames={1}  Search for oscillations>{2}   Frame overlap>={3}",
+                              dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), dctIndex, config.WindowOverlap);
 
-            //DISPLAY HITS ON SONOGRAM
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, threshold));
-            image.AddSuperimposedMatrix(hits); //displays hits
-            image.AddEvents(events);           //displays events
-            image.Save(outputFolder + wavFileName + ".png");
+            //DETECT EVENTS USING OSCILLATION DETECTION
+            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath);
+            List<AcousticEvent> events;
+            Main_DetectOscillation.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctIndex, minAmplitude, opPath, out events);
+
+            //CALCULATE ACCURACY
+            int tp, fp, fn;
+            double precision, recall, accuracy;
+            AcousticEvent.CalculateAccuracy(events, labels, out tp, out fp, out fn, out precision, out recall, out accuracy);
+            Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
+            Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
+
+
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }//end Main
+
+
+
+
+
+
+
+
+
+
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="minHz">freq band to search</param>
+        /// <param name="maxHz">freq band to search</param>
+        /// <param name="dctDuration">duration of DCT in seconds</param>
+        /// <param name="DCTindex"></param>
+        /// <param name="minAmplitude"></param>
+        /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
+        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
+                                   double dctDuration, int dctIndex, double minAmplitude, string opPath, out List<AcousticEvent> events)
+        {
+
+            //DETECT OSCILLATIONS
+            int minBin    = (int)(minHz / sonogram.FBinWidth);
+            int maxBin    = (int)(maxHz / sonogram.FBinWidth);
+            int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
+
+            Double[,] hits = DetectOscillations(sonogram.Data, minBin, maxBin, dctLength, dctIndex, minAmplitude);
+            hits = RemoveIsolatedOscillations(hits);
+
+            //EXTRACT SCORES AND ACOUSTIC EVENTS
+            double[] scores = GetScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            double threshold = 0.2; //USE THIS TO DETERMINE FP / FN trade-off.
+            events = ConvertScores2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, threshold);
+
+            //DISPLAY HITS ON SONOGRAM
+            if (opPath == null) return;
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, threshold));
+            image.AddSuperimposedMatrix(hits); //displays hits
+            image.AddEvents(events);           //displays events
+            image.Save(opPath);
+        }
 
 
         /// <summary>
@@ -129,25 +188,16 @@ namespace AudioAnalysis
         /// <param name="framesPerSec">time scale of spectrogram</param>
         /// <param name="freqBinWidth">freq scale of spectrogram</param>
         /// <returns></returns>
-        public static Double[,] DetectOscillations(Double[,] matrix, int minHz, int maxHz, double framesPerSec, double freqBinWidth)
+        public static Double[,] DetectOscillations(Double[,] matrix, int minBin, int maxBin, int dctLength, int DCTindex, double minAmplitude)
         {
-            double dctDuration  = 0.25;  //duration of DCT in seconds 
-            int DCTindex        = 9;   //bounding index i.e. ignore oscillations with lower freq
-            double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
-            //=============================================================================
-
-
-            int DCTLength  = (int)Math.Round(framesPerSec * dctDuration);
-            int coeffCount = DCTLength;
+            int coeffCount = dctLength;
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             Double[,] hits = new Double[rows, cols];
             //matrix = ImageTools.WienerFilter(matrix, 3);// DO NOT USE - SMUDGES EVERYTHING
-            int minBin = (int)(minHz / freqBinWidth);
-            int maxBin = (int)(maxHz / freqBinWidth);
 
 
-            double[,] cosines = Speech.Cosines(DCTLength, coeffCount + 1); //set up the cosine coefficients
+            double[,] cosines = Speech.Cosines(dctLength, coeffCount + 1); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
@@ -160,18 +210,18 @@ namespace AudioAnalysis
 
             for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
             {
-                for (int r = 0; r < rows - DCTLength; r++)
+                for (int r = 0; r < rows - dctLength; r++)
                 {
-                    var array = new double[DCTLength];
+                    var array = new double[dctLength];
                     //accumulate J columns of values
-                    for (int i = 0; i < DCTLength; i++) 
+                    for (int i = 0; i < dctLength; i++) 
                         for (int j = 0; j < 5; j++) array[i] += matrix[r + i, c + j];
 
                     array = DataTools.SubtractMean(array);
                //     DataTools.writeBarGraph(array);
 
                     double[] dct = Speech.DCT(array, cosines);
-                    for (int i = 0; i < DCTLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                     dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);
                     //dct = DataTools.normalise(dct); //another option to normalise
@@ -180,8 +230,8 @@ namespace AudioAnalysis
               //      DataTools.writeBarGraph(dct);
 
                     //mark DCT location if max freq is correct
-                    if ((maxIndex >= DCTindex) && (maxIndex < DCTLength) && (dct[maxIndex] > minAmplitude))
-                        for (int i = 0; i < DCTLength; i++) hits[r + i, c] = maxIndex; 
+                    if ((maxIndex >= DCTindex) && (maxIndex < dctLength) && (dct[maxIndex] > minAmplitude))
+                        for (int i = 0; i < dctLength; i++) hits[r + i, c] = maxIndex; 
                     r += 5; //skip rows
                 }
                 c++; //do alternate columns
