@@ -31,9 +31,9 @@ I3c = zeros(M,N);
 for ii=1:N
     
     vec_M = smooth(I3(:,ii),smooth_par);
-    [pks_M,locs_M] = findpeaks(vec_M);
-    % keep peaks that are greater than peaks_int_thresh
-    I3c(locs_M(pks_M>=peaks_int_thresh),ii) = pks_M(pks_M>=peaks_int_thresh);
+    vec_M(vec_M<peaks_int_thresh)=0;
+    locs_M = myfindpeaks(vec_M);
+    I3c(locs_M,ii) = vec_M(locs_M);
 end
 % showImage(c,I3c,T,F,2)
 % csvout('I3c.csv', I3c)
@@ -137,6 +137,11 @@ dilateI3 = imdilate(dilateI3,se);
 peaksI3(dilateI3==1) = I3(dilateI3==1);
 peaksI3(peaksI3<peaks_int_thresh) = 0;
 % showImage(c,peaksI3,T,F,5)
+end
+
+function loc = myfindpeaks(v)
+    s=v(2:end)-v(1:end-1);
+    loc =find((s(1:end-1)>0) & (s(2:end)<0)) + 1;
 end
 
 function csvout(name, M)
