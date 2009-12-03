@@ -157,6 +157,7 @@ namespace AudioAnalysis
                     if ((this.SuperimposedMatrix[r, c] > bounds[5]) && (this.SuperimposedMatrix[r, c] <= bounds[6])) pen = pens[5];
                     else
                     if ((this.SuperimposedMatrix[r, c] > bounds[6]) && (this.SuperimposedMatrix[r, c] <= bounds[7])) pen = pens[6];
+                    else pen = new Pen(Color.Brown);
 
                     g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
                 }
