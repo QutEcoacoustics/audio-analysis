@@ -15,8 +15,8 @@ let testVerticalPeaks () =
 [<Fact>]
 let testIndexMaxNeighbour () =
     let m = Math.Matrix.ofList [[9.0; 10.0; 0.0]; [0.0; 11.0; 3.0]]
-    Assert.Equal(None, indexMaxNeighbour 0 Set.empty m 1)
-    Assert.Equal(Some 1, indexMaxNeighbour 0 (Set.ofList [0; 1]) m 1)
+    Assert.Equal(None, indexMaxNeighbour 0 ([|10.0; 11.0|], Set.empty))
+    Assert.Equal(Some 1, indexMaxNeighbour 0 ([|10.0; 11.0|], Set.ofList [0; 1]))
     
 (* TODO Try FsCheck. The following properties should hold
 0 <= i < m.NumRows
@@ -26,8 +26,14 @@ indexMaxNeighbour i ni m nj == None ==> Set.isEmpty ni || forall x in ni |i-x| >
 *)  
 
 [<Fact>]
-let testVerticalTracks () =
-    let m = Math.Matrix.ofList [[9.0; 10.0; 0.0]; [0.0; 11.0; 3.0]]
-    Assert.Equal(List.replicate 3 Set.empty, verticalTracks m (List.replicate 3 Set.empty))
-    Assert.Equal([Set.ofList [0]; Set.ofList [1]; Set.empty], verticalTracks m [Set.ofList [0]; Set.ofList [0; 1]; Set.empty])
+let testHorizontalTracksQuick () =
+    Assert.Equal(List.replicate 3 Set.empty, horizontalTracks (List.replicate 3 ([|10.0; 11.0|], Set.empty)))
+    Assert.Equal([Set.ofList [0]; Set.ofList [1]; Set.empty],
+        horizontalTracks [([|9.0; 0.0|], Set.ofList [0]); ([|10.0; 11.0|], Set.ofList [0; 1]); ([|10.0; 11.0|], Set.empty)])
     
+[<Fact>]
+let testHorizontalTracks () =
+    let v = loadTestFile2 "SPT" "I3.csv" |> verticalPeaks 9.0
+    let peaksI3_h = horizontalTracks v |> colIndicesToMatrix (Array.length (fst v.[0])) v.Length
+    let peaksI3_hm = loadTestFile2 "SPT" "peaksI3_h.csv" 
+    Assert.True (matrixFloatEquals peaksI3_hm peaksI3_h 0.0001)
