@@ -7,7 +7,6 @@ function [peaksI3,peaksI3_h,peaksI3_v] = computeSPT(I1,F,T,peaks_int_thresh)
 % bmp 20091103
 
 
-
 % PARAMETERS
 peaks_dist_thresh = 2;
 smooth_par = 3;
@@ -18,7 +17,6 @@ ctmp = colormap(gray); c = flipud(ctmp); % for greyscale plotting
 % wiener filtering 
 w = 5; %window length of wxw window used in wiener filtering
 I2 = wiener2(I1, [w w]);
-
 
 % remove subband noise
 I3 = withoutSubbandModeIntensities(I2);
@@ -32,15 +30,10 @@ I3 = withoutSubbandModeIntensities(I2);
 I3c = zeros(M,N);
 for ii=1:N
     
-    % do a smooth 
     vec_M = smooth(I3(:,ii),smooth_par);
-    
-    % find peaks
     [pks_M,locs_M] = findpeaks(vec_M);
-    
     % keep peaks that are greater than peaks_int_thresh
     I3c(locs_M(pks_M>=peaks_int_thresh),ii) = pks_M(pks_M>=peaks_int_thresh);
-    
 end
 % showImage(c,I3c,T,F,2)
 % csvout('I3c.csv', I3c)
@@ -67,9 +60,7 @@ for ii=1:N-1
             peaksI3_h(locs_l(pp),ii) = peaksI3_h(locs_l(pp),ii) + 1;
             peaksI3_h(locs_r(locs_keep1(locs_keep2)),ii+1) = peaksI3_h(locs_r(locs_keep1(locs_keep2)),ii+1) + 1;
         end
-        
     end
-    
 %     pause
 end
 peaksI3_h(peaksI3_h>1)=1;
@@ -113,18 +104,16 @@ for jj=1:M-1
             peaksI3_v(jj,locs_b(pp)) = peaksI3_v(jj,locs_b(pp)) + 1;
             peaksI3_v(jj+1,locs_t(locs_keep1(locs_keep2))) = peaksI3_v(jj+1,locs_t(locs_keep1(locs_keep2))) + 1;
         end
-        
     end
-    
 %     pause
 end
 peaksI3_v(peaksI3_v>1)=1;
 % showImage(c,peaksI3_v,T,F,4)
-% csvout('peaksI3_v.csv', peaksI3_v)
 
 % combine horizontal and vertical peak tracks
 peaksI3 = peaksI3_h + peaksI3_v;
 peaksI3(peaksI3>1)=1;
+% csvout('peaksI3.csv', peaksI3)
 
 % discard small tracks
 L = bwlabel(peaksI3,8);
@@ -138,6 +127,7 @@ for ll=1:max(L(:))
     end
 %     pause
 end
+% csvout('peaksI3_2.csv', peaksI3)
 
 % dilate area around peaks and fill tracks and neighbouring regions with I3 image data
 dilateI3 = peaksI3;
