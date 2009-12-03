@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 using TowseyLib;
+using System.Text.RegularExpressions;
 
 namespace AudioAnalysis
 {
@@ -305,6 +307,100 @@ namespace AudioAnalysis
             }
             return events;
         } // end method GetEventsInFile(List<AcousticEvent> eventList, string fileName)
+
+
+
+        /// <summary>
+        /// Reads a text file containing a list of acoustic events (one per line) and returns list of events.
+        /// The file must contain a header.
+        /// The format is tab separated words as follows:
+        /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end; 
+        /// words[5]=tag; words[6]=quality; words[7]=intensity 
+        /// </summary>
+        /// <param name="path">the file path</param>
+        /// <returns>a list of Acoustic events</returns>
+        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path)
+        {
+            var events = new List<AcousticEvent>();
+            List<string> lines = FileTools.ReadTextFile(path);
+            int minFreq = 0; //dummy value - never to be used
+            int maxfreq = 0; //dummy value - never to be used
+            Console.WriteLine("\nList of labelled events in file: " + Path.GetFileName(path));
+            Console.WriteLine(" #  tag \tstart  ...   end  intensity quality  file");
+            for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
+            {
+                string[] words = Regex.Split(lines[i], @"\t");
+                string file = words[0];
+                string date = words[1];
+                string time = words[2];
+
+                double start = Double.Parse(words[3]);
+                double end = Double.Parse(words[4]);
+                string tag = words[5];
+                int quality = Int32.Parse(words[6]);
+                int intensity = Int32.Parse(words[7]);
+                Console.WriteLine("{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}", i, tag, start, end, intensity, quality, file);
+                //Console.WriteLine(("").PadRight(24, '-'));
+
+                var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
+                ae.Score = intensity;
+                ae.Name = tag;
+                ae.SourceFile = file;
+                events.Add(ae);
+            }
+            return events;
+        } //end method GetLabelsInFile(List<string> labels, string file)
+
+
+
+
+
+        public static void CalculateAccuracy(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
+                                         out double precision, out double recall, out double accuracy)
+        {
+            //init  values
+            tp = 0;
+            fp = 0;
+            fn = 0;
+            //header
+            string space = " ";
+            int count = 0;
+            Console.WriteLine("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,1}", space);
+            foreach (AcousticEvent ae in results)
+            {
+                count++;
+                double end = ae.StartTime + ae.Duration;
+                var events = AcousticEvent.GetEventsInFile(labels, ae.SourceFile);//get only events in same file as ae
+                AcousticEvent overlapEvent = ae.OverlapsEventInList(events);
+                if (overlapEvent == null)
+                {
+                    fp++;
+                    Console.WriteLine("False positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                }
+                else
+                {
+                    tp++;
+                    overlapEvent.Tag = true; //tag because later need to determine fn
+                    Console.WriteLine("True  positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                }
+            }//end of looking for true and false positives
+
+            //now calculate the fn. These are the labelled events not tagged in previous search.
+            foreach (AcousticEvent ae in labels)
+                if (ae.Tag == false)
+                {
+                    fn++;
+                    Console.WriteLine("False NEGative:         {0:f1} ... {1:f1}", ae.StartTime, ae.EndTime);
+                }
+
+            if (((tp + fp) == 0)) precision = 0.0;
+            else precision = tp / (double)(tp + fp);
+            if (((tp + fn) == 0)) recall = 0.0;
+            else recall = tp / (double)(tp + fn);
+            accuracy = (precision + recall) / (float)2;
+        } //end method
+
+
 
     }
 }
