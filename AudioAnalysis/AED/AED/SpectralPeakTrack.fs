@@ -1,5 +1,6 @@
 ﻿module QutSensors.AudioAnalysis.AED.SpectralPeakTrack    
 
+open GetAcousticEvents
 open Matlab
 open Util
 
@@ -34,6 +35,10 @@ let allPeaks (m:matrix) =
     let f = horizontalTracks << verticalPeaks 9.0
     colIndicesToMatrix m.NumRows m.NumCols (f m) + (mTranspose m |> f |> colIndicesToMatrix m.NumCols m.NumRows |> mTranspose)
     
-let peakTracks m =
-    let ps = allPeaks m
-    ()
+let removeSmall m =
+    let aes = getAcousticEvents m |> List.filter (fun ae -> ae.Elements.Count < 15)
+    let m' = Math.Matrix.copy m
+    List.iter (fun ae -> Set.iter (fun (i,j) -> m'.[i,j] <- 0.0) ae.Elements) aes
+    m'
+    
+let peakTracks m = allPeaks m |> removeSmall
