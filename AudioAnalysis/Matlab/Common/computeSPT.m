@@ -29,10 +29,9 @@ I3 = withoutSubbandModeIntensities(I2);
 % look for peaks in x direction
 I3c = zeros(M,N);
 for ii=1:N
-    
     vec_M = smooth(I3(:,ii),smooth_par);
     vec_M(vec_M<peaks_int_thresh)=0;
-    locs_M = myfindpeaks(vec_M);
+    locs_M = fastfindpeaks(vec_M);
     I3c(locs_M,ii) = vec_M(locs_M);
 end
 % showImage(c,I3c,T,F,2)
@@ -71,15 +70,10 @@ peaksI3_h(peaksI3_h>1)=1;
 I3r = zeros(M,N);
 for jj=1:M
     
-    % do a smooth 
     vec_N = smooth(I3(jj,:),smooth_par);
-    
-    % find peaks
-    [pks_N,locs_N] = findpeaks(vec_N);
-    
-    % keep peaks that are greater than peaks_int_thresh
-    I3r(jj,locs_N(pks_N>=peaks_int_thresh)) = pks_N(pks_N>=peaks_int_thresh);
-    
+    vec_N(vec_N<peaks_int_thresh)=0;
+    locs_N = fastfindpeaks(vec_N);
+    I3r(jj,locs_N) = vec_N(locs_N); 
 end
 
 peaksI3_v = zeros(size(I3)); % init
@@ -139,9 +133,9 @@ peaksI3(peaksI3<peaks_int_thresh) = 0;
 % showImage(c,peaksI3,T,F,5)
 end
 
-function loc = myfindpeaks(v)
+function loc = fastfindpeaks(v)
     s=v(2:end)-v(1:end-1);
-    loc =find((s(1:end-1)>0) & (s(2:end)<0)) + 1;
+    loc=find((s(1:end-1)>0) & (s(2:end)<0)) + 1;
 end
 
 function csvout(name, M)
