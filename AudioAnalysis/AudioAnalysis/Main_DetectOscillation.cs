@@ -14,7 +14,7 @@ namespace AudioAnalysis
         public static void Main(string[] args)
         {
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("DETECTING OSCILLATIONS, I.E. MALE KOALA GROWL, IN RECORDING\n");
+            Console.WriteLine("DETECTING OSCILLATIONS, I.E. MALE KOALAS, HONEYEATERS etc IN A RECORDING\n");
 
             Log.Verbosity = 1;
 
@@ -29,9 +29,7 @@ namespace AudioAnalysis
             //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
 
             string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\Output\"; //default 
-            //min and max of required sub-band
-            //int minHz = 0; int maxHz = 8000;
+            string outputFolder = @"C:\SensorNetworks\Output\OscillationDetectionImages\"; //default 
 
 
 
@@ -57,9 +55,7 @@ namespace AudioAnalysis
             Console.WriteLine();
 
             var config = new SonogramConfig();//default values config
-            //config.MinFreqBand = minHz; //want to show the full bandwidth spectrum
-            //config.MaxFreqBand = maxHz;
-            config.WindowOverlap = 0.75;
+            config.WindowOverlap  = 0.75; //default=0.50;   use 0.75 for koalas
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
             Console.WriteLine("\nSIGNAL PARAMETERS");
@@ -91,8 +87,8 @@ namespace AudioAnalysis
             Console.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFrames.Snr.ToString("F2") + " dB   (See Note 7)");
 
             //DETECT OSCILLATIONS
-            minHz = 100;
-            maxHz = 2000;
+            int minHz = 100;  //koalas range = 100-2000
+            int maxHz = 2000;
             Double[,] hits = DetectOscillations(sonogram.Data, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth);
             hits = RemoveIsolatedOscillations(hits);
 
@@ -135,12 +131,13 @@ namespace AudioAnalysis
         /// <returns></returns>
         public static Double[,] DetectOscillations(Double[,] matrix, int minHz, int maxHz, double framesPerSec, double freqBinWidth)
         {
-            int DCTLength       = (int)(framesPerSec / 4); //duration of DCT = 1/4 second 
+            double dctDuration  = 0.25;  //duration of DCT in seconds 
             int DCTindex        = 9;   //bounding index i.e. ignore oscillations with lower freq
-            double minAmplitude = 0.6; //minimum acceptable value of a DCT coefficient
+            double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
             //=============================================================================
 
 
+            int DCTLength  = (int)Math.Round(framesPerSec * dctDuration);
             int coeffCount = DCTLength;
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
