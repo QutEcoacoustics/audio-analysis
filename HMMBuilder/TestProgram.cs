@@ -141,7 +141,7 @@ namespace HMMBuilder
             image_mt.AddTrack(Image_Track.GetScoreTrack(finalScores, 0.0, 1.0, thresholdFraction));
 
 
-            string fName = Path.GetFileNameWithoutExtension(testWavFile);
+            string fName  = Path.GetFileNameWithoutExtension(testWavFile);
             string opFile = htkConfig.ResultsDir + "\\" + fName + ".png";
             Console.WriteLine("\nSonogram will be written to file: " + opFile);
             image_mt.Save(opFile);

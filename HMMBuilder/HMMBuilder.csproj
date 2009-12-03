@@ -35,9 +35,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AudioAnalysis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <ExecutableExtension>.exe</ExecutableExtension>
-    </Reference>
+    <Reference Include="AudioAnalysis, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="AudioTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\AudioAnalysis\AudioAnalysis\bin\Debug\AudioTools.dll</HintPath>
