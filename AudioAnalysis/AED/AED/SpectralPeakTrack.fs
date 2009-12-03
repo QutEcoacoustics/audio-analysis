@@ -1,9 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.SpectralPeakTrack    
 
 open Matlab
-
-// TODO move to Util
-let mapByCol f (m:matrix) = seq{m.NumCols-1..-1..0} |> Seq.fold (fun z j -> f (m.Column j) ::z) [] |> Math.Vector.Generic.ofList
+open Util
 
 let verticalPeaks t (m:matrix) =
     let f c =
@@ -31,8 +29,11 @@ let colIndicesToMatrix m n (ps:int Set seq) =
         let m = Math.Matrix.zero m n
         Seq.iteri (fun j -> Set.iter (fun i -> m.[i,j] <- 1.0)) ps
         m
-        
+    
+let allPeaks (m:matrix) =
+    let f = horizontalTracks << verticalPeaks 9.0
+    colIndicesToMatrix m.NumRows m.NumCols (f m) + (mTranspose m |> f |> colIndicesToMatrix m.NumCols m.NumRows |> mTranspose)
+    
 let peakTracks m =
-    let vp = verticalPeaks 9.0 m
-    let vt = horizontalTracks vp
+    let ps = allPeaks m
     ()
