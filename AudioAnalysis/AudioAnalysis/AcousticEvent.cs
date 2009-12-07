@@ -162,10 +162,8 @@ namespace AudioAnalysis
         }
 
         /// <summary>
-        /// Returns the first event in the passed list which overlaps with this one.
+        /// Returns the first event in the passed list which overlaps with this one IN THE SAME RECORDING.
         /// If no event overlaps return null.
-        /// IMPORTANT!!! This method assumes that all events in the passed list are from the same recording/file
-        /// as this one.
         /// </summary>
         /// <param name="events"></param>
         /// <returns></returns>
@@ -173,7 +171,7 @@ namespace AudioAnalysis
         {
             foreach (AcousticEvent ae in events)
             {
-                if (this.Overlaps(ae)) return ae;
+                if ((this.SourceFile.Equals(ae.SourceFile))&&(this.Overlaps(ae))) return ae;
             }
             return null;
         }
@@ -343,9 +341,11 @@ namespace AudioAnalysis
                 //Console.WriteLine(("").PadRight(24, '-'));
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
-                ae.Score = intensity;
-                ae.Name = tag;
+                ae.Score      = intensity;
+                ae.Name       = tag;
                 ae.SourceFile = file;
+                ae.Intensity  = intensity;
+                ae.Quality    = quality;
                 events.Add(ae);
             }
             return events;
@@ -365,12 +365,14 @@ namespace AudioAnalysis
             //header
             string space = " ";
             int count = 0;
+            List<string> sourceFiles = new List<string>();
             Console.WriteLine("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,1}", space);
             foreach (AcousticEvent ae in results)
             {
                 count++;
                 double end = ae.StartTime + ae.Duration;
                 var events = AcousticEvent.GetEventsInFile(labels, ae.SourceFile);//get only events in same file as ae
+                sourceFiles.Add(ae.SourceFile); //keep track of source files that the detected events come from
                 AcousticEvent overlapEvent = ae.OverlapsEventInList(events);
                 if (overlapEvent == null)
                 {
@@ -387,11 +389,15 @@ namespace AudioAnalysis
 
             //now calculate the fn. These are the labelled events not tagged in previous search.
             foreach (AcousticEvent ae in labels)
+            {
+                if (! sourceFiles.Contains(ae.SourceFile)) continue;
                 if (ae.Tag == false)
                 {
                     fn++;
-                    Console.WriteLine("False NEGative:         {0:f1} ... {1:f1}", ae.StartTime, ae.EndTime);
+                    Console.WriteLine("False NEGative:                {0:f1} ... {1:f1}  intensity={2} quality={3}", 
+                                              ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality);
                 }
+            }
 
             if (((tp + fp) == 0)) precision = 0.0;
             else precision = tp / (double)(tp + fp);
