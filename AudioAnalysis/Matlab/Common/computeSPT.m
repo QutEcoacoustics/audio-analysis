@@ -131,6 +131,7 @@ dilateI3 = imdilate(dilateI3,se);
 peaksI3(dilateI3==1) = I3(dilateI3==1);
 peaksI3(peaksI3<peaks_int_thresh) = 0;
 % showImage(c,peaksI3,T,F,5)
+%csvout('peaksI3_3.csv', peaksI3)
 end
 
 function loc = fastfindpeaks(v)

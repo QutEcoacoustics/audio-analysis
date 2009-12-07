@@ -41,4 +41,17 @@ let removeSmall m =
     List.iter (fun ae -> Set.iter (fun (i,j) -> m'.[i,j] <- 0.0) ae.Elements) aes
     m'
     
-let peakTracks m = allPeaks m |> removeSmall
+let dilate t (m:matrix) ps =
+    let m' = Math.Matrix.zero m.NumRows m.NumCols
+    let f i j x =
+        if x = 0.0 then () else
+            let (si, sj, li, lj) = neighbourhoodBounds 3 (m.NumRows) (m.NumCols) i j
+            for ic = si to (si + li - 1) do
+                for jc = sj to (sj + lj - 1) do
+                    if m.[ic,jc] >= t then m'.[ic,jc] <- m.[ic,jc] else ()
+                done
+            done
+    Array2D.iteri f (Math.Matrix.toArray2D ps)
+    m'
+    
+let peakTracks m = allPeaks m |> removeSmall |> dilate 9.0 m
