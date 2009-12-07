@@ -40,7 +40,7 @@ let testHorizontalTracks () =
     
 [<Fact>]
 let testAllPeaks () =
-    let peaksI3 = loadTestFile2 "SPT" "I3.csv" |> allPeaks |> Math.Matrix.map (fun x -> if x = 0.0 then 0.0 else 1.0)
+    let peaksI3 = loadTestFile2 "SPT" "I3.csv" |> allPeaks 9.0 |> Math.Matrix.map (fun x -> if x = 0.0 then 0.0 else 1.0)
     let peaksI3m = loadTestFile2 "SPT" "peaksI3.csv" 
     Assert.True (matrixFloatEquals peaksI3m peaksI3 0.0001)
     

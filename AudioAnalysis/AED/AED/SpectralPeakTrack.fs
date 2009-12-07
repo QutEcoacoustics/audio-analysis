@@ -31,8 +31,8 @@ let colIndicesToMatrix m n (ps:int Set seq) =
         Seq.iteri (fun j -> Set.iter (fun i -> m.[i,j] <- 1.0)) ps
         m
     
-let allPeaks (m:matrix) =
-    let f = horizontalTracks << verticalPeaks 9.0
+let allPeaks t (m:matrix) =
+    let f = horizontalTracks << verticalPeaks t
     colIndicesToMatrix m.NumRows m.NumCols (f m) + (mTranspose m |> f |> colIndicesToMatrix m.NumCols m.NumRows |> mTranspose)
     
 let removeSmall m =
@@ -54,4 +54,4 @@ let dilate t (m:matrix) ps =
     Array2D.iteri f (Math.Matrix.toArray2D ps)
     m'
     
-let peakTracks m = allPeaks m |> removeSmall |> dilate 9.0 m
+let peakTracks t m = allPeaks t m |> removeSmall |> dilate t m
