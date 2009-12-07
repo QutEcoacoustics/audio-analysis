@@ -54,4 +54,4 @@ let dilate t (m:matrix) ps =
     Array2D.iteri f (Math.Matrix.toArray2D ps)
     m'
     
-let peakTracks t m = allPeaks t m |> removeSmall |> dilate t m
+let spt t a = let m = Math.Matrix.ofArray2D a in allPeaks t m |> removeSmall |> dilate t m |> Math.Matrix.toArray2D
