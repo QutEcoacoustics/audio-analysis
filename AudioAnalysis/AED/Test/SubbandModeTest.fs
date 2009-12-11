@@ -3,13 +3,6 @@
 open Common
 open QutSensors.AudioAnalysis.AED.SubbandMode
 open Xunit
-
-[<Fact>]
-let testRowHist () =
-    let m = Math.Matrix.ofList [[ 1.0; 1.4; 2.2; 2.5; 2.51; 3.1; 3.7 ]]
-    let vIn = Math.Vector.Generic.ofList [(1.0, 3.7)]
-    let vOut = Math.Vector.Generic.ofList [[|2; 2; 3|]]
-    Assert.Equal(rowHist m vIn, vOut)
     
 [<Fact>]
 let testRemoveSubbandModeIntensities2 () =
