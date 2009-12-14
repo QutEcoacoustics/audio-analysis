@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-
 using TowseyLib;
 
 
@@ -11,12 +10,14 @@ namespace AudioAnalysis
 {
     class Main_DetectOscillation
     {
-        public static bool DRAW_SONOGRAMS = true;
+        public static bool DRAW_SONOGRAMS = false;
 
         public static void Main(string[] args)
         {
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Console.WriteLine("DETECTING OSCILLATIONS, I.E. MALE KOALAS, HONEYEATERS etc IN A RECORDING\n");
+            StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now+"\n");
+            sb.Append("DETECTING OSCILLATIONS, I.E. MALE KOALAS, HONEYEATERS etc IN A RECORDING\n");
 
             Log.Verbosity = 1;
 
@@ -26,17 +27,40 @@ namespace AudioAnalysis
             int maxHz = 2000;
             double dctDuration = 0.25;  //duration of DCT in seconds 
             int dctIndex = 9;   //bounding index i.e. ignore oscillations with lower freq
-            double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
+            double minAmplitude   = 0.6;  //minimum acceptable value of a DCT coefficient
+            double scoreThreshold = 0.25; //USE THIS TO DETERMINE FP / FN trade-off.
 
+
+            //string appConfigPath = "";
             //string wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
-            string wavDirName   = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
-            string wavFileName = null; // "HoneymoonBay_StBees_20080905-001000.wav";
-            string labelsFileName = "KoalaTestData.txt";
+            //string wavDirName = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
+            string wavDirName   = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\";
+            string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_OD\"; 
+
+            string wavFileName = null; 
+            //string wavFileName = @"HoneymoonBay_StBees_20080905-001000.wav";
+            //string wavFileName = @"Honeymoon Bay - Bees_20091030-070000.wav";
+
+            //MATCH STRING -search directory for matches to this file name
+            //string fileMatch = "*.wav";
+            //string fileMatch = "Honeymoon Bay - Bees_20091030*.wav";
+            //string fileMatch = "Top Knoll - Bees_20091030-*.wav";
+            string fileMatch = "West Knoll - Bees_20091030-*.wav";
+            //string fileMatch = "West Knoll - Bees_200911*.wav";
+
+            //RESULTS FILE
+            string resultsFile = "West Knoll - Bees_20091030.results.txt";
+            //string resultsFile = "West Knoll - Bees_200911.results.txt";
+            
+            //LABELS FILE
+            //string labelsFileName = "KoalaTestData.txt";
+            //string labelsFileName = "Koala Calls - Honeymoon Bay- 30 October 2009.txt";
+            //string labelsFileName = "Koala Calls - TopKnoll - 30 October 2009.txt";
+            string labelsFileName = "Koala Calls - WestKnoll - 30 October 2009.txt";
+            //string labelsFileName = "Koala Calls - WestKnoll - 1 Nov 2009 - 14 Nov 2009.txt";
 
             //#######################################################################################################
 
-            //string appConfigPath = "";
-            string outputFolder  = wavDirName;     //default 
             if (!Directory.Exists(outputFolder))
             {
                 Console.WriteLine("Cannot find output directory <" + outputFolder + ">");
@@ -48,7 +72,7 @@ namespace AudioAnalysis
             Log.WriteIfVerbose("output folder =" + outputFolder);
 
             //set up file containg label data
-            string labelsPath = outputFolder + labelsFileName;
+            string labelsPath = wavDirName + labelsFileName;
             if (!File.Exists(labelsPath))
             {
                 Console.WriteLine("Cannot find file containing lebel data. <" + labelsPath + ">");
@@ -58,14 +82,18 @@ namespace AudioAnalysis
             }
 
             //GET EVENTS from labels file
+            string labelsText;
             Log.WriteIfVerbose("Labels Path =" + labelsPath);
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath);
+            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
+            sb.Append("Labels Path =" + labelsPath + "\n");
+            sb.Append(labelsText);
+
 
             //set up the array of file paths.
             var fileNames = new List<string>();
             if (wavFileName == null)
             {
-                string[] names = Directory.GetFiles(wavDirName, "*.wav");
+                string[] names = Directory.GetFiles(wavDirName, fileMatch);
 
                 foreach(string name in names) fileNames.Add(name);             
             }
@@ -75,18 +103,22 @@ namespace AudioAnalysis
             }
 
 
-
+            Console.WriteLine("\nNUMBER OF MATCHING FILES IN DIRECTORY = " + fileNames.Count);
+            sb.Append(String.Format("\nNUMBER OF FILES IN DIRECTORY MATCHING REGEX \\\\{0}\\\\  ={1}\n", fileMatch, fileNames.Count));
 
             int tp_total = 0;
             int fp_total = 0; 
             int fn_total = 0;
-
+            int file_count = 0;
             foreach (string wavPath in fileNames)
             {
-                Log.WriteIfVerbose("\n\n###############################################################################################");
+                file_count++;
+                Log.WriteIfVerbose("\n\n"+file_count+" ###############################################################################################");
+                sb.Append("\n\n" + file_count + " ###############################################################################################\n");
                 if (!File.Exists(wavPath))
                 {
-                    Console.WriteLine("Cannot find file <" + wavPath + ">");
+                    Log.WriteIfVerbose("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
+                    sb.Append("WARNING!!  CANNOT FIND FILE <" + wavPath + ">\n");
                     //Console.WriteLine("Press <ENTER> key to exit.");
                     //Console.ReadLine();
                     //System.Environment.Exit(999);
@@ -95,6 +127,7 @@ namespace AudioAnalysis
                 else
                 {
                     Log.WriteIfVerbose("wav File Path =" + wavPath);
+                    sb.Append("wav File Path = <" + wavPath + ">\n");
                 }
 
                 //A: Get recording
@@ -113,14 +146,15 @@ namespace AudioAnalysis
                                    sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                   (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
 
-                Console.WriteLine("DCT   PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
+                Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                   dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), dctIndex, config.WindowOverlap);
                 //=============================================================================
 
                 //C: DETECT EVENTS USING OSCILLATION DETECTION
                 string opPath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
                 List<AcousticEvent> events;
-                Main_DetectOscillation.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctIndex, minAmplitude, opPath, out events);
+                Main_DetectOscillation.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctIndex, minAmplitude, scoreThreshold,
+                                                opPath, out events);
 
 
 
@@ -130,15 +164,23 @@ namespace AudioAnalysis
                 //Log.WriteIfVerbose("\n\n###############################################################################################");
                 int tp, fp, fn;
                 double precision, recall, accuracy;
-                AcousticEvent.CalculateAccuracy(events, labels, out tp, out fp, out fn, out precision, out recall, out accuracy);
-                Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
-                Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
+                string resultsText;
+                AcousticEvent.CalculateAccuracy(events, labels, out tp, out fp, out fn, out precision, out recall, out accuracy,
+                                                                out resultsText);
+                sb.Append(resultsText+"\n");
+                sb.Append(String.Format("tp={0}\tfp={1}\tfn={2}\n", tp, fp, fn));
+                Console.WriteLine("\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
+                sb.Append(String.Format("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}\n", recall, precision, accuracy));
+                Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}\n", recall, precision, accuracy);
 
                 tp_total += tp;
                 fp_total += fp;
                 fn_total += fn;
                 //Console.WriteLine("");
+                //if (file_count == 3) break;
             }// end the foreach() loop 
+
+
 
             double precision_total, recall_total, accuracy_total;
             if (((tp_total + fp_total) == 0)) precision_total = 0.0;
@@ -147,10 +189,16 @@ namespace AudioAnalysis
             else recall_total = tp_total / (double)(tp_total + fn_total);
 
             accuracy_total = (precision_total + recall_total) / (float)2;
-            Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp_total, fp_total, fn_total);
+
+            //write results to Console and to File
+            Console.WriteLine("\n\n###############################################################################################");
+            sb.Append("\n\n###############################################################################################\n");
+            Console.WriteLine("\ntp={0}\tfp={1}\tfn={2}", tp_total, fp_total, fn_total);
+            sb.Append(String.Format("\ntp={0}\tfp={1}\tfn={2}\n", tp_total, fp_total, fn_total));
             Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall_total, precision_total, accuracy_total);
+            sb.Append(String.Format("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}\n", recall_total, precision_total, accuracy_total));
 
-
+            FileTools.WriteTextFile(outputFolder + resultsFile, sb.ToString());
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }//end Main
@@ -169,15 +217,16 @@ namespace AudioAnalysis
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sonogram"></param>
-        /// <param name="minHz">freq band to search</param>
-        /// <param name="maxHz">freq band to search</param>
+        /// <param name="sonogram">sonogram derived from the recording</param>
+        /// <param name="minHz">min bound freq band to search</param>
+        /// <param name="maxHz">max bound freq band to search</param>
         /// <param name="dctDuration">duration of DCT in seconds</param>
-        /// <param name="DCTindex"></param>
-        /// <param name="minAmplitude"></param>
+        /// <param name="DCTindex">ignore DCT values below this index position</param>
+        /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
         /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
-                                   double dctDuration, int dctIndex, double minAmplitude, string opPath, out List<AcousticEvent> events)
+                                   double dctDuration, int dctIndex, double minAmplitude, double scoreThreshold,
+                                   string opPath, out List<AcousticEvent> events)
         {
 
             //DETECT OSCILLATIONS
@@ -189,9 +238,10 @@ namespace AudioAnalysis
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            double[] scores = GetScores(hits, minHz, maxHz, sonogram.FBinWidth);
-            double threshold = 0.2; //USE THIS TO DETERMINE FP / FN trade-off.
-            events = ConvertScores2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, threshold, sonogram.Configuration.SourceFName);
+            double[] scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            double durationThreshold = 0.25; //seconds
+            events = ConvertODScores2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
+                                          durationThreshold, sonogram.Configuration.SourceFName);
 
             //DISPLAY HITS ON SONOGRAM
             if (DRAW_SONOGRAMS)
@@ -201,7 +251,7 @@ namespace AudioAnalysis
                 var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, threshold));
+                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, scoreThreshold));
                 image.AddSuperimposedMatrix(hits); //displays hits
                 image.AddEvents(events);           //displays events
                 image.Save(opPath);
@@ -281,7 +331,7 @@ namespace AudioAnalysis
         /// <summary>
         /// Removes single lines of hits from Oscillation matrix.
         /// </summary>
-        /// <param name="matrix"></param>
+        /// <param name="matrix">the Oscillation matrix</param>
         /// <returns></returns>
         public static Double[,] RemoveIsolatedOscillations(Double[,] matrix)
         {
@@ -306,12 +356,12 @@ namespace AudioAnalysis
         /// Converts the hits derived from the oscilation detector into a score.
         /// NOTE: The oscilation detector skips every second row, so score must be adjusted for this.
         /// </summary>
-        /// <param name="hits"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="freqBinWidth"></param>
+        /// <param name="hits">sonogram as matrix showing location of oscillation hits</param>
+        /// <param name="minHz">lower freq bound of the acoustic event</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
         /// <returns></returns>
-        public static double[] GetScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
+        public static double[] GetODScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
         {
             int rows = hits.GetLength(0);
             int cols = hits.GetLength(1);
@@ -333,9 +383,20 @@ namespace AudioAnalysis
             return scores;
         }
 
-
-        public static List<AcousticEvent> ConvertScores2Events(double[] scores, int minHz, int maxHz, double framesPerSec, 
-                                                                         double freqBinWidth, double scoreThreshold, string fileName)
+        /// <summary>
+        /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
+        /// </summary>
+        /// <param name="scores">the array of OD scores</param>
+        /// <param name="minHz">lower freq bound of the acoustic event</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event</param>
+        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
+        /// <param name="scoreThreshold">OD score must exceed this threshold to count as an event</param>
+        /// <param name="durationThreshold">duration of event must exceed this duration to count as an event</param>
+        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <returns></returns>
+        public static List<AcousticEvent> ConvertODScores2Events(double[] scores, int minHz, int maxHz, double framesPerSec, double freqBinWidth, 
+                                                               double scoreThreshold, double durationThreshold, string fileName)
         {
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
@@ -361,7 +422,7 @@ namespace AudioAnalysis
                     isHit = false;
                     double endTime = i * frameOffset;
                     double duration = endTime - startTime;
-                    if(duration < 0.25) continue; //
+                    if (duration < durationThreshold) continue; //
                     AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                     //ev.SetTimeAndFreqScales(22050, 512, 128);
                     ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);

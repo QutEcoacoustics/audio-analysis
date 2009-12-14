@@ -12,7 +12,7 @@ namespace AudioAnalysis
 	{
 
 		#region Properties
-		public Image Image { get; private set; }
+		public Image SonoImage { get; private set; }
 		List<Image_Track> tracks = new List<Image_Track>();
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
         List<AcousticEvent> EventList { get; set; }
@@ -25,7 +25,7 @@ namespace AudioAnalysis
         /// <param name="image"></param>
         public Image_MultiTrack(Image image)
         {
-            Image = image;
+            SonoImage = image;
         }
         
         
@@ -58,31 +58,31 @@ namespace AudioAnalysis
 			var height = CalculateImageHeight();
 
             //set up a new image having the correct dimensions
-			var returnImage = new Bitmap(Image.Width, height, PixelFormat.Format24bppRgb);
+			var image2return = new Bitmap(SonoImage.Width, height, PixelFormat.Format24bppRgb);
 
             //create new graphics canvas and add in the sonogram image
-            using (var g = Graphics.FromImage(returnImage))
+            using (var g = Graphics.FromImage(image2return))
             {                
-                g.DrawImage(Image, 0, 0);
+                g.DrawImage(this.SonoImage, 0, 0);
                 if (this.EventList != null) DrawEvents(g);
                 if (this.SuperimposedMatrix != null) Superimpose(g);
             }
 
             //now add tracks to the image
-			int offset = Image.Height;
+			int offset = SonoImage.Height;
 			foreach (var track in Tracks)
 			{
 				track.topOffset = offset;
                 track.bottomOffset = offset + track.Height-1;
-                track.DrawTrack(returnImage);
+                track.DrawTrack(image2return);
 				offset += track.Height;
 			}
-			return returnImage;
+			return image2return;
 		}
 
 		int CalculateImageHeight()
 		{
-			int totalHeight = Image.Height;
+			int totalHeight = SonoImage.Height;
             foreach (Image_Track track in tracks)
                 totalHeight += track.Height;
 			return totalHeight;
@@ -134,7 +134,7 @@ namespace AudioAnalysis
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
-            int imageHt = this.Image.Height-1; //subtract 1 because indices start at zero
+            int imageHt = this.SonoImage.Height-1; //subtract 1 because indices start at zero
             //int[] bounds = {0,7,14,21,28,35,42,49}; //for max value around 50
             int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
 
