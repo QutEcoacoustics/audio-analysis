@@ -76,11 +76,14 @@ namespace HMMBuilder
 
             string labelsPath = @"C:\SensorNetworks\WavFiles\KoalaTestData\KoalaTestData.txt";
             List<AcousticEvent> results = GetAcousticEventsFromResultsFile(opFile);
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath);
+            string labelsText;
+            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
 
-            int tp, fp, fn; 
+            int tp, fp, fn;
+            string resultsText;
             double precision, recall, accuracy;
-            AcousticEvent.CalculateAccuracy(results, labels, out tp, out fp, out fn, out precision, out recall, out accuracy);
+            AcousticEvent.CalculateAccuracy(results, labels, out tp, out fp, out fn, out precision, out recall, out accuracy,
+                                              out resultsText);
 
             Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
             Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
