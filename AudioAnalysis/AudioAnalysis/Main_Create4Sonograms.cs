@@ -62,7 +62,7 @@ namespace AudioAnalysis
           //  {
                 image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+                image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.Save(fn);
                 Console.WriteLine("Ordinary sonogram to file: " + fn);
@@ -97,7 +97,7 @@ namespace AudioAnalysis
             
             image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, false));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             fn = outputFolder + wavFileName + "_tracks.png";
             image.Save(fn);

@@ -67,7 +67,7 @@ namespace AudioAnalysis
             bool doHighlightSubband = false; bool add1kHzLines = true;
 			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(events);
             image.Save(outputFolder + wavFileName + ".png");

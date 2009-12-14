@@ -317,27 +317,33 @@ namespace AudioAnalysis
         /// </summary>
         /// <param name="path">the file path</param>
         /// <returns>a list of Acoustic events</returns>
-        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path)
+        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path, out string labelsText)
         {
+            var sb = new StringBuilder();
             var events = new List<AcousticEvent>();
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
             Console.WriteLine("\nList of labelled events in file: " + Path.GetFileName(path));
+            sb.Append("\nList of labelled events in file: " + Path.GetFileName(path)+"\n");
             Console.WriteLine(" #  tag \tstart  ...   end  intensity quality  file");
+            sb.Append(" #  tag \tstart  ...   end  intensity quality  file\n");
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
             {
                 string[] words = Regex.Split(lines[i], @"\t");
+                if ((words.Length<8) || (words[4].Equals(null)) || (words[4].Equals(""))) 
+                                              continue; //ignore entries that do not have full data
                 string file = words[0];
                 string date = words[1];
                 string time = words[2];
 
-                double start = Double.Parse(words[3]);
-                double end = Double.Parse(words[4]);
-                string tag = words[5];
-                int quality = Int32.Parse(words[6]);
+                double start  = Double.Parse(words[3]);
+                double end    = Double.Parse(words[4]);
+                string tag    = words[5];
+                int quality   = Int32.Parse(words[6]);
                 int intensity = Int32.Parse(words[7]);
-                Console.WriteLine("{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}", i, tag, start, end, intensity, quality, file);
+                Console.WriteLine(      "{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}", i, tag, start, end, intensity, quality, file);
+                sb.Append(String.Format("{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}\n", i, tag, start, end, intensity, quality, file));
                 //Console.WriteLine(("").PadRight(24, '-'));
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
@@ -348,6 +354,7 @@ namespace AudioAnalysis
                 ae.Quality    = quality;
                 events.Add(ae);
             }
+            labelsText = sb.ToString();
             return events;
         } //end method GetLabelsInFile(List<string> labels, string file)
 
@@ -356,7 +363,7 @@ namespace AudioAnalysis
 
 
         public static void CalculateAccuracy(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
-                                         out double precision, out double recall, out double accuracy)
+                                         out double precision, out double recall, out double accuracy, out string resultsText)
         {
             //init  values
             tp = 0;
@@ -366,7 +373,10 @@ namespace AudioAnalysis
             string space = " ";
             int count = 0;
             List<string> sourceFiles = new List<string>();
-            Console.WriteLine("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,1}", space);
+            string header = String.Format("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,10}duration{0,1}", space);
+            Console.WriteLine(header);
+            string line = null;
+            var sb = new StringBuilder(header + "\n"); 
             foreach (AcousticEvent ae in results)
             {
                 count++;
@@ -377,14 +387,17 @@ namespace AudioAnalysis
                 if (overlapEvent == null)
                 {
                     fp++;
-                    Console.WriteLine("False positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                    line = String.Format("False positive: {0,4} {1,10} {2,6:f1} ...{3,6:f1} {4,10:f2}\t{5,10:f2}\t{6}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Duration, ae.SourceFile);
                 }
                 else
                 {
                     tp++;
                     overlapEvent.Tag = true; //tag because later need to determine fn
-                    Console.WriteLine("True  positive: {0,4}{1,10}{2,6:f1} ...{3,6:f1}{4,10:f1}\t{5}", count, ae.Name, ae.StartTime, end, ae.Score, ae.SourceFile);
+                    line = String.Format("True  positive: {0,4} {1,10} {2,6:f1} ...{3,6:f1} {4,10:f2}\t{5,10:f2}\t{6}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Duration, ae.SourceFile);
                 }
+                Console.WriteLine(line);
+                sb.Append(line + "\n");
+
             }//end of looking for true and false positives
 
             //now calculate the fn. These are the labelled events not tagged in previous search.
@@ -394,8 +407,10 @@ namespace AudioAnalysis
                 if (ae.Tag == false)
                 {
                     fn++;
-                    Console.WriteLine("False NEGative:                {0:f1} ... {1:f1}  intensity={2} quality={3}", 
+                    line = String.Format("False NEGative:                {0:f1} ... {1:f1}  intensity={2} quality={3}",
                                               ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality);
+                    Console.WriteLine(line);
+                    sb.Append(line + "\n");
                 }
             }
 
@@ -404,6 +419,8 @@ namespace AudioAnalysis
             if (((tp + fn) == 0)) recall = 0.0;
             else recall = tp / (double)(tp + fn);
             accuracy = (precision + recall) / (float)2;
+
+            resultsText = sb.ToString();
         } //end method
 
 
