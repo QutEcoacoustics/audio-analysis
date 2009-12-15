@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScoreBirgittsBBSSAResults</StartupObject>
+    <StartupObject>AudioAnalysis.Main_DetectOscillation</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>

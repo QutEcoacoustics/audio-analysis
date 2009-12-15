@@ -32,6 +32,7 @@ namespace AudioAnalysis
         public string Name  { get; set; }
         public string SourceFile { get; set; }
         public double Score { get; set; }
+        public double Score2 { get; set; } //second score if required e.g. for Birgits recognisers
         public double NormalisedScore { get; private set; } //score normalised in range [0,1].
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1Var;  //,
@@ -324,10 +325,13 @@ namespace AudioAnalysis
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
-            Console.WriteLine("\nList of labelled events in file: " + Path.GetFileName(path));
-            sb.Append("\nList of labelled events in file: " + Path.GetFileName(path)+"\n");
-            Console.WriteLine(" #  tag \tstart  ...   end  intensity quality  file");
-            sb.Append(" #  tag \tstart  ...   end  intensity quality  file\n");
+            string line = "\nList of labelled events in file: " + Path.GetFileName(path);
+            Console.WriteLine(line);
+            sb.Append(line +"\n");
+            line = "  #   #  \ttag \tstart  ...   end  intensity quality  file";
+            Console.WriteLine(line);
+            sb.Append(line+"\n");
+            int count = 0;
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
             {
                 string[] words = Regex.Split(lines[i], @"\t");
@@ -342,9 +346,11 @@ namespace AudioAnalysis
                 string tag    = words[5];
                 int quality   = Int32.Parse(words[6]);
                 int intensity = Int32.Parse(words[7]);
-                Console.WriteLine(      "{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}", i, tag, start, end, intensity, quality, file);
-                sb.Append(String.Format("{0}\t{1,10}{2,6:f1} ...{3,6:f1}{4,10}{5,10}\t{6}\n", i, tag, start, end, intensity, quality, file));
-                //Console.WriteLine(("").PadRight(24, '-'));
+                count++;
+                line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}", 
+                                        count, i, tag, start, end, intensity, quality, file);
+                Console.WriteLine(line);
+                sb.Append(line+"\n");
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
                 ae.Score      = intensity;
@@ -372,47 +378,81 @@ namespace AudioAnalysis
             //header
             string space = " ";
             int count = 0;
-            List<string> sourceFiles = new List<string>();
-            string header = String.Format("\nScore Category:    #{0,4}name{0,4}start{0,5}end{0,10}score{0,10}duration{0,1}", space);
+            List<string> resultsSourceFiles = new List<string>();
+            string header = String.Format("\nScore Category:    #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
             Console.WriteLine(header);
             string line = null;
-            var sb = new StringBuilder(header + "\n"); 
+            var sb = new StringBuilder(header + "\n");
+            string previousSourceFile = "  ";
+            
             foreach (AcousticEvent ae in results)
             {
                 count++;
-                double end = ae.StartTime + ae.Duration;
-                var events = AcousticEvent.GetEventsInFile(labels, ae.SourceFile);//get only events in same file as ae
-                sourceFiles.Add(ae.SourceFile); //keep track of source files that the detected events come from
-                AcousticEvent overlapEvent = ae.OverlapsEventInList(events);
-                if (overlapEvent == null)
+                double end = ae.StartTime + ae.Duration; //calculate end time of the result event
+                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.SourceFile); //get all & only those labelled events in same file as result ae
+                resultsSourceFiles.Add(ae.SourceFile);   //keep list of source files that the detected events come from
+                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                if (overlapLabelEvent == null)
                 {
                     fp++;
-                    line = String.Format("False positive: {0,4} {1,10} {2,6:f1} ...{3,6:f1} {4,10:f2}\t{5,10:f2}\t{6}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Duration, ae.SourceFile);
+                    line = String.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Score2, ae.Duration);
                 }
                 else
                 {
                     tp++;
-                    overlapEvent.Tag = true; //tag because later need to determine fn
-                    line = String.Format("True  positive: {0,4} {1,10} {2,6:f1} ...{3,6:f1} {4,10:f2}\t{5,10:f2}\t{6}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Duration, ae.SourceFile);
+                    overlapLabelEvent.Tag = true; //tag because later need to determine fn
+                    line = String.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Score2, ae.Duration);
                 }
-                Console.WriteLine(line);
-                sb.Append(line + "\n");
+                if (previousSourceFile != ae.SourceFile)
+                {
+                    Console.WriteLine(line + "\t"+ ae.SourceFile);
+                    sb.Append(line + "\t"+ ae.SourceFile+ "\n");
+                    previousSourceFile = ae.SourceFile;
+                }
+                else{
+                    Console.WriteLine(line+"\t  ||   ||   ||   ||   ||   ||");
+                    sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
+                }
+                
 
             }//end of looking for true and false positives
 
-            //now calculate the fn. These are the labelled events not tagged in previous search.
+
+
+            //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
+            Console.WriteLine();
+            sb.Append("\n");
+            count = 0;
+            previousSourceFile = " ";
             foreach (AcousticEvent ae in labels)
             {
-                if (! sourceFiles.Contains(ae.SourceFile)) continue;
+                count++;
+                string hitFile = "";
+                //check if this FN event is in a file that score tp of fp hit. 
+                if (resultsSourceFiles.Contains(ae.SourceFile)) 
+                    hitFile = "**";
                 if (ae.Tag == false)
                 {
                     fn++;
-                    line = String.Format("False NEGative:                {0:f1} ... {1:f1}  intensity={2} quality={3}",
-                                              ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality);
-                    Console.WriteLine(line);
-                    sb.Append(line + "\n");
+                    line = String.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
+                                         count, ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality, ae.Name);
+                    if (previousSourceFile != ae.SourceFile)
+                    {
+                        Console.WriteLine(line + "\t" + ae.SourceFile + " " + hitFile );
+                        sb.Append(line + "\t" + ae.SourceFile + " " + hitFile + "\n");
+                        previousSourceFile = ae.SourceFile;
+                    }
+                    else
+                    {
+                        Console.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
+                        sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
+                    }
                 }
             }
+
+            line = "** This FN event occured in a recording which also scored a tp or fp hit.";
+            Console.WriteLine(line);
+            sb.Append(line + "\n");
 
             if (((tp + fp) == 0)) precision = 0.0;
             else precision = tp / (double)(tp + fp);
