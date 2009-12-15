@@ -43,20 +43,21 @@ namespace AudioAnalysis
 
             //MATCH STRING -search directory for matches to this file name
             //string fileMatch = "*.wav";
-            //string fileMatch = "Honeymoon Bay - Bees_20091030*.wav";
+            string fileMatch = "Honeymoon Bay - Bees_20091030*.wav";
             //string fileMatch = "Top Knoll - Bees_20091030-*.wav";
-            string fileMatch = "West Knoll - Bees_20091030-*.wav";
+            //string fileMatch = "West Knoll - Bees_20091030-*.wav";
             //string fileMatch = "West Knoll - Bees_200911*.wav";
 
             //RESULTS FILE
-            string resultsFile = "West Knoll - Bees_20091030.results.txt";
+            string resultsFile = "Honeymoon Bay - Bees_20091030.results.txt";
+            //string resultsFile = "West Knoll - Bees_20091030.results.txt";
             //string resultsFile = "West Knoll - Bees_200911.results.txt";
             
             //LABELS FILE
             //string labelsFileName = "KoalaTestData.txt";
-            //string labelsFileName = "Koala Calls - Honeymoon Bay- 30 October 2009.txt";
+            string labelsFileName = "Koala Calls - Honeymoon Bay- 30 October 2009.txt";
             //string labelsFileName = "Koala Calls - TopKnoll - 30 October 2009.txt";
-            string labelsFileName = "Koala Calls - WestKnoll - 30 October 2009.txt";
+            //string labelsFileName = "Koala Calls - WestKnoll - 30 October 2009.txt";
             //string labelsFileName = "Koala Calls - WestKnoll - 1 Nov 2009 - 14 Nov 2009.txt";
 
             //#######################################################################################################

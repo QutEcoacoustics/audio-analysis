@@ -24,25 +24,21 @@ namespace AudioAnalysis
             Log.Verbosity = 1;
 
             //#######################################################################################################
-            // KEY PARAMETERS TO CHANGE for DETECT OSCILLATIONS
-            //int minHz = 100;  //koalas range = 100-2000
-            //int maxHz = 2000;
-            //double dctDuration = 0.25;  //duration of DCT in seconds 
-            //int dctIndex = 9;   //bounding index i.e. ignore oscillations with lower freq
-            //double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
-            //double scoreThreshold = 0.25; //USE THIS TO DETERMINE FP / FN trade-off.
-
             //BBSD results data
-            string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaMale_BBSD\";
-            string bbsdFile = "koalasBBSDAlgorithm_intThresh6_matchScore30.txt";
+            //string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaMale_BBSD\";
+            //string bbsdFile = "koalasBBSDAlgorithm_intThresh6_matchScore30.txt";
+            string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaFemale_BBSD\";
+            string bbsdFile = "koalas_intThresh1_matchScore30.txt";
             string bbsdPath = bbsdFolder + bbsdFile;
 
             //LABELS FILE
-            string labelsFileName = "Koala Calls - All 2009.txt";
-            string labelsPath = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\" + labelsFileName;
+            //string labelsFileName = "Koala Calls - All 2009.txt";
+            //string labelsPath = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\" + labelsFileName;
+            string labelsFileName = "Bills female koala tags test2.txt";
+            string labelsPath = @"C:\SensorNetworks\Recordings\KoalaFemale\TestSet1\" + labelsFileName;
 
             //RESULTS FILE
-            string resultsFile = "Koala Calls - BBSD.results.txt";
+            string resultsFile = "Female Koala Calls - BBSD.results.txt";
             string resultsPath = bbsdFolder + resultsFile;
 
 
@@ -59,7 +55,7 @@ namespace AudioAnalysis
             //Read list of acoustic events containg label data
             string labelsText;
             Log.WriteIfVerbose("Labels Path =" + labelsPath);
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
+            List<AcousticEvent> labelledEvents = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
             sb.Append("Labels Path =" + labelsPath + "\n");
             sb.Append(labelsText);
 
@@ -91,20 +87,19 @@ namespace AudioAnalysis
             int tp_total = 0;
             int fp_total = 0;
             int fn_total = 0;
-            int label_count = 0;
+  //          int label_count = 0;
   //          foreach (AcousticEvent ae in bbsdEvents)
    //         {
-                label_count++;
-                Log.WriteIfVerbose("\n\n" + label_count + " ###############################################################################################");
-                sb.Append("\n\n" + label_count + " ###############################################################################################\n");
+   //             label_count++;
+                Log.WriteIfVerbose("\n\n###############################################################################################");
+                sb.Append("\n\n###############################################################################################\n");
 
                 //D: CALCULATE ACCURACY
-                //Log.WriteIfVerbose("\n\n###############################################################################################");
                 int tp, fp, fn;
                 double precision, recall, accuracy;
                 string resultsText;
-                AcousticEvent.CalculateAccuracy(bbsdEvents, labels, out tp, out fp, out fn, out precision, out recall, out accuracy,
-                                                                out resultsText);
+                AcousticEvent.CalculateAccuracy(bbsdEvents, labelledEvents, out tp, out fp, out fn, 
+                                                out precision, out recall, out accuracy, out resultsText);
                 sb.Append(resultsText + "\n");
                 sb.Append(String.Format("tp={0}\tfp={1}\tfn={2}\n", tp, fp, fn));
                 Console.WriteLine("\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
@@ -148,10 +143,15 @@ namespace AudioAnalysis
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
-            Console.WriteLine("\nList of BBSD events in file: " + Path.GetFileName(path));
-            sb.Append("\nList of BBSD events in file: " + Path.GetFileName(path) + "\n");
-            Console.WriteLine(" #  tag \tstart  ...   end  intensity quality  file");
-            sb.Append(" #  tag \tstart  ...   end  intensity quality  file\n");
+            string line = "\nList of BBSD events in file: " + Path.GetFileName(path);
+            Console.WriteLine(line);
+            sb.Append(line + "\n");
+
+            line = "  #   #  \ttag \tstart  ...  end     score 1    score 2  source file";
+            Console.WriteLine(line);
+            sb.Append(line + "\n");
+            
+            int count = 0;
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
             {
                 string[] words = Regex.Split(lines[i], @"\t");
@@ -164,13 +164,17 @@ namespace AudioAnalysis
                 double score2 = Double.Parse(words[4]);
                 string file = words[5];
                 if (file.EndsWith(".wav")) file = Path.GetFileNameWithoutExtension(file);//do not want file extention
-                Console.WriteLine("{0}\t{1,10}{2,6:f1} ...{3,6:f1} {4,6:f1}  {5,10}", i, tag, start, end, score1, file);
-                sb.Append(String.Format("{0}\t{1,10}{2,6:f1} ...{3,6:f1} {4,6:f1}  {5,10}\n", i, tag, start, end, score1, file));
-                //Console.WriteLine(("").PadRight(24, '-'));
+                count++;
+
+                line = String.Format("{0,3} {1,3} {2,15}{3,6:f1} ...{4,6:f1}    {5,6:f1}  {6,10}", count, i, tag, start, end, score1, file);
+
+                Console.WriteLine(line);
+                sb.Append(line + "\n");
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
-                ae.Score = score1;
-                ae.Name = tag;
+                ae.Score  = score1;
+                ae.Score2 = score2;
+                ae.Name   = tag;
                 ae.SourceFile = file;
                 //ae.Intensity = intensity;
                 //ae.Quality = quality;
