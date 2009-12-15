@@ -7,6 +7,14 @@ open FsCheckArbs
 open Xunit
 
 [<Fact>]
+let testRemoveSubbandModeIntensities () =
+    let f md =
+        let i3 = loadTestFile "I2.csv" md |> removeSubbandModeIntensities
+        let i3m = loadTestFile "I3.csv" md
+        matrixFloatEquals i3 i3m 0.0001 |> Assert.True
+    testAll f
+    
+[<Fact>]
 let testToBlackAndWhite () =
     let f md =
         let i4 = loadTestFile "I3.csv" md |> toBlackAndWhite md.BWthresh

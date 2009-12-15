@@ -5,6 +5,19 @@ open Matlab
 open TowseyLib
 open Util
 
+let removeSubbandModeIntensities (m:matrix) =
+    let modes =
+        let f r =
+            let mn, mx = Seq.min r, Seq.max r
+            let hs = histf r (seq{mn .. mx})
+            let mi = Seq.findIndex ((=) (Seq.max hs)) hs
+            let mode = mn + (float mi)
+            let t = (mn - mx) / 2.0
+            if mode > t then t else mode
+        mapByRow f m
+    let sModes = smooth 11 (Math.Vector.Generic.toArray modes)
+    Math.Matrix.mapi (fun r _ x -> x - sModes.[r]) m
+
 // TODO should this return a matrix of int
 let toBlackAndWhite t = Math.Matrix.map (fun e -> if e > t then 1.0 else 0.0)
     
@@ -58,7 +71,7 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     //let start = System.DateTime.Now.TimeOfDay
     let m1 = Matlab.wiener2 5 m 
     //printfn "wiener2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m2 = SubbandMode.removeSubbandModeIntensities2 m1
+    let m2 = removeSubbandModeIntensities m1
     //printfn "removeSubbandModeIntensities2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
     let m3 = toBlackAndWhite intensityThreshold m2
     //printfn "toBlackAndWhite: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))

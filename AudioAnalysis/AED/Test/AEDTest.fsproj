@@ -63,7 +63,6 @@
     <Compile Include="Common.fs" />
     <Compile Include="UtilTest.fs" />
     <Compile Include="MatlabTest.fs" />
-    <Compile Include="SubbandModeTest.fs" />
     <Compile Include="AcousticEventDetectionTest.fs" />
     <Compile Include="GetAcousticEventsTest.fs" />
     <Compile Include="EventPatternRecogTest.fs" />
