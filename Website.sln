@@ -8,7 +8,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		SccLocalPath = ""
 		SccProvider = ""
 		TargetFramework = "3.5"
-		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.dll;{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}|SLShaderEffectLibrary.dll;"
+		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.exe;{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}|SLShaderEffectLibrary.dll;{3EB736C4-62EA-4887-B040-948B13EF29B9}|GZipEncoder.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
 		Debug.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
@@ -25,6 +25,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		Release.AspNetCompiler.Debug = "False"
 		VWDPort = "2669"
 		VWDDynamicPort = "false"
+		VWDVirtualPath = "/"
 		ProjOutputReferences = "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}|ClientBin|false;{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}|ClientBin|false;{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}|ClientBin|false;"
 	EndProjectSection
 EndProject
@@ -50,7 +51,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysis", "AudioAnaly
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayer", "SilverlightControls\AudioPlayer\AudioPlayer\AudioPlayer.csproj", "{677A24F2-5643-4960-BD8E-FFD739696099}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayerControl", "SilverlightControls\AudioPlayer\AudioPlayerControl\AudioPlayerControl.csproj", "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayerSLC", "SilverlightControls\AudioPlayer\AudioPlayerControl\AudioPlayerSLC.csproj", "{36AE7049-A84A-43B1-8CE4-4A63F993A0A3}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED", "AudioAnalysis\AED\AED\AED.fsproj", "{993980A0-8D06-4635-8296-40E9FFF9C301}"
 EndProject
@@ -60,7 +61,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLShaderEffectLibrary", "Si
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SLTransitionEffects", "SilverlightControls\SLTransitionEffects\SLTransitionEffects.csproj", "{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloudControl", "SilverlightControls\TagCloud\TagCloudControl\TagCloudControl.csproj", "{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloudSLC", "SilverlightControls\TagCloud\TagCloudControl\TagCloudSLC.csproj", "{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TagCloud", "SilverlightControls\TagCloud\TagCloud\TagCloud.csproj", "{FB088810-E5A8-4A22-9598-5BA99A963D5B}"
 EndProject
