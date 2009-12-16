@@ -100,10 +100,6 @@
   <ItemGroup>
     <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="FSharp.PowerPack, Version=1.9.7.8, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
-    <Reference Include="HMMBuilder, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\HMMBuilder\HMMBuilder.exe</HintPath>
-    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\SharpZip\SharpZipLib_0855_Bin\netcf-20\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -193,6 +189,10 @@
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\HMMBuilder\HMMBuilder.csproj">
+      <Project>{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}</Project>
+      <Name>HMMBuilder</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>

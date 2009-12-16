@@ -308,28 +308,32 @@ namespace AudioAnalysis
         } // end method GetEventsInFile(List<AcousticEvent> eventList, string fileName)
 
 
-
+        /// <summary>
         /// <summary>
         /// Reads a text file containing a list of acoustic events (one per line) and returns list of events.
         /// The file must contain a header.
         /// The format is tab separated words as follows:
         /// words[0]=file name; words[1]=recording date; words[2]=time; words[3]=start; words[4]=end; 
         /// words[5]=tag; words[6]=quality; words[7]=intensity 
+        /// 
+        /// NOTE: if match argument = null, method will return all events.
         /// </summary>
-        /// <param name="path">the file path</param>
+        /// <param name="path">path of file containing the acoustic events</param>
+        /// <param name="match">file/recording name to match</param>
+        /// <param name="labelsText">info to return as text</param>
         /// <returns>a list of Acoustic events</returns>
-        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path, out string labelsText)
+        public static List<AcousticEvent> GetAcousticEventsFromLabelsFile(string path, string match, out string labelsText)
         {
             var sb = new StringBuilder();
             var events = new List<AcousticEvent>();
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
-            string line = "\nList of labelled events in file: " + Path.GetFileName(path);
-            Console.WriteLine(line);
+            string line = "\nList of LABELLED events in file: " + Path.GetFileName(path);
+            //Console.WriteLine(line);
             sb.Append(line +"\n");
             line = "  #   #  \ttag \tstart  ...   end  intensity quality  file";
-            Console.WriteLine(line);
+            //Console.WriteLine(line);
             sb.Append(line+"\n");
             int count = 0;
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
@@ -338,6 +342,8 @@ namespace AudioAnalysis
                 if ((words.Length<8) || (words[4].Equals(null)) || (words[4].Equals(""))) 
                                               continue; //ignore entries that do not have full data
                 string file = words[0];
+                if((match != null)&&(! file.StartsWith(match))) continue;  //ignore events not from the required file
+
                 string date = words[1];
                 string time = words[2];
 
@@ -349,7 +355,7 @@ namespace AudioAnalysis
                 count++;
                 line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}", 
                                         count, i, tag, start, end, intensity, quality, file);
-                Console.WriteLine(line);
+                //Console.WriteLine(line);
                 sb.Append(line+"\n");
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
@@ -367,7 +373,20 @@ namespace AudioAnalysis
 
 
 
-
+        /// <summary>
+        /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. The events may come from any number of 
+        /// recordings or files
+        /// </summary>
+        /// <param name="results"></param>
+        /// <param name="labels"></param>
+        /// <param name="tp"></param>
+        /// <param name="fp"></param>
+        /// <param name="fn"></param>
+        /// <param name="precision"></param>
+        /// <param name="recall"></param>
+        /// <param name="accuracy"></param>
+        /// <param name="resultsText"></param>
         public static void CalculateAccuracy(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
                                          out double precision, out double recall, out double accuracy, out string resultsText)
         {
@@ -423,7 +442,7 @@ namespace AudioAnalysis
             Console.WriteLine();
             sb.Append("\n");
             count = 0;
-            previousSourceFile = " ";
+            previousSourceFile = " "; //this is just a device to achieve a formatting hwich is easier to interpret
             foreach (AcousticEvent ae in labels)
             {
                 count++;
@@ -464,6 +483,87 @@ namespace AudioAnalysis
         } //end method
 
 
+
+
+        /// <summary>
+        /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
+        /// this method calculates the accuracy of the predictions in terms of tp, fp, fn etc. 
+        /// This method is similar to the one above except that it is assumed that all the events, both labelled and predicted
+        /// come from the same recording.
+        /// </summary>
+        /// <param name="results"></param>
+        /// <param name="labels"></param>
+        /// <param name="tp"></param>
+        /// <param name="fp"></param>
+        /// <param name="fn"></param>
+        /// <param name="precision"></param>
+        /// <param name="recall"></param>
+        /// <param name="accuracy"></param>
+        /// <param name="resultsText"></param>
+        public static void CalculateAccuracyOnOneRecording(List<AcousticEvent> results, List<AcousticEvent> labels, out int tp, out int fp, out int fn,
+                                         out double precision, out double recall, out double accuracy, out string resultsText)
+        {
+            //init  values
+            tp = 0;
+            fp = 0;
+            fn = 0;
+            //header
+            string space = " ";
+            int count = 0;
+            List<string> resultsSourceFiles = new List<string>();
+            string header = String.Format("PREDICTED EVENTS:  #{0,12}name{0,3}start{0,6}end{0,2}score1{0,2}score2{0,5}duration{0,6}source file", space);
+            //Console.WriteLine(header);
+            string line = null;
+            var sb = new StringBuilder(header + "\n");
+
+            foreach (AcousticEvent ae in results)
+            {
+                count++;
+                double end = ae.StartTime + ae.Duration; //calculate end time of the result event
+                var labelledEvents = AcousticEvent.GetEventsInFile(labels, ae.SourceFile); //get all & only those labelled events in same file as result ae
+                resultsSourceFiles.Add(ae.SourceFile);   //keep list of source files that the detected events come from
+                AcousticEvent overlapLabelEvent = ae.OverlapsEventInList(labelledEvents);//get overlapped labelled event
+                if (overlapLabelEvent == null)
+                {
+                    fp++;
+                    line = String.Format("False POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Score2, ae.Duration);
+                }
+                else
+                {
+                    tp++;
+                    overlapLabelEvent.Tag = true; //tag because later need to determine fn
+                    line = String.Format("True  POSITIVE: {0,4} {1,15} {2,6:f1} ...{3,6:f1} {4,7:f1} {5,7:f1}\t{6,10:f2}", count, ae.Name, ae.StartTime, end, ae.Score, ae.Score2, ae.Duration);
+                }
+                sb.Append(line + "\t" + ae.SourceFile + "\n");
+
+            }//end of looking for true and false positives
+
+
+
+            //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
+            //Console.WriteLine();
+            sb.Append("\n");
+            count = 0;
+            foreach (AcousticEvent ae in labels)
+            {
+                count++;
+                if (ae.Tag == false)
+                {
+                    fn++;
+                    line = String.Format("False NEGATIVE: {0,4} {5,15} {1,6:f1} ...{2,6:f1}    intensity={3}     quality={4}",
+                                         count, ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality, ae.Name);
+                    sb.Append(line + "\t" + ae.SourceFile + "\n");
+                }
+            }
+
+            if (((tp + fp) == 0)) precision = 0.0;
+            else precision = tp / (double)(tp + fp);
+            if (((tp + fn) == 0)) recall = 0.0;
+            else recall = tp / (double)(tp + fn);
+            accuracy = (precision + recall) / (float)2;
+
+            resultsText = sb.ToString();
+        } //end method
 
     }
 }

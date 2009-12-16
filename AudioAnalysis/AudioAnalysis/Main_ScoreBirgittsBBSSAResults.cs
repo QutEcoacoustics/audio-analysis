@@ -55,7 +55,7 @@ namespace AudioAnalysis
             //Read list of acoustic events containg label data
             string labelsText;
             Log.WriteIfVerbose("Labels Path =" + labelsPath);
-            List<AcousticEvent> labelledEvents = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
+            List<AcousticEvent> labelledEvents = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, null, out labelsText);
             sb.Append("Labels Path =" + labelsPath + "\n");
             sb.Append(labelsText);
 

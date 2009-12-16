@@ -69,7 +69,7 @@ namespace HMMBuilder
 
             //get list of recognised events and print.
             List<AcousticEvent> events;
-            Execute(templateFN, workingDirectory, wavFile, out events);
+            TestHTKRecogniser.Execute(templateFN, workingDirectory, wavFile, out events);
             List<string> list = ExtractEventData(events);
             string opFile = workingDirectory + "\\results\\eventData.txt";
             FileTools.WriteTextFile(opFile, list, true);
@@ -77,7 +77,7 @@ namespace HMMBuilder
             string labelsPath = @"C:\SensorNetworks\WavFiles\KoalaTestData\KoalaTestData.txt";
             List<AcousticEvent> results = GetAcousticEventsFromResultsFile(opFile);
             string labelsText;
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, out labelsText);
+            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, null, out labelsText);
 
             int tp, fp, fn;
             string resultsText;
@@ -97,7 +97,7 @@ namespace HMMBuilder
 
 
 
-        static void Execute(string templatePath, string workingDirectory, string wavFile, out List<AcousticEvent> events)
+        public static void Execute(string templatePath, string workingDirectory, string wavFile, out List<AcousticEvent> events)
         {
             string templateName = Path.GetFileNameWithoutExtension(templatePath);
 
