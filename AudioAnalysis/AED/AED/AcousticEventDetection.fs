@@ -61,7 +61,7 @@ let smallThreshold t rs =
     let (%%) x y = (float x) * y |> rnd |> (int)
     let cs = seq {for i in 0..9 -> (i * (t %% 0.1)) + (t %% 0.05)}
     let as' = areas rs |> Seq.filter (fun x -> x <= t)
-    smallFirstMin cs (hist as' cs) t
+    smallFirstMin cs (histi as' cs) t
 
 let filterOutSmallEvents t rs =
     let t' = smallThreshold t rs
