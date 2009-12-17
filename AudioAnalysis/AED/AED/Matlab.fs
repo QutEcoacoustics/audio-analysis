@@ -6,27 +6,22 @@ open Util
     N = HIST(Y,X), where X is a vector, returns the distribution of Y among bins with centers
     specified by X. The first bin includes data between -inf and the first center and the last
     bin includes data between the last bin and inf.
+    
+    Tried using (o:'a Math.INumeric) instead of individual arguments, but couldn't figure out
+    to get float and int implementations of INumeric.
 *)
-let hist xs cs =
-    let ub = Seq.append (Seq.pairwise cs |> Seq.map (fun (x,y) -> x + ((y - x)/2))) [999999999] |> Seq.toArray // TODO what is MAX_INT?
+let inline hist add sub half mx xs cs =
+    let ub = Seq.append (Seq.pairwise cs |> Seq.map (fun (x,y) -> add x (half (sub y x)))) [mx] |> Seq.toArray
     let a = Array.create (Seq.length ub) 0
-    // TODO nasty bit of imperative code
     let f x = 
         let i = Array.findIndex (fun b -> x <= b) ub
         a.[i] <- a.[i] + 1
     Seq.iter f xs
     a
     
-// TODO nasty copy of hist, generalise!
-let histf xs cs =
-    let ub = Seq.append (Seq.pairwise cs |> Seq.map (fun (x,y) -> x + ((y - x)/2.0))) [999999999.0] |> Seq.toArray // TODO what is MAX_FLOAT?
-    let a = Array.create (Seq.length ub) 0
-    // TODO nasty bit of imperative code
-    let f x = 
-        let i = Array.findIndex (fun b -> x <= b) ub
-        a.[i] <- a.[i] + 1
-    Seq.iter f xs
-    a
+let histf xs cs = hist (+) (-) (fun x -> x / 2.0) System.Double.MaxValue xs cs
+let histi xs cs = hist (+) (-) (fun x -> x / 2) System.Int32.MaxValue xs cs
+      
     
 (* 
 yy = smooth(y,span) sets the span of the moving average to span. span must be odd.
