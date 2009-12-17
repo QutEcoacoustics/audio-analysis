@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_DetectOscillation</StartupObject>
+    <StartupObject>AudioAnalysis.Main_ScoreTestSetWithRecogniser</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -131,7 +131,7 @@
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
-    <Compile Include="Main_DetectOscillation.cs" />
+    <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
     <Compile Include="Main_EPR.cs" />
     <Compile Include="Main_FindAcousticEvents.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
@@ -150,6 +150,7 @@
     <Compile Include="Image_Track.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="OscillationDetector.cs" />
     <Compile Include="Recogniser.cs" />
     <Compile Include="ResultItem.cs" />
     <Compile Include="Result_1PS.cs" />
