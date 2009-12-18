@@ -11,8 +11,11 @@ namespace HMMBuilder
     {
         //public string WorkingDir  { get; set; }
         public string WorkingDir { get; set; }
+        public string WorkingDirBkg { get; set; }
         public string DataDir     { get; set; }
+        public string DataDirBkg { get; set; }
         public string ConfigDir   { get; set; }
+        public string ConfigDirBkg { get; set; }
         public string HTKDir      { get; set; }
         public string SegmentationDir { get; set; }
         public string ResultsDir { get; set; }
@@ -20,6 +23,10 @@ namespace HMMBuilder
         public string CallName    { get; set; }
         public string Comment     { get; set; }
         public string numHmmStates { get; set; }
+        public string numHmmBkgStates { get; set; }
+        public int numIterations { get; set; }
+        public int numBkgIterations { get; set; }
+        public bool bkgTraining = false;
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
@@ -61,14 +68,17 @@ namespace HMMBuilder
 
         //dir and path names
         public string trnDirPath      { get { return DataDir   + "\\train"; } }
+        public string trnDirPathBkg   { get { return DataDirBkg ; } }
         public string tstFalseDirPath { get { return DataDir   + "\\test\\testFalse"; } }
         public string tstTrueDirPath  { get { return DataDir   + "\\test\\testTrue"; } }
 
         public string ProtoConfDir    { get { return ConfigDir + "\\protoConfigs"; } }
+        public string ProtoConfDirBkg { get { return ConfigDirBkg + "\\protoConfigs"; } }
         public string ConfigFN        { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
         public string MfccConfigFN    { get { return ConfigDir + "\\mfccConfig"; } }
+        public string MfccConfigFNBkg { get { return ConfigDirBkg + "\\mfccConfig"; } }
         public string MfccConfig2FN   { get { return ConfigDir + "\\" + mfccConfigFN; } } //need this copy for training
-
+        public string MfccConfig2FNBkg { get { return ConfigDirBkg + "\\mfccConfig.txt"; } }
 
         //grammar file for multisyllabic calls
         public string gramF { get { return ConfigDir + "\\gram.bnf"; } }
@@ -76,15 +86,20 @@ namespace HMMBuilder
         public List<string> multiSyllableList = new List<string>();
 
         public string DictFile     { get { return ConfigDir + "\\dict"; } }
+        public string DictFileBkg  { get { return ConfigDirBkg + "\\dict"; } }
         public string cTrainF      { get { return ConfigDir + "\\codetrain.scp"; } }
+        public string cTrainFBkg   { get { return ConfigDirBkg + "\\codetrain.scp"; } }
         public string cTestFalseF  { get { return ConfigDir + "\\codetestfalse.scp"; } }
         public string cTestTrueF   { get { return ConfigDir + "\\codetesttrue.scp"; } }
         public string trainF       { get { return ConfigDir + "\\train.scp"; } }
+        public string trainFBkg    { get { return ConfigDirBkg + "\\train.scp"; } }
         public string tFalseF      { get { return ConfigDir + "\\testfalse.scp"; } }
         public string tTrueF       { get { return ConfigDir + "\\testtrue.scp"; } }
-        public string LabelSeqF    { get { return ConfigDir + "\\labSeq"; } }
+        public string singleWord = "BACKGROUND";
         public string wltF         { get { return ConfigDir + "\\phones.mlf";  } }//file containing segmentation info into SONG SYLLABLES + SILENCE
+        public string wltFBkg      { get { return ConfigDirBkg + "\\phones.mlf"; } }
         public string wordNet      { get { return ConfigDir + "\\phone.net"; } }
+        public string wordNetBkg   { get { return ConfigDirBkg + "\\phone.net"; } }
         //for scanning a single test file
         public string TestFileCode { get { return ConfigDir + "\\Test_CodeSingle.scp"; } }
         public string TestFile     { get { return ConfigDir + "\\Test_Single.scp"; } }
@@ -92,18 +107,25 @@ namespace HMMBuilder
         //lists directory
         //public string ListsDir   { get { return ConfigDir + "\\lists"; } }
         public string monophones   { get { return ConfigDir + "\\" + labelListFN; } } //contains list of syllables to recognise including SIL
+        public string monophonesBkg   { get { return ConfigDirBkg + "\\" + labelListFN; } }
 
         //HMM files
         public string HmmDir       { get { return ConfigDir + "\\hmms"; } }
+        public string HmmDirBkg    { get { return ConfigDirBkg + "\\hmms"; } }
         public string tgtDir0      { get { return HmmDir + "\\hmm.0"; } }
+        public string tgtDir0Bkg   { get { return HmmDirBkg + "\\hmm.0"; } }
         public string tgtDir1      { get { return HmmDir + "\\hmm.1"; }}
+        public string tgtDir1Bkg   { get { return HmmDirBkg + "\\hmm.1"; } }
         public string tgtDir2      { get { return HmmDir + "\\hmm.2"; }}
+        public string tgtDir2Bkg { get { return HmmDirBkg + "\\hmm.2"; } }
         public string tgtDirTmp    { get { return HmmDir + "\\tmp"; } }
+        public string tgtDirTmpBkg { get { return HmmDirBkg + "\\tmp"; } }
         public string macrosFN        = "macros";
         public string hmmdefFN        = "hmmdefs";
         public string protoFN         = "proto"; //CANNOT CHANGE THIS NAME !!??
         public string vFloorsFN       = "vFloors";
         public string prototypeHMM { get { return ConfigDir + "\\" + protoFN; } }
+        public string prototypeHMMBkg { get { return ConfigDirBkg + "\\" + protoFN; } }
 
         //results files
         public string resultTrue  { get { return ResultsDir + "\\recountTrue.mlf";} }
@@ -322,7 +344,8 @@ namespace HMMBuilder
                     "#Context: M\n" +
                     "#TiedState: n\n" +
                     "#VQ_clust: L\n" +
-                    "HERest_Iter: 7\n" + //################ NUMBER OF ITERATIONS #############################
+                    "HERest_Iter: " + numIterations.ToString() + "\n" + //################ NUMBER OF ITERATIONS #############################
+                    "HERestBKG_Iter: " + numBkgIterations.ToString() + "\n" + 
                     "#HERest_par_mode: n\n" +
                     "#Clean_up: n\n" +
                     "Trace_tool_calls: y\n\n" +
@@ -337,7 +360,8 @@ namespace HMMBuilder
                     "#HLEd: y\n" +
                     "#HInit: y\n" +
                     "#HRest: n\n" +
-                    "HERest: y\n" +
+                    "HERest: y\n" +         //train VOCALIZATION/SIL models
+                    "HERestBKG: y\n" +      //train BACKGROUND model
                     "#HSmooth: n\n" +
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
