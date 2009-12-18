@@ -17,7 +17,12 @@ namespace HMMBuilder
         #region Variables
 
         const int ERROR_FILE_NOT_FOUND = 2;
-        static List<string> syllableList = new List<string>(); //list of words/syllables/phones to recognise
+        private static List<string> syllableList = new List<string>(); //list of words/syllables/phones to recognise
+
+        public static List<string> SyllableList
+        {
+            get { return syllableList;  }  
+        }
 
         #endregion
 
@@ -221,77 +226,42 @@ namespace HMMBuilder
             } //end if (extractLabels)
             else //DO NOT EXTRACT LABELS
             {
-                //read the labSeq file containing the label sequence
-                
-                StreamReader wltReader = null;
+                //htkConfig.singleWord contains the one-word model to train               
                 StreamWriter wltWriter = null;
                 string heading = "#!MLF!#";
 
                 try
                 {
-                    wltReader = new StreamReader(htkConfig.LabelSeqF);
-                    try
+                    syllableList.Add(htkConfig.singleWord); //remember to clear this!!!
+                    vocalization = htkConfig.singleWord;
+
+                    Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltFBkg + ">");
+                    wltWriter = File.CreateText(htkConfig.wltFBkg);
+                    wltWriter.WriteLine(heading);
+
+                    DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPathBkg);
+                    FileInfo[] FileList = Dir.GetFiles("*"+HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
+
+                    string currLine = "";                        
+                    foreach (FileInfo FI in FileList)
                     {
-                        wltWriter = File.CreateText(htkConfig.wltF);
-                        wltWriter.WriteLine(heading);
-                        
-                        txtLine = wltReader.ReadLine(); //the label file has only one line
-                        string[] param = Regex.Split(txtLine, @"\s*\|\s*");
-                        
-                        ////TO DO; for each value of labParam, check if the related .pcf and proto files exist
-
-                        foreach (string match in param)
-                        {
-                            syllableList.Add(match);
-
-                        }
-
-                        DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPath);
-                        FileInfo[] FileList = Dir.GetFiles("*"+HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
-
-                        string currLine = "";
-                        
-                        foreach (FileInfo FI in FileList)
-                        {
-                            currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
-                            wltWriter.WriteLine(currLine);
-                            foreach (string match in param)
-                            {
-                                wltWriter.WriteLine(match);
-                            }
-                            wltWriter.WriteLine(".");
-                        }
-
-                        while ((txtLine = wltReader.ReadLine()) != null)
-                        {
-                            wltWriter.WriteLine(txtLine);
-                        }
+                        currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
+                        wltWriter.WriteLine(currLine);
+                        wltWriter.WriteLine(htkConfig.singleWord);
+                        wltWriter.WriteLine(".");
                     }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e);
-                        throw (e);
-                    }
-                    finally
-                    {
-                        if (wltWriter != null)
-                        {
-                            wltWriter.Flush();
-                            wltWriter.Close();
-                        }
-                    }
-
                 }
-                catch (IOException e)
+                catch (Exception e)
                 {
-                    Console.WriteLine("Could not find label file: {0}", htkConfig.LabelSeqF);
+                    Console.WriteLine(e);
                     throw (e);
                 }
                 finally
                 {
-                    if (wltReader != null)
+                    if (wltWriter != null)
                     {
-                        wltReader.Close();
+                        wltWriter.Flush();
+                        wltWriter.Close();
                     }
                 }
 
@@ -306,8 +276,12 @@ namespace HMMBuilder
         public static void WriteDictionary(HTKConfig htkConfig)
         {            
             //THREE: generate dictionary file 'dict' and monophones file 'monophones'
-            Console.WriteLine("HMMBuilder: Generate dictionary file '{0}' and monophones file '{1}'",
+            if(!htkConfig.bkgTraining)
+                Console.WriteLine("HMMBuilder: Generate dictionary file '{0}' and monophones file '{1}'",
                                                             htkConfig.DictFile, htkConfig.monophones);
+            else
+                Console.WriteLine("BKGTrainer: Generate dictionary file '{0}' and monophones file '{1}'",
+                                                            htkConfig.DictFileBkg, htkConfig.monophonesBkg);
             StreamReader dictionaryStreamReader = null;
             try
             {
@@ -338,11 +312,14 @@ namespace HMMBuilder
                 syllableList.Remove("SENT_START");
                 syllableList.Remove("SENT_END");
 
-
-
                 //Save list of phones to be recognised to files
                 //Check if the target directory exists. If not, create it.
-                string bcpDir = Path.GetDirectoryName(htkConfig.monophones);
+                string bcpDir;
+                if(!htkConfig.bkgTraining)
+                    bcpDir = Path.GetDirectoryName(htkConfig.monophones);
+                else
+                    bcpDir = Path.GetDirectoryName(htkConfig.monophonesBkg);
+
                 if (Directory.Exists(bcpDir) == false)
                 {
                     Directory.CreateDirectory(bcpDir);
@@ -350,8 +327,16 @@ namespace HMMBuilder
                 StreamWriter bcpWriter  = null; //to contain list of names of syllables/phones to recognise
                 StreamWriter dictWriter = null; //contains another list of phones/syllables
 
-                bcpWriter  = File.CreateText(htkConfig.monophones);
-                dictWriter = File.CreateText(htkConfig.DictFile);
+                if (!htkConfig.bkgTraining)
+                {
+                    bcpWriter = File.CreateText(htkConfig.monophones);
+                    dictWriter = File.CreateText(htkConfig.DictFile);
+                }
+                else
+                {
+                    bcpWriter = File.CreateText(htkConfig.monophonesBkg);
+                    dictWriter = File.CreateText(htkConfig.DictFileBkg);
+                }
 
                 foreach (string word in bcpList)
                 {
@@ -415,38 +400,44 @@ namespace HMMBuilder
             //write the script files for training and test data
             try
             {
-                //check if the call is multisyllabic
-                if (htkConfig.multiSyllableList.Count == 0)
+                //check that we are not traiing the BACKGROUND model right now
+                if (!htkConfig.bkgTraining)
                 {
-                    WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
-                    
-                }
-                else
-                {
-                    bool firtWord = true;
-                    foreach (string word in htkConfig.multiSyllableList)
+                    //check if the call is multisyllabic
+                    if (htkConfig.multiSyllableList.Count == 0)
                     {
-                        string trnDir = htkConfig.trnDirPath + "\\" + word;
-                        string tstTrueDir = htkConfig.tstTrueDirPath + "\\" + word;
-                        string tstFalseDir = htkConfig.tstFalseDirPath + "\\" + word;
+                        WriteScriptFiles(htkConfig.trnDirPath, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
+                    }
+                    else
+                    {
+                        bool firtWord = true;
+                        foreach (string word in htkConfig.multiSyllableList)
+                        {
+                            string trnDir = htkConfig.trnDirPath + "\\" + word;
+                            string tstTrueDir = htkConfig.tstTrueDirPath + "\\" + word;
+                            string tstFalseDir = htkConfig.tstFalseDirPath + "\\" + word;
 
-                        if (firtWord)
-                        {
-                            WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
-                            //WriteScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
-                            firtWord = false;
-                        }
-                        else
-                        {
-                            AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
-                            //AppendScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
+                            if (firtWord)
+                            {
+                                WriteScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
+                                //WriteScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
+                                firtWord = false;
+                            }
+                            else
+                            {
+                                AppendScriptFiles(trnDir, htkConfig.cTrainF, htkConfig.trainF, HTKConfig.wavExt, HTKConfig.mfcExt);
+                                //AppendScriptFiles(tstTrueDir, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt);                            
+                            }
                         }
                     }
+
+                    WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, HTKConfig.wavExt, HTKConfig.mfcExt);
+                    WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, HTKConfig.wavExt, HTKConfig.mfcExt);
                 }
-                
-                WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, HTKConfig.wavExt, HTKConfig.mfcExt);                    
-                WriteScriptFiles(htkConfig.tstFalseDirPath, htkConfig.cTestFalseF, htkConfig.tFalseF, HTKConfig.wavExt, HTKConfig.mfcExt);
-               
+                else //we are training the BACKGROUND model
+                {
+                    WriteScriptFiles(htkConfig.trnDirPathBkg, htkConfig.cTrainFBkg, htkConfig.trainFBkg, HTKConfig.wavExt, HTKConfig.mfcExt);
+                }
             }
             catch (IOException e)
             {
@@ -460,16 +451,23 @@ namespace HMMBuilder
             }
 
             //THREE - extract feature vectors for train and test sets
-            if (fvToExtract)
+            Console.WriteLine("\nHTKHelper.HCopy: fvToExtract=" + fvToExtract + "   options=" + optStr);
+            Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
+
+            if (!htkConfig.bkgTraining)
             {
-                Console.WriteLine("\nHTKHelper.HCopy: fvToExtract=" + fvToExtract + "   options=" + optStr);
-                Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
+                if (fvToExtract)
+                {
+                    ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF, htkConfig.HCopyExecutable); //training data
+                    ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestTrueF, htkConfig.HCopyExecutable);  //test data
+                    ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestFalseF, htkConfig.HCopyExecutable); //test data
 
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF,    htkConfig.HCopyExecutable); //training data
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestTrueF, htkConfig.HCopyExecutable);  //test data
-                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTestFalseF,htkConfig.HCopyExecutable); //test data
-
-            } //end if do extraction of features
+                } //end if do extraction of features
+            }
+            else
+            {
+                ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainFBkg, htkConfig.HCopyExecutable); //training data
+            }
             //Console.WriteLine("HMMBuilder: GOT TO HERE 1");
             //Console.ReadLine();
         } //end Method HCopy()
@@ -594,9 +592,28 @@ namespace HMMBuilder
 
         public static void InitSys(string aOtpStr, HTKConfig htkConfig)
         {
-            string protoCfgDir  = htkConfig.ProtoConfDir;
-            string prototypeHMM = htkConfig.prototypeHMM;
-            string tgtDir       = htkConfig.tgtDir0;
+            string protoCfgDir;
+            string prototypeHMM;
+            string tgtDir;
+            string mfccConf2;
+            string trainF;
+            
+            if (!htkConfig.bkgTraining)
+            {
+                protoCfgDir = htkConfig.ProtoConfDir;
+                prototypeHMM = htkConfig.prototypeHMM;
+                tgtDir = htkConfig.tgtDir0;
+                mfccConf2 = htkConfig.MfccConfig2FN;
+                trainF = htkConfig.trainF;
+            }
+            else
+            {
+                protoCfgDir = htkConfig.ProtoConfDirBkg;
+                prototypeHMM = htkConfig.prototypeHMMBkg;
+                tgtDir = htkConfig.tgtDir0Bkg;
+                mfccConf2 = htkConfig.MfccConfig2FNBkg;
+                trainF = htkConfig.trainFBkg;
+            }
 
             string HCompVExecutable = htkConfig.HTKDir + "\\HCompV.exe";
             StreamReader stdErr = null;
@@ -619,7 +636,7 @@ namespace HMMBuilder
 
                 //Calling HCompV.exe with following arguments creates the proto and vFloors in dir hmms\hmm.0 
                 //HCompV.exe -A -D -T 1 -C config_train -f 0.01 -m -S train.scp -M hmm.0 proto    
-                string commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfig2FN + " -f 0.01 -m -S " + htkConfig.trainF 
+                string commandLine = " " + aOtpStr + " -C " + mfccConf2 + " -f 0.01 -m -S " + trainF 
                                    + " -M " + tgtDir + " " + prototypeHMM;
                 Console.WriteLine("commandLine = "+commandLine);
 
@@ -969,27 +986,59 @@ namespace HMMBuilder
             //tgtDir2 == tgtD
 
             StreamReader stdErr = null;
+
             //StreamReader stdOut = null;
             //string output = null;
             string error = null;
 
             //Create directories
-            string tmpD = htkConfig.tgtDirTmp;
+            string tmpD;
+            string tgtDir0;
+            string tgtDir1;
+            string tgtDir2;
+            string MfccConfig2FN;
+            string wltF;
+            string trainF;
+            string monophones;
+
+            if (!htkConfig.bkgTraining)
+            {
+                tmpD = htkConfig.tgtDirTmp;
+                tgtDir1 = htkConfig.tgtDir1;
+                tgtDir2 = htkConfig.tgtDir2;
+                tgtDir0 = htkConfig.tgtDir0;
+                MfccConfig2FN = htkConfig.MfccConfig2FN; 
+                wltF = htkConfig.wltF; 
+                trainF = htkConfig.trainF; 
+                monophones = htkConfig.monophones;
+            }
+            else
+            {
+                tmpD = htkConfig.tgtDirTmpBkg;
+                tgtDir1 = htkConfig.tgtDir1Bkg;
+                tgtDir2 = htkConfig.tgtDir2Bkg;
+                tgtDir0 = htkConfig.tgtDir0Bkg;
+                MfccConfig2FN = htkConfig.MfccConfig2FNBkg;
+                wltF = htkConfig.wltFBkg;
+                trainF = htkConfig.trainFBkg;
+                monophones = htkConfig.monophonesBkg;
+            }
+
             try
             {
-                if (Directory.Exists(htkConfig.tgtDir1)) // Remove hmm1 dir if it exists
+                if (Directory.Exists(tgtDir1)) // Remove hmm1 dir if it exists
                 {
-                    Directory.Delete(htkConfig.tgtDir1, true);
+                    Directory.Delete(tgtDir1, true);
                 }
-                Directory.CreateDirectory(htkConfig.tgtDir1);
-                DirectoryInfo srcDir = new DirectoryInfo(htkConfig.tgtDir1); //hmm1 becomes source dir
+                Directory.CreateDirectory(tgtDir1);
+                DirectoryInfo srcDir = new DirectoryInfo(tgtDir1); //hmm1 becomes source dir
 
-                if (Directory.Exists(htkConfig.tgtDir2))// Remove hmm2 dir if it exists
-                {           
-                    Directory.Delete(htkConfig.tgtDir2, true);
+                if (Directory.Exists(tgtDir2))// Remove hmm2 dir if it exists
+                {
+                    Directory.Delete(tgtDir2, true);
                 }
-                Directory.CreateDirectory(htkConfig.tgtDir2);
-                DirectoryInfo tgtDir = new DirectoryInfo(htkConfig.tgtDir2); //hmm2 becomes target dir
+                Directory.CreateDirectory(tgtDir2);
+                DirectoryInfo tgtDir = new DirectoryInfo(tgtDir2); //hmm2 becomes target dir
 
                 if (Directory.Exists(tmpD)) // Remove temp dir if exists
                 {                   
@@ -1001,12 +1050,12 @@ namespace HMMBuilder
 
 
                 //Copy hmm0 to hmm1. hmm0 contains the initial parameter values
-                DirectoryInfo hmm0 = new DirectoryInfo(htkConfig.tgtDir0);
+                DirectoryInfo hmm0 = new DirectoryInfo(tgtDir0);
                 CopyAll(hmm0, srcDir);
-                if (File.Exists(htkConfig.tgtDir1 + "\\" + htkConfig.protoFN)) 
-                    File.Delete(htkConfig.tgtDir1 + "\\" + htkConfig.protoFN);
-                if (File.Exists(htkConfig.tgtDir1 + "\\" + htkConfig.vFloorsFN)) 
-                    File.Delete(htkConfig.tgtDir1 + "\\" + htkConfig.vFloorsFN);
+                if (File.Exists(tgtDir1 + "\\" + htkConfig.protoFN))
+                    File.Delete(tgtDir1 + "\\" + htkConfig.protoFN);
+                if (File.Exists(tgtDir1 + "\\" + htkConfig.vFloorsFN))
+                    File.Delete(tgtDir1 + "\\" + htkConfig.vFloorsFN);
 
 
                 //Now do HMM training
@@ -1026,14 +1075,14 @@ namespace HMMBuilder
                         //      -H ./hmms/hmmx/macros 
                         //      -H ./hmms/hmmx/hmmdefs 
                         //      -M ./hmms/hmm(x+1) ./lists/bcplist
-                        
+
                         string commandLine = "";
-                        commandLine = " " + aOtpStr + " -C " + htkConfig.MfccConfig2FN + " -I " + htkConfig.wltF +
-                                      " " + pOptStr + 
-                                      " -S " + htkConfig.trainF +
+                        commandLine = " " + aOtpStr + " -C " + MfccConfig2FN + " -I " + wltF +
+                                      " " + pOptStr +
+                                      " -S " + trainF +
                                       " -H " + srcDir.ToString() + "\\" + htkConfig.macrosFN +
                                       " -H " + srcDir.ToString() + "\\" + htkConfig.hmmdefFN +
-                                      " -M " + tgtDir.ToString() + " " + htkConfig.monophones;
+                                      " -M " + tgtDir.ToString() + " " + monophones;
 
                         Process herest = new Process();
                         ProcessStartInfo psI = new ProcessStartInfo(HERestExecutable);
