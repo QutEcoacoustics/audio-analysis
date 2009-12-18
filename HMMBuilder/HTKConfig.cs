@@ -361,7 +361,7 @@ namespace HMMBuilder
                     "#HInit: y\n" +
                     "#HRest: n\n" +
                     "HERest: y\n" +         //train VOCALIZATION/SIL models
-                    "HERestBKG: y\n" +      //train BACKGROUND model
+                    "HERestBKG: n\n" +      //train BACKGROUND model
                     "#HSmooth: n\n" +
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
