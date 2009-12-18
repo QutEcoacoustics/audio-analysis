@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-//using System.Collections.Generic;
 
 namespace HMMBuilder
 {
@@ -97,7 +96,7 @@ namespace HMMBuilder
 
             //string cwd = Directory.GetCurrentDirectory();
             //if(File.Exists(fileName))
-
+            
             StreamReader objReader = null;
             try
             {
