@@ -13,7 +13,8 @@ namespace HMMBuilder
         {
             #region Variables
 
-            HTKConfig htkConfig = new HTKConfig();
+            HTKConfig htkConfig = new HTKConfig();            
+            BKGTrainer bkgModel;
 
             //htkConfig.CallName = "CURLEW1";
             //htkConfig.Comment = "Parameters for Curlew";
@@ -50,10 +51,10 @@ namespace HMMBuilder
             htkConfig.LOFREQ = "150";
             htkConfig.HIFREQ = "6000";
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            htkConfig.numIterations = 3;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
             //==================================================================================================================
             //==================================================================================================================
-
 
             htkConfig.Author       = "Michael Towsey";
             htkConfig.SOURCEFORMAT = "WAV";
@@ -63,6 +64,10 @@ namespace HMMBuilder
             htkConfig.SampleRate     = "22050";    //samples per second //this must be put first inlist of framing parameters
             htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds - that is a frame every 11.6 millisconds.
             htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
+
+            //BACKGROUND MODEL PARAMETERS
+            htkConfig.numBkgIterations = 3; //number of iterations for re-estimating the BG model
+            htkConfig.numHmmBkgStates = "1";
 
             //parse all the above strings to ints or reals
             double tr;
@@ -86,10 +91,13 @@ namespace HMMBuilder
 
             //htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
             htkConfig.WorkingDir  = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
+            htkConfig.WorkingDirBkg = "C:\\SensorNetworks\\Templates\\Template_BACKGROUND";
             htkConfig.HTKDir      = "C:\\SensorNetworks\\Software\\HTK";
-            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
+            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";            
             htkConfig.DataDir     = htkConfig.WorkingDir + "\\data";
+            htkConfig.DataDirBkg = htkConfig.WorkingDirBkg + "\\data";
             htkConfig.ConfigDir   = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
+            htkConfig.ConfigDirBkg = htkConfig.WorkingDirBkg;
             htkConfig.ResultsDir  = htkConfig.WorkingDir + "\\results";
             htkConfig.SilenceModelPath = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + HTKConfig.noiseModelExt;
@@ -103,7 +111,8 @@ namespace HMMBuilder
             string aOptionsStr = htkConfig.aOptionsStr;
             string pOptionsStr = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
             bool good = true;
-            int numIters = 0;  //number of training iterations
+            int numIters = htkConfig.numIterations;           //number of training iterations
+            int numBkgIters = htkConfig.numBkgIterations;    //number of background training iterations
             #endregion
 
             switch (args.Length)
@@ -112,7 +121,7 @@ namespace HMMBuilder
                 default:
 
                     #region ZERO: Determine if the vocalization is monosyllabic
-                    // If the file 'gram.txt' is found in ... the vocalization is assumed to be multisyllabic. 
+                    // If the file 'gram.txt' is found in the config folder the vocalization is assumed to be multisyllabic. 
                     bool multisyllabic = false;
                     if (Directory.Exists(htkConfig.ConfigDir))
                         if (File.Exists(htkConfig.gramF))
@@ -208,6 +217,44 @@ namespace HMMBuilder
                     //    cK = "F";
                     //}
 
+                    if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG", out tmpVal))
+                    {
+                        if (tmpVal.Equals("Y"))
+                        {
+                            //Need to estimate the background model
+                            if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
+                            {
+                                numBkgIters = int.Parse(tmpVal);
+                            }
+                            else
+                            {
+                                numBkgIters = 3;
+                            }
+                            Console.WriteLine("\n\nNumber of iterations for estimating the BACKGROUND model set to: " + numIters);
+
+                            //Estimate BACKGROUND model
+                            try
+                            {
+                                htkConfig.bkgTraining = true;  //BACKGROUND training mode on
+                                bkgModel = new BKGTrainer(htkConfig);
+                                bkgModel.EstimateModel();
+                                htkConfig.bkgTraining = false; //BACKGROUND training mode off 
+                            }
+                            catch                            
+                            {
+                                Console.WriteLine("Failed to estimate the background model.");
+                                good = false;
+                                break;
+                            }
+
+                        }
+                        else //the BG model does not need to be re-trained
+                        {
+                            htkConfig.bkgTraining = false;
+                            //TO DO: check if the BKG HMM exists
+                        }
+                    }
+
                     if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
                     {
                         numIters = int.Parse(tmpVal);
@@ -216,7 +263,7 @@ namespace HMMBuilder
                     {
                         numIters = 3;
                     }
-                    Console.WriteLine("\n\nNumber of iterations for training set = " + numIters);
+                    Console.WriteLine("\n\nNumber of iterations for estimating the VOCALIZATION/SIL models set to : " + numIters);
 
                     if (HMMSettings.ConfigParam.TryGetValue("TRACE_TOOL_CALLS", out tmpVal))
                     {
