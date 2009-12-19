@@ -10,6 +10,7 @@ namespace HMMBuilder
     {
         #region Variables
         static HTKConfig htkConfig;
+        bool teeModel = true;
         string bkgLabel;
 
         #endregion
@@ -25,26 +26,51 @@ namespace HMMBuilder
         {
             try
             {
+                //Clear Prototype settings
+                HMMSettings.confProtoDict.Clear();
+                if (!teeModel)
+                {
+                    //Clear Sillable list
+                    HTKHelper.SyllableList.Clear();
+                }
+                
+                //Create Code config file for the extraction of MFCC features
                 if (!Directory.Exists(htkConfig.ConfigDirBkg)) Directory.CreateDirectory(htkConfig.ConfigDirBkg);                
-                htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFNBkg);       //Write the mfcc for FV extraction
+                htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFNBkg);
 
-                ReadTCF(htkConfig.MfccConfigFNBkg, htkConfig.MfccConfig2FNBkg); //Write the mfcc for training
-                
+                //Create Train Code File for training the model
+                ReadTCF(htkConfig.MfccConfigFNBkg, htkConfig.MfccConfig2FNBkg);
+
+                //Create Prototype Config File
                 if (!Directory.Exists(htkConfig.ProtoConfDirBkg)) Directory.CreateDirectory(htkConfig.ProtoConfDirBkg);
-                WriteBkgPrototypeFile(htkConfig.ProtoConfDirBkg);  //prototype file
+                WriteBkgPrototypeFile(htkConfig.ProtoConfDirBkg);               
 
+                //Extract MFCC features from the recordings
                 //HTKHelper.HCopy(htkConfig.aOptionsStr, htkConfig, true);
-                
-                HTKHelper.CreateWLT(htkConfig, ref bkgLabel, false);
+
+                //Create Word Level Transcription file
+                HTKHelper.CreateWLT(htkConfig, ref bkgLabel, false);            
 
                 HTKHelper.WriteDictionary(htkConfig);
 
-                HMMSettings.ReadPCF(htkConfig.ProtoConfDirBkg);
+                //Read in Prototype Configuration Files
+                HMMSettings.ReadPCF(htkConfig.ProtoConfDirBkg);                 
 
                 HMMSettings.WriteHMMprototypeFile(htkConfig.prototypeHMMBkg);
 
-                HTKHelper.InitSys(htkConfig.aOptionsStr, htkConfig);
+                if (teeModel)
+                {
+                    HTKHelper.InitSys(htkConfig.aOptionsStr, htkConfig);
+                    //Read in the trained SILENCE model
+                    //ReadSilModel();
+                }
+                else
+                {
+                    //Flat start the model
+                    HTKHelper.InitSys(htkConfig.aOptionsStr, htkConfig);
+                }
 
+                //Re-estimate model parameters
                 HTKHelper.HERest(htkConfig.numBkgIterations, htkConfig.aOptionsStr, "", htkConfig);
 
                 //Clear Lists and Tables
