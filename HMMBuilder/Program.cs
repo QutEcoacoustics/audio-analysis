@@ -50,8 +50,8 @@ namespace HMMBuilder
             htkConfig.Comment = "Trained on separate inhale and exhale syllables";
             htkConfig.LOFREQ = "150";
             htkConfig.HIFREQ = "6000";
-            htkConfig.numHmmStates = "10";  //number of hmm states for call model
-            htkConfig.numIterations = 3;  //number of iterations for re-estimating the VOCALIZATION/SIL models
+            htkConfig.numHmmStates = "4";  //number of hmm states for call model
+            htkConfig.numIterations = 7;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
             //==================================================================================================================
             //==================================================================================================================
@@ -180,6 +180,7 @@ namespace HMMBuilder
                                 htkConfig.CallName = word;
                                 htkConfig.WriteSegmentationIniFile(segmentationIniFile);
                                 htkConfig.CallName = tmpString;
+                           
                             }                        
                         }
                     }
@@ -216,44 +217,6 @@ namespace HMMBuilder
                     //    Console.WriteLine("Covariance kind set to 'FULLC'");
                     //    cK = "F";
                     //}
-
-                    if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG", out tmpVal))
-                    {
-                        if (tmpVal.Equals("Y"))
-                        {
-                            //Need to estimate the background model
-                            if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
-                            {
-                                numBkgIters = int.Parse(tmpVal);
-                            }
-                            else
-                            {
-                                numBkgIters = 3;
-                            }
-                            Console.WriteLine("\n\nNumber of iterations for estimating the BACKGROUND model set to: " + numIters);
-
-                            //Estimate BACKGROUND model
-                            try
-                            {
-                                htkConfig.bkgTraining = true;  //BACKGROUND training mode on
-                                bkgModel = new BKGTrainer(htkConfig);
-                                bkgModel.EstimateModel();
-                                htkConfig.bkgTraining = false; //BACKGROUND training mode off 
-                            }
-                            catch                            
-                            {
-                                Console.WriteLine("Failed to estimate the background model.");
-                                good = false;
-                                break;
-                            }
-
-                        }
-                        else //the BG model does not need to be re-trained
-                        {
-                            htkConfig.bkgTraining = false;
-                            //TO DO: check if the BKG HMM exists
-                        }
-                    }
 
                     if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
                     {
@@ -322,7 +285,7 @@ namespace HMMBuilder
 
                                 //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
                                 //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
-                                int verbosity = 0;
+                                int verbosity = 1;
                                 Main_CallSegmentation2.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
                             }
 
@@ -388,9 +351,8 @@ namespace HMMBuilder
                     {
                         Console.WriteLine(ex.ToString());
                         good = false;
-                        break; 
+                        break;
                     }
-
 
                     Console.WriteLine("\nTRAINING: HMM Model re-estimation using HTK.HERest");
                     try
@@ -412,6 +374,47 @@ namespace HMMBuilder
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig)");
                         good = false;
                         break; 
+                    }
+                    #endregion
+
+                    #region Background Model Estimation
+                    if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG", out tmpVal))
+                    {
+                        if (tmpVal.Equals("Y"))
+                        {
+                            Console.WriteLine("\n\nEstimating the BACKGROUND model ...");
+
+                            if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
+                            {
+                                numBkgIters = int.Parse(tmpVal);
+                            }
+                            else
+                            {
+                                numBkgIters = 3;
+                            }
+                            Console.WriteLine("\n\nNumber of iterations for estimating the BACKGROUND model set to: " + numIters);
+
+                            //Estimate BACKGROUND model
+                            try
+                            {
+                                htkConfig.bkgTraining = true;  //BACKGROUND training mode on
+                                bkgModel = new BKGTrainer(htkConfig);
+                                bkgModel.EstimateModel();
+                                htkConfig.bkgTraining = false; //BACKGROUND training mode off 
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Failed to estimate the BACKGROUND model.");
+                                good = false;
+                                break;
+                            }
+
+                        }
+                        else //the BG model does not need to be re-trained
+                        {
+                            htkConfig.bkgTraining = false;
+                            //TO DO: check if the BKG HMM exists
+                        }
                     }
                     #endregion
 
@@ -582,7 +585,10 @@ namespace HMMBuilder
                                 //check if the threshold has been defined
                                 int threshold = 0;
                                 if (!htkConfig.threshold.TryGetValue(syllName, out threshold))
-                                    throw new Exception("No Score Threshold defined for '{"+syllName+"}'");
+                                {
+                                    Console.WriteLine("No Score Threshold defined for '{0}'", syllName);
+                                    throw new Exception();
+                                }
                                     
                                 int step = 2; //to step the threshold
                                 double maxScore = -Double.MaxValue;
