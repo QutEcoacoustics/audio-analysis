@@ -232,7 +232,9 @@ namespace HMMBuilder
 
                 try
                 {
-                    syllableList.Add(htkConfig.singleWord); //remember to clear this!!!
+                    if (!syllableList.Contains(htkConfig.singleWord))
+                        syllableList.Add(htkConfig.singleWord); 
+                    
                     vocalization = htkConfig.singleWord;
 
                     Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltFBkg + ">");
@@ -240,7 +242,7 @@ namespace HMMBuilder
                     wltWriter.WriteLine(heading);
 
                     DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPathBkg);
-                    FileInfo[] FileList = Dir.GetFiles("*"+HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
+                    FileInfo[] FileList = Dir.GetFiles("*" + HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
 
                     string currLine = "";                        
                     foreach (FileInfo FI in FileList)
@@ -663,7 +665,7 @@ namespace HMMBuilder
                 //wait for the process to finish
 
 
-                //create a HMM for each WORD in the labelSeq.
+                //create a HMM for each WORD in the syllableList.
                 //If the file 'WORD' is not found a default transition matrix will be used.
 
                 string prototypeFN = Path.GetFileName(prototypeHMM);
