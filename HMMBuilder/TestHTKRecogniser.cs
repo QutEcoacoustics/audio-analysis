@@ -67,7 +67,7 @@ namespace HMMBuilder
             if (args.Length == 3) wavFile = args[2]; //wav file to process
             #endregion
 
-            //get list of recognised events and print.
+            //#### B: GET LIST OF RECOGNISED EVENTS.
             List<AcousticEvent> events;
             TestHTKRecogniser.Execute(templateFN, workingDirectory, wavFile, out events);
             List<string> list = ExtractEventData(events);
