@@ -393,7 +393,6 @@ namespace AudioAnalysis
             //init  values
             tp = 0;
             fp = 0;
-            fn = 0;
             //header
             string space = " ";
             int count = 0;
@@ -441,6 +440,7 @@ namespace AudioAnalysis
             //Now calculate the FALSE NEGATIVES. These are the labelled events not tagged in previous search.
             Console.WriteLine();
             sb.Append("\n");
+            fn = 0;
             count = 0;
             previousSourceFile = " "; //this is just a device to achieve a formatting hwich is easier to interpret
             foreach (AcousticEvent ae in labels)
@@ -469,7 +469,9 @@ namespace AudioAnalysis
                 }
             }
 
-            line = "** This FN event occured in a recording which also scored a tp or fp hit.";
+            if(fn == 0) line = "NO FALSE NEGATIVES.";
+            else
+                line = "** This FN event occured in a recording which also scored a tp or fp hit.";
             Console.WriteLine(line);
             sb.Append(line + "\n");
 
