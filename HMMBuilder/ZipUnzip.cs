@@ -158,7 +158,7 @@ namespace HMMBuilder
             fastZip.RestoreAttributesOnExtract = restoreAttributes;
             fastZip.RestoreDateTimeOnExtract = restoreDates;
             fastZip.ExtractZip(zipFN, targetDir, overwrite, confirmOverwrite, fileFilter, dirFilter, recurse);
-
+            
         }
     } //end class
 
