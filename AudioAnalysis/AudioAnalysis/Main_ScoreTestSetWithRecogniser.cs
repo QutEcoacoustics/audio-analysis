@@ -35,7 +35,8 @@ namespace AudioAnalysis
             //string wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //string wavDirName = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
             string wavDirName   = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\";
-            string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_OD\"; 
+            //string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_OD\";
+            string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_HTK\"; 
 
             string wavFileName = null; 
             //string wavFileName = @"HoneymoonBay_StBees_20080905-001000.wav";
@@ -43,22 +44,26 @@ namespace AudioAnalysis
 
             //LABELS FILE
             //string labelsFileName = "KoalaTestData.txt";
-            //string labelsFileName = "Koala Calls - Honeymoon Bay- 30 October 2009.txt";     //1
-            //string labelsFileName = "Koala Calls - TopKnoll - 30 October 2009.txt";         //2
-            //string labelsFileName = "Koala Calls - WestKnoll - 30 October 2009.txt";        //3
-            string labelsFileName = "Koala Calls - WestKnoll - 1 Nov 2009 - 14 Nov 2009.txt"; //4
+            //string labelsFileName = "KoalaCalls_HoneymoonBay_30October2009.txt";     //1
+            //string labelsFileName = "KoalaCalls_TopKnoll_30October2009.txt";         //2
+            //string labelsFileName = "KoalaCalls_WestKnoll_30October2009.txt";        //3
+            //string labelsFileName = "KoalaCalls_WestKnoll_01Nov2009-14Nov2009.txt";  //4
+            string labelsFileName = "KoalaCalls_All_2009.txt";                       //5
 
             //MATCH STRING -search directory for matches to this file name
             //string fileMatch = "*.wav";
-            //string fileMatch = "Honeymoon Bay - Bees_20091030*.wav";   //1
-            //string fileMatch = "Top Knoll - Bees_20091030-*.wav";      //2
-            //string fileMatch = "West Knoll - Bees_20091030-*.wav";     //3
-            string fileMatch = "West Knoll - Bees_200911*.wav";          //4
+            //string fileMatch = "HoneymoonBay_Bees_20091030*.wav";   //1
+            //string fileMatch = "TopKnoll_Bees_20091030-*.wav";      //2
+            //string fileMatch = "WestKnoll_Bees_20091030-*.wav";     //3
+            //string fileMatch = "WestKnoll_Bees_200911*.wav";        //4
+            string fileMatch = "*.wav";                             //5
 
             //RESULTS FILE
-            //string resultsFile = "Honeymoon Bay - Bees_20091030.results.txt";  //1
-            //string resultsFile = "West Knoll - Bees_20091030.results.txt";     //3
-            string resultsFile = "West Knoll - Bees_200911.results.txt";         //4
+            //string resultsFile = "HoneymoonBay_Bees_20091030.results.txt";  //1
+            //string resultsFile = "TopKnoll_Bees_20091030.results.txt";      //2
+            //string resultsFile = "WestKnoll_Bees_20091030.results.txt";     //3
+            //string resultsFile = "WestKnoll_Bees_200911.results.txt";       //4
+            string resultsFile = "KoalaCalls_All_2009.results.txt";         //5
 
             //#######################################################################################################
 
@@ -103,9 +108,9 @@ namespace AudioAnalysis
                 fileNames.Add(wavDirName + wavFileName);
             }
 
-
-            Console.WriteLine("\nNUMBER OF MATCHING FILES IN DIRECTORY = " + fileNames.Count);
-            sb.Append(String.Format("\nNUMBER OF FILES IN DIRECTORY MATCHING REGEX \\\\{0}\\\\  ={1}\n", fileMatch, fileNames.Count));
+            string str = String.Format("\nNUMBER OF FILES IN DIRECTORY MATCHING REGEX \\\\{0}\\\\  ={1}\n", fileMatch, fileNames.Count);
+            Console.WriteLine(str);
+            sb.Append(str);
 
 
             //#######################################################################################################
@@ -178,6 +183,7 @@ namespace AudioAnalysis
                     case HTK_RECOGNISER:
                         //###############################################################################################");
                         //C2    HTK
+                        Console.WriteLine("TESTING HTK RECOGNISER");
                         string workingDirectory = "C:\\SensorNetworks\\temp"; //set default working directory  
                         string dir = "C:\\SensorNetworks\\Templates\\Template_";
                         //string templateName = "CURRAWONG1";
