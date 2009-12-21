@@ -53,7 +53,7 @@ namespace HMMBuilder
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav";          //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";       //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";           //ARG 2
-            string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav";   //ARG 2
+            string wavFile = "C:\\SensorNetworks\\WavFiles\\Koala_Male\\SmallTestSet\\HoneymoonBay_StBees_20080905-001000.wav";   //ARG 2
             //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
             //string wavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
             //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
@@ -67,17 +67,21 @@ namespace HMMBuilder
             if (args.Length == 3) wavFile = args[2]; //wav file to process
             #endregion
 
+
+            //#### A: GET LIST OF LABELLED EVENTS.
+            string labelsPath = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\KoalaTestData.txt";
+            string labelsText;
+            string filename = Path.GetFileNameWithoutExtension(wavFile);
+            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, filename, out labelsText);
+            //List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, null, out labelsText);
+
             //#### B: GET LIST OF RECOGNISED EVENTS.
             List<AcousticEvent> events;
             TestHTKRecogniser.Execute(templateFN, workingDirectory, wavFile, out events);
             List<string> list = ExtractEventData(events);
             string opFile = workingDirectory + "\\results\\eventData.txt";
             FileTools.WriteTextFile(opFile, list, true);
-
-            string labelsPath = @"C:\SensorNetworks\WavFiles\KoalaTestData\KoalaTestData.txt";
             List<AcousticEvent> results = GetAcousticEventsFromResultsFile(opFile);
-            string labelsText;
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, null, out labelsText);
 
             int tp, fp, fn;
             string resultsText;
@@ -101,11 +105,19 @@ namespace HMMBuilder
         {
             string templateName = Path.GetFileNameWithoutExtension(templatePath);
 
-            //A: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
+            //A: SHIFT TEMPLATE TO WORKING DIRECTORY AND UNZIP IF NOT ALREADY DONE
+                //string target = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
+                //Console.WriteLine("GOT TO HERE1");
+                //ZipUnzip.UnZip(target, templateFN, true);
+                //Console.WriteLine("GOT TO HERE2");
+            string target = workingDirectory + "\\" + Path.GetFileNameWithoutExtension(templatePath);
+            if (! Directory.Exists(target)) ZipUnzip.UnZip(target, templatePath, true);
+
+            //B: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
             string resultsPath;
             ScanWithHTKREcogniser(workingDirectory, templatePath, wavFile, out resultsPath);
 
-            //B: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
+            //C: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
             if (TestHTKRecogniser.Verbose == true)
             {
                 Console.WriteLine("Parse the HMM results file and return Acoustic Events");
@@ -113,7 +125,7 @@ namespace HMMBuilder
             string templateDir = workingDirectory + "\\" + templateName; //template has been shifted
             events = GetAcousticEventsFromHTKResults(resultsPath, templateDir);
 
-            //C: DISPLAY IN SONOGRAM
+            //D: DISPLAY IN SONOGRAM
             if (TestHTKRecogniser.Verbose == true)
             {
                 Console.WriteLine(" Extracted " + events.Count + " events.   Preparing sonogram to display events");
@@ -388,10 +400,6 @@ namespace HMMBuilder
             //delete data directory if it exists
             if (Directory.Exists(htkConfig.DataDir)) Directory.Delete(htkConfig.DataDir, true);
             Directory.CreateDirectory(htkConfig.DataDir);
-
-            //shift template to working directory and unzip
-            string target = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
-            ZipUnzip.UnZip(target, templateFN, true);
 
             //move the data/TEST file to its own directory
             Directory.CreateDirectory(htkConfig.DataDir);
