@@ -46,12 +46,19 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "7000";
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
 
-            htkConfig.CallName = "KOALAMALE1";
-            htkConfig.Comment = "Trained on separate inhale and exhale syllables";
+            //htkConfig.CallName = "KOALAMALE_IE";
+            //htkConfig.Comment = "Two models trained on separate inhale and exhale syllables";
+            //htkConfig.LOFREQ = "150";
+            //htkConfig.HIFREQ = "6000";
+            //htkConfig.numHmmStates = "4";  //number of hmm states for call model
+            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
+
+            htkConfig.CallName = "KOALAMALE_EXHALE";
+            htkConfig.Comment = "One model trained on exhale syllables";
             htkConfig.LOFREQ = "150";
             htkConfig.HIFREQ = "6000";
             htkConfig.numHmmStates = "4";  //number of hmm states for call model
-            htkConfig.numIterations = 7;  //number of iterations for re-estimating the VOCALIZATION/SIL models
+            htkConfig.numIterations = 6;   //number of iterations for re-estimating the VOCALIZATION/SIL models
 
             //==================================================================================================================
             //==================================================================================================================
@@ -80,26 +87,26 @@ namespace HMMBuilder
             htkConfig.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString(); 
             htkConfig.FrameOverlap = (tr / wd).ToString();
             htkConfig.SAVECOMPRESSED = "T";
-            htkConfig.SAVEWITHCRC = "T";
+            htkConfig.SAVEWITHCRC    = "T";
 
             //MFCC PARAMETERS
             htkConfig.USEHAMMING = "T";
             htkConfig.PREEMCOEF  = "0.97"; //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
-            htkConfig.NUMCHANS   = "26";   //size of filter bank default = 26
+            htkConfig.NUMCHANS   = "26";   //size of filter bank - default = 26
             htkConfig.CEPLIFTER  = "22";
-            htkConfig.NUMCEPS    = "12";   //number of cepstral coefficients
+            htkConfig.NUMCEPS    = "12";   //number of cepstral coefficients - default = 12
 
-            //htkConfig.WorkingDir  = Directory.GetCurrentDirectory();
-            htkConfig.WorkingDir  = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
-            htkConfig.WorkingDirBkg = "C:\\SensorNetworks\\Templates\\Template_BACKGROUND";
-            htkConfig.HTKDir      = "C:\\SensorNetworks\\Software\\HTK";
-            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";            
-            htkConfig.DataDir     = htkConfig.WorkingDir + "\\data";
-            htkConfig.DataDirBkg = htkConfig.WorkingDirBkg + "\\data";
-            htkConfig.ConfigDir   = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
-            htkConfig.ConfigDirBkg = htkConfig.WorkingDirBkg;
-            htkConfig.ResultsDir  = htkConfig.WorkingDir + "\\results";
-            htkConfig.SilenceModelPath = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            //htkConfig.WorkingDir    = Directory.GetCurrentDirectory();
+            htkConfig.WorkingDir      = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
+            htkConfig.WorkingDirBkg   = "C:\\SensorNetworks\\Templates\\Template_BACKGROUND";
+            htkConfig.HTKDir          = "C:\\SensorNetworks\\Software\\HTK";
+            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
+            htkConfig.ConfigDir       = htkConfig.WorkingDir    + "\\" + htkConfig.CallName;
+            htkConfig.DataDir         = htkConfig.WorkingDir    + "\\data";
+            htkConfig.DataDirBkg      = htkConfig.WorkingDirBkg + "\\data";
+            htkConfig.ConfigDirBkg    = htkConfig.WorkingDirBkg;
+            htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
+            htkConfig.SilenceModelPath= "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + HTKConfig.noiseModelExt;
             
             Console.WriteLine("CWD=" + htkConfig.WorkingDir);
