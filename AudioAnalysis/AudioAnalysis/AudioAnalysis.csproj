@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScoreTestSetWithRecogniser</StartupObject>
+    <StartupObject>AudioAnalysis.Main_ScoreBirgitsResults</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -137,7 +137,7 @@
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
     <Compile Include="Main_CreateTemplate_Part2.cs" />
-    <Compile Include="Main_ScoreBirgittsBBSSAResults.cs" />
+    <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_SNR.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="Main_TestSerialTemplateOnCallFiles.cs" />
