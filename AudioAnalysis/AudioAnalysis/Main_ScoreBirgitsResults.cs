@@ -10,16 +10,16 @@ using System.Text.RegularExpressions;
 
 namespace AudioAnalysis
 {
-    class Main_ScoreBirgittsBBSSAResults
+    class Main_ScoreBirgitsResults
     {
         public static bool DRAW_SONOGRAMS = false;
 
         public static void Main(string[] args)
         {
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("SCORING BIRGIT'S BBSD ALGORITHM\n");
+            Console.WriteLine("SCORING BIRGIT'S RESULTS\n");
             StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
-            sb.Append("SCORING BIRGIT'S BBSD ALGORITHM\n");
+            sb.Append("SCORING BIRGIT'S RESULTS\n");
 
             Log.Verbosity = 1;
 
@@ -27,18 +27,21 @@ namespace AudioAnalysis
             //BBSD results data
             //string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaMale_BBSD\";
             //string bbsdFile = "koalasBBSDAlgorithm_intThresh6_matchScore30.txt";
-            string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaFemale_BBSD\";
-            string bbsdFile = "koalas_intThresh1_matchScore30.txt";
+            //string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaFemale_BBSD\";
+            //string bbsdFile   = "koalas_intThresh1_matchScore30.txt";
+            string bbsdFolder = @"C:\SensorNetworks\TestResults\KoalaMale_SPT-AED-EPR\";
+            string bbsdFile = "koalas_intThresh6_mThresh1.5_wThresh3.txt";
             string bbsdPath = bbsdFolder + bbsdFile;
 
             //LABELS FILE
-            //string labelsFileName = "Koala Calls - All 2009.txt";
+            string labelsFileName = "KoalaCalls_All_2009.txt";
+            string labelsPath     = @"C:\SensorNetworks\TestResults\KoalaMale_SPT-AED-EPR\" + labelsFileName;
+            //string labelsFileName = "Bills female koala tags test2.txt";
+            //string labelsPath = @"C:\SensorNetworks\Recordings\KoalaFemale\TestSet1\" + labelsFileName;
             //string labelsPath = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\" + labelsFileName;
-            string labelsFileName = "Bills female koala tags test2.txt";
-            string labelsPath = @"C:\SensorNetworks\Recordings\KoalaFemale\TestSet1\" + labelsFileName;
 
             //RESULTS FILE
-            string resultsFile = "Female Koala Calls - BBSD.results.txt";
+            string resultsFile = "MaleKoalaCalls_SPT-AED-EPR.results.txt";
             string resultsPath = bbsdFolder + resultsFile;
 
 
@@ -47,7 +50,7 @@ namespace AudioAnalysis
             //GET EVENTS from labels file
             if (!File.Exists(labelsPath))
             {
-                Console.WriteLine("Cannot find file containing lebel data. <" + labelsPath + ">");
+                Console.WriteLine("Cannot find file containing label data. <" + labelsPath + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(999);
@@ -63,20 +66,20 @@ namespace AudioAnalysis
             //GET EVENTS from BBSD file
             if (!File.Exists(bbsdPath))
             {
-                Console.WriteLine("Cannot find file containing bbsd data. <" + bbsdPath + ">");
+                Console.WriteLine("Cannot find file containing PREDICTIONS data. <" + bbsdPath + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(999);
             }
             //set up file containg BBSD data
             string bbsdText;
-            Log.WriteIfVerbose("BBSD Path =" + bbsdPath);
-            List<AcousticEvent> bbsdEvents = GetAcousticEventsFromBBSDFile(bbsdPath, out bbsdText);
-            sb.Append("\nBBSD Path =" + bbsdPath + "\n");
+            Log.WriteIfVerbose("PREDICTIONS Path =" + bbsdPath);
+            List<AcousticEvent> bbsdEvents = GetPredictedAcousticEventsFromBirgitsFile(bbsdPath, out bbsdText);
+            sb.Append("PREDICTIONS Path =" + bbsdPath + "\n");
             sb.Append(bbsdText);
             if(bbsdEvents.Count == 0)
             {
-                Console.WriteLine("\nWARNING!!!!   BBSD file does not contain any Acoustic Events.");
+                Console.WriteLine("\nWARNING!!!!   PREDICTIONS file does not contain any Acoustic Events.");
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(999);
@@ -136,14 +139,14 @@ namespace AudioAnalysis
         }//end Main
 
 
-        public static List<AcousticEvent> GetAcousticEventsFromBBSDFile(string path, out string bbsdText)
+        public static List<AcousticEvent> GetPredictedAcousticEventsFromBirgitsFile(string path, out string bbsdText)
         {
             var sb = new StringBuilder();
             var events = new List<AcousticEvent>();
             List<string> lines = FileTools.ReadTextFile(path);
             int minFreq = 0; //dummy value - never to be used
             int maxfreq = 0; //dummy value - never to be used
-            string line = "\nList of BBSD events in file: " + Path.GetFileName(path);
+            string line = "\nList of PREDICTED events in file: " + Path.GetFileName(path);
             Console.WriteLine(line);
             sb.Append(line + "\n");
 
