@@ -35,8 +35,8 @@ namespace AudioAnalysis
             //string wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //string wavDirName = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
             string wavDirName   = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\";
-            //string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_OD\";
-            string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_HTK\"; 
+            //string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_IE_OD\";
+            string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_EXHALE_HTK\"; 
 
             string wavFileName = null; 
             //string wavFileName = @"HoneymoonBay_StBees_20080905-001000.wav";
@@ -192,7 +192,7 @@ namespace AudioAnalysis
                         //string templateName = "CURRAWONG1";
                         //string templateName = "KOALAFEMALE1";
                         //string templateName = "KOALAFEMALE2";
-                        string templateName = "KOALAMALE1";
+                        string templateName = "KOALAMALE_EXHALE";
                         string templateDir = dir + templateName;
                         string templateFN = templateDir + "\\" + templateName + ".zip";
                         HMMBuilder.TestHTKRecogniser.Execute(templateFN, workingDirectory, wavPath, out predictedEvents);
