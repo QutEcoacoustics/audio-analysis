@@ -156,7 +156,8 @@ namespace AudioAnalysis
                         int minHz = 100;  //koalas range = 100-2000
                         int maxHz = 2000;
                         double dctDuration = 0.25;  //duration of DCT in seconds 
-                        int dctIndex = 9;   //bounding index i.e. ignore oscillations with lower freq
+                        int minOscilFreq = 10;      //ignore oscillations below this threshold freq
+                        int maxOscilFreq = 20;      //ignore oscillations above this threshold freq
                         double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
                         scoreThreshold = 0.25; //USE THIS TO DETERMINE FP / FN trade-off.
 
@@ -174,10 +175,10 @@ namespace AudioAnalysis
                                            sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                           (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
                         Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
-                                          dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), dctIndex, config.WindowOverlap);
+                                          dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
-                        OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctIndex, minAmplitude, scoreThreshold,
-                                                     out scores, out predictedEvents, out hits);
+                        OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
+                                                    minAmplitude, scoreThreshold, out scores, out predictedEvents, out hits);
                         break;
 
                     case HTK_RECOGNISER:

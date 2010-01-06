@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>AudioAnalysis</RootNamespace>
     <AssemblyName>AudioAnalysis</AssemblyName>
-    <StartupObject>AudioAnalysis.Main_ScoreBirgitsResults</StartupObject>
+    <StartupObject>AudioAnalysis.CaneToadRecogniser</StartupObject>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -122,6 +122,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="Acoustic_Model.cs" />
     <Compile Include="BaseModel.cs" />
+    <Compile Include="CaneToadRecogniser.cs" />
     <Compile Include="ConfigurationClasses.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="BaseTemplate.cs" />

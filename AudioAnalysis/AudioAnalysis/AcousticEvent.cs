@@ -291,6 +291,20 @@ namespace AudioAnalysis
         }
 
 
+
+        public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
+        {
+            foreach (AcousticEvent ae in eventList)
+            {
+                string line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}", 
+                                            ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
+                sb.Append(line + "\n");
+            }
+        }
+
+
+
+
         /// <summary>
         /// returns all the events in a list that occur in the recording with passed file name.
         /// </summary>
