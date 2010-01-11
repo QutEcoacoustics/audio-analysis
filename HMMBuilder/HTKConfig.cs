@@ -27,6 +27,7 @@ namespace HMMBuilder
         public int numIterations { get; set; }
         public int numBkgIterations { get; set; }
         public bool bkgTraining = false;
+        public bool LLRNormalization = true;    //perform LLR normalization on the output from HVite
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
@@ -131,6 +132,14 @@ namespace HMMBuilder
         public string resultTrue  { get { return ResultsDir + "\\recountTrue.mlf";} }
         public string resultFalse { get { return ResultsDir + "\\recountFalse.mlf"; } }
         public string resultTest  { get { return ResultsDir + "\\TestScan.mlf"; } } //for scanning a single file
+
+        //script files for scoring the BACKGROUND model
+        public string audioSegmTrue { get { return ConfigDir + "\\audioSegmTrue.scp"; } }
+        public string audioSegmFalse { get { return ConfigDir + "\\audioSegmFalse.scp"; } }
+        public string bckScoreTrue { get { return ConfigDir + "\\bckScoreTrue.mlf"; } }
+        public string bckScoreFalse { get { return ConfigDir + "\\bckScoreFalse.mlf"; } }
+        public string modifResultTrue { get { return ResultsDir + "\\bckRecountTrue.mlf"; } }
+        public string modifResultFalse { get { return ResultsDir + "\\bckRecountFalse.mlf"; } }
 
         // file extentions
         public static string mfcExt       = ".mfc";
@@ -361,7 +370,7 @@ namespace HMMBuilder
                     "#HInit: y\n" +
                     "#HRest: n\n" +
                     "HERest: y\n" +         //train VOCALIZATION/SIL models
-                    "HERestBKG: n\n" +      //train BACKGROUND model
+                    "#HERestBKG: n\n" +      //train BACKGROUND model
                     "#HSmooth: n\n" +
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
