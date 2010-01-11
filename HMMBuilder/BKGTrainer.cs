@@ -10,7 +10,7 @@ namespace HMMBuilder
     {
         #region Variables
         static HTKConfig htkConfig;
-        bool teeModel = true;
+        bool teeModel = false;
         string bkgLabel;
 
         #endregion
@@ -46,11 +46,15 @@ namespace HMMBuilder
                 WriteBkgPrototypeFile(htkConfig.ProtoConfDirBkg);               
 
                 //Extract MFCC features from the recordings
-                //HTKHelper.HCopy(htkConfig.aOptionsStr, htkConfig, true);
+                //This method also creates the files:
+                // - 'codetrain.scp': used for extracting the MFCC features from the recordings
+                // - 'train.scp': used for model re-estimation
+                HTKHelper.HCopy(htkConfig.aOptionsStr, htkConfig, true);
 
-                //Create Word Level Transcription file
-                HTKHelper.CreateWLT(htkConfig, ref bkgLabel, false);            
+                //Create Word Level Transcription file (phone.mlf)
+                HTKHelper.CreateWLT(htkConfig, ref bkgLabel, false);
 
+                //Create Dictionary file and Monophones file (what we called SillableList)
                 HTKHelper.WriteDictionary(htkConfig);
 
                 //Read in Prototype Configuration Files
@@ -130,22 +134,22 @@ namespace HMMBuilder
         {
             string txtLine = "";
             
-            StreamReader mfcReader = null;
-            StreamWriter mfcWriter = null;
+            StreamReader fReader = null;
+            StreamWriter fWriter = null;
             try
             {
-                mfcReader = new StreamReader(mfcConfFN);
+                fReader = new StreamReader(mfcConfFN);
                 try
                 {
-                    mfcWriter = File.CreateText(mainConfTrainFN);
+                    fWriter = File.CreateText(mainConfTrainFN);
 
-                    while ((txtLine = mfcReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
+                    while ((txtLine = fReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
                     {
                         if (Regex.IsMatch(txtLine.ToUpper(), @"SOURCEFORMAT.*"))
                         {
                             continue; //skip this line
                         }
-                        mfcWriter.WriteLine(txtLine);
+                        fWriter.WriteLine(txtLine);
                     }
                 }
                 catch (IOException e)
@@ -160,10 +164,10 @@ namespace HMMBuilder
                 }
                 finally
                 {
-                    if (mfcWriter != null)
+                    if (fWriter != null)
                     {
-                        mfcWriter.Flush();
-                        mfcWriter.Close();
+                        fWriter.Flush();
+                        fWriter.Close();
                     }
                 }
 
@@ -175,11 +179,169 @@ namespace HMMBuilder
             }
             finally
             {
-                if (mfcReader != null)
+                if (fReader != null)
                 {
-                    mfcReader.Close();
+                    fReader.Close();
                 }
             }
         }
+
+        public void ScoreModel(bool trueSet)
+        {                      
+            StreamReader resultsReader = null;
+            StreamWriter scriptWriter = null;
+            StreamWriter modifResultsWriter = null;
+            StreamReader bckScoreReader = null;
+
+            string resultsReaderF, scriptWriterF, modifResultsWriterF, bckScoreReaderF;
+            
+
+            try
+            {
+                if (trueSet)
+                {
+                    resultsReaderF = htkConfig.resultTrue;
+                    scriptWriterF = htkConfig.audioSegmTrue;
+                    modifResultsWriterF = htkConfig.modifResultTrue;
+                    bckScoreReaderF = htkConfig.bckScoreTrue;
+                }
+                else
+                {
+                    resultsReaderF = htkConfig.resultFalse;
+                    scriptWriterF = htkConfig.audioSegmFalse;
+                    modifResultsWriterF = htkConfig.modifResultFalse;
+                    bckScoreReaderF = htkConfig.bckScoreFalse;
+                }
+
+                resultsReader = new StreamReader(resultsReaderF); 
+                scriptWriter = File.CreateText(scriptWriterF);
+
+                //Create script containing logical files: segments of the mfc files indicized by frame numbers
+                //Also close the stream writer as the file will be used by HVite
+                CreateAudioSegmentsScript(resultsReader, scriptWriter);
+
+                if (scriptWriter != null)
+                {
+                    scriptWriter.Flush();
+                    scriptWriter.Close();
+                }
+                if (resultsReader != null) resultsReader.Close();
+
+                //Score the BKG model over the VOCALIZATION frames
+                //True calls
+                HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2Bkg, scriptWriterF, htkConfig.wordNetBkg,
+                                htkConfig.DictFileBkg, bckScoreReaderF, htkConfig.monophonesBkg, htkConfig.HViteExecutable);
+                             
+                resultsReader = new StreamReader(resultsReaderF);
+                modifResultsWriter = new StreamWriter(modifResultsWriterF);
+                //Open the result file produced by HVite
+                bckScoreReader = new StreamReader(bckScoreReaderF);
+
+                //Modify the result file by adding the BKG scores
+                AddBkgScores(resultsReader, bckScoreReader, modifResultsWriter);
+
+                if (modifResultsWriter != null)
+                {
+                    modifResultsWriter.Flush();
+                    modifResultsWriter.Close();
+                }
+                if (resultsReader != null) resultsReader.Close();
+                if (bckScoreReader != null) bckScoreReader.Close();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Could not score the BACKGROUND model.");
+                throw (e);
+            }
+        }
+
+        public void CreateAudioSegmentsScript(StreamReader fReader, StreamWriter fWriter)
+        {
+            string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+";
+            string txtLine = "";
+            int intIndex = 0;
+            string logicalFile, physicalFile, currPath = null;
+            bool valid = false;
+
+            while ((txtLine = fReader.ReadLine()) != null)
+            {
+                if (txtLine == ".")
+                {
+                    intIndex = 0;
+                    valid = false;
+                    continue;
+                }
+
+                if (txtLine.StartsWith("\""))
+                {
+                    //Unquote string
+                    txtLine = txtLine.Replace("\"", "");
+                    currPath = Path.ChangeExtension(txtLine, "mfc");
+                    valid = true;
+                }
+
+                if (Regex.IsMatch(txtLine, regex)
+                    && valid)
+                {
+                    string[] param = Regex.Split(txtLine, @"\s+");
+                    long start = long.Parse(param[0]);
+                    long end = long.Parse(param[1]);
+                    string name = param[2];
+                    float score = float.Parse(param[3]);
+
+                    if (name == "SIL")
+                        continue;
+
+                    float denomin = float.Parse(htkConfig.TARGETRATE);
+                    int frameStart = (int)(start / denomin);
+                    int frameEnd = (int)(end / denomin) - 1;
+
+                    logicalFile = Path.GetFileNameWithoutExtension(currPath);
+                    logicalFile += "_" + intIndex++ + ".mfc";
+                    physicalFile = currPath + "[" + frameStart.ToString() + "," + frameEnd.ToString() + "]";
+
+                    fWriter.WriteLine(logicalFile + "=" + physicalFile);
+                }
+            }
+        }
+
+        public void AddBkgScores(StreamReader resultsReader, StreamReader bckScoreReader, StreamWriter modifResultsWriter)
+        {
+            string bckScoreLine = "";
+            string resultsLine = "";
+
+            string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+";
+
+
+            while ((bckScoreLine = bckScoreReader.ReadLine()) != null)
+            {
+                if (Regex.IsMatch(bckScoreLine, regex))
+                {
+                    string[] bkgParam = Regex.Split(bckScoreLine, @"\s+");
+                    float score = float.Parse(bkgParam[3]);
+
+                    while ((resultsLine = resultsReader.ReadLine()) != null)
+                    {
+                        if (Regex.IsMatch(resultsLine, regex))
+                        {                                
+                            string[] resParam = Regex.Split(resultsLine, @"\s+");
+                            string name = resParam[2];
+                            if (name != "SIL")
+                            {                                    
+                                resultsLine += " " + score.ToString();
+                                modifResultsWriter.WriteLine(resultsLine);
+                                break;
+                            }
+                        }
+                        modifResultsWriter.WriteLine(resultsLine);
+                    }                       
+                }
+            }
+            //closing char for the mlf file
+            modifResultsWriter.WriteLine(".");
+
+        }
+ 
     }
 }
