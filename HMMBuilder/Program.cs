@@ -14,7 +14,7 @@ namespace HMMBuilder
             #region Variables
 
             HTKConfig htkConfig = new HTKConfig();            
-            BKGTrainer bkgModel;
+            BKGTrainer bkgModel = new BKGTrainer(htkConfig);
 
             //htkConfig.CallName = "CURLEW1";
             //htkConfig.Comment = "Parameters for Curlew";
@@ -33,6 +33,13 @@ namespace HMMBuilder
             //htkConfig.LOFREQ = "500";
             //htkConfig.HIFREQ = "9000"; 
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+
+            htkConfig.CallName = "KOALAMALE1";
+            htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
+            htkConfig.LOFREQ = "500";
+            htkConfig.HIFREQ = "7000";
+            htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            //htkConfig.numIterations = 6;
 
             //htkConfig.CallName = "KOALAFEMALE1";
             //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
@@ -53,12 +60,12 @@ namespace HMMBuilder
             //htkConfig.numHmmStates = "4";  //number of hmm states for call model
             //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
-            htkConfig.CallName = "KOALAMALE_EXHALE";
-            htkConfig.Comment = "One model trained on exhale syllables";
-            htkConfig.LOFREQ = "150";
-            htkConfig.HIFREQ = "6000";
-            htkConfig.numHmmStates = "4";  //number of hmm states for call model
-            htkConfig.numIterations = 6;   //number of iterations for re-estimating the VOCALIZATION/SIL models
+            //htkConfig.CallName = "KOALAMALE_EXHALE";
+            //htkConfig.Comment = "One model trained on exhale syllables";
+            //htkConfig.LOFREQ = "150";
+            //htkConfig.HIFREQ = "6000";
+            //htkConfig.numHmmStates = "4";  //number of hmm states for call model
+            //htkConfig.numIterations = 6;   //number of iterations for re-estimating the VOCALIZATION/SIL models
 
             //==================================================================================================================
             //==================================================================================================================
@@ -69,7 +76,7 @@ namespace HMMBuilder
 
             //FRAMING PARAMETERS
             htkConfig.SampleRate     = "22050";    //samples per second //this must be put first inlist of framing parameters
-            htkConfig.TARGETRATE     = "116100.0"; //x10e-7 seconds - that is a frame every 11.6 millisconds.
+            htkConfig.TARGETRATE     = "116100.0"; //=10e-7 seconds - that is a frame every 11.6 millisconds.
             htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
 
             //BACKGROUND MODEL PARAMETERS
@@ -225,16 +232,6 @@ namespace HMMBuilder
                     //    cK = "F";
                     //}
 
-                    if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
-                    {
-                        numIters = int.Parse(tmpVal);
-                    }
-                    else
-                    {
-                        numIters = 3;
-                    }
-                    Console.WriteLine("\n\nNumber of iterations for estimating the VOCALIZATION/SIL models set to : " + numIters);
-
                     if (HMMSettings.ConfigParam.TryGetValue("TRACE_TOOL_CALLS", out tmpVal))
                     {
                         if (tmpVal.Equals("Y")) aOptionsStr = htkConfig.aOptionsStr; //aOptionsStr = "-A -D -T 1";
@@ -367,13 +364,15 @@ namespace HMMBuilder
                         if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
                         {
                             numIters = int.Parse(tmpVal);
+                            if (numIters <= 0) //backward compatibility
+                                numIters = 3;
                         }
                         else
                         {
                             Console.WriteLine("'HEREST_ITER' parameter not specified. Default (3) value used.");
                             numIters = 3;
                         }
-
+                        Console.WriteLine("\n\nNumber of iterations for re-estimating the VOCALIZATION/SIL models set to : " + numIters);
                         HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
                     }
                     catch
@@ -394,18 +393,19 @@ namespace HMMBuilder
                             if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
                             {
                                 numBkgIters = int.Parse(tmpVal);
+                                if(numBkgIters<=0)
+                                    numBkgIters = 3;
                             }
                             else
                             {
                                 numBkgIters = 3;
                             }
-                            Console.WriteLine("\n\nNumber of iterations for estimating the BACKGROUND model set to: " + numIters);
+                            Console.WriteLine("\n\nNumber of iterations for estimating the BACKGROUND model set to: " + numBkgIters);
 
                             //Estimate BACKGROUND model
                             try
                             {
                                 htkConfig.bkgTraining = true;  //BACKGROUND training mode on
-                                bkgModel = new BKGTrainer(htkConfig);
                                 bkgModel.EstimateModel();
                                 htkConfig.bkgTraining = false; //BACKGROUND training mode off 
                             }
@@ -424,7 +424,6 @@ namespace HMMBuilder
                         }
                     }
                     #endregion
-
 
                     #region SIX: Test the HMMs
                     try
@@ -461,6 +460,20 @@ namespace HMMBuilder
                         good = false;
                         break; 
                     }
+                    #endregion
+
+
+                    #region Score BACKGROUND model
+                    //Modify the output from HVite so as to include the scores from background model
+                    if (htkConfig.LLRNormalization)
+                    {
+                        //Generate the word network for the backgroung word
+                        HTKHelper.HBuild(htkConfig.monophonesBkg, htkConfig.wordNetBkg, htkConfig.HBuildExecutable);
+                        //Score the BCK model on the true set
+                        bkgModel.ScoreModel(true);
+                        //Score the BCK model on the false set
+                        bkgModel.ScoreModel(false);
+                     }
                     #endregion
 
 
