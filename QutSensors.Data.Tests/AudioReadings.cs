@@ -32,16 +32,16 @@ namespace QutSensors.Data.Tests
 
 			var notReadFilter = new ReadingsFilter() { IsRead = false };
 			var readFilter = new ReadingsFilter() { IsRead = true };
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+			Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			var reading = AddAudioReading(hardware, DateTime.Now);
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			reading.MarkAsRead(db, TestUserName);
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 		}
 
 		[TestMethod]
@@ -53,21 +53,21 @@ namespace QutSensors.Data.Tests
 
 			var notReadFilter = new ReadingsFilter() { IsRead = false };
 			var readFilter = new ReadingsFilter() { IsRead = true };
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			var reading1 = AddAudioReading(hardware, DateTime.Now);
 			var reading2 = AddAudioReading(hardware, DateTime.Now);
-			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(2, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			reading1.MarkAsRead(db, TestUserName);
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			reading2.MarkAsRead(db, TestUserName);
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(2, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 		}
 
 		[TestMethod]
@@ -79,21 +79,21 @@ namespace QutSensors.Data.Tests
 
 			var notReadFilter = new ReadingsFilter() { IsRead = false };
 			var readFilter = new ReadingsFilter() { IsRead = true };
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			var reading1 = AddAudioReading(hardware, DateTime.Now);
 			var reading2 = AddAudioReading(hardware, DateTime.Now);
-			Assert.AreEqual(2, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(0, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(2, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(0, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			reading1.MarkAsRead(db, TestUserName);
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 
 			reading1.MarkAsRead(db, TestUserName);
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, notReadFilter, TestUserName));
-			Assert.AreEqual(1, QutSensors.Data.Linq.AudioReadingsInfo.FindCount(db, readFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, notReadFilter, TestUserName));
+            Assert.AreEqual(1, QutSensors.Data.Logic.AudioReadingInfo.FindCount(db, readFilter, TestUserName));
 		}
 
 		[TestMethod]
