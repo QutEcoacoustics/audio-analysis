@@ -3,7 +3,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 using TowseyLib;
-using AudioAnalysis;
 
 namespace HMMBuilder
 {
