@@ -185,6 +185,8 @@
     </Compile>
     <Compile Include="Template_CCAuto.cs" />
     <Compile Include="Template_DCT2D.cs" />
+    <Compile Include="Main_TestHTKProgram.cs" />
+    <Compile Include="Main_TestHTKRecogniser.cs" />
     <Compile Include="WavChooser.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -192,9 +194,9 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\HMMBuilder\HMMBuilder.csproj">
-      <Project>{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}</Project>
-      <Name>HMMBuilder</Name>
+    <ProjectReference Include="..\..\HTK\HTKTools\HTKTools.csproj">
+      <Project>{3544E90E-E7C5-4D58-98F5-2B07A28DD796}</Project>
+      <Name>HTKTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
