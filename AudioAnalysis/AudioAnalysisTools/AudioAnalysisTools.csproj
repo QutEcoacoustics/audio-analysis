@@ -111,4 +111,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>copy "$(TargetPath)" "$(SolutionDir)WebFrontend\Bin\$(TargetFileName)"</PostBuildEvent>
+  </PropertyGroup>
 </Project>
