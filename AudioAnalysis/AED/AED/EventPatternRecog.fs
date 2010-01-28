@@ -11,17 +11,18 @@ let bottomLeft r = (r.Left, r.Bottom)
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
 
 let groundParrotTemplate =
-    [ {Left=13.359148; Right=13.591436; Bottom=3545.294118; Top=3977.647059};
-      {Left=14.242014; Right=14.381387; Bottom=3631.764706; Top=4064.117647};
-      {Left=14.497580; Right=14.787940; Bottom=3847.941176; Top=4237.058824};
-      {Left=14.811229; Right=14.962216; Bottom=3977.647059; Top=4323.529412};
-      {Left=15.043562; Right=15.287464; Bottom=4020.882353; Top=4366.764706};
-      {Left=15.380445; Right=15.531432; Bottom=4107.352941; Top=4539.705882};
-      {Left=16.263311; Right=16.495599; Bottom=4280.294118; Top=4712.647059};
-      {Left=16.588577; Right=16.774407; Bottom=4366.764706; Top=4712.647059};
-      {Left=17.134560; Right=17.320390; Bottom=4323.529412; Top=4755.882353};
-      {Left=17.703775; Right=17.866377; Bottom=4366.764706; Top=4842.352941};
-      {Left=17.889642; Right=18.354218; Bottom=4237.058824; Top=4885.588235}]
+    [ {Left=5.166440; Right=5.305733; Bottom=3703.710938; Top=4048.242188};
+      {Left=5.421859; Right=5.630799; Bottom=3531.445313; Top=4005.175781};
+      {Left=5.746939; Right=5.851408; Bottom=3875.976563; Top=4134.375000};
+      {Left=5.979138; Right=6.211293; Bottom=3875.976563; Top=4220.507813};
+      {Left=6.315828; Right=6.431905; Bottom=3962.109375; Top=4306.640625};
+      {Left=6.559637; Right=6.791792; Bottom=4048.242188; Top=4392.773438};
+      {Left=6.896327; Right=7.035619; Bottom=4220.507813; Top=4565.039063};
+      {Left=7.151746; Right=7.349077; Bottom=4306.640625; Top=4651.171875};
+      {Left=7.709025; Right=7.929572; Bottom=4392.773438; Top=4995.703125};
+      {Left=8.045714; Right=8.173399; Bottom=4478.906250; Top=4780.371094};
+      {Left=8.312744; Right=8.533291; Bottom=4478.906250; Top=4823.437500};
+      {Left=8.870023; Right=8.974492; Bottom=4694.238281; Top=4866.503906}]
 
 let indexMinMap f xs =
     let ys = Seq.map f xs
@@ -84,4 +85,4 @@ let detectGroundParrots aes =
         Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
         
     let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
-    seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 3.5 then yield sae}
+    seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 4.0 then yield sae}
