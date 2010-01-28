@@ -6,8 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Transactions;
 using System.Configuration;
 using QutSensors.Data.Linq;
-using AudioAnalysis;
 using QutSensors.Data;
+using AudioAnalysisTools;
 
 namespace QutSensors.Data.Tests
 {
