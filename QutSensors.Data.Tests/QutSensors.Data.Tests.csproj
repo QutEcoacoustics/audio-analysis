@@ -119,9 +119,9 @@
     <Compile Include="WatiN\WatiNTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
-      <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
-      <Name>AudioAnalysis</Name>
+    <ProjectReference Include="..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
+      <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
+      <Name>AudioAnalysisTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\AudioTools\AudioTools.csproj">
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
