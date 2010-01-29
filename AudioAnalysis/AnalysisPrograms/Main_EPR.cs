@@ -49,11 +49,10 @@ namespace AudioAnalysis
             {
                 var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
                 //events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double)e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
-                events.Add(new Util.Rectangle<double>(e.StartTime, e.StartTime + e.Duration, (double)e.MaxFreq, (double)e.MinFreq, e.Duration, (double)e.MaxFreq - e.MinFreq));
+                events.Add(Util.fcornersToRect(e.StartTime, e.EndTime, e.MaxFreq, e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
             Console.WriteLine("# AED events: " + events.Count);
-
 
             Console.WriteLine("START: EPR");
             IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
@@ -62,7 +61,7 @@ namespace AudioAnalysis
             var eprEvents = new List<AcousticEvent>();
             foreach (Util.Rectangle<double> r in eprRects)
             {
-                var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top);
+                var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
                 //Console.WriteLine(ae.WriteProperties());
                 Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 eprEvents.Add(ae);
