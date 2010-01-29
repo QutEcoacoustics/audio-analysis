@@ -1,6 +1,5 @@
 ﻿module Common
 
-open QutSensors.AudioAnalysis.AED.GetAcousticEvents
 open QutSensors.AudioAnalysis.AED.Util
                        
 type TestMetadata = {Dir:string; BWthresh:double; smallThreshIn:int; smallThreshOut:int}
@@ -20,7 +19,7 @@ let loadEventsFile f md =
     let aem = loadTestFile2 md.Dir f 
     // matlab matrix indicies are 1 based, F# is 0 based
     let dec x = (int x) - 1
-    seq {for i in 0..(aem.NumCols-1) -> {Left=dec aem.[0,i]; Top=dec aem.[1,i]; Width=(int) aem.[2,i]; Height=(int) aem.[3,i]}}
+    seq {for i in 0..(aem.NumCols-1) -> lengthsToRect (dec aem.[0,i]) (dec aem.[1,i]) ((int) aem.[2,i]) ((int) aem.[3,i])}
     
 let floatEquals f1 f2 d = abs(f1 - f2) <= d
         

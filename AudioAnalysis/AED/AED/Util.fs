@@ -60,6 +60,18 @@ let matrixMapi2Unzip f (m:matrix) =
     done
     (r,s) 
     
+type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
+let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b; Width=r-l; Height=t-b;}
+let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1; Width=w; Height=h;}
+let left r = r.Left
+let right r = r.Right
+let top r = r.Top
+let bottom r = r.Bottom
+let bottomLeft r = (r.Left, r.Bottom)
+let width r = r.Width
+let height r = r.Height
+let inline area r = r.Width * r.Height
+    
 (* This is currently done the easy, inefficient way.
 
    The following Matlab code will write the matrix I1 to the file I1.txt, with one element per line

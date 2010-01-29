@@ -7,7 +7,7 @@ using TowseyLib;
 using AudioAnalysisTools;
 using QutSensors.AudioAnalysis.AED;
 
-namespace AnalysisPrograms
+namespace AudioAnalysis
 {
     class Main_EPR
     {
@@ -42,30 +42,32 @@ namespace AnalysisPrograms
 
             //get the time and freq scales
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            double frameOffset  = config.GetFrameOffset();
+            double frameOffset = config.GetFrameOffset();
 
-            var events = new List<EventPatternRecog.Rectangle>();
+            var events = new List<Util.Rectangle<double>>();
             foreach (Oblong o in oblongs)
             {
                 var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
-                events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double) e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+                //events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double)e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+                events.Add(new Util.Rectangle<double>(e.StartTime, e.StartTime + e.Duration, (double)e.MaxFreq, (double)e.MinFreq, e.Duration, (double)e.MaxFreq - e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
             Console.WriteLine("# AED events: " + events.Count);
 
-            /*
+
             Console.WriteLine("START: EPR");
-            IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
+            IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
             Console.WriteLine("END: EPR");
 
             var eprEvents = new List<AcousticEvent>();
-            foreach (EventPatternRecog.Rectangle r in eprRects)
+            foreach (Util.Rectangle<double> r in eprRects)
             {
                 var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top);
-                Console.WriteLine(ae.WriteProperties());
+                //Console.WriteLine(ae.WriteProperties());
+                Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 eprEvents.Add(ae);
             }
-
+            /*
             string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
 
             bool doHighlightSubband = false; bool add1kHzLines = true;

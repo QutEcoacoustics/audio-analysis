@@ -10,7 +10,7 @@ open Xunit
 // Format: time start, time duration, freq start, freq end
 let loadEventsFile f md =
     let aem = loadTestFile2 md.Dir f 
-    seq {for i in 0..(aem.NumCols-1) -> {Left=aem.[0,i]; Right=aem.[0,i]+aem.[1,i]; Bottom=aem.[2,i]; Top=aem.[3,i]}}
+    seq {for i in 0..(aem.NumCols-1) -> cornersToRect aem.[0,i] (aem.[0,i]+aem.[1,i]) aem.[3,i] aem.[2,i]}
 
 [<Fact>]
 let detectGroundParrotsTest () = 
@@ -20,7 +20,7 @@ let detectGroundParrotsTest () =
     //Assert.Equal(m, detectGroundParrots ae |> Seq.sort)
     let r = detectGroundParrots ae |> Seq.sort
     
-    let toString r = sprintf "%f, %f, %f, %f" r.Left r.Right r.Bottom r.Top
+    let toString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
     let s = sprintf "\r\nmatlab %i, F# %i\r\n" (Seq.length m) (Seq.length r)
     let f (m,r) = if m = r then "match" else sprintf "\r\nmatlab:\t %s \r\nF#:\t %s" (toString m) (toString r)
     let l = sprintf "\r\n\r\nF# (9):\t %s\r\n" (toString (Seq.nth 8 r))

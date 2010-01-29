@@ -2,6 +2,7 @@
 
 open Common
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
+open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 
 [<Fact>]
@@ -20,10 +21,10 @@ let getAcousticEventsTestQuick () =
     let m = Math.Matrix.zero 4 3
     Assert.Equal([], getAcousticEvents m)
     m.[0,1] <- 1.0
-    Assert.Equal([{Bounds={Left=1;Top=0;Width=1;Height=1}; Elements=Set.ofList [(0,1)]}], (getAcousticEvents m))
+    Assert.Equal([{Bounds=lengthsToRect 1 0 1 1; Elements=Set.ofList [(0,1)]}], (getAcousticEvents m))
     m.[1,1] <- 1.0
     m.[1,2] <- 1.0
-    Assert.Equal([{Bounds={Left=1;Top=0;Width=2;Height=2}; Elements=Set.ofList [(0,1);(1,1);(1,2)]}], (getAcousticEvents m))
+    Assert.Equal([{Bounds=lengthsToRect 1 0 2 2; Elements=Set.ofList [(0,1);(1,1);(1,2)]}], (getAcousticEvents m))
     m.[3,0] <- 1.0
     Assert.Equal(2, List.length (getAcousticEvents m))
 

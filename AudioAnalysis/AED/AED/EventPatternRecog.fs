@@ -2,28 +2,22 @@
 
 open Util
 
-type Rectangle = {Left:float; Top:float; Right:float; Bottom:float;}
-let left r = r.Left
-let right r = r.Right
-let bottom r = r.Bottom
-let top r = r.Top
-let bottomLeft r = (r.Left, r.Bottom)
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
 
 let groundParrotTemplate =
-    [ {Left=5.166440; Right=5.305733; Bottom=3703.710938; Top=4048.242188};
-      {Left=5.421859; Right=5.630799; Bottom=3531.445313; Top=4005.175781};
-      {Left=5.746939; Right=5.851408; Bottom=3875.976563; Top=4134.375000};
-      {Left=5.979138; Right=6.211293; Bottom=3875.976563; Top=4220.507813};
-      {Left=6.315828; Right=6.431905; Bottom=3962.109375; Top=4306.640625};
-      {Left=6.559637; Right=6.791792; Bottom=4048.242188; Top=4392.773438};
-      {Left=6.896327; Right=7.035619; Bottom=4220.507813; Top=4565.039063};
-      {Left=7.151746; Right=7.349077; Bottom=4306.640625; Top=4651.171875};
-      {Left=7.709025; Right=7.929572; Bottom=4392.773438; Top=4995.703125};
-      {Left=8.045714; Right=8.173399; Bottom=4478.906250; Top=4780.371094};
-      {Left=8.312744; Right=8.533291; Bottom=4478.906250; Top=4823.437500};
-      {Left=8.870023; Right=8.974492; Bottom=4694.238281; Top=4866.503906}]
-
+    [ cornersToRect 5.166440 5.305733 4048.242188 3703.710938;
+      cornersToRect 5.421859 5.630799 4005.175781 3531.445313
+      cornersToRect 5.746939 5.851408 4134.375000 3875.976563
+      cornersToRect 5.979138 6.211293 4220.507813 3875.976563 
+      cornersToRect 6.315828 6.431905 4306.640625 3962.109375 
+      cornersToRect 6.559637 6.791792 4392.773438 4048.242188 
+      cornersToRect 6.896327 7.035619 4565.039063 4220.507813 
+      cornersToRect 7.151746 7.349077 4651.171875 4306.640625 
+      cornersToRect 7.709025 7.929572 4995.703125 4392.773438 
+      cornersToRect 8.045714 8.173399 4780.371094 4478.906250 
+      cornersToRect 8.312744 8.533291 4823.437500 4478.906250 
+      cornersToRect 8.870023 8.974492 4866.503906 4694.238281 ]
+      
 let indexMinMap f xs =
     let ys = Seq.map f xs
     let m = Seq.min ys

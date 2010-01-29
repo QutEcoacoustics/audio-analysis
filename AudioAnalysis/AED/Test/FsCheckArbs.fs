@@ -3,6 +3,7 @@
 open FsCheck
 open FsCheckXunit
 open QutSensors.AudioAnalysis.AED.GetAcousticEvents
+open QutSensors.AudioAnalysis.AED.Util
 
 let nonNeg = arbitrary |> fmapGen abs
 
@@ -20,8 +21,8 @@ let replicateGenM n g = List.replicate n g |> sequenceGen
 
 type ArbitraryModifiers = 
     static member Rectangle () =
-         { new Arbitrary<Rectangle>() with
-            override x.Arbitrary = liftGen4 (fun l t w h -> {Left=l;Top=t;Width=w;Height=h}) nonNeg nonNeg pos pos }
+         { new Arbitrary<Rectangle<int>>() with
+            override x.Arbitrary = liftGen4 (fun l t w h -> lengthsToRect l t w h) nonNeg nonNeg pos pos }
     static member AcousticEvent () =
         { new Arbitrary<AcousticEvent>()with
             override x.Arbitrary = gen { let! rect = arbitrary
