@@ -44,12 +44,12 @@ let separateLargeEvents aes =
         let s = sumRows m |> Seq.map (fun x -> x / (float) m.NumCols * 100.0 <= freqt) 
         let m1 = Math.Matrix.mapi (fun i _ x -> if Seq.nth i s then 0.0 else x) m
         let rs = getAcousticEvents m1
-                 |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in {Left=b1.Left+b2.Left; Top=b1.Top+b2.Top; Width=b2.Width; Height=b2.Height})
+                 |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1 + top b2) (width b2) (height b2))
         let timet = 100.0 / 3.0
         let m2 = m - m1
         rs @ (getAcousticEvents m2
               |> List.filter (fun x -> (float) x.Bounds.Height * 100.0 / (float) m2.NumRows >= timet)
-              |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in {Left=b1.Left+b2.Left; Top=b1.Top; Width=b2.Width; Height=b1.Height}))
+              |> List.map (fun x -> let b1, b2 = ae.Bounds, x.Bounds in lengthsToRect (left b1 + left b2) (top b1) (width b2) (height b1)))
     Seq.collect (fun ae -> if area ae.Bounds < areat then [ae.Bounds] else f ae) aes
 
 let smallFirstMin cs h t =
@@ -60,7 +60,7 @@ let smallFirstMin cs h t =
 let smallThreshold t rs =
     let (%%) x y = (float x) * y |> rnd |> (int)
     let cs = seq {for i in 0..9 -> (i * (t %% 0.1)) + (t %% 0.05)}
-    let as' = areas rs |> Seq.filter (fun x -> x <= t)
+    let as' = Seq.map area rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (histi as' cs) t
 
 let filterOutSmallEvents t rs =
