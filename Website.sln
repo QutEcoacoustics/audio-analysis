@@ -43,8 +43,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Website.vsmdi = Website.vsmdi
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data.Tests", "QutSensors.Data.Tests\QutSensors.Data.Tests.csproj", "{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovModels", "AudioAnalysis\MarkovModels\MarkovModels.csproj", "{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayer", "SilverlightControls\AudioPlayer\AudioPlayer\AudioPlayer.csproj", "{677A24F2-5643-4960-BD8E-FFD739696099}"
@@ -74,6 +72,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysisTools", "AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj", "{86855CBC-7243-492A-A500-2DE36CC7C825}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMMBuilder", "HMMBuilder\HMMBuilder.csproj", "{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Test", "QutSensors.Test\QutSensors.Test.csproj", "{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -197,27 +197,6 @@ Global
 		{7E0D2209-A416-4784-B350-83778D20A64B}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|x86
 		{7E0D2209-A416-4784-B350-83778D20A64B}.SilverlightOnly|x86.ActiveCfg = SilverlightOnly|x86
 		{7E0D2209-A416-4784-B350-83778D20A64B}.SilverlightOnly|x86.Build.0 = SilverlightOnly|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|x86.ActiveCfg = Debug|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Debug|x86.Build.0 = Debug|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|.NET.ActiveCfg = Release|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|x86.ActiveCfg = Release|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.Release|x86.Build.0 = Release|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|.NET.ActiveCfg = SilverlightOnly|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|Any CPU.ActiveCfg = SilverlightOnly|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|Any CPU.Build.0 = SilverlightOnly|Any CPU
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|Mixed Platforms.Build.0 = Debug|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|x86.ActiveCfg = SilverlightOnly|x86
-		{A9D49DAC-E0D5-4C46-BBDF-EE575C795A5C}.SilverlightOnly|x86.Build.0 = SilverlightOnly|x86
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|.NET.ActiveCfg = Debug|Any CPU
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
@@ -454,6 +433,24 @@ Global
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.SilverlightOnly|Mixed Platforms.Build.0 = Release|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|.NET.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Release|x86.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|Mixed Platforms.Build.0 = Release|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
