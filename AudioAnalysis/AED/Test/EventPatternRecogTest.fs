@@ -5,18 +5,11 @@ open QutSensors.AudioAnalysis.AED.EventPatternRecog
 open QutSensors.AudioAnalysis.AED.Util
 open Xunit
 
-
-// TODO copied and modified from AED test - generalise
-// Format: time start, time duration, freq start, freq end
-let loadEventsFile f md =
-    let aem = loadTestFile2 md.Dir f 
-    seq {for i in 0..(aem.NumCols-1) -> cornersToRect aem.[0,i] (aem.[0,i]+aem.[1,i]) aem.[3,i] aem.[2,i]}
-
 [<Fact>]
 let detectGroundParrotsTest () = 
     let md = GParrots_JB2_20090607_173000_wav_minute_3
-    let ae = loadEventsFile "EPRAE.csv" md
-    let m = loadEventsFile "EPRresults.csv" md |> Seq.sort
+    let ae = loadFloatEventsFile "EPRAE.csv" md
+    let m = loadFloatEventsFile "EPRresults.csv" md |> Seq.sort
     //Assert.Equal(m, detectGroundParrots ae |> Seq.sort)
     let r = detectGroundParrots ae |> Seq.sort
     

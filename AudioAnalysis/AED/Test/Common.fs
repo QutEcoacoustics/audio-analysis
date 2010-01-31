@@ -15,11 +15,15 @@ let loadTestFile2 d f = csvToMatrix (@"matlab\" + d + @"\" + f)
 
 let loadTestFile f md = loadTestFile2 md.Dir f 
 
-let loadEventsFile f md =
+let loadIntEventsFile f md =
     let aem = loadTestFile2 md.Dir f 
     // matlab matrix indicies are 1 based, F# is 0 based
     let dec x = (int x) - 1
     seq {for i in 0..(aem.NumCols-1) -> lengthsToRect (dec aem.[0,i]) (dec aem.[1,i]) ((int) aem.[2,i]) ((int) aem.[3,i])}
+    
+let loadFloatEventsFile f md =
+    let aem = loadTestFile2 md.Dir f 
+    seq {for i in 0..(aem.NumCols-1) -> cornersToRect aem.[0,i] (aem.[0,i]+aem.[1,i]) aem.[3,i] aem.[2,i]}
     
 let floatEquals f1 f2 d = abs(f1 - f2) <= d
         

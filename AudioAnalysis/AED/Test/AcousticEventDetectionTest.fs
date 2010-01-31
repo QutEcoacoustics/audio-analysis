@@ -81,7 +81,7 @@ let aeToMatrixElements () =
 let testSeparateLargeEvents () =
     let f md =
         let ae2 = loadTestFile "I6.csv" md |> getAcousticEvents |> separateLargeEvents
-        let ae2m = loadEventsFile "AE2.csv" md
+        let ae2m = loadIntEventsFile "AE2.csv" md
         Assert.Equal(Seq.length ae2m, Seq.length ae2)
         Assert.Equal(Seq.sort ae2m, Seq.sort ae2)
     testAll f        
@@ -96,15 +96,15 @@ let testSmallFirstMin () =
 [<Fact>]
 let testSmallThreshold () =
     let f md =
-        let ae2m = loadEventsFile "AE2.csv" md
+        let ae2m = loadIntEventsFile "AE2.csv" md
         Assert.Equal(md.smallThreshOut, smallThreshold md.smallThreshIn ae2m)
     testAll f
 
 [<Fact>]
 let testFilterOutSmallEvents () =
     let f md =
-        let ae2m = loadEventsFile "AE2.csv" md
+        let ae2m = loadIntEventsFile "AE2.csv" md
         let ae3 = filterOutSmallEvents md.smallThreshIn ae2m
-        let ae3m = loadEventsFile "AE3.csv" md
+        let ae3m = loadIntEventsFile "AE3.csv" md
         Assert.Equal(Seq.sort ae3m, Seq.sort ae3)
     testAll f
