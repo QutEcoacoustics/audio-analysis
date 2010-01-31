@@ -63,6 +63,7 @@ let matrixMapi2Unzip f (m:matrix) =
 type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
 let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b; Width=r-l; Height=t-b;}
 let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1; Width=w; Height=h;}
+let fcornersToRect (l:float) r t b = cornersToRect l r t b // for C#
 let left r = r.Left
 let right r = r.Right
 let top r = r.Top
