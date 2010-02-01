@@ -7,7 +7,7 @@ using TowseyLib;
 using AudioAnalysisTools;
 using QutSensors.AudioAnalysis.AED;
 
-namespace AudioAnalysis
+namespace AnalysisPrograms
 {
     class Main_EPR
     {
