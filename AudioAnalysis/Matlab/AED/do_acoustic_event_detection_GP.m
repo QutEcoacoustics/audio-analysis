@@ -80,7 +80,7 @@ if (~isempty(AE3))
     [rAE,cAE] = size(AE3');
     allAE = zeros(rAE,4);
     allAE(:,1) = T([AE3(1,:)]);
-    allAE(:,2) = max(T) / N * AE3(3,:);
+    allAE(:,2) = T([AE3(3,:)]);
     allAE(:,3) = F([AE3(2,:)]);
     allAE(:,4) = F([AE3(2,:) + AE3(4,:) - 1]);
 end

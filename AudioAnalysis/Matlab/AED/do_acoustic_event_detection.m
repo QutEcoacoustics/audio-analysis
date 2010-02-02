@@ -19,6 +19,7 @@ ctmp = colormap(gray); c = flipud(ctmp); %colormap for plotting in grayscale
 % STEP 1: COMPUTE SPECTROGRAM
 addpath('../Common')
 [y,fs,I1,F,T,] = wavToSpectrogram('../../AED/Test/matlab/BAC2_20071015-045040.wav');
+
 [M,N] = size(I1);
 showImage(c,I1,T,F,1);
 % csvout('I1.csv',I1)
@@ -67,11 +68,12 @@ if (~isempty(AE3))
     [rAE,cAE] = size(AE3');
     AE4 = zeros(rAE,4);
     AE4(:,1) = T([AE3(1,:)]);
-    AE4(:,2) = max(T) / N * AE3(3,:);
+    AE4(:,2) = T([AE3(3,:)])
     AE4(:,3) = F([AE3(2,:)]);
     AE4(:,4) = F([AE3(2,:) + AE3(4,:) - 1]);
 end
 showImage(c,I3,T,F,2,AE4);
+
 end
 
 function csvout(name, M)
