@@ -20,13 +20,13 @@ I3 = withoutSubbandModeIntensities(I2);
 template_name = 'GParrots_JB2_20090607-173000.wav_minute_3.wav_Intensity_Thresh_3dB_Small_area_thresh_max_100_template72'; % new template created 20091215 with new AED
 
 xlsfile = strcat('Matching_',template_name,'.xls');
-% % scan image for AEs in appropriate frequency band; store results in xlsfile
-% scan_image_for_AEs(name, F, int_thresh, small_events_thresh, xlsfile, template_name)
-% 
-% 
-% 
-% % do matching
-% template_matching_using_distance(name, int_thresh, small_events_thresh, xlsfile, template_name)
+% scan image for AEs in appropriate frequency band; store results in xlsfile
+scan_image_for_AEs(name, F, int_thresh, small_events_thresh, xlsfile, template_name)
+
+
+
+% do matching
+template_matching_using_distance(name, int_thresh, small_events_thresh, xlsfile, template_name)
 
 
 % check out results

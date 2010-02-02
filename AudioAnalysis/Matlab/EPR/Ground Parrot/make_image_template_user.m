@@ -90,8 +90,10 @@ else
     [tmp2, ttop] = min(abs(thisF-tmp));
     Itemplate = zeros(length(tbottom:ttop),length(tleft:tright));
     Itemplate = I3_seg(tbottom:ttop,tleft:tright);
-    thisT = thisT(tleft:tright);
-    thisF = thisF(tbottom:ttop);
+    thisT2 = thisT(tleft:tright);
+    thisF2 = thisF(tbottom:ttop);
+    thisT = thisT2;
+    thisF = thisF2;
     showImage(c,Itemplate,thisT,thisF,4,keepAE)
     
     
