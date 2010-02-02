@@ -2,21 +2,19 @@
 
 open Util
 
-let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
-
 let groundParrotTemplate =
-    [ cornersToRect 5.166440 5.305733 4048.242188 3703.710938;
-      cornersToRect 5.421859 5.630799 4005.175781 3531.445313
-      cornersToRect 5.746939 5.851408 4134.375000 3875.976563
-      cornersToRect 5.979138 6.211293 4220.507813 3875.976563 
-      cornersToRect 6.315828 6.431905 4306.640625 3962.109375 
-      cornersToRect 6.559637 6.791792 4392.773438 4048.242188 
-      cornersToRect 6.896327 7.035619 4565.039063 4220.507813 
-      cornersToRect 7.151746 7.349077 4651.171875 4306.640625 
-      cornersToRect 7.709025 7.929572 4995.703125 4392.773438 
-      cornersToRect 8.045714 8.173399 4780.371094 4478.906250 
-      cornersToRect 8.312744 8.533291 4823.437500 4478.906250 
-      cornersToRect 8.870023 8.974492 4866.503906 4694.238281 ]
+    [ cornersToRect 5.166440 5.294150 4048.242188 3703.710938;
+      cornersToRect 5.421859 5.619229 4005.175781 3531.445313;
+      cornersToRect 5.746939 5.839819 4134.375000 3875.976563;
+      cornersToRect 5.979138 6.199728 4220.507813 3875.976563; 
+      cornersToRect 6.315828 6.420317 4306.640625 3962.109375; 
+      cornersToRect 6.559637 6.780227 4392.773438 4048.242188; 
+      cornersToRect 6.896327 7.024036 4565.039063 4220.507813; 
+      cornersToRect 7.151746 7.337506 4651.171875 4306.640625; 
+      cornersToRect 7.709025 7.918005 4995.703125 4392.773438; 
+      cornersToRect 8.045714 8.161814 4780.371094 4478.906250; 
+      cornersToRect 8.312744 8.521723 4823.437500 4478.906250; 
+      cornersToRect 8.870023 8.962902 4866.503906 4694.238281 ]
       
 let indexMinMap f xs =
     let ys = Seq.map f xs
@@ -52,6 +50,12 @@ let candidates sfr ttd tfr aes =
     let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
     let f x = Seq.filter (fun ae -> ae.Left >==< (x.Left, x.Left + ttd) && ae.Bottom >==< (x.Bottom, x.Bottom + tfr)) aes
     (ss, Seq.map f ss)
+
+let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
+    
+let templateBounds t =
+    let (tl, tb) = absLeftAbsBottom t
+    (tl, tb, maxmap right t - tl, maxmap top t - tb)
     
 let freqMax = 11025.0
 let freqBins = 256.0
@@ -59,9 +63,7 @@ let samplingRate = 22050.0
         
 let detectGroundParrots aes =
     let t = groundParrotTemplate
-    let (tl, tb) = absLeftAbsBottom t
-    // template right is close (3 decimal places) but not quite exactly the same as matlab
-    let ttd, tfr = maxmap right t - tl, maxmap top t - tb
+    let (tl, tb, ttd, tfr) = templateBounds t
     
     // Length of x and y axis' to scale time and frequency back to
     // TODO investigate these formulas - correct for ground parrot template
