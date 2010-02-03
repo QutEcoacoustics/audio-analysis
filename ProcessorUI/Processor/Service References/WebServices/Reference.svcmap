@@ -6,7 +6,7 @@
     <ExcludedTypes />
     <ImportXmlTypes>false</ImportXmlTypes>
     <GenerateInternalTypes>false</GenerateInternalTypes>
-    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <GenerateMessageContracts>true</GenerateMessageContracts>
     <NamespaceMappings />
     <CollectionMappings />
     <GenerateSerializableTypes>true</GenerateSerializableTypes>
@@ -17,15 +17,16 @@
     <ServiceContractMappings />
   </ClientOptions>
   <MetadataSources>
-    <MetadataSource Address="http://localhost/Processor/Processor.svc" Protocol="http" SourceId="1" />
+    <MetadataSource Address="http://localhost:2669/Processor/Processor.svc" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="Processor.xsd" MetadataType="Schema" ID="b869a50c-d15b-495a-8a1e-0087581c1968" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd2" />
-    <MetadataFile FileName="Processor.wsdl" MetadataType="Wsdl" ID="68b3a0a0-ee81-43b1-82b9-44b7d4882b96" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?wsdl=wsdl0" />
-    <MetadataFile FileName="Processor1.wsdl" MetadataType="Wsdl" ID="db890fc9-fd23-40b9-b631-54d7a7edcd74" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?wsdl" />
-    <MetadataFile FileName="Processor.disco" MetadataType="Disco" ID="20547c09-f594-4940-bdbf-30b3603269b0" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?disco" />
-    <MetadataFile FileName="Processor1.xsd" MetadataType="Schema" ID="2b8f402f-f92b-4505-9ed4-9126a007a1bd" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd0" />
-    <MetadataFile FileName="Processor2.xsd" MetadataType="Schema" ID="06750b3a-6c55-46a6-a22d-fa292c964e91" SourceId="1" SourceUrl="http://nibbler/Processor/Processor.svc?xsd=xsd1" />
+    <MetadataFile FileName="Processor3.xsd" MetadataType="Schema" ID="7534a77c-46b0-4649-9c9e-379520c9c4fc" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?xsd=xsd0" />
+    <MetadataFile FileName="Processor1.disco" MetadataType="Disco" ID="6e47a7e0-e32d-42ec-a2a4-c4ab3992c8c5" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?disco" />
+    <MetadataFile FileName="Processor31.xsd" MetadataType="Schema" ID="400fe8f3-847f-4def-9c1c-b79c2f3fa0e8" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?xsd=xsd3" />
+    <MetadataFile FileName="Processor2.wsdl" MetadataType="Wsdl" ID="f66c3c5e-8268-4a82-805f-fa105d5b07d2" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?wsdl" />
+    <MetadataFile FileName="Processor32.xsd" MetadataType="Schema" ID="94d7c9f4-d3ed-4746-a1df-b71cba0a7282" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?xsd=xsd2" />
+    <MetadataFile FileName="Processor33.xsd" MetadataType="Schema" ID="962d4925-981e-47d6-80c8-702045028825" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?xsd=xsd1" />
+    <MetadataFile FileName="Processor21.wsdl" MetadataType="Wsdl" ID="aed48e44-b019-4dab-8396-cafdf52dee82" SourceId="1" SourceUrl="http://localhost:2669/Processor/Processor.svc?wsdl=wsdl0" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />

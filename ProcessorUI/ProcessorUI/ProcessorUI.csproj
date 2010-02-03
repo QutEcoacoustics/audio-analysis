@@ -102,10 +102,6 @@
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
       <Name>AED</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
-      <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
-      <Name>AudioAnalysis</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
       <Name>TowseyLib</Name>

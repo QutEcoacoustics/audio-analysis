@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AudioAnalysis;
 using QutSensors.Processor.WebServices;
 using AudioTools;
 using System.Threading;
@@ -12,6 +11,7 @@ using System.IO;
 using TowseyLib;
 using QutSensors.AudioAnalysis.AED;
 using QutSensors.Processor;
+using AudioAnalysisTools;
 
 namespace QutSensors.Processor
 {

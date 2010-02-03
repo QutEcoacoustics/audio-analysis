@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AudioAnalysis;
 using AudioTools;
 using System.Threading;
 using QutSensors.Data;
@@ -13,6 +12,7 @@ using QutSensors.AudioAnalysis.AED;
 using QutSensors.Processor;
 
 using QutSensors.Processor.WebServices;
+using AudioAnalysisTools;
 
 namespace QutSensors.Processor
 {
@@ -56,17 +56,17 @@ namespace QutSensors.Processor
 
                     //set up static variables for init Acoustic events
                     //AcousticEvent.   doMelScale = config.DoMelScale;
-                    AcousticEvent.FreqBinCount = config.FreqBinCount;
-                    AcousticEvent.FreqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+                    //AcousticEvent.FreqBinCount = config.FreqBinCount;
+                    double binWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
                     //  int minF        = (int)config.MinFreqBand;
                     //  int maxF        = (int)config.MaxFreqBand;
-                    AcousticEvent.FrameDuration = config.GetFrameOffset();
+                    double frameOffset = config.GetFrameOffset();
 
 
                     var events = new List<AcousticEvent>();
                     foreach (Oblong o in oblongs)
                     {
-                        var e = new AcousticEvent(o);
+                        var e = new AcousticEvent(o, frameOffset, binWidth);
                         events.Add(e);
                     }
 

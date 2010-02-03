@@ -31,7 +31,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -78,9 +78,13 @@
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
       <Name>AED</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj">
-      <Project>{CB8177A5-2B01-4D8C-B434-63C4400EC381}</Project>
-      <Name>AudioAnalysis</Name>
+    <ProjectReference Include="..\..\AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj">
+      <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
+      <Name>AnalysisPrograms</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
+      <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
+      <Name>AudioAnalysisTools</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
@@ -115,21 +119,34 @@
     <None Include="Service References\WebServices\configuration.svcinfo" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor.wsdl" />
-    <None Include="Service References\WebServices\Processor.xsd" />
-    <None Include="Service References\WebServices\Processor1.wsdl" />
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ProcessorJobItemDescription.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
+    <None Include="Service References\WebServices\Processor3.xsd" />
     <None Include="Service References\WebServices\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor.disco" />
-    <None Include="Service References\WebServices\Processor1.xsd" />
-    <None Include="Service References\WebServices\Processor2.xsd" />
+    <None Include="Service References\WebServices\Processor1.disco" />
+    <None Include="Service References\WebServices\Processor2.wsdl" />
+    <None Include="Service References\WebServices\Processor21.wsdl" />
+    <None Include="Service References\WebServices\Processor31.xsd" />
+    <None Include="Service References\WebServices\Processor32.xsd" />
+    <None Include="Service References\WebServices\Processor33.xsd" />
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.GetJobItemResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ReturnJobResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ReturnJobWithErrorResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.SubmitJobItemResultsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.SubmitResultsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

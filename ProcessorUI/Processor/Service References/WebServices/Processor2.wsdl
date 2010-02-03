@@ -7,7 +7,7 @@
       </wsp:All>
     </wsp:ExactlyOne>
   </wsp:Policy>
-  <wsdl:import namespace="sensor.mquter.qut.edu.au" location="http://nibbler/Processor/Processor.svc?wsdl=wsdl0" />
+  <wsdl:import namespace="sensor.mquter.qut.edu.au" location="http://localhost:2669/Processor/Processor.svc?wsdl=wsdl0" />
   <wsdl:types />
   <wsdl:binding name="WSHttpBinding_Processor" type="i0:Processor">
     <wsp:PolicyReference URI="#WSHttpBinding_Processor_policy" />
@@ -23,6 +23,15 @@
     </wsdl:operation>
     <wsdl:operation name="SubmitResults">
       <soap12:operation soapAction="sensor.mquter.qut.edu.au/Processor/SubmitResults" style="document" />
+      <wsdl:input>
+        <soap12:body use="literal" />
+      </wsdl:input>
+      <wsdl:output>
+        <soap12:body use="literal" />
+      </wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="SubmitJobItemResults">
+      <soap12:operation soapAction="sensor.mquter.qut.edu.au/Processor/SubmitJobItemResults" style="document" />
       <wsdl:input>
         <soap12:body use="literal" />
       </wsdl:input>
@@ -51,9 +60,9 @@
   </wsdl:binding>
   <wsdl:service name="Processor">
     <wsdl:port name="WSHttpBinding_Processor" binding="tns:WSHttpBinding_Processor">
-      <soap12:address location="http://nibbler/Processor/Processor.svc" />
+      <soap12:address location="http://localhost:2669/Processor/Processor.svc" />
       <wsa10:EndpointReference>
-        <wsa10:Address>http://nibbler/Processor/Processor.svc</wsa10:Address>
+        <wsa10:Address>http://localhost:2669/Processor/Processor.svc</wsa10:Address>
       </wsa10:EndpointReference>
     </wsdl:port>
   </wsdl:service>
