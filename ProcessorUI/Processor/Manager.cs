@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AudioAnalysis;
 using QutSensors.Processor.WebServices;
 using AudioTools;
 using System.Threading;
@@ -26,8 +25,9 @@ namespace QutSensors.Processor
         public static void BeginGetNextJob(string workerName, GetNextJobCallback callback, object state)
         {
             var ws = new ServiceWrapper();
-            ws.Proxy.BeginGetJobItem(workerName, OnGotJob, new object[] { ws, workerName, callback, state });
+            ws.Proxy.BeginGetJobItem(new GetJobItemRequest(workerName), OnGotJob, new object[] { ws, workerName, callback, state });
         }
+        
         static void OnGotJob(IAsyncResult ar)
         {
             object[] asyncState = (object[])ar.AsyncState;
@@ -40,9 +40,9 @@ namespace QutSensors.Processor
             {
                 using (incomingWs)
                 {
-                    ProcessorJobItemDescription item = incomingWs.Proxy.EndGetJobItem(ar);
+                    GetJobItemResponse item = incomingWs.Proxy.EndGetJobItem(ar);
                     incomingWs.Close();
-                    callback(item, state);
+                    callback(item.GetJobItemResult, state);
                 }
             }
             catch
@@ -57,11 +57,11 @@ namespace QutSensors.Processor
             {
                 try
                 {
-                    ProcessorJobItemDescription item = incomingWs.Proxy.GetJobItem(workerName);
+                    GetJobItemResponse item = incomingWs.Proxy.GetJobItem(new GetJobItemRequest(workerName));
                     incomingWs.Close();
-                    return item;
+                    return item.GetJobItemResult;
                 }
-                catch (Exception e)
+                catch 
                 {
                     return null;
                 }
@@ -94,7 +94,7 @@ namespace QutSensors.Processor
                         {
                             using (var ws = new ServiceWrapper())
                             {
-                                ws.Proxy.ReturnJobWithError(workerName, item.JobItemID, e.ToString());
+                                ws.Proxy.ReturnJobWithError(new ReturnJobWithErrorRequest(workerName, item.JobItemID, e.ToString()));
                                 ws.Close();
                             }
                             processed = true;
@@ -105,7 +105,7 @@ namespace QutSensors.Processor
                         {
                             using (var ws = new ServiceWrapper())
                             {
-                                ws.Proxy.SubmitResults(workerName, item.JobItemID, results.ToArray());
+                                ws.Proxy.SubmitResults(new SubmitResultsRequest( workerName, item.JobItemID, results.ToArray()));
                                 ws.Close();
                             }
                             processed = true;
@@ -121,7 +121,7 @@ namespace QutSensors.Processor
                 {
                     using (var ws = new ServiceWrapper())
                     {
-                        ws.Proxy.ReturnJob(workerName, item.JobItemID);
+                        ws.Proxy.ReturnJob(new ReturnJobRequest(workerName, item.JobItemID));
                         ws.Close();
                     }
                 }

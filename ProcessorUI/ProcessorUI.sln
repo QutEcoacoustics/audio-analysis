@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "..\AudioAnaly
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowseyLib", "..\AudioAnalysis\TowseyLib\TowseyLib.csproj", "{7E0D2209-A416-4784-B350-83778D20A64B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysis", "..\AudioAnalysis\AudioAnalysis\AudioAnalysis.csproj", "{CB8177A5-2B01-4D8C-B434-63C4400EC381}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovModels", "..\AudioAnalysis\MarkovModels\MarkovModels.csproj", "{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED", "..\AudioAnalysis\AED\AED\AED.fsproj", "{993980A0-8D06-4635-8296-40E9FFF9C301}"
@@ -22,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ProcessorCLI", "ProcessorCLI\ProcessorCLI.csproj", "{E51F554E-51AF-4064-980A-1637F91236D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMMBuilder", "..\HMMBuilder\HMMBuilder.csproj", "{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioAnalysisTools", "..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj", "{86855CBC-7243-492A-A500-2DE36CC7C825}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisPrograms", "..\AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj", "{EC323929-0160-46BC-A04B-B4A66D02E757}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -69,14 +71,6 @@ Global
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|x86.ActiveCfg = Release|x86
 		{7E0D2209-A416-4784-B350-83778D20A64B}.Release|x86.Build.0 = Release|x86
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|x86.ActiveCfg = Debug|x86
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Debug|x86.Build.0 = Debug|x86
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|x86.ActiveCfg = Release|x86
-		{CB8177A5-2B01-4D8C-B434-63C4400EC381}.Release|x86.Build.0 = Release|x86
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}.Debug|x86.ActiveCfg = Debug|Any CPU
@@ -107,6 +101,18 @@ Global
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Release|x86.ActiveCfg = Release|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86855CBC-7243-492A-A500-2DE36CC7C825}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
