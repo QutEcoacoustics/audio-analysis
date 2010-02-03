@@ -62,23 +62,23 @@ namespace QutSensors.Processor
                 //  int maxF        = (int)config.MaxFreqBand;
                 double frameOffset = config.GetFrameOffset();
 
-
-                var events = new List<EventPatternRecog.Rectangle>();
+                var events = new List<Util.Rectangle<double>>();
                 foreach (Oblong o in oblongs)
                 {
                     var e = new AcousticEvent(o, frameOffset, binWidth);
-                    events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double)e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
+                    events.Add(Util.fcornersToRect(e.StartTime, e.EndTime, e.MaxFreq, e.MinFreq));
                     //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
                 }
                 OnLog("START: EPR");
-                IEnumerable<EventPatternRecog.Rectangle> eprRects = EventPatternRecog.detectGroundParrots(events);
+                IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
                 OnLog("END: EPR");
 
                 var eprEvents = new List<AcousticEvent>();
-                foreach (EventPatternRecog.Rectangle r in eprRects)
+                foreach (Util.Rectangle<double> r in eprRects)
                 {
-                    var ae = new AcousticEvent(r.Left, r.Right - r.Left, r.Bottom, r.Top, false);
-                    OnLog(ae.WriteProperties());
+                    var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
+                    //OnLog(ae.WriteProperties());
+                    //OnLog(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                     eprEvents.Add(ae);
                 }
 
