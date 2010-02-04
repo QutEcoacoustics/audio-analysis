@@ -46,9 +46,15 @@ let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     if or' < ol || ot < ob then 0.0
         else let oa = (or'-ol) * (ot-ob) in 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
         
-let candidates sfr ttd tfr aes =
+let freqMax = 11025.0
+let freqBins = 256.0
+let samplingRate = 22050.0
+
+let candidates tb ttd tfr aes =
+    let sfr = (boundedInterval tb 500.0 500.0 0.0 freqMax)
     let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
-    let f x = Seq.filter (fun ae -> ae.Left >==< (x.Left, x.Left + ttd) && ae.Bottom >==< (x.Bottom, x.Bottom + tfr)) aes
+    // This is slightly different to matlab where the upper bounds are strictly less than then
+    let f x = Seq.filter (fun ae -> left ae >==< (left x, left x + ttd) && ae.Bottom >==< (bottom x, bottom x + tfr)) aes
     (ss, Seq.map f ss)
 
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
@@ -56,10 +62,6 @@ let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
 let templateBounds t =
     let (tl, tb) = absLeftAbsBottom t
     (tl, tb, maxmap right t - tl, maxmap top t - tb)
-    
-let freqMax = 11025.0
-let freqBins = 256.0
-let samplingRate = 22050.0
         
 let detectGroundParrots aes =
     let t = groundParrotTemplate
@@ -80,5 +82,5 @@ let detectGroundParrots aes =
             overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
         Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
         
-    let (saes, cs) = candidates (boundedInterval tb 500.0 500.0 0.0 freqMax) ttd tfr aes
+    let (saes, cs) = candidates tb ttd tfr aes
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 4.0 then yield sae}
