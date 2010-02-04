@@ -13,11 +13,6 @@ let testTemplateBounds () =
     Assert.Equal(8.962902-5.166440, ttd)
     Assert.Equal(4995.703125-3531.445313, tfr)
     
-let findAE (st:string) (fb:string) (ft:string) aes =
-    Seq.find (fun ae -> floatEquals (left ae) (System.Convert.ToDouble st) 0.00001
-                     && floatEquals (bottom ae) (System.Convert.ToDouble fb) 0.01
-                     && floatEquals (top ae) (System.Convert.ToDouble ft) 0.01) aes
-    
 [<Fact>]
 let testCandidates () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
