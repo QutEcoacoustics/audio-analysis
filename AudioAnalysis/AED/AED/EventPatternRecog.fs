@@ -29,6 +29,9 @@ let normaliseTimeFreq st sf td fr nt nf (t,f) =
 let centroids rs =
     let centre l r = l + (r - l) / 2.0  // assuming l <= r
     Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
+    // TODO rewrite this to be something like:
+    // let centre s l = s + l / 2.0
+    // Seq.map (fun r -> (centre (left r) (width r), centre (bottom r) (height r))) rs
     
 // TODO investigate performance optimisation by normalising individual points in tuple computations
 let centroidsBottomLefts st sf td fr nt nf rs = 
@@ -80,7 +83,7 @@ let detectGroundParrots aes =
         let f tc tbl =
             let i = indexMinMap (euclidianDist tc) cs   // index of closest centroid 
             overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
-        Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum
+        Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum // TODO this is just curry or could use Seq.map2
         
     let (saes, cs) = candidates tb ttd tfr aes
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 4.0 then yield sae}

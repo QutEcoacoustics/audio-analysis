@@ -13,9 +13,11 @@ let testTemplateBounds () =
     Assert.Equal(8.962902-5.166440, ttd)
     Assert.Equal(4995.703125-3531.445313, tfr)
     
+let defToString x = sprintf "%A" x
 let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
 
-let assertSeqEqual f xs ys =
+let assertSeqEqual f xs' ys' =
+    let xs, ys = Seq.sort xs', Seq.sort ys'
     let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
     let bs = Seq.map2 (=) xs ys
     let c = if Seq.forall id bs then [None]
@@ -40,12 +42,25 @@ let testCandidates () =
     
     let (_, tb, ttd, tfr) = templateBounds groundParrotTemplate
     let (saes, cs) = candidates tb ttd tfr aes
-    Assert.Equal(Seq.length msaes, Seq.length saes)
-    assertSeqEqual rectToString (Seq.sort msaes) (Seq.sort saes)
+    assertSeqEqual rectToString msaes saes
+
+[<Fact>]
+let testTemplateCentroidsBottomLefts () =
+    let md = GParrots_JB2_20090607_173000_wav_minute_3
+    let mToTuples = mapByRow (fun v -> (v.[0], v.[1]))
+    let mtcs = loadTestFile "EPRtemplatecentroids.csv" md |> mToTuples
+    let mtbls = loadTestFile "EPRtemplatebottomlefts.csv" md |> mToTuples
+    
+    let (tl, tb, ttd, tfr) = templateBounds groundParrotTemplate
+    let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0 // TODO fix copy
+    let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0 // TODO fix copy
+    let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl groundParrotTemplate
+    assertSeqEqual defToString mtcs tcs
+    assertSeqEqual defToString mtbls tbls
 
 [<Fact>]
 let detectGroundParrotsTest () = 
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let ae = loadFloatEventsFile "EPRAE.csv" md
-    let m = loadFloatEventsFile "EPRresults.csv" md |> Seq.sort
-    assertSeqEqual rectToString m (detectGroundParrots ae |> Seq.sort)
+    let m = loadFloatEventsFile "EPRresults.csv" md
+    assertSeqEqual rectToString m (detectGroundParrots ae)
