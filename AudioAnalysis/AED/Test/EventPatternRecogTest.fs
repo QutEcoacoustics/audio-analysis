@@ -13,6 +13,20 @@ let testTemplateBounds () =
     Assert.Equal(8.962902-5.166440, ttd)
     Assert.Equal(4995.703125-3531.445313, tfr)
     
+let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
+
+let assertSeqEqual f xs ys =
+    let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
+    let bs = Seq.map2 (=) xs ys
+    let c = if Seq.forall id bs then [None]
+            else let i = Seq.findIndex not bs
+                 let i' = i + 1
+                 [ sprintf "First difference at position %i" i |> Some;
+                   sprintf "Expected[%i]:\t%s\r\nFound[%i]:\t%s" i (Seq.nth i xs |> f) i (Seq.nth i ys |> f) |> Some;
+                   (if i' < Seq.length ys then sprintf "Found[%i]:\t%s" i' (Seq.nth i' ys |> f) |> Some else None) ]
+    let m = catOptions (l::c)
+    if Seq.isEmpty m then Assert.True(true) else Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n")
+        
 [<Fact>]
 let testCandidates () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
@@ -27,28 +41,11 @@ let testCandidates () =
     let (_, tb, ttd, tfr) = templateBounds groundParrotTemplate
     let (saes, cs) = candidates tb ttd tfr aes
     Assert.Equal(Seq.length msaes, Seq.length saes)
-    
-    let assertSeqEqual xs ys =
-        let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
-        let bs = Seq.map2 (=) xs ys
-        let c = if Seq.forall id bs then None
-                else let i = Seq.findIndex not bs
-                     sprintf "First difference at position %i\r\nExpected: %A\r\nFound: %A" i (Seq.nth i xs) (Seq.nth i ys) |> Some
-        let m = catOptions [l;c]
-        if Seq.isEmpty m then Assert.True(true) else Assert.True(false, String.concat "\r\n\r\n" m)
-        
-    assertSeqEqual (Seq.sort msaes) (Seq.sort saes)
+    assertSeqEqual rectToString (Seq.sort msaes) (Seq.sort saes)
 
 [<Fact>]
 let detectGroundParrotsTest () = 
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let ae = loadFloatEventsFile "EPRAE.csv" md
     let m = loadFloatEventsFile "EPRresults.csv" md |> Seq.sort
-    //Assert.Equal(m, detectGroundParrots ae |> Seq.sort)
-    let r = detectGroundParrots ae |> Seq.sort
-    
-    let toString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
-    let s = sprintf "\r\nmatlab %i, F# %i\r\n" (Seq.length m) (Seq.length r)
-    let f (m,r) = if m = r then "match" else sprintf "\r\nmatlab:\t %s \r\nF#:\t %s" (toString m) (toString r)
-    let l = sprintf "\r\n\r\nF# (8):\t %s\r\n" (toString (Seq.nth 7 r))
-    Assert.True(false, s + (Seq.zip m r |> Seq.map f |> String.concat "\r\n") + l)
+    assertSeqEqual rectToString m (detectGroundParrots ae |> Seq.sort)
