@@ -13,14 +13,36 @@ let testTemplateBounds () =
     Assert.Equal(8.962902-5.166440, ttd)
     Assert.Equal(4995.703125-3531.445313, tfr)
     
+let findAE (st:string) (fb:string) (ft:string) aes =
+    Seq.find (fun ae -> floatEquals (left ae) (System.Convert.ToDouble st) 0.00001
+                     && floatEquals (bottom ae) (System.Convert.ToDouble fb) 0.01
+                     && floatEquals (top ae) (System.Convert.ToDouble ft) 0.01) aes
+    
+[<Fact>]
 let testCandidates () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let aes = loadFloatEventsFile "EPRAE.csv" md
     let f = @"matlab\" + md.Dir + @"\" + "EPRCandidates.csv"
     let ls = System.IO.File.ReadAllLines f
-    let g (l:string []) = Seq.find (fun ae -> floatEquals (left ae) (System.Convert.ToDouble l.[0]) 0.00001) aes
-    let saes = Seq.map (fun l -> String.split [','] l |> List.toArray |> g) ls
-    ()
+    
+    let g x = String.split [' '] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.nth n aes)    
+    let mcs = Seq.map (fun l -> String.split [','] l |> Seq.nth 5 |> g) ls
+    let msaes = Seq.map (Seq.nth 0 << Seq.sort) mcs
+    
+    let (_, tb, ttd, tfr) = templateBounds groundParrotTemplate
+    let (saes, cs) = candidates tb ttd tfr aes
+    Assert.Equal(Seq.length msaes, Seq.length saes)
+    
+    let assertSeqEqual xs ys =
+        let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
+        let bs = Seq.map2 (=) xs ys
+        let c = if Seq.forall id bs then None
+                else let i = Seq.findIndex not bs
+                     sprintf "First difference at position %i\r\nExpected: %A\r\nFound: %A" i (Seq.nth i xs) (Seq.nth i ys) |> Some
+        let m = catOptions [l;c]
+        if Seq.isEmpty m then Assert.True(true) else Assert.True(false, String.concat "\r\n\r\n" m)
+        
+    assertSeqEqual (Seq.sort msaes) (Seq.sort saes)
 
 [<Fact>]
 let detectGroundParrotsTest () = 

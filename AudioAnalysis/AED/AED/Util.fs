@@ -7,6 +7,9 @@ let (|?) = orElse
 
 let (|?|) = defaultArg
 
+// Haskell catMaybes
+let catOptions xs = Seq.filter Option.isSome xs |> Seq.map Option.get
+
 let uncurry f (x,y) = f x y
 
 // TODO: should I/can I fix the overloaded round instead?
