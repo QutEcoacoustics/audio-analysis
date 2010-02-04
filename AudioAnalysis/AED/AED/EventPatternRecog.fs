@@ -53,7 +53,7 @@ let samplingRate = 22050.0
 let candidates tb ttd tfr aes =
     let sfr = (boundedInterval tb 500.0 500.0 0.0 freqMax)
     let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
-    // This is slightly different to matlab where the upper bounds are strictly less than then
+    // This is slightly different to matlab where the upper bounds are strictly less than
     let f x = Seq.filter (fun ae -> left ae >==< (left x, left x + ttd) && ae.Bottom >==< (bottom x, bottom x + tfr)) aes
     (ss, Seq.map f ss)
 
