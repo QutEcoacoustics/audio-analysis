@@ -27,11 +27,8 @@ let normaliseTimeFreq st sf td fr nt nf (t,f) =
     (g t st td nt, g f sf fr nf)
     
 let centroids rs =
-    let centre l r = l + (r - l) / 2.0  // assuming l <= r
-    Seq.map (fun r -> (centre r.Left r.Right, centre r.Bottom r.Top)) rs
-    // TODO rewrite this to be something like:
-    // let centre s l = s + l / 2.0
-    // Seq.map (fun r -> (centre (left r) (width r), centre (bottom r) (height r))) rs
+    let centre s l = s + l / 2.0
+    Seq.map (fun r -> (centre (left r) (width r), centre (bottom r) (height r))) rs
     
 // TODO investigate performance optimisation by normalising individual points in tuple computations
 let centroidsBottomLefts st sf td fr nt nf rs = 
