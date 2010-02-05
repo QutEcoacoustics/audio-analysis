@@ -57,6 +57,10 @@ let candidates tb ttd tfr aes =
     let f x = Seq.filter (fun ae -> left ae >==< (left x, left x + ttd) && ae.Bottom >==< (bottom x, bottom x + tfr)) aes
     (ss, Seq.map f ss)
 
+// Length of x and y axis' to scale time and frequency back to
+// TODO investigate these formulas - correct for ground parrot template
+let pixelAxisLengths ttd tfr = (ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0, tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0)
+    
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
     
 let templateBounds t =
@@ -66,12 +70,7 @@ let templateBounds t =
 let detectGroundParrots aes =
     let t = groundParrotTemplate
     let (tl, tb, ttd, tfr) = templateBounds t
-    
-    // Length of x and y axis' to scale time and frequency back to
-    // TODO investigate these formulas - correct for ground parrot template
-    let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0
-    let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0
-    
+    let (xl, yl) = pixelAxisLengths ttd tfr
     let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
         
     let score rs =

@@ -52,8 +52,7 @@ let testTemplateCentroidsBottomLefts () =
     let mtbls = loadTestFile "EPRtemplatebottomlefts.csv" md |> mToTuples
     
     let (tl, tb, ttd, tfr) = templateBounds groundParrotTemplate
-    let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0 // TODO fix copy
-    let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0 // TODO fix copy
+    let (xl, yl) = pixelAxisLengths ttd tfr
     let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl groundParrotTemplate
     assertSeqEqual defToString mtcs tcs
     assertSeqEqual defToString mtbls tbls
