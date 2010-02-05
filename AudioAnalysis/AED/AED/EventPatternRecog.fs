@@ -52,7 +52,7 @@ let samplingRate = 22050.0
 
 let candidates tb ttd tfr aes =
     let sfr = (boundedInterval tb 500.0 500.0 0.0 freqMax)
-    let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes
+    let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes // These are bottom left corners to overlay the template from
     // This is slightly different to matlab where the upper bounds are strictly less than
     let f x = Seq.filter (fun ae -> left ae >==< (left x, left x + ttd) && ae.Bottom >==< (bottom x, bottom x + tfr)) aes
     (ss, Seq.map f ss)
@@ -72,7 +72,7 @@ let detectGroundParrots aes =
     let xl = ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0
     let yl = tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0
     
-    let tcbls = centroidsBottomLefts tl tb ttd tfr xl yl t |> uncurry Seq.zip
+    let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
         
     let score rs =
         let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
@@ -80,7 +80,7 @@ let detectGroundParrots aes =
         let f tc tbl =
             let i = indexMinMap (euclidianDist tc) cs   // index of closest centroid 
             overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
-        Seq.map (fun (tc, tbl) -> f tc tbl) tcbls |> Seq.sum // TODO this is just curry or could use Seq.map2
+        Seq.map2 f tcs tbls |> Seq.sum
         
-    let (saes, cs) = candidates tb ttd tfr aes
+    let (saes, cs) = candidates tb ttd tfr aes // cs are the groups of acoustic events that are candiates for template matching
     seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 4.0 then yield sae}
