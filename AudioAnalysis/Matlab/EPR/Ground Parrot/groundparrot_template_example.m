@@ -30,5 +30,5 @@ template_matching_using_distance(name, int_thresh, small_events_thresh, xlsfile,
 
 
 % check out results
-score = 4;%3.5; 
+score = 4; 
 examine_all_AE_results(name, I3, T, F, int_thresh, small_events_thresh, xlsfile, score)

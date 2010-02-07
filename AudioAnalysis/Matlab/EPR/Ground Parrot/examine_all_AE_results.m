@@ -50,11 +50,14 @@ for ng=1:num_g
     num_a = length(AE_inds);
     thisAE = allAE(AE_inds,:);
 
+    % find left-most AE
+    [tmp,indL] = min(thisAE(:,1));
+
     score =  all_results(ng,7);
     if score < match_score
-        notAE = [notAE; thisAE(1,:)];
+        notAE = [notAE; thisAE(indL,:)];
     else
-        isAE = [isAE; thisAE(1,:)];
+        isAE = [isAE; thisAE(indL,:)];
     end
 end
 
