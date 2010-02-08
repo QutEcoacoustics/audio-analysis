@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using AudioAnalysisTools;
+using QutSensors.Data.Logic;
 
 
 namespace QutSensors.Processor
@@ -25,7 +26,7 @@ namespace QutSensors.Processor
             {
                 XmlElement element = document.CreateElement(resultItemKey);
 
-                ResultItem resultItem = result.GetResultItem(resultItemKey);
+                ResultProperty resultItem = result.GetResultItem(resultItemKey);
 
                 double resultVal = 0.0;
 
@@ -103,7 +104,7 @@ namespace QutSensors.Processor
                 if (result != null)
                 {
                     string key = result.RankingScoreName;
-                    ResultItem item = result.GetEventProperty(key, e);
+                    ResultProperty item = result.GetEventProperty(key, e);
 
                     nameValue = item.GetName();
                     scoreValue = item.GetValue().ToString();

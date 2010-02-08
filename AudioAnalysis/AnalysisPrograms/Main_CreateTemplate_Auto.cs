@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using QutSensors.Data.Logic;
 
 namespace AnalysisPrograms
 {
@@ -90,7 +91,7 @@ namespace AnalysisPrograms
             {
                 count++;
                 string key = result.RankingScoreName;
-                ResultItem item = result.GetEventProperty(key, e);
+                ResultProperty item = result.GetEventProperty(key, e);
                 Console.WriteLine("Hit Event ("+count+")  score="+item.GetValue().ToString());
             }
 

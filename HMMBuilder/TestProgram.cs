@@ -5,7 +5,9 @@ using System.Text;
 using ICSharpCode.SharpZipLib.Zip;
 using System.Text.RegularExpressions;
 using TowseyLib;
-using AudioAnalysis;
+using AudioTools;
+using AudioAnalysisTools;
+using AudioAnalysisTools.HTKTools;
 
 
 namespace HMMBuilder
@@ -85,7 +87,7 @@ namespace HMMBuilder
 
             //PREPARE THE TEST FILE AND EXTRACT FEATURES
             //write script files
-            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, htkConfig.wavExt, htkConfig.mfcExt);
+            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, HTKConfig.wavExt, HTKConfig.mfcExt);
             //extract features from the test file
             HTKHelper.ExtractFeatures(htkConfig.aOptionsStr, htkConfig.MfccConfigFN, htkConfig.TestFileCode, htkConfig.HCopyExecutable); //test data
             //scan the file with HTK HMM
@@ -119,7 +121,7 @@ namespace HMMBuilder
             List<string> hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);//There must be ONE AND ONLY ONE header line.
 
             Console.WriteLine("\nPreparing sonogram");
-            AudioAnalysis.SonogramConfig sonoConfig = new SonogramConfig();
+            AudioAnalysisTools.SonogramConfig sonoConfig = new SonogramConfig();
             AudioRecording ar = new AudioRecording(testWavFile);
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, ar.GetWavReader());
             Console.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
@@ -301,7 +303,7 @@ namespace HMMBuilder
 
             //PREPARE THE TEST FILE AND EXTRACT FEATURES
             //write script files
-            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, htkConfig.wavExt, htkConfig.mfcExt);
+            HTKHelper.WriteScriptFiles(htkConfig.DataDir, htkConfig.TestFileCode, htkConfig.TestFile, HTKConfig.wavExt, HTKConfig.mfcExt);
             //extract features from the test file
             HTKHelper.ExtractFeatures(htkConfig.aOptionsStr, htkConfig.MfccConfigFN, htkConfig.TestFileCode, htkConfig.HCopyExecutable); //test data
             //scan the file with HTK HMM
