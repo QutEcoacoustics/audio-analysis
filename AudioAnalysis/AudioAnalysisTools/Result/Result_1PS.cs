@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using TowseyLib;
 using MarkovModels;
+using QutSensors.Data.Logic;
 
 namespace AudioAnalysisTools
 {
@@ -14,7 +15,6 @@ namespace AudioAnalysisTools
 		public static int? CallPeriodicity_ms { get; set; }
 		public int? NumberOfPeriodicHits { get; set; }
 
-        private string[] resultItemKeys = { "PERIODIC_HITS", "VOCAL_COUNT", BaseResult.TIME_OF_TOP_SCORE };
 
         public override string[] ResultItemKeys
         {
@@ -42,33 +42,20 @@ namespace AudioAnalysisTools
             Template = template;
             //ACCUMULATE OUTPUT SO FAR
             AcousticMatrix = Template.AcousticModel.AcousticMatrix; //double[,] acousticMatrix
-            SyllSymbols = Template.AcousticModel.SyllSymbols;    //string symbolSequence = result.SyllSymbols;
-            SyllableIDs = Template.AcousticModel.SyllableIDs;    //int[] integerSequence = result.SyllableIDs;
+            SyllSymbols = Template.AcousticModel.SyllSymbols;       //string symbolSequence = result.SyllSymbols;
+            SyllableIDs = Template.AcousticModel.SyllableIDs;       //int[] integerSequence = result.SyllableIDs;
             //ModelType type = Template.Model.ModelType;
 
         }
 
-        public override ResultItem GetEventProperty(string key, AcousticEvent acousticEvent)
+        public override ResultProperty GetEventProperty(string key, AcousticEvent acousticEvent)
         {
             if (key.Equals("LLR_VALUE"))
             {
                 double? score = GetMaxScoreInEvent(acousticEvent);
-                var table = new Dictionary<string, string>();
-                table.Add("UNITS", "LLR");
-                table.Add("COMMENT_ABOUT_EVENT_LLR", "The returned score is the maximum LLR in the event. " +
-                                   "An LLR score is given to each frame in the event.");
-                table.Add("COMMENT_ABOUT_LLR", "The log likelihood ratio, in this case, is interpreted as follows. " +
-                                   "Let v1 be the test vocalisation and let v2 be an 'average' vocalisation used to train the Markov Model. " +
-                                   "Let p1 = p(v1 | MM) and let p2 = p(v2 | MM). Then LLR = log (p1 /p2).  " +
-                                   "Note 1: In theory LLR takes only negative values because p1 < p2. " +
-                                   "Note 2: For same reason, LLR's max value = 0.0 (i.e. test str has same prob has training sample. " +
-                                   "Note 3: In practice, LLR can have positive value when p1 > p2 because p2 is an average.");
-
-                table.Add("THRESHOLD", "-6.64");
-                table.Add("COMMENT_ABOUT_THRESHOLD", "The null hypothesis is that the test sequence is a true positive. " +
-                          "Accept null hypothesis if LLR >= -6.64.  " +
-                          "Reject null hypothesis if LLR <  -6.64.");
-                return new ResultItem("LLR_VALUE", score, table);
+                var rp = new ResultProperty("LLR_VALUE", score, typeof(double));
+                BaseResult.AddLLRInfo(rp); 
+                return rp;
             }
             return null;
 
@@ -88,11 +75,26 @@ namespace AudioAnalysisTools
 
 
 
-        public override ResultItem GetResultItem(string key)
+        public override ResultProperty GetResultItem(string key)
         {
-            if (key.Equals(resultItemKeys[0])) return new ResultItem(resultItemKeys[0], RankingScoreValue, GetResultInfo(resultItemKeys[0]));
-            else if (key.Equals(resultItemKeys[1])) return new ResultItem(resultItemKeys[1], VocalCount, GetResultInfo(resultItemKeys[1]));
-            else if (key.Equals(resultItemKeys[2])) return new ResultItem(resultItemKeys[2], TimeOfMaxScore, GetResultInfo(resultItemKeys[2]));
+            if (key.Equals(resultItemKeys[0]))
+            {
+                var rp = new ResultProperty(resultItemKeys[0], RankingScoreValue, typeof(double));
+                BaseResult.AddLLRInfo(rp);
+                return rp;
+            }
+            else if (key.Equals(resultItemKeys[1]))
+            {
+                var rp = new ResultProperty(resultItemKeys[1], VocalCount, typeof(int));
+                BaseResult.AddVocalCountInfo(rp); 
+                return rp;
+            }
+            else if (key.Equals(resultItemKeys[2]))
+            { 
+                var rp = new ResultProperty(resultItemKeys[2], TimeOfMaxScore, typeof(double));
+                BaseResult.AddTimeOfTopScoreInfo(rp); 
+                return rp;
+            }
             return null;
         }
 
@@ -121,13 +123,13 @@ namespace AudioAnalysisTools
         } //end method GetAcousticEvents()
 
 
-        public new static Dictionary<string, string> GetResultInfo(string key)
-        {
-            if (key.Equals("PERIODIC_HITS")) return GetRankingScoreInfo();
-            else if (key.Equals("VOCAL_COUNT"))      return GetVocalCountInfo();
-            else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE)) return GetTimeOfTopScoreInfo();
-            return null;
-        }
+        //public new static Dictionary<string, string> GetResultInfo(string key)
+        //{
+        //    if (key.Equals("PERIODIC_HITS")) return GetRankingScoreInfo();
+        //    else if (key.Equals("VOCAL_COUNT"))      return GetVocalCountInfo();
+        //    else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE)) return GetTimeOfTopScoreInfo();
+        //    return null;
+        //}
 
         private static Dictionary<string, string> GetRankingScoreInfo()
         {
@@ -138,20 +140,6 @@ namespace AudioAnalysisTools
             table["PERIODICITY"] = "The required periodicity in ms for syllables of this call type = " + CallPeriodicity_ms + ".";
             return table;
         }
-        private static Dictionary<string, string> GetVocalCountInfo()
-        {
-            var table = new Dictionary<string, string>();
-            table["COMMENT"] = "Total number of vocalisations of the recognised syllable.";
-            return table;
-        }
-        private static Dictionary<string, string> GetTimeOfTopScoreInfo()
-        {
-            var table = new Dictionary<string, string>();
-            table["UNITS"] = "seconds";
-            table["COMMENT"] = "Time from beginning of recording.";
-            return table;
-        }
-
 
         public string GetOneLineSummary()
         {

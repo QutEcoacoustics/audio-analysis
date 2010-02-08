@@ -5,6 +5,8 @@ using System.Text;
 using System.Xml;
 using TowseyLib;
 using MarkovModels;
+using QutSensors.Data.Logic;
+
 
 namespace AudioAnalysisTools
 {
@@ -12,6 +14,9 @@ namespace AudioAnalysisTools
 	public abstract class BaseResult
     {
         protected const string TIME_OF_TOP_SCORE = "TIME_OF_TOP_SCORE";
+        public string[] resultItemKeys = { "PERIODIC_HITS", "VOCAL_COUNT", BaseResult.TIME_OF_TOP_SCORE };
+
+
 
         #region Properties
         public string recordingName { get; set; }       //name of the recording file which was sacnned with template.
@@ -36,7 +41,7 @@ namespace AudioAnalysisTools
         public abstract string RankingScoreName { get; }
         #endregion
 
-        public abstract ResultItem GetResultItem(string key);
+        public abstract ResultProperty GetResultItem(string key);
 
         public abstract string[] ResultItemKeys
         {
@@ -46,7 +51,7 @@ namespace AudioAnalysisTools
         public abstract List<AcousticEvent> GetAcousticEvents(int samplingRate, int windowSize, int windowOffset,
                                                               bool doMelScale, int minFreq, int maxFreq);
 
-        public abstract ResultItem GetEventProperty(string key, AcousticEvent acousticEvent);
+        public abstract ResultProperty GetEventProperty(string key, AcousticEvent acousticEvent);
 
         public static Dictionary<string, string> GetResultInfo(string key)
         {
@@ -57,6 +62,36 @@ namespace AudioAnalysisTools
         {
             return "NO RESULTS AVAILABLE FROM BASE CLASS.";
         }
+
+
+
+        public static void AddLLRInfo(ResultProperty rp)
+        {
+            rp.AddInfo("UNITS", "LLR");
+            rp.AddInfo("COMMENT_ABOUT_LLR", "The log likelihood ratio, in this case, is interpreted as follows. " +
+                               "Let v1 be the test vocalisation and let v2 be an 'average' vocalisation used to train the Markov Model. " +
+                               "Let p1 = p(v1 | MM) and let p2 = p(v2 | MM). Then LLR = log (p1 /p2).  " +
+                               "Note 1: In theory LLR takes only negative values because p1 < p2. " +
+                               "Note 2: For same reason, LLR's max value = 0.0 (i.e. test str has same prob has training sample. " +
+                               "Note 3: In practice, LLR can have positive value when p1 > p2 because p2 is an average.");
+
+            rp.AddInfo("THRESHOLD", "-6.64");
+            rp.AddInfo("COMMENT_ABOUT_THRESHOLD", "The null hypothesis is that the test sequence is a true positive. " +
+                       "Accept null hypothesis if LLR >= -6.64.  " +
+                       "Reject null hypothesis if LLR <  -6.64.");
+        }
+
+        public static void AddTimeOfTopScoreInfo(ResultProperty rp)
+        {
+            rp.AddInfo("UNITS", "seconds");
+            rp.AddInfo("COMMENT", "Time from beginning of recording.");
+        }
+
+        public static void AddVocalCountInfo(ResultProperty rp)
+        {
+            rp.AddInfo("COMMENT", "The number of vocalisations that contained at least one recognised syllable.");
+        }
+
 
     }
 }
