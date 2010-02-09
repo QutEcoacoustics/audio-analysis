@@ -92,7 +92,7 @@ namespace AnalysisPrograms
                 count++;
                 string key = result.RankingScoreName;
                 ResultProperty item = result.GetEventProperty(key, e);
-                Console.WriteLine("Hit Event ("+count+")  score="+item.GetValue().ToString());
+                Console.WriteLine("Hit Event ("+count+")  score="+item.Value.ToString());
             }
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
