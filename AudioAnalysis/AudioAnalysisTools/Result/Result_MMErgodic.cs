@@ -15,20 +15,20 @@ namespace AudioAnalysisTools
 		#region Properties
         public double? LLRThreshold { get; set; } // significance threshold for display of LLR scores
 
-        private string[] resultItemKeys = new string[] { "LLR_VALUE", "VOCAL_COUNT", "VOCAL_VALID", BaseResult.TIME_OF_TOP_SCORE };
-        public override string[] ResultItemKeys 
-        {
-            get
-            {
-                return resultItemKeys;
-            }
-        }
+        //private string[] resultItemKeys = new string[] { "LLR_VALUE", "VOCAL_COUNT", "VOCAL_VALID", BaseResult.TIME_OF_TOP_SCORE };
+        //public override string[] ResultItemKeys 
+        //{
+        //    get
+        //    {
+        //        return BaseResult.resultItemKeys;
+        //    }
+        //}
 
         public override string RankingScoreName
         {
             get
             {
-                return "LLR_VALUE";
+                return BaseResult.resultItemKeys[BaseResult.LLR_VALUE];
             }
         }
 
@@ -145,7 +145,7 @@ namespace AudioAnalysisTools
             }
             else if (key.Equals(BaseResult.TIME_OF_TOP_SCORE))
             {
-                var rp = new ResultProperty(BaseResult.TIME_OF_TOP_SCORE, TimeOfMaxScore, typeof(double));
+                var rp = new ResultProperty(resultItemKeys[BaseResult.TIME_OF_TOP_SCORE], TimeOfMaxScore, typeof(double));
                 AddTimeOfTopScoreInfo(rp);
                 return rp;
             }
@@ -163,11 +163,11 @@ namespace AudioAnalysisTools
         public override string WriteResults()
         {
             StringBuilder sb = new StringBuilder("RESULTS OF SCANNING RECORDING FOR CALL <" + this.Template.CallName + ">\n");
-            for (int i = 0; i < this.resultItemKeys.Length; i++)
+            for (int i = 0; i < BaseResult.resultItemKeys.Length; i++)
             {
-                ResultProperty item = GetResultItem(this.resultItemKeys[i]);
-                sb.AppendLine(this.resultItemKeys[i] + " = " + item.ToString());
-                var info = GetResultInfo(this.resultItemKeys[i]);
+                ResultProperty item = GetResultItem(BaseResult.resultItemKeys[i]);
+                sb.AppendLine(BaseResult.resultItemKeys[i] + " = " + item.ToString());
+                var info = GetResultInfo(BaseResult.resultItemKeys[i]);
                 if (info == null) sb.AppendLine("\tNo information found for this result item.");
                 else
                 foreach (var pair in info)

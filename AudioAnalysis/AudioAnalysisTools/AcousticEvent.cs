@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using System.Text.RegularExpressions;
+using QutSensors.Data.Logic;
 
 namespace AudioAnalysisTools
 {
@@ -12,11 +13,11 @@ namespace AudioAnalysisTools
     {
 
         //DIMENSIONS OF THE EVENT
-        public double StartTime { get; set; } // (s),
-        public double Duration; // in secondss
+        public double StartTime { get; set; }       // (s),
+        public double Duration;                     // in seconds
         public double EndTime { get; private set; } // (s),
-        public int    MinFreq;  //
-        public int    MaxFreq;  //
+        public int    MinFreq;  // Hertz
+        public int    MaxFreq;  // Hertz
         public int    FreqRange { get { return(MaxFreq - MinFreq + 1); } }
         public bool   IsMelscale { get; set; } 
         public Oblong oblong { get; private set;}
@@ -32,6 +33,7 @@ namespace AudioAnalysisTools
         public string Name  { get; set; }
         public string SourceFile { get; set; }
         public double Score { get; set; }
+        public string ScoreComment { get; set; }
         public double Score2 { get; set; } //second score if required e.g. for Birgits recognisers
         public double NormalisedScore { get; private set; } //score normalised in range [0,1].
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
@@ -271,12 +273,12 @@ namespace AudioAnalysisTools
         /// <summary>
         /// returns the frame duration and offset duration in seconds
         /// </summary>
-        /// <param name="samplingRate"></param>
-        /// <param name="windowSize"></param>
-        /// <param name="windowOffset"></param>
+        /// <param name="samplingRate">signal samples per second</param>
+        /// <param name="windowSize">number of signal samples in one window or frame.</param>
+        /// <param name="windowOffset">number of signal samples between start of one frame and start of next frame.</param>
         /// <param name="frameDuration">units = seconds</param>
         /// <param name="frameOffset">units = seconds</param>
-        /// <param name="framesPerSecond"></param>
+        /// <param name="framesPerSecond">number of frames in one second.</param>
         public static void CalculateTimeScale(int samplingRate, int windowSize, int windowOffset,
                                                         out double frameDuration, out double frameOffset, out double framesPerSecond)
         {
@@ -580,6 +582,22 @@ namespace AudioAnalysisTools
 
             resultsText = sb.ToString();
         } //end method
+
+        /// <summary>
+        /// Uses the information in Michael Towsey's AcousticEvent class to initialise an instance of the ProcessorResultTag class.
+        /// </summary>
+        /// <param name="ae">instance of the AcousticEvent class</param>
+        /// <returns></returns>
+        public static ProcessorResultTag GetProcessorResultTag (AcousticEvent ae)
+        {
+            string str = "Normalised score";
+            long? start = (long?)Math.Round(ae.StartTime * 1000);
+            long? end   = (long?)Math.Round(ae.EndTime   * 1000);
+            var prt = new ProcessorResultTag(ae.Name, ae.NormalisedScore, str, start, end, (int?)ae.MinFreq, (int?)ae.MaxFreq);
+            var rp1 = new ResultProperty("SCORE", ae.Score, typeof(double));
+            prt.AddExtraDetail(rp1);
+            return prt;
+        }
 
     }
 }
