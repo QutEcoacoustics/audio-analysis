@@ -13,8 +13,14 @@ namespace AudioAnalysisTools
 	[Serializable]
 	public abstract class BaseResult
     {
-        protected const string TIME_OF_TOP_SCORE = "TIME_OF_TOP_SCORE";
-        public string[] resultItemKeys = { "PERIODIC_HITS", "VOCAL_COUNT", BaseResult.TIME_OF_TOP_SCORE };
+        protected const int LLR_VALUE         = 0;
+        protected const int PERIODIC_HITS     = 1;
+        protected const int VOCAL_COUNT       = 2;
+        protected const int TIME_OF_TOP_SCORE = 3;
+        protected const int VOCAL_VALID       = 4;
+        protected const int SCORE             = 5;
+
+        public static string[] resultItemKeys = { "LLR_VALUE", "PERIODIC_HITS", "VOCAL_COUNT", "TIME_OF_TOP_SCORE", "VOCAL_VALID", "SCORE" };
 
 
 
@@ -43,13 +49,7 @@ namespace AudioAnalysisTools
 
         public abstract ResultProperty GetResultItem(string key);
 
-        public abstract string[] ResultItemKeys
-        {
-            get;
-        }
-
-        public abstract List<AcousticEvent> GetAcousticEvents(int samplingRate, int windowSize, int windowOffset,
-                                                              bool doMelScale, int minFreq, int maxFreq);
+        public abstract List<AcousticEvent> GetAcousticEvents(int samplingRate, int windowSize, int windowOffset, bool doMelScale, int minFreq, int maxFreq);
 
         public abstract ResultProperty GetEventProperty(string key, AcousticEvent acousticEvent);
 

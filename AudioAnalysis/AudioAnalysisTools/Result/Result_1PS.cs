@@ -16,19 +16,19 @@ namespace AudioAnalysisTools
 		public int? NumberOfPeriodicHits { get; set; }
 
 
-        public override string[] ResultItemKeys
-        {
-            get
-            {
-                return resultItemKeys;
-            }
-        }
+        //public override string[] ResultItemKeys
+        //{
+        //    get
+        //    {
+        //        return resultItemKeys;
+        //    }
+        //}
 
         public override string RankingScoreName
         {
             get
             {
-                return "PERIODIC_HITS";
+                return BaseResult.resultItemKeys[BaseResult.PERIODIC_HITS];
             }
 
         }
