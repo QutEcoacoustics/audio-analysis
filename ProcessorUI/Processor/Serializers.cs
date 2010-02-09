@@ -22,17 +22,19 @@ namespace QutSensors.Processor
             XmlElement resultSummary = document.CreateElement("Summary");
             documentElement.AppendChild(resultSummary);
 
-            foreach (string resultItemKey in result.ResultItemKeys)
+            foreach (string resultItemKey in BaseResult.resultItemKeys)
             {
+                ResultProperty resultItem = result.GetResultItem(resultItemKey);
+                if(resultItem == null) continue;
+
                 XmlElement element = document.CreateElement(resultItemKey);
 
-                ResultProperty resultItem = result.GetResultItem(resultItemKey);
 
                 double resultVal = 0.0;
 
                 try
                 {
-                    resultVal = double.Parse(resultItem.GetValue().ToString());
+                    resultVal = double.Parse(resultItem.Value.ToString());
                 }
                 catch
                 {
@@ -44,16 +46,17 @@ namespace QutSensors.Processor
             }
 
             BaseTemplate template = result.Template;
-
-            bool doMelScale = template.SonogramConfig.DoMelScale;
-
-            int binCount = template.SonogramConfig.FreqBinCount;
-            double binWidth = template.SonogramConfig.FftConfig.NyquistFreq / (double)binCount;
-            int minFConfig = (int)template.SonogramConfig.MinFreqBand;
-            int maxFConfig = (int)template.SonogramConfig.MaxFreqBand;
+            int sr = template.SonogramConfig.FftConfig.SampleRate;
+            int ws = template.SonogramConfig.WindowSize;
             double frameOffset = template.SonogramConfig.GetFrameOffset();
+            int wo = (int)Math.Floor(ws * frameOffset);
+            bool doMelScale = template.SonogramConfig.DoMelScale;
+            int minF = (int)template.SonogramConfig.MinFreqBand;
+            int maxF = (int)template.SonogramConfig.MaxFreqBand;
+            //int binCount = template.SonogramConfig.FreqBinCount;
+            //double binWidth = template.SonogramConfig.FftConfig.NyquistFreq / (double)binCount;
 
-            List<AcousticEvent> events = result.GetAcousticEvents(doMelScale, binCount, binWidth, minFConfig, maxFConfig, frameOffset);
+            List<AcousticEvent> events = result.GetAcousticEvents(sr, ws, wo, doMelScale, minF, maxF);
 
             XmlElement eventsWrapper = SerializeAcousticEvents(events, document, result);
 
@@ -106,8 +109,8 @@ namespace QutSensors.Processor
                     string key = result.RankingScoreName;
                     ResultProperty item = result.GetEventProperty(key, e);
 
-                    nameValue = item.GetName();
-                    scoreValue = item.GetValue().ToString();
+                    nameValue = item.Key;
+                    scoreValue = item.Value.ToString();
                 }
 
                 XmlElement scoreElement = document.CreateElement("Score");
