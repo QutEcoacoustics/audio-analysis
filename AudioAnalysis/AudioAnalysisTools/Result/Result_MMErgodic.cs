@@ -8,6 +8,7 @@ using MarkovModels;
 using System.IO;
 using QutSensors.Data.Logic;
 
+
 namespace AudioAnalysisTools
 {
 	public class Result_MMErgodic : BaseResult
