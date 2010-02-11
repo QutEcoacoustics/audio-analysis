@@ -10,7 +10,7 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-	public class AudioRecording
+	public class AudioRecording : IDisposable
 	{
         private WavReader wavReader = null;
         
@@ -249,5 +249,14 @@ namespace AudioAnalysisTools
             WavWriter.WriteWavFile(this.wavReader.Samples, this.SampleRate, path);
         }
 
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            wavReader.Dispose();
+        }
+
+        #endregion
     }// end class AudioRecording
 }
