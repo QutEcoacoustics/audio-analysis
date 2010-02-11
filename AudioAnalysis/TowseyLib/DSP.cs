@@ -14,7 +14,51 @@ namespace TowseyLib
 
 
         /// <summary>
+        /// returns the start and end index of all frames in a long audio signal
+        /// </summary>
+        public static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
+        {
+            int step = (int)(windowSize * (1 - windowOverlap));
+
+            if (step < 1)
+                throw new ArgumentException("Frame Step must be at least 1");
+            if (step > windowSize)
+                throw new ArgumentException("Frame Step must be <=" + windowSize);
+
+            int overlap = windowSize - step;
+            int framecount = (dataLength - overlap) / step; //this truncates residual samples
+            if (framecount < 2) throw new ArgumentException("Signal must produce at least two frames!");
+
+            int offset = 0;
+            int[,] frames = new int[framecount, 2]; //col 0 =start; col 1 =end
+
+            for (int i = 0; i < framecount; i++) //foreach frame
+            {
+                frames[i, 0] = offset;                  //start of frame
+                frames[i, 1] = offset + windowSize - 1; //end of frame
+                offset += step;
+            }
+            return frames;
+        }
+
+
+        public static double[,] Frames(double[] data, int[,] startEnds)
+        {
+            int windowSize = startEnds[0, 1] + 1;
+            int framecount = startEnds.GetLength(0);
+            double[,] frames = new double[framecount, windowSize];
+
+            for (int i = 0; i < framecount; i++) //for each frame
+            {
+                for (int j = 0; j < windowSize; j++) frames[i, j] = data[startEnds[i, 0] + j];
+            } //end matrix
+            return frames;
+        }
+
+        
+        /// <summary>
         /// Breaks a long audio signal into frames with given step
+        /// IMPORTANT: THIS METHOD PRODUCES A LARGE MEMORY-HUNGRY MATRIX.  BEST TO USE THE FrameStartEnds() METHOD.
         /// </summary>
         public static double[,] Frames(double[] data, int windowSize, double windowOverlap)
         {
@@ -40,6 +84,7 @@ namespace TowseyLib
             } //end matrix
             return frames;
         }
+
 
         public static double[] GetSignal(int sampleRate, double duration, int[] freq)
         {
