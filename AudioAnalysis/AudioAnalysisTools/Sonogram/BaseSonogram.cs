@@ -94,7 +94,9 @@ namespace AudioAnalysisTools
 			if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
 
 			// FRAME WINDOWING
-            double[,] frames = DSP.Frames(signal, config.WindowSize, config.WindowOverlap);
+            //double[,] frames = DSP.Frames(signal, config.WindowSize, config.WindowOverlap);
+            int[,] framesIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
+            double[,] frames = DSP.Frames(signal, framesIDs);
 			FrameCount = frames.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
