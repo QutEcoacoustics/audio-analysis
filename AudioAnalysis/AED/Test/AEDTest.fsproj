@@ -37,7 +37,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="FsCheck">
-      <HintPath>C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\mQUTer Sensor\Extra Assemblies\FsCheck.dll</HintPath>
+      <HintPath>..\..\..\Extra Assemblies\FsCheck.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="FSharp.PowerPack, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809">
@@ -50,7 +50,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="xunit">
-      <HintPath>C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\mQUTer Sensor\Extra Assemblies\xunit.dll</HintPath>
+      <HintPath>..\..\..\Extra Assemblies\xunit.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
