@@ -85,9 +85,9 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
-      <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
-      <Name>QutSensors.Data</Name>
+    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
+      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
+      <Name>QutSensors.Shared</Name>
     </ProjectReference>
     <ProjectReference Include="..\MarkovModels\MarkovModels.csproj">
       <Project>{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}</Project>

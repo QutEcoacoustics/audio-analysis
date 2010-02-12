@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="sensor.mquter.qut.edu.au" elementFormDefault="qualified" targetNamespace="sensor.mquter.qut.edu.au" xmlns:xs="http://www.w3.org/2001/XMLSchema">
   <xs:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/" />
-  <xs:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Data.Logic" />
+  <xs:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" />
   <xs:element name="GetJobItem">
     <xs:complexType>
       <xs:sequence>
@@ -34,7 +34,7 @@
     <xs:complexType>
       <xs:sequence>
         <xs:element minOccurs="0" name="jobItemID" type="xs:int" />
-        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/QutSensors.Data.Logic" minOccurs="0" name="results" nillable="true" type="q3:ArrayOfProcessorResultTag" />
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/QutSensors.Shared" minOccurs="0" name="results" nillable="true" type="q3:ArrayOfProcessorResultTag" />
       </xs:sequence>
     </xs:complexType>
   </xs:element>

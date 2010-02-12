@@ -324,6 +324,172 @@ namespace QutSensors.Processor.WebServices {
         }
     }
     
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="InternalCache", Namespace="http://schemas.datacontract.org/2004/07/System.Reflection.Cache")]
+    [System.SerializableAttribute()]
+    public partial class InternalCache : object, System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        private QutSensors.Processor.WebServices.InternalCacheItem[] m_cacheField;
+        
+        private int m_numItemsField;
+        
+        [global::System.ComponentModel.BrowsableAttribute(false)]
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+        public QutSensors.Processor.WebServices.InternalCacheItem[] m_cache {
+            get {
+                return this.m_cacheField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.m_cacheField, value) != true)) {
+                    this.m_cacheField = value;
+                    this.RaisePropertyChanged("m_cache");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+        public int m_numItems {
+            get {
+                return this.m_numItemsField;
+            }
+            set {
+                if ((this.m_numItemsField.Equals(value) != true)) {
+                    this.m_numItemsField = value;
+                    this.RaisePropertyChanged("m_numItems");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        protected void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.Diagnostics.DebuggerStepThroughAttribute()]
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="InternalCacheItem", Namespace="http://schemas.datacontract.org/2004/07/System.Reflection.Cache")]
+    [System.SerializableAttribute()]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(System.Reflection.MemberInfo))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Shared.ProcessorResultTag[]))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Shared.ProcessorResultTag))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Shared.ResultProperty[]))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Shared.ResultProperty))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(System.Type))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.ProcessorJobItemDescription))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.ProcessorJobDescription))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.ProcessorJobItemResult[]))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.ProcessorJobItemResult))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.InternalCache))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.InternalCacheItem[]))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(QutSensors.Processor.WebServices.CacheObjType))]
+    [System.Runtime.Serialization.KnownTypeAttribute(typeof(System.Collections.Generic.Dictionary<string, string>))]
+    public partial struct InternalCacheItem : System.Runtime.Serialization.IExtensibleDataObject, System.ComponentModel.INotifyPropertyChanged {
+        
+        [System.NonSerializedAttribute()]
+        private System.Runtime.Serialization.ExtensionDataObject extensionDataField;
+        
+        private QutSensors.Processor.WebServices.CacheObjType KeyField;
+        
+        private object ValueField;
+        
+        public System.Runtime.Serialization.ExtensionDataObject ExtensionData {
+            get {
+                return this.extensionDataField;
+            }
+            set {
+                this.extensionDataField = value;
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+        public QutSensors.Processor.WebServices.CacheObjType Key {
+            get {
+                return this.KeyField;
+            }
+            set {
+                if ((this.KeyField.Equals(value) != true)) {
+                    this.KeyField = value;
+                    this.RaisePropertyChanged("Key");
+                }
+            }
+        }
+        
+        [System.Runtime.Serialization.DataMemberAttribute(IsRequired=true)]
+        public object Value {
+            get {
+                return this.ValueField;
+            }
+            set {
+                if ((object.ReferenceEquals(this.ValueField, value) != true)) {
+                    this.ValueField = value;
+                    this.RaisePropertyChanged("Value");
+                }
+            }
+        }
+        
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
+        
+        void RaisePropertyChanged(string propertyName) {
+            System.ComponentModel.PropertyChangedEventHandler propertyChanged = this.PropertyChanged;
+            if ((propertyChanged != null)) {
+                propertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs(propertyName));
+            }
+        }
+    }
+    
+    [System.CodeDom.Compiler.GeneratedCodeAttribute("System.Runtime.Serialization", "3.0.0.0")]
+    [System.Runtime.Serialization.DataContractAttribute(Name="CacheObjType", Namespace="http://schemas.datacontract.org/2004/07/System.Reflection.Cache")]
+    public enum CacheObjType : int {
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        EmptyElement = 0,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        ParameterInfo = 1,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        TypeName = 2,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        RemotingData = 3,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        SerializableAttribute = 4,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        AssemblyName = 5,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        ConstructorInfo = 6,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        FieldType = 7,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        FieldName = 8,
+        
+        [System.Runtime.Serialization.EnumMemberAttribute()]
+        DefaultMember = 9,
+    }
+    
     [System.CodeDom.Compiler.GeneratedCodeAttribute("System.ServiceModel", "3.0.0.0")]
     [System.ServiceModel.ServiceContractAttribute(Namespace="sensor.mquter.qut.edu.au", ConfigurationName="WebServices.Processor")]
     public interface Processor {
@@ -443,12 +609,12 @@ namespace QutSensors.Processor.WebServices {
         public int jobItemID;
         
         [System.ServiceModel.MessageBodyMemberAttribute(Namespace="sensor.mquter.qut.edu.au", Order=1)]
-        public QutSensors.Data.Logic.ProcessorResultTag[] results;
+        public QutSensors.Shared.ProcessorResultTag[] results;
         
         public SubmitJobItemResultsRequest() {
         }
         
-        public SubmitJobItemResultsRequest(int jobItemID, QutSensors.Data.Logic.ProcessorResultTag[] results) {
+        public SubmitJobItemResultsRequest(int jobItemID, QutSensors.Shared.ProcessorResultTag[] results) {
             this.jobItemID = jobItemID;
             this.results = results;
         }

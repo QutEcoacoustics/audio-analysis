@@ -3,14 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Windows.Forms;
-using AudioAnalysis;
-using System.IO;
-using System.Net;
 using AudioTools;
-
 using QutSensors.Processor;
 using Settings = QutSensors.Processor.Settings;
 

@@ -58,7 +58,7 @@ namespace AnalysisPrograms
             //LOAD TEMPLATE AND SERIALISE
             Log.WriteLine("\n\nLoading template and serialise.");
             var template = BaseTemplate.Load(appConfigPath, templatePath) as Template_CC;
-            var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+            var serializedData = QutSensors.Shared.Utilities.BinarySerialize(template);
             Log.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
             string serialPath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(templatePath) + ".serialised");
             Log.WriteLine("\tWriting serialised template to file: " + serialPath);

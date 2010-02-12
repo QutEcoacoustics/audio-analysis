@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
-using QutSensors.Data.Logic;
+using QutSensors.Shared;
 
 namespace AnalysisPrograms
 {
@@ -51,7 +51,7 @@ namespace AnalysisPrograms
 
             //B: CREATE SERIALISED VERSION OF TEMPLATE
             Console.WriteLine("STEP B: CREATE SERIALISED VERSION OF TEMPLATE");
-            var serializedData = QutSensors.Data.Utilities.BinarySerialize(template);
+            var serializedData = QutSensors.Shared.Utilities.BinarySerialize(template);
             Console.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
             string serialPath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(templateFName) + ".serialised");
             Console.WriteLine("\tWriting serialised template to file: " + serialPath);
@@ -62,7 +62,7 @@ namespace AnalysisPrograms
             //C: READ IN SERIALISED TEMPLATE
             Console.WriteLine("STEP C: READ SERIALISED VERSION OF TEMPLATE in file " + serialPath);
             var serializedData2 = FileTools.ReadSerialisedObject(serialPath);
-            var template2 = QutSensors.Data.Utilities.BinaryDeserialize(serializedData2) as Template_CCAuto;
+            var template2 = QutSensors.Shared.Utilities.BinaryDeserialize(serializedData2) as Template_CCAuto;
 
             //D: LOAD TEMPLATE INTO RECOGNISER
             Console.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
