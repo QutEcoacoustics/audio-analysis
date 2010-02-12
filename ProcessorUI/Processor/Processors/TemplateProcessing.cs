@@ -12,6 +12,7 @@ using TowseyLib;
 using QutSensors.AudioAnalysis.AED;
 using QutSensors.Processor;
 using AudioAnalysisTools;
+using QutSensors.Shared;
 
 namespace QutSensors.Processor
 {

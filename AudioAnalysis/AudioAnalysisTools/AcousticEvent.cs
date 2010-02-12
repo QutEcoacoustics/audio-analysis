@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using System.Text.RegularExpressions;
-using QutSensors.Data.Logic;
+using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/System.Reflection.Cache" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/System.Reflection.Cache" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
+  <xs:complexType name="InternalCache">
+    <xs:sequence>
+      <xs:element name="m_cache" nillable="true" type="tns:ArrayOfInternalCacheItem" />
+      <xs:element name="m_numItems" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InternalCache" nillable="true" type="tns:InternalCache" />
+  <xs:complexType name="ArrayOfInternalCacheItem">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="InternalCacheItem" type="tns:InternalCacheItem" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="ArrayOfInternalCacheItem" nillable="true" type="tns:ArrayOfInternalCacheItem" />
+  <xs:complexType name="InternalCacheItem">
+    <xs:annotation>
+      <xs:appinfo>
+        <IsValueType xmlns="http://schemas.microsoft.com/2003/10/Serialization/">true</IsValueType>
+      </xs:appinfo>
+    </xs:annotation>
+    <xs:sequence>
+      <xs:element name="Key" type="tns:CacheObjType" />
+      <xs:element name="Value" nillable="true" type="xs:anyType" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="InternalCacheItem" nillable="true" type="tns:InternalCacheItem" />
+  <xs:simpleType name="CacheObjType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="EmptyElement" />
+      <xs:enumeration value="ParameterInfo" />
+      <xs:enumeration value="TypeName" />
+      <xs:enumeration value="RemotingData" />
+      <xs:enumeration value="SerializableAttribute" />
+      <xs:enumeration value="AssemblyName" />
+      <xs:enumeration value="ConstructorInfo" />
+      <xs:enumeration value="FieldType" />
+      <xs:enumeration value="FieldName" />
+      <xs:enumeration value="DefaultMember" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:element name="CacheObjType" nillable="true" type="tns:CacheObjType" />
+</xs:schema>

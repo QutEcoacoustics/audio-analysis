@@ -6,6 +6,7 @@ using System.IO;
 using AudioTools;
 using TowseyLib;
 using QutSensors;
+using QutSensors.Shared;
 
 
 namespace AudioAnalysisTools

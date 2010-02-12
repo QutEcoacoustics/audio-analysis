@@ -102,6 +102,10 @@
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
+      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
+      <Name>QutSensors.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -126,12 +130,16 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Service References\WebServices\Processor.xsd" />
     <None Include="Service References\WebServices\Processor1.disco" />
+    <None Include="Service References\WebServices\Processor1.xsd" />
     <None Include="Service References\WebServices\Processor2.wsdl" />
+    <None Include="Service References\WebServices\Processor2.xsd" />
     <None Include="Service References\WebServices\Processor21.wsdl" />
     <None Include="Service References\WebServices\Processor31.xsd" />
     <None Include="Service References\WebServices\Processor32.xsd" />
     <None Include="Service References\WebServices\Processor33.xsd" />
+    <None Include="Service References\WebServices\Processor4.xsd" />
     <None Include="Service References\WebServices\QutSensors.Processor.WebServices.GetJobItemResponse.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>

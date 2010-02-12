@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Xml;
 using AudioAnalysisTools;
-using QutSensors.Data.Logic;
+using QutSensors.Shared;
 
 
 namespace QutSensors.Processor

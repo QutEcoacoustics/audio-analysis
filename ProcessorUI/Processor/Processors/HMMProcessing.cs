@@ -9,6 +9,7 @@ using AudioTools;
 using QutSensors.Processor.WebServices;
 using QutSensors.Data;
 using AudioAnalysisTools;
+using QutSensors.Shared;
 
 namespace QutSensors.Processor
 {

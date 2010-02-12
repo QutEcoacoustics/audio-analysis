@@ -6,7 +6,7 @@ using QutSensors;
 using TowseyLib;
 using MarkovModels;
 using System.IO;
-using QutSensors.Data.Logic;
+using QutSensors.Shared;
 
 
 namespace AudioAnalysisTools

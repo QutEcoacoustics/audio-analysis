@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using TowseyLib;
 using MarkovModels;
-using QutSensors.Data.Logic;
+using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {

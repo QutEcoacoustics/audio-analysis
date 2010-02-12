@@ -5,7 +5,11 @@
       <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd0" namespace="sensor.mquter.qut.edu.au" />
       <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd1" namespace="http://schemas.microsoft.com/2003/10/Serialization/" />
       <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd2" namespace="http://schemas.datacontract.org/2004/07/" />
-      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Data.Logic" />
+      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd3" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" />
+      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd4" namespace="http://schemas.microsoft.com/2003/10/Serialization/Arrays" />
+      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd5" namespace="http://schemas.datacontract.org/2004/07/System" />
+      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd6" namespace="http://schemas.datacontract.org/2004/07/System.Reflection" />
+      <xsd:import schemaLocation="http://localhost:2669/Processor/Processor.svc?xsd=xsd7" namespace="http://schemas.datacontract.org/2004/07/System.Reflection.Cache" />
     </xsd:schema>
   </wsdl:types>
   <wsdl:message name="Processor_GetJobItem_InputMessage">
