@@ -28,20 +28,31 @@ namespace TowseyLib
         public double Snr { get; set; }             //sig/noise ratio i.e. max dB wrt modal noise = 0.0
         public double[] ModalNoiseProfile { get; set; }
 
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
-        /// <param name="frames"></param>
+        /// <param name="frames">all the overlapped frames of a signal</param>
         public SNR(double[,] frames)
         {
             this.LogEnergy = SignalLogEnergy(frames);
             CalculateDecibelsPerFrame();
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="signal">signal </param>
+        /// <param name="frameIDs">starts and end index of each frame</param>
+        public SNR(double[] signal, int[,] frameIDs)
+        {
+            this.LogEnergy = SignalLogEnergy(signal, frameIDs);
+            CalculateDecibelsPerFrame();
+        }
 
         /// <summary>
-        /// Frame energy is the log of the summed energy of the samples.
+        /// Returns the frame energy of the signal.
+        /// The energy of a frame/window is the log of the summed energy of all the samples in the frame.
         /// Normally, if the passed frames are FFT spectra, then would multiply by 2 because spectra are symmetrical about Nyquist.
         /// BUT this method returns the AVERAGE sample energy, which therefore normalises for frame length / sample number. 
         /// 
@@ -56,26 +67,25 @@ namespace TowseyLib
         /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
         /// <returns></returns>
-        public static double[] SignalLogEnergy(double[,] frames)
+        public static double[] SignalLogEnergy(double[] signal, int[,] frameIDs)
         {
-            int frameCount = frames.GetLength(0);
-            int N = frames.GetLength(1);
+            int frameCount = frameIDs.GetLength(0);
+            int N          = frameIDs[0,1] + 1; //window or frame width
             double[] logEnergy = new double[frameCount];
             for (int i = 0; i < frameCount; i++) //foreach frame
             {
                 double sum = 0.0;
                 for (int j = 0; j < N; j++)  //foreach sample in frame
                 {
-                    sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
+                    sum += Math.Pow(signal[frameIDs[i,0] + j], 2); //sum the energy = amplitude squared
                 }
                 double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
                 //Console.WriteLine("e=" + e);
                 //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
 
                 if (e == Double.MinValue) //to guard against log(0) but this should never happen!
-                //if (e == 0.0000000000) //to guard against log(0) but this should never happen!
                 {
-                    System.Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+                    Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
                     logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference; //normalise to absolute scale
                     continue;
                 }
@@ -98,6 +108,45 @@ namespace TowseyLib
             return logEnergy;
         }
 
+        /// <summary>
+        /// this calculation of frame log energy is used only to calculate the log energy in each frame 
+        /// of a sub-band of the sonogram.
+        /// </summary>
+        /// <param name="frames"></param>
+        /// <returns></returns>
+        public static double[] SignalLogEnergy(double[,] frames)
+        {
+            int frameCount = frames.GetLength(0);
+            int N = frames.GetLength(1);
+            double[] logEnergy = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                double sum = 0.0;
+                for (int j = 0; j < N; j++)  //foreach sample in frame
+                {
+                    sum += (frames[i, j] * frames[i, j]); //sum the energy = amplitude squared
+                }
+                double e = sum / (double)N; //normalise to frame size i.e. average energy per sample
+                //Console.WriteLine("e=" + e);
+                //if (e > 0.25) Console.WriteLine("e > 0.25 = " + e);
+
+                if (e == Double.MinValue) //to guard against log(0) but this should never happen!
+                {
+                    Console.WriteLine("DSP.SignalLogEnergy() Warning!!! Zero Energy in frame " + i);
+                    logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference; //normalise to absolute scale
+                    continue;
+                }
+                double logE = Math.Log10(e);
+
+                //normalise to ABSOLUTE energy value i.e. as defined in header of Sonogram class
+                if (logE < SNR.MinLogEnergyReference)
+                {
+                    logEnergy[i] = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference;
+                }
+                else logEnergy[i] = logE - SNR.MaxLogEnergyReference;
+            }
+            return logEnergy;
+        }
 
 
         /// <summary>

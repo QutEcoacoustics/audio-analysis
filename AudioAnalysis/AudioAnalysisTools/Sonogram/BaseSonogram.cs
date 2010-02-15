@@ -13,7 +13,7 @@ namespace AudioAnalysisTools
     public enum SonogramType { amplitude, spectral, cepstral, acousticVectors, sobelEdge }
 
 
-	public abstract class BaseSonogram
+    public abstract class BaseSonogram : IDisposable
     {
 
         #region Properties
@@ -51,6 +51,7 @@ namespace AudioAnalysisTools
 		public double[,] Data { get; set; } //the spectrogram data matrix, AFTER conversion to dB and noise removal 
 		#endregion
 
+        
         /// <summary>
         /// use this constructor when want to extract time segment of existing sonogram
         /// </summary>
@@ -79,34 +80,30 @@ namespace AudioAnalysisTools
 			Duration        = wav.Time;
 			MaxAmplitude    = wav.CalculateMaximumAmplitude();
             double[] signal = wav.Samples;
+            
             //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
             epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
 
 			this.subBand_MinHz = config.MinFreqBand ?? 0;
 			this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
-            //this.ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
-             bool ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
+            bool ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
             if (config.DoFullBandwidth) ExtractSubband = false;   //if sono only intended for image
 
 
 			// SIGNAL PRE-EMPHASIS helps with speech signals
-			if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
+            if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
 
 			// FRAME WINDOWING
             //double[,] frames = DSP.Frames(signal, config.WindowSize, config.WindowOverlap);
             int[,] framesIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
-            double[,] frames = DSP.Frames(signal, framesIDs);
-			FrameCount = frames.GetLength(0);
+            //double[,] frames = DSP.Frames(signal, framesIDs);
+            FrameCount = framesIDs.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            this.SnrFrames = new SNR(frames);
+            this.SnrFrames = new SNR(signal, framesIDs);
             this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
-
-
-			// ZERO CROSSINGS
-			//this.zeroCross = DSP.ZeroCrossings(frames);
 
             //AUDIO SEGMENTATION
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
@@ -122,8 +119,9 @@ namespace AudioAnalysisTools
 			}
 
 			//generate the spectra of FFT AMPLITUDES
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-			//Log.WriteIfVerbose("\tDim of amplitude spectrum =" + amplitudeM.GetLength(0)+", " + amplitudeM.GetLength(1));
+			//var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            var amplitudeM = MakeAmplitudeSonogram(signal, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            //framesIDs = null;
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
@@ -141,45 +139,79 @@ namespace AudioAnalysisTools
 
 
 
-		double[,] MakeAmplitudeSpectra(double[,] frames, TowseyLib.FFT.WindowFunc w)
-		{
-			int frameCount = frames.GetLength(0);
-			int N = frames.GetLength(1);  // = FFT windowSize 
-            int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
+        //double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
+        //{
+        //    int frameCount = frames.GetLength(0);
+        //    int N = frames.GetLength(1);  // = FFT windowSize 
+        //    int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
-			//var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+        //    //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+        //    var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
+        //    this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
+        //    double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+
+        //    for (int i = 0; i < frameCount; i++)//foreach frame or time step
+        //    {
+        //        double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+        //        //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+
+        //        if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+        //        for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
+        //        {
+        //            amplitudeSg[i, j] = f1[j]; //transfer amplitude
+        //        }
+        //    } //end of all frames
+        //    return amplitudeSg;
+        //}
+
+
+        double[,] MakeAmplitudeSonogram(double[] signal, int[,] frames, TowseyLib.FFT.WindowFunc w)
+        {
+            int frameCount = frames.GetLength(0);
+            int N = frames[0, 1] + 1;     //window or frame width
+            int smoothingWindow = 0;      //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
+
+            //var fft = new TowseyLib.FFT(N, w);     // init class which calculates the FFT
             var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
             this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
-            double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+            double[,] amplitudeSonogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+            double[] window = new double[N]; 
+            double[] f1; 
 
-			for (int i = 0; i < frameCount; i++)//foreach frame or time step
-			{
-                double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+            for (int i = 0; i < frameCount; i++) //foreach frame or time step
+            {
+                //set up the window
+                for (int j = 0; j < N; j++) window[j] = signal[frames[i,0] + j];
+
+                f1 = fft.InvokeDotNetFFT(window); //returns fft amplitude spectrum
+                //double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
                 if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
                 for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
-				{
-					amplitudeSg[i, j] = f1[j]; //transfer amplitude
-				}
-			} //end of all frames
-			return amplitudeSg;
-		}
-
+                {
+                    amplitudeSonogram[i, j] = f1[j]; //transfer amplitude
+                }
+            } //end of all frames
+            return amplitudeSonogram;
+        }
 
 
         public double[,] ExtractFreqSubband(WavReader wav, int minHz, int maxHz)
         {
-			double[] signal = wav.Samples;
-            double[,] frames = DSP.Frames(signal, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
+            //double[,] frames = DSP.Frames(wav.Samples, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
+            int[,] framesIDs = DSP.FrameStartEnds(wav.Samples.Length, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
 			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-			var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+
+            //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
             return ExtractFreqSubband(amplitudeM, minHz, maxHz);
         }
+
 
         public void CalculateSubbandSNR(WavReader wav, int minHz, int maxHz)
         {
@@ -518,6 +550,17 @@ namespace AudioAnalysisTools
             return vScale;
         }
 
+        public void Dispose()
+        {
+            this.Configuration = null;
+            this.SnrFrames     = null;
+            this.SnrSubband    = null;
+            this.DecibelsPerFrame = null;
+            this.DecibelsInSubband  = null;
+            this.DecibelsNormalised = null;
+            this.Data          = null;
+            this.SigState      = null;
+        }
 
 
     } //end abstract class BaseSonogram
@@ -648,15 +691,6 @@ namespace AudioAnalysisTools
             
             this.Data = m; //store data matrix
 		}
-
-
-        //double[,] ApplyFilterBank(double[,] matrix)
-        //{
-        //    //Log.WriteIfVerbose(" ApplyFilterBank(double[,] matrix)");
-        //    int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
-        //    double[,] m = Speech.MelFilterBank(matrix, FFTbins, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
-        //    return m;
-        //} //end ApplyFilterBank(double[,] matrix)
 
 
         /// <summary>
@@ -843,4 +877,7 @@ namespace AudioAnalysisTools
             return ImageTools.SobelEdgeDetection(m);
 		}
     }// end SobelEdgeSonogram : BaseSonogram
+
+
+
 }
