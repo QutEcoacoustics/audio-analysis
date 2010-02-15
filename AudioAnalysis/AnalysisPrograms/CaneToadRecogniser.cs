@@ -13,7 +13,7 @@ namespace AudioAnalysis
     {
 
 
-        public static string fileExtention = "mp3";         //file extention to find
+        public static string fileExtention = "wav";         //file extention to find
         public static int minHz_default = 500;              //min of freq band
         public static int maxHz_default = 1000;             //max of freq band
         public static double frameOverlap_default = 0.75;   //default=0.50; Use 0.75 for koalas //#### IMPORTANT PARAMETER
@@ -22,7 +22,7 @@ namespace AudioAnalysis
         public static int maxOscilFreq_default = 20;        //ignore oscillations above this threshold freq (hz)
         public static double minAmplitude_default = 0.6;    //minimum acceptable value of a DCT coefficient
         public static double eventThreshold_default = 0.40; //USE THIS TO DETERMINE FP / FN trade-off for events.
-        public static bool DRAW_SONOGRAMS = false;
+        public static bool DRAW_SONOGRAMS = true;
 
 
 
@@ -41,6 +41,7 @@ namespace AudioAnalysis
 
             // DEFAULT PARAMETER VALUES #############################################################################################
             string dirName = @"C:\SensorNetworks\WavFiles\Canetoad\";
+            //string dirName = @"C:\SensorNetworks\WavFiles\temp\";
             int minHz = minHz_default;                      //koala range = 100-2000
             int maxHz = maxHz_default;
             double frameOverlap = frameOverlap_default;     //default=0.50; Use 0.75 for koalas //#### IMPORTANT PARAMETER
@@ -124,15 +125,25 @@ namespace AudioAnalysis
 
 
             //#######################################################################################################
+            // predefinition of variables to prevent memory leaks?!
+            BaseSonogram sonogram;
+            List<AcousticEvent> accumulatedEvents;
+            List<AcousticEvent> predictedEvents;
+            StringBuilder sb1;
+            StringBuilder sb3; 
+            SonogramConfig config;
+            Double[,] hits;
+            double[] scores;
+            Image_MultiTrack image;
             int file_count = 0;
             int totalEvent_count = 0;
             foreach (string wavPath in fileNames) //for each recording
             {
                 file_count++;
 
-                List<AcousticEvent> accumulatedEvents = new List<AcousticEvent>();
+                accumulatedEvents = new List<AcousticEvent>();
 
-                StringBuilder sb1 = new StringBuilder("\n\n" + file_count + " ###############################################################################\n");
+                sb1 = new StringBuilder("\n\n" + file_count + " ###############################################################################\n");
                 Log.WriteIfVerbose("\n\n" + file_count + " #################################################################################");
 
                 if (!File.Exists(wavPath))
@@ -157,10 +168,10 @@ namespace AudioAnalysis
                     if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
                     //ii: MAKE SONOGRAM
-                    var config = new SonogramConfig();//default values config
+                    config = new SonogramConfig(); //default values config
                     config.WindowOverlap = frameOverlap;
                     config.SourceFName = recording.FileName;
-                    BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
+                    sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
                     Console.WriteLine("\nSIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
                     Console.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
@@ -172,9 +183,9 @@ namespace AudioAnalysis
 
 
                     ////iii: detect oscillations
-                    List<AcousticEvent> predictedEvents = null; //predefinition of results event list
-                    double[] scores = null;                     //predefinition of score array
-                    Double[,] hits = null;                      //predefinition of hits matrix - to superimpose on sonogram image
+                    predictedEvents = null;   //predefinition of results event list
+                    scores          = null;   //predefinition of score array
+                    hits            = null;   //predefinition of hits matrix - to superimpose on sonogram image
                     OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
                                                  minAmplitude, eventThreshold, out scores, out predictedEvents, out hits);
 
@@ -187,42 +198,43 @@ namespace AudioAnalysis
                     sb1 = null;
 
                     //write detailed event info to events file.
-                    StringBuilder sb3 = new StringBuilder("\n# " + file_count + " ########################################################################\n");
+                    sb3 = new StringBuilder("\n# " + file_count + " ########################################################################\n");
                     AcousticEvent.WriteEvents(predictedEvents, ref sb3);
                     FileTools.Append2TextFile(outputFolder + eventsFile, sb3.ToString());
                     sb3 = null;
 
 
-                //###############################################################################################");
+                    //###############################################################################################");
                 
-                //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
-                if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
-                {
-                    string imagePath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
-                    if (imagePath == null) return;
-                    bool doHighlightSubband = false; bool add1kHzLines = true;
-                    var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                    image.AddSuperimposedMatrix(hits);    //displays hits
-                    image.AddEvents(predictedEvents);     //displays events
-                    image.Save(imagePath);
-                    image = null; //checking for a memory leak
-                }
+                    //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
+                    if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
+                    {
+                        string imagePath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
+                        if (imagePath == null) return;
+                        bool doHighlightSubband = false; bool add1kHzLines = true;
+                        image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+                        image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                        image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                        image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                        image.AddSuperimposedMatrix(hits);    //displays hits
+                        image.AddEvents(predictedEvents);     //displays events
+                        image.Save(imagePath);
+                        image = null; //checking for a memory leak
+                    }
 
-                } //end using statement
+                   // } //end using statement - BaseSonogram
+                } //end using statement - AudioRecording
 
             }// end the foreach() loop over all recordings
 
 
             Console.WriteLine("\n\n#############################################################################");
             Console.WriteLine("TOTAL EVENT COUNT = " + totalEvent_count);
-            StringBuilder sb2 = new StringBuilder();
-           sb.Append("\n\n###########################################################################\n");
+            sb = new StringBuilder();
+            sb.Append("\n\n###########################################################################\n");
             sb.Append("TOTAL EVENT COUNT = " + totalEvent_count + "\n");
-            FileTools.Append2TextFile(outputFolder + eventsFile, sb2.ToString());
-            sb2 = null;
+            FileTools.Append2TextFile(outputFolder + eventsFile, sb.ToString());
+            sb = null;
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();

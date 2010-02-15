@@ -63,19 +63,18 @@ namespace AudioAnalysisTools
         /// </summary>
         public void ConvertSampleRate22kHz()
         {
-            WavReader signal = GetWavReader();
-            int sr = signal.SampleRate;
+            int sr = wavReader.SampleRate;
             if(sr == 22050) return; //signal already has required sr
 
             if (sr == 44100)
             {
-                signal.SubSample(2);
+                wavReader.SubSample(2);
                 Console.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
                 return;
             }else
             if (sr == 88200)
             {
-                signal.SubSample(4);
+                wavReader.SubSample(4);
                 Console.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
                 return;
             }
