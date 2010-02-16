@@ -8,14 +8,14 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-	public class Image_MultiTrack
+	public class Image_MultiTrack : IDisposable
 	{
 
 		#region Properties
 		public Image SonoImage { get; private set; }
 		List<Image_Track> tracks = new List<Image_Track>();
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
-        List<AcousticEvent> EventList { get; set; }
+       public  List<AcousticEvent> EventList { get; set; }
         double[,] SuperimposedMatrix {get; set;}
 		#endregion
 
@@ -62,8 +62,10 @@ namespace AudioAnalysisTools
 
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
-            {                
+            {
+                Console.WriteLine("HERE1");
                 g.DrawImage(this.SonoImage, 0, 0);
+                Console.WriteLine("HERE2");
                 if (this.EventList != null) DrawEvents(g);
                 if (this.SuperimposedMatrix != null) Superimpose(g);
             }
@@ -166,5 +168,16 @@ namespace AudioAnalysisTools
 
         }
 
-	} //end class
+
+        #region IDisposable Members
+
+        public void Dispose()
+        {
+            this.EventList = null;
+            this.SonoImage.Dispose();
+
+        }
+
+        #endregion
+    } //end class
 }

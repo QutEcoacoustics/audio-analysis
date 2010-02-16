@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
-using AudioAnalysisTools; 
+using AudioAnalysisTools;
 
 
 namespace AudioAnalysis
@@ -32,10 +32,10 @@ namespace AudioAnalysis
         {
             string title = "DETECTING CANE TOADS USING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine(title+"\n");
+            Console.WriteLine(title + "\n");
 
             StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
-            sb.Append(title+"\n");
+            sb.Append(title + "\n");
 
             Log.Verbosity = 1;
 
@@ -50,7 +50,7 @@ namespace AudioAnalysis
             int maxOscilFreq = maxOscilFreq_default;        //ignore oscillations above this threshold freq
             double minAmplitude = minAmplitude_default;     //minimum acceptable value of a DCT coefficient
             double eventThreshold = eventThreshold_default; //use this to determine FP/FN trade-off.
-         
+
             //#######################################################################################################
             // DEAL WITH COMMAND LINE ARGUMENTS
             Console.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
@@ -59,16 +59,17 @@ namespace AudioAnalysis
             if (args.Length > 1) fileExtention = args[1];
             if (args.Length > 2) minHz = Int32.Parse(args[2]);
             if (args.Length > 3) maxHz = Int32.Parse(args[3]);
-            if (args.Length > 4) frameOverlap   = Double.Parse(args[4]);
+            if (args.Length > 4) frameOverlap = Double.Parse(args[4]);
             if (args.Length > 5) eventThreshold = Double.Parse(args[5]);
+            //eventThreshold = (dic.ContainsKey("id") ? Double.Parse(dic["id"]) : "default");
 
             //#######################################################################################################
             // OTHER VARS
             string outputFolder = dirName;
             string resultsFile = "results.txt";  //1
-            string eventsFile  = "events.txt";   //2
+            string eventsFile = "events.txt";   //2
             //MATCH STRING -search directory for matches to this file name
-            string fileMatch     = "*." + fileExtention;
+            string fileMatch = "*." + fileExtention;
 
             //#######################################################################################################
 
@@ -99,7 +100,7 @@ namespace AudioAnalysis
 
             string str = String.Format("\nPARAMETER VALUES");
             Console.WriteLine(str);
-            sb.Append(str+"\n");
+            sb.Append(str + "\n");
             str = String.Format("\nNUMBER OF FILES IN DIRECTORY MATCHING REGEX \\\\{0}\\\\  = {1}", fileMatch, fileNames.Count);
             Console.WriteLine(str);
             sb.Append(str + "\n");
@@ -121,7 +122,7 @@ namespace AudioAnalysis
 
             FileTools.WriteTextFile(outputFolder + resultsFile, sb.ToString());
 
-            FileTools.WriteTextFile(outputFolder + eventsFile, "### "+ title);
+            FileTools.WriteTextFile(outputFolder + eventsFile, "### " + title);
 
 
             //#######################################################################################################
@@ -130,7 +131,7 @@ namespace AudioAnalysis
             List<AcousticEvent> accumulatedEvents;
             List<AcousticEvent> predictedEvents;
             StringBuilder sb1;
-            StringBuilder sb3; 
+            StringBuilder sb3;
             SonogramConfig config;
             Double[,] hits;
             double[] scores;
@@ -149,7 +150,7 @@ namespace AudioAnalysis
                 if (!File.Exists(wavPath))
                 {
                     Log.WriteIfVerbose("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
-  //                  sb1.Append("WARNING!!  CANNOT FIND FILE <" + wavPath + ">\n");
+                    //                  sb1.Append("WARNING!!  CANNOT FIND FILE <" + wavPath + ">\n");
                     //Console.WriteLine("Press <ENTER> key to exit.");
                     //Console.ReadLine();
                     //System.Environment.Exit(999);
@@ -158,7 +159,7 @@ namespace AudioAnalysis
                 else
                 {
                     Log.WriteIfVerbose("wav File Path =" + wavPath);
-  //                  sb1.Append("wav File Path = <" + wavPath + ">\n");
+                    //                  sb1.Append("wav File Path = <" + wavPath + ">\n");
                 }
 
                 //C: DETECT EVENTS USING OSCILLATION DETECTION - KEY PARAMETERS TO CHANGE for DETECT OSCILLATIONS
@@ -184,8 +185,8 @@ namespace AudioAnalysis
 
                     ////iii: detect oscillations
                     predictedEvents = null;   //predefinition of results event list
-                    scores          = null;   //predefinition of score array
-                    hits            = null;   //predefinition of hits matrix - to superimpose on sonogram image
+                    scores = null;   //predefinition of score array
+                    hits = null;   //predefinition of hits matrix - to superimpose on sonogram image
                     OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
                                                  minAmplitude, eventThreshold, out scores, out predictedEvents, out hits);
 
@@ -195,34 +196,40 @@ namespace AudioAnalysis
                     Console.WriteLine(str);
                     sb1.Append(str + "\n");
                     FileTools.Append2TextFile(outputFolder + resultsFile, sb1.ToString());
-                    sb1 = null;
+                    //sb1 = null;
 
                     //write detailed event info to events file.
                     sb3 = new StringBuilder("\n# " + file_count + " ########################################################################\n");
                     AcousticEvent.WriteEvents(predictedEvents, ref sb3);
                     FileTools.Append2TextFile(outputFolder + eventsFile, sb3.ToString());
-                    sb3 = null;
+                    //sb3 = null;
 
 
                     //###############################################################################################");
-                
+
                     //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
-                    if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
+                    if ((DRAW_SONOGRAMS))// && (predictedEvents.Count > 0))
                     {
                         string imagePath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
-                        if (imagePath == null) return;
+                        //if (imagePath == null) return;
                         bool doHighlightSubband = false; bool add1kHzLines = true;
-                        image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-                        image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                        image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                        image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                        image.AddSuperimposedMatrix(hits);    //displays hits
-                        image.AddEvents(predictedEvents);     //displays events
-                        image.Save(imagePath);
-                        image = null; //checking for a memory leak
+
+                        using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+                        using (image = new Image_MultiTrack(img))
+                        {
+
+                            img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                            image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                            image.AddSuperimposedMatrix(hits);    //displays hits
+                            image.AddEvents(predictedEvents);     //displays events
+                            Console.WriteLine("imagePath=" + imagePath);
+                            image.Save(imagePath);
+                        }
                     }
 
-                   // } //end using statement - BaseSonogram
+                    // } //end using statement - BaseSonogram
                 } //end using statement - AudioRecording
 
             }// end the foreach() loop over all recordings
