@@ -102,6 +102,7 @@ namespace AudioAnalysisTools
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             this.SnrFrames = new SNR(signal, framesIDs);
+            //this.SnrFrames = new SNR(frames);
             this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
@@ -119,7 +120,7 @@ namespace AudioAnalysisTools
 			}
 
 			//generate the spectra of FFT AMPLITUDES
-			//var amplitudeM = MakeAmplitudeSpectra(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             var amplitudeM = MakeAmplitudeSonogram(signal, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             //framesIDs = null;
 
@@ -138,31 +139,31 @@ namespace AudioAnalysisTools
         protected abstract void Make(double[,] amplitudeM);
 
 
+        [Obsolete]
+        double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
+        {
+            int frameCount = frames.GetLength(0);
+            int N = frames.GetLength(1);  // = FFT windowSize 
+            int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
-        //double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
-        //{
-        //    int frameCount = frames.GetLength(0);
-        //    int N = frames.GetLength(1);  // = FFT windowSize 
-        //    int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
+            //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+            var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
+            this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
+            double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
 
-        //    //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
-        //    var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
-        //    this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
-        //    double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+            for (int i = 0; i < frameCount; i++)//foreach frame or time step
+            {
+                double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
-        //    for (int i = 0; i < frameCount; i++)//foreach frame or time step
-        //    {
-        //        double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-        //        //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-
-        //        if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
-        //        for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
-        //        {
-        //            amplitudeSg[i, j] = f1[j]; //transfer amplitude
-        //        }
-        //    } //end of all frames
-        //    return amplitudeSg;
-        //}
+                if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+                for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
+                {
+                    amplitudeSg[i, j] = f1[j]; //transfer amplitude
+                }
+            } //end of all frames
+            return amplitudeSg;
+        }
 
 
         double[,] MakeAmplitudeSonogram(double[] signal, int[,] frames, TowseyLib.FFT.WindowFunc w)

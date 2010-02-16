@@ -118,6 +118,8 @@ namespace AudioAnalysisTools
             //MISCELLANEOUS
             //wavDirName = @"C:\SensorNetworks\Software\AudioAnalysis\Matlab\EPR\";
             //wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
+            wavDirName  = @"C:\SensorNetworks\WavFiles\temp1\";
+            wavFileName = "ZCopy of West Knoll - Bees_20091030-013000";
 
             //--------------------------------------------------------------------------------------------------------------
 
