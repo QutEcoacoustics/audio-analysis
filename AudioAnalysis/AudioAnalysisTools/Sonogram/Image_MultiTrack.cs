@@ -44,14 +44,29 @@ namespace AudioAnalysisTools
             this.SuperimposedMatrix = m;
         }
 
+        /// <summary>
+        /// WARNING: This method calls Image_MultiTrack.GetImage().
+        /// In some circumstances GetImage() cannot manage images with an area larger than 10,385,000 pixels.
+        /// This means it cannot handle recording sonograms longer than 2 minutes.
+        /// </summary>
+        /// <param name="path"></param>
         public void Save(string path)
 		{
             Image image = GetImage();
-            if (image == null) 
-                Log.WriteLine("MultiTrackImage.Save() - WARNING: NULL IMAGE.Cannot save to: "+path);
+            if (image == null)
+            {
+                Log.WriteLine("MultiTrackImage.Save() - WARNING: NULL IMAGE.Cannot save to: " + path);
+                return;
+            }
 			image.Save(path, ImageFormat.Png);
-		}
+            //image.Save(path, ImageFormat.Jpeg);
+        }
 
+        /// <summary>
+        /// WARNING: In some circumstances this method cannot manage images with an area larger than 10,385,000 pixels.
+        /// This means it cannot handle recording sonograms longer than 2 minutes.
+        /// </summary>
+        /// <returns></returns>
 		public Image GetImage()
 		{
 			// Calculate total height of the bmp
@@ -63,9 +78,7 @@ namespace AudioAnalysisTools
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
             {
-                Console.WriteLine("HERE1");
                 g.DrawImage(this.SonoImage, 0, 0);
-                Console.WriteLine("HERE2");
                 if (this.EventList != null) DrawEvents(g);
                 if (this.SuperimposedMatrix != null) Superimpose(g);
             }

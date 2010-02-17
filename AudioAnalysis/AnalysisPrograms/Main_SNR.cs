@@ -30,7 +30,7 @@ namespace AnalysisPrograms
             //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
 
             string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\Output\"; //default 
+            string outputFolder = @"C:\SensorNetworks\temp1\"; //default 
             //min and max of required sub-band
             int minHz = 500; int maxHz = 8000;
 
