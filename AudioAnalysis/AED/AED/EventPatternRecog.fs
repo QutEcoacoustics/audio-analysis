@@ -21,9 +21,11 @@ let indexMinMap f xs =
     let m = Seq.min ys
     Seq.findIndex (fun y -> y = m) ys
     
-// TODO review all the normalising code
+// This is purely to deal with rounding differences (0.4999 in F# vs 0.5 in Matlab rounded to 1) in the tests
+let rnd' x = if floatEquals 0.5 (x - (floor x)) 0.0001 then ceil x else round x
+
 let normaliseTimeFreq st sf td fr nt nf (t,f) =
-    let g x s d l = let x' = rnd ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
+    let g x s d l = let x' = rnd' ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
     (g t st td nt, g f sf fr nf)
     
 let centroids rs =
@@ -43,8 +45,17 @@ let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     let r = l + (ct - l) * 2.0
     let t = b + (cf - b) * 2.0
     let ol, or', ob, ot = max tl l, min tr r, max tb b, min tt t
+    //let res = if or' < ol || ot < ob then 0.0
     if or' < ol || ot < ob then 0.0
-        else let oa = (or'-ol) * (ot-ob) in 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
+                 else
+                    let oa = (or'-ol) * (ot-ob)
+                    let res' = 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
+                    if System.Double.IsNaN res' then 0.0 else res'
+                    //res'
+    //if System.Double.IsNaN res then failwith (sprintf "tl: %f, tb: %f, %f, %f, l: %f, b: %f, ct: %f, cf: %f, tr: %f, tt: %f, r: %f, t: %f, ol: %f, or': %f, ob: %f, ot: %f"
+    //    tl tb tct tcf l b ct cf tr tt r t ol or' ob ot) else res
+    // Is this a genuine fix (the possibility of getting NAN due to t=b=cf) or is there a problem with transorming freq to pixels?
+    
         
 let freqMax = 11025.0
 let freqBins = 256.0
@@ -67,14 +78,14 @@ let templateBounds t =
     let (tl, tb) = absLeftAbsBottom t
     (tl, tb, maxmap right t - tl, maxmap top t - tb)
         
-let detectGroundParrots aes =
+let detectGroundParrots' aes =
     let t = groundParrotTemplate
     let (tl, tb, ttd, tfr) = templateBounds t
     let (xl, yl) = pixelAxisLengths ttd tfr
     let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
         
     let score rs =
-        let (st, sf) = absLeftAbsBottom rs // TODO broken assumption that the same event will have both bottom and left? Same as matlab?
+        let (st, sf) = absLeftAbsBottom rs
         let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs
         let f tc tbl =
             let i = indexMinMap (euclidianDist tc) cs   // index of closest centroid 
@@ -82,4 +93,6 @@ let detectGroundParrots aes =
         Seq.map2 f tcs tbls |> Seq.sum
         
     let (saes, cs) = candidates tb ttd tfr aes // cs are the groups of acoustic events that are candiates for template matching
-    seq {for (sae,score) in Seq.zip saes (Seq.map score cs) do if score >= 4.0 then yield sae}
+    Seq.zip saes (Seq.map score cs)
+    
+let detectGroundParrots aes = seq {for (sae,score) in detectGroundParrots' aes do if score >= 4.0 then yield sae}
