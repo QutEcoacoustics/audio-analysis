@@ -208,7 +208,7 @@ namespace AudioAnalysis
                     //###############################################################################################");
 
                     //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
-                    if ((DRAW_SONOGRAMS))// && (predictedEvents.Count > 0))
+                    if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
                     {
                         string imagePath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
                         //if (imagePath == null) return;
@@ -217,14 +217,12 @@ namespace AudioAnalysis
                         using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
                         using (image = new Image_MultiTrack(img))
                         {
-
-                            img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                            //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
                             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                             image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                             image.AddSuperimposedMatrix(hits);    //displays hits
                             image.AddEvents(predictedEvents);     //displays events
-                            Console.WriteLine("imagePath=" + imagePath);
                             image.Save(imagePath);
                         }
                     }
