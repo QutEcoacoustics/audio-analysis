@@ -24,8 +24,6 @@ let loadIntEventsFile f md =
 let loadFloatEventsFile f md =
     let aem = loadTestFile2 md.Dir f 
     seq {for i in 0..(aem.NumCols-1) -> cornersToRect aem.[0,i] (aem.[0,i]+aem.[1,i]) aem.[3,i] aem.[2,i]}
-    
-let floatEquals f1 f2 d = abs(f1 - f2) <= d
         
 // TODO would rather use Either than an exception here
 let matrixFloatEquals (a:matrix) (b:matrix) d = 
