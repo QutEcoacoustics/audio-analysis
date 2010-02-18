@@ -24,6 +24,10 @@ namespace AnalysisPrograms
                     case "snr":
                         Main_SNR.Main(r);
                         break;
+                    case "Canetoad":
+                        CaneToadRecogniser.Main(r);
+                        break;
+
                     default:
                         Console.WriteLine("unrecognised");
                         break;

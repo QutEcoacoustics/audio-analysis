@@ -7,7 +7,7 @@ using TowseyLib;
 using AudioAnalysisTools;
 
 
-namespace AudioAnalysis
+namespace AnalysisPrograms
 {
     class CaneToadRecogniser
     {
