@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AudioAnalysis.CaneToadRecogniser</StartupObject>
+    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -57,6 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CaneToadRecogniser.cs" />
+    <Compile Include="MainEntry.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
