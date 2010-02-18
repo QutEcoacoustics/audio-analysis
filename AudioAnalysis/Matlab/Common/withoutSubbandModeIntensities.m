@@ -15,8 +15,10 @@ mode1 = zeros(1,M);
 for nf = 1:M  
     thisI = I1(nf,:);
     
+    thisI(isinf(thisI)) = nan;
     maxI = max(thisI(:));
     minI = min(thisI(:));
+    
     threshI = (minI-maxI)/2;
     
     hvec = [min(thisI(:)):max(thisI(:))];
