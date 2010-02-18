@@ -15,7 +15,7 @@ mode1 = zeros(1,M);
 for nf = 1:M  
     thisI = I1(nf,:);
     
-    thisI(isinf(thisI)) = nan;
+    thisI(isinf(thisI)) = nan; % need to check for inf - 20100218
     maxI = max(thisI(:));
     minI = min(thisI(:));
     
