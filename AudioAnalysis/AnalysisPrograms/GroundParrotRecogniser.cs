@@ -9,7 +9,7 @@ using QutSensors.AudioAnalysis.AED;
 
 namespace AnalysisPrograms
 {
-    class Main_EPR
+    class GroundParrotRecogniser
     {
         // TODO nasty copy from Main_FindAcousticEvents.cs
         public static void Main(string[] args)

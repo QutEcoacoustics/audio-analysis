@@ -57,13 +57,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CaneToadRecogniser.cs" />
+    <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
     <Compile Include="Main_CreateTemplate_Auto.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
     <Compile Include="Main_CreateTemplate_Part2.cs" />
-    <Compile Include="Main_EPR.cs" />
     <Compile Include="Main_FindAcousticEvents.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
