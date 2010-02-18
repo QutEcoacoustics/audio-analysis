@@ -63,6 +63,11 @@ namespace TowseyLib
 			return table.ContainsKey(key);
 		}
 
+        public Dictionary<string, string> GetTable()
+        {
+            return table;
+        }
+
 		public string GetString(string key)
 		{
 			string value;
