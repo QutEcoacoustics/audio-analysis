@@ -25,7 +25,6 @@ namespace AnalysisPrograms
             //wavDirName = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\Matlab\EPR\Ground Parrot\";
             string wavFilePath = @"..\Matlab\EPR\Ground Parrot\GParrots_JB2_20090607-173000.wav_minute_3.wav";
 
-            // TODO final / val?
             var eprEvents = epr(appConfigPath, wavFilePath);
 
             string outputFolder = @"C:\SensorNetworks\Output\";
@@ -46,7 +45,6 @@ namespace AnalysisPrograms
             */
         }
         
-        // TODO a strings immutable in C#? Whas is equivelant to Java final?
         public static List<AcousticEvent> epr(string appConfigPath, string wavFilePath)
         {
             AudioRecording recording = new AudioRecording(wavFilePath);
@@ -57,10 +55,10 @@ namespace AnalysisPrograms
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             double[,] matrix = sonogram.Data;
+            // TODO the whole section to here will be common with other analysis
 
             Console.WriteLine("START: AED");
             TimeSpan start = DateTime.Now.TimeOfDay;
-            //Enumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(9.0, 200, matrix);
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
             Console.WriteLine("Elapsed time:" + DateTime.Now.TimeOfDay.Subtract(start));
             Console.WriteLine("END: AED");
