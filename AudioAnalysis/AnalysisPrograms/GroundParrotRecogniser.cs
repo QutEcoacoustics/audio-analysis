@@ -15,13 +15,12 @@ namespace AnalysisPrograms
         {
             string appConfigPath = ""; // TODO what is this for?
 
-            // TODO standardise on a logger or Console here
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Log.Verbosity = 1;
+            Log.WriteLine("DATE AND TIME:" + DateTime.Now);
             Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            
-            Console.WriteLine();
+            Log.WriteLine(""); // TODO add a Log.WriteLine() method
 
+            // TODO perhaps pass the path to the svn trunk in as args[0]
             //wavDirName = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\Matlab\EPR\Ground Parrot\";
             string wavFilePath = @"..\Matlab\EPR\Ground Parrot\GParrots_JB2_20090607-173000.wav_minute_3.wav";
 
@@ -57,11 +56,11 @@ namespace AnalysisPrograms
             double[,] matrix = sonogram.Data;
             // TODO the whole section to here will be common with other analysis
 
-            Console.WriteLine("START: AED");
+            Log.WriteLine("START: AED");
             TimeSpan start = DateTime.Now.TimeOfDay;
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
-            Console.WriteLine("Elapsed time:" + DateTime.Now.TimeOfDay.Subtract(start));
-            Console.WriteLine("END: AED");
+            Log.WriteIfVerbose("Elapsed time:" + DateTime.Now.TimeOfDay.Subtract(start));
+            Log.WriteLine("END: AED");
 
             //get the time and freq scales
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
@@ -75,18 +74,18 @@ namespace AnalysisPrograms
                 events.Add(Util.fcornersToRect(e.StartTime, e.EndTime, e.MaxFreq, e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
-            Console.WriteLine("# AED events: " + events.Count);
+            Log.WriteIfVerbose("# AED events: " + events.Count);
 
-            Console.WriteLine("START: EPR");
+            Log.WriteLine("START: EPR");
             IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
-            Console.WriteLine("END: EPR");
+            Log.WriteLine("END: EPR");
 
             var eprEvents = new List<AcousticEvent>();
             foreach (Util.Rectangle<double> r in eprRects)
             {
                 var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
                 //Console.WriteLine(ae.WriteProperties());
-                Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                Log.WriteIfVerbose(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 eprEvents.Add(ae);
             }
             return eprEvents;
