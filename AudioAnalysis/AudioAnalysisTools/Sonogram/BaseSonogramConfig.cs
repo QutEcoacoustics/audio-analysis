@@ -37,9 +37,10 @@ namespace AudioAnalysisTools
 
 		public static SonogramConfig Load(string configFile)
 		{
+            Log.WriteLine("config file =" + configFile);
             if (!File.Exists(configFile))
             {
-                Log.WriteLine("The configuraiton file <" + configFile + "> does not exist!");
+                Log.WriteLine("The configuration file <" + configFile + "> does not exist!");
                 Log.WriteLine("Initialising application with default parameter values.");
                 return new SonogramConfig();
             }
