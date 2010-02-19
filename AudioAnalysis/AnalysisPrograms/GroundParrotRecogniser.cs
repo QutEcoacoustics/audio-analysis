@@ -11,22 +11,47 @@ namespace AnalysisPrograms
 {
     class GroundParrotRecogniser
     {
-        // TODO nasty copy from Main_FindAcousticEvents.cs
-        public static void Main(string[] args)
+        public static void dev(string[] args)
         {
+            string appConfigPath = ""; // TODO what is this for?
+
+            // TODO standardise on a logger or Console here
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
             Log.Verbosity = 1;
-            string wavDirName; string wavFileName;
-            AudioRecording recording;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-            string appConfigPath = "";
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\Output\"; //default 
-
             Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            Log.WriteIfVerbose("wav File Path =" + wavPath);
-            Log.WriteIfVerbose("output folder =" + outputFolder);
+            
             Console.WriteLine();
+
+            //wavDirName = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\Matlab\EPR\Ground Parrot\";
+            string wavFilePath = @"..\Matlab\EPR\Ground Parrot\GParrots_JB2_20090607-173000.wav_minute_3.wav";
+
+            // TODO final / val?
+            var eprEvents = epr(appConfigPath, wavFilePath);
+
+            string outputFolder = @"C:\SensorNetworks\Output\";
+            Log.WriteIfVerbose("output folder =" + outputFolder);
+
+            /*
+            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddEvents(eprEvents);
+            image.Save(outputFolder + wavFileName + ".png");
+            
+            Console.WriteLine("\nFINISHED!");
+            */
+        }
+        
+        // TODO a strings immutable in C#? Whas is equivelant to Java final?
+        public static List<AcousticEvent> epr(string appConfigPath, string wavFilePath)
+        {
+            AudioRecording recording = new AudioRecording(wavFilePath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
+            Log.WriteIfVerbose("wav file =" + recording.FilePath);
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
@@ -66,19 +91,7 @@ namespace AnalysisPrograms
                 Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 eprEvents.Add(ae);
             }
-            /*
-            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(eprEvents);
-            image.Save(outputFolder + wavFileName + ".png");
-            
-            Console.WriteLine("\nFINISHED!");
-            */
+            return eprEvents;
         }
     }
 }

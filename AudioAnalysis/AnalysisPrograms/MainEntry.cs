@@ -19,7 +19,7 @@ namespace AnalysisPrograms
                 switch (args[0])
                 {
                     case "groundparrot":
-                        GroundParrotRecogniser.Main(r);
+                        GroundParrotRecogniser.dev(r);
                         break;
                     case "snr":
                         Main_SNR.Main(r);
