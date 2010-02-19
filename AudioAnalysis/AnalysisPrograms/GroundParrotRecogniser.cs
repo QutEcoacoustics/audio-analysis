@@ -21,10 +21,8 @@ namespace AnalysisPrograms
             }
             else
             {
-                string appConfigPath = ""; // TODO what is this for?
                 Log.Verbosity = 1;
-                Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-
+                string appConfigPath = ""; // TODO what is this for?
                 var eprEvents = detect(appConfigPath, args[0]);
 
                 Console.WriteLine();
@@ -60,11 +58,10 @@ namespace AnalysisPrograms
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
-            double[,] matrix = sonogram.Data;
             // TODO the whole section to here will be common with other analysis
 
             Log.WriteLine("AED start");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, sonogram.Data);
             Log.WriteLine("AED finished");
 
             //get the time and freq scales
