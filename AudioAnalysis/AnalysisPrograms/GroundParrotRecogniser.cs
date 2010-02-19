@@ -51,7 +51,6 @@ namespace AnalysisPrograms
         
         public static List<AcousticEvent> detect(string appConfigPath, string wavFilePath)
         {
-            Log.WriteLine("wav file =" + wavFilePath);
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
 
