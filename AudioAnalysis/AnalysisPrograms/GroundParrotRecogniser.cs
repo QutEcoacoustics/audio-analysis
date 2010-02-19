@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -13,42 +14,48 @@ namespace AnalysisPrograms
     {
         public static void dev(string[] args)
         {
-            string appConfigPath = ""; // TODO what is this for?
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Please supply a .wav recording as a command line argument.");
+                Console.WriteLine("Example: \"trunk\\AudioAnalysis\\Matlab\\EPR\\Ground Parrot\\GParrots_JB2_20090607-173000.wav_minute_3.wav\"");
+            }
+            else
+            {
+                string appConfigPath = ""; // TODO what is this for?
+                Log.Verbosity = 1;
+                Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
 
-            Log.Verbosity = 1;
-            Log.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            Log.WriteLine(""); // TODO add a Log.WriteLine() method
+                var eprEvents = detect(appConfigPath, args[0]);
 
-            // TODO perhaps pass the path to the svn trunk in as args[0]
-            //wavDirName = @"C:\Documents and Settings\Brad\svn\Sensors\trunk\AudioAnalysis\Matlab\EPR\Ground Parrot\";
-            string wavFilePath = @"..\Matlab\EPR\Ground Parrot\GParrots_JB2_20090607-173000.wav_minute_3.wav";
+                Console.WriteLine();
+                foreach (AcousticEvent ae in eprEvents)
+                    Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                Console.WriteLine();
 
-            var eprEvents = epr(appConfigPath, wavFilePath);
+                string outputFolder = @"C:\SensorNetworks\Output\";
+                Log.WriteIfVerbose("output folder =" + outputFolder);
 
-            string outputFolder = @"C:\SensorNetworks\Output\";
-            Log.WriteIfVerbose("output folder =" + outputFolder);
+                /*
+                string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
 
-            /*
-            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-            var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(eprEvents);
-            image.Save(outputFolder + wavFileName + ".png");
-            
-            Console.WriteLine("\nFINISHED!");
-            */
+                bool doHighlightSubband = false; bool add1kHzLines = true;
+                var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+                //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+                //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddEvents(eprEvents);
+                image.Save(outputFolder + wavFileName + ".png");
+                
+                Console.WriteLine("\nFINISHED!");
+                */
+            }
         }
         
-        public static List<AcousticEvent> epr(string appConfigPath, string wavFilePath)
+        public static List<AcousticEvent> detect(string appConfigPath, string wavFilePath)
         {
+            Log.WriteLine("wav file =" + wavFilePath);
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
-            Log.WriteIfVerbose("wav file =" + recording.FilePath);
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
@@ -56,11 +63,9 @@ namespace AnalysisPrograms
             double[,] matrix = sonogram.Data;
             // TODO the whole section to here will be common with other analysis
 
-            Log.WriteLine("START: AED");
-            TimeSpan start = DateTime.Now.TimeOfDay;
+            Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, matrix);
-            Log.WriteIfVerbose("Elapsed time:" + DateTime.Now.TimeOfDay.Subtract(start));
-            Log.WriteLine("END: AED");
+            Log.WriteLine("AED finished");
 
             //get the time and freq scales
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
@@ -74,20 +79,16 @@ namespace AnalysisPrograms
                 events.Add(Util.fcornersToRect(e.StartTime, e.EndTime, e.MaxFreq, e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
-            Log.WriteIfVerbose("# AED events: " + events.Count);
+            Log.WriteIfVerbose("AED # events: " + events.Count);
 
-            Log.WriteLine("START: EPR");
+            Log.WriteLine("EPR start");
             IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
-            Log.WriteLine("END: EPR");
+            Log.WriteLine("EPR finished");
 
             var eprEvents = new List<AcousticEvent>();
             foreach (Util.Rectangle<double> r in eprRects)
-            {
-                var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
-                //Console.WriteLine(ae.WriteProperties());
-                Log.WriteIfVerbose(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
-                eprEvents.Add(ae);
-            }
+                eprEvents.Add(new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top)); // TODO Is this the right return type / constructor?
+
             return eprEvents;
         }
     }
