@@ -34,6 +34,7 @@ namespace AudioAnalysisTools
         }
         public AudioRecording(string path)
         {
+            Log.WriteLine("Recording file path: " + path);
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);
