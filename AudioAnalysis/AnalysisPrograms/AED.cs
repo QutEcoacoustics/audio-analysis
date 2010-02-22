@@ -46,7 +46,6 @@ namespace AnalysisPrograms
             }
         }
 
-        // TODO call this from EPR
         public static System.Tuple<AudioRecording, BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath,
             double intensityThreshold, int smallAreaThreshold)
         {
