@@ -11,7 +11,6 @@ namespace AudioAnalysisTools
     {
 
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -20,10 +19,18 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">max bound freq band to search</param>
         /// <param name="dctDuration">duration of DCT in seconds</param>
         /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
+        /// <param name="maxOscilFreq">ignore oscillation frequencies greater than this </param>
         /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
-        /// <param name="opPath">set=null if do not want to save an image, which takes time</param>
+        /// <param name="scoreThreshold">used for FP/FN</param>
+        /// <param name="minDuration">ignore hits whose duration is shorter than this</param>
+        /// <param name="maxDuration">ignore hits whose duration is longer than this</param>
+        /// <param name="scores">return an array of scores over the entire recording</param>
+        /// <param name="events">return a list of acoustic events</param>
+        /// <param name="hits"></param>
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
-                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude, double scoreThreshold,
+                                   double dctDuration, int minOscilFreq, int maxOscilFreq, 
+                                   double minAmplitude, double scoreThreshold,
+                                   double minDuration, double maxDuration, 
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
 
@@ -34,9 +41,8 @@ namespace AudioAnalysisTools
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            double durationThreshold = 0.25; //seconds
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                          durationThreshold, sonogram.Configuration.SourceFName);
+                                            minDuration, maxDuration, sonogram.Configuration.SourceFName);
         }//end method
 
 
@@ -211,16 +217,19 @@ namespace AudioAnalysisTools
         /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
         /// </summary>
         /// <param name="scores">the array of OD scores</param>
+        /// <param name="oscFreq"></param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="scoreThreshold">OD score must exceed this threshold to count as an event</param>
-        /// <param name="durationThreshold">duration of event must exceed this duration to count as an event</param>
+        /// <param name="maxThreshold">OD score must exceed this threshold to count as an event</param>
+        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
+        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
-        public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz, double framesPerSec, double freqBinWidth,
-                                                               double maxThreshold, double durationThreshold, string fileName)
+        public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
+                                                               double framesPerSec, double freqBinWidth,
+                                                               double maxThreshold, double minDuration, double maxDuration, string fileName)
         {
             double minThreshold = 0.1;
             double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
@@ -248,7 +257,7 @@ namespace AudioAnalysisTools
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
-                        if (duration < durationThreshold) continue; //skip events with duration shorter than threshold
+                        if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         //ev.SetTimeAndFreqScales(22050, 512, 128);

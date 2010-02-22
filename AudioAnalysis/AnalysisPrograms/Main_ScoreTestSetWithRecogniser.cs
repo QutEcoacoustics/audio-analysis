@@ -160,6 +160,8 @@ namespace AnalysisPrograms
                         int maxOscilFreq = 20;      //ignore oscillations above this threshold freq
                         double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
                         scoreThreshold = 0.25; //USE THIS TO DETERMINE FP / FN trade-off.
+                        double minDuration = 1.0;
+                        double maxDuration = 10.0;
 
                         //i: GET RECORDING
                         AudioRecording recording = new AudioRecording(wavPath);
@@ -178,7 +180,7 @@ namespace AnalysisPrograms
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
                         OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
-                                                    minAmplitude, scoreThreshold, out scores, out predictedEvents, out hits);
+                                                    minAmplitude, scoreThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
                         break;
 
                     case HTK_RECOGNISER:

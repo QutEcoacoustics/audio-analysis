@@ -70,18 +70,16 @@ namespace AnalysisPrograms
         public static void Manage_CaneToadRecogniser(string[] args)
         {
             string title = "DETECTING CANE TOADS USING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine(title + "\n");
+            string date  = "DATE AND TIME:" + DateTime.Now;
 
-            StringBuilder sb = new StringBuilder("DATE AND TIME:" + DateTime.Now + "\n");
-            sb.Append(title + "\n");
+            StringBuilder sb = new StringBuilder(title + "\n" + date+ "\n\n");
 
             Log.Verbosity = 1;
 
             if (args.Length < 2)
             {
-                Console.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
-                Console.WriteLine("YOU REQUIRE AT LEAST {0} COMMAND LINE ARGUMENTS\n", 2);
+                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
+                Log.WriteLine("YOU REQUIRE AT LEAST {0} COMMAND LINE ARGUMENTS\n", 2);
                 Usage();
             }
 
@@ -100,27 +98,29 @@ namespace AnalysisPrograms
                 Console.ReadLine();
                 System.Environment.Exit(999);
             }
-            string outputDir = Path.GetDirectoryName(args[1]);   
+            string outputDir = Path.GetDirectoryName(args[1])+"\\";
+            FileTools.WriteTextFile(outputDir + CaneToadAnalysis.eventsFile, sb.ToString());
+            FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
 
-            Console.WriteLine("CONTENTS OF INI FILE");
+            
             DisplayParameterValues(args[1]);
+            //CaneToadRecogniser(args[0], args[1]);
+            List<AcousticEvent> events = CaneToadRecogniser(args[0], args[1]);
 
-            CaneToadRecogniser(args[0], args[1]);
 
-            Console.WriteLine("\n\n#############################################################################");
-           // Console.WriteLine("TOTAL EVENT COUNT = " + totalEvent_count);
-            sb = new StringBuilder();
-            sb.Append("\n\n###########################################################################\n");
-           // sb.Append("TOTAL EVENT COUNT = " + totalEvent_count + "\n");
-           // FileTools.Append2TextFile(outputDir + eventsFile, sb.ToString());
-            Console.WriteLine("\nFINISHED!");
+            sb = new StringBuilder("\n\n#############################################################################\n");
+            sb.Append("TOTAL EVENT COUNT = " + events.Count + "\n");
+            Log.WriteLine(sb.ToString());
+            FileTools.Append2TextFile(outputDir + eventsFile, sb.ToString());
+
+
+            Log.WriteLine("FINISHED!");
             Console.ReadLine();
         } //Manage_CaneToadRecogniser()
 
 
-        public static void CaneToadRecogniser(string arg1, string arg2)
+        public static List<AcousticEvent> CaneToadRecogniser(string _recordingDir, string _iniPath)
         {
-
 
             // DEFAULT PARAMETER VALUES #############################################################################################
             //string dirName = @"C:\SensorNetworks\WavFiles\temp\";
@@ -142,21 +142,21 @@ namespace AnalysisPrograms
 
             //#######################################################################################################
             // DEAL WITH ARGUMENTS
-            if ((arg1 == null) || (arg2 == null)) Usage();
-            recordingDir = arg1;
-            iniPath      = arg2;
-            outputDir    = Path.GetDirectoryName(arg2);   //default is to put in same dir as ini file
+            if ((_recordingDir == null) || (_iniPath == null)) Usage();
+            recordingDir = _recordingDir;
+            iniPath      = _iniPath;
+            outputDir = Path.GetDirectoryName(_iniPath)+"\\";   //default is to put in same dir as ini file
 
             if (!Directory.Exists(outputDir))
             {
-                Console.WriteLine("Cannot find output directory <" + outputDir + ">");
+                Log.WriteLine("Cannot find output directory <" + outputDir + ">");
                 outputDir = System.Environment.CurrentDirectory;
-                Console.WriteLine("Have set output directory = <" + outputDir + ">");
-                Console.WriteLine("Press <ENTER> key to continue.");
-                Console.ReadLine();
+                Log.WriteLine("Have set output directory = <" + outputDir + ">");
+                Log.WriteLine("Press <ENTER> key to continue.");
+                Console.ReadLine();                                                           //########################### ASk BRAD
             }
             else
-                Log.WriteIfVerbose("\noutput folder =" + outputDir);
+                Log.WriteIfVerbose("\nOutput folder =" + outputDir);                          //########################### ASk BRAD
 
 
             //#######################################################################################################
@@ -164,10 +164,10 @@ namespace AnalysisPrograms
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
-            Console.WriteLine("\n## PARAMETER VALUES IN DICT");
+            Log.WriteLine("\n## PARAMETER VALUES IN DICT");
             foreach (string key in keys)
             {
-                Console.WriteLine("{0,20}    {1}", key, dict[key]);
+                Log.WriteLine("{0,20}    {1}", key, dict[key]);
             }
      
             //eventThreshold = (dic.ContainsKey("id") ? Double.Parse(dic["id"]) : "default");
@@ -197,19 +197,17 @@ namespace AnalysisPrograms
 
 
 
-            //FileTools.WriteTextFile(outputDir + resultsFile, sb.ToString());
-
-            //FileTools.WriteTextFile(outputDir + eventsFile, "### " + title);
+            string line;
+            line = "NUMBER OF FILES IN DIRECTORY MATCHING REGEX \\" + fileMatch + "\\  = 1";
+            FileTools.Append2TextFile(outputDir + CaneToadAnalysis.logFile, line + "\n");
 
 
             //#######################################################################################################
             // predefinition of variables to prevent memory leaks?!
             BaseSonogram sonogram;
-            List<AcousticEvent> accumulatedEvents;
+            List<AcousticEvent> accumulatedEvents = new List<AcousticEvent>();
             List<AcousticEvent> predictedEvents;
             StringBuilder sb1;
-            StringBuilder sb3;
-            string str;
             SonogramConfig sonoConfig;
             Double[,] hits;
             double[] scores;
@@ -221,23 +219,24 @@ namespace AnalysisPrograms
                 file_count++;
 
                 accumulatedEvents = new List<AcousticEvent>();
-
-                sb1 = new StringBuilder("\n\n" + file_count + " ###############################################################################\n");
-                Log.WriteIfVerbose("\n\n" + file_count + " #################################################################################");
+                line = "\n\n" + file_count + " ###############################################################################";
+                sb1 = new StringBuilder(line + "\n");                                              //########################### ASK BRAD
+                Log.WriteLine(line);
 
                 if (!File.Exists(wavPath))
                 {
-                    Log.WriteIfVerbose("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
-                    //                  sb1.Append("WARNING!!  CANNOT FIND FILE <" + wavPath + ">\n");
+                    line = "WARNING!!  CANNOT FIND FILE <" + wavPath + ">";
+                    Log.WriteLine(line);
                     //Console.WriteLine("Press <ENTER> key to exit.");
                     //Console.ReadLine();
                     //System.Environment.Exit(999);
-                    //continue;
+                    continue;
                 }
                 else
                 {
-                    Log.WriteIfVerbose("wav File Path =" + wavPath);
-                    //                  sb1.Append("wav File Path = <" + wavPath + ">\n");
+                    line = "Reading file:- " + wavPath;
+                    Log.WriteIfVerbose(line);
+                    sb1.Append(line + "\n");
                 }
 
                 //C: DETECT EVENTS USING OSCILLATION DETECTION - KEY PARAMETERS TO CHANGE for DETECT OSCILLATIONS
@@ -252,36 +251,34 @@ namespace AnalysisPrograms
                     sonoConfig.SourceFName = recording.FileName;
                     sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
 
-                    Console.WriteLine("\nSIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
-                    Console.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
+                    Log.WriteLine("SIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
+                    Log.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
                                                sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                               (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
-                    Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
+                    Log.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                               dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, sonoConfig.WindowOverlap);
 
 
 
                     ////iii: detect oscillations
-                    predictedEvents = null;   //predefinition of results event list
-                    scores = null;   //predefinition of score array
-                    hits = null;   //predefinition of hits matrix - to superimpose on sonogram image
+                    predictedEvents = null;  //predefinition of results event list
+                    scores = null;           //predefinition of score array
+                    hits = null;             //predefinition of hits matrix - to superimpose on sonogram image
                     OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
-                                                 minAmplitude, eventThreshold, out scores, out predictedEvents, out hits);
+                                                 minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+                    Log.WriteLine("  Finished detecting oscillation events.");
+                    accumulatedEvents.AddRange(predictedEvents); //add predicted events into list
+
 
                     //write event count to results file.
                     totalEvent_count += predictedEvents.Count;
-                    str = String.Format("EVENT COUNT = " + predictedEvents.Count);
-                    Console.WriteLine(str);
-                    sb1.Append(str + "\n");
+                    line = String.Format("EVENT COUNT = " + predictedEvents.Count);
+                    Log.WriteLine(line);
+                    sb1.Append(line + "\n");
                     FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
-                    //sb1 = null;
 
                     //write detailed event info to events file.
-                    sb3 = new StringBuilder("\n# " + file_count + " ########################################################################\n");
-                    AcousticEvent.WriteEvents(predictedEvents, ref sb3);
-                    FileTools.Append2TextFile(outputDir + eventsFile, sb3.ToString());
-                    //sb3 = null;
-
+                    WriteEventsInfo2TextFile(file_count, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
 
                     //###############################################################################################");
 
@@ -289,7 +286,6 @@ namespace AnalysisPrograms
                     if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
                     {
                         string imagePath = outputDir + Path.GetFileNameWithoutExtension(wavPath) + ".png";
-                        //if (imagePath == null) return;
                         bool doHighlightSubband = false; bool add1kHzLines = true;
 
                         using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
@@ -310,7 +306,25 @@ namespace AnalysisPrograms
 
             }// end the foreach() loop over all recordings
 
+            return accumulatedEvents;
+
         }//end CaneToadRecogniser
+
+
+
+
+        /// <summary>
+        /// writes detailed event info to a text file.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="predictedEvents"></param>
+        /// <param name="path"></param>
+        static void WriteEventsInfo2TextFile(int count, List<AcousticEvent>predictedEvents, string path)
+        {
+            StringBuilder sb = new StringBuilder("\n# " + count + " ########################################################################\n");
+            AcousticEvent.WriteEvents(predictedEvents, ref sb);
+            FileTools.Append2TextFile(path, sb.ToString());
+        }
 
 
         public static string GetDefaultParameterValues()
@@ -340,7 +354,7 @@ namespace AnalysisPrograms
 
         private static void DisplayParameterValues(string path)
         {
-            Console.WriteLine("\n## PARAMETER VALUES");
+            Console.WriteLine("\n## PARAMETER VALUES in INI FILE");
             List<string> list = FileTools.ReadTextFile(path);
             foreach (string line in list) Log.WriteIfVerbose(line);
         }
