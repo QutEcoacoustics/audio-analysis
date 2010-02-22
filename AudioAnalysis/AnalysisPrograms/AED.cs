@@ -13,6 +13,7 @@ namespace AnalysisPrograms
     {
         public static void dev(string[] args)
         {
+            // TODO read intensityThreshold, smallAreaThreshold from args
             if (args.Length == 0)
             {
                 Console.WriteLine("Please supply a .wav recording as a command line argument.");
@@ -22,7 +23,7 @@ namespace AnalysisPrograms
             {
                 Log.Verbosity = 1;
                 string appConfigPath = ""; // TODO what is this for?
-                var result = detect(appConfigPath, args[0]);
+                var result = detect(appConfigPath, args[0], Default.intensityThreshold, Default.smallAreaThreshold);
                 var recording = result.Item1;
                 var sonogram = result.Item2;
                 var events = result.Item3;
@@ -46,8 +47,8 @@ namespace AnalysisPrograms
         }
 
         // TODO call this from EPR
-        // TODO add AED thresholds as method arguments
-        public static System.Tuple<AudioRecording, BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath)
+        public static System.Tuple<AudioRecording, BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath,
+            double intensityThreshold, int smallAreaThreshold)
         {
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
@@ -58,7 +59,7 @@ namespace AnalysisPrograms
             // TODO the whole section to here will be common with other analysis
 
             Log.WriteLine("AED start");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, sonogram.Data);
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(intensityThreshold, smallAreaThreshold, sonogram.Data);
             Log.WriteLine("AED finished");
 
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
