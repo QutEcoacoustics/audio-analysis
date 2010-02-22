@@ -11,79 +11,63 @@ namespace AnalysisPrograms
 {
     class AED
     {
-
-
-
-        public static void Main(string[] args)
+        public static void dev(string[] args)
         {
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("DETECTION OF ACOUSTIC EVENTS IN RECORDING\n");
+            if (args.Length == 0)
+            {
+                Console.WriteLine("Please supply a .wav recording as a command line argument.");
+                Console.WriteLine("Example: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\BAC2_20071015-045040.wav\"");
+            }
+            else
+            {
+                Log.Verbosity = 1;
+                string appConfigPath = ""; // TODO what is this for?
+                var result = detect(appConfigPath, args[0]);
+                var recording = result.Item1;
+                var sonogram = result.Item2;
+                var events = result.Item3;
 
-            Log.Verbosity = 1;
+                Console.WriteLine();
+                foreach (AcousticEvent ae in events)
+                    Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                Console.WriteLine();
 
-            //#######################################################################################################
-            // KEY PARAMETERS TO CHANGE
-            string wavDirName; string wavFileName;
-            AudioRecording recording;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-            //#######################################################################################################
+                string outputFolder = @"C:\SensorNetworks\Output\";
+                Log.WriteIfVerbose("output folder =" + outputFolder);
+                string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+                var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+                //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+                //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddEvents(events); // Acoustic events fail to render on image as no Oblong field set
+                image.Save(outputFolder + recording.FileName + ".png");
+                Log.WriteLine("Finished");
+            }
+        }
 
-            string appConfigPath = "";
-            //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
-
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\Output\"; //default 
-
-
-            Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            Log.WriteIfVerbose("wav File Path =" + wavPath);
-            Log.WriteIfVerbose("output folder =" + outputFolder);
-            Console.WriteLine();
+        // TODO call this from EPR
+        // TODO add AED thresholds as method arguments
+        public static System.Tuple<AudioRecording, BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath)
+        {
+            AudioRecording recording = new AudioRecording(wavFilePath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
-            double[,] matrix = sonogram.Data;
+            // TODO the whole section to here will be common with other analysis
 
-            Console.WriteLine("START: DETECTION");
-            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(Default.intensityThreshold, Default.smallAreaThreshold, matrix);
-            Console.WriteLine("END: DETECTION");
+            Log.WriteLine("AED start");
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(3.0, 100, sonogram.Data);
+            Log.WriteLine("AED finished");
 
-            //get the time and freq scales
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
-            double frameOffset  = config.GetFrameOffset();
-
 
             var events = new List<AcousticEvent>();
             foreach (Oblong o in oblongs)
-            {
-                var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
-                events.Add(e);
-            }
-
-
-            string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-
-
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events);
-            image.Save(outputFolder + wavFileName + ".png");
-
-
-
-            Console.WriteLine("\nFINISHED!");
-            Console.ReadLine();
-        
-
-        }//end method Main()
-
-
-
-
-
-    } //end class
+                events.Add(new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth));
+            Log.WriteIfVerbose("AED # events: " + events.Count);
+            return System.Tuple.Create(recording, sonogram, events);
+        }
+    }
 }
