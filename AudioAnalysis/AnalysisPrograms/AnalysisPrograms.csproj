@@ -56,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AED.cs" />
     <Compile Include="CaneToadRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
@@ -64,7 +65,6 @@
     <Compile Include="Main_CreateTemplate_Auto.cs" />
     <Compile Include="Main_CreateTemplate_Part1.cs" />
     <Compile Include="Main_CreateTemplate_Part2.cs" />
-    <Compile Include="Main_FindAcousticEvents.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
