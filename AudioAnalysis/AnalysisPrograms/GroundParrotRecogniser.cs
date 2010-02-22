@@ -23,7 +23,10 @@ namespace AnalysisPrograms
             {
                 Log.Verbosity = 1;
                 string appConfigPath = ""; // TODO what is this for?
-                var eprEvents = detect(appConfigPath, args[0]);
+                var result = detect(appConfigPath, args[0]);
+                var recording = result.Item1;
+                var sonogram = result.Item2;
+                var eprEvents = result.Item3;
 
                 Console.WriteLine();
                 foreach (AcousticEvent ae in eprEvents)
@@ -32,24 +35,18 @@ namespace AnalysisPrograms
 
                 string outputFolder = @"C:\SensorNetworks\Output\";
                 Log.WriteIfVerbose("output folder =" + outputFolder);
-
-                /*
                 string imagePath = Path.Combine(outputFolder, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-
-                bool doHighlightSubband = false; bool add1kHzLines = true;
-                var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+                var image = new Image_MultiTrack(sonogram.GetImage(false, true));
                 //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
                 //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddEvents(eprEvents);
-                image.Save(outputFolder + wavFileName + ".png");
-                
-                Console.WriteLine("\nFINISHED!");
-                */
+                image.AddEvents(eprEvents); // Acoustic events fail to render on image as no Oblong field set
+                image.Save(outputFolder + recording.FileName + ".png");
+                Log.WriteLine("Finished");                
             }
         }
         
-        public static List<AcousticEvent> detect(string appConfigPath, string wavFilePath)
+        public static System.Tuple<AudioRecording, BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath)
         {
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
@@ -71,7 +68,6 @@ namespace AnalysisPrograms
             foreach (Oblong o in oblongs)
             {
                 var e = new AcousticEvent(o, frameOffset, freqBinWidth); //this constructor assumes linear Herz scale events 
-                //events.Add(new EventPatternRecog.Rectangle(e.StartTime, (double)e.MaxFreq, e.StartTime + e.Duration, (double)e.MinFreq));
                 events.Add(Util.fcornersToRect(e.StartTime, e.EndTime, e.MaxFreq, e.MinFreq));
                 //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
             }
@@ -83,9 +79,12 @@ namespace AnalysisPrograms
 
             var eprEvents = new List<AcousticEvent>();
             foreach (Util.Rectangle<double> r in eprRects)
-                eprEvents.Add(new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top)); // TODO Is this the right return type / constructor?
-
-            return eprEvents;
+            {
+                var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
+                ae.SetTimeAndFreqScales(1 / frameOffset, freqBinWidth);
+                eprEvents.Add(ae);
+            }
+            return System.Tuple.Create(recording, sonogram, eprEvents);
         }
     }
 }
