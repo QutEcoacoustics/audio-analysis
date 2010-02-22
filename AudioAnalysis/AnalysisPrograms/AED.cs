@@ -9,7 +9,7 @@ using QutSensors.AudioAnalysis.AED;
 
 namespace AnalysisPrograms
 {
-    class Main_FindAcousticEvents
+    class AED
     {
 
 

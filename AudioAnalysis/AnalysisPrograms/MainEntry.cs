@@ -18,16 +18,18 @@ namespace AnalysisPrograms
                 string[] r = args.Skip(1).ToArray();
                 switch (args[0])
                 {
+                    case "aed":
+                        AED.Main(r);
+                        break;
+                    case "canetoad":
+                        CaneToadAnalysis.Manage_CaneToadRecogniser(r);
+                        break;
                     case "groundparrot":
                         GroundParrotRecogniser.dev(r);
                         break;
                     case "snr":
                         Main_SNR.Main(r);
                         break;
-                    case "canetoad":
-                        CaneToadAnalysis.Manage_CaneToadRecogniser(r);
-                        break;
-
                     default:
                         Console.WriteLine("unrecognised");
                         break;
