@@ -33,25 +33,6 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
-        //default parameter values
-        public static string fileExt_default = "wav";       //file extention to find
-        public static int minHz_default = 500;              //min of freq band
-        public static int maxHz_default = 1000;             //max of freq band
-        public static double frameOverlap_default = 0.75;   //default=0.50; Use 0.75 for koalas //#### IMPORTANT PARAMETER
-        public static double dctDuration_default = 0.5;     //duration of DCT in seconds 
-        public static int minOscilFreq_default = 10;        //ignore oscillations below this threshold freq (hz)
-        public static int maxOscilFreq_default = 20;        //ignore oscillations above this threshold freq (hz)
-        public static double minDuration_default = 1.0;     //Minimum duration for the length of a true event
-        public static double maxDuration_default = 20.0;    //Maximum duration for the length of a true event
-        public static double minAmplitude_default = 0.6;    //minimum acceptable value of a DCT coefficient
-        public static double eventThreshold_default = 0.40; //USE THIS TO DETERMINE FP / FN trade-off for events.
-        public static bool DRAW_SONOGRAMS_default = false;
-
-        //DEFAULT FILENAMES, PATHS AND DIRECTORIES
-        public static string recordingDir_default = @"C:\SensorNetworks\WavFiles\Canetoad\";
-        public static string outputDir_default    = recordingDir_default;
-        public static string iniPath_default      = @"C:\SensorNetworks\Output\OscillationDetection\CaneToadDetectionParams.txt";
-
         public static string logFile     = "log.txt";      //1
         public static string eventsFile  = "events.txt";   //2
 
@@ -92,11 +73,14 @@ namespace AnalysisPrograms
             //}
             if (!File.Exists(args[1]))
             {
+                Usage();
+                Console.WriteLine();
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
                 System.Environment.Exit(999);
             }
+            string iniPath = args[1];
             string outputDir = Path.GetDirectoryName(args[1])+"\\";
             if (!Directory.Exists(outputDir))
             {
@@ -111,8 +95,36 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.eventsFile, sb.ToString());
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
            
-            DisplayParameterValues(args[1]);
-            var results = DetectOscillations(args[0], args[1]);
+            // TODO logging
+            //DisplayParameterValues(args[1]);
+
+
+            //READ PARAMETER VALUES FROM INI FILE
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            Log.WriteLine("\n## PARAMETER VALUES IN DICT");
+            foreach (string key in keys)
+            {
+                Log.WriteLine("{0,20}    {1}", key, dict[key]);
+            }
+
+            // TODO remove fileExt
+            //string fileExt = dict[key_FILE_EXT];
+            int minHz = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+            double dctDuration = Double.Parse(dict[key_DCT_DURATION]);     //duration of DCT in seconds 
+            int minOscilFreq = Int32.Parse(dict[key_MIN_OSCIL_FREQ]); //ignore oscillations below this threshold freq
+            int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);    //ignore oscillations above this threshold freq
+            double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
+            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
+            double minDuration = Double.Parse(dict[key_MIN_DURATION]);     //min duration of event in seconds 
+            double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
+            bool DRAW_SONOGRAMS = bool.Parse(dict[key_DRAW_SONOGRAMS]);
+
+            var results = DetectOscillations(args[0], minHz,  maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
+                                                eventThreshold, minDuration,  maxDuration);
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -149,59 +161,10 @@ namespace AnalysisPrograms
         } //Manage_CaneToadRecogniser()
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> DetectOscillations(string wavPath, string _iniPath)
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> DetectOscillations(string wavPath,
+            int minHz, int maxHz, double frameOverlap, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
+            double eventThreshold, double minDuration, double maxDuration)
         {
-
-            // DEFAULT PARAMETER VALUES #############################################################################################
-            //string dirName = @"C:\SensorNetworks\WavFiles\temp\";
-            string  fileExt       = fileExt_default;
-            int minHz             = minHz_default;           //koala range = 100-2000
-            int maxHz             = maxHz_default;
-            double frameOverlap   = frameOverlap_default;    //default=0.50; Use 0.75 for koalas //#### IMPORTANT PARAMETER
-            double dctDuration    = dctDuration_default;     //duration of DCT in seconds 
-            int minOscilFreq      = minOscilFreq_default;    //ignore oscillations below this threshold freq
-            int maxOscilFreq      = maxOscilFreq_default;    //ignore oscillations above this threshold freq
-            double minAmplitude   = minAmplitude_default;    //minimum acceptable value of a DCT coefficient
-            double minDuration    = minDuration_default;
-            double maxDuration    = maxDuration_default;
-            double eventThreshold = eventThreshold_default;  //use this to determine FP/FN trade-off.
-            bool DRAW_SONOGRAMS   = DRAW_SONOGRAMS_default;
-            string recordingDir   = recordingDir_default;
-            string outputDir      = outputDir_default;
-            string iniPath        = iniPath_default;
-
-            // DEAL WITH ARGUMENTS
-            // TODO iniPath check
-            //if (_recordingDir == null) || (_iniPath == null)) Usage();
-            //recordingDir = _recordingDir;
-            iniPath      = _iniPath;
-            outputDir = Path.GetDirectoryName(_iniPath)+"\\";   //default is to put in same dir as ini file
-
-            //READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
-            Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
-            Log.WriteLine("\n## PARAMETER VALUES IN DICT");
-            foreach (string key in keys)
-            {
-                Log.WriteLine("{0,20}    {1}", key, dict[key]);
-            }
-     
-            fileExt      = (dict.ContainsKey(key_FILE_EXT) ? dict[key_FILE_EXT] : fileExt_default);
-            minHz        = (dict.ContainsKey(key_MIN_HZ) ? Int32.Parse(dict[key_MIN_HZ]) : minHz_default);
-            maxHz        = (dict.ContainsKey(key_MAX_HZ) ? Int32.Parse(dict[key_MAX_HZ]) : maxHz_default);
-            frameOverlap = (dict.ContainsKey(key_FRAME_OVERLAP) ? Double.Parse(dict[key_FRAME_OVERLAP]) : frameOverlap_default);
-            dctDuration  = (dict.ContainsKey(key_DCT_DURATION) ? Double.Parse(dict[key_DCT_DURATION]) : dctDuration_default);     //duration of DCT in seconds 
-            minOscilFreq = (dict.ContainsKey(key_MIN_OSCIL_FREQ) ? Int32.Parse(dict[key_MIN_OSCIL_FREQ]) : minOscilFreq_default);//ignore oscillations below this threshold freq
-            maxOscilFreq = (dict.ContainsKey(key_MAX_OSCIL_FREQ) ? Int32.Parse(dict[key_MAX_OSCIL_FREQ]) : maxOscilFreq_default);    //ignore oscillations above this threshold freq
-            minAmplitude = (dict.ContainsKey(key_MIN_AMPLITUDE) ? Double.Parse(dict[key_MIN_AMPLITUDE]) : minAmplitude_default);    //minimum acceptable value of a DCT coefficient
-            eventThreshold = (dict.ContainsKey(key_EVENT_THRESHOLD) ? Double.Parse(dict[key_EVENT_THRESHOLD]) : eventThreshold_default);
-            minDuration  = (dict.ContainsKey(key_MIN_DURATION) ? Double.Parse(dict[key_MIN_DURATION]) : minDuration_default);     //min duration of event in seconds 
-            maxDuration  = (dict.ContainsKey(key_MAX_DURATION) ? Double.Parse(dict[key_MAX_DURATION]) : maxDuration_default);     //max duration of event in seconds 
-            DRAW_SONOGRAMS = (dict.ContainsKey(key_DRAW_SONOGRAMS) ? bool.Parse(dict[key_DRAW_SONOGRAMS]) : DRAW_SONOGRAMS_default);
-
-
-            // OTHER VARS
             string line = "";
             StringBuilder sb1 = new StringBuilder(line + "\n");                       
             Log.WriteLine(line);
@@ -242,11 +205,11 @@ namespace AnalysisPrograms
             line = String.Format("EVENT COUNT = " + predictedEvents.Count);
             Log.WriteLine(line);
             sb1.Append(line + "\n");
-            FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
+            //FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
 
             //write detailed event info to events file.
             // TODO fix hardcoded 1
-            WriteEventsInfo2TextFile(1, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
+            //WriteEventsInfo2TextFile(1, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
