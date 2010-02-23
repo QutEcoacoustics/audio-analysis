@@ -33,8 +33,7 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
-        public static string logFile     = "log.txt";      //1
-        public static string eventsFile  = "events.txt";   //2
+        public static string eventsFile  = "events.txt"; 
 
 
         /// <summary>
@@ -48,10 +47,10 @@ namespace AnalysisPrograms
 
         public static void Manage_CaneToadRecogniser(string[] args)
         {
-            string title = "DETECTING CANE TOADS USING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
-            string date  = "DATE AND TIME:" + DateTime.Now;
-
-            StringBuilder sb = new StringBuilder(title + "\n" + date+ "\n\n");
+            string title = "# DETECTING CANE TOADS USING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
+            string date  = "# DATE AND TIME: " + DateTime.Now;
+            StringBuilder sb = new StringBuilder(title + "\n" + date+ "\n");
+            Log.WriteLine(sb.ToString());
 
             Log.Verbosity = 1;
 
@@ -84,19 +83,14 @@ namespace AnalysisPrograms
             string iniPath = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\";
             
-            Log.WriteIfVerbose("\nOutput folder =" + outputDir);            
+            Log.WriteIfVerbose("\nOutput folder =" + outputDir);
+            sb.Append("# RECORDING: " + Path.GetFileName(recordingPath));
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.eventsFile, sb.ToString());
-            FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
 
             //READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
-            Log.WriteLine("\n## PARAMETER VALUES IN DICT");
-            foreach (string key in keys)
-            {
-                Log.WriteLine("{0,20}    {1}", key, dict[key]);
-            }
 
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
@@ -115,12 +109,11 @@ namespace AnalysisPrograms
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
-            var events = results.Item4;
+            var predictedEvents = results.Item4;
+            Log.WriteLine("Event Count = " + predictedEvents.Count());
 
-            sb = new StringBuilder("\n\n#############################################################################\n");
-            sb.Append("TOTAL EVENT COUNT = " + events.Count + "\n");
-            Log.WriteLine(sb.ToString());
-            FileTools.Append2TextFile(outputDir + eventsFile, sb.ToString());
+            //write event count to results file.            
+            WriteEventsInfo2TextFile(predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
 
             //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
             {
@@ -136,12 +129,12 @@ namespace AnalysisPrograms
                     // TODO fix eventThreshold once ini file parameters are moved out
                     //image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                     image.AddSuperimposedMatrix(hits);
-                    image.AddEvents(events);
+                    image.AddEvents(predictedEvents);
                     image.Save(imagePath);
                 }
             }
 
-            Log.WriteLine("FINISHED!");
+            Log.WriteLine("Finished!");
             Console.ReadLine();
         } //Manage_CaneToadRecogniser()
 
@@ -150,9 +143,16 @@ namespace AnalysisPrograms
             int minHz, int maxHz, double frameOverlap, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
             double eventThreshold, double minDuration, double maxDuration)
         {
-            string line = "";
-            StringBuilder sb1 = new StringBuilder(line + "\n");                       
-            Log.WriteLine(line);
+            Log.WriteIfVerbose("minHz = " + minHz);
+            Log.WriteIfVerbose("maxHz = " + maxHz);
+            Log.WriteIfVerbose("frameOverlap = " + frameOverlap);
+            Log.WriteIfVerbose("dctDuration = " + dctDuration);
+            Log.WriteIfVerbose("minOscilFreq = " + minOscilFreq);
+            Log.WriteIfVerbose("maxOscilFreq = " + maxOscilFreq);
+            Log.WriteIfVerbose("minAmplitude = " + minAmplitude);
+            Log.WriteIfVerbose("eventThreshold = " + eventThreshold);
+            Log.WriteIfVerbose("minDuration = " + minDuration);
+            Log.WriteIfVerbose("maxDuration = " + maxDuration);                       
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
@@ -168,53 +168,32 @@ namespace AnalysisPrograms
             Log.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
-            Log.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
-                                      dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, sonoConfig.WindowOverlap);
+            Log.WriteLine("DCT    PARAMETERS: #frames={0}", (int)Math.Round(dctDuration * sonogram.FramesPerSecond));
 
             //iii: DETECT OSCILLATIONS
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
-            double[] scores;           //predefinition of score array
-            Double[,] hits;             //predefinition of hits matrix - to superimpose on sonogram image
+            double[] scores;                      //predefinition of score array
+            Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
                                          minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
             Log.WriteLine("Finished detecting oscillation events.");
-
-            //write event count to results file.
-            line = String.Format("EVENT COUNT = " + predictedEvents.Count);
-            Log.WriteLine(line);
-            sb1.Append(line + "\n");
-            //FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
-
-            //write detailed event info to events file.
-            // TODO fix hardcoded 1
-            //WriteEventsInfo2TextFile(1, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
         }//end CaneToadRecogniser
 
-
-
-
-        /// <summary>
-        /// writes detailed event info to a text file.
-        /// </summary>
-        /// <param name="count"></param>
-        /// <param name="predictedEvents"></param>
-        /// <param name="path"></param>
-        static void WriteEventsInfo2TextFile(int count, List<AcousticEvent>predictedEvents, string path)
+        static void WriteEventsInfo2TextFile(List<AcousticEvent>predictedEvents, string path)
         {
-            StringBuilder sb = new StringBuilder("# " + count + " ########################################################################\n");
+            StringBuilder sb = new StringBuilder("# EVENT COUNT = " + predictedEvents.Count() + "\n\n");
             AcousticEvent.WriteEvents(predictedEvents, ref sb);
+            sb.Append("#############################################################################\n");
             FileTools.Append2TextFile(path, sb.ToString());
         }
 
-
+        // TODO this is duplicated with the ini file?
         public static string GetDefaultParameterValues()
         {
             var sb = new StringBuilder("# LIST OF DEFAULT PARAMETER VALUES FOR CANETOAD RECOGNITION\n");
-            sb.Append("# recording format WAV or MP3\n");
-            sb.Append("FILE_EXT=wav\n");
             sb.Append("# min and max of the freq band to search\n");
             sb.Append("MIN_HZ=500   \n");       
             sb.Append("MAX_HZ=1000\n");
@@ -232,14 +211,6 @@ namespace AnalysisPrograms
             sb.Append("# save a sonogram for each recording that contained a hit \n");
             sb.Append("DRAW_SONOGRAMS=true\n");
             return sb.ToString();
-        }
-
-
-        private static void DisplayParameterValues(string path)
-        {
-            Console.WriteLine("\n## PARAMETER VALUES in INI FILE");
-            List<string> list = FileTools.ReadTextFile(path);
-            foreach (string line in list) Log.WriteIfVerbose(line);
         }
 
 
