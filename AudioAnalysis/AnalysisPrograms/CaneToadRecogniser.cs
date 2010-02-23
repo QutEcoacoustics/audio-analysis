@@ -16,8 +16,6 @@ using AudioAnalysisTools;
 //
 
 
-
-
 namespace AnalysisPrograms
 {
     class CaneToadAnalysis
@@ -84,13 +82,14 @@ namespace AnalysisPrograms
             }
 
             //CHECK THE PATHS
-            if (!Directory.Exists(args[0]))
-            {
-                Console.WriteLine("Cannot find directory <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(999);
-            }
+            // TODO do we need to check the file exists here now?
+            //if (!Directory.Exists(args[0]))
+           // {
+            //    Console.WriteLine("Cannot find directory <" + args[0] + ">");
+             //   Console.WriteLine("Press <ENTER> key to exit.");
+            //    Console.ReadLine();
+            //    System.Environment.Exit(999);
+            //}
             if (!File.Exists(args[1]))
             {
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
@@ -111,12 +110,9 @@ namespace AnalysisPrograms
                 Log.WriteIfVerbose("\nOutput folder =" + outputDir);            
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.eventsFile, sb.ToString());
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
-
-            
+           
             DisplayParameterValues(args[1]);
-            //DetectOscillations(args[0], args[1]);
             List<AcousticEvent> events = DetectOscillations(args[0], args[1]);
-
 
             sb = new StringBuilder("\n\n#############################################################################\n");
             sb.Append("TOTAL EVENT COUNT = " + events.Count + "\n");
@@ -129,7 +125,7 @@ namespace AnalysisPrograms
         } //Manage_CaneToadRecogniser()
 
 
-        public static List<AcousticEvent> DetectOscillations(string _recordingDir, string _iniPath)
+        public static List<AcousticEvent> DetectOscillations(string wavPath, string _iniPath)
         {
 
             // DEFAULT PARAMETER VALUES #############################################################################################
@@ -152,8 +148,9 @@ namespace AnalysisPrograms
 
             //#######################################################################################################
             // DEAL WITH ARGUMENTS
-            if ((_recordingDir == null) || (_iniPath == null)) Usage();
-            recordingDir = _recordingDir;
+            // TODO iniPath check
+            //if (_recordingDir == null) || (_iniPath == null)) Usage();
+            //recordingDir = _recordingDir;
             iniPath      = _iniPath;
             outputDir = Path.GetDirectoryName(_iniPath)+"\\";   //default is to put in same dir as ini file
 
@@ -169,7 +166,6 @@ namespace AnalysisPrograms
                 Log.WriteLine("{0,20}    {1}", key, dict[key]);
             }
      
-            //eventThreshold = (dic.ContainsKey("id") ? Double.Parse(dic["id"]) : "default");
             fileExt      = (dict.ContainsKey(key_FILE_EXT) ? dict[key_FILE_EXT] : fileExt_default);
             minHz        = (dict.ContainsKey(key_MIN_HZ) ? Int32.Parse(dict[key_MIN_HZ]) : minHz_default);
             maxHz        = (dict.ContainsKey(key_MAX_HZ) ? Int32.Parse(dict[key_MAX_HZ]) : maxHz_default);
@@ -184,110 +180,89 @@ namespace AnalysisPrograms
             DRAW_SONOGRAMS = (dict.ContainsKey(key_DRAW_SONOGRAMS) ? bool.Parse(dict[key_DRAW_SONOGRAMS]) : DRAW_SONOGRAMS_default);
 
 
-            //#######################################################################################################
             // OTHER VARS
-            //MATCH STRING -search directory for matches to this file name
-            string fileMatch = "*." + fileExt;
-
-            //set up the array of file paths.
-            var fileNames = new List<string>();
-            string[] names = Directory.GetFiles(recordingDir, fileMatch);
-            foreach (string name in names) fileNames.Add(name);
-
-
-
-            string line;
-            line = "NUMBER OF FILES IN DIRECTORY MATCHING REGEX \\" + fileMatch + "\\  = 1";
-            FileTools.Append2TextFile(outputDir + CaneToadAnalysis.logFile, line + "\n");
-
+            string line = "";
 
             //#######################################################################################################
             // predefinition of variables to prevent memory leaks?!
             AudioRecording recording;
             BaseSonogram sonogram;
-            List<AcousticEvent> accumulatedEvents = new List<AcousticEvent>();
+            //List<AcousticEvent> accumulatedEvents = new List<AcousticEvent>();
             List<AcousticEvent> predictedEvents;
             StringBuilder sb1;
             SonogramConfig sonoConfig;
             Double[,] hits;
             double[] scores;
             Image_MultiTrack image;
-            int file_count = 0;
             int totalEvent_count = 0;
-            foreach (string wavPath in fileNames) //for each recording
+
+            sb1 = new StringBuilder(line + "\n");                       
+            Log.WriteLine(line);
+
+            // TODO deal with this for single file case
+            //if (!File.Exists(wavPath))
+           // {
+            //    Log.WriteLine("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
+             //   continue;
+           // }
+
+            //i: GET RECORDING
+            recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+
+            //ii: MAKE SONOGRAM
+            sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.SourceFName = recording.FileName;
+            sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+
+            Log.WriteLine("SIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
+            Log.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
+                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
+            Log.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
+                                      dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, sonoConfig.WindowOverlap);
+
+            //iii: DETECT OSCILLATIONS
+            predictedEvents = null;  //predefinition of results event list
+            scores = null;           //predefinition of score array
+            hits = null;             //predefinition of hits matrix - to superimpose on sonogram image
+            OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
+                                         minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+            Log.WriteLine("Finished detecting oscillation events.");
+            //accumulatedEvents.AddRange(predictedEvents); //add predicted events into list
+
+
+            //write event count to results file.
+            totalEvent_count += predictedEvents.Count;
+            line = String.Format("EVENT COUNT = " + predictedEvents.Count);
+            Log.WriteLine(line);
+            sb1.Append(line + "\n");
+            FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
+
+            //write detailed event info to events file.
+            // TODO fix hardcoded 1
+            WriteEventsInfo2TextFile(1, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
+
+            //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
+            //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
             {
-                file_count++;
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(wavPath) + ".png";
+                bool doHighlightSubband = false; bool add1kHzLines = true;
 
-                accumulatedEvents = new List<AcousticEvent>();
-                line = "\n\n" + file_count + " ###############################################################################";
-                sb1 = new StringBuilder(line + "\n");                       
-                Log.WriteLine(line);
-
-                if (!File.Exists(wavPath))
+                using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+                using (image = new Image_MultiTrack(img))
                 {
-                    Log.WriteLine("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
-                    continue;
+                    //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                    image.AddSuperimposedMatrix(hits);    //displays hits
+                    image.AddEvents(predictedEvents);     //displays events
+                    image.Save(imagePath);
                 }
-
-                //i: GET RECORDING
-                recording = new AudioRecording(wavPath);
-                if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-
-                //ii: MAKE SONOGRAM
-                sonoConfig = new SonogramConfig(); //default values config
-                sonoConfig.WindowOverlap = frameOverlap;
-                sonoConfig.SourceFName = recording.FileName;
-                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-
-                Log.WriteLine("SIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
-                Log.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
-                                           sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                          (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond);
-                Log.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
-                                          dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, sonoConfig.WindowOverlap);
-
-                //iii: DETECT OSCILLATIONS
-                predictedEvents = null;  //predefinition of results event list
-                scores = null;           //predefinition of score array
-                hits = null;             //predefinition of hits matrix - to superimpose on sonogram image
-                OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
-                                             minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
-                Log.WriteLine("Finished detecting oscillation events.");
-                accumulatedEvents.AddRange(predictedEvents); //add predicted events into list
-
-
-                //write event count to results file.
-                totalEvent_count += predictedEvents.Count;
-                line = String.Format("EVENT COUNT = " + predictedEvents.Count);
-                Log.WriteLine(line);
-                sb1.Append(line + "\n");
-                FileTools.Append2TextFile(outputDir + logFile, sb1.ToString());
-
-                //write detailed event info to events file.
-                WriteEventsInfo2TextFile(file_count, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
-
-                //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
-                //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
-                {
-                    string imagePath = outputDir + Path.GetFileNameWithoutExtension(wavPath) + ".png";
-                    bool doHighlightSubband = false; bool add1kHzLines = true;
-
-                    using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-                    using (image = new Image_MultiTrack(img))
-                    {
-                        //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                        image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                        image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                        image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                        image.AddSuperimposedMatrix(hits);    //displays hits
-                        image.AddEvents(predictedEvents);     //displays events
-                        image.Save(imagePath);
-                    }
-                }
-
-            }// end the foreach() loop over all recordings
-
-            return accumulatedEvents;
+            }
+            return predictedEvents;
 
         }//end CaneToadRecogniser
 
