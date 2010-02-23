@@ -34,7 +34,7 @@ namespace AudioAnalysisTools
         }
         public AudioRecording(string path)
         {
-            Log.WriteLine("Recording file path: " + path);
+            Log.WriteLine("Reading file: " + path);
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);
@@ -70,16 +70,16 @@ namespace AudioAnalysisTools
             if (sr == 44100)
             {
                 wavReader.SubSample(2);
-                Console.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
+                Log.WriteLine("Original signal Sample Rate=44100 - Downsampled to 22050.");
                 return;
             }else
             if (sr == 88200)
             {
                 wavReader.SubSample(4);
-                Console.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
+                Log.WriteLine("Original signal Sample Rate=88200 - Downsampled to 22050.");
                 return;
             }
-            Console.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
+            Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
         }
 
         /// <summary>
@@ -223,11 +223,11 @@ namespace AudioAnalysisTools
 
         public AudioRecording ExportSignal(double startTime, double endTime)
         {
-            Console.WriteLine("AudioRecording.Extract()");
+            Log.WriteLine("AudioRecording.Extract()");
             int startIndex = (int)(startTime * this.SampleRate);
             int endIndex   = (int)(endTime   * this.SampleRate);
-            Console.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
-            Console.WriteLine("end  =" + endTime.ToString("F1")  + "s = " + endIndex);
+            Log.WriteLine("start=" + startTime.ToString("F1") + "s = " + startIndex);
+            Log.WriteLine("end  =" + endTime.ToString("F1") + "s = " + endIndex);
             int sampleCount = endIndex - startIndex + 1;
             double[] signal = new double[sampleCount];
             //must multiply signal in [-1,+1] to signal in signed 16 bit integer range ie multiply by 2^15
