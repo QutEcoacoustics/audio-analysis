@@ -112,20 +112,44 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
            
             DisplayParameterValues(args[1]);
-            List<AcousticEvent> events = DetectOscillations(args[0], args[1]);
+            var results = DetectOscillations(args[0], args[1]);
+            var sonogram = results.Item1;
+            var hits = results.Item2;
+            var scores = results.Item3;
+            var events = results.Item4;
 
             sb = new StringBuilder("\n\n#############################################################################\n");
             sb.Append("TOTAL EVENT COUNT = " + events.Count + "\n");
             Log.WriteLine(sb.ToString());
             FileTools.Append2TextFile(outputDir + eventsFile, sb.ToString());
 
+            //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
+            //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
+            {
+                // TODO fix reference to args[0]
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(args[0]) + ".png";
+                bool doHighlightSubband = false; bool add1kHzLines = true;
+
+                using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+                using (Image_MultiTrack image = new Image_MultiTrack(img))
+                {
+                    //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                    // TODO fix eventThreshold once ini file parameters are moved out
+                    //image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                    image.AddSuperimposedMatrix(hits);
+                    image.AddEvents(events);
+                    image.Save(imagePath);
+                }
+            }
 
             Log.WriteLine("FINISHED!");
             Console.ReadLine();
         } //Manage_CaneToadRecogniser()
 
 
-        public static List<AcousticEvent> DetectOscillations(string wavPath, string _iniPath)
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> DetectOscillations(string wavPath, string _iniPath)
         {
 
             // DEFAULT PARAMETER VALUES #############################################################################################
@@ -146,7 +170,6 @@ namespace AnalysisPrograms
             string outputDir      = outputDir_default;
             string iniPath        = iniPath_default;
 
-            //#######################################################################################################
             // DEAL WITH ARGUMENTS
             // TODO iniPath check
             //if (_recordingDir == null) || (_iniPath == null)) Usage();
@@ -154,8 +177,6 @@ namespace AnalysisPrograms
             iniPath      = _iniPath;
             outputDir = Path.GetDirectoryName(_iniPath)+"\\";   //default is to put in same dir as ini file
 
-
-            //#######################################################################################################
             //READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -182,21 +203,7 @@ namespace AnalysisPrograms
 
             // OTHER VARS
             string line = "";
-
-            //#######################################################################################################
-            // predefinition of variables to prevent memory leaks?!
-            AudioRecording recording;
-            BaseSonogram sonogram;
-            //List<AcousticEvent> accumulatedEvents = new List<AcousticEvent>();
-            List<AcousticEvent> predictedEvents;
-            StringBuilder sb1;
-            SonogramConfig sonoConfig;
-            Double[,] hits;
-            double[] scores;
-            Image_MultiTrack image;
-            int totalEvent_count = 0;
-
-            sb1 = new StringBuilder(line + "\n");                       
+            StringBuilder sb1 = new StringBuilder(line + "\n");                       
             Log.WriteLine(line);
 
             // TODO deal with this for single file case
@@ -207,14 +214,14 @@ namespace AnalysisPrograms
            // }
 
             //i: GET RECORDING
-            recording = new AudioRecording(wavPath);
+            AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
             //ii: MAKE SONOGRAM
-            sonoConfig = new SonogramConfig(); //default values config
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
-            sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
 
             Log.WriteLine("SIGNAL PARAMETERS: Duration ={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
             Log.WriteLine("FRAME  PARAMETERS: Frame Size= {0}, count={1}, duration={2:f1}ms, offset={3:f3}ms, fr/s={4:f1}",
@@ -224,17 +231,14 @@ namespace AnalysisPrograms
                                       dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, sonoConfig.WindowOverlap);
 
             //iii: DETECT OSCILLATIONS
-            predictedEvents = null;  //predefinition of results event list
-            scores = null;           //predefinition of score array
-            hits = null;             //predefinition of hits matrix - to superimpose on sonogram image
+            List<AcousticEvent> predictedEvents;  //predefinition of results event list
+            double[] scores;           //predefinition of score array
+            Double[,] hits;             //predefinition of hits matrix - to superimpose on sonogram image
             OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
                                          minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
             Log.WriteLine("Finished detecting oscillation events.");
-            //accumulatedEvents.AddRange(predictedEvents); //add predicted events into list
-
 
             //write event count to results file.
-            totalEvent_count += predictedEvents.Count;
             line = String.Format("EVENT COUNT = " + predictedEvents.Count);
             Log.WriteLine(line);
             sb1.Append(line + "\n");
@@ -244,25 +248,7 @@ namespace AnalysisPrograms
             // TODO fix hardcoded 1
             WriteEventsInfo2TextFile(1, predictedEvents, outputDir + CaneToadAnalysis.eventsFile);
 
-            //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
-            //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
-            {
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(wavPath) + ".png";
-                bool doHighlightSubband = false; bool add1kHzLines = true;
-
-                using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-                using (image = new Image_MultiTrack(img))
-                {
-                    //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                    image.AddSuperimposedMatrix(hits);    //displays hits
-                    image.AddEvents(predictedEvents);     //displays events
-                    image.Save(imagePath);
-                }
-            }
-            return predictedEvents;
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
         }//end CaneToadRecogniser
 
