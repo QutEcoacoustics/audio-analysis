@@ -169,14 +169,14 @@ namespace AudioAnalysisTools
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
             int binCount = maxBin - minBin + 1;
-            double hitRange = binCount * 0.5 * 0.8; //set hit range slightly < half the bins. Half because only scan every second bin.
+            double hitRange = binCount * 0.5 * 0.9; //set hit range slightly < half the bins. Half because only scan every second bin.
             var scores = new double[rows];
             for (int r = 0; r < rows; r++)
             {
                 int score = 0;
-                for (int c = minBin; c <= maxBin; c++)//traverse columns in required band
+                for (int c = minBin; c <= maxBin; c++)//traverse columns in required freq band
                 {
-                    if (hits[r, c] > 0) score++;
+                    if (hits[r, c] > 0) score++; //add up number of freq bins where have a hit
                 }
                 scores[r] = score / hitRange; //normalise the hit score in [0,1]
                 if (scores[r] > 1.0) scores[r] = 1.0;
@@ -215,6 +215,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
+        /// NOTE: The scoreThreshold is adaptive. Starts at min threshold and adapts after that.
         /// </summary>
         /// <param name="scores">the array of OD scores</param>
         /// <param name="oscFreq"></param>
@@ -229,9 +230,9 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth,
-                                                               double maxThreshold, double minDuration, double maxDuration, string fileName)
+                                                               double minThreshold, double minDuration, double maxDuration, string fileName)
         {
-            double minThreshold = 0.1;
+            double maxThreshold = 0.9;            //MAXIMUM BOUND OF ADAPTIVE SCORE THRESHOLD
             double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
@@ -267,7 +268,8 @@ namespace AudioAnalysisTools
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
-                        //obtain oscillation freq.
+                        //calculate average oscillation freq and assign to ev.Score2 
+                        ev.Score2Name = "OscillRate"; //score2 name
                         av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += oscFreq[n];
                         ev.Score2 = av / (double)(i - startFrame + 1);
