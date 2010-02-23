@@ -63,14 +63,13 @@ namespace AnalysisPrograms
             }
 
             //CHECK THE PATHS
-            // TODO do we need to check the file exists here now?
-            //if (!Directory.Exists(args[0]))
-           // {
-            //    Console.WriteLine("Cannot find directory <" + args[0] + ">");
-             //   Console.WriteLine("Press <ENTER> key to exit.");
-            //    Console.ReadLine();
-            //    System.Environment.Exit(999);
-            //}
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Cannot find file <" + args[0] + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
             if (!File.Exists(args[1]))
             {
                 Usage();
@@ -78,26 +77,16 @@ namespace AnalysisPrograms
                 Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
                 Console.WriteLine("Press <ENTER> key to exit.");
                 Console.ReadLine();
-                System.Environment.Exit(999);
+                System.Environment.Exit(1);
             }
+
+            string recordingPath = args[0];
             string iniPath = args[1];
-            string outputDir = Path.GetDirectoryName(args[1])+"\\";
-            if (!Directory.Exists(outputDir))
-            {
-                Log.WriteLine("Cannot find output directory <" + outputDir + ">");
-                outputDir = System.Environment.CurrentDirectory;
-                Log.WriteLine("Have set output directory = <" + outputDir + ">");
-                Log.WriteLine("Press <ENTER> key to continue.");
-                Console.ReadLine();                                                         
-            }
-            else
-                Log.WriteIfVerbose("\nOutput folder =" + outputDir);            
+            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            
+            Log.WriteIfVerbose("\nOutput folder =" + outputDir);            
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.eventsFile, sb.ToString());
             FileTools.WriteTextFile(outputDir + CaneToadAnalysis.logFile, sb.ToString());
-           
-            // TODO logging
-            //DisplayParameterValues(args[1]);
-
 
             //READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
@@ -109,8 +98,6 @@ namespace AnalysisPrograms
                 Log.WriteLine("{0,20}    {1}", key, dict[key]);
             }
 
-            // TODO remove fileExt
-            //string fileExt = dict[key_FILE_EXT];
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
@@ -123,7 +110,7 @@ namespace AnalysisPrograms
             double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
             bool DRAW_SONOGRAMS = bool.Parse(dict[key_DRAW_SONOGRAMS]);
 
-            var results = DetectOscillations(args[0], minHz,  maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
+            var results = DetectOscillations(recordingPath, minHz, maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
                                                 eventThreshold, minDuration,  maxDuration);
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -135,11 +122,9 @@ namespace AnalysisPrograms
             Log.WriteLine(sb.ToString());
             FileTools.Append2TextFile(outputDir + eventsFile, sb.ToString());
 
-            //DISPLAY HITS ON SONOGRAM - THIS SECTION ORIGINALLY WRITTEN ONLY FOR OSCILLATION METHOD
             //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
             {
-                // TODO fix reference to args[0]
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(args[0]) + ".png";
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(iniPath) + ".png";
                 bool doHighlightSubband = false; bool add1kHzLines = true;
 
                 using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
@@ -168,13 +153,6 @@ namespace AnalysisPrograms
             string line = "";
             StringBuilder sb1 = new StringBuilder(line + "\n");                       
             Log.WriteLine(line);
-
-            // TODO deal with this for single file case
-            //if (!File.Exists(wavPath))
-           // {
-            //    Log.WriteLine("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
-             //   continue;
-           // }
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
