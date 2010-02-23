@@ -11,7 +11,7 @@ namespace AnalysisPrograms
 {
     class AED
     {
-        public static void dev(string[] args)
+        public static void Dev(string[] args)
         {
             Log.Verbosity = 1;
             double intensityThreshold;
@@ -41,8 +41,7 @@ namespace AnalysisPrograms
             }
 
             string wavFilePath = args[0];
-            var result = detect(wavFilePath, Default.intensityThreshold, Default.smallAreaThreshold);
-            var sonogram = result.Item1;
+            var result = Detect(wavFilePath, Default.intensityThreshold, Default.smallAreaThreshold);
             var events = result.Item2;
 
             Console.WriteLine();
@@ -50,19 +49,11 @@ namespace AnalysisPrograms
                 Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             Console.WriteLine();
 
-            string outputFolder = @"C:\SensorNetworks\Output\";
-            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
-            Log.WriteIfVerbose("imagePath = " + imagePath);
-            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events);
-            image.Save(imagePath);
+            GenerateImage(wavFilePath, @"C:\SensorNetworks\Output\", result.Item1, events);
             Log.WriteLine("Finished");
         }
 
-        public static Tuple<BaseSonogram, List<AcousticEvent>> detect(string wavFilePath, double intensityThreshold,
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath, double intensityThreshold,
             int smallAreaThreshold)
         {
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
@@ -87,5 +78,18 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("AED # events: " + events.Count);
             return Tuple.Create(sonogram, events);
         }
+
+        public static void GenerateImage(string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
+        {
+            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
+            Log.WriteIfVerbose("imagePath = " + imagePath);
+            var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+            //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
+            //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddEvents(events);
+            image.Save(imagePath);
+        }
+
     }
 }

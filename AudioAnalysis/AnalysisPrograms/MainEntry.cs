@@ -19,13 +19,13 @@ namespace AnalysisPrograms
                 switch (args[0])
                 {
                     case "aed":
-                        AED.dev(r);
+                        AED.Dev(r);
                         break;
                     case "canetoad":
                         CaneToadAnalysis.Manage_CaneToadRecogniser(r);
                         break;
                     case "groundparrot":
-                        GroundParrotRecogniser.dev(r);
+                        GroundParrotRecogniser.Dev(r);
                         break;
                     case "snr":
                         Main_SNR.Main(r);
