@@ -12,7 +12,7 @@ namespace AnalysisPrograms
 {
     class GroundParrotRecogniser
     {
-        public static void dev(string[] args)
+        public static void Dev(string[] args)
         {
             if (args.Length == 0)
             {
@@ -24,8 +24,7 @@ namespace AnalysisPrograms
             {
                 Log.Verbosity = 1;
                 var wavFilePath = args[0];
-                var result = detect(wavFilePath);
-                var sonogram = result.Item1;
+                var result = Detect(wavFilePath);
                 var eprEvents = result.Item2;
 
                 Console.WriteLine();
@@ -33,23 +32,14 @@ namespace AnalysisPrograms
                     Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 Console.WriteLine();
 
-                string outputFolder = @"C:\SensorNetworks\Output\";
-                string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
-                Log.WriteIfVerbose("imagePath = " + imagePath);
-                var image = new Image_MultiTrack(sonogram.GetImage(false, true));
-                //image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
-                //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddEvents(eprEvents);
-                image.Save(imagePath);
-
+                AED.GenerateImage(wavFilePath, @"C:\SensorNetworks\Output\", result.Item1, eprEvents);
                 Log.WriteLine("Finished");                
             }
         }
         
-        public static Tuple<BaseSonogram, List<AcousticEvent>> detect(string wavFilePath)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath)
         {
-            var aed = AED.detect(wavFilePath, 3.0, 100);
+            var aed = AED.Detect(wavFilePath, 3.0, 100);
 
             var events = new List<Util.Rectangle<double>>();
             foreach (AcousticEvent ae in aed.Item2)
