@@ -41,8 +41,7 @@ namespace AnalysisPrograms
             }
 
             string wavFilePath = args[0];
-            string appConfigPath = ""; // TODO what is this for?
-            var result = detect(appConfigPath, wavFilePath, Default.intensityThreshold, Default.smallAreaThreshold);
+            var result = detect(wavFilePath, Default.intensityThreshold, Default.smallAreaThreshold);
             var sonogram = result.Item1;
             var events = result.Item2;
 
@@ -63,15 +62,15 @@ namespace AnalysisPrograms
             Log.WriteLine("Finished");
         }
 
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath,
-            double intensityThreshold, int smallAreaThreshold)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> detect(string wavFilePath, double intensityThreshold,
+            int smallAreaThreshold)
         {
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
             Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
 
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
-            SonogramConfig config = SonogramConfig.Load(appConfigPath);
+            SonogramConfig config = new SonogramConfig(); //default values config
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             // TODO this whole section will be common with other analysis

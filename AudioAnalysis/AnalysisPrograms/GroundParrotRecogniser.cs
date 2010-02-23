@@ -23,9 +23,8 @@ namespace AnalysisPrograms
             else
             {
                 Log.Verbosity = 1;
-                string appConfigPath = ""; // TODO what is this for?
                 var wavFilePath = args[0];
-                var result = detect(appConfigPath, wavFilePath);
+                var result = detect(wavFilePath);
                 var sonogram = result.Item1;
                 var eprEvents = result.Item2;
 
@@ -48,9 +47,9 @@ namespace AnalysisPrograms
             }
         }
         
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>> detect(string appConfigPath, string wavFilePath)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> detect(string wavFilePath)
         {
-            var aed = AED.detect(appConfigPath, wavFilePath, 3.0, 100);
+            var aed = AED.detect(wavFilePath, 3.0, 100);
 
             var events = new List<Util.Rectangle<double>>();
             foreach (AcousticEvent ae in aed.Item2)
