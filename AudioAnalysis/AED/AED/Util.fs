@@ -31,6 +31,8 @@ let minmap f = Seq.min << Seq.map f
 
 let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
+let split (d:char array) (s:string) = s.Split(d, System.StringSplitOptions.RemoveEmptyEntries)
+
 let array2Dfold f z (a:'a[,]) =
      let mutable x = z
      for i=0 to (a.GetLength(0)-1) do
@@ -96,7 +98,7 @@ let fileToMatrix f r c =
     
 let csvToMatrix f =
     let ls = System.IO.File.ReadAllLines f
-    let xs = Array.map (List.toArray << String.split [',']) ls    
+    let xs = Array.map (split [|','|]) ls    
     let m = Math.Matrix.init (ls.GetLength 0) (Array.length xs.[0]) (fun i j -> System.Convert.ToDouble(xs.[i].[j]))
     m
     
