@@ -31,6 +31,7 @@ let minmap f = Seq.min << Seq.map f
 
 let sumRows (m:matrix) = Math.Matrix.foldByRow (+) (Math.Vector.zero m.NumRows) m
 
+// TODO this is now in PowerPack.Compatibility (need to add specific Reference)
 let split (d:char array) (s:string) = s.Split(d, System.StringSplitOptions.RemoveEmptyEntries)
 
 let array2Dfold f z (a:'a[,]) =
