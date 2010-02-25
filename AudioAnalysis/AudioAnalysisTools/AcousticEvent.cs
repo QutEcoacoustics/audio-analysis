@@ -297,11 +297,12 @@ namespace AudioAnalysisTools
 
         public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
         {
+            if (eventList.Count == 0) return;
+            string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                                        "     Event Name", "Start", "End", "MinF", "MaxF", "Score", eventList[0].Score2Name, "SourceFile");
+            sb.Append(line + "\n");
             foreach (AcousticEvent ae in eventList)
             {
-                string line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
-                                            "      Event Name", "Start", "End", "MinFreq", "MaxFreq", "Score", ae.Score2Name, "SourceFile");
-                sb.Append(line + "\n");
                 line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}", 
                                             ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
                 sb.Append(line + "\n");

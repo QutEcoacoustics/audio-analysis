@@ -89,10 +89,8 @@ Global
 		{BDAEA7B5-28BE-45D5-952E-76820E474649}.SilverlightOnly|x86.ActiveCfg = SilverlightOnly|x86
 		{BDAEA7B5-28BE-45D5-952E-76820E474649}.SilverlightOnly|x86.Build.0 = SilverlightOnly|x86
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|Any CPU.Build.0 = Release|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Release|x86.ActiveCfg = Release|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.SilverlightOnly|Any CPU.ActiveCfg = SilverlightOnly|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.SilverlightOnly|Any CPU.Build.0 = SilverlightOnly|Any CPU
@@ -146,10 +144,8 @@ Global
 		{3580DCAD-213C-400C-88BF-273824E506F7}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
 		{3580DCAD-213C-400C-88BF-273824E506F7}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Release|x86.ActiveCfg = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
