@@ -194,7 +194,7 @@ namespace TowseyLib
 
         public static void Append2TextFile(string fPath, string line)
         {
-            bool saveExistingFile = true;
+            bool saveExistingFile = false;
             Append2TextFile(fPath, line, saveExistingFile);
         }// end Append2TextFile()
 

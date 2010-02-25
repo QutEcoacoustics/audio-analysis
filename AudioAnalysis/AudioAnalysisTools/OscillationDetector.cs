@@ -269,7 +269,7 @@ namespace AudioAnalysisTools
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
                         //calculate average oscillation freq and assign to ev.Score2 
-                        ev.Score2Name = "OscillRate"; //score2 name
+                        ev.Score2Name = "OscRate"; //score2 name
                         av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += oscFreq[n];
                         ev.Score2 = av / (double)(i - startFrame + 1);

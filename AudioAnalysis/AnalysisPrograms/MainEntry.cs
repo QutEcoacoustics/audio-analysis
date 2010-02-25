@@ -11,7 +11,7 @@ namespace AnalysisPrograms
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("usage");
+                Console.WriteLine("ERROR: YOU HAVE CALLED THE AanalysisPrograms.MainEntry() method without command line arguments.");
             }
             else
             {
@@ -22,7 +22,7 @@ namespace AnalysisPrograms
                         AED.Dev(r);
                         break;
                     case "canetoad":
-                        CaneToadAnalysis.Manage_CaneToadRecogniser(r);
+                        CaneToadAnalysis.Dev(r);
                         break;
                     case "groundparrot":
                         GroundParrotRecogniser.Dev(r);
