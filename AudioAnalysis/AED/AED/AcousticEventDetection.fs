@@ -58,7 +58,7 @@ let smallFirstMin cs h t =
     tf ((>) 0) |? lazy tf ((=) 0) |> Option.map fst |?| t
 
 let smallThreshold t rs =
-    let (%%) x y = (float x) * y |> rnd |> (int)
+    let (%%) x y = (float x) * y |> round |> (int)
     let cs = seq {for i in 0..9 -> (i * (t %% 0.1)) + (t %% 0.05)}
     let as' = Seq.map area rs |> Seq.filter (fun x -> x <= t)
     smallFirstMin cs (histi as' cs) t
