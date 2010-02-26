@@ -12,22 +12,6 @@ let testTemplateBounds () =
     Assert.Equal(3531.445313, tb)
     Assert.Equal(8.962902-5.166440, ttd)
     Assert.Equal(4995.703125-3531.445313, tfr)
-    
-let defToString x = sprintf "%A" x
-let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
-
-let assertSeqEqual eq toS xs' ys' =
-    let xs, ys = Seq.sort xs', Seq.sort ys'
-    let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
-    let bs = Seq.map2 eq xs ys
-    let c = if Seq.forall id bs then [None]
-            else let i = Seq.findIndex not bs
-                 let i' = i + 1
-                 [ sprintf "First difference at position %i" i |> Some;
-                   sprintf "Expected[%i]:\t%s\r\nFound[%i]:\t%s" i (Seq.nth i xs |> toS) i (Seq.nth i ys |> toS) |> Some;
-                   (if i' < Seq.length ys then sprintf "Found[%i]:\t%s" i' (Seq.nth i' ys |> toS) |> Some else None) ]
-    let m = catOptions (l::c)
-    if Seq.isEmpty m then Assert.True(true) else Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n")
         
 let fromCsv =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
@@ -48,6 +32,13 @@ let testCandidates () =
     assertSeqEqual (=) rectToString msaes saes
 
 [<Fact>]
+let testPixelAxisLengths () =
+    let (_, _, ttd, tfr) = templateBounds groundParrotTemplate
+    let (xl, yl) = pixelAxisLengths ttd tfr
+    Assert.Equal(328.0, xl)
+    Assert.Equal(35.0, yl)
+    
+[<Fact>]
 let testTemplateCentroidsBottomLefts () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let mToTuples = mapByRow (fun v -> (v.[0], v.[1]))
@@ -59,13 +50,6 @@ let testTemplateCentroidsBottomLefts () =
     let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl groundParrotTemplate
     assertSeqEqual (=) defToString mtcs tcs
     assertSeqEqual (=) defToString mtbls tbls
-
-[<Fact>]
-let testPixelAxisLengths () =
-    let (_, _, ttd, tfr) = templateBounds groundParrotTemplate
-    let (xl, yl) = pixelAxisLengths ttd tfr
-    Assert.Equal(328.0, xl)
-    Assert.Equal(35.0, yl)
 
 [<Fact>]
 let testCentroidsBottomLefts () =
