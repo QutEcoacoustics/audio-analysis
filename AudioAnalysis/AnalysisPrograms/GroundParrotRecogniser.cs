@@ -27,6 +27,13 @@ namespace AnalysisPrograms
                 var result = Detect(wavFilePath);
                 var eprEvents = result.Item2;
 
+                eprEvents.Sort(
+                    delegate(AcousticEvent ae1, AcousticEvent ae2)
+                    {
+                        return ae1.StartTime.CompareTo(ae2.StartTime);
+                    }
+                );
+
                 Console.WriteLine();
                 foreach (AcousticEvent ae in eprEvents)
                     Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
