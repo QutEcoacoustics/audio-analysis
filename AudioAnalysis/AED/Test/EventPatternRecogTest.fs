@@ -29,19 +29,20 @@ let assertSeqEqual eq toS xs' ys' =
     let m = catOptions (l::c)
     if Seq.isEmpty m then Assert.True(true) else Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n")
         
-
-        
-[<Fact>]
-let testCandidates () =
+let fromCsv =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let aes = loadFloatEventsFile "EPRAE.csv" md
     let f = @"matlab\" + md.Dir + @"\" + "EPRCandidates.csv"
-    let ls = System.IO.File.ReadAllLines f
+    let ls = System.IO.File.ReadAllLines f |> List.ofArray
     
     let g x = split [|' '|] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.nth n aes)    
-    let mcs = Seq.map (fun l -> split [|','|] l |> Seq.nth 5 |> g) ls
+    let (mcs, scores) = List.map (fun l -> let es = split [|','|] l in (Seq.nth 5 es |> g, Seq.nth 6 es |> System.Convert.ToDouble)) ls |> List.unzip
     let msaes = Seq.map (Seq.nth 0 << Seq.sort) mcs
-    
+    (aes, msaes, mcs, scores)
+        
+[<Fact>]
+let testCandidates () =
+    let (aes, msaes, mcs, scores)= fromCsv
     let (_, tb, ttd, tfr) = templateBounds groundParrotTemplate
     let (saes, cs) = candidates tb ttd tfr aes
     assertSeqEqual (=) rectToString msaes saes
@@ -65,18 +66,6 @@ let testPixelAxisLengths () =
     let (xl, yl) = pixelAxisLengths ttd tfr
     Assert.Equal(328.0, xl)
     Assert.Equal(35.0, yl)
-
-// TODO re-use this for all appropriate tests    
-let fromCsv =
-    let md = GParrots_JB2_20090607_173000_wav_minute_3
-    let aes = loadFloatEventsFile "EPRAE.csv" md
-    let f = @"matlab\" + md.Dir + @"\" + "EPRCandidates.csv"
-    let ls = System.IO.File.ReadAllLines f |> List.ofArray
-    
-    let g x = split [|' '|] x |> Seq.map (fun s -> let n = System.Convert.ToInt32 s - 1 in Seq.nth n aes)    
-    let (mcs, scores) = List.map (fun l -> let es = split [|','|] l in (Seq.nth 5 es |> g, Seq.nth 6 es |> System.Convert.ToDouble)) ls |> List.unzip
-    let msaes = Seq.map (Seq.nth 0 << Seq.sort) mcs
-    (aes, msaes, mcs, scores)
 
 [<Fact>]
 let testCentroidsBottomLefts () =
