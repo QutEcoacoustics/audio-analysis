@@ -21,11 +21,10 @@ let indexMinMap f xs =
     let m = Seq.min ys
     Seq.findIndex (fun y -> y = m) ys
     
-// This is purely to deal with rounding differences (0.4999 in F# vs 0.5 in Matlab rounded to 1) in the tests
-let rnd' x = if floatEquals 0.5 (x - (floor x)) 0.0001 then ceil x else round x
 
-let normaliseTimeFreq st sf td fr nt nf (t,f) =
-    let g x s d l = let x' = rnd' ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
+// the rnd parameter is purely for tests, see round' function in EventPatternRecogTest
+let normaliseTimeFreq rnd st sf td fr nt nf (t,f) =
+    let g x s d l = let x' = rnd ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
     (g t st td nt, g f sf fr nf)
     
 let centroids rs =
@@ -33,8 +32,8 @@ let centroids rs =
     Seq.map (fun r -> (centre (left r) (width r), centre (bottom r) (height r))) rs
     
 // TODO investigate performance optimisation by normalising individual points in tuple computations
-let centroidsBottomLefts st sf td fr nt nf rs = 
-    let f = Seq.map (normaliseTimeFreq st sf td fr nt nf)
+let centroidsBottomLefts rnd st sf td fr nt nf rs = 
+    let f = Seq.map (normaliseTimeFreq rnd st sf td fr nt nf)
     (centroids rs |> f, Seq.map bottomLeft rs |> f)
     
 let euclidianDist (x1, y1) (x2, y2) = (x1 - x2) ** 2.0 + (y1 - y2) ** 2.0 |> sqrt
@@ -78,15 +77,15 @@ let templateBounds t =
     let (tl, tb) = absLeftAbsBottom t
     (tl, tb, maxmap right t - tl, maxmap top t - tb)
         
-let detectGroundParrots' aes =
+let scoreGroundParrots rnd aes =
     let t = groundParrotTemplate
     let (tl, tb, ttd, tfr) = templateBounds t
     let (xl, yl) = pixelAxisLengths ttd tfr
-    let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl t
+    let (tcs, tbls) = centroidsBottomLefts rnd tl tb ttd tfr xl yl t
         
     let score rs =
         let (st, sf) = absLeftAbsBottom rs
-        let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs
+        let (cs, bls) = centroidsBottomLefts rnd st sf ttd tfr xl yl rs
         let f tc tbl =
             let i = indexMinMap (euclidianDist tc) cs   // index of closest centroid 
             overlap tbl tc (Seq.nth i bls) (Seq.nth i cs)
@@ -95,4 +94,7 @@ let detectGroundParrots' aes =
     let (saes, cs) = candidates tb ttd tfr aes // cs are the groups of acoustic events that are candiates for template matching
     Seq.zip saes (Seq.map score cs)
     
-let detectGroundParrots aes = seq {for (sae,score) in detectGroundParrots' aes do if score >= 4.0 then yield sae}
+let detectGroundParrots' rnd aes = seq {for (sae,score) in scoreGroundParrots rnd aes do if score >= 4.0 then yield sae}
+    
+// TODO should this return a score
+let detectGroundParrots aes = detectGroundParrots' round aes
