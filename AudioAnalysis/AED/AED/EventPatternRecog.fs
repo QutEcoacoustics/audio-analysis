@@ -70,7 +70,7 @@ let candidates tb ttd tfr aes =
 
 // Length of x and y axis' to scale time and frequency back to
 // TODO investigate these formulas - correct for ground parrot template
-let pixelAxisLengths ttd tfr = (ttd / (freqBins / samplingRate) |> rnd |> (+) 1.0, tfr / freqMax * (freqBins-1.0) |> rnd |> (+) 1.0)
+let pixelAxisLengths ttd tfr = (ttd / (freqBins / samplingRate) |> round |> (+) 1.0, tfr / freqMax * (freqBins-1.0) |> round |> (+) 1.0)
     
 let absLeftAbsBottom rs = (minmap left rs, minmap bottom rs)
     

@@ -14,10 +14,6 @@ let uncurry f (x,y) = f x y
 
 let floatEquals (f1:float) f2 d = abs(f1 - f2) <= d
 
-// TODO: should I/can I fix the overloaded round instead
-// TODO: is this even applicable now?
-let rnd x = if x - 0.5 = floor x then ceil x else round x
-
 let roundUpTo v x = if x < v then v else x
 let roundDownTo v x = if x > v then v else x
 
