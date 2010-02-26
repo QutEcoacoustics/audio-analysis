@@ -38,6 +38,10 @@ let testPixelAxisLengths () =
     Assert.Equal(328.0, xl)
     Assert.Equal(35.0, yl)
     
+// This is purely to deal with rounding differences in the tests
+// Some values appear as 0.4999 in F# vs 0.5 in Matlab. Rounding is then different, magnifying the difference through to the score
+let round' x = if floatEquals 0.5 (x - (floor x)) 0.0001 then ceil x else round x
+
 [<Fact>]
 let testTemplateCentroidsBottomLefts () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
@@ -47,7 +51,7 @@ let testTemplateCentroidsBottomLefts () =
     
     let (tl, tb, ttd, tfr) = templateBounds groundParrotTemplate
     let (xl, yl) = pixelAxisLengths ttd tfr
-    let (tcs, tbls) = centroidsBottomLefts tl tb ttd tfr xl yl groundParrotTemplate
+    let (tcs, tbls) = centroidsBottomLefts round' tl tb ttd tfr xl yl groundParrotTemplate
     assertSeqEqual (=) defToString mtcs tcs
     assertSeqEqual (=) defToString mtbls tbls
 
@@ -60,7 +64,7 @@ let testCentroidsBottomLefts () =
     let f i cs' bls' =
         let rs = Seq.nth i mcs
         let (st, sf) = absLeftAbsBottom rs
-        let (cs, bls) = centroidsBottomLefts st sf ttd tfr xl yl rs
+        let (cs, bls) = centroidsBottomLefts round' st sf ttd tfr xl yl rs
         assertSeqEqual (=) defToString bls' bls
         assertSeqEqual (=) defToString cs' cs
         
@@ -81,15 +85,14 @@ let testCentroidsBottomLefts () =
 //[<Fact>]
 let testScores () =
     let (aes, msaes, mcs, mscores)= fromCsv
-    let scores = detectGroundParrots' aes
+    let scores = scoreGroundParrots round' aes
     let eq (r1, s1) (r2, s2) = r1 = r2 && floatEquals s1 s2 0.001
-    //assertSeqEqual eq defToString (Seq.zip msaes mscores) scores 
-    Assert.True(false, Seq.nth 24 scores |> defToString) 
-    //Assert.True(false, defToString scores) 
+    assertSeqEqual eq defToString (Seq.zip msaes mscores) scores 
+    //Assert.True(false, Seq.nth 24 scores |> defToString) 
 
 [<Fact>]
 let detectGroundParrotsTest () = 
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let ae = loadFloatEventsFile "EPRAE.csv" md
     let m = loadFloatEventsFile "EPRresults.csv" md
-    assertSeqEqual (=) rectToString m (detectGroundParrots ae)
+    assertSeqEqual (=) rectToString m (detectGroundParrots' round' ae)
