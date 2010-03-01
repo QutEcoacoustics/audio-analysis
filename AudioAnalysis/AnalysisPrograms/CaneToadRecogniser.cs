@@ -106,7 +106,7 @@ namespace AnalysisPrograms
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
             double minDuration = Double.Parse(dict[key_MIN_DURATION]);     //min duration of event in seconds 
             double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
-            bool DRAW_SONOGRAMS = bool.Parse(dict[key_DRAW_SONOGRAMS]);
+            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: " + minHz + " Hz - " + maxHz + " Hz");
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
@@ -126,26 +126,19 @@ namespace AnalysisPrograms
             //write event count to results file.            
             WriteEventsInfo2TextFile(predictedEvents, opPath);
 
-            //if ((DRAW_SONOGRAMS) && (predictedEvents.Count > 0))
+            if (DRAW_SONOGRAMS==2)
             {
-                Log.WriteLine("# Start to draw image of sonogram.");
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                bool doHighlightSubband = false; bool add1kHzLines = true;
-
-                using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-                using (Image_MultiTrack image = new Image_MultiTrack(img))
-                {
-                    //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                    image.AddSuperimposedMatrix(hits);
-                    image.AddEvents(predictedEvents);
-                    image.Save(imagePath);
-                }
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+            }
+            else
+            if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
+            {
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
             }
 
-            Log.WriteLine("# Finished file:- " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             //Console.ReadLine();
         } //Dev()
 
@@ -181,6 +174,25 @@ namespace AnalysisPrograms
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
         }//end CaneToadRecogniser
+
+
+        static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        {
+            Log.WriteLine("# Start to draw image of sonogram.");
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                image.AddSuperimposedMatrix(hits);
+                image.AddEvents(predictedEvents);
+                image.Save(path);
+            }
+        }
 
 
         static void WriteEventsInfo2TextFile(List<AcousticEvent>predictedEvents, string path)
