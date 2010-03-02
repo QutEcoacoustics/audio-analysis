@@ -80,8 +80,8 @@ namespace AnalysisPrograms
             //double[] modalNoise = SNR.CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
             //modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
             
-            double[] modalNoise = SNR.CalculateModalNoise(mnr, smoothingWindow);            
-            mnr        = SNR.NoiseReduce_Standard(mnr, modalNoise);
+            double[] modalNoise = SNR.CalculateModalNoise(mnr, smoothingWindow);
+            mnr = SNR.NoiseReduce_Standard(mnr, modalNoise);
             double dynamicRange = 70;        //sets the the max dB
             mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
             //sonogram.Data = mnr;
