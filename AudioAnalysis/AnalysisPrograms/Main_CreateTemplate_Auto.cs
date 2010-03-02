@@ -71,8 +71,11 @@ namespace AnalysisPrograms
             //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
             Console.WriteLine("STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + serialPath);
             string wavDirName; string wavFileName;
-            AudioRecording recording;// get recording from somewhere
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE
+            string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+
             var result = recogniser.Analyse(recording);
 
 

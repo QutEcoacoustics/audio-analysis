@@ -22,15 +22,16 @@ namespace AnalysisPrograms
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
             string wavDirName; string wavFileName;
-            AudioRecording recording;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+
             //#######################################################################################################
 
             string appConfigPath = "";
             //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
-
-            string wavPath = wavDirName + wavFileName + ".wav"; //set the .wav file in method ChooseWavFile()
-            string outputFolder = @"C:\SensorNetworks\temp1\"; //default 
+            string outputFolder = @"C:\SensorNetworks\Output\temp1\"; //default 
             //min and max of required sub-band
             int minHz = 500; int maxHz = 8000;
 

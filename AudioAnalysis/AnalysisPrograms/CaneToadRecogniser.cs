@@ -20,6 +20,13 @@ namespace AnalysisPrograms
 {
     class CaneToadAnalysis
     {
+        //Following line is used for the debug command line.
+        //GECKO
+        //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\Gecko_DetectionParams.txt events.txt
+        //KOALA MALE EXHALE
+        //od "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_DetectionParams.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_DetectionParams.txt events.txt
+
         public static string key_FILE_EXT        = "FILE_EXT";
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
@@ -40,10 +47,10 @@ namespace AnalysisPrograms
         /// for use in compiling a stand alone application 
         /// </summary>
         /// <param name="args"></param>
-        public static void Main(string[] args)
-        {
-            Dev(args);
-        }
+        //public static void Main(string[] args)
+        //{
+        //    Dev(args);
+        //}
 
 
         public static void Dev(string[] args)
@@ -139,6 +146,7 @@ namespace AnalysisPrograms
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Click continue:");
             //Console.ReadLine();
         } //Dev()
 
@@ -150,13 +158,15 @@ namespace AnalysisPrograms
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            int sr = recording.SampleRate;
 
             //ii: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
+            recording.Dispose();
+            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
