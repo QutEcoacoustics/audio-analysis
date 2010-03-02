@@ -57,7 +57,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
-    <Compile Include="CaneToadRecogniser.cs" />
+    <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />

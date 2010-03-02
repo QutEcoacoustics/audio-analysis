@@ -63,8 +63,10 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
-        /// WARNING: In some circumstances this method cannot manage images with an area larger than 10,385,000 pixels.
+        /// WARNING: graphics.DrawImage() or GDI cannot draw an image that is too big, typically 
+        /// with an area larger than 10,385,000 pixels (Jiro estimated > 40000 pixels).
         /// This means it cannot handle recording sonograms longer than 2 minutes.
+        /// Therefore call a recursive method to draw the image.
         /// </summary>
         /// <returns></returns>
 		public Image GetImage()
@@ -78,7 +80,10 @@ namespace AudioAnalysisTools
             //create new graphics canvas and add in the sonogram image
             using (var g = Graphics.FromImage(image2return))
             {
-                g.DrawImage(this.SonoImage, 0, 0);
+                //g.DrawImage(this.SonoImage, 0, 0);            // WARNING ### THIS CALL DID NOT WORK
+                int accumulatedX = 0;                           // THEREFORE
+                SegmentedDraw(g, this.SonoImage, accumulatedX); // USE THIS CALL INSTEAD.
+
                 if (this.EventList != null) DrawEvents(g);
                 if (this.SuperimposedMatrix != null) Superimpose(g);
             }
@@ -95,7 +100,33 @@ namespace AudioAnalysisTools
 			return image2return;
 		}
 
-		int CalculateImageHeight()
+        /// <summary>
+        /// graphics.DrawImage() or GDI cannot draw an image that is too big, typically greater than 40000 pixels.
+        /// So call this method which calls itself recursively and draws image in small rectangles until the entire image is drawn.
+        /// </summary>
+        /// <param name="graphics">the graphics object to be drawn to</param>
+        /// <param name="sourceImage">the image to be drawn</param>
+        /// <param name="accumulatedX">the left most location of current drawing rectangle.</param>
+        private void SegmentedDraw(Graphics graphics, Image sourceImage, int accumulatedX)
+        {
+            const int gdiLimit = 20000;
+
+            // how much do we have to draw? Is it narrower than the gdiLimit?
+            int writeWidth = Math.Min(gdiLimit, sourceImage.Width - accumulatedX);
+
+            Rectangle writeRectangle = new Rectangle(accumulatedX, 0, writeWidth, sourceImage.Height);
+            graphics.DrawImage(sourceImage, writeRectangle, accumulatedX, 0, writeWidth, sourceImage.Height, GraphicsUnit.Pixel);
+
+            accumulatedX += writeWidth;
+
+            if (accumulatedX < sourceImage.Width)
+            {
+                SegmentedDraw(graphics, sourceImage, accumulatedX);
+            }
+        }
+
+
+        private int CalculateImageHeight()
 		{
 			int totalHeight = SonoImage.Height;
             foreach (Image_Track track in tracks)

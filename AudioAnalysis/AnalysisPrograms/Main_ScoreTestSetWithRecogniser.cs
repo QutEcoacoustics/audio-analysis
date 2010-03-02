@@ -179,7 +179,7 @@ namespace AnalysisPrograms
                         Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
-                        OscillationDetector.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
+                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
                                                     minAmplitude, scoreThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
                         break;
 

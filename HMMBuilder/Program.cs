@@ -291,7 +291,7 @@ namespace HMMBuilder
                                 //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
                                 //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
                                 int verbosity = 1;
-                                Main_CallSegmentation2.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
+                                AudioSegmentation.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
                             }
 
                         }
@@ -301,7 +301,7 @@ namespace HMMBuilder
                             foreach (string word in htkConfig.multiSyllableList)
                             {
                                 string trnDir = htkConfig.trnDirPath + "\\" + word;   
-                                Main_CallSegmentation2.Execute(trnDir, trnDir, verbosity);
+                                AudioSegmentation.Execute(trnDir, trnDir, verbosity);
                             }                        
                         }
 
