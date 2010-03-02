@@ -103,6 +103,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// graphics.DrawImage() or GDI cannot draw an image that is too big, typically greater than 40000 pixels.
         /// So call this method which calls itself recursively and draws image in small rectangles until the entire image is drawn.
+        /// This method was copied from WebFrontEnd solution:-  C:\SensorNetworks\Software\WebFrontend\App_Code\Spectrogram.cs
         /// </summary>
         /// <param name="graphics">the graphics object to be drawn to</param>
         /// <param name="sourceImage">the image to be drawn</param>

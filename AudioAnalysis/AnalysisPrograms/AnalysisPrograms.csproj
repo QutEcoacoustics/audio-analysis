@@ -68,7 +68,7 @@
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
-    <Compile Include="Main_SNR.cs" />
+    <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="Main_TestHTKProgram.cs" />
     <Compile Include="Main_TestHTKRecogniser.cs" />
