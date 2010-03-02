@@ -21,8 +21,8 @@ namespace AnalysisPrograms
                     case "aed":  //acoustic event detection
                         AED.Dev(r);
                         break;
-                    case "od":   //Oscillation detection
-                        CaneToadAnalysis.Dev(r);
+                    case "od":   //Oscillation Recogniser
+                        OscillationRecogniser.Dev(r);
                         break;
                     case "groundparrot":
                         GroundParrotRecogniser.Dev(r); //event pattern recognition
