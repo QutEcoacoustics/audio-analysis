@@ -18,16 +18,16 @@ namespace AnalysisPrograms
                 string[] r = args.Skip(1).ToArray();
                 switch (args[0])
                 {
-                    case "aed":
+                    case "aed":  //acoustic event detection
                         AED.Dev(r);
                         break;
-                    case "canetoad":
+                    case "od":   //Oscillation detection
                         CaneToadAnalysis.Dev(r);
                         break;
                     case "groundparrot":
-                        GroundParrotRecogniser.Dev(r);
+                        GroundParrotRecogniser.Dev(r); //event pattern recognition
                         break;
-                    case "snr":
+                    case "snr":   //signal to noise ratio
                         Main_SNR.Main(r);
                         break;
                     default:

@@ -21,8 +21,10 @@ namespace AnalysisPrograms
             // KEY PARAMETERS TO CHANGE
             int callID = 4; //used for extracting 2D-DCT templates from marquee
             string wavDirName; string wavFileName;
-            AudioRecording recording;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName, out recording);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            WavChooser.ChooseWavFile(out wavDirName, out wavFileName);//WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
+            string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             Log.Verbosity = 1;
             //#######################################################################################################
 

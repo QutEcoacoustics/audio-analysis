@@ -232,7 +232,7 @@ namespace AudioAnalysisTools
                                                                double framesPerSec, double freqBinWidth,
                                                                double minThreshold, double minDuration, double maxDuration, string fileName)
         {
-            double maxThreshold = 0.9;            //MAXIMUM BOUND OF ADAPTIVE SCORE THRESHOLD
+            //double maxThreshold = 0.9;            //MAXIMUM BOUND OF ADAPTIVE SCORE THRESHOLD
             double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
@@ -277,9 +277,9 @@ namespace AudioAnalysisTools
                     }
 
                 //adapt the threshold
-                if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
-                else
-                if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
+                //if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
+                //else
+                //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
                 
 
             } //end of pass over all frames

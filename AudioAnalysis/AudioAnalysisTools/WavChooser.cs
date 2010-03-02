@@ -10,7 +10,7 @@ namespace AudioAnalysisTools
     {
 
 
-        public static void ChooseWavFile(out string wavDirName, out string wavFileName, out AudioRecording recording)
+        public static void ChooseWavFile(out string wavDirName, out string wavFileName)
         {
             //BRISBANE AIRPORT CORP
             //wavDirName = @"C:\SensorNetworks\WavFiles\";
@@ -63,11 +63,13 @@ namespace AudioAnalysisTools
             //wavDirName = @"C:\SensorNetworks\WavFiles\Koala\";
             //string wavFileName = "Jackaroo_20080715-103940";  //recording from Bill Ellis.
             //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
+            wavDirName = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
+            wavFileName = "HoneymoonBay_StBees_20080905-001000.wav";
 
             //ST BEES
-            wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
+            //wavDirName = @"C:\SensorNetworks\WavFiles\StBees\";
             //wavFileName = "WestKnoll_StBees_KoalaBellow20080919-073000"; //source file for template 6
-            wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
+            //wavFileName = "Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000";
             //wavFileName = "West_Knoll_St_Bees_WindRain_20080917-123000";
             //wavFileName = "West_Knoll_St_Bees_FarDistantKoala_20080919-000000";
             //wavFileName = "West_Knoll_St_Bees_fruitBat1_20080919-030000";
@@ -120,12 +122,6 @@ namespace AudioAnalysisTools
             //wavFileName = "BAC8_20080605-020000_selection"; //test file from BAC
             //wavDirName  = @"C:\SensorNetworks\WavFiles\temp1\";
             //wavFileName = "ZCopy of West Knoll - Bees_20091030-013000";
-
-            //--------------------------------------------------------------------------------------------------------------
-
-            string wavPath = wavDirName + wavFileName + ".wav";
-            recording = new AudioRecording(wavPath);
-            if(recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
         } //end ChooseWavFile()
 
