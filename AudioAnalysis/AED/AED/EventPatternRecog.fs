@@ -3,24 +3,23 @@
 open Util
 
 let groundParrotTemplate =
-    [ cornersToRect 5.166440 5.294150 4048.242188 3703.710938;
-      cornersToRect 5.421859 5.619229 4005.175781 3531.445313;
-      cornersToRect 5.746939 5.839819 4134.375000 3875.976563;
-      cornersToRect 5.979138 6.199728 4220.507813 3875.976563; 
-      cornersToRect 6.315828 6.420317 4306.640625 3962.109375; 
-      cornersToRect 6.559637 6.780227 4392.773438 4048.242188; 
-      cornersToRect 6.896327 7.024036 4565.039063 4220.507813; 
-      cornersToRect 7.151746 7.337506 4651.171875 4306.640625; 
-      cornersToRect 7.709025 7.918005 4995.703125 4392.773438; 
-      cornersToRect 8.045714 8.161814 4780.371094 4478.906250; 
-      cornersToRect 8.312744 8.521723 4823.437500 4478.906250; 
-      cornersToRect 8.870023 8.962902 4866.503906 4694.238281 ]
+    [ cornersToRect 5.166439909297052 5.294149659863946 4048.24218750 3703.7109375;
+      cornersToRect 5.421859410430839 5.619229024943310 4005.17578125 3531.4453125;
+      cornersToRect 5.746938775510204 5.839818594104308 4134.37500000 3875.9765625;
+      cornersToRect 5.979138321995465 6.199727891156463 4220.50781250 3875.9765625; 
+      cornersToRect 6.315827664399093 6.420317460317460 4306.64062500 3962.1093750; 
+      cornersToRect 6.559637188208616 6.780226757369614 4392.77343750 4048.2421875; 
+      cornersToRect 6.896326530612245 7.024036281179138 4565.03906250 4220.5078125; 
+      cornersToRect 7.151746031746032 7.337505668934241 4651.17187500 4306.6406250; 
+      cornersToRect 7.709024943310658 7.918004535147392 4995.70312500 4392.7734375; 
+      cornersToRect 8.045714285714286 8.161814058956917 4780.37109375 4478.9062500; 
+      cornersToRect 8.312743764172335 8.521723356009071 4823.43750000 4478.9062500; 
+      cornersToRect 8.870022675736962 8.962902494331066 4866.50390625 4694.23828125 ]
       
 let indexMinMap f xs =
     let ys = Seq.map f xs
     let m = Seq.min ys
     Seq.findIndex (fun y -> y = m) ys
-    
 
 // the rnd parameter is purely for tests, see round' function in EventPatternRecogTest
 let normaliseTimeFreq rnd st sf td fr nt nf (t,f) =
@@ -55,7 +54,6 @@ let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     //    tl tb tct tcf l b ct cf tr tt r t ol or' ob ot) else res
     // Is this a genuine fix (the possibility of getting NAN due to t=b=cf) or is there a problem with transorming freq to pixels?
     
-        
 let freqMax = 11025.0
 let freqBins = 256.0
 let samplingRate = 22050.0
@@ -63,8 +61,7 @@ let samplingRate = 22050.0
 let candidates tb ttd tfr aes =
     let sfr = (boundedInterval tb 500.0 500.0 0.0 freqMax)
     let ss = Seq.filter (fun r -> r.Bottom >< sfr) aes // These are bottom left corners to overlay the template from
-    // This is slightly different to matlab where the upper bounds are strictly less than
-    let f x = Seq.filter (fun ae -> left ae >==< (left x, left x + ttd) && ae.Bottom >==< (bottom x, bottom x + tfr)) aes
+    let f x = Seq.filter (fun ae -> left ae >= left x && left ae < left x + ttd && bottom ae >= bottom x && bottom ae < bottom x + tfr) aes
     (ss, Seq.map f ss)
 
 // Length of x and y axis' to scale time and frequency back to

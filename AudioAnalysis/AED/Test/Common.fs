@@ -40,7 +40,7 @@ let matrixFloatEquals (a:matrix) (b:matrix) d =
 let defToString x = sprintf "%A" x
 let rectToString r = sprintf "%f, %f, %f, %f" (left r) (right r) (bottom r) (top r)
 
-let assertSeqEqual eq toS xs' ys' =
+let seqEqual eq toS xs' ys' =
     let xs, ys = Seq.sort xs', Seq.sort ys'
     let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
     let bs = Seq.map2 eq xs ys
@@ -50,5 +50,8 @@ let assertSeqEqual eq toS xs' ys' =
                  [ sprintf "First difference at position %i" i |> Some;
                    sprintf "Expected[%i]:\t%s\r\nFound[%i]:\t%s" i (Seq.nth i xs |> toS) i (Seq.nth i ys |> toS) |> Some;
                    (if i' < Seq.length ys then sprintf "Found[%i]:\t%s" i' (Seq.nth i' ys |> toS) |> Some else None) ]
-    let m = catOptions (l::c)
+    catOptions (l::c)
+
+let assertSeqEqual eq toS xs ys =
+    let m = seqEqual eq toS xs ys
     if Seq.isEmpty m then Assert.True(true) else Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n")
