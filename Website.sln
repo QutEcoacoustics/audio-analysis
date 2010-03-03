@@ -560,6 +560,6 @@ Global
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783} = {E9A5C60A-ADD0-4667-A099-1BE9DC3155BE}
 	EndGlobalSection
 	GlobalSection(NDepend) = preSolution
-		Project = ".\Website.ndproj"
+		Project = ""
 	EndGlobalSection
 EndGlobal
