@@ -30,6 +30,9 @@ namespace AnalysisPrograms
                     case "snr":   //signal to noise ratio
                         SnrAnalysis.Main(r);
                         break;
+                    case "fpfnAnalysis":   //calculate false pos false neg percents
+                        SnrAnalysis.Main(r);
+                        break;
                     default:
                         Console.WriteLine("unrecognised");
                         break;
