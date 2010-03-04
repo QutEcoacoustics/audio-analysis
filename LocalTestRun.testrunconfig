@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestRunConfiguration name="LocalTestRun" id="2e02dbfe-5022-48f7-8778-2d9b0ce554a6" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
-  <Description>This is a default test run configuration for a local test run.</Description>
+<TestRunConfiguration name="QutSensorsTestRun" id="2e02dbfe-5022-48f7-8778-2d9b0ce554a6" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+  <Description>QutSensors test run.</Description>
   <Deployment>
     <DeploymentItem filename="QutSensors.Test\TestData\" outputDirectory="TestData" />
   </Deployment>
@@ -17,4 +17,9 @@
       <Network Name="LAN" BandwidthInKbps="0" />
     </WebTestRunConfiguration>
   </TestTypeSpecific>
+  <CodeCoverage enabled="true">
+    <Regular>
+      <CodeCoverageItem binaryFile="QutSensors.Test\bin\Debug\QutSensors.Test.dll" pdbFile="QutSensors.Test\bin\Debug\QutSensors.Test.pdb" instrumentInPlace="true" />
+    </Regular>
+  </CodeCoverage>
 </TestRunConfiguration>
