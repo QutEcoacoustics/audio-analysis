@@ -20,6 +20,8 @@
   <CodeCoverage enabled="true">
     <Regular>
       <CodeCoverageItem binaryFile="QutSensors.Test\bin\Debug\QutSensors.Test.dll" pdbFile="QutSensors.Test\bin\Debug\QutSensors.Test.pdb" instrumentInPlace="true" />
+	  <CodeCoverageItem binaryFile="QutSensors.Shared\bin\Debug\QutSensors.Shared.dll" pdbFile="QutSensors.Shared\bin\Debug\QutSensors.Shared.pdb" instrumentInPlace="true" />
+	  <CodeCoverageItem binaryFile="QutSensors.Data\bin\Debug\QutSensors.Data.dll" pdbFile="QutSensors.Data\bin\Debug\QutSensors.Data.pdb" instrumentInPlace="true" />
     </Regular>
   </CodeCoverage>
 </TestRunConfiguration>
