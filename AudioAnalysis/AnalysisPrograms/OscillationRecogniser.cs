@@ -130,6 +130,7 @@ namespace AnalysisPrograms
             var results = Execute_ODDetect(recordingPath, minHz, maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
                                                 eventThreshold, minDuration,  maxDuration);
             Log.WriteLine("# Finished detecting oscillation events.");
+//#############################################################################################################################################
 
             var sonogram = results.Item1;
             var hits = results.Item2;
