@@ -40,7 +40,7 @@ let smooth s (a:float []) =
                      | _ when i < n                  -> (0, i*2+1)
                      | _ when i + n < a.GetLength(0) -> (i-n, s)
                      | _                             -> (i-(a.GetLength(0)-1-i), (a.GetLength(0)-1-i)*2+1)
-        Array.sum (Array.sub a b l) / (float l) // TODO try Array.average here
+        Array.average (Array.sub a b l)
     Array.mapi f a
     
 let findPeaks (a:'a[]) =
