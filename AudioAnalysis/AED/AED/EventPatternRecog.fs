@@ -43,16 +43,7 @@ let overlap (tl, tb) (tct, tcf) (l, b) (ct, cf) =
     let r = l + (ct - l) * 2.0
     let t = b + (cf - b) * 2.0
     let ol, or', ob, ot = max tl l, min tr r, max tb b, min tt t
-    //let res = if or' < ol || ot < ob then 0.0
-    if or' < ol || ot < ob then 0.0
-                 else
-                    let oa = (or'-ol) * (ot-ob)
-                    let res' = 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
-                    if System.Double.IsNaN res' then 0.0 else res'
-                    //res'
-    //if System.Double.IsNaN res then failwith (sprintf "tl: %f, tb: %f, %f, %f, l: %f, b: %f, ct: %f, cf: %f, tr: %f, tt: %f, r: %f, t: %f, ol: %f, or': %f, ob: %f, ot: %f"
-    //    tl tb tct tcf l b ct cf tr tt r t ol or' ob ot) else res
-    // Is this a genuine fix (the possibility of getting NAN due to t=b=cf) or is there a problem with transorming freq to pixels?
+    if or' < ol || ot < ob then 0.0 else let oa = (or'-ol) * (ot-ob) in 0.5 * (oa/((tr-tl)*(tt-tb)) + oa/((r-l)*(t-b)))
     
 let freqMax = 11025.0
 let freqBins = 256.0
