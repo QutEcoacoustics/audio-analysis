@@ -53,7 +53,6 @@
     <Compile Include="FeatureVector\FeatureVector.cs" />
     <Compile Include="FeatureVector\FVConfig.cs" />
     <Compile Include="FeatureVector\FVExtractor.cs" />
-    <Compile Include="FP_FN_Analysis.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="HTKTools\BKGTrainer.cs" />
     <Compile Include="HTKTools\Helper.cs" />
