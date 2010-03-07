@@ -10,8 +10,20 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    //COMMAND LINES FOR SNRAnalysis.exe
+    // snr 
+    // snr 
+
 	class SnrAnalysis
 	{
+        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_MIN_HZ = "MIN_HZ";
+        public static string key_MAX_HZ = "MAX_HZ";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
+        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+
+
 		public static void Main(string[] args)
 		{
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);

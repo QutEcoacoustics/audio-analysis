@@ -34,7 +34,7 @@ namespace AnalysisPrograms
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_FILE_EXT        = "FILE_EXT";
+        //public static string key_FILE_EXT        = "FILE_EXT";
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
