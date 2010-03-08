@@ -55,7 +55,7 @@ namespace AnalysisPrograms
                 events.Add(Util.fcornersToRect(ae.StartTime, ae.EndTime, ae.MaxFreq, ae.MinFreq));
 
             Log.WriteLine("EPR start");
-            IEnumerable<Tuple<Util.Rectangle<double>, double>> eprRects = EventPatternRecog.detectGroundParrots(events);
+            var eprRects = EventPatternRecog.detectGroundParrots(events);
             Log.WriteLine("EPR finished");
 
             var config = aed.Item1.Configuration;

@@ -69,4 +69,5 @@ let testDetectGroundParrots () =
     let md = GParrots_JB2_20090607_173000_wav_minute_3
     let ae = loadFloatEventsFile "EPRAE.csv" md
     let m = loadFloatEventsFile "EPRresults.csv" md
-    assertSeqEqual (=) rectToString m (detectGroundParrots ae)
+    assertSeqEqual (=) rectToString m  (Seq.map fst (detectGroundParrots ae))
+    
