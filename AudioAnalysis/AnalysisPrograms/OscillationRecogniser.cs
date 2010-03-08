@@ -18,7 +18,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    partial class OscillationRecogniser
+    class OscillationRecogniser
     {
         //Following lines are used for the debug command line.
         //GECKO
