@@ -92,6 +92,7 @@ namespace AudioAnalysisTools
         {
             public const string Key_AddGrid = "ADDGRID";
         }
+
     } //end class ConfigKeys
 
 
@@ -205,6 +206,25 @@ namespace AudioAnalysisTools
     }//end class MfccConfiguration
 
 
+    public static class NoiseReduceConfiguration
+    {
+
+        public static ConfigKeys.NoiseReductionType SetNoiseReductionType(string key)
+        {   
+            if(key.Equals("NONE")) return ConfigKeys.NoiseReductionType.NONE;
+            else
+            if(key.Equals("STANDARD")) return ConfigKeys.NoiseReductionType.STANDARD;
+            else
+            if(key.Equals("FIXED_DYNAMIC_RANGE")) return ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+            else
+            if(key.Equals("SILENCE_MODEL")) return ConfigKeys.NoiseReductionType.SILENCE_MODEL;
+            else
+            if(key.Equals("PEAK_TRACKING")) return ConfigKeys.NoiseReductionType.PEAK_TRACKING;
+            else 
+            if(key.Equals("DEFAULT_STANDBY")) return ConfigKeys.NoiseReductionType.DEFAULT_STANDBY;
+            return ConfigKeys.NoiseReductionType.NONE;
+        }
+    }
 
     /// <summary>
     /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION

@@ -66,17 +66,24 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             // TODO this whole section will be common with other analysis
 
+            var events = Detect(sonogram, intensityThreshold, smallAreaThreshold);
+            return Tuple.Create(sonogram, events);
+        }
+
+        public static List<AcousticEvent> Detect(BaseSonogram sonogram, double intensityThreshold, int smallAreaThreshold)
+        {
             Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(intensityThreshold, smallAreaThreshold, sonogram.Data);
             Log.WriteLine("AED finished");
 
+            SonogramConfig config = sonogram.Configuration;
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
 
             var events = new List<AcousticEvent>();
             foreach (Oblong o in oblongs)
                 events.Add(new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth));
             Log.WriteIfVerbose("AED # events: " + events.Count);
-            return Tuple.Create(sonogram, events);
+            return events;
         }
 
         public static void GenerateImage(string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
