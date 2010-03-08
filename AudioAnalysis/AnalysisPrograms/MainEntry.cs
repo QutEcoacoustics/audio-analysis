@@ -28,7 +28,7 @@ namespace AnalysisPrograms
                         GroundParrotRecogniser.Dev(r); //event pattern recognition
                         break;
                     case "snr":   //signal to noise ratio
-                        SnrAnalysis.Main(r);
+                        SnrAnalysis.Dev(r);
                         break;
                     default:
                         Console.WriteLine("unrecognised");

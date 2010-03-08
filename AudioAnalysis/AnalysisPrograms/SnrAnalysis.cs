@@ -17,85 +17,128 @@ namespace AnalysisPrograms
 	class SnrAnalysis
 	{
         //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_FRAME_SIZE="FRAME_SIZE";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_WINDOW_FUNCTION = "WINDOW_FUNCTION";
+        public static string key_N_POINT_SMOOTH_FFT = "N_POINT_SMOOTH_FFT";
+        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+        public static string key_SILENCE_RECORDING_PATH = "SILENCE_RECORDING_PATH";
         public static string key_MIN_HZ = "MIN_HZ";
         public static string key_MAX_HZ = "MAX_HZ";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_SEGMENTATION_THRESHOLD_K1 = "SEGMENTATION_THRESHOLD_K1";
+        public static string key_SEGMENTATION_THRESHOLD_K2 = "SEGMENTATION_THRESHOLD_K2";
+        public static string key_K1_K2_LATENCY   = "K1_K2_LATENCY";
+        public static string key_VOCAL_GAP       = "VOCAL_GAP";
+        public static string key_MIN_VOCAL_DURATION = "MIN_VOCAL_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
 
-		public static void Main(string[] args)
+		public static void Dev(string[] args)
 		{
-            Console.WriteLine("DATE AND TIME:" + DateTime.Now);
-            Console.WriteLine("DETERMINING SIGNAL TO NOISE RATIO IN RECORDING\n");
+            string title = "# DETERMINING SIGNAL TO NOISE RATIO IN RECORDING";
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Log.WriteLine(title);
+            Log.WriteLine(date);
 
             Log.Verbosity = 1;
+
+            CheckArguments(args);
+
+
+            string recordingPath = args[0];
+            string iniPath = args[1];
+            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            string opFName = args[2];
+            string opPath = outputDir + opFName;
+
+            Log.WriteIfVerbose("# Output folder =" + outputDir);
+            Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+
+            //READ PARAMETER VALUES FROM INI FILE
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+
+            int frameSize       = Int32.Parse(dict[key_FRAME_SIZE]);
+            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+            string windowFunction = dict[key_WINDOW_FUNCTION];
+            int N_PointSmoothFFT= Int32.Parse(dict[key_N_POINT_SMOOTH_FFT]);
+            string noiseReduceType = dict[key_NOISE_REDUCTION_TYPE];
+            string silencePath  = dict[key_SILENCE_RECORDING_PATH];
+            int minHz           = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
+            int segK1           = Int32.Parse(dict[key_SEGMENTATION_THRESHOLD_K1]);
+            int segK2           = Int32.Parse(dict[key_SEGMENTATION_THRESHOLD_K2]);
+            int latency         = Int32.Parse(dict[key_K1_K2_LATENCY]);
+            int vocalGap        = Int32.Parse(dict[key_VOCAL_GAP]);
+            int minVocalLength  = Int32.Parse(dict[key_MIN_VOCAL_DURATION]);
+            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
+            int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
+
+            Log.WriteIfVerbose("Frame size: {0}.  Frame overlap: {1:f2}", frameSize, frameOverlap);
+            Log.WriteIfVerbose("Freq band:  " + minHz + " Hz - " + maxHz + " Hz");
+            Log.WriteIfVerbose("Segment Threshold K1: {0:f2}.  Segment Threshold K2: {1:f2}", segK1, segK2);
+            //#############################################################################################################################################
+
+            //string appConfigPath = "";
+            //string outputFolder = @"C:\SensorNetworks\Output\temp1\"; //default 
+
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
             string wavDirName; string wavFileName;
             WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-            string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
-            AudioRecording recording = new AudioRecording(wavPath);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            recordingPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
 
             //#######################################################################################################
 
-            string appConfigPath = "";
-            //string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
-            string outputFolder = @"C:\SensorNetworks\Output\temp1\"; //default 
-            //min and max of required sub-band
-            int minHz = 500; int maxHz = 8000;
 
 
-            //reset paths if have command line arguments
-            if ((args == null)||(args.Length == 0))
-            {
-                Console.WriteLine("=====================================================================================");
-                Console.WriteLine("USAGE:");
-                Console.WriteLine("snr.exe arg1 arg2 arg3 arg4 arg5");
-                Console.WriteLine("\twhere arg1 = path to application ini file (string)");
-                Console.WriteLine("\twhere arg2 = path to wav file             (string)");
-                Console.WriteLine("\twhere arg3 = output dir (string)");
-                Console.WriteLine("\twhere arg4 = min frequency      (optional integer)");
-                Console.WriteLine("\twhere arg5 = max frequency (     optional integer)");
-                Console.WriteLine("");
-                Console.WriteLine("\tSet arg1 = \"null\" to use default parameters.");
-                Console.WriteLine("=====================================================================================");
-                Console.WriteLine("");
-            }
-            else
-            {
-                if (args.Length > 0) appConfigPath = args[0];
-                if (args.Length > 1) wavPath       = args[1];
-                if (args.Length > 2) outputFolder  = args[2];
-                if (args.Length > 3) minHz = Int32.Parse(args[3]);
-                if (args.Length > 4) maxHz = Int32.Parse(args[4]);
-            }
+            ////reset paths if have command line arguments
+            //if ((args == null)||(args.Length == 0))
+            //{
+            //    Console.WriteLine("=====================================================================================");
+            //    Console.WriteLine("USAGE:");
+            //    Console.WriteLine("snr.exe arg1 arg2 arg3 arg4 arg5");
+            //    Console.WriteLine("\twhere arg1 = path to application ini file (string)");
+            //    Console.WriteLine("\twhere arg2 = path to wav file             (string)");
+            //    Console.WriteLine("\twhere arg3 = output dir (string)");
+            //    Console.WriteLine("\twhere arg4 = min frequency      (optional integer)");
+            //    Console.WriteLine("\twhere arg5 = max frequency (     optional integer)");
+            //    Console.WriteLine("");
+            //    Console.WriteLine("\tSet arg1 = \"null\" to use default parameters.");
+            //    Console.WriteLine("=====================================================================================");
+            //    Console.WriteLine("");
+            //}
+            //else
+            //{
+            //    if (args.Length > 0) appConfigPath = args[0];
+            //    if (args.Length > 1) recordingPath = args[1];
+            //    if (args.Length > 2) outputFolder  = args[2];
+            //    if (args.Length > 3) minHz = Int32.Parse(args[3]);
+            //    if (args.Length > 4) maxHz = Int32.Parse(args[4]);
+            //}
 
-            if (! File.Exists(wavPath))
-            {
-                Console.WriteLine("Cannot find file <" + wavPath + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(999);
-            }
-            if (!Directory.Exists(outputFolder))
-            {
-                Console.WriteLine("Cannot find output directory <" + outputFolder + ">");
-                outputFolder = System.Environment.CurrentDirectory;
-                Console.WriteLine("Have set output directory = <" + outputFolder + ">");
-                Console.WriteLine("Press <ENTER> key to continue.");
-                Console.ReadLine();
-            }
+            //string silencePath = dict[key_SILENCE_RECORDING_PATH];
+            //int minVocalLength = Int32.Parse(dict[key_MIN_VOCAL_DURATION]);
 
-            Log.WriteIfVerbose("appConfigPath =" + appConfigPath);
-            Log.WriteIfVerbose("wav File Path =" + wavPath);
-            Log.WriteIfVerbose("output folder =" + outputFolder);
-            Console.WriteLine();
+            //#############################################################################################################################################
+            var results = Execute_SNR(recordingPath, frameSize, frameOverlap, windowFunction, N_PointSmoothFFT, noiseReduceType,
+                                      minHz, maxHz, segK1, segK2, latency, vocalGap, eventThreshold);
+            Log.WriteLine("# Finished calculating SNR and detecting acoustic events.");
+            //#############################################################################################################################################
 
-            BaseSonogram sonogram = new SpectralSonogram(appConfigPath, recording.GetWavReader());
 
+            var sonogram = results.Item1;
+            var hits = results.Item2;
+            var scores = results.Item3;
+            var predictedEvents = results.Item4;
+            Log.WriteLine("# Event Count = " + predictedEvents.Count());
+
+            
+            
             Console.WriteLine("\nSIGNAL PARAMETERS");
             Console.WriteLine("Signal Duration =" + sonogram.Duration);
             Console.WriteLine("Sample Rate     =" + sonogram.SampleRate);
@@ -154,33 +197,14 @@ namespace AnalysisPrograms
 
 
 
-//            Console.ReadLine();
-            bool doHighlightSubband = false; bool add1kHzLines = true;
-			var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
-            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.Save(outputFolder + wavFileName + ".png");
-
-            int imageWidth = 284;
-            int imageHeight = 60;
-            var image2 = new Image_MultiTrack(recording.GetWaveForm(imageWidth, imageHeight));
-            image2.Save(outputFolder + wavFileName + "_waveform.png");
-            double dBMin = -25.0; //-25 dB appear to be good value
-            var image6 = new Image_MultiTrack(recording.GetWaveFormDB(imageWidth, imageHeight, dBMin));
-            image6.Save(outputFolder + wavFileName + "_waveformDB.png");
-
-            //int factor = 10;
-            //var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor));
-            //image3.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            //image3.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image3.Image.Width));
-            //image3.AddTrack(Image_Track.GetDecibelTrack(sonogram));
-            //image3.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            //image3.Save(outputFolder + wavFileName + "_reduced.png");
+            if (DRAW_SONOGRAMS > 0)
+            {
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+            }
 
 
             //EXTRACT SNR DATA ABOUT SUB BAND/.
-            doHighlightSubband = true;
             sonogram.CalculateSubbandSNR(recording.GetWavReader(), minHz, maxHz);
             Console.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
             //Console.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");
@@ -190,15 +214,161 @@ namespace AnalysisPrograms
             Console.WriteLine("Noise range       =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
             Console.WriteLine("SNR (sub-band)    =" + sonogram.SnrSubband.Snr.ToString("F2") + " dB");
 
-            var image4 = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image4.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-            image4.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.SonoImage.Width));
-            image4.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image4.Save(outputFolder + wavFileName + "_subband.png");
+            if (DRAW_SONOGRAMS > 0)
+            {
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+            }
 
-            Console.WriteLine("\nFINISHED!");
+
+            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            //Console.ReadLine();
+        } //Dev()
+
+
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_SNR(string wavPath,
+                            int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
+                            int minHz, int maxHz, int segK1, int segK2, int latency, int vocalGap, double eventThreshold)
+        {
+            //i: GET RECORDING
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            int sr = recording.SampleRate;
+
+            //ii: MAKE SONOGRAM
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.SourceFName = recording.FileName;
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            recording.Dispose();
+            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
+            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
+                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
+            Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
+
+
+            //CALCULATE SNR DATA ABOUT SUB BAND.
+            sonogram.CalculateSubbandSNR(recording.GetWavReader(), minHz, maxHz);
+
+
+            List<AcousticEvent> predictedEvents;  //predefinition of results event list - predicted from AED
+            double[] scores;                      //predefinition of score array
+            Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
+        }
+
+
+
+        static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        {
+            Log.WriteLine("# Start to draw image of sonogram.");
+            bool doHighlightSubband = false; 
+            bool add1kHzLines = true;
+
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
+                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                image.AddSuperimposedMatrix(hits);
+                image.AddEvents(predictedEvents);
+                image.Save(path);
+            }
+
+            //USE THIS CODE TO RETURN COMPRESSED SONOGRAM
+            //int factor = 10;  //compression factor
+            //using (var image3 = new Image_MultiTrack(sonogram.GetImage_ReducedSonogram(factor)))
+            //{
+                //image3.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                //image3.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image3.Image.Width));
+                //image3.AddTrack(Image_Track.GetDecibelTrack(sonogram));
+                //image3.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                //path = outputFolder + wavFileName + "_reduced.png"
+                //image3.Save(path);
+            //}
+
+
+            //DISPLAY IMAGE SUB BAND HIGHLIGHT and SNR DATA
+            //doHighlightSubband = true;
+            //var image4 = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            //image4.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            ////image4.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.SonoImage.Width));
+            //image4.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            ////path = outputFolder + wavFileName + "_subband.png"
+            //image4.Save(path);
+        }
+
+
+        static void DrawWaveforms(AudioRecording recording, string path)
+        {
+            int imageWidth = 284;
+            int imageHeight = 60;
+            var image2 = new Image_MultiTrack(recording.GetWaveForm(imageWidth, imageHeight));
+            //path = outputFolder + wavFileName + "_waveform.png";
+            image2.Save(path);
+
+            double dBMin = -25.0; //-25 dB appear to be good value
+            var image6 = new Image_MultiTrack(recording.GetWaveFormDB(imageWidth, imageHeight, dBMin));
+            //path = outputFolder + wavFileName + "_waveformDB.png"
+            image6.Save(path);
+        }
+
+
+        private static void CheckArguments(string[] args)
+        {
+            if (args.Length < 3)
+            {
+                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
+                foreach (string arg in args) Log.WriteLine(arg + "  ");
+                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
+                Usage();
+            }
+            CheckPaths(args);
+        }
+
+        /// <summary>
+        /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
+        /// </summary>
+        /// <param name="args"></param>
+        private static void CheckPaths(string[] args)
+        {
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+            if (!File.Exists(args[1]))
+            {
+                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
+                Usage();
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+        }
+
+
+        private static void Usage()
+        {
+            Console.WriteLine("INCORRECT COMMAND LINE.");
+            Console.WriteLine("USAGE:");
+            Console.WriteLine("SnrAnalysis.exe recordingPath iniPath outputFileName");
+            Console.WriteLine("where:");
+            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
+            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
+            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
+            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
+            Console.WriteLine("");
+            Console.WriteLine("\nPress <ENTER> key to exit.");
             Console.ReadLine();
-		}
+            System.Environment.Exit(1);
+        } //end Usage();
 
 	} //end class
 }
