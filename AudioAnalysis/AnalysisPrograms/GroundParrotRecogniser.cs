@@ -10,6 +10,8 @@ using QutSensors.AudioAnalysis.AED;
 
 namespace AnalysisPrograms
 {
+    using System.Collections;
+
     class GroundParrotRecogniser
     {
         public static void Dev(string[] args)
@@ -53,7 +55,7 @@ namespace AnalysisPrograms
                 events.Add(Util.fcornersToRect(ae.StartTime, ae.EndTime, ae.MaxFreq, ae.MinFreq));
 
             Log.WriteLine("EPR start");
-            IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
+            IEnumerable<Tuple<Util.Rectangle<double>, double>> eprRects = EventPatternRecog.detectGroundParrots(events);
             Log.WriteLine("EPR finished");
 
             var config = aed.Item1.Configuration;
@@ -61,12 +63,14 @@ namespace AnalysisPrograms
             double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount; // TODO this is common with AED
 
             var eprEvents = new List<AcousticEvent>();
-            foreach (Util.Rectangle<double> r in eprRects)
+            foreach (var rectScore in eprRects)
             {
-                var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
+                var ae = new AcousticEvent(rectScore.Item1.Left, rectScore.Item1.Width, rectScore.Item1.Bottom, rectScore.Item1.Top);
                 ae.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                ae.SetScores(rectScore.Item2, 0, 1);
                 eprEvents.Add(ae);
             }
+
             return Tuple.Create(aed.Item1, eprEvents);
         }
     }

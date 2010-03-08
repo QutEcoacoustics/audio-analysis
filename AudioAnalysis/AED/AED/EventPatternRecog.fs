@@ -15,6 +15,7 @@ let groundParrotTemplate =
       cornersToRect 8.045714285714286 8.161814058956917 4780.37109375 4478.9062500; 
       cornersToRect 8.312743764172335 8.521723356009071 4823.43750000 4478.9062500; 
       cornersToRect 8.870022675736962 8.962902494331066 4866.50390625 4694.23828125 ]
+     
       
 let indexMinMap f xs =
     let ys = Seq.map f xs
@@ -80,7 +81,8 @@ let scoreEvents t aes =
     let (saes, cs) = candidates tb ttd tfr aes // cs are the groups of acoustic events that are candiates for template matching
     Seq.zip saes (Seq.map score cs)
 
-let detect template minScore aes = seq {for (sae,s) in scoreEvents template aes do if s >= minScore then yield sae}
-
-// TODO should this return a score    
+let detect template minScore aes = 
+    let total = float (List.length template)
+    seq {for (sae,s) in scoreEvents template aes do if s >= minScore then yield (sae, s / total)}
+   
 let detectGroundParrots aes = detect groundParrotTemplate 4.0 aes
