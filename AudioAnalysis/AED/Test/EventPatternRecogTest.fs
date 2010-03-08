@@ -60,7 +60,7 @@ let testTemplateCentroidsBottomLefts () =
 [<Fact>]
 let testScores () =
     let (aes, msaes, mcs, mscores)= fromCsv
-    let scores = scoreGroundParrots aes
+    let scores = scoreEvents groundParrotTemplate aes
     let eq (r1, s1) (r2, s2) = r1 = r2 && floatEquals s1 s2 0.001
     assertSeqEqual eq defToString (Seq.zip msaes mscores) scores 
 
