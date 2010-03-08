@@ -50,16 +50,6 @@ namespace AnalysisPrograms
         public static string eventsFile  = "events.txt"; 
 
 
-        /// <summary>
-        /// for use in compiling a stand alone application 
-        /// </summary>
-        /// <param name="args"></param>
-        //public static void Main(string[] args)
-        //{
-        //    Dev(args);
-        //}
-
-
         public static void Dev(string[] args)
         {
             string title = "# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
@@ -68,32 +58,8 @@ namespace AnalysisPrograms
             Log.WriteLine(date);
 
             Log.Verbosity = 1;
+            CheckArguments(args);
 
-            if (args.Length < 3)
-            {
-                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
-                foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
-                Usage();
-            }
-
-            //CHECK THE PATHS
-            //Log.WriteLine("CHECK THE PATHS");
-            if (!File.Exists(args[0]))
-            {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
-            if (!File.Exists(args[1]))
-            {
-                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
-                Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
 
             string recordingPath = args[0];
             string iniPath   = args[1];
@@ -154,7 +120,6 @@ namespace AnalysisPrograms
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Log.WriteLine("# Click continue:");
             //Console.ReadLine();
         } //Dev()
 
@@ -223,26 +188,62 @@ namespace AnalysisPrograms
 
 
         // TODO this is duplicated with the ini file?
-        public static string GetDefaultParameterValues()
+        //public static string GetDefaultParameterValues()
+        //{
+        //    var sb = new StringBuilder("# LIST OF DEFAULT PARAMETER VALUES FOR CANETOAD RECOGNITION\n");
+        //    sb.Append("# min and max of the freq band to search\n");
+        //    sb.Append("MIN_HZ=500   \n");       
+        //    sb.Append("MAX_HZ=1000\n");
+        //    sb.Append("# default=0.50; Use 0.75 for koalas \n");
+        //    sb.Append("FRAME_OVERLAP=0.75\n");
+        //    sb.Append("# duration of DCT in seconds \n");
+        //    sb.Append("DCT_DURATION=0.5\n");
+        //    sb.Append("# ignore oscillation rates below the min & above the max threshold OSCILLATIONS PER SECOND\n");
+        //    sb.Append("MIN_OSCIL_FREQ=10 \n");       
+        //    sb.Append("MAX_OSCIL_FREQ=20\n");
+        //    sb.Append("# minimum acceptable value of a DCT coefficient\n");
+        //    sb.Append("MIN_AMPLITUDE=0.6\n");
+        //    sb.Append("# Event threshold - use this to determin FP / FN trade-off for events.\n");
+        //    sb.Append("EVENT_THRESHOLD=0.40\n");
+        //    sb.Append("# save a sonogram for each recording that contained a hit \n");
+        //    sb.Append("DRAW_SONOGRAMS=true\n");
+        //    return sb.ToString();
+        //}
+
+
+        private static void CheckArguments(string[] args)
         {
-            var sb = new StringBuilder("# LIST OF DEFAULT PARAMETER VALUES FOR CANETOAD RECOGNITION\n");
-            sb.Append("# min and max of the freq band to search\n");
-            sb.Append("MIN_HZ=500   \n");       
-            sb.Append("MAX_HZ=1000\n");
-            sb.Append("# default=0.50; Use 0.75 for koalas \n");
-            sb.Append("FRAME_OVERLAP=0.75\n");
-            sb.Append("# duration of DCT in seconds \n");
-            sb.Append("DCT_DURATION=0.5\n");
-            sb.Append("# ignore oscillation rates below the min & above the max threshold OSCILLATIONS PER SECOND\n");
-            sb.Append("MIN_OSCIL_FREQ=10 \n");       
-            sb.Append("MAX_OSCIL_FREQ=20\n");
-            sb.Append("# minimum acceptable value of a DCT coefficient\n");
-            sb.Append("MIN_AMPLITUDE=0.6\n");
-            sb.Append("# Event threshold - use this to determin FP / FN trade-off for events.\n");
-            sb.Append("EVENT_THRESHOLD=0.40\n");
-            sb.Append("# save a sonogram for each recording that contained a hit \n");
-            sb.Append("DRAW_SONOGRAMS=true\n");
-            return sb.ToString();
+            if (args.Length < 3)
+            {
+                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
+                foreach (string arg in args) Log.WriteLine(arg + "  ");
+                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
+                Usage();
+            }
+            CheckPaths(args);
+        }
+
+        /// <summary>
+        /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
+        /// </summary>
+        /// <param name="args"></param>
+        private static void CheckPaths(string[] args)
+        {
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+            if (!File.Exists(args[1]))
+            {
+                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
+                Usage();
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
         }
 
 
@@ -250,19 +251,17 @@ namespace AnalysisPrograms
         {
             Console.WriteLine("INCORRECT COMMAND LINE.");
             Console.WriteLine("USAGE:");
-            Console.WriteLine("OscillationDetection.exe recordingDir iniPath outputDir");
+            Console.WriteLine("OscillationDetection.exe recordingPath iniPath outputFileName");
             Console.WriteLine("where:");
-            Console.WriteLine("recordingDir:-   (string) the directory containing the audio files to be processed.");
-            Console.WriteLine("iniPath:-        (string) path of the ini file containing all required paramters");
-            Console.WriteLine("outputDir:-      (string) the directory where output is to be placed. This is optional.");
-            Console.WriteLine("                          The default output dir is that containing the ini file.");
+            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
+            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
+            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
+            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
             Console.WriteLine("");
-            //Console.WriteLine("Here are the default paramter values:-");
-            //Console.WriteLine(GetDefaultParameterValues());
             Console.WriteLine("\nPress <ENTER> key to exit.");
             Console.ReadLine();
-            System.Environment.Exit(999);
+            System.Environment.Exit(1);
         }
 
-    }
+    } //end class
 }
