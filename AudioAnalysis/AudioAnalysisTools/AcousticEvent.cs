@@ -16,21 +16,21 @@ namespace AudioAnalysisTools
         public double StartTime { get; set; }       // (s),
         public double Duration;                     // in seconds
         public double EndTime { get; private set; } // (s),
-        public int    MinFreq;  // Hertz
-        public int    MaxFreq;  // Hertz
-        public int    FreqRange { get { return(MaxFreq - MinFreq + 1); } }
-        public bool   IsMelscale { get; set; } 
-        public Oblong oblong { get; private set;}
+        public int MinFreq;  // Hertz
+        public int MaxFreq;  // Hertz
+        public int FreqRange { get { return (MaxFreq - MinFreq + 1); } }
+        public bool IsMelscale { get; set; }
+        public Oblong oblong { get; private set; }
 
-        public int    FreqBinCount  { get; private set;}     //required for conversions to & from MEL scale
-        public double FreqBinWidth  { get; private set; }    //required for freq-binID conversions
+        public int FreqBinCount { get; private set; }     //required for conversions to & from MEL scale
+        public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
         public double FrameDuration { get; private set; }    //frame duration in seconds
-        public double FrameOffset   { get; private set; }    //time between frame starts in seconds
+        public double FrameOffset { get; private set; }    //time between frame starts in seconds
         public double FramesPerSecond { get; private set; }  //inverse of the frame offset
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
-        public string Name  { get; set; }
+        public string Name { get; set; }
         public string SourceFile { get; set; }
         public double Score { get; set; }
         public string ScoreComment { get; set; }
@@ -48,7 +48,12 @@ namespace AudioAnalysisTools
         public int Quality { get; set; }   //subjective assessment of event quality
         public bool Tag { get; set; } //use this if want to filter or tag some members of a list for some purpose
 
-
+        /// <summary>
+        /// <para>Populate this with any information that should be stored for verification or
+        /// checks required for research papers.</para>
+        /// <para>Do not include Name, NormalisedScore, StartTime, EndTime, MinFreq or MaxFreq, as these are stored by default.</para>
+        /// </summary>
+        public List<ResultProperty> ResultPropertyList { get; set; }
 
         /// <summary>
         /// CONSTRUCTOR
@@ -72,10 +77,10 @@ namespace AudioAnalysisTools
         /// <param name="binWidth"></param>
         public AcousticEvent(Oblong o, double frameOffset, double binWidth)
         {
-            this.oblong       = o;
+            this.oblong = o;
             this.FreqBinWidth = binWidth;
-            this.FrameOffset  = frameOffset;
-            this.IsMelscale   = false;
+            this.FrameOffset = frameOffset;
+            this.IsMelscale = false;
 
             double startTime; double duration;
             RowIDs2Time(o.r1, o.r2, frameOffset, out startTime, out duration);
@@ -90,7 +95,7 @@ namespace AudioAnalysisTools
 
         public void DoMelScale(bool doMelscale, int freqBinCount)
         {
-            this.IsMelscale   = doMelscale;
+            this.IsMelscale = doMelscale;
             this.FreqBinCount = freqBinCount;
         }
 
@@ -99,9 +104,9 @@ namespace AudioAnalysisTools
             double frameDuration, frameOffset, framesPerSecond;
             CalculateTimeScale(samplingRate, windowSize, windowOffset,
                                          out frameDuration, out frameOffset, out framesPerSecond);
-            this.FrameDuration  = frameDuration;    //frame duration in seconds
-            this.FrameOffset    = frameOffset;      //frame offset in seconds
-            this.FramesPerSecond= framesPerSecond;  //inverse of the frame offset
+            this.FrameDuration = frameDuration;    //frame duration in seconds
+            this.FrameOffset = frameOffset;      //frame offset in seconds
+            this.FramesPerSecond = framesPerSecond;  //inverse of the frame offset
 
             int binCount;
             double binWidth;
@@ -117,7 +122,7 @@ namespace AudioAnalysisTools
         {
             //this.FrameDuration = frameDuration;     //frame duration in seconds
             this.FramesPerSecond = framesPerSec;      //inverse of the frame offset
-            this.FrameOffset     = 1 / framesPerSec;  //frame offset in seconds
+            this.FrameOffset = 1 / framesPerSec;  //frame offset in seconds
 
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
@@ -175,7 +180,7 @@ namespace AudioAnalysisTools
         {
             foreach (AcousticEvent ae in events)
             {
-                if ((this.SourceFile.Equals(ae.SourceFile))&&(this.Overlaps(ae))) return ae;
+                if ((this.SourceFile.Equals(ae.SourceFile)) && (this.Overlaps(ae))) return ae;
             }
             return null;
         }
@@ -190,9 +195,9 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public bool Overlaps(AcousticEvent ae)
         {
-            if ((this.StartTime < ae.EndTime) && (this.EndTime > ae.StartTime)) 
+            if ((this.StartTime < ae.EndTime) && (this.EndTime > ae.StartTime))
                 return true;
-            if ((ae.StartTime < this.EndTime) && (ae.EndTime > this.StartTime)) 
+            if ((ae.StartTime < this.EndTime) && (ae.EndTime > this.StartTime))
                 return true;
             return false;
         }
@@ -210,24 +215,24 @@ namespace AudioAnalysisTools
         public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int binCount, double binWidth,
                                                                                               out int leftCol, out int rightCol)
         {
-            if(doMelscale)
+            if (doMelscale)
                 Freq2MelsBinIDs(minFreq, maxFreq, binWidth, binCount, out leftCol, out rightCol);
             else
                 Freq2HerzBinIDs(minFreq, maxFreq, binWidth, out leftCol, out rightCol);
         }
         public static void Freq2HerzBinIDs(int minFreq, int maxFreq, double binWidth, out int leftCol, out int rightCol)
         {
-            leftCol  = (int)Math.Round(minFreq / binWidth);
+            leftCol = (int)Math.Round(minFreq / binWidth);
             rightCol = (int)Math.Round(maxFreq / binWidth);
         }
         public static void Freq2MelsBinIDs(int minFreq, int maxFreq, double binWidth, int binCount, out int leftCol, out int rightCol)
         {
-                double nyquistFrequency = binCount * binWidth;
-                double maxMel = Speech.Mel(nyquistFrequency); 
-                int melRange = (int)(maxMel - 0 + 1);
-                double binsPerMel = binCount / (double)melRange;
-                leftCol  = (int)Math.Round((double)Speech.Mel(minFreq) * binsPerMel);
-                rightCol = (int)Math.Round((double)Speech.Mel(maxFreq) * binsPerMel);
+            double nyquistFrequency = binCount * binWidth;
+            double maxMel = Speech.Mel(nyquistFrequency);
+            int melRange = (int)(maxMel - 0 + 1);
+            double binsPerMel = binCount / (double)melRange;
+            leftCol = (int)Math.Round((double)Speech.Mel(minFreq) * binsPerMel);
+            rightCol = (int)Math.Round((double)Speech.Mel(maxFreq) * binsPerMel);
         }
 
         /// <summary>
@@ -248,13 +253,13 @@ namespace AudioAnalysisTools
         }
 
 
-        
-        
+
+
         //#################################################################################################################
         //METHODS TO CONVERT BETWEEN TIME BIN AND SECONDS 
         public static void RowIDs2Time(int topRow, int bottomRow, double frameOffset, out double startTime, out double duration)
         {
-            startTime  = topRow * frameOffset;
+            startTime = topRow * frameOffset;
             double end = (bottomRow + 1) * frameOffset;
             duration = end - startTime;
         }
@@ -268,7 +273,7 @@ namespace AudioAnalysisTools
         public void SetNetIntensityAfterNoiseReduction(double mean, double var)
         {
             this.I3Mean = mean; //
-            this.I3Var  = var;  //
+            this.I3Var = var;  //
         }
 
         /// <summary>
@@ -303,7 +308,7 @@ namespace AudioAnalysisTools
             sb.Append(line + "\n");
             foreach (AcousticEvent ae in eventList)
             {
-                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}", 
+                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
                 sb.Append(line + "\n");
             }
@@ -323,7 +328,7 @@ namespace AudioAnalysisTools
             var events = new List<AcousticEvent>();
             foreach (AcousticEvent ae in eventList)
             {
-                if(ae.SourceFile.Equals(fileName)) events.Add(ae);
+                if (ae.SourceFile.Equals(fileName)) events.Add(ae);
             }
             return events;
         } // end method GetEventsInFile(List<AcousticEvent> eventList, string fileName)
@@ -352,39 +357,39 @@ namespace AudioAnalysisTools
             int maxfreq = 0; //dummy value - never to be used
             string line = "\nList of LABELLED events in file: " + Path.GetFileName(path);
             //Console.WriteLine(line);
-            sb.Append(line +"\n");
+            sb.Append(line + "\n");
             line = "  #   #  \ttag \tstart  ...   end  intensity quality  file";
             //Console.WriteLine(line);
-            sb.Append(line+"\n");
+            sb.Append(line + "\n");
             int count = 0;
             for (int i = 1; i < lines.Count; i++) //skip the header line in labels data
             {
                 string[] words = Regex.Split(lines[i], @"\t");
-                if ((words.Length<8) || (words[4].Equals(null)) || (words[4].Equals(""))) 
-                                              continue; //ignore entries that do not have full data
+                if ((words.Length < 8) || (words[4].Equals(null)) || (words[4].Equals("")))
+                    continue; //ignore entries that do not have full data
                 string file = words[0];
-                if((match != null)&&(! file.StartsWith(match))) continue;  //ignore events not from the required file
+                if ((match != null) && (!file.StartsWith(match))) continue;  //ignore events not from the required file
 
                 string date = words[1];
                 string time = words[2];
 
-                double start  = Double.Parse(words[3]);
-                double end    = Double.Parse(words[4]);
-                string tag    = words[5];
-                int quality   = Int32.Parse(words[6]);
+                double start = Double.Parse(words[3]);
+                double end = Double.Parse(words[4]);
+                string tag = words[5];
+                int quality = Int32.Parse(words[6]);
                 int intensity = Int32.Parse(words[7]);
                 count++;
-                line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}", 
+                line = String.Format("{0,3} {1,3} {2,10}{3,6:f1} ...{4,6:f1}{5,10}{6,10}\t{7}",
                                         count, i, tag, start, end, intensity, quality, file);
                 //Console.WriteLine(line);
-                sb.Append(line+"\n");
+                sb.Append(line + "\n");
 
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
-                ae.Score      = intensity;
-                ae.Name       = tag;
+                ae.Score = intensity;
+                ae.Name = tag;
                 ae.SourceFile = file;
-                ae.Intensity  = intensity;
-                ae.Quality    = quality;
+                ae.Intensity = intensity;
+                ae.Quality = quality;
                 events.Add(ae);
             }
             labelsText = sb.ToString();
@@ -423,7 +428,7 @@ namespace AudioAnalysisTools
             string line = null;
             var sb = new StringBuilder(header + "\n");
             string previousSourceFile = "  ";
-            
+
             foreach (AcousticEvent ae in results)
             {
                 count++;
@@ -444,15 +449,16 @@ namespace AudioAnalysisTools
                 }
                 if (previousSourceFile != ae.SourceFile)
                 {
-                    Console.WriteLine(line + "\t"+ ae.SourceFile);
-                    sb.Append(line + "\t"+ ae.SourceFile+ "\n");
+                    Console.WriteLine(line + "\t" + ae.SourceFile);
+                    sb.Append(line + "\t" + ae.SourceFile + "\n");
                     previousSourceFile = ae.SourceFile;
                 }
-                else{
-                    Console.WriteLine(line+"\t  ||   ||   ||   ||   ||   ||");
+                else
+                {
+                    Console.WriteLine(line + "\t  ||   ||   ||   ||   ||   ||");
                     sb.Append(line + "\t  ||   ||   ||   ||   ||   ||\n");
                 }
-                
+
 
             }//end of looking for true and false positives
 
@@ -469,7 +475,7 @@ namespace AudioAnalysisTools
                 count++;
                 string hitFile = "";
                 //check if this FN event is in a file that score tp of fp hit. 
-                if (resultsSourceFiles.Contains(ae.SourceFile)) 
+                if (resultsSourceFiles.Contains(ae.SourceFile))
                     hitFile = "**";
                 if (ae.Tag == false)
                 {
@@ -478,7 +484,7 @@ namespace AudioAnalysisTools
                                          count, ae.StartTime, ae.EndTime, ae.Intensity, ae.Quality, ae.Name);
                     if (previousSourceFile != ae.SourceFile)
                     {
-                        Console.WriteLine(line + "\t" + ae.SourceFile + " " + hitFile );
+                        Console.WriteLine(line + "\t" + ae.SourceFile + " " + hitFile);
                         sb.Append(line + "\t" + ae.SourceFile + " " + hitFile + "\n");
                         previousSourceFile = ae.SourceFile;
                     }
@@ -490,7 +496,7 @@ namespace AudioAnalysisTools
                 }
             }
 
-            if(fn == 0) line = "NO FALSE NEGATIVES.";
+            if (fn == 0) line = "NO FALSE NEGATIVES.";
             else
                 line = "** This FN event occured in a recording which also scored a tp or fp hit.";
             Console.WriteLine(line);
@@ -588,21 +594,7 @@ namespace AudioAnalysisTools
             resultsText = sb.ToString();
         } //end method
 
-        /// <summary>
-        /// Uses the information in Michael Towsey's AcousticEvent class to initialise an instance of the ProcessorResultTag class.
-        /// </summary>
-        /// <param name="ae">instance of the AcousticEvent class</param>
-        /// <returns></returns>
-        public static ProcessorResultTag GetProcessorResultTag (AcousticEvent ae)
-        {
-            string str = "Normalised score";
-            long? start = (long?)Math.Round(ae.StartTime * 1000);
-            long? end   = (long?)Math.Round(ae.EndTime   * 1000);
-            var prt = new ProcessorResultTag(ae.Name, ae.NormalisedScore, str, start, end, (int?)ae.MinFreq, (int?)ae.MaxFreq);
-            var rp1 = new ResultProperty("SCORE", ae.Score, typeof(double));
-            prt.AddExtraDetail(rp1);
-            return prt;
-        }
+
 
     }
 }

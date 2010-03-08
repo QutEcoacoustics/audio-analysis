@@ -53,7 +53,7 @@ namespace AudioAnalysisTools
             if (key.Equals("LLR_VALUE"))
             {
                 double? score = GetMaxScoreInEvent(acousticEvent);
-                var rp = new ResultProperty("LLR_VALUE", score, typeof(double));
+                var rp = new ResultProperty("LLR_VALUE", score);
                 BaseResult.AddLLRInfo(rp); 
                 return rp;
             }
@@ -79,19 +79,19 @@ namespace AudioAnalysisTools
         {
             if (key.Equals(resultItemKeys[0]))
             {
-                var rp = new ResultProperty(resultItemKeys[0], RankingScoreValue, typeof(double));
+                var rp = new ResultProperty(resultItemKeys[0], RankingScoreValue);
                 BaseResult.AddLLRInfo(rp);
                 return rp;
             }
             else if (key.Equals(resultItemKeys[1]))
             {
-                var rp = new ResultProperty(resultItemKeys[1], VocalCount, typeof(int));
+                var rp = new ResultProperty(resultItemKeys[1], VocalCount);
                 BaseResult.AddVocalCountInfo(rp); 
                 return rp;
             }
             else if (key.Equals(resultItemKeys[2]))
             { 
-                var rp = new ResultProperty(resultItemKeys[2], TimeOfMaxScore, typeof(double));
+                var rp = new ResultProperty(resultItemKeys[2], TimeOfMaxScore);
                 BaseResult.AddTimeOfTopScoreInfo(rp); 
                 return rp;
             }

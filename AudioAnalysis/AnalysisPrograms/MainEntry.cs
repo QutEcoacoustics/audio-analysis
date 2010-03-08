@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using AnalysisPrograms.Processing;
 
 namespace AnalysisPrograms
 {
@@ -29,6 +30,9 @@ namespace AnalysisPrograms
                         break;
                     case "snr":   //signal to noise ratio
                         SnrAnalysis.Dev(r);
+                        break;
+                    case "processing": // for running on the processing cluster
+                        ProcessingUtils.Run(r);
                         break;
                     default:
                         Console.WriteLine("unrecognised");
