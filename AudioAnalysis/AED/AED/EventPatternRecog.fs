@@ -21,7 +21,6 @@ let indexMinMap f xs =
     let m = Seq.min ys
     Seq.findIndex (fun y -> y = m) ys
 
-// the rnd parameter is purely for tests, see round' function in EventPatternRecogTest
 let normaliseTimeFreq st sf td fr nt nf (t,f) =
     let g x s d l = let x' = round ((x - s) / d * l) in if x' < 1.0 then 1.0 else if x' > l then l else x'
     (g t st td nt, g f sf fr nf)
