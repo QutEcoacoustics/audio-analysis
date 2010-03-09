@@ -56,9 +56,6 @@ namespace AnalysisPrograms
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath, double intensityThreshold,
             int smallAreaThreshold)
         {
-            Log.WriteLine("intensityThreshold = " + intensityThreshold);
-            Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
-
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
             SonogramConfig config = new SonogramConfig(); //default values config
@@ -72,6 +69,9 @@ namespace AnalysisPrograms
 
         public static List<AcousticEvent> Detect(BaseSonogram sonogram, double intensityThreshold, int smallAreaThreshold)
         {
+            Log.WriteLine("intensityThreshold = " + intensityThreshold);
+            Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
+
             Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(intensityThreshold, smallAreaThreshold, sonogram.Data);
             Log.WriteLine("AED finished");
@@ -97,6 +97,5 @@ namespace AnalysisPrograms
             image.AddEvents(events);
             image.Save(imagePath);
         }
-
     }
 }
