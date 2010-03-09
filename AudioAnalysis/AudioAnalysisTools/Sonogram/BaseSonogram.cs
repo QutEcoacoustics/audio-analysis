@@ -203,7 +203,7 @@ namespace AudioAnalysisTools
             //double[,] frames = DSP.Frames(wav.Samples, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
             int[,] framesIDs = DSP.FrameStartEnds(wav.Samples.Length, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
 			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
-			double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+			//double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
