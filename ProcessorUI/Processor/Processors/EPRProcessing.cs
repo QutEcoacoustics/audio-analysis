@@ -70,15 +70,16 @@ namespace QutSensors.Processor
                     //Console.WriteLine(e.StartTime + "," + e.Duration + "," + e.MinFreq + "," + e.MaxFreq);
                 }
                 OnLog("START: EPR");
-                IEnumerable<Util.Rectangle<double>> eprRects = EventPatternRecog.detectGroundParrots(events);
+                IEnumerable<Tuple<Util.Rectangle<double>,double>> eprRects = EventPatternRecog.detectGroundParrots(events);
                 OnLog("END: EPR");
 
                 var eprEvents = new List<AcousticEvent>();
-                foreach (Util.Rectangle<double> r in eprRects)
+                foreach (var rectpair in eprRects)
                 {
-                    var ae = new AcousticEvent(r.Left, r.Width, r.Bottom, r.Top);
+                    var ae = new AcousticEvent(rectpair.Item1.Left, rectpair.Item1.Width, rectpair.Item1.Bottom, rectpair.Item1.Top);
                     //OnLog(ae.WriteProperties());
                     //OnLog(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                    ae.SetScores(rectpair.Item2, 0, 1);
                     eprEvents.Add(ae);
                 }
 
