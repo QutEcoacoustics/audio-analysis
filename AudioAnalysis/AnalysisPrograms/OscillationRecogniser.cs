@@ -88,10 +88,11 @@ namespace AnalysisPrograms
             double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
             int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
-            Log.WriteIfVerbose("Freq band: " + minHz + " Hz - " + maxHz + " Hz");
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
             Log.WriteIfVerbose("minAmplitude = " + minAmplitude);
-            Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");                       
+            Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");   
+                    
 //#############################################################################################################################################
             var results = Execute_ODDetect(recordingPath, minHz, maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
                                                 eventThreshold, minDuration,  maxDuration);
@@ -143,6 +144,9 @@ namespace AnalysisPrograms
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+
             Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
             Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
 
