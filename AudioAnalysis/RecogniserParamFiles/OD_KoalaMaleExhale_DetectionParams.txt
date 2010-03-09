@@ -1,6 +1,6 @@
 # min and max of the freq band to search
 MIN_HZ=100          
-MAX_HZ=2000
+MAX_HZ=1100
 # default=0.50; Use 0.75 for koalas 
 FRAME_OVERLAP=0.75
 # duration of DCT in seconds 
