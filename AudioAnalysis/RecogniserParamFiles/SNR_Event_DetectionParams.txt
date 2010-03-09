@@ -5,11 +5,11 @@ WINDOW_FUNCTION=HAMMING
 N_POINT_SMOOTH_FFT=3
 #
 #**************** NOISE REDUCTION
-NOISE_REDUCTION_TYPE=SILENCE_MODEL
-SILENCE_RECORDING_PATH=C:\SensorNetworks\Templates\Template_CURRAWONG1\config_CURRAWONG1\SilenceModel\West_Knoll_St_Bees_Currawong1_20080923-120000.wav
+NOISE_REDUCTION_TYPE=NONE
+#SILENCE_RECORDING_PATH=C:\SensorNetworks\Templates\Template_CURRAWONG1\config_CURRAWONG1\SilenceModel\West_Knoll_St_Bees_Currawong1_20080923-120000.wav
 #**************** MIN and MAX of the freq band to search
 MIN_HZ=100          
-MAX_HZ=2000
+MAX_HZ=8000
 #**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS 
 # See Lamel et al 1981.
 # They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.
@@ -27,8 +27,8 @@ VOCAL_GAP=0.2
 MIN_VOCAL_DURATION=0.075
 #
 #********************* ACOUSTIC EVENT DETECTION PARAMETERS.
-AED_INTENSITY_THRESHOLD=6.0
+AED_INTENSITY_THRESHOLD=9.0
 AED_SMALL_AREA_THRESHOLD=100
 #
 # SAVE IMAGE - save a sonogram image for each recording 0=no, >=1 = yes
-DRAW_SONOGRAMS=0
+DRAW_SONOGRAMS=1
