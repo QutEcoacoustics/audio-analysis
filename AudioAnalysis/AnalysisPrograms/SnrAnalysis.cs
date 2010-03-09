@@ -10,9 +10,9 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    //COMMAND LINES FOR SNRAnalysis.exe
-    // snr 
-    // snr 
+    //COMMAND LINES FOR SnrAnalysis.exe
+    // snr C:\SensorNetworks\WavFiles\Curlew\Top_Knoll_-_St_Bees_20081005-223000.wav C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_DetectionParams.txt snrResults.txt
+    // snr C:\SensorNetworks\WavFiles\Curlew\Top_Knoll_-_St_Bees_20081005-223000.wav C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_DetectionParams.txt snrResults.txt
 
 	class SnrAnalysis
 	{
@@ -65,49 +65,37 @@ namespace AnalysisPrograms
             string windowFunction = dict[key_WINDOW_FUNCTION];
             int N_PointSmoothFFT= Int32.Parse(dict[key_N_POINT_SMOOTH_FFT]);
             string noiseReduceType = dict[key_NOISE_REDUCTION_TYPE];
-            string silencePath  = dict[key_SILENCE_RECORDING_PATH];
+            string silencePath = null;
+            if (dict.ContainsKey(key_SILENCE_RECORDING_PATH))  silencePath  = dict[key_SILENCE_RECORDING_PATH];
             int minHz           = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
-            int segK1           = Int32.Parse(dict[key_SEGMENTATION_THRESHOLD_K1]);
-            int segK2           = Int32.Parse(dict[key_SEGMENTATION_THRESHOLD_K2]);
-            int latency         = Int32.Parse(dict[key_K1_K2_LATENCY]);
-            int vocalGap        = Int32.Parse(dict[key_VOCAL_GAP]);
-            int minVocalLength  = Int32.Parse(dict[key_MIN_VOCAL_DURATION]);
+            Double segK1        = Double.Parse(dict[key_SEGMENTATION_THRESHOLD_K1]);
+            Double segK2        = Double.Parse(dict[key_SEGMENTATION_THRESHOLD_K2]);
+            Double latency      = Double.Parse(dict[key_K1_K2_LATENCY]);
+            Double vocalGap     = Double.Parse(dict[key_VOCAL_GAP]);
+            Double minVocalLength = Double.Parse(dict[key_MIN_VOCAL_DURATION]);
             int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             double intensityThreshold = QutSensors.AudioAnalysis.AED.Default.intensityThreshold;
-            if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD))    intensityThreshold = Int32.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
+            if (dict.ContainsKey(key_AED_INTENSITY_THRESHOLD)) intensityThreshold = Double.Parse(dict[key_AED_INTENSITY_THRESHOLD]);
             int smallAreaThreshold = QutSensors.AudioAnalysis.AED.Default.smallAreaThreshold;
             if( dict.ContainsKey(key_AED_SMALL_AREA_THRESHOLD))   smallAreaThreshold = Int32.Parse(dict[key_AED_SMALL_AREA_THRESHOLD]);
 
 
-            Log.WriteIfVerbose("Frame size: {0}.  Frame overlap: {1:f2}", frameSize, frameOverlap);
-            Log.WriteIfVerbose("Freq band:  " + minHz + " Hz - " + maxHz + " Hz");
-            Log.WriteIfVerbose("Segment Threshold K1: {0:f2}.  Segment Threshold K2: {1:f2}", segK1, segK2);
 
-            //#############################################################################################################################################
-            // KEY PARAMETERS TO CHANGE
-            //string appConfigPath = "";
-            //string outputFolder = @"C:\SensorNetworks\Output\temp1\"; //default 
-//            string wavDirName; string wavFileName;
-//            WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE IF CREATING NEW TEMPLATE
-//            recordingPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
-            //#######################################################################################################
+            //##########################################################################################################################
+            //FUNCTIONAL CODE
+            //##########################################################################################################################
+            var results1 = Execute_Sonogram(recordingPath, frameSize, frameOverlap, windowFunction, N_PointSmoothFFT, noiseReduceType,
+                                            minHz, maxHz, segK1, segK2, latency, vocalGap);
+            var sonogram          = results1.Item1;
+            var SNR_fullbandEvent = results1.Item2;
+            var SNR_subbandEvent  = results1.Item3;
+            var predictedEvents = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
+            //##########################################################################################################################
 
-
-
-            //#############################################################################################################################################
-            var results = Execute_SNR(recordingPath, frameSize, frameOverlap, windowFunction, N_PointSmoothFFT, noiseReduceType,
-                                      minHz, maxHz, segK1, segK2, latency, vocalGap, intensityThreshold, smallAreaThreshold);
             Log.WriteLine("# Finished calculating SNR and detecting acoustic events.");
-            //#############################################################################################################################################
-
-
-            var sonogram = results.Item1;
-            var predictedEvents = results.Item2;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
-
-
 
             Log.WriteLine("\nSIGNAL PARAMETERS");
             Log.WriteLine("Signal Duration =" + sonogram.Duration);
@@ -139,9 +127,9 @@ namespace AnalysisPrograms
 
 
             Log.WriteLine("\nSEGMENTATION PARAMETERS");
-            Console.WriteLine("SegmentationThreshold K1 =" + EndpointDetectionConfiguration.K1Threshold.ToString("F3") + " dB   (See Note 8)");
-            Console.WriteLine("SegmentationThreshold K2 =" + EndpointDetectionConfiguration.K2Threshold.ToString("F3") + " dB   (See Note 8)");
+            Log.WriteLine("Segment Thresholds K1: {0:f2}.  K2: {1:f2}  (See Note 8)", segK1, segK2);
 
+            
             Console.WriteLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
             Console.WriteLine("\n\tNote 2:      Signal energy is calculated frame by frame. The log energy of a frame");
             Console.WriteLine("\t             equals the log(10) of the average of the amplitude squared of all 512 values in a frame.");
@@ -175,13 +163,13 @@ namespace AnalysisPrograms
 
 
             //DISPLAY INFO ABOUT SUB BAND SNR.
-            Console.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
-            //Console.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");
-            //Console.WriteLine("Sub-band Max dB   =" + sonogram.SnrSubband.Max_dB.ToString("F2") + " dB");
-            Console.WriteLine("Modal noise       =" + sonogram.SnrSubband.NoiseSubtracted.ToString("F2") + " dB");
+            Log.WriteLine("\ndB NOISE IN SUBBAND " + minHz + "Hz - " + maxHz + "Hz");
+            //Log.WriteLine("Sub-band Min dB   =" + sonogram.SnrSubband.Min_dB.ToString("F2") + " dB");
+            //Log.WriteLine("Sub-band Max dB   =" + sonogram.SnrSubband.Max_dB.ToString("F2") + " dB");
+            Log.WriteLine("Modal noise       =" + sonogram.SnrSubband.NoiseSubtracted.ToString("F2") + " dB");
             noiseSpan = sonogram.SnrSubband.NoiseRange;
-            Console.WriteLine("Noise range       =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
-            Console.WriteLine("SNR (sub-band)    =" + sonogram.SnrSubband.Snr.ToString("F2") + " dB");
+            Log.WriteLine("Noise range       =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
+            Log.WriteLine("SNR (sub-band)    =" + sonogram.SnrSubband.Snr.ToString("F2") + " dB");
 
             if (DRAW_SONOGRAMS > 0)
             {
@@ -191,9 +179,48 @@ namespace AnalysisPrograms
 
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Console.ReadLine();
+            //Log.ReadLine();
         } //Dev()
 
+
+        public static System.Tuple<BaseSonogram, AcousticEvent, AcousticEvent> Execute_Sonogram(string wavPath,
+                            int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
+                            int minHz, int maxHz, double segK1, double segK2, double latency, double vocalGap)
+        {
+            //i: GET RECORDING
+            AudioRecording recording = new AudioRecording(wavPath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            int sr = recording.SampleRate;
+
+            //ii: SET SONOGRAM CONFIGURATION
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.WindowSize = frameSize;
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.FftConfig.WindowFunction = windowFunction;
+            sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
+            sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(noiseReduceType);
+
+            //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+
+            //CALCULATE SNR DATA ABOUT SUB BAND.
+            sonogram.CalculateSubbandSNR(recording.GetWavReader(), minHz, maxHz);
+
+            recording.Dispose();
+
+            var SNR_fullbandEvent = new AcousticEvent(0, 0, 0, 0);
+            SNR_fullbandEvent.Name = "SNR(full bandwidth)";
+            SNR_fullbandEvent.Score = sonogram.SnrFrames.Snr;
+            SNR_fullbandEvent.ScoreComment = "dB of max frame minus db of modal noise.";
+
+            var SNR_subbandEvent  = new AcousticEvent(0, 0, minHz, maxHz);
+            SNR_subbandEvent.Name = "SNR(sub-band)";
+            SNR_subbandEvent.Score = sonogram.SnrSubband.Snr;
+            SNR_fullbandEvent.ScoreComment = "dB of max subband frame minus db of subband modal noise.";
+
+            return System.Tuple.Create(sonogram, SNR_fullbandEvent, SNR_subbandEvent);
+        }
 
         public static System.Tuple<BaseSonogram, List<AcousticEvent>> Execute_SNR(string wavPath,
                             int frameSize, double frameOverlap, string windowFunction, int N_PointSmoothFFT, string noiseReduceType,
@@ -212,20 +239,10 @@ namespace AnalysisPrograms
             sonoConfig.FftConfig.WindowFunction = windowFunction;
             sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
             sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(noiseReduceType);
-            //sonoConfig.
 
-            //iii: MAKE SONOGRAM
+            //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
-            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
-            Log.WriteIfVerbose("Event Intensity Threshold=" + intensityThreshold);
-
-
-            //CALCULATE SNR DATA ABOUT SUB BAND.
-            sonogram.CalculateSubbandSNR(recording.GetWavReader(), minHz, maxHz);
 
             //CALCULATE AED
             var events = AED.Detect(sonogram, intensityThreshold, smallAreaThreshold);
