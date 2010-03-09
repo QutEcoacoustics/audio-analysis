@@ -51,10 +51,13 @@ let findPeaks (a:'a[]) =
                     else f z (i+1)
     if a.GetLength(0) > 2 then f [] 1 else []
     
-let mean m n = Math.Matrix.sum m / n
+// TODO remove n parameter
+let mean (m:matrix) n = Math.Matrix.sum m / n
     
-let variance a n m = Math.Matrix.sum (a .* a) / n - (m*m)
+// TODO is this even used?
+let variance (a:matrix) n m = Math.Matrix.sum (a .* a) / n - (m*m)
 
+// TODO investigate where else this is used
 // Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element       
 let neighbourhoodBounds n h w x y =
     let m = (n-1)/2
@@ -68,15 +71,49 @@ let neighbourhoodBounds n h w x y =
     let (is, il) = subBounds (int x) h
     let (js, jl) = subBounds (int y) w
     (is, js, il, jl)
-       
+ 
 let localMeansVariances n (m:matrix) =
-    let nbs = float (n*n)
-    let f x y _ = 
-        let nba = neighbourhoodBounds n (m.NumRows) (m.NumCols) x y |> m.Region
-        let m = mean nba nbs
-        (m, variance nba nbs m)
-    matrixMapi2Unzip f m
+    let ms = m .* m
+    let n' = (n-1)/2
+    let sums = Math.Matrix.zero m.NumRows m.NumCols
+    let sumsSquares = Math.Matrix.zero m.NumRows m.NumCols
     
+    let imax, jmax = m.NumRows-1, m.NumCols-1
+    let inline g (m:matrix) i j = if i < 0 || j < 0 || i > imax || j > jmax then 0.0 else m.[i,j]
+    
+    for oi=0 to imax do
+        let mutable s = 0.0;
+        let mutable ss = 0.0;
+        for i=oi-n' to oi+n' do
+            for j=0 to n' do
+                s <- s + g m i j
+                ss <- ss + g ms i j
+            done
+        done
+        sums.[oi,0] <- s
+        sumsSquares.[oi,0] <- ss
+    done
+    
+    for oi=0 to imax do
+      for oj=1 to jmax do
+        let mutable s = 0.0;
+        let mutable ss = 0.0;
+        for i=oi-n' to oi+n' do
+            let jl, jh = oj-n'-1, oj+n'
+            s <- s - g m i jl + g m i jh
+            ss <- ss - g ms i jl + g ms i jh
+        done
+        sums.[oi,oj] <- sums.[oi, oj-1] + s
+        sumsSquares.[oi,oj] <- sumsSquares.[oi, oj-1] + ss
+      done
+    done
+    
+    let nf = float (n*n)
+    let means = sums * (1.0/nf)
+    let variances = sumsSquares * (1.0/nf)
+    Math.Matrix.inplaceSub variances (means .* means)
+    (means, variances)   
+ 
 (* In wiener2.m the local means are calculated using a sum of smaller neighbourhoods around the edges but
    are always divided by a constant neighbourhood size. Implemented the same here.
 *)
