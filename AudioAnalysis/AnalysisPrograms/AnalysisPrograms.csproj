@@ -72,8 +72,7 @@
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
-    <Compile Include="Main_TestHTKProgram.cs" />
-    <Compile Include="Main_TestHTKRecogniser.cs" />
+    <Compile Include="HTKRecogniser.cs" />
     <Compile Include="Main_TestSerialTemplateOnCallFiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
