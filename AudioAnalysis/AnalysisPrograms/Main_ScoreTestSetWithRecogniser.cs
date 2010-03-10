@@ -198,7 +198,7 @@ namespace AnalysisPrograms
                         string templateName = "KOALAMALE_EXHALE";
                         string templateDir = dir + templateName;
                         string templateFN = templateDir + "\\" + templateName + ".zip";
-                        TestHTKRecogniser.Execute(templateFN, workingDirectory, wavPath, out predictedEvents);
+                        predictedEvents = HTKRecogniser.Execute(wavPath, templateFN, workingDirectory);
                         break;
 
                     //###############################################################################################");

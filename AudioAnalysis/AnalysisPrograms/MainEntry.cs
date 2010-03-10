@@ -31,6 +31,9 @@ namespace AnalysisPrograms
                     case "snr":   //signal to noise ratio
                         SnrAnalysis.Dev(r);
                         break;
+                    case "htk":   //run an HTK template over a recording
+                        HTKRecogniser.Dev(r);
+                        break;
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;
