@@ -1,0 +1,15 @@
+VERSION=1.0
+N=6    L=7    
+I=0    W=!NULL               
+I=1    W=!NULL               
+I=2    W=CURLEW1             
+I=3    W=SIL                 
+I=4    W=!NULL               
+I=5    W=!NULL               
+J=0     S=0    E=1    l=0.00     
+J=1     S=4    E=1    l=0.00     
+J=2     S=1    E=2    l=-0.69    
+J=3     S=1    E=3    l=-0.69    
+J=4     S=2    E=4    l=0.00     
+J=5     S=3    E=4    l=0.00     
+J=6     S=4    E=5    l=0.00     

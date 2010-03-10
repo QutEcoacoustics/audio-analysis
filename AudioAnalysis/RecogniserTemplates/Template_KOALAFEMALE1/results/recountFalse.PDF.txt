@@ -1,0 +1,100 @@
+#!MLF!#
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane1.rec"
+0 10913400 SIL -4031.586182
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane2.rec"
+0 9288000 SIL -3535.144531
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane3.rec"
+0 1044900 SIL -364.684540
+1044900 6501600 KOALAFEMALE1 -2267.235352 -48.2  0.13935
+6501600 7198200 SIL -299.547394
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane4.rec"
+0 9520200 SIL -3467.753906
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane5.rec"
+0 1741500 SIL -651.916809
+1741500 9055800 KOALAFEMALE1 -2764.881592 -43.9  0.73034
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane6.rec"
+0 580500 SIL -191.194046
+580500 9055800 KOALAFEMALE1 -3296.316406 -45.2  1.09971
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane7.rec"
+0 9288000 SIL -3031.712646
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Airplane8.rec"
+0 8010900 SIL -2610.105713
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Curlew_WestKnollStBees_20080921-043000_4.rec"
+0 9055800 KOALAFEMALE1 -3586.684326 -46.0  1.28440
+9055800 11493900 SIL -779.256653
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Curlew_WestKnollStBees_20080928-193000_4.rec"
+0 4179600 SIL -1259.809326
+4179600 25425900 KOALAFEMALE1 -8227.604492 -45.0  5.16276
+25425900 29025000 SIL -1144.508667
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Curlew_WestKnollStBees_20080928-193000_5.rec"
+0 2438100 SIL -750.060913
+2438100 24497100 KOALAFEMALE1 -9087.904297 -47.8  5.42132
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Curlew_WestKnollStBees_20080929-190000_4.rec"
+0 696600 SIL -207.469376
+696600 15093000 KOALAFEMALE1 -5235.328125 -42.2  2.98349
+15093000 21594600 SIL -1919.317261
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Curlew_WestKnollStBees_20080929-190000_5.rec"
+0 3483000 SIL -936.702698
+3483000 15209100 KOALAFEMALE1 -4563.489746 -45.2  2.13394
+15209100 22059000 SIL -2069.276855
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Currawong_St_Bees_Currawong_20080919-060000_40.rec"
+0 4527900 KOALAFEMALE1 -2480.151123 -63.6  0.15614
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Currawong_St_Bees_Currawong_20080919-060000_41.rec"
+0 4179600 KOALAFEMALE1 -1988.224121 -55.2  0.26695
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Currawong_St_Bees_Currawong_20080919-060000_42.rec"
+0 812700 SIL -241.335648
+812700 4295700 KOALAFEMALE1 -1332.039429 -44.4  0.48857
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Currawong_St_Bees_Currawong_20080919-060000_43.rec"
+0 6269400 KOALAFEMALE1 -2796.047119 -51.8  0.39791
+6269400 7778700 SIL -435.473694
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/Currawong_St_Bees_Currawong_20080919-060000_44.rec"
+0 6385500 KOALAFEMALE1 -2769.498779 -50.4  0.43485
+6385500 6849900 SIL -149.896561
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/dogBarking1.rec"
+0 16602300 SIL -6026.055664
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/dogBarking2.rec"
+0 14396400 SIL -5313.058594
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/msg3GMobile.rec"
+0 2670300 SIL -952.010681
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/pheasant1.rec"
+0 11145600 SIL -3244.603516
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind1.rec"
+0 9055800 KOALAFEMALE1 -3556.521484 -45.6  1.28440
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind2.rec"
+0 7314300 KOALAFEMALE1 -3006.764648 -47.7  0.73034
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind3.rec"
+0 9055800 KOALAFEMALE1 -3515.538330 -45.1  1.28440
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind4.rec"
+0 15325200 KOALAFEMALE1 -6645.563965 -50.3  3.27898
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind5.rec"
+0 12190500 KOALAFEMALE1 -5399.941895 -51.4  2.28169
+.
+"C:/SensorNetworks/Templates/Template_KOALAFEMALE1/data/test/testFalse/wind6.rec"
+0 10332900 KOALAFEMALE1 -4676.384766 -52.5  1.69070
+.
