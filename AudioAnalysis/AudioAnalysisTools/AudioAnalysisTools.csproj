@@ -31,6 +31,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Extra Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -60,6 +64,7 @@
     <Compile Include="HTKTools\HTKConfig.cs" />
     <Compile Include="HTKTools\HTKHelper.cs" />
     <Compile Include="AudioSegmentation.cs" />
+    <Compile Include="HTKTools\HTKScanRecording.cs" />
     <Compile Include="Model\BaseModel.cs" />
     <Compile Include="Model\Model_1PS.cs" />
     <Compile Include="Model\Model_2SP.cs" />

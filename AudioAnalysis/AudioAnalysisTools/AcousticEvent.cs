@@ -595,6 +595,58 @@ namespace AudioAnalysisTools
         } //end method
 
 
+        /// <summary>
+        /// Extracts an array of scores from a list of events.
+        /// The events are required to have the passed name.
+        /// The events are assumed to contain sufficient info about frame rate in order to populate the array.
+        /// This method is only called when visualising HTK scores
+        /// </summary>
+        /// <param name="events"></param>
+        /// <param name="frameCount">the size of the array to return</param>
+        /// <param name="windowOffset"></param>
+        /// <param name="targetClass"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <param name="qualityMean"></param>
+        /// <param name="qualitySD"></param>
+        /// <param name="qualityThreshold"></param>
+        /// <returns></returns>
+        public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string targetName)
+        //public static double[] ExtractScoreArray(List<AcousticEvent> events, string iniFile, int arraySize, string targetName)
+        {
 
+            double windowOffset = events[0].FrameOffset;
+            double frameRate = 1 / windowOffset; //frames per second
+
+            // string[] files = new string[1];
+            // files[0] = iniFile;
+            // Configuration config = new Configuration(files);
+
+            double[] scores = new double[arraySize];
+            //for (int i = 0; i < arraySize; i++) scores[i] = Double.NaN; //init to NaNs.
+            int count = events.Count;
+
+            //double avScore = 0.0;
+            //double avDuration = 0.0;
+            //double avFrames = 0.0;
+            for (int i = 0; i < count; i++)
+            {
+                if (!events[i].Name.Equals(targetName)) continue; //skip irrelevant events
+
+                //           double scoreThreshold = config.GetDouble(vocalName + "HTK_THRESHOLD");
+                //           double qualityMean = config.GetDouble(vocalName + "DURATION_MEAN");
+                //           double qualitySD = config.GetDouble(vocalName + "DURATION_SD");
+                //           double qualityThreshold = config.GetDouble("Key_SD_THRESHOLD");
+                int startFrame = (int)(events[i].StartTime * frameRate);
+                int endFrame = (int)((events[i].StartTime + events[i].Duration) * frameRate);
+                double frameLength = events[i].Duration * frameRate;
+
+                //avScore    += events[i].Score;
+                //avDuration += events[i].Duration;
+                //avFrames   += frameLength;
+
+                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].NormalisedScore;
+            }
+            return scores;
+        } //end method
     }
 }
