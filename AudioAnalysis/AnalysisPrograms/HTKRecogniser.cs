@@ -10,20 +10,43 @@ using AudioAnalysisTools.HTKTools;
 
 namespace AnalysisPrograms
 {
+    //INFORMATION FOR MARK
+    //The CURRAWONG template under version control is located on my machine at:
+    //C:\SensorNetworks\Software\AudioAnalysis\RecogniserTemplates\Template_CURRAWONG1\CURRAWONG1.zip
+    //The CURLEW template under version control is located on my machine at:
+    //C:\SensorNetworks\Software\AudioAnalysis\RecogniserTemplates\Template_CURLEW1\CURLEW1.zip
+    //The KOALAFEMALE template under version control is located on my machine at:
+    //C:\SensorNetworks\Software\AudioAnalysis\RecogniserTemplates\Template_KOALAFEMALE1
+
+
+
     public class HTKRecogniser
     {
         //COMMAND LINES
-//htk C:\SensorNetworks\WavFiles\TestWaveFile\St_Bees_Currawong_20080919-060000_13.wav C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip C:\SensorNetworks\temp
+        //for CURRAWONG
+        //htk C:\SensorNetworks\WavFiles\StBees\West_Knoll_St_Bees_Currawong3_20080919-060000.wav C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip C:\SensorNetworks\temp
+        //htk C:\SensorNetworks\WavFiles\StBees\West_Knoll_St_Bees_Currawong1_20080923-120000.wav C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip C:\SensorNetworks\temp
+        //for CURLEW
+        //htk C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav     C:\SensorNetworks\Templates\Template_CURLEW1\CURLEW1.zip C:\SensorNetworks\temp
 
+        //INFO FOR THREE COMMAND LINE ARGUMENTS
+        //THE WAV FILE TO PROCESS
+        //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";           //ARG 0
+        //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
+        //string wavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
+        //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
+        //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees_20081216-213000.wav";
+        //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees3_20090907-053000.wav";//mix of curlew,currawong, koalas
 
+        //THE TEMPLATE
+        //string dir  = "C:\\SensorNetworks\\Templates\\Template_";
+        //string templateName = "CURRAWONG1"  "CURLEW1"  "WHIPBIRD1"  "KOALAFEMALE1"  "KOALAMALE1";
+        //string templateFN  = dir + templateName + "\\" + templateName + ".zip";                           // ARG 1
+        //Example: C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip
+        //*******************************************************************************************************************
+        //string workingDirectory = "C:\\SensorNetworks\\temp";                                            // ARG 2  
+        //*******************************************************************************************************************
 
-        //FORCE THRESHOLDS FOR Experimentation --- set SCORE_THRESHOLD = Double.NaN  if do not want to override default values
-        const double SCORE_THRESHOLD   = -50.0;  //Double.NaN
-        const double QUALITY_THRESHOLD = 2.56;   //1.96 for p=0.05;  2.56 for p=0.01
-
-        private static bool verbose = true;
-        public static bool Verbose { get { return verbose; } set { verbose = value; } }
-        
         
         
         /// <summary>
@@ -32,31 +55,6 @@ namespace AnalysisPrograms
         /// <param name="args"></param>
         public static void Dev(string[] args)
         {
-            //THE WAV FILE TO PROCESS
-            //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\West_Knoll_St_Bees_Currawong3_20080919-060000.wav";       //ARG 0
-            //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";           //ARG 0
-            //string wavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
-            //string wavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
-            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav";
-            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees_20081216-213000.wav";
-            //string wavFile = @"C:\SensorNetworks\WavFiles\Koala_Female\WestKnoll_StBees3_20090907-053000.wav";//mix of curlew,currawong, koalas
-            
-            //THE TEMPLATE
-            //string dir  = "C:\\SensorNetworks\\Templates\\Template_";
-            //string templateName = "CURRAWONG1";
-            //string templateName = "CURLEW1";
-            //string templateName = "WHIPBIRD1";
-            //string templateName = "CURRAWONG1";
-            //string templateName = "KOALAFEMALE1";
-            //string templateName = "KOALAFEMALE2";
-            //string templateName = "KOALAMALE1";
-            //*******************************************************************************************************************
-            //string templateDir = dir + templateName;
-            //string templateFN  = templateDir + "\\" + templateName + ".zip";                           // ARG 1
-            //*******************************************************************************************************************
-
-            //string workingDirectory = "C:\\SensorNetworks\\temp"; //set default working directory                    // ARG 2  
-            //*******************************************************************************************************************
 
             Log.Verbosity = 1;
 
@@ -68,54 +66,45 @@ namespace AnalysisPrograms
             //GET THE COMMAND LINE ARGUMENTS
             CheckArguments(args);
 
-
             string recordingPath      = args[0];
             string templateFN         = args[1];
             string workingDirectory   = args[2];
             
-            string templateDir = Path.GetDirectoryName(templateFN);
-            Log.WriteLine("# Recording file: "    + Path.GetFileName(recordingPath));
-            Log.WriteLine("# Template Dir: "      + templateDir);
-            Log.WriteLine("# Working Directory =" + workingDirectory);
-            //FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
-
-
+            Log.WriteLine("# Recording:   " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Working Dir: " + workingDirectory);
 
 
             //##############################################################################################################################
             //#### A: GET LIST OF HTK RECOGNISED EVENTS.
-            List<AcousticEvent> events = HTKRecogniser.Execute(recordingPath, templateFN, workingDirectory);
+            var op = HTKRecogniser.Execute(recordingPath, templateFN, workingDirectory);
+            HTKConfig config = op.Item1;
+            List<AcousticEvent> events = op.Item2;
             Log.WriteLine("# Finished scan with HTK.");
 
             //##############################################################################################################################
 
-            //#### B: GET LIST OF TAGGED OR LABELLED EVENTS.
-            string labelsPath = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\KoalaTestData.txt";
+            //#### B: DISPLAY EVENTS IN SONOGRAM
+            Log.WriteLine(" Extracted " + events.Count + " events.   Preparing sonogram to display events");
+            DisplayAcousticEvents(recordingPath, events, config.ConfigDir, config.ResultsDir);
+
+            //#### C: WRITE EVENTS TO A TEXT FILE
+            List<string> list = ExtractEventData(events);
+            FileTools.WriteTextFile(config.ResultsDir + "\\eventData.txt", list, true);
+
+            //#### D: GET LIST OF TAGGED OR LABELLED EVENTS.
+            //string labelsPath = @"C:\SensorNetworks\WavFiles\StBees\CurrawongTestData.txt";
+            string labelsPath = @"C:\SensorNetworks\WavFiles\StBees\CurlewTestData.txt";
             string labelsText;
             string filename = Path.GetFileNameWithoutExtension(recordingPath);
             List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, filename, out labelsText);
 
-            //#### C: DISPLAY EVENTS IN SONOGRAM
-            Log.WriteLine(" Extracted " + events.Count + " events.   Preparing sonogram to display events");
-            DisplayAcousticEvents(recordingPath, events, templateDir, workingDirectory);
-
-            //#### D: WRITE EVENTS TO A TEXT FILE
-            List<string> list = ExtractEventData(events);
-            string opFile = workingDirectory + "\\results\\eventData.txt";
-            FileTools.WriteTextFile(opFile, list, true);
-
-            //#### E: CALCULATE PREDICTIOn ACCURACY
+            //#### E: CALCULATE PREDICTION ACCURACY
             int tp, fp, fn;
             string resultsText;
             double precision, recall, accuracy;
-            //List<AcousticEvent> results = HTKScanRecording.GetAcousticEventsFromResultsFile(opFile);
-//            AcousticEvent.CalculateAccuracy(results, labels, out tp, out fp, out fn, out precision, out recall, out accuracy,
-//                                              out resultsText);
-            AcousticEvent.CalculateAccuracy(events, labels, out tp, out fp, out fn, out precision, out recall, out accuracy,
-                                              out resultsText);
-
-            Console.WriteLine("\n\ntp={0}\tfp={1}\tfn={2}", tp, fp, fn);
-            Console.WriteLine("Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
+            AcousticEvent.CalculateAccuracy(events, labels, out tp, out fp, out fn, out precision, out recall, out accuracy, out resultsText);
+            Log.WriteLine(" >>>>>>>>>>>>>>> tp={0}\tfp={1}\tfn={2}", tp, fp, fn);
+            Log.WriteLine(" >>>>>>>>>>>>>>> Recall={0:f2}  Precision={1:f2}  Accuracy={2:f2}", recall, precision, accuracy);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
@@ -123,34 +112,40 @@ namespace AnalysisPrograms
 
 
 
-
-
-
-        public static List<AcousticEvent> Execute(string wavFile, string templatePath, string workingDirectory)
+        public static System.Tuple<HTKConfig, List<AcousticEvent>> Execute(string wavFile, string templatePath, string workingDirectory)
         {
             string templateName = Path.GetFileNameWithoutExtension(templatePath);
 
+            //create the working directory if it does not exist
+            if (!Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
+
+
             //A: SHIFT TEMPLATE TO WORKING DIRECTORY AND UNZIP IF NOT ALREADY DONE
-                //string target = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
-                //Console.WriteLine("GOT TO HERE1");
-                //ZipUnzip.UnZip(target, templateFN, true);
-                //Console.WriteLine("GOT TO HERE2");
-            string target = workingDirectory + "\\" + Path.GetFileNameWithoutExtension(templatePath);
-            if (! Directory.Exists(target)) ZipUnzip.UnZip(target, templatePath, true);
+            string newTemplateDir = workingDirectory + "\\" + templateName;
+            if (!Directory.Exists(newTemplateDir)) ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
-            //B: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
-            string resultsPath = HTKScanRecording.Execute(wavFile, workingDirectory, templatePath);
+            //C: INI CONFIG and CREATE DIRECTORY STRUCTURE
+            Log.WriteLine("Init CONFIG and creating directory structure");
+            HTKConfig htkConfig = new HTKConfig(workingDirectory, templateName);
+            Log.WriteLine("\tCONFIG=" + newTemplateDir);
+            Log.WriteLine("\tDATA  =" + htkConfig.DataDir);
+            Log.WriteLine("\tRESULT=" + htkConfig.ResultsDir);
 
-            //C: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
+            //B: move the data/TEST file to its own directory
+            if (Directory.Exists(htkConfig.DataDir)) Directory.Delete(htkConfig.DataDir, true); //delete data dir if it exists
+            Directory.CreateDirectory(htkConfig.DataDir);
+            string dataFN = Path.GetFileName(wavFile);
+            File.Copy(wavFile, htkConfig.DataDir + "\\" + dataFN, true);
+
+            //D: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
+            Log.WriteLine("Executing HTK_Recogniser - scanning recording: " + dataFN);
+            string resultsPath = HTKScanRecording.Execute(dataFN, workingDirectory, htkConfig);
+
+            //E: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
             Log.WriteLine("Parse the HMM results file and return Acoustic Events");
-            string templateDir = workingDirectory + "\\" + templateName; //template has been shifted
-            List<AcousticEvent> events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, templateDir);
-            return events;
+            List<AcousticEvent> events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, newTemplateDir);
+            return System.Tuple.Create(htkConfig, events);
         } //end method Execute()
-
-
-
-
 
 
 
@@ -162,21 +157,19 @@ namespace AnalysisPrograms
                 var sb = new StringBuilder();
                 double endtime = ae.StartTime + ae.Duration;
                 sb.Append(ae.Name + "\t" + ae.StartTime.ToString("f4") + "\t" +
-                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" +
-                          ae.SourceFile);
+                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" + ae.SourceFile);
                 list.Add(sb.ToString());
             }
             return list;
         }
 
 
-        public static void DisplayAcousticEvents(string wavFile, List<AcousticEvent> events, string target, string outputDir)
+        public static void DisplayAcousticEvents(string wavFile, List<AcousticEvent> events, string templateDir, string outputDir)
         {
             SonogramConfig sonoConfig = new SonogramConfig();
             AudioRecording ar = new AudioRecording(wavFile);
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, ar.GetWavReader());
-            if (HTKRecogniser.Verbose == true) 
-                Console.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
+            Log.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
             bool doHighlightSubband = false; bool add1kHzLines = true;
             var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
@@ -184,8 +177,7 @@ namespace AnalysisPrograms
             image_mt.AddEvents(events);
 
             //D: PARSE THE RESULTS FILE TO GET SCORE ARRAY
-            string iniFile = target + "\\" + HTKConfig.segmentationIniFN;
-            string syllableFile = target + "\\" + HTKConfig.labelListFN;
+            string syllableFile = templateDir + "\\" + HTKConfig.labelListFN;
             List<string> sylNames = HTKConfig.GetSyllableNames(syllableFile);
             foreach (string name in sylNames)
             {
@@ -195,10 +187,9 @@ namespace AnalysisPrograms
                 image_mt.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, thresholdFraction));
             }
 
-            string resultsDir = outputDir + "\\results";
             string fName = Path.GetFileNameWithoutExtension(wavFile);
-            string opFile = resultsDir + "\\" + fName + ".png";
-            if (HTKRecogniser.Verbose == true) Console.WriteLine("\nSonogram will be written to file: " + opFile);
+            string opFile = outputDir + "\\" + fName + ".png";
+            Log.WriteLine("Sonogram will be written to file: " + opFile);
             image_mt.Save(opFile); 
         }
 
