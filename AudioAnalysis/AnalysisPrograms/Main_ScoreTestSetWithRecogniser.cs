@@ -5,6 +5,7 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using AudioAnalysisTools.HTKTools;
 
 
 namespace AnalysisPrograms
@@ -198,7 +199,9 @@ namespace AnalysisPrograms
                         string templateName = "KOALAMALE_EXHALE";
                         string templateDir = dir + templateName;
                         string templateFN = templateDir + "\\" + templateName + ".zip";
-                        predictedEvents = HTKRecogniser.Execute(wavPath, templateFN, workingDirectory);
+                        var op = HTKRecogniser.Execute(wavPath, templateFN, workingDirectory);
+                        HTKConfig htkConfig = op.Item1;
+                        predictedEvents     = op.Item2;
                         break;
 
                     //###############################################################################################");

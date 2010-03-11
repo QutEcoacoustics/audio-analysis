@@ -9,7 +9,6 @@ namespace AudioAnalysisTools.HTKTools
 {
     public class HTKConfig
     {
-        //public string WorkingDir  { get; set; }
         public string WorkingDir { get; set; }
         public string WorkingDirBkg { get; set; }
         public string DataDir     { get; set; }
@@ -68,17 +67,17 @@ namespace AudioAnalysisTools.HTKTools
 
 
         //dir and path names
-        public string trnDirPath      { get { return DataDir   + "\\train"; } }
+        public string trnDirPath      { get { return DataDir       + "\\train"; } }
         public string trnDirPathBkg   { get { return DataDirBkg ; } }
-        public string tstFalseDirPath { get { return DataDir   + "\\test\\testFalse"; } }
-        public string tstTrueDirPath  { get { return DataDir   + "\\test\\testTrue"; } }
+        public string tstFalseDirPath { get { return DataDir       + "\\test\\testFalse"; } }
+        public string tstTrueDirPath  { get { return DataDir       + "\\test\\testTrue"; } }
 
-        public string ProtoConfDir    { get { return ConfigDir + "\\protoConfigs"; } }
-        public string ProtoConfDirBkg { get { return ConfigDirBkg + "\\protoConfigs"; } }
-        public string ConfigFN        { get { return ConfigDir + "\\monPlainM1S1.dcf"; } }
-        public string MfccConfigFN    { get { return ConfigDir + "\\mfccConfig"; } }
-        public string MfccConfigFNBkg { get { return ConfigDirBkg + "\\mfccConfig"; } }
-        public string MfccConfig2FN   { get { return ConfigDir + "\\" + mfccConfigFN; } } //need this copy for training
+        public string ProtoConfDir    { get { return ConfigDir     + "\\protoConfigs"; } }
+        public string ProtoConfDirBkg { get { return ConfigDirBkg  + "\\protoConfigs"; } }
+        public string ConfigFN        { get { return ConfigDir     + "\\monPlainM1S1.dcf"; } }
+        public string MfccConfigFN    { get { return ConfigDir     + "\\mfccConfig"; } }
+        public string MfccConfigFNBkg { get { return ConfigDirBkg  + "\\mfccConfig"; } }
+        public string MfccConfig2FN   { get { return ConfigDir     + "\\" + mfccConfigFN; } }   //need this copy for training
         public string MfccConfig2FNBkg { get { return ConfigDirBkg + "\\mfccConfig.txt"; } }
 
         //grammar file for multisyllabic calls
@@ -564,7 +563,33 @@ namespace AudioAnalysisTools.HTKTools
             smFeatureDict.Add("D", 3);
             smFeatureDict.Add("A", 3);
         }
+
+        /// <summary>
+        /// This constuctor sets up the directory structure.
+        /// </summary>
+        /// <param name="workingDir"></param>
+        /// <param name="templateName"></param>
+        public HTKConfig(string workingDir, string templateName)
+        {
+            this.WorkingDir = workingDir;
+            this.CallName   = templateName;
+            this.DataDir    = workingDir + "\\data";
+            this.ConfigDir  = workingDir + "\\" + templateName;
+            this.ResultsDir = workingDir + "\\results";
+            this.HTKDir     = this.ConfigDir  + "\\HTK";
+            this.SegmentationDir  = this.ConfigDir + "\\Segmentation"; //NOT USED FOR TESTING
+           // this.SilenceModelPath = this.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav"; //NOT USED IN TESTING
+
+            //initialize dictionary
+            smFeatureDict.Add("MFCC", 1);
+            smFeatureDict.Add("0", 2);
+            smFeatureDict.Add("E", 2);
+            smFeatureDict.Add("D", 3);
+            smFeatureDict.Add("A", 3);
+        }
+
         #endregion
+
 
     }//end class
 
