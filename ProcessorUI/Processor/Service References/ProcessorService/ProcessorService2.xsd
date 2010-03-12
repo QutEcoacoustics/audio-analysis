@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:tns="sensor.mquter.qut.edu.au" elementFormDefault="qualified" targetNamespace="sensor.mquter.qut.edu.au" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:import schemaLocation="http://localhost:2669/Services/ProcessorService.svc?xsd=xsd1" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" />
+  <xs:element name="GetWorkItem">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="workerName" nillable="true" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetWorkItemResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q1="http://schemas.datacontract.org/2004/07/QutSensors.Shared" minOccurs="0" name="GetWorkItemResult" nillable="true" type="q1:AnalysisWorkItem" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetWorkItems">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="workerName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="maxItems" type="xs:int" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="GetWorkItemsResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element xmlns:q2="http://schemas.datacontract.org/2004/07/QutSensors.Shared" minOccurs="0" name="GetWorkItemsResult" nillable="true" type="q2:ArrayOfAnalysisWorkItem" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ReturnWorkItemIncomplete">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="workerName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="jobItemId" type="xs:int" />
+        <xs:element minOccurs="0" name="itemRunDetails" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="errorOccurred" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ReturnWorkItemIncompleteResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ReturnWorkItemComplete">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element minOccurs="0" name="workerName" nillable="true" type="xs:string" />
+        <xs:element minOccurs="0" name="jobItemId" type="xs:int" />
+        <xs:element minOccurs="0" name="itemRunDetails" nillable="true" type="xs:string" />
+        <xs:element xmlns:q3="http://schemas.datacontract.org/2004/07/QutSensors.Shared" minOccurs="0" name="results" nillable="true" type="q3:ArrayOfProcessorResultTag" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  <xs:element name="ReturnWorkItemCompleteResponse">
+    <xs:complexType>
+      <xs:sequence />
+    </xs:complexType>
+  </xs:element>
+</xs:schema>

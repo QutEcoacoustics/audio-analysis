@@ -33,7 +33,12 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ccpapi, Version=1.0.2.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Extra Assemblies\ccpapi.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
@@ -62,20 +67,10 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="OptionsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="OptionsForm.Designer.cs">
-      <DependentUpon>OptionsForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="PollingSystem.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="OptionsForm.resx">
-      <DependentUpon>OptionsForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -98,21 +93,13 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AudioAnalysis\AED\AED\AED.fsproj">
-      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
-      <Name>AED</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
-      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
-      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
-      <Name>AudioTools</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
+      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
+      <Name>QutSensors.Shared</Name>
     </ProjectReference>
     <ProjectReference Include="..\Processor\Processor.csproj">
       <Project>{3580DCAD-213C-400C-88BF-273824E506F7}</Project>

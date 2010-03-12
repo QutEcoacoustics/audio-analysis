@@ -31,81 +31,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
-    <Reference Include="System" />
-    <Reference Include="System.Core">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Runtime.Serialization">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.ServiceModel">
-      <RequiredTargetFramework>3.0</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
-      <RequiredTargetFramework>3.5</RequiredTargetFramework>
-    </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="ProcessorSettings.cs" />
-    <Compile Include="Processors\AEDProcessing.cs" />
-    <Compile Include="Processors\EPRProcessing.cs" />
-    <Compile Include="Processors\HMMProcessing.cs" />
-    <Compile Include="Processors\Processor.cs" />
-    <Compile Include="ProcessorFactory.cs" />
-    <Compile Include="Manager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Serializers.cs" />
-    <Compile Include="Service References\WebServices\Reference.cs">
+    <Compile Include="ProcessItem.cs" />
+    <Compile Include="ProcessorServiceWrapper.cs" />
+    <Compile Include="Manager.cs" />
+    <Compile Include="Service References\ProcessorService\Reference.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Reference.svcmap</DependentUpon>
     </Compile>
-    <Compile Include="Settings.cs" />
-    <Compile Include="TempDirectory.cs" />
-    <Compile Include="TempFile.cs" />
-    <Compile Include="Processors\TemplateProcessing.cs" />
     <Compile Include="Utilities.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\AudioAnalysis\AED\AED\AED.fsproj">
-      <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>
-      <Name>AED</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj">
-      <Project>{EC323929-0160-46BC-A04B-B4A66D02E757}</Project>
-      <Name>AnalysisPrograms</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj">
-      <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
-      <Name>AudioAnalysisTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioAnalysis\TowseyLib\TowseyLib.csproj">
-      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
-      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
-      <Name>AudioTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\HMMBuilder\HMMBuilder.csproj">
-      <Project>{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}</Project>
-      <Name>HMMBuilder</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\QutSensors.Data\QutSensors.Data.csproj">
-      <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
-      <Name>QutSensors.Data</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
-      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
-      <Name>QutSensors.Shared</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
@@ -114,47 +49,64 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <WCFMetadataStorage Include="Service References\WebServices\" />
+    <Reference Include="ccpapi, Version=1.0.2.3, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Extra Assemblies\ccpapi.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.ServiceModel">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\configuration91.svcinfo" />
+    <WCFMetadataStorage Include="Service References\ProcessorService\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\configuration.svcinfo" />
+    <None Include="Service References\ProcessorService\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor3.xsd" />
-    <None Include="Service References\WebServices\Reference.svcmap">
+    <None Include="Service References\ProcessorService\configuration.svcinfo" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ProcessorService\ProcessorService.xsd" />
+    <None Include="Service References\ProcessorService\ProcessorService1.wsdl" />
+    <None Include="Service References\ProcessorService\ProcessorService2.xsd" />
+    <None Include="Service References\ProcessorService\ProcessorService3.xsd" />
+    <None Include="Service References\ProcessorService\QutSensors.Processor.ProcessorService.GetWorkItemResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ProcessorService\QutSensors.Processor.ProcessorService.GetWorkItemsResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ProcessorService\QutSensors.Processor.ProcessorService.ReturnWorkItemCompleteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ProcessorService\QutSensors.Processor.ProcessorService.ReturnWorkItemIncompleteResponse.datasource">
+      <DependentUpon>Reference.svcmap</DependentUpon>
+    </None>
+    <None Include="Service References\ProcessorService\Reference.svcmap">
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\WebServices\Processor.xsd" />
-    <None Include="Service References\WebServices\Processor1.disco" />
-    <None Include="Service References\WebServices\Processor1.xsd" />
-    <None Include="Service References\WebServices\Processor2.wsdl" />
-    <None Include="Service References\WebServices\Processor2.xsd" />
-    <None Include="Service References\WebServices\Processor21.wsdl" />
-    <None Include="Service References\WebServices\Processor31.xsd" />
-    <None Include="Service References\WebServices\Processor32.xsd" />
-    <None Include="Service References\WebServices\Processor33.xsd" />
-    <None Include="Service References\WebServices\Processor4.xsd" />
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.GetJobItemResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ReturnJobResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.ReturnJobWithErrorResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.SubmitJobItemResultsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
-    <None Include="Service References\WebServices\QutSensors.Processor.WebServices.SubmitResultsResponse.datasource">
-      <DependentUpon>Reference.svcmap</DependentUpon>
-    </None>
+    <None Include="Service References\ProcessorService\ProcessorService.disco" />
+    <None Include="Service References\ProcessorService\ProcessorService11.wsdl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
+      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
+      <Name>QutSensors.Shared</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
