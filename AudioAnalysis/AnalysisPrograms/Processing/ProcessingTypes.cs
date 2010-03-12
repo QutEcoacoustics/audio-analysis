@@ -30,7 +30,15 @@ namespace AnalysisPrograms.Processing
             var events = result.Item2;
 
             // AcousticEvent results
-            return events.Select(ae => ProcessingUtils.GetProcessorResultTag(ae));
+            return events.Select(ae =>
+                ProcessingUtils.GetProcessorResultTag(ae,
+                    new ResultProperty(ae.Name, null,
+                        new Dictionary<string, string>() { 
+                            { "Description", "Normalised score is not applicable to AED." } 
+                        }
+                    )
+                )
+            );
 
         }
 
@@ -58,20 +66,36 @@ namespace AnalysisPrograms.Processing
             var events = results.Item4;
 
             // AcousticEvent results
-            return events.Select(ae => ProcessingUtils.GetProcessorResultTag(ae));
+            return events.Select(ae =>
+                ProcessingUtils.GetProcessorResultTag(ae,
+                    new ResultProperty(ae.Name, ae.NormalisedScore,
+                        new Dictionary<string, string>() { 
+                            { "Description", "Normalised score" } 
+                        }
+                    )
+                )
+            );
 
         }
 
         internal static IEnumerable<ProcessorResultTag> RunEPR(FileInfo audioFile)
         {
             // no settings, yet
-            
+
             // execute
             var result = GroundParrotRecogniser.Detect(audioFile.FullName);
             var events = result.Item2;
 
             // AcousticEvent results
-            return events.Select(ae => ProcessingUtils.GetProcessorResultTag(ae));
+            return events.Select(ae =>
+                ProcessingUtils.GetProcessorResultTag(ae,
+                    new ResultProperty(ae.Name, ae.NormalisedScore,
+                        new Dictionary<string, string>() { 
+                            { "Description", "Normalised score" } 
+                        }
+                    )
+                )
+            );
         }
     }
 }

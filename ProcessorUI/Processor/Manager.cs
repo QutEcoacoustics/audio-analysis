@@ -1,176 +1,445 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
-using QutSensors.Processor.WebServices;
-using AudioTools;
-using System.Threading;
-using QutSensors.Data;
-using System.Xml.Linq;
-using System.IO;
-using TowseyLib;
-using QutSensors.AudioAnalysis.AED;
-using QutSensors.Processor;
-
-using WebServices = QutSensors.Processor.WebServices;
+using QutSensors.Shared;
+using QutSensors.Processor.ProcessorService;
+using Microsoft.ComputeCluster;
 
 namespace QutSensors.Processor
 {
-    public delegate void GenericHandler<T>(object sender, T args);
-
-    public static class Manager
+    /// <summary>
+    /// Retrieves, prepares, runs and submits analysis work items.
+    /// </summary>
+    public class Manager
     {
-        public delegate void GetNextJobCallback(ProcessorJobItemDescription item, object state);
+        #region Singleton
 
-        public static void BeginGetNextJob(string workerName, GetNextJobCallback callback, object state)
+        private static readonly object syncLock = new object();
+
+        // we don't want the compiler to emit beforefieldinit
+        static Manager()
         {
-            var ws = new ServiceWrapper();
-            ws.Proxy.BeginGetJobItem(new GetJobItemRequest(workerName), OnGotJob, new object[] { ws, workerName, callback, state });
         }
-        
-        static void OnGotJob(IAsyncResult ar)
-        {
-            object[] asyncState = (object[])ar.AsyncState;
-            var incomingWs = (ServiceWrapper)asyncState[0];
-            var workerName = (string)asyncState[1];
-            var callback = (GetNextJobCallback)asyncState[2];
-            var state = asyncState[3];
 
-            try
+        // private ctor is below
+
+        static Manager instance;
+        public static Manager Instance
+        {
+            get
             {
-                using (incomingWs)
+                lock (syncLock)
                 {
-                    GetJobItemResponse item = incomingWs.Proxy.EndGetJobItem(ar);
-                    incomingWs.Close();
-                    callback(item.GetJobItemResult, state);
+                    if (instance == null)
+                        instance = new Manager();
+                    return instance;
                 }
             }
-            catch
-            {
-                callback(null, state);
-            }
+            set { instance = value; }
         }
 
-        public static ProcessorJobItemDescription GetJobItem(string workerName)
+        #endregion
+
+        public DirectoryInfo DirRunBase { get; private set; }
+        public DirectoryInfo DirProgramBase { get; private set; }
+        public string ProgramName { get; private set; }
+
+        private const string PROGRAM_DIR_KEY = "ProgramDirectory";
+        private const string RUN_DIR_KEY = "RunDirectory";
+        private const string PROGRAM_NAME_KEY = "ProgramName";
+
+        private const string USERNAME_KEY = "JobRunUserName";
+        private const string PASSWORD_KEY = "JobRunPassword";
+
+        private const string SETTINGS_FILE_NAME = "input_settings.txt";
+        private const string AUDIO_FILE_NAME = "input_audio.wav";
+        private const string CLUSTER_STDERR_FILE_NAME = "output_stderr.txt";
+        private const string CLUSTER_STDOUT_FILE_NAME = "output_stdout.txt";
+
+        // analysis program file names
+        private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
+        private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
+
+        /// <summary>
+        /// Private ctor for Singleton pattern
+        /// </summary>
+        private Manager()
         {
-            using (var incomingWs = new ServiceWrapper())
+            // set the name of the executable to run
+            ProgramName = System.Configuration.ConfigurationManager.AppSettings[PROGRAM_NAME_KEY] ?? "AnalysisPrograms.exe";
+
+            //set the programs directory
+            var programsFolder = System.Configuration.ConfigurationManager.AppSettings[PROGRAM_DIR_KEY];
+            if (string.IsNullOrEmpty(programsFolder) || !Directory.Exists(programsFolder)) throw new Exception("Analysis program directory does not exist: " + programsFolder);
+            DirProgramBase = new DirectoryInfo(programsFolder);
+
+            // set the run directory
+            var runsFolder = System.Configuration.ConfigurationManager.AppSettings[RUN_DIR_KEY];
+            if (string.IsNullOrEmpty(runsFolder) || !Directory.Exists(runsFolder)) throw new Exception("Analysis run directory does not exist: " + runsFolder);
+            DirRunBase = new DirectoryInfo(runsFolder);
+        }
+
+
+        #region Common
+
+        public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
+        {
+            if (workItem != null)
+            {
+                // create new run folder
+                var newRunDir = Directory.CreateDirectory(DirRunBase.FullName + "\\" + workItem.JobItemId.ToString() + "-Run-" + Guid.NewGuid().ToString());
+
+
+                // create settings file
+                var settingsFile = newRunDir.FullName + "\\" + SETTINGS_FILE_NAME;
+                File.WriteAllText(settingsFile, workItem.AnalysisRunSettings);
+
+
+                // audio file location
+                var audioFile = newRunDir.FullName + "\\" + AUDIO_FILE_NAME;
+
+                // audio file must be wav file
+                var audioFileUrl = workItem.AudioFileUri;
+                if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
+                {
+                    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
+                }
+
+                // download and save audio file
+                var client = new System.Net.WebClient();
+                client.DownloadFile(audioFileUrl, audioFile);
+
+                return newRunDir;
+            }
+
+            return null;
+        }
+
+        public FileInfo GetProgramFile(string version)
+        {
+            // program file from version
+
+            // get program file location
+            //var programFile = DirProgramBase.FullName + "\\" + version + "\\" + ProgramName;
+
+            // while testing, directly use debug version of AnalysisPrograms.exe
+            var programFile = DirProgramBase.FullName + "\\" + ProgramName;
+
+            return new FileInfo(programFile);
+        }
+
+        public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
+        {
+            return
+                " processing " + // execute cluster version, not dev version
+                " " + item.AnalysisGenericType + " " +// type of analysis to run
+                " \"" + runDirectory.FullName + "\\" + SETTINGS_FILE_NAME + "\" " + // full path to settings file
+                " \"" + runDirectory.FullName + "\\" + AUDIO_FILE_NAME + "\" " + // full path to audio file
+                " \"" + PROGRAM_OUTPUT_RESULTS_FILE_NAME + "\" " + // results file name
+                " \"" + PROGRAM_OUTPUT_FINISHED_FILE_NAME + "\" " // finished file name
+                ;
+        }
+
+
+
+        public AnalysisWorkItem GetWorkItem(string workerName)
+        {
+            using (var ws = new ProcessorServiceWrapper())
             {
                 try
                 {
-                    GetJobItemResponse item = incomingWs.Proxy.GetJobItem(new GetJobItemRequest(workerName));
-                    incomingWs.Close();
-                    return item.GetJobItemResult;
+                    var item = ws.Proxy.GetWorkItem(new GetWorkItemRequest(workerName));
+                    return item.GetWorkItemResult;
                 }
-                catch 
+                catch
                 {
                     return null;
                 }
             }
         }
 
-        public static bool ProcessItem(ProcessorJobItemDescription item, string workerName, out TimeSpan? duration)
+        public IEnumerable<AnalysisWorkItem> GetWorkItems(string workerName, int maxItems)
         {
-            bool processed = false;
-            duration = null;
+            using (var ws = new ProcessorServiceWrapper())
+            {
+                try
+                {
+                    var item = ws.Proxy.GetWorkItems(new GetWorkItemsRequest(workerName, maxItems));
+                    return item.GetWorkItemsResult;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+        public bool ReturnComplete(string workerName, int jobItemId, string itemRunDetails, List<ProcessorResultTag> results)
+        {
+            using (var ws = new ProcessorServiceWrapper())
+            {
+                try
+                {
+                    var item = ws.Proxy.ReturnWorkItemComplete(new ReturnWorkItemCompleteRequest(workerName, jobItemId, itemRunDetails, results));
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        public bool ReturnIncomplete(string workerName, int jobItemId, string itemRunDetails, bool errorOccurred)
+        {
+            using (var ws = new ProcessorServiceWrapper())
+            {
+                try
+                {
+                    var item = ws.Proxy.ReturnWorkItemIncomplete(new ReturnWorkItemIncompleteRequest(workerName, jobItemId, itemRunDetails, errorOccurred));
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
+        #endregion
+
+
+        #region Processing Cluster
+
+        /// <summary>
+        /// Create a new job on the cluster.
+        /// </summary>
+        /// <param name="cluster">Existing cluster to create job.</param>
+        /// <returns>New job.</returns>
+        public IJob PC_NewJob(ICluster cluster)
+        {
+            var job = cluster.CreateJob();
+            job.IsExclusive = false;
+            job.MaximumNumberOfProcessors = cluster.ClusterCounter.TotalNumberOfProcessors;
+            job.MinimumNumberOfProcessors = 1;
+            job.Name = "Processor " + DateTime.Now.ToString();
+            job.Project = "QUT Sensors";
+
+            return job;
+        }
+
+        public ITask PC_PrepareTask(ICluster cluster, AnalysisWorkItem item)
+        {
+            var newRunDir = PrepareNewRun(item);
+            var programFile = GetProgramFile(item.AnalysisGenericVersion);
+            var programArgs = CreateArgumentString(item, newRunDir);
+
+            ITask task = cluster.CreateTask();
+            task.IsExclusive = false;
+            task.IsRerunnable = false;
+            task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now.ToString();
+            task.MaximumNumberOfProcessors = 1;
+            task.MinimumNumberOfProcessors = 1;
+
+            task.WorkDirectory = programFile.DirectoryName;
+            task.CommandLine = programFile.Name + " " + programArgs;
+            task.Stderr = newRunDir.FullName + "\\" + CLUSTER_STDERR_FILE_NAME;
+            task.Stdout = newRunDir.FullName + "\\" + CLUSTER_STDOUT_FILE_NAME;
+
+            return task;
+        }
+
+        public int PC_RunJob(ICluster cluster, IJob job)
+        {
+            var username = System.Configuration.ConfigurationManager.AppSettings[USERNAME_KEY];
+            var password = System.Configuration.ConfigurationManager.AppSettings[PASSWORD_KEY];
+
+            var jobId = cluster.QueueJob(job, username, password, false, 0);
+            return jobId;
+        }
+
+        public IJob PC_GetJob(ICluster cluster, int jobId)
+        {
+            return cluster.GetJob(jobId);
+        }
+
+        private object _timestamp;
+
+        public ITask PC_GetFinishedTask(ICluster cluster, int jobId)
+        {
+            return cluster.CheckAnyTask(jobId, ref _timestamp);
+        }
+
+        public IEnumerable<DirectoryInfo> PC_GetFinishedRuns()
+        {
+            var finishedDirs = new List<DirectoryInfo>();
+
+            foreach (var dir in DirRunBase.GetDirectories())
+            {
+                foreach (var file in dir.GetFiles("*.txt"))
+                {
+                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME)
+                    {
+                        finishedDirs.Add(dir);
+                        break;
+                    }
+                }
+            }
+
+            return finishedDirs.ToList();
+        }
+
+        public void PC_CompletedRun(DirectoryInfo runDir, string workerName)
+        {
+            var itemRunDetails = new StringBuilder();
+
+            //get jobitemId from folder name
+            int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
 
             try
             {
-                if (item != null)
+                // get output
+                var runDirString = runDir.FullName + "\\";
+                var resultFile = runDirString + PROGRAM_OUTPUT_RESULTS_FILE_NAME;
+                var finishedFile = runDirString + PROGRAM_OUTPUT_FINISHED_FILE_NAME;
+                var stderrFile = runDirString + CLUSTER_STDERR_FILE_NAME;
+                var stdoutFile = runDirString + CLUSTER_STDOUT_FILE_NAME;
+
+                if (File.Exists(finishedFile)) itemRunDetails.AppendLine("-->Finished Information: " + File.ReadAllText(finishedFile));
+                if (File.Exists(stdoutFile)) itemRunDetails.AppendLine("-->Standard Out: " + File.ReadAllText(stdoutFile));
+                if (File.Exists(stderrFile)) itemRunDetails.AppendLine("-->Standard Error: " + File.ReadAllText(stderrFile));
+
+                if (!File.Exists(resultFile) || !File.Exists(finishedFile))
                 {
-                    using (var tempFile = new TempFile(".wav"))
-                    {
-                        Utilities.DownloadFile(item.AudioReadingUrl, tempFile.FileName);
-                        IEnumerable<ProcessorJobItemResult> results = null;
-                        
-                        try
-                        {
-                            Processor processor = ProcessorFactory.GetProcessor(item);
-                            if (processor == null)
-                                return false;
-
-                            results = processor.Process(tempFile, item, out duration);
-                        }
-                        catch (Exception e)
-                        {
-                            using (var ws = new ServiceWrapper())
-                            {
-                                ws.Proxy.ReturnJobWithError(new ReturnJobWithErrorRequest(workerName, item.JobItemID, e.ToString()));
-                                ws.Close();
-                            }
-                            processed = true;
-                            return true;
-                        }
-
-                        if (results != null)
-                        {
-                            using (var ws = new ServiceWrapper())
-                            {
-                                ws.Proxy.SubmitResults(new SubmitResultsRequest( workerName, item.JobItemID, results.ToArray()));
-                                ws.Close();
-                            }
-                            processed = true;
-                            return true;
-                        }
-                    }
+                    this.ReturnIncomplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        File.Exists(stderrFile)
+                    );
                 }
-                return false;
+                else if (File.Exists(resultFile))
+                {
+                    this.ReturnComplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        ProcessorResultTag.Read(resultFile)
+                    );
+
+                }
+
+                // delete run directory
+                if (Directory.Exists(runDirString))
+                {
+                    //Directory.Delete(runDirString, true);
+                }
             }
-            finally
+            catch (Exception ex)
             {
-                if (!processed && item != null)
-                {
-                    using (var ws = new ServiceWrapper())
-                    {
-                        ws.Proxy.ReturnJob(new ReturnJobRequest(workerName, item.JobItemID));
-                        ws.Close();
-                    }
-                }
+                itemRunDetails.AppendLine("**Error Sending Completed: " + ex.ToString());
+
+                this.ReturnIncomplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        true
+                    );
             }
         }
-    }
 
-    /// <summary>
-    /// Wraps the WCF Service to ensure Abort or Close is called as appropriate
-    /// Close should be called in normal circumstances, Abort if there's an error.
-    /// Easiest way to use is:
-    /// using (var ws = new ServiceWrapper()) {
-    ///		ws.Proxy.Call();
-    ///		ws.Close();
-    ///	}
-    ///	That way, if Call() fails then an exception is thrown and Dispose is called without Close
-    ///	being called beforehand. In that case the wrapper will call Abort.
-    /// </summary>
-    public class ServiceWrapper : IDisposable
-    {
-        WebServices.ProcessorClient proxy;
-        public ServiceWrapper()
-        {
-            proxy = new WebServices.ProcessorClient("WSHttpBinding_Processor", Settings.Server);
-        }
-
-        public WebServices.ProcessorClient Proxy
-        {
-            get { return proxy; }
-        }
-
-        public void Close()
-        {
-            proxy.Close();
-            proxy = null;
-        }
-
-        #region IDisposable
-        public void Dispose()
-        {
-            if (proxy != null)
-                proxy.Abort();
-        }
-
-        ~ServiceWrapper()
-        {
-            Dispose();
-        }
         #endregion
-    }
 
+
+        #region Development
+
+        public void Dev_StartWorker(string workerName, ProcessItem pi, Action onComplete)
+        {
+            if (pi != null)
+            {
+                // start processing
+                pi.Start((exitCode) => { Dev_WorkerCompleted(pi, workerName, exitCode); onComplete(); });
+            }
+            else
+            {
+                onComplete();
+            }
+        }
+
+        public ProcessItem Dev_PrepareItem(AnalysisWorkItem workItem)
+        {
+            if (workItem != null)
+            {
+                var newRunDir = PrepareNewRun(workItem);
+                var programFile = GetProgramFile(workItem.AnalysisGenericVersion);
+                var programArgs = CreateArgumentString(workItem, newRunDir);
+
+                // create new processor
+                return new ProcessItem(workItem, programFile, newRunDir, programArgs);
+            }
+
+            return null;
+        }
+
+        private void Dev_WorkerCompleted(ProcessItem pi, string workerName, int exitCode)
+        {
+            var itemRunDetails = new StringBuilder();
+
+            try
+            {
+                // retrieve output
+
+                var resultFile = pi.RunDir.FullName + "\\" + PROGRAM_OUTPUT_RESULTS_FILE_NAME;
+                var finishedFile = pi.RunDir.FullName + "\\" + PROGRAM_OUTPUT_FINISHED_FILE_NAME;
+
+                itemRunDetails.AppendLine("**Exit Code: " + exitCode);
+                if (File.Exists(finishedFile)) itemRunDetails.AppendLine("**Finished Information: " + File.ReadAllText(finishedFile));
+                if (!string.IsNullOrEmpty(pi.OutputData)) itemRunDetails.AppendLine("**Output: " + pi.OutputData);
+                if (!string.IsNullOrEmpty(pi.ErrorData)) itemRunDetails.AppendLine("**Error: " + pi.ErrorData);
+
+
+                if (!File.Exists(resultFile) || exitCode != 0)
+                {
+                    this.ReturnIncomplete(
+                        workerName,
+                        pi.WorkItem.JobItemId,
+                        itemRunDetails.ToString(),
+                        exitCode != 0
+                    );
+                }
+                else if (File.Exists(resultFile))
+                {
+                    this.ReturnComplete(
+                        workerName,
+                        pi.WorkItem.JobItemId,
+                        itemRunDetails.ToString(),
+                        ProcessorResultTag.Read(resultFile)
+                    );
+
+                }
+
+                // delete run directory
+                if (Directory.Exists(pi.RunDir.FullName))
+                {
+                    //Directory.Delete(pi.RunDir.FullName, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                itemRunDetails.AppendLine("**Error Sending Completed: " + ex.ToString());
+
+                this.ReturnIncomplete(
+                        workerName,
+                        pi.WorkItem.JobItemId,
+                        itemRunDetails.ToString(),
+                        true
+                    );
+            }
+        }
+
+        #endregion
+
+    }
 }

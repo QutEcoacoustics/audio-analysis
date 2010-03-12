@@ -11,21 +11,24 @@ namespace AnalysisPrograms.Processing
 {
     public static class ProcessingUtils
     {
+
         internal static void Run(string[] args)
         {
             // validate
             if (
-                args.Length != 3 ||                         // must be 3 args
+                args.Length != 5 ||                         // must be 5 args
                 // first arg must be valid analysis type
                 !File.Exists(args[1]) ||                    // settings file must exist
                 !File.Exists(args[2])                       // audio file must exist
+                // results file name
+                // finished file name
             )
             {
                 PrintUsage();
             }
             else
             {
-                RunAnalysis(args[0], args[1], args[2]);
+                RunAnalysis(args[0], args[1], args[2], args[3], args[4]);
             }
         }
 
@@ -37,45 +40,84 @@ namespace AnalysisPrograms.Processing
             Console.WriteLine("\t2. Type of analysis to run.");
             Console.WriteLine("\t3. Path to settings file.");
             Console.WriteLine("\t4. Path to audio file.");
+            Console.WriteLine("\t5. Name of results output file.");
+            Console.WriteLine("\t6. Name of finished output file.");
             Console.WriteLine();
             Console.WriteLine("Press a key to continue...");
-
-            Console.ReadLine();
         }
 
-        private static void RunAnalysis(string analysisType, string pathToSettingsFile, string pathToAudioFile)
+        private static void RunAnalysis(string analysisType, string pathToSettingsFile, string pathToAudioFile, string resultsFileName, string finishedFileName)
         {
+
             IEnumerable<ProcessorResultTag> results = null;
 
-            // select analysis from name
-            switch (analysisType)
+            var finishedPath = Path.GetDirectoryName(pathToSettingsFile) + "\\" + finishedFileName;
+            var finishedMessage = new StringBuilder();
+            try
             {
-                case "aed":  //acoustic event detection
-                    results = ProcessingTypes.RunAED(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
-                    break;
-                case "od":   //Oscillation Recogniser
-                    results = ProcessingTypes.RunOD(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
-                    break;
-                case "epr": //event pattern recognition - groundparrot
-                    results = ProcessingTypes.RunEPR(new FileInfo(pathToAudioFile));
-                    break;
-                case "snr":   //signal to noise ratio
-                    // not used yet
-                    break;
-                default:
-                    Console.WriteLine("Unrecognised analysis type.");
-                    PrintUsage();
-                    break;
+                // select analysis from name
+                switch (analysisType)
+                {
+                    case "aed":  //acoustic event detection
+                        results = ProcessingTypes.RunAED(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
+                        break;
+                    case "od":   //Oscillation Recogniser
+                        results = ProcessingTypes.RunOD(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
+                        break;
+                    case "epr": //event pattern recognition - groundparrot
+                        results = ProcessingTypes.RunEPR(new FileInfo(pathToAudioFile));
+                        break;
+                    case "snr":   //signal to noise ratio
+                        // not used yet
+                        break;
+                    default:
+                        Console.WriteLine("Unrecognised analysis type.");
+                        PrintUsage();
+                        break;
+                }
+
+            }
+            catch (Exception ex)
+            {
+                finishedMessage.AppendLine("***AP-Analysis-Run-Error: " + ex.ToString());
             }
 
             // write results and messages
-            if (results != null)
-            {
-                var resultsPath = Path.GetDirectoryName(pathToSettingsFile) + "\\results.xml";
-                var messagePath = Path.GetDirectoryName(pathToSettingsFile) + "\\usermessage.txt";
+            var resultsPath = Path.GetDirectoryName(pathToSettingsFile) + "\\" + resultsFileName;
 
-                ProcessorResultTag.Write(results, resultsPath);
+            try
+            {
+
+                if (results != null)
+                {
+                    // results file
+                    ProcessorResultTag.Write(results.ToList(), resultsPath);
+
+                    // finished file
+                    finishedMessage.AppendLine("***AP-ExitCode: 0");
+                    File.WriteAllText(finishedPath, finishedMessage.ToString());
+
+                    Environment.Exit(0);
+                }
+                else
+                {
+                    // finished file
+                    finishedMessage.AppendLine("***AP-ExitCode: 1");
+                    finishedMessage.AppendLine("***AP-Results: No results available");
+                    File.WriteAllText(finishedPath, finishedMessage.ToString());
+                    Environment.Exit(1);
+                }
             }
+            catch (Exception ex)
+            {
+                // finished file
+                finishedMessage.AppendLine("***AP-Write-File-Error: " + ex.ToString());
+                finishedMessage.AppendLine("***AP-ExitCode: 2");
+                File.WriteAllText(finishedPath, finishedMessage.ToString());
+                Environment.Exit(2);
+            }
+
+
         }
 
         /// <summary>
@@ -83,22 +125,20 @@ namespace AnalysisPrograms.Processing
         /// </summary>
         /// <param name="ae">instance of the AcousticEvent class</param>
         /// <returns></returns>
-        public static ProcessorResultTag GetProcessorResultTag(AcousticEvent ae)
+        public static ProcessorResultTag GetProcessorResultTag(AcousticEvent ae, ResultProperty normalisedScore)
         {
             var prt = new ProcessorResultTag()
             {
-                NormalisedScore = new ResultProperty()
-                {
-                    Key = ae.Name,
-                    Value = ae.NormalisedScore,
-                    Info = new SerializableDictionary<string, string>() { { "Description", "Normalised score" } }
-                },
+                NormalisedScore = normalisedScore,
                 StartTime = (int?)Math.Round(ae.StartTime * 1000),
                 EndTime = (int?)Math.Round(ae.EndTime * 1000),
                 MinFrequency = (int?)ae.MinFreq,
                 MaxFrequency = (int?)ae.MaxFreq,
-                ExtraDetail = new System.Collections.ObjectModel.Collection<ResultProperty>(ae.ResultPropertyList.ToList()) //TODO: store more info about AcousticEvents?
+                ExtraDetail = ae.ResultPropertyList != null ?
+                    ae.ResultPropertyList.ToList() //TODO: store more info about AcousticEvents?
+                    : null
             };
+
 
             return prt;
         }
