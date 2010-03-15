@@ -37,6 +37,9 @@ namespace AnalysisPrograms
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;
+                    case "spt": // spectral peak tracking, currently not used
+                        Spt.Dev(r);
+                        break;
                     default:
                         Console.WriteLine("unrecognised");
                         break;
