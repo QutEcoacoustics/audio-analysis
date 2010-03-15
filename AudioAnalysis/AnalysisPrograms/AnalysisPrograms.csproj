@@ -78,6 +78,7 @@
     <Compile Include="HTKRecogniser.cs" />
     <Compile Include="Main_TestSerialTemplateOnCallFiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Spt.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
