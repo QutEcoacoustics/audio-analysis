@@ -53,10 +53,8 @@ let findPeaks (a:'a[]) =
     
 let mean (m:matrix) = Math.Matrix.sum m / (float) (m.NumRows * m.NumCols)
     
-// TODO is this even used?
 let variance (a:matrix) n m = Math.Matrix.sum (a .* a) / n - (m*m)
 
-// TODO investigate where else this is used
 // Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element       
 let neighbourhoodBounds n h w x y =
     let m = (n-1)/2
