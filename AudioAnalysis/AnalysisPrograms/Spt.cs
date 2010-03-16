@@ -1,13 +1,4 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="Spt.cs" company="MQUTeR">
-//   -
-// </copyright>
-// <summary>
-//   Defines the Spt type.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
@@ -17,7 +8,6 @@ namespace AnalysisPrograms
     using System.Text;
 
     using AudioAnalysisTools;
-
     using TowseyLib;
 
     public class Spt
@@ -42,13 +32,12 @@ namespace AnalysisPrograms
                 Console.WriteLine();
                 Console.WriteLine("wavFile:            path to .wav recording.");
                 Console.WriteLine(
-                    "                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\BAC2_20071015-045040.wav\"");
+                    "                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\SPT\\Female1_HoneymoonBay_StBees_20081027-023000.wav\"");
                 Console.WriteLine("intensityThreshold: is mandatory");
                 Environment.Exit(1);
             }
 
             string wavFilePath = args[0];
-            
             var result = Detect(wavFilePath, intensityThreshold);
 
             // TODO: do something with this?
