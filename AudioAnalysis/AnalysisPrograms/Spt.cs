@@ -68,10 +68,10 @@
             Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");
-            var p = SpectralPeakTrack.spt(intensityThreshold, s);
+            var p = SpectralPeakTrack.spt(intensityThreshold, s.ToArray2D());
             Log.WriteLine("SPT finished");
 
-            var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
+            var r = MatrixModule.toArray2D(MatrixModule.transpose(MatrixModule.ofArray2D(p)));
             return Tuple.Create(sonogram, r);
         }
     }
