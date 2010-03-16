@@ -28,7 +28,8 @@ namespace AnalysisPrograms
         //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_DetectionParams.txt events.txt
         //KOALA MALE FOREPLAY
         //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleForeplay_LargeTestSet\KoalaMaleForeplay_DetectionParams.txt events.txt
-
+        //BRIDGE CREEK
+        //od "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_DetectionParams.txt events.txt
 
 
 
@@ -121,7 +122,7 @@ namespace AnalysisPrograms
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Console.ReadLine();
+            Console.ReadLine();
         } //Dev()
 
 
@@ -135,6 +136,7 @@ namespace AnalysisPrograms
             int sr = recording.SampleRate;
 
             //ii: MAKE SONOGRAM
+            Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
@@ -149,7 +151,7 @@ namespace AnalysisPrograms
 
             Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
             Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
-
+            Log.WriteLine("Start OD event detection");
 
             //iii: DETECT OSCILLATIONS
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
