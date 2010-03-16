@@ -56,13 +56,7 @@ namespace AnalysisPrograms
         public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath, double intensityThreshold,
             int smallAreaThreshold)
         {
-            AudioRecording recording = new AudioRecording(wavFilePath);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // TODO this will be common
-            SonogramConfig config = new SonogramConfig(); //default values config
-            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
-            BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
-            // TODO this whole section will be common with other analysis
-
+            var sonogram = fileToSonogram(wavFilePath);
             var events = Detect(sonogram, intensityThreshold, smallAreaThreshold);
             return Tuple.Create(sonogram, events);
         }
@@ -84,6 +78,15 @@ namespace AnalysisPrograms
                 events.Add(new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth));
             Log.WriteIfVerbose("AED # events: " + events.Count);
             return events;
+        }
+
+        public static BaseSonogram fileToSonogram(string wavFilePath)
+        {
+            AudioRecording recording = new AudioRecording(wavFilePath);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            SonogramConfig config = new SonogramConfig(); //default values config
+            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+            return new SpectralSonogram(config, recording.GetWavReader());
         }
 
         public static void GenerateImage(string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
