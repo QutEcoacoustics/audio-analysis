@@ -20,13 +20,8 @@
         public static void Dev(string[] args)
         {
             Log.Verbosity = 1;
-            double intensityThreshold = 0;
 
-            if (args.Length == 2)
-            {
-                intensityThreshold = Convert.ToDouble(args[1]);
-            }
-            else
+            if (args.Length != 2)
             {
                 Console.WriteLine("The arguments for SPT are: wavFile intensityThreshold");
                 Console.WriteLine();
@@ -37,7 +32,9 @@
                 Environment.Exit(1);
             }
 
+            double intensityThreshold = Convert.ToDouble(args[1]);
             string wavFilePath = args[0];
+
             var result = Detect(wavFilePath, intensityThreshold);
 
             // TODO: do something with this?
@@ -56,11 +53,17 @@
 
         public static BaseSonogram Detect(string wavPath, double intensityThreshold)
         {
+            if (String.IsNullOrEmpty(wavPath))
+            {
+                throw new ArgumentException("wavPath");
+            }
+
             AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050)
             {
                 recording.ConvertSampleRate22kHz(); // TODO this will be common
             }
+
             SonogramConfig config = new SonogramConfig(); // default values config
             config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
