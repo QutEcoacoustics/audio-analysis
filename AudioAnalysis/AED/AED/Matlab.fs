@@ -51,8 +51,7 @@ let findPeaks (a:'a[]) =
                     else f z (i+1)
     if a.GetLength(0) > 2 then f [] 1 else []
     
-// TODO remove n parameter
-let mean (m:matrix) n = Math.Matrix.sum m / n
+let mean (m:matrix) = Math.Matrix.sum m / (float) (m.NumRows * m.NumCols)
     
 // TODO is this even used?
 let variance (a:matrix) n m = Math.Matrix.sum (a .* a) / n - (m*m)
@@ -119,6 +118,6 @@ let localMeansVariances n (m:matrix) =
 *)
 let wiener2 n m =
     let (ms, vs) = localMeansVariances n m
-    let mv = mean vs ((float) (m.NumRows * m.NumCols))
+    let mv = mean vs
     let vs' = Math.Matrix.map (fun v -> (max 0.0 (v - mv)) / max v mv) vs
     ms + (vs' .* (m - ms))
