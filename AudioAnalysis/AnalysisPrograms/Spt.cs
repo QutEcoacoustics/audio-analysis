@@ -7,16 +7,13 @@
     using System.Linq;
     using System.Text;
 
+    using Microsoft.FSharp.Math;
     using AudioAnalysisTools;
+    using QutSensors.AudioAnalysis.AED;
     using TowseyLib;
 
     public class Spt
     {
-        /// <summary>
-        /// The method used to invoke the SPT filter from a console app.
-        /// </summary>
-        /// <param name="args">An array of arguments passed in from console app. </param>
-        /// /// <exception cref="ArgumentException">This filter needs both arguments to work.</exception>
         public static void Dev(string[] args)
         {
             Log.Verbosity = 1;
@@ -32,10 +29,14 @@
                 Environment.Exit(1);
             }
 
-            double intensityThreshold = Convert.ToDouble(args[1]);
             string wavFilePath = args[0];
+            double intensityThreshold = Convert.ToDouble(args[1]);
 
-            var result = Detect(wavFilePath, intensityThreshold);
+            var result = doSPT(wavFilePath, intensityThreshold);
+            var sonogram = result.Item1;
+
+            // TODO Is this bad?
+            sonogram.Data = result.Item2;
 
             // TODO: do something with this?
             string savePath = System.Environment.CurrentDirectory + "\\" + Path.GetFileNameWithoutExtension(wavFilePath);
@@ -45,51 +46,33 @@
                 suffix = (suffix == string.Empty) ? "1" : (int.Parse(suffix) + 1).ToString();
             }
 
-            Image im = result.GetImage(false, false);
+            Image im = sonogram.GetImage(false, false);
             im.Save(savePath + suffix + ".jpg");
-
-            Console.WriteLine("Image saved to: " + savePath);
+            Log.WriteIfVerbose("imagePath = " + savePath);
         }
 
-        public static BaseSonogram Detect(string wavPath, double intensityThreshold)
+        public static Tuple<BaseSonogram,double[,]> doSPT(string wavPath, double intensityThreshold)
         {
-            if (String.IsNullOrEmpty(wavPath))
-            {
-                throw new ArgumentException("wavPath");
-            }
+            var sonogram = AED.fileToSonogram(wavPath);
+            Log.WriteLine("intensityThreshold = " + intensityThreshold);
 
-            AudioRecording recording = new AudioRecording(wavPath);
-            if (recording.SampleRate != 22050)
-            {
-                recording.ConvertSampleRate22kHz(); // TODO this will be common
-            }
+            // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
+            var m = MatrixModule.transpose(MatrixModule.ofArray2D(sonogram.Data));
 
-            SonogramConfig config = new SonogramConfig(); // default values config
-            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
-            BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
+            Log.WriteLine("Wiener filter start");
+            var w = Matlab.wiener2(5, m);
+            Log.WriteLine("Wiener filter end");
 
-            return Detect(sonogram, intensityThreshold);
-        }
+            Log.WriteLine("Remove subband mode intensities start");
+            var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+            Log.WriteLine("Remove subband mode intensities end");
 
-        /// <summary>
-        /// This method run SPT over a given sonogram.
-        /// </summary>
-        /// <param name="sonogram">The sonogram to process.</param>
-        /// <param name="intensityThreshold">The intensity threshold to use.</param>
-        /// <returns>A filtered sonogram.</returns>
-        /// <exception cref="ArgumentNullException"><c>sonogram</c> is null.</exception>
-        public static BaseSonogram Detect(BaseSonogram sonogram, double intensityThreshold)
-        {
-            if (sonogram == null)
-            {
-                throw new ArgumentNullException("sonogram");
-            }
+            Log.WriteLine("SPT start");
+            var p = SpectralPeakTrack.spt(intensityThreshold, s);
+            Log.WriteLine("SPT finished");
 
-            double[,] filtered = QutSensors.AudioAnalysis.AED.SpectralPeakTrack.spt(intensityThreshold, sonogram.Data);
-            
-            // overwrite old data, not sure if this will work
-            sonogram.Data = filtered;
-            return sonogram;
+            var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
+            return Tuple.Create(sonogram, r);
         }
     }
 }
