@@ -19,7 +19,7 @@ let testFindPeaks () =
     chk p
     
 [<Fact>]
-let testMean () = Assert.Equal(2.5, mean (Math.Matrix.ofList [[1.0; 2.0]; [3.0; 4.0]]) 4.0)
+let testMean () = Assert.Equal(2.5, mean (Math.Matrix.ofList [[1.0; 2.0]; [3.0; 4.0]]))
 
 [<Fact>]
 let testNeighbourhoodBounds () =
