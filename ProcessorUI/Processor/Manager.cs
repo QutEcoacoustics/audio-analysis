@@ -42,16 +42,58 @@ namespace QutSensors.Processor
 
         #endregion
 
-        public DirectoryInfo DirRunBase { get; private set; }
-        public DirectoryInfo DirProgramBase { get; private set; }
-        public string ProgramName { get; private set; }
+        public DirectoryInfo DirRunBase
+        {
+            get
+            {
+                // set the run directory
+                var runsFolder = System.Configuration.ConfigurationManager.AppSettings["RunDirectory"];
 
-        private const string PROGRAM_DIR_KEY = "ProgramDirectory";
-        private const string RUN_DIR_KEY = "RunDirectory";
-        private const string PROGRAM_NAME_KEY = "ProgramName";
+                if (string.IsNullOrEmpty(runsFolder) || !Directory.Exists(runsFolder))
+                    throw new Exception("Analysis run directory does not exist: " + runsFolder);
 
-        private const string USERNAME_KEY = "JobRunUserName";
-        private const string PASSWORD_KEY = "JobRunPassword";
+                return new DirectoryInfo(runsFolder);
+            }
+        }
+
+        public DirectoryInfo DirProgramBase
+        {
+            get
+            {
+                //set the programs directory
+                var programsFolder = System.Configuration.ConfigurationManager.AppSettings["ProgramDirectory"];
+
+                if (string.IsNullOrEmpty(programsFolder) || !Directory.Exists(programsFolder))
+                    throw new Exception("Analysis program directory does not exist: " + programsFolder);
+
+                return new DirectoryInfo(programsFolder);
+
+            }
+        }
+
+        public string ProgramName
+        {
+            get
+            {
+                return System.Configuration.ConfigurationManager.AppSettings["ProgramName"] ?? "AnalysisPrograms.exe";
+            }
+        }
+
+        public string UserName
+        {
+            get
+            {
+                return System.Configuration.ConfigurationManager.AppSettings["JobRunUserName"];
+            }
+        }
+
+        public string Password
+        {
+            get
+            {
+                return System.Configuration.ConfigurationManager.AppSettings["JobRunPassword"];
+            }
+        }
 
         private const string SETTINGS_FILE_NAME = "input_settings.txt";
         private const string AUDIO_FILE_NAME = "input_audio.wav";
@@ -67,18 +109,7 @@ namespace QutSensors.Processor
         /// </summary>
         private Manager()
         {
-            // set the name of the executable to run
-            ProgramName = System.Configuration.ConfigurationManager.AppSettings[PROGRAM_NAME_KEY] ?? "AnalysisPrograms.exe";
 
-            //set the programs directory
-            var programsFolder = System.Configuration.ConfigurationManager.AppSettings[PROGRAM_DIR_KEY];
-            if (string.IsNullOrEmpty(programsFolder) || !Directory.Exists(programsFolder)) throw new Exception("Analysis program directory does not exist: " + programsFolder);
-            DirProgramBase = new DirectoryInfo(programsFolder);
-
-            // set the run directory
-            var runsFolder = System.Configuration.ConfigurationManager.AppSettings[RUN_DIR_KEY];
-            if (string.IsNullOrEmpty(runsFolder) || !Directory.Exists(runsFolder)) throw new Exception("Analysis run directory does not exist: " + runsFolder);
-            DirRunBase = new DirectoryInfo(runsFolder);
         }
 
 
@@ -86,10 +117,15 @@ namespace QutSensors.Processor
 
         public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
         {
-            if (workItem != null)
+            if (workItem == null) return null;
+
+            var newRunDirString = DirRunBase.FullName + "\\" + workItem.JobItemId.ToString() + "-Run-" + Guid.NewGuid().ToString();
+
+            try
             {
+
                 // create new run folder
-                var newRunDir = Directory.CreateDirectory(DirRunBase.FullName + "\\" + workItem.JobItemId.ToString() + "-Run-" + Guid.NewGuid().ToString());
+                var newRunDir = Directory.CreateDirectory(newRunDirString);
 
 
                 // create settings file
@@ -112,6 +148,14 @@ namespace QutSensors.Processor
                 client.DownloadFile(audioFileUrl, audioFile);
 
                 return newRunDir;
+
+            }
+            catch
+            {
+                if (Directory.Exists(newRunDirString))
+                {
+                    Directory.Delete(newRunDirString, true);
+                }
             }
 
             return null;
@@ -122,16 +166,17 @@ namespace QutSensors.Processor
             // program file from version
 
             // get program file location
-            //var programFile = DirProgramBase.FullName + "\\" + version + "\\" + ProgramName;
+            var programFile = DirProgramBase.FullName + "\\" + version + "\\" + ProgramName;
 
             // while testing, directly use debug version of AnalysisPrograms.exe
-            var programFile = DirProgramBase.FullName + "\\" + ProgramName;
+            //var programFile = DirProgramBase.FullName + "\\" + ProgramName;
 
             return new FileInfo(programFile);
         }
 
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
+
             return
                 " processing " + // execute cluster version, not dev version
                 " " + item.AnalysisGenericType + " " +// type of analysis to run
@@ -140,6 +185,8 @@ namespace QutSensors.Processor
                 " \"" + PROGRAM_OUTPUT_RESULTS_FILE_NAME + "\" " + // results file name
                 " \"" + PROGRAM_OUTPUT_FINISHED_FILE_NAME + "\" " // finished file name
                 ;
+
+            //return "dir /Q \"" + runDirectory.FullName + "\"";
         }
 
 
@@ -230,21 +277,38 @@ namespace QutSensors.Processor
             return job;
         }
 
-        public ITask PC_PrepareTask(ICluster cluster, AnalysisWorkItem item)
+        public ITask PC_CreateTask(ICluster cluster)
         {
-            var newRunDir = PrepareNewRun(item);
-            var programFile = GetProgramFile(item.AnalysisGenericVersion);
-            var programArgs = CreateArgumentString(item, newRunDir);
-
             ITask task = cluster.CreateTask();
             task.IsExclusive = false;
             task.IsRerunnable = false;
-            task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now.ToString();
+
             task.MaximumNumberOfProcessors = 1;
             task.MinimumNumberOfProcessors = 1;
 
+            return task;
+        }
+
+        public ITask PC_PrepareTask(ICluster cluster, AnalysisWorkItem item)
+        {
+
+            var newRunDir = PrepareNewRun(item);
+            if (newRunDir == null || !newRunDir.Exists) return null;
+
+            var programFile = GetProgramFile(item.AnalysisGenericVersion);
+            if (programFile == null || !programFile.Exists) return null;
+
+            var programArgs = CreateArgumentString(item, newRunDir);
+            if (string.IsNullOrEmpty(programArgs)) return null;
+
+            var task = PC_CreateTask(cluster);
+
+            task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now.ToString();
             task.WorkDirectory = programFile.DirectoryName;
+
             task.CommandLine = programFile.Name + " " + programArgs;
+            //task.CommandLine = programArgs;
+
             task.Stderr = newRunDir.FullName + "\\" + CLUSTER_STDERR_FILE_NAME;
             task.Stdout = newRunDir.FullName + "\\" + CLUSTER_STDOUT_FILE_NAME;
 
@@ -253,10 +317,13 @@ namespace QutSensors.Processor
 
         public int PC_RunJob(ICluster cluster, IJob job)
         {
-            var username = System.Configuration.ConfigurationManager.AppSettings[USERNAME_KEY];
-            var password = System.Configuration.ConfigurationManager.AppSettings[PASSWORD_KEY];
+            var jobId = cluster.AddJob(job);
 
-            var jobId = cluster.QueueJob(job, username, password, false, 0);
+            // job is owned by specified user
+            cluster.SetJobCredentials(jobId, UserName, Password);
+
+            // submit job as specified user
+            cluster.SubmitJob(jobId, UserName, Password, false, 0);
             return jobId;
         }
 
