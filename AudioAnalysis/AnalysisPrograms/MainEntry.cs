@@ -34,11 +34,12 @@ namespace AnalysisPrograms
                     case "htk":   //run an HTK template over a recording
                         HTKRecogniser.Dev(r);
                         break;
-                    case "processing": // for running on the processing cluster
-                        ProcessingUtils.Run(r);
-                        break;
                     case "spt": // spectral peak tracking, currently not used
                         Spt.Dev(r);
+                        break;
+
+                    case "processing": // for running on the processing cluster
+                        ProcessingUtils.Run(r);
                         break;
                     default:
                         Console.WriteLine("unrecognised");
