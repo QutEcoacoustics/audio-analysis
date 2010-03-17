@@ -73,6 +73,8 @@ namespace AnalysisPrograms.Processing
 
             var finishedPath = Path.GetDirectoryName(pathToSettingsFile) + "\\" + finishedFileName;
             var finishedMessage = new StringBuilder();
+            Console.WriteLine("Analysis Type: " + analysisType);
+
             try
             {
                 // select analysis from name
@@ -89,6 +91,15 @@ namespace AnalysisPrograms.Processing
                         break;
                     case "snr":   //signal to noise ratio
                         // not used yet
+                        Console.WriteLine("not used yet.");
+                        break;
+                    case "htk":   //run an HTK template over a recording
+                        // not used yet
+                        Console.WriteLine("not used yet.");
+                        break;
+                    case "spt": // spectral peak tracking
+                        // not used yet
+                        Console.WriteLine("not used yet.");
                         break;
                     default:
                         Console.WriteLine("Unrecognised analysis type.");

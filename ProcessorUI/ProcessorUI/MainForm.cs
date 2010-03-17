@@ -144,7 +144,7 @@ namespace ProcessorUI
                         }
                         else
                         {
-                            Log(this, "Not queuing job as it contains 0 tasks.");
+                            Log(this, "Job not queued as it contains 0 tasks.");
                         }
                     }
                 }
@@ -235,7 +235,7 @@ namespace ProcessorUI
 
             if (preparedTasks == null || (preparedTasks.Count() == 0 && workItems.Count() > 0))
             {
-                Log(this, "Problem converting AnalysisItems to ITasks.");
+                Log(this, "Problem converting AnalysisItems to ITasks - no tasks prepared.");
             }
             else
             {
