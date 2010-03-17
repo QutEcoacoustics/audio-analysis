@@ -24,6 +24,26 @@ namespace AnalysisPrograms.Processing
                 // finished file name
             )
             {
+                Console.WriteLine("Num of Args: " + args.Length);
+                Console.WriteLine("Settings File: " + args[1]);
+                Console.WriteLine("Exists: " + File.Exists(args[1]));
+                Console.WriteLine("Audio File: " + args[2]);
+                Console.WriteLine("Exists: " + File.Exists(args[2]));
+                Console.WriteLine();
+                Console.WriteLine("Arguments: " + string.Join(" , ", args));
+                Console.WriteLine();
+
+                // check trust
+                var filePerm = new System.Security.Permissions.FileIOPermission(
+                    System.Security.Permissions.FileIOPermissionAccess.Read,
+                    System.Security.AccessControl.AccessControlActions.View,
+                    args[1]
+                    );
+
+                var accessSettings = System.Security.SecurityManager.IsGranted(filePerm);
+                Console.WriteLine("Access: " + accessSettings + " To: " + filePerm.ToString());
+
+
                 PrintUsage();
             }
             else
@@ -35,7 +55,7 @@ namespace AnalysisPrograms.Processing
         internal static void PrintUsage()
         {
             Console.WriteLine("This console app is used to run analyses on the processing cluster.");
-            Console.WriteLine("It requires exactly four parameters:");
+            Console.WriteLine("It requires exactly six parameters:");
             Console.WriteLine("\t1. 'processing' - indicates this is a processing run.");
             Console.WriteLine("\t2. Type of analysis to run.");
             Console.WriteLine("\t3. Path to settings file.");

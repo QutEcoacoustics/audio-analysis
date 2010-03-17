@@ -45,6 +45,7 @@ namespace ProcessorUI
                 Log(this, item.Name + " = " + item.Value);
             }
             */
+
         }
 
         protected void cmdStart_Click(object sender, EventArgs e)
@@ -74,8 +75,10 @@ namespace ProcessorUI
             }
             else
             {
-                txtLog.Text = DateTime.Now.ToString("HH:mm:ss") + ": " + log + Environment.NewLine + txtLog.Text;
-                if (txtLog.Text.Length > 10000) txtLog.Text = txtLog.Text.Substring(0, 8000);
+                if (txtLog.Text.Length > 0) txtLog.AppendText(Environment.NewLine);
+                txtLog.AppendText(DateTime.Now.ToString("HH:mm:ss") + ": " + log);
+
+                if (txtLog.Text.Length > 10000) txtLog.Text = txtLog.Text.Substring(2000);
             }
         }
 
@@ -120,24 +123,38 @@ namespace ProcessorUI
                         // create ITasks from AnalysisItems
                         preparedTasks = PrepareTasks(cluster, workItems);
 
+                        Log(this, "Add new tasks to job...");
+
                         // add all new ITasks to new IJob
                         foreach (var task in preparedTasks)
                         {
                             newJob.AddTask(task);
                         }
+
+                        Log(this, preparedTasks.Count() + " tasks added to job.");
+
+                        if (newJob.TaskCount > 0)
+                        {
+                            Log(this, "Queuing job...");
+
+                            // set the job running
+                            int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
+
+                            Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
+                        }
+                        else
+                        {
+                            Log(this, "Not queuing job as it contains 0 tasks.");
+                        }
                     }
-
-                    // set the job running
-                    int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
-
-
-                    Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
                 }
             }
         }
 
         private void SubmitCompleteRuns()
         {
+            Log(this, "Retrieving complete runs...");
+
             var finishedRuns = Manager.Instance.PC_GetFinishedRuns();
 
             if (finishedRuns != null && finishedRuns.Count() > 0)
@@ -157,6 +174,7 @@ namespace ProcessorUI
 
         private IEnumerable<AnalysisWorkItem> GetWorkItems(ICluster cluster)
         {
+            Log(this, "Get new work items...");
 
             var maxItems = cluster.ClusterCounter.NumberOfIdleProcessors;
 
@@ -176,7 +194,9 @@ namespace ProcessorUI
 
         private IJob CreateNewJob(ICluster cluster)
         {
-            IJob newJob =  Manager.Instance.PC_NewJob(cluster);
+            Log(this, "Create new jobs...");
+
+            IJob newJob = Manager.Instance.PC_NewJob(cluster);
 
             if (newJob == null)
             {
@@ -188,13 +208,38 @@ namespace ProcessorUI
 
         private IEnumerable<ITask> PrepareTasks(ICluster cluster, IEnumerable<AnalysisWorkItem> workItems)
         {
+            Log(this, "Prepare tasks...");
+
             if (workItems == null || workItems.Count() == 0) return null;
 
-            IEnumerable<ITask> preparedTasks = workItems.Select(wi => Manager.Instance.PC_PrepareTask(cluster, wi));
+            List<ITask> preparedTasks = new List<ITask>();
+
+            foreach (var workItem in workItems)
+            {
+                Log(this, "Preparing task...");
+                if (workItem != null)
+                {
+                    var item = Manager.Instance.PC_PrepareTask(cluster, workItem);
+                    if (item != null)
+                    {
+                        preparedTasks.Add(item);
+                        Log(this, "Task prepared.");
+                    }
+                    else
+                    {
+                        Log(this, "Problem preparing task.");
+                    }
+                }
+            }
+
 
             if (preparedTasks == null || (preparedTasks.Count() == 0 && workItems.Count() > 0))
             {
                 Log(this, "Problem converting AnalysisItems to ITasks.");
+            }
+            else
+            {
+                Log(this, "Tasks prepared.");
             }
 
             return preparedTasks;

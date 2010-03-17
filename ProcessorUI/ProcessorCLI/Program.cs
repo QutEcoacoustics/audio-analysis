@@ -12,6 +12,12 @@ namespace ProcessorCLI
 
         public static void Main(string[] args)
         {
+            var path = @"\\131.181.206.254\Sensors\AnlaysisRoot\task add command.txt";
+            var exists = System.IO.File.Exists(path);
+
+            Console.WriteLine();
+
+            /*
             string workerName = System.Environment.GetEnvironmentVariable("WORKER_NAME") ?? System.Configuration.ConfigurationManager.AppSettings[WORKER_NAME_KEY] ?? System.Environment.MachineName;
             Console.WriteLine("Worker name: {0}", workerName);
 
@@ -36,7 +42,11 @@ namespace ProcessorCLI
                 Console.WriteLine("ERROR: {0}", e.ToString());
             }
             Console.WriteLine("Press enter to exit.");
+            
+             
+             */
             Console.ReadLine();
+
         }
     }
 }
