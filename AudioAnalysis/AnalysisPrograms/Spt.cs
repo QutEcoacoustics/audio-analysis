@@ -35,7 +35,6 @@
             var result = doSPT(wavFilePath, intensityThreshold);
             var sonogram = result.Item1;
 
-            // TODO Is this bad?
             sonogram.Data = result.Item2;
 
             // TODO: do something with this?
