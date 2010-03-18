@@ -108,8 +108,10 @@ namespace ProcessorUI
 
                 // 2. obtain and run more jobitems
 
+                var maxItems = cluster.ClusterCounter.NumberOfIdleProcessors - cluster.ClusterCounter.NumberOfUnreachableProcessors;
+
                 // get analysisItems from web service
-                var workItems = GetWorkItems(cluster);
+                var workItems = GetWorkItems(cluster, maxItems);
 
                 // create a new job on the cluster head node
                 var newJob = CreateNewJob(cluster);
@@ -136,6 +138,9 @@ namespace ProcessorUI
                         if (newJob.TaskCount > 0)
                         {
                             Log(this, "Queuing job...");
+
+                            // set the max num processors based on the number of tasks in the job.
+                            newJob.MaximumNumberOfProcessors = newJob.TaskCount;
 
                             // set the job running
                             int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
@@ -172,11 +177,9 @@ namespace ProcessorUI
             }
         }
 
-        private IEnumerable<AnalysisWorkItem> GetWorkItems(ICluster cluster)
+        private IEnumerable<AnalysisWorkItem> GetWorkItems(ICluster cluster, int maxItems)
         {
             Log(this, "Get new work items...");
-
-            var maxItems = cluster.ClusterCounter.NumberOfIdleProcessors;
 
             var workItems = Manager.Instance.GetWorkItems(_workerName, maxItems);
 

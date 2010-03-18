@@ -11,144 +11,177 @@ namespace AnalysisPrograms.Processing
 {
     public static class ProcessingUtils
     {
+        private static readonly int NUM_ARGS_REQUIRED = 7;
 
         internal static void Run(string[] args)
         {
-            // validate
-            if (
-                args.Length != 5 ||                         // must be 5 args
-                // first arg must be valid analysis type
-                !File.Exists(args[1]) ||                    // settings file must exist
-                !File.Exists(args[2])                       // audio file must exist
-                // results file name
-                // finished file name
-            )
+            try
             {
-                Console.WriteLine("Num of Args: " + args.Length);
-                Console.WriteLine("Settings File: " + args[1]);
-                Console.WriteLine("Exists: " + File.Exists(args[1]));
-                Console.WriteLine("Audio File: " + args[2]);
-                Console.WriteLine("Exists: " + File.Exists(args[2]));
-                Console.WriteLine();
-                Console.WriteLine("Arguments: " + string.Join(" , ", args));
-                Console.WriteLine();
+                bool isValid = Validate(args);
 
-                // check trust
-                var filePerm = new System.Security.Permissions.FileIOPermission(
-                    System.Security.Permissions.FileIOPermissionAccess.Read,
-                    System.Security.AccessControl.AccessControlActions.View,
-                    args[1]
-                    );
-
-                var accessSettings = System.Security.SecurityManager.IsGranted(filePerm);
-                Console.WriteLine("Access: " + accessSettings + " To: " + filePerm.ToString());
+                if (isValid)
+                {
+                    IEnumerable<ProcessorResultTag> results = null;
+                    var resultsFile = new FileInfo(Path.Combine(args[2], args[4]));
+                    var finishedFile = new FileInfo(Path.Combine(args[2], args[5]));
+                    var errorFile = new FileInfo(Path.Combine(args[2], args[6]));
+                    var finishedMessages = new StringBuilder();
+                    var errorMessages = new StringBuilder();
 
 
-                PrintUsage();
+                    try
+                    {
+                        results = RunAnalysis(args[0], args[1], args[2], args[3]);
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessages.AppendLine("Analysis-Run--Error: " + ex.ToString());
+                    }
+
+
+                    try
+                    {
+                        if (results != null && results.Count() > 0)
+                        {
+                            ProcessorResultTag.Write(results.ToList(), resultsFile.FullName);
+                            finishedMessages.AppendLine("Analysis-Run--Results: " + results.Count() + " results available.");
+                        }
+                        else
+                        {
+                            finishedMessages.AppendLine("Analysis-Run--Results: No results available");
+                        }
+
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMessages.AppendLine("Analysis-Run--Write-Results-Error: " + ex.ToString());
+                    }
+
+
+
+                    //write messages
+                    int exitCode = 0;
+                    if (errorMessages.Length > 0)
+                    {
+                        exitCode = 1;
+                        File.WriteAllText(errorFile.FullName, errorMessages.ToString());
+                    }
+
+                    finishedMessages.AppendLine("Analysis-Run--Exit-Code: " + exitCode);
+                    File.WriteAllText(finishedFile.FullName, finishedMessages.ToString());
+                    Environment.Exit(exitCode);
+
+                }
+                else
+                {
+                    PrintUsage();
+                }
             }
-            else
+            catch (Exception ex)
             {
-                RunAnalysis(args[0], args[1], args[2], args[3], args[4]);
+                Console.WriteLine();
+                Console.WriteLine("Error: " + ex.ToString());
             }
         }
 
         internal static void PrintUsage()
         {
-            Console.WriteLine("This console app is used to run analyses on the processing cluster.");
-            Console.WriteLine("It requires exactly six parameters:");
+            Console.WriteLine();
+            Console.WriteLine("This console app is used to run analyses on a compute node in the processing cluster.");
+            Console.WriteLine("It requires these parameters:");
             Console.WriteLine("\t1. 'processing' - indicates this is a processing run.");
             Console.WriteLine("\t2. Type of analysis to run.");
-            Console.WriteLine("\t3. Path to settings file.");
-            Console.WriteLine("\t4. Path to audio file.");
-            Console.WriteLine("\t5. Name of results output file.");
-            Console.WriteLine("\t6. Name of finished output file.");
+            Console.WriteLine("\t3. Path of run directory.");
+            Console.WriteLine("\t4. Name of settings file.");
+            Console.WriteLine("\t5. Name of audio file.");
+            Console.WriteLine("\t6. Name of results output file.");
+            Console.WriteLine("\t7. Name of finished output file.");
+            Console.WriteLine("\t8. Name of error output file.");
             Console.WriteLine();
-            Console.WriteLine("Press a key to continue...");
         }
 
-        private static void RunAnalysis(string analysisType, string pathToSettingsFile, string pathToAudioFile, string resultsFileName, string finishedFileName)
+        private static bool Validate(string[] args)
         {
+            Console.WriteLine("Given " + args.Length + " arguments: " + string.Join(" , ", args));
 
+            bool isValid = true;
+
+            // validate
+            if (args.Length != NUM_ARGS_REQUIRED)
+            {
+                Console.WriteLine("Inncorrect number of arguments. Given " + args.Length + ", require 'processing' " + NUM_ARGS_REQUIRED + ".");
+                isValid = false;
+            }
+
+            if (!Directory.Exists(args[1]))
+            {
+                Console.WriteLine("Directory does not exist: " + args[1]);
+                isValid = false;
+            }
+
+            if (!File.Exists(args[2]))
+            {
+                Console.WriteLine("File does not exist: " + args[1]);
+                isValid = false;
+            }
+
+            if (!File.Exists(args[3]))
+            {
+                Console.WriteLine("File does not exist: " + args[1]);
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        /// <summary>
+        /// Run analysis and get results.
+        /// </summary>
+        /// <param name="analysisType"></param>
+        /// <param name="runDirectory"></param>
+        /// <param name="settingsFileName"></param>
+        /// <param name="audioFileName"></param>
+        /// <returns></returns>
+        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory, string settingsFileName, string audioFileName)
+        {
             IEnumerable<ProcessorResultTag> results = null;
 
-            var finishedPath = Path.GetDirectoryName(pathToSettingsFile) + "\\" + finishedFileName;
-            var finishedMessage = new StringBuilder();
+            DirectoryInfo runDir = new DirectoryInfo(runDirectory);
+            var settingsFile = new FileInfo(Path.Combine(runDir.FullName, settingsFileName));
+            var audioFile = new FileInfo(Path.Combine(runDir.FullName, audioFileName));
+
             Console.WriteLine("Analysis Type: " + analysisType);
 
-            try
+            // select analysis from name
+            switch (analysisType)
             {
-                // select analysis from name
-                switch (analysisType)
-                {
-                    case "aed":  //acoustic event detection
-                        results = ProcessingTypes.RunAED(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
-                        break;
-                    case "od":   //Oscillation Recogniser
-                        results = ProcessingTypes.RunOD(new FileInfo(pathToSettingsFile), new FileInfo(pathToAudioFile));
-                        break;
-                    case "epr": //event pattern recognition - groundparrot
-                        results = ProcessingTypes.RunEPR(new FileInfo(pathToAudioFile));
-                        break;
-                    case "snr":   //signal to noise ratio
-                        // not used yet
-                        Console.WriteLine("not used yet.");
-                        break;
-                    case "htk":   //run an HTK template over a recording
-                        // not used yet
-                        Console.WriteLine("not used yet.");
-                        break;
-                    case "spt": // spectral peak tracking
-                        // not used yet
-                        Console.WriteLine("not used yet.");
-                        break;
-                    default:
-                        Console.WriteLine("Unrecognised analysis type.");
-                        PrintUsage();
-                        break;
-                }
-
-            }
-            catch (Exception ex)
-            {
-                finishedMessage.AppendLine("***AP-Analysis-Run-Error: " + ex.ToString());
+                case "aed":  //acoustic event detection
+                    results = ProcessingTypes.RunAED(settingsFile, audioFile);
+                    break;
+                case "od":   //Oscillation Recogniser
+                    results = ProcessingTypes.RunOD(settingsFile, audioFile);
+                    break;
+                case "epr": //event pattern recognition - groundparrot
+                    results = ProcessingTypes.RunEPR(audioFile);
+                    break;
+                case "snr":   //signal to noise ratio
+                    // not used yet
+                    Console.WriteLine("not used yet...");
+                    break;
+                case "htk":   //run an HTK template over a recording
+                    // not used yet
+                    Console.WriteLine("not used yet...");
+                    break;
+                case "spt": // spectral peak tracking
+                    // not used yet
+                    Console.WriteLine("not used yet...");
+                    break;
+                default:
+                    Console.WriteLine("Unrecognised analysis type.");
+                    break;
             }
 
-            // write results and messages
-            var resultsPath = Path.GetDirectoryName(pathToSettingsFile) + "\\" + resultsFileName;
-
-            try
-            {
-
-                if (results != null)
-                {
-                    // results file
-                    ProcessorResultTag.Write(results.ToList(), resultsPath);
-
-                    // finished file
-                    finishedMessage.AppendLine("***AP-ExitCode: 0");
-                    File.WriteAllText(finishedPath, finishedMessage.ToString());
-
-                    Environment.Exit(0);
-                }
-                else
-                {
-                    // finished file
-                    finishedMessage.AppendLine("***AP-ExitCode: 1");
-                    finishedMessage.AppendLine("***AP-Results: No results available");
-                    File.WriteAllText(finishedPath, finishedMessage.ToString());
-                    Environment.Exit(1);
-                }
-            }
-            catch (Exception ex)
-            {
-                // finished file
-                finishedMessage.AppendLine("***AP-Write-File-Error: " + ex.ToString());
-                finishedMessage.AppendLine("***AP-ExitCode: 2");
-                File.WriteAllText(finishedPath, finishedMessage.ToString());
-                Environment.Exit(2);
-            }
-
-
+            return results;
         }
 
         /// <summary>
@@ -169,7 +202,6 @@ namespace AnalysisPrograms.Processing
                     ae.ResultPropertyList.ToList() //TODO: store more info about AcousticEvents?
                     : null
             };
-
 
             return prt;
         }

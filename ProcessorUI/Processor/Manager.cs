@@ -95,14 +95,23 @@ namespace QutSensors.Processor
             }
         }
 
+        public bool DeleteFinishedRuns
+        {
+            get
+            {
+                return Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["DeleteFinishedRuns"]);
+            }
+        }
+
         private const string SETTINGS_FILE_NAME = "input_settings.txt";
         private const string AUDIO_FILE_NAME = "input_audio.wav";
-        private const string CLUSTER_STDERR_FILE_NAME = "output_stderr.txt";
-        private const string CLUSTER_STDOUT_FILE_NAME = "output_stdout.txt";
+        private const string STDERR_FILE_NAME = "output_stderr.txt";
+        private const string STDOUT_FILE_NAME = "output_stdout.txt";
 
         // analysis program file names
         private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
         private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
+        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.xml";
 
         /// <summary>
         /// Private ctor for Singleton pattern
@@ -138,10 +147,10 @@ namespace QutSensors.Processor
 
                 // audio file must be wav file
                 var audioFileUrl = workItem.AudioFileUri;
-                if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
-                {
-                    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
-                }
+                //if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
+                //{
+                //    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
+                //}
 
                 // download and save audio file
                 var client = new System.Net.WebClient();
@@ -176,20 +185,102 @@ namespace QutSensors.Processor
 
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
-
             return
-                " processing " + // execute cluster version, not dev version
-                " " + item.AnalysisGenericType + " " +// type of analysis to run
-                " \"" + runDirectory.FullName + "\\" + SETTINGS_FILE_NAME + "\" " + // full path to settings file
-                " \"" + runDirectory.FullName + "\\" + AUDIO_FILE_NAME + "\" " + // full path to audio file
-                " \"" + PROGRAM_OUTPUT_RESULTS_FILE_NAME + "\" " + // results file name
-                " \"" + PROGRAM_OUTPUT_FINISHED_FILE_NAME + "\" " // finished file name
+                " processing" +                             // execute cluster version, not dev version
+                " " + item.AnalysisGenericType +            // type of analysis to run
+                " \"" + runDirectory.FullName + "\"" +      // run directory
+                " " + SETTINGS_FILE_NAME +                  // settings file name
+                " " + AUDIO_FILE_NAME +                     // audio file name
+                " " + PROGRAM_OUTPUT_RESULTS_FILE_NAME +    // results file name
+                " " + PROGRAM_OUTPUT_FINISHED_FILE_NAME +   // finished file name
+                " " + PROGRAM_OUTPUT_ERROR_FILE_NAME        // error file name
                 ;
-
-            //return "dir /Q \"" + runDirectory.FullName + "\"";
         }
 
+        public void ReturnFinishedRun(DirectoryInfo runDir, string workerName)
+        {
+            var itemRunDetails = new StringBuilder();
 
+            //get jobitemId from folder name
+            int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
+
+            try
+            {
+                var errorsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME);
+                var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
+
+                // read available files
+                var files = new Dictionary<string, string>() {
+                    { "Results", resultsFile },
+                    { "Information", Path.Combine(runDir.FullName,PROGRAM_OUTPUT_FINISHED_FILE_NAME) },
+                    { "Errors", errorsFile },
+
+                    { "Application Output", Path.Combine(runDir.FullName,STDOUT_FILE_NAME) },
+                    { "Application Errors", Path.Combine(runDir.FullName,STDERR_FILE_NAME) },
+                };
+
+                foreach (var item in files)
+                {
+                    if (File.Exists(item.Value))
+                    {
+                        itemRunDetails.AppendLine();
+                        itemRunDetails.AppendLine(item.Key);
+                        itemRunDetails.Append(File.ReadAllLines(item.Value));
+                    }
+                }
+
+
+
+                if (File.Exists(errorsFile))
+                {
+                    // ignore results file, send back as error
+                    this.ReturnIncomplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        true
+                    );
+                    return;
+                }
+
+
+                // return completed, even if there are 0 results.
+                List<ProcessorResultTag> results = null;
+                if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
+
+                this.ReturnComplete(
+                    workerName,
+                    jobItemId,
+                    itemRunDetails.ToString(),
+                    results
+                );
+
+
+                // delete run directory
+                if (runDir.Exists && DeleteFinishedRuns)
+                {
+                    runDir.Delete(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                itemRunDetails.AppendLine();
+                itemRunDetails.AppendLine("**Error Sending Completed Run: ");
+                itemRunDetails.Append(ex.ToString());
+
+                this.ReturnIncomplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        true
+                    );
+            }
+        }
+
+        #endregion
+
+
+        #region Web service
 
         public AnalysisWorkItem GetWorkItem(string workerName)
         {
@@ -269,12 +360,24 @@ namespace QutSensors.Processor
         {
             var job = cluster.CreateJob();
             job.IsExclusive = false;
-            job.MaximumNumberOfProcessors = cluster.ClusterCounter.TotalNumberOfProcessors;
+
             job.MinimumNumberOfProcessors = 1;
             job.Name = "Processor " + DateTime.Now.ToString();
             job.Project = "QUT Sensors";
 
             return job;
+        }
+
+        public int PC_RunJob(ICluster cluster, IJob job)
+        {
+            var jobId = cluster.AddJob(job);
+
+            // job is owned by specified user
+            cluster.SetJobCredentials(jobId, UserName, Password);
+
+            // submit job as specified user
+            cluster.SubmitJob(jobId, UserName, Password, false, 0);
+            return jobId;
         }
 
         public ITask PC_CreateTask(ICluster cluster)
@@ -309,34 +412,10 @@ namespace QutSensors.Processor
             task.CommandLine = programFile.Name + " " + programArgs;
             //task.CommandLine = programArgs;
 
-            task.Stderr = newRunDir.FullName + "\\" + CLUSTER_STDERR_FILE_NAME;
-            task.Stdout = newRunDir.FullName + "\\" + CLUSTER_STDOUT_FILE_NAME;
+            task.Stderr = Path.Combine(newRunDir.FullName, STDERR_FILE_NAME);
+            task.Stdout = Path.Combine(newRunDir.FullName, STDOUT_FILE_NAME);
 
             return task;
-        }
-
-        public int PC_RunJob(ICluster cluster, IJob job)
-        {
-            var jobId = cluster.AddJob(job);
-
-            // job is owned by specified user
-            cluster.SetJobCredentials(jobId, UserName, Password);
-
-            // submit job as specified user
-            cluster.SubmitJob(jobId, UserName, Password, false, 0);
-            return jobId;
-        }
-
-        public IJob PC_GetJob(ICluster cluster, int jobId)
-        {
-            return cluster.GetJob(jobId);
-        }
-
-        private object _timestamp;
-
-        public ITask PC_GetFinishedTask(ICluster cluster, int jobId)
-        {
-            return cluster.CheckAnyTask(jobId, ref _timestamp);
         }
 
         public IEnumerable<DirectoryInfo> PC_GetFinishedRuns()
@@ -360,61 +439,7 @@ namespace QutSensors.Processor
 
         public void PC_CompletedRun(DirectoryInfo runDir, string workerName)
         {
-            var itemRunDetails = new StringBuilder();
-
-            //get jobitemId from folder name
-            int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
-
-            try
-            {
-                // get output
-                var runDirString = runDir.FullName + "\\";
-                var resultFile = runDirString + PROGRAM_OUTPUT_RESULTS_FILE_NAME;
-                var finishedFile = runDirString + PROGRAM_OUTPUT_FINISHED_FILE_NAME;
-                var stderrFile = runDirString + CLUSTER_STDERR_FILE_NAME;
-                var stdoutFile = runDirString + CLUSTER_STDOUT_FILE_NAME;
-
-                if (File.Exists(finishedFile)) itemRunDetails.AppendLine("-->Finished Information: " + File.ReadAllText(finishedFile));
-                if (File.Exists(stdoutFile)) itemRunDetails.AppendLine("-->Standard Out: " + File.ReadAllText(stdoutFile));
-                if (File.Exists(stderrFile)) itemRunDetails.AppendLine("-->Standard Error: " + File.ReadAllText(stderrFile));
-
-                if (!File.Exists(resultFile) || !File.Exists(finishedFile))
-                {
-                    this.ReturnIncomplete(
-                        workerName,
-                        jobItemId,
-                        itemRunDetails.ToString(),
-                        File.Exists(stderrFile)
-                    );
-                }
-                else if (File.Exists(resultFile))
-                {
-                    this.ReturnComplete(
-                        workerName,
-                        jobItemId,
-                        itemRunDetails.ToString(),
-                        ProcessorResultTag.Read(resultFile)
-                    );
-
-                }
-
-                // delete run directory
-                if (Directory.Exists(runDirString))
-                {
-                    //Directory.Delete(runDirString, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                itemRunDetails.AppendLine("**Error Sending Completed: " + ex.ToString());
-
-                this.ReturnIncomplete(
-                        workerName,
-                        jobItemId,
-                        itemRunDetails.ToString(),
-                        true
-                    );
-            }
+            ReturnFinishedRun(runDir, workerName);
         }
 
         #endregion
@@ -452,58 +477,10 @@ namespace QutSensors.Processor
 
         private void Dev_WorkerCompleted(ProcessItem pi, string workerName, int exitCode)
         {
-            var itemRunDetails = new StringBuilder();
+            File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDOUT_FILE_NAME), pi.OutputData);
+            File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDERR_FILE_NAME), pi.ErrorData);
 
-            try
-            {
-                // retrieve output
-
-                var resultFile = pi.RunDir.FullName + "\\" + PROGRAM_OUTPUT_RESULTS_FILE_NAME;
-                var finishedFile = pi.RunDir.FullName + "\\" + PROGRAM_OUTPUT_FINISHED_FILE_NAME;
-
-                itemRunDetails.AppendLine("**Exit Code: " + exitCode);
-                if (File.Exists(finishedFile)) itemRunDetails.AppendLine("**Finished Information: " + File.ReadAllText(finishedFile));
-                if (!string.IsNullOrEmpty(pi.OutputData)) itemRunDetails.AppendLine("**Output: " + pi.OutputData);
-                if (!string.IsNullOrEmpty(pi.ErrorData)) itemRunDetails.AppendLine("**Error: " + pi.ErrorData);
-
-
-                if (!File.Exists(resultFile) || exitCode != 0)
-                {
-                    this.ReturnIncomplete(
-                        workerName,
-                        pi.WorkItem.JobItemId,
-                        itemRunDetails.ToString(),
-                        exitCode != 0
-                    );
-                }
-                else if (File.Exists(resultFile))
-                {
-                    this.ReturnComplete(
-                        workerName,
-                        pi.WorkItem.JobItemId,
-                        itemRunDetails.ToString(),
-                        ProcessorResultTag.Read(resultFile)
-                    );
-
-                }
-
-                // delete run directory
-                if (Directory.Exists(pi.RunDir.FullName))
-                {
-                    //Directory.Delete(pi.RunDir.FullName, true);
-                }
-            }
-            catch (Exception ex)
-            {
-                itemRunDetails.AppendLine("**Error Sending Completed: " + ex.ToString());
-
-                this.ReturnIncomplete(
-                        workerName,
-                        pi.WorkItem.JobItemId,
-                        itemRunDetails.ToString(),
-                        true
-                    );
-            }
+            ReturnFinishedRun(pi.RunDir, workerName);
         }
 
         #endregion
