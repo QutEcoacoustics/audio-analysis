@@ -25,6 +25,9 @@ namespace AnalysisPrograms
                     case "od":   //Oscillation Recogniser
                         OscillationRecogniser.Dev(r);
                         break;
+                    case "hd":   //Harmonic Recogniser
+                        HarmonicRecogniser.Dev(r);
+                        break;
                     case "groundparrot":
                         GroundParrotRecogniser.Dev(r); //event pattern recognition
                         break;

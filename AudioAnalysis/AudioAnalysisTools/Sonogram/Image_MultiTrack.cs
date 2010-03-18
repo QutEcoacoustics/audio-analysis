@@ -84,8 +84,8 @@ namespace AudioAnalysisTools
                 int accumulatedX = 0;                           // THEREFORE
                 SegmentedDraw(g, this.SonoImage, accumulatedX); // USE THIS CALL INSTEAD.
 
-                if (this.EventList != null) DrawEvents(g);
                 if (this.SuperimposedMatrix != null) Superimpose(g);
+                if (this.EventList != null) DrawEvents(g);
             }
 
             //now add tracks to the image
@@ -205,8 +205,7 @@ namespace AudioAnalysisTools
                     else
                     if ((this.SuperimposedMatrix[r, c] > bounds[6]) && (this.SuperimposedMatrix[r, c] <= bounds[7])) pen = pens[6];
                     else pen = new Pen(Color.Brown);
-
-                    g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
+                    g.DrawLine(pen, r, imageHt - c, r, imageHt - c + 1);
                 }
             }
 
