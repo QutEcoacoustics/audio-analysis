@@ -60,6 +60,7 @@ namespace ProcessorUI
             }
             else
             {
+                Log(this, "DeleteFinishedRuns: " + Manager.Instance.DeleteFinishedRuns);
                 Log(this, "Started...");
                 cmdStart.Text = "&Stop";
 
@@ -124,32 +125,38 @@ namespace ProcessorUI
                     {
                         // create ITasks from AnalysisItems
                         preparedTasks = PrepareTasks(cluster, workItems);
-
-                        Log(this, "Add new tasks to job...");
-
-                        // add all new ITasks to new IJob
-                        foreach (var task in preparedTasks)
+                        if (preparedTasks != null && preparedTasks.Count() > 0)
                         {
-                            newJob.AddTask(task);
-                        }
+                            Log(this, "Add new tasks to job...");
 
-                        Log(this, preparedTasks.Count() + " tasks added to job.");
+                            // add all new ITasks to new IJob
+                            foreach (var task in preparedTasks)
+                            {
+                                newJob.AddTask(task);
+                            }
 
-                        if (newJob.TaskCount > 0)
-                        {
-                            Log(this, "Queuing job...");
+                            Log(this, preparedTasks.Count() + " tasks added to job.");
 
-                            // set the max num processors based on the number of tasks in the job.
-                            newJob.MaximumNumberOfProcessors = newJob.TaskCount;
+                            if (newJob.TaskCount > 0)
+                            {
+                                Log(this, "Queuing job...");
 
-                            // set the job running
-                            int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
+                                // set the max num processors based on the number of tasks in the job.
+                                newJob.MaximumNumberOfProcessors = newJob.TaskCount;
 
-                            Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
+                                // set the job running
+                                int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
+
+                                Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
+                            }
+                            else
+                            {
+                                Log(this, "Job not queued as it contains 0 tasks.");
+                            }
                         }
                         else
                         {
-                            Log(this, "Job not queued as it contains 0 tasks.");
+                            Log(this, "No tasks prepared.");
                         }
                     }
                 }
@@ -216,21 +223,20 @@ namespace ProcessorUI
             if (workItems == null || workItems.Count() == 0) return null;
 
             List<ITask> preparedTasks = new List<ITask>();
+            int problemCount = 0;
 
             foreach (var workItem in workItems)
             {
-                Log(this, "Preparing task...");
                 if (workItem != null)
                 {
                     var item = Manager.Instance.PC_PrepareTask(cluster, workItem);
                     if (item != null)
                     {
                         preparedTasks.Add(item);
-                        Log(this, "Task prepared.");
                     }
                     else
                     {
-                        Log(this, "Problem preparing task.");
+                        problemCount++;
                     }
                 }
             }
@@ -242,7 +248,9 @@ namespace ProcessorUI
             }
             else
             {
-                Log(this, "Tasks prepared.");
+                var msg = "Prepared " + preparedTasks.Count + " tasks.";
+                if (problemCount > 0) msg += " " + problemCount + " tasks could not be prepared.";
+                Log(this, msg);
             }
 
             return preparedTasks;

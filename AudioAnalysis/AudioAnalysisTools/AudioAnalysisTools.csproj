@@ -54,7 +54,6 @@
     <Compile Include="Acoustic_Model.cs" />
     <Compile Include="AudioRecording.cs" />
     <Compile Include="ConfigurationClasses.cs" />
-    <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="FeatureVector\FeatureVector.cs" />
     <Compile Include="FeatureVector\FVConfig.cs" />
     <Compile Include="FeatureVector\FVExtractor.cs" />

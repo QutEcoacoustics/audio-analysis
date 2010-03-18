@@ -11,27 +11,44 @@ namespace AnalysisPrograms.Processing
 {
     public static class ProcessingUtils
     {
-        private static readonly int NUM_ARGS_REQUIRED = 7;
+        // input files
+        private const string SETTINGS_FILE_NAME = "input_settings.txt";
+        private const string AUDIO_FILE_NAME = "input_audio.wav";
+
+        // standard out and error
+        private const string STDERR_FILE_NAME = "output_stderr.txt";
+        private const string STDOUT_FILE_NAME = "output_stdout.txt";
+
+        // analysis program file names
+        private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
+        private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
+        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.txt";
 
         internal static void Run(string[] args)
         {
             try
             {
+                var rundir = args[1];
+                var analysisType = args[0];
+
+                var finishedFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_FINISHED_FILE_NAME));
+                var errorFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_ERROR_FILE_NAME));
+                var resultsFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_RESULTS_FILE_NAME));
+
+                var finishedMessages = new StringBuilder();
+                var errorMessages = new StringBuilder();
+
+
                 bool isValid = Validate(args);
 
                 if (isValid)
                 {
-                    IEnumerable<ProcessorResultTag> results = null;
-                    var resultsFile = new FileInfo(Path.Combine(args[2], args[4]));
-                    var finishedFile = new FileInfo(Path.Combine(args[2], args[5]));
-                    var errorFile = new FileInfo(Path.Combine(args[2], args[6]));
-                    var finishedMessages = new StringBuilder();
-                    var errorMessages = new StringBuilder();
 
+                    IEnumerable<ProcessorResultTag> results = null;
 
                     try
                     {
-                        results = RunAnalysis(args[0], args[1], args[2], args[3]);
+                        results = RunAnalysis(analysisType, rundir);
                     }
                     catch (Exception ex)
                     {
@@ -57,25 +74,24 @@ namespace AnalysisPrograms.Processing
                         errorMessages.AppendLine("Analysis-Run--Write-Results-Error: " + ex.ToString());
                     }
 
-
-
-                    //write messages
-                    int exitCode = 0;
-                    if (errorMessages.Length > 0)
-                    {
-                        exitCode = 1;
-                        File.WriteAllText(errorFile.FullName, errorMessages.ToString());
-                    }
-
-                    finishedMessages.AppendLine("Analysis-Run--Exit-Code: " + exitCode);
-                    File.WriteAllText(finishedFile.FullName, finishedMessages.ToString());
-                    Environment.Exit(exitCode);
-
                 }
                 else
                 {
                     PrintUsage();
+                    errorMessages.AppendLine("Analysis-Run--Argument-Invalid-Error.");
                 }
+
+                //write messages
+                int exitCode = 0;
+                if (errorMessages.Length > 0)
+                {
+                    exitCode = 1;
+                    File.WriteAllText(errorFile.FullName, errorMessages.ToString());
+                }
+
+                finishedMessages.AppendLine("Analysis-Run--Exit-Code: " + exitCode);
+                File.WriteAllText(finishedFile.FullName, finishedMessages.ToString());
+                Environment.Exit(exitCode);
             }
             catch (Exception ex)
             {
@@ -92,11 +108,6 @@ namespace AnalysisPrograms.Processing
             Console.WriteLine("\t1. 'processing' - indicates this is a processing run.");
             Console.WriteLine("\t2. Type of analysis to run.");
             Console.WriteLine("\t3. Path of run directory.");
-            Console.WriteLine("\t4. Name of settings file.");
-            Console.WriteLine("\t5. Name of audio file.");
-            Console.WriteLine("\t6. Name of results output file.");
-            Console.WriteLine("\t7. Name of finished output file.");
-            Console.WriteLine("\t8. Name of error output file.");
             Console.WriteLine();
         }
 
@@ -104,34 +115,32 @@ namespace AnalysisPrograms.Processing
         {
             Console.WriteLine("Given " + args.Length + " arguments: " + string.Join(" , ", args));
 
-            bool isValid = true;
-
             // validate
-            if (args.Length != NUM_ARGS_REQUIRED)
+            if (args.Length != 2)
             {
-                Console.WriteLine("Inncorrect number of arguments. Given " + args.Length + ", require 'processing' " + NUM_ARGS_REQUIRED + ".");
-                isValid = false;
+                Console.WriteLine("Incorrect number of arguments given: " + args.Length + ".");
+                return false;
             }
 
             if (!Directory.Exists(args[1]))
             {
-                Console.WriteLine("Directory does not exist: " + args[1]);
-                isValid = false;
+                Console.WriteLine("Run directory does not exist: " + args[1]);
+                return false;
             }
 
-            if (!File.Exists(args[2]))
+            if (!File.Exists(Path.Combine(args[1], SETTINGS_FILE_NAME)))
             {
-                Console.WriteLine("File does not exist: " + args[1]);
-                isValid = false;
+                Console.WriteLine("Settings file does not exist: " + SETTINGS_FILE_NAME);
+                return false;
             }
 
-            if (!File.Exists(args[3]))
+            if (!File.Exists(Path.Combine(args[1], AUDIO_FILE_NAME)))
             {
-                Console.WriteLine("File does not exist: " + args[1]);
-                isValid = false;
+                Console.WriteLine("Audio file does not exist: " + AUDIO_FILE_NAME);
+                return false;
             }
 
-            return isValid;
+            return true;
         }
 
         /// <summary>
@@ -142,13 +151,13 @@ namespace AnalysisPrograms.Processing
         /// <param name="settingsFileName"></param>
         /// <param name="audioFileName"></param>
         /// <returns></returns>
-        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory, string settingsFileName, string audioFileName)
+        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory)
         {
             IEnumerable<ProcessorResultTag> results = null;
 
             DirectoryInfo runDir = new DirectoryInfo(runDirectory);
-            var settingsFile = new FileInfo(Path.Combine(runDir.FullName, settingsFileName));
-            var audioFile = new FileInfo(Path.Combine(runDir.FullName, audioFileName));
+            var settingsFile = new FileInfo(Path.Combine(runDir.FullName, SETTINGS_FILE_NAME));
+            var audioFile = new FileInfo(Path.Combine(runDir.FullName, AUDIO_FILE_NAME));
 
             Console.WriteLine("Analysis Type: " + analysisType);
 

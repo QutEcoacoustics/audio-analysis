@@ -103,15 +103,18 @@ namespace QutSensors.Processor
             }
         }
 
+        // input files
         private const string SETTINGS_FILE_NAME = "input_settings.txt";
         private const string AUDIO_FILE_NAME = "input_audio.wav";
+
+        // standard out and error
         private const string STDERR_FILE_NAME = "output_stderr.txt";
         private const string STDOUT_FILE_NAME = "output_stdout.txt";
 
         // analysis program file names
         private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
         private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
-        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.xml";
+        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.txt";
 
         /// <summary>
         /// Private ctor for Singleton pattern
@@ -188,13 +191,27 @@ namespace QutSensors.Processor
             return
                 " processing" +                             // execute cluster version, not dev version
                 " " + item.AnalysisGenericType +            // type of analysis to run
-                " \"" + runDirectory.FullName + "\"" +      // run directory
-                " " + SETTINGS_FILE_NAME +                  // settings file name
-                " " + AUDIO_FILE_NAME +                     // audio file name
-                " " + PROGRAM_OUTPUT_RESULTS_FILE_NAME +    // results file name
-                " " + PROGRAM_OUTPUT_FINISHED_FILE_NAME +   // finished file name
-                " " + PROGRAM_OUTPUT_ERROR_FILE_NAME        // error file name
+                " \"" + runDirectory.FullName + "\""       // run directory
                 ;
+        }
+
+        private StringBuilder GetTextFromFile(string fileDescr, string filePath, StringBuilder itemRunDetails)
+        {
+            var sb = new StringBuilder();
+            if (File.Exists(filePath))
+            {
+                sb.AppendLine();
+                sb.AppendLine("----" + fileDescr + "----");
+
+                foreach (var line in File.ReadAllLines(filePath))
+                {
+                    sb.AppendLine(line);
+                }
+            }
+
+            if (sb.Length > 0) itemRunDetails.Append(sb.ToString());
+
+            return sb;
         }
 
         public void ReturnFinishedRun(DirectoryInfo runDir, string workerName)
@@ -206,32 +223,15 @@ namespace QutSensors.Processor
 
             try
             {
-                var errorsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME);
-                var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
+                // possible files
+                var errors = GetTextFromFile("Errors", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), itemRunDetails);
+                var info = GetTextFromFile("Information", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_FINISHED_FILE_NAME), itemRunDetails);
 
-                // read available files
-                var files = new Dictionary<string, string>() {
-                    { "Results", resultsFile },
-                    { "Information", Path.Combine(runDir.FullName,PROGRAM_OUTPUT_FINISHED_FILE_NAME) },
-                    { "Errors", errorsFile },
-
-                    { "Application Output", Path.Combine(runDir.FullName,STDOUT_FILE_NAME) },
-                    { "Application Errors", Path.Combine(runDir.FullName,STDERR_FILE_NAME) },
-                };
-
-                foreach (var item in files)
-                {
-                    if (File.Exists(item.Value))
-                    {
-                        itemRunDetails.AppendLine();
-                        itemRunDetails.AppendLine(item.Key);
-                        itemRunDetails.Append(File.ReadAllLines(item.Value));
-                    }
-                }
+                var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, STDOUT_FILE_NAME), itemRunDetails);
+                var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, STDERR_FILE_NAME), itemRunDetails);
 
 
-
-                if (File.Exists(errorsFile))
+                if (errors.Length > 0 || stdErr.Length > 0)
                 {
                     // ignore results file, send back as error
                     this.ReturnIncomplete(
@@ -246,6 +246,7 @@ namespace QutSensors.Processor
 
                 // return completed, even if there are 0 results.
                 List<ProcessorResultTag> results = null;
+                var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
                 if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
 
                 this.ReturnComplete(
@@ -266,7 +267,7 @@ namespace QutSensors.Processor
             {
                 itemRunDetails.AppendLine();
                 itemRunDetails.AppendLine("**Error Sending Completed Run: ");
-                itemRunDetails.Append(ex.ToString());
+                itemRunDetails.AppendLine(ex.ToString());
 
                 this.ReturnIncomplete(
                         workerName,
