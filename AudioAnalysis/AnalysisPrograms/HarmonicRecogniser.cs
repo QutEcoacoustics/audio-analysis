@@ -149,8 +149,8 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
-            //HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
-                                         //minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+            HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
+                                         minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
 
             return null; // System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
