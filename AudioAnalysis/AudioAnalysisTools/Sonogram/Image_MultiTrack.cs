@@ -15,8 +15,9 @@ namespace AudioAnalysisTools
 		public Image SonoImage { get; private set; }
 		List<Image_Track> tracks = new List<Image_Track>();
 		public IEnumerable<Image_Track> Tracks { get { return tracks; } }
-       public  List<AcousticEvent> EventList { get; set; }
+        public  List<AcousticEvent> EventList { get; set; }
         double[,] SuperimposedMatrix {get; set;}
+        private double superImposedMaxScore;
 		#endregion
 
         /// <summary>
@@ -39,9 +40,10 @@ namespace AudioAnalysisTools
             this.EventList = list;
         }
 
-        public void AddSuperimposedMatrix(Double[,] m)
+        public void AddSuperimposedMatrix(Double[,] m, double maxScore)
         {
             this.SuperimposedMatrix = m;
+            this.superImposedMaxScore = maxScore;
         }
 
         /// <summary>
@@ -183,7 +185,8 @@ namespace AudioAnalysisTools
             int cols = this.SuperimposedMatrix.GetLength(1);
             int imageHt = this.SonoImage.Height-1; //subtract 1 because indices start at zero
             //int[] bounds = {0,7,14,21,28,35,42,49}; //for max value around 50
-            int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
+            //int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
+            double[] bounds = { 0.0, 0.14, 0.28, 0.42, 0.56, 0.70, 0.85, 1.0 }; //for normalised score
 
             for (int c = 0; c < cols; c++)//traverse columns - skip DC column
             {
@@ -191,19 +194,20 @@ namespace AudioAnalysisTools
                 {
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
-                    if ((this.SuperimposedMatrix[r, c] > bounds[0]) && (this.SuperimposedMatrix[r, c] <= bounds[1])) pen = pens[0];
+                    double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
+                    if ((normScore > bounds[0]) && (normScore <= bounds[1])) pen = pens[0];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[1]) && (this.SuperimposedMatrix[r, c] <= bounds[2])) pen = pens[1];
+                    if ((normScore > bounds[1]) && (normScore <= bounds[2])) pen = pens[1];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[2]) && (this.SuperimposedMatrix[r, c] <= bounds[3])) pen = pens[2];
+                    if ((normScore > bounds[2]) && (normScore <= bounds[3])) pen = pens[2];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[3]) && (this.SuperimposedMatrix[r, c] <= bounds[4])) pen = pens[3];
+                    if ((normScore > bounds[3]) && (normScore <= bounds[4])) pen = pens[3];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[4]) && (this.SuperimposedMatrix[r, c] <= bounds[5])) pen = pens[4];
+                    if ((normScore > bounds[4]) && (normScore <= bounds[5])) pen = pens[4];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[5]) && (this.SuperimposedMatrix[r, c] <= bounds[6])) pen = pens[5];
+                    if ((normScore > bounds[5]) && (normScore <= bounds[6])) pen = pens[5];
                     else
-                    if ((this.SuperimposedMatrix[r, c] > bounds[6]) && (this.SuperimposedMatrix[r, c] <= bounds[7])) pen = pens[6];
+                    if ((normScore > bounds[6]) && (normScore <= bounds[7])) pen = pens[6];
                     else pen = new Pen(Color.Brown);
                     g.DrawLine(pen, r, imageHt - c, r, imageHt - c + 1);
                 }
