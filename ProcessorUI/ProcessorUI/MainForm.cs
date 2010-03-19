@@ -167,7 +167,7 @@ namespace ProcessorUI
         {
             Log(this, "Retrieving complete runs...");
 
-            var finishedRuns = Manager.Instance.PC_GetFinishedRuns();
+            var finishedRuns = Manager.Instance.GetFinishedRuns();
 
             if (finishedRuns != null && finishedRuns.Count() > 0)
             {

@@ -200,16 +200,19 @@ namespace QutSensors.Processor
             var sb = new StringBuilder();
             if (File.Exists(filePath))
             {
-                sb.AppendLine();
-                sb.AppendLine("----" + fileDescr + "----");
-
                 foreach (var line in File.ReadAllLines(filePath))
                 {
-                    sb.AppendLine(line);
+                    sb.AppendLine(line.Trim());
                 }
             }
 
-            if (sb.Length > 0) itemRunDetails.Append(sb.ToString());
+            if (sb.Length > 0)
+            {
+                itemRunDetails.AppendLine();
+                itemRunDetails.AppendLine("----" + fileDescr + "----");
+
+                itemRunDetails.AppendLine(sb.ToString());
+            }
 
             return sb;
         }
@@ -217,65 +220,100 @@ namespace QutSensors.Processor
         public void ReturnFinishedRun(DirectoryInfo runDir, string workerName)
         {
             var itemRunDetails = new StringBuilder();
+            bool webServiceCallSuccess;
 
             //get jobitemId from folder name
             int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
 
+            // possible files
+            var errors = GetTextFromFile("Errors", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), itemRunDetails);
+            var info = GetTextFromFile("Information", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_FINISHED_FILE_NAME), itemRunDetails);
+
+            var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, STDOUT_FILE_NAME), itemRunDetails);
+            var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, STDERR_FILE_NAME), itemRunDetails);
+
+
             try
             {
-                // possible files
-                var errors = GetTextFromFile("Errors", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), itemRunDetails);
-                var info = GetTextFromFile("Information", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_FINISHED_FILE_NAME), itemRunDetails);
-
-                var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, STDOUT_FILE_NAME), itemRunDetails);
-                var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, STDERR_FILE_NAME), itemRunDetails);
 
 
                 if (errors.Length > 0 || stdErr.Length > 0)
                 {
                     // ignore results file, send back as error
-                    this.ReturnIncomplete(
+                    webServiceCallSuccess = this.ReturnIncomplete(
                         workerName,
                         jobItemId,
                         itemRunDetails.ToString(),
                         true
                     );
-                    return;
+                }
+                else
+                {
+
+                    //TODO: does not seem to be returning the results, but the folders are deleted.
+
+                    // return completed, even if there are 0 results.
+                    List<ProcessorResultTag> results = null;
+                    var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
+                    if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
+
+                    webServiceCallSuccess = this.ReturnComplete(
+                        workerName,
+                        jobItemId,
+                        itemRunDetails.ToString(),
+                        results
+                    );
                 }
 
-
-                // return completed, even if there are 0 results.
-                List<ProcessorResultTag> results = null;
-                var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
-                if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
-
-                this.ReturnComplete(
-                    workerName,
-                    jobItemId,
-                    itemRunDetails.ToString(),
-                    results
-                );
-
-
-                // delete run directory
-                if (runDir.Exists && DeleteFinishedRuns)
+                if (webServiceCallSuccess)
                 {
-                    runDir.Delete(true);
+                    // delete run directory
+                    if (runDir.Exists && DeleteFinishedRuns)
+                    {
+                        runDir.Delete(true);
+                    }
+                }
+                else
+                {
+                    var msg = new StringBuilder();
+                    msg.AppendLine();
+                    msg.AppendLine();
+                    msg.AppendLine("**Error Sending Run via webservice. ");
+
+                    File.AppendAllText(Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), msg.ToString());
                 }
             }
             catch (Exception ex)
             {
-                itemRunDetails.AppendLine();
-                itemRunDetails.AppendLine("**Error Sending Completed Run: ");
-                itemRunDetails.AppendLine(ex.ToString());
+                var msg = new StringBuilder();
+                msg.AppendLine();
+                msg.AppendLine();
+                msg.AppendLine("**Error Sending Run: ");
+                msg.AppendLine(ex.ToString());
 
-                this.ReturnIncomplete(
-                        workerName,
-                        jobItemId,
-                        itemRunDetails.ToString(),
-                        true
-                    );
+                File.AppendAllText(Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), msg.ToString());
+
             }
+
+        }
+
+        public IEnumerable<DirectoryInfo> GetFinishedRuns()
+        {
+            var finishedDirs = new List<DirectoryInfo>();
+
+            foreach (var dir in DirRunBase.GetDirectories())
+            {
+                foreach (var file in dir.GetFiles("*.txt"))
+                {
+                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME || file.Name == STDERR_FILE_NAME)
+                    {
+                        finishedDirs.Add(dir);
+                        break;
+                    }
+                }
+            }
+
+            return finishedDirs.ToList();
         }
 
         #endregion
@@ -417,25 +455,6 @@ namespace QutSensors.Processor
             task.Stdout = Path.Combine(newRunDir.FullName, STDOUT_FILE_NAME);
 
             return task;
-        }
-
-        public IEnumerable<DirectoryInfo> PC_GetFinishedRuns()
-        {
-            var finishedDirs = new List<DirectoryInfo>();
-
-            foreach (var dir in DirRunBase.GetDirectories())
-            {
-                foreach (var file in dir.GetFiles("*.txt"))
-                {
-                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME || file.Name == STDERR_FILE_NAME)
-                    {
-                        finishedDirs.Add(dir);
-                        break;
-                    }
-                }
-            }
-
-            return finishedDirs.ToList();
         }
 
         public void PC_CompletedRun(DirectoryInfo runDir, string workerName)

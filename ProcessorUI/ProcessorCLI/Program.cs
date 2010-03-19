@@ -12,17 +12,13 @@ namespace ProcessorCLI
 
         public static void Main(string[] args)
         {
-            var path = @"\\131.181.206.254\Sensors\AnlaysisRoot\task add command.txt";
-            var exists = System.IO.File.Exists(path);
-
-            Console.WriteLine();
-
-            /*
             string workerName = System.Environment.GetEnvironmentVariable("WORKER_NAME") ?? System.Configuration.ConfigurationManager.AppSettings[WORKER_NAME_KEY] ?? System.Environment.MachineName;
             Console.WriteLine("Worker name: {0}", workerName);
 
             try
             {
+
+
                 Console.WriteLine("Get work item.");
                 var workItem = Manager.Instance.GetWorkItem(workerName);
                 Console.WriteLine("Work item retrieved.");
@@ -35,18 +31,34 @@ namespace ProcessorCLI
                 Manager.Instance.Dev_StartWorker(workerName, pi, () =>
                 {
                     Console.WriteLine("Finished processing...");
+
+                    Console.WriteLine("Get finished runs...");
+                    var finishedRuns = Manager.Instance.GetFinishedRuns();
+
+                    if (finishedRuns != null && finishedRuns.Count() > 0)
+                    {
+                        foreach (var finishedRunDir in finishedRuns)
+                        {
+
+                            Manager.Instance.PC_CompletedRun(finishedRunDir, workerName);
+                        }
+
+                        Console.WriteLine("Submitted " + finishedRuns.Count() + " completed runs.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("No complete runs to submit.");
+                    }
+
                 });
             }
             catch (Exception e)
             {
                 Console.WriteLine("ERROR: {0}", e.ToString());
             }
-            Console.WriteLine("Press enter to exit.");
-            
-             
-             */
-            Console.ReadLine();
 
+            Console.WriteLine("Press enter to exit.");
+            Console.ReadLine();
         }
     }
 }
