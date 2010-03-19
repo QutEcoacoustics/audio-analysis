@@ -53,7 +53,7 @@ let findPeaks (a:'a[]) =
     
 let mean (m:matrix) = Math.Matrix.sum m / (float) (m.NumRows * m.NumCols)
     
-let variance (a:matrix) n m = Math.Matrix.sum (a .* a) / n - (m*m)
+let variance (m:matrix) mean = Math.Matrix.sum (m .* m) / ((float) (m.NumRows * m.NumCols)) - (mean*mean)
 
 // Assuming that the neighborhood dimensions n is odd so that it can be centred on a specific element       
 let neighbourhoodBounds n h w x y =
