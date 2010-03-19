@@ -427,7 +427,7 @@ namespace QutSensors.Processor
             {
                 foreach (var file in dir.GetFiles("*.txt"))
                 {
-                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME)
+                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME || file.Name == STDERR_FILE_NAME)
                     {
                         finishedDirs.Add(dir);
                         break;
