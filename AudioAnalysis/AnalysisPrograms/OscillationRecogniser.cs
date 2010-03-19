@@ -169,6 +169,7 @@ namespace AnalysisPrograms
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
+            double maxScore = 50.0; //assumed max posisble oscillations per second
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
@@ -177,7 +178,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                image.AddSuperimposedMatrix(hits);
+                image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }

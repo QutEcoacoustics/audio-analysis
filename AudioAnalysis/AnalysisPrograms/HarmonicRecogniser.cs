@@ -36,8 +36,7 @@ namespace AnalysisPrograms
         public static string key_MIN_OSCIL_FREQ  = "MIN_OSCIL_FREQ";
         public static string key_MAX_OSCIL_FREQ  = "MAX_OSCIL_FREQ";
         public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
-        public static string key_MIN_DURATION    = "MIN_DURATION";
-        public static string key_MAX_DURATION    = "MAX_DURATION";
+        public static string key_DURATION        = "DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
@@ -78,18 +77,17 @@ namespace AnalysisPrograms
             int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);    //ignore oscillations above this threshold freq
             double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
-            double minDuration = Double.Parse(dict[key_MIN_DURATION]);     //min duration of event in seconds 
-            double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
+            double expectedDuration = Double.Parse(dict[key_DURATION]);     //expected duration of event in seconds 
             int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
             Log.WriteIfVerbose("minAmplitude = " + minAmplitude);
-            Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");   
+            Log.WriteIfVerbose("Expected Duration: " + expectedDuration + " seconds");   
                     
 //#############################################################################################################################################
             var results = Execute_HDDetect(recordingPath, minHz, maxHz, frameOverlap, minOscilFreq, maxOscilFreq, minAmplitude,
-                                                eventThreshold, minDuration,  maxDuration);
+                                                eventThreshold, expectedDuration);
             Log.WriteLine("# Finished detecting oscillation events.");
 //#############################################################################################################################################
 
@@ -121,7 +119,7 @@ namespace AnalysisPrograms
 
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath,
             int minHz, int maxHz, double frameOverlap, int minOscilFreq, int maxOscilFreq, double minAmplitude,
-            double eventThreshold, double minDuration, double maxDuration)
+            double eventThreshold, double expectedDuration)
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
@@ -150,9 +148,9 @@ namespace AnalysisPrograms
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+                                         minAmplitude, eventThreshold, expectedDuration, out scores, out predictedEvents, out hits);
 
-            return null; // System.Tuple.Create(sonogram, hits, scores, predictedEvents);
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
         }//end CaneToadRecogniser
 
@@ -161,6 +159,7 @@ namespace AnalysisPrograms
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
+            double maxScore = 2000.0;
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
@@ -169,7 +168,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                image.AddSuperimposedMatrix(hits);
+                image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }

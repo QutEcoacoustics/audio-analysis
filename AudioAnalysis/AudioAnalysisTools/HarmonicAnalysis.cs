@@ -21,14 +21,12 @@ namespace AudioAnalysisTools
         /// <param name="maxOscilFreq">ignore oscillation frequencies greater than this </param>
         /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
         /// <param name="scoreThreshold">used for FP/FN</param>
-        /// <param name="minDuration">ignore hits whose duration is shorter than this</param>
-        /// <param name="maxDuration">ignore hits whose duration is longer than this</param>
+        /// <param name="expectedDuration">look for events of this duration</param>
         /// <param name="scores">return an array of scores over the entire recording</param>
         /// <param name="events">return a list of acoustic events</param>
         /// <param name="hits"></param>
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz, int minOscilFreq, int maxOscilFreq, 
-                                   double minAmplitude, double scoreThreshold,
-                                   double minDuration, double maxDuration, 
+                                   double minAmplitude, double scoreThreshold, double expectedDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
 
@@ -40,7 +38,7 @@ namespace AudioAnalysisTools
             scores = GetHarmonicScores(hits, minHz, maxHz, sonogram.FBinWidth);
             double[] oscFreq = GetHDFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertHDScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                            minDuration, maxDuration, sonogram.Configuration.SourceFName);
+                                            expectedDuration, sonogram.Configuration.SourceFName);
         }//end method
 
 
@@ -92,13 +90,12 @@ namespace AudioAnalysisTools
 
             for (int r = 0; r < rows - dctLength; r++)
             {
-                //for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
-                for (int c = minBin; c <= minBin; c++)//traverse columns - skip DC column
-                {
+                //for (int c = minBin; c <= minBin; c++)//traverse columns - skip DC column
+                //{
                     var array = new double[dctLength];
                     //accumulate J rows of values
                     for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < 5; j++) array[i] += matrix[r + j, c + i];
+                        for (int j = 0; j < 5; j++) array[i] += matrix[r + j, minBin + i];
 
                     array = DataTools.SubtractMean(array);
                     //     DataTools.writeBarGraph(array);
@@ -109,24 +106,17 @@ namespace AudioAnalysisTools
                     dct = DataTools.normalise2UnitLength(dct);
                     //dct = DataTools.normalise(dct); //another option to normalise
                     int indexOfMaxValue = DataTools.GetMaxIndex(dct);
-                    //double oscilFreq = indexOfMaxValue / hzWidth * 0.5; //Times 0.5 because index = Pi and not 2Pi
+
                     double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
-
-                    //DataTools.MinMax(dct, out min, out max);
-                    //      DataTools.writeBarGraph(dct);
-
-                    //if ((r >= 2020) && (r <= 2200))
-                    //    Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, dct[indexOfMaxValue]);
 
                     //mark DCT location with harmonic freq, only if harmonic freq is in correct range and amplitude
                     if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > minAmplitude))
                     {
-                        //for (int i = 0; i < dctLength; i++) hits[r, c + i] = oscilFreq;
-                        for (int i = 0; i < dctLength; i++) hits[r, c + i] = period;
+                        for (int i = 0; i < dctLength; i++) hits[r, minBin + i] = period;
                         //Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, dct[indexOfMaxValue]);
                     }
-                    c += 5; //skip columns
-                }
+                    //c += 5; //skip columns
+                //}
                 r++; //do alternate row
             }
             return hits;
@@ -226,59 +216,54 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="maxThreshold">OD score must exceed this threshold to count as an event</param>
-        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
-        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
+        /// <param name="eventThreshold">OD score must exceed this threshold to count as an event</param>
+        /// <param name="duration">expected duration of event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
         public static List<AcousticEvent> ConvertHDScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
                                                                  double framesPerSec, double freqBinWidth,
-                                                                 double minThreshold, double minDuration, double maxDuration, string fileName)
+                                                                 double eventThreshold, double expectedDuration, string fileName)
         {
-            double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
             //int binCount = maxBin - minBin + 1;
             var events = new List<AcousticEvent>();
-            bool isHit = false;
+            
             double frameOffset = 1 / framesPerSec;
-            double startTime = 0.0;
-            int startFrame = 0;
+            int frameDuration = (int)(expectedDuration * framesPerSec);
 
-            for (int i = 0; i < count; i++)//pass over all frames
+            for (int i = 0; i < count - frameDuration; i++)//pass over all frames
             {
-                if ((isHit == false) && (scores[i] >= scoreThreshold))//start of an event
+                if (scores[i] <= 0.0) continue;
+
+                int hitCount = 0;
+                double total = 0.0;
+                double avPeriod = 0.0;
+                for (int j = 0; j < frameDuration; j++)//check ahead over frame duration
                 {
-                    isHit = true;
-                    startTime = i * frameOffset;
-                    startFrame = i;
-                }
-                else  //check for the end of an event
-                    if ((isHit == true) && (scores[i] < scoreThreshold))//this is end of an event, so initialise it
+                    if (scores[i + j] > 0.0)
                     {
-                        isHit = false;
-                        double endTime = i * frameOffset;
-                        double duration = endTime - startTime;
-                        if ((duration < minDuration) || (duration > maxDuration)) Console.WriteLine("OUTSIDE DURATION");
-                        if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
-                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
-                        ev.Name = "OscillationEvent"; //default name
-                        //ev.SetTimeAndFreqScales(22050, 512, 128);
-                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.SourceFile = fileName;
-                        //obtain average score.
-                        double av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += scores[n];
-                        ev.Score = av / (double)(i - startFrame + 1);
-                        //calculate average oscillation freq and assign to ev.Score2 
-                        ev.Score2Name = "OscRate"; //score2 name
-                        av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += oscFreq[n];
-                        ev.Score2 = av / (double)(i - startFrame + 1);
-                        events.Add(ev);
+                        hitCount++; //get density of hits
+                        total += oscFreq[i + j]; //calucalte period of harmonics
                     }
-                i++; //skip every second frame
+                }
+                double density = hitCount * 2 / (double)frameDuration;
+                if (density < eventThreshold) continue;
+                avPeriod = total / (double)hitCount;
+
+                //have found an event
+                double startTime = i * frameOffset;
+                AcousticEvent ev = new AcousticEvent(startTime, expectedDuration, minHz, maxHz);
+                ev.Name = "HarmonicEvent"; //default name
+                ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                ev.SourceFile = fileName;
+                ev.Score = density;  //score 1
+                //calculate average harmonic period and assign to ev.Score2 
+                ev.Score2Name = "Period"; //score2 name
+                ev.Score2 = avPeriod;
+                events.Add(ev);
+                i += frameDuration;
             } //end of pass over all frames
             return events;
         }//end method ConvertHDScores2Events()

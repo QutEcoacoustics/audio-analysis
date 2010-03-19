@@ -214,11 +214,13 @@ namespace AnalysisPrograms
                     string imagePath = outputFolder + Path.GetFileNameWithoutExtension(wavPath) + ".png";
                     if (imagePath == null) return;
                     bool doHighlightSubband = false; bool add1kHzLines = true;
+                    double maxScore = 50.0; //assumed max possible score
+
                     var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
                     image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                     image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                     image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, scoreThreshold));
-                    image.AddSuperimposedMatrix(hits);    //displays hits
+                    image.AddSuperimposedMatrix(hits, maxScore);    //displays hits
                     image.AddEvents(predictedEvents);     //displays events
                     image.Save(imagePath);
                 }
