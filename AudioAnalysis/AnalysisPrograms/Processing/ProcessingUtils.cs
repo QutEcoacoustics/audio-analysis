@@ -95,8 +95,8 @@ namespace AnalysisPrograms.Processing
             }
             catch (Exception ex)
             {
-                Console.WriteLine();
-                Console.WriteLine("Error: " + ex.ToString());
+                Console.Error.WriteLine();
+                Console.Error.WriteLine("Error: " + ex.ToString());
             }
         }
 
@@ -118,25 +118,25 @@ namespace AnalysisPrograms.Processing
             // validate
             if (args.Length != 2)
             {
-                Console.WriteLine("Incorrect number of arguments given: " + args.Length + ".");
+                Console.Error.WriteLine("Incorrect number of arguments given: " + args.Length + ".");
                 return false;
             }
 
             if (!Directory.Exists(args[1]))
             {
-                Console.WriteLine("Run directory does not exist: " + args[1]);
+                Console.Error.WriteLine("Run directory does not exist: " + args[1]);
                 return false;
             }
 
             if (!File.Exists(Path.Combine(args[1], SETTINGS_FILE_NAME)))
             {
-                Console.WriteLine("Settings file does not exist: " + SETTINGS_FILE_NAME);
+                Console.Error.WriteLine("Settings file does not exist: " + SETTINGS_FILE_NAME);
                 return false;
             }
 
             if (!File.Exists(Path.Combine(args[1], AUDIO_FILE_NAME)))
             {
-                Console.WriteLine("Audio file does not exist: " + AUDIO_FILE_NAME);
+                Console.Error.WriteLine("Audio file does not exist: " + AUDIO_FILE_NAME);
                 return false;
             }
 
@@ -186,7 +186,7 @@ namespace AnalysisPrograms.Processing
                     Console.WriteLine("not used yet...");
                     break;
                 default:
-                    Console.WriteLine("Unrecognised analysis type.");
+                    Console.Error.WriteLine("Unrecognised analysis type.");
                     break;
             }
 
