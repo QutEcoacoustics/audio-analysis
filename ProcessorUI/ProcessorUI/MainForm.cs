@@ -204,7 +204,7 @@ namespace ProcessorUI
 
         private IJob CreateNewJob(ICluster cluster)
         {
-            Log(this, "Create new jobs...");
+            Log(this, "Create new job...");
 
             IJob newJob = Manager.Instance.PC_NewJob(cluster);
 
