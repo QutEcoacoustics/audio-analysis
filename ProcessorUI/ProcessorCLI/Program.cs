@@ -3,14 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using QutSensors.Processor;
+using QutSensors.Shared;
 
 namespace ProcessorCLI
 {
     class Program
     {
+        public static void Main(string[] args)
+        {
+            //RunOnce(args);
+            TestCompleteReturn();
+        }
+
         private const string WORKER_NAME_KEY = "WorkerName";
 
-        public static void Main(string[] args)
+        private static void RunOnce(string[] args)
         {
             string workerName = System.Environment.GetEnvironmentVariable("WORKER_NAME") ?? System.Configuration.ConfigurationManager.AppSettings[WORKER_NAME_KEY] ?? System.Environment.MachineName;
             Console.WriteLine("Worker name: {0}", workerName);
@@ -40,7 +47,7 @@ namespace ProcessorCLI
                         foreach (var finishedRunDir in finishedRuns)
                         {
 
-                            Manager.Instance.PC_CompletedRun(finishedRunDir, workerName);
+                            Manager.Instance.ReturnFinishedRun(finishedRunDir, workerName);
                         }
 
                         Console.WriteLine("Submitted " + finishedRuns.Count() + " completed runs.");
@@ -51,6 +58,7 @@ namespace ProcessorCLI
                     }
 
                 });
+
             }
             catch (Exception e)
             {
@@ -60,5 +68,21 @@ namespace ProcessorCLI
             Console.WriteLine("Press enter to exit.");
             Console.ReadLine();
         }
+
+        private static void TestCompleteReturn()
+        {
+            var webServiceCallSuccess = Manager.Instance.ReturnComplete(
+                        "TESTER",
+                        0,
+                        "Just Testing",
+                        new List<ProcessorResultTag>()
+                        {
+                            new ProcessorResultTag(){
+                                
+                            }
+                        }
+                    );
+        }
+
     }
 }

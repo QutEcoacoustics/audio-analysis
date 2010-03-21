@@ -188,6 +188,7 @@ namespace QutSensors.Processor
 
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
+            if (item == null || runDirectory == null) return string.Empty;
             return
                 " processing" +                             // execute cluster version, not dev version
                 " " + item.AnalysisGenericType +            // type of analysis to run
@@ -485,7 +486,7 @@ namespace QutSensors.Processor
             if (workItem != null)
             {
                 var newRunDir = PrepareNewRun(workItem);
-                var programFile = GetProgramFile(workItem.AnalysisGenericVersion);
+                var programFile = new FileInfo(DirProgramBase.FullName + "\\" + ProgramName); // always use debug build
                 var programArgs = CreateArgumentString(workItem, newRunDir);
 
                 // create new processor
@@ -497,10 +498,17 @@ namespace QutSensors.Processor
 
         private void Dev_WorkerCompleted(ProcessItem pi, string workerName, int exitCode)
         {
-            File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDOUT_FILE_NAME), pi.OutputData);
-            File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDERR_FILE_NAME), pi.ErrorData);
+            if (pi != null)
+            {
 
-            ReturnFinishedRun(pi.RunDir, workerName);
+                File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDOUT_FILE_NAME), pi.OutputData);
+                File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDERR_FILE_NAME), pi.ErrorData);
+            }
+
+            if (!string.IsNullOrEmpty(workerName))
+            {
+                ReturnFinishedRun(pi.RunDir, workerName);
+            }
         }
 
         #endregion
