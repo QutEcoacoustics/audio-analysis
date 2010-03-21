@@ -10,7 +10,6 @@ namespace AudioAnalysisTools
     public static class HarmonicAnalysis
     {
 
-
         /// <summary>
         /// 
         /// </summary>
@@ -25,13 +24,12 @@ namespace AudioAnalysisTools
         /// <param name="scores">return an array of scores over the entire recording</param>
         /// <param name="events">return a list of acoustic events</param>
         /// <param name="hits"></param>
-        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz, int minOscilFreq, int maxOscilFreq, 
+        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz, int minPeriod, int maxPeriod, 
                                    double minAmplitude, double scoreThreshold, double expectedDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
-
             //DETECT OSCILLATIONS
-            hits = DetectHarmonics(sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq, minAmplitude);
+            hits = DetectHarmonics(sonogram, minHz, maxHz, minPeriod, maxPeriod, minAmplitude);
             hits = RemoveIsolatedHits(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -62,7 +60,7 @@ namespace AudioAnalysisTools
 
 
         public static Double[,] DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz,
-                                                   int minOscilFreq, int maxOscilFreq, double minAmplitude)
+                                                   int minPeriod, int maxPeriod, double minAmplitude)
         {
             //find freq bins
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -73,8 +71,6 @@ namespace AudioAnalysisTools
 
             //int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
             //int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
-            int minPeriod = 1500;
-            int maxPeriod = 2500;
 
             int minIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
             int maxIndex = (int)(hzWidth / (double)minPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
