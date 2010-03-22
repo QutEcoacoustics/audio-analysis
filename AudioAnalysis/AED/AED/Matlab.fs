@@ -68,7 +68,15 @@ let neighbourhoodBounds n h w x y =
     let (is, il) = subBounds (int x) h
     let (js, jl) = subBounds (int y) w
     (is, js, il, jl)
- 
+
+(* Calculate the mean and variance of the neighbourhood centred on each element of m.
+   Where the neighbourhood is an n x n region in m.
+   In Matlab (wiener2.m) the edges are treated as being surrounded by 'virtual' zeros
+   and it is implemented the same here for consistency.
+   
+   E.G. at m.[0,0] with n=3, there are only 4 values in the 3 x 3 region centred on [0,0]
+        but the mean is the sum divided by 9, not 4.
+   *)
 let localMeansVariances n (m:matrix) =
     let ms = m .* m
     let n' = (n-1)/2
@@ -78,6 +86,7 @@ let localMeansVariances n (m:matrix) =
     let imax, jmax = m.NumRows-1, m.NumCols-1
     let inline g (m:matrix) i j = if i < 0 || j < 0 || i > imax || j > jmax then 0.0 else m.[i,j]
     
+    // For each row, calculate the first column the naive expensive way
     for oi=0 to imax do
         let mutable s = 0.0;
         let mutable ss = 0.0;
@@ -91,12 +100,14 @@ let localMeansVariances n (m:matrix) =
         sumsSquares.[oi,0] <- ss
     done
     
+    // Imagine a sliding window moving along each row. For each column (starting at 1), the value is the previous one less 
+    // the left-most previous window values plus the new new right-most ones.
     for oi=0 to imax do
       for oj=1 to jmax do
         let mutable s = 0.0;
         let mutable ss = 0.0;
+        let jl, jh = oj-n'-1, oj+n'
         for i=oi-n' to oi+n' do
-            let jl, jh = oj-n'-1, oj+n'
             s <- s - g m i jl + g m i jh
             ss <- ss - g ms i jl + g ms i jh
         done
@@ -111,9 +122,6 @@ let localMeansVariances n (m:matrix) =
     Math.Matrix.inplaceSub variances (means .* means)
     (means, variances)   
  
-(* In wiener2.m the local means are calculated using a sum of smaller neighbourhoods around the edges but
-   are always divided by a constant neighbourhood size. Implemented the same here.
-*)
 let wiener2 n m =
     let (ms, vs) = localMeansVariances n m
     let mv = mean vs
