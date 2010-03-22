@@ -120,7 +120,7 @@ namespace AnalysisPrograms
 
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
+            //Console.ReadLine();
         } //Dev()
 
 
