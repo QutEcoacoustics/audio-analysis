@@ -23,8 +23,8 @@ namespace AnalysisPrograms
         //Following lines are used for the debug command line.
         //for CURLEW
         //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_DetectionParams.txt events.txt
-
-
+        //for FEMALE KOALA
+        //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\FemaleKoala_DetectionParams.txt events.txt
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -67,16 +67,17 @@ namespace AnalysisPrograms
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
-
-            int minHz           = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
-            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            int minPeriod       = Int32.Parse(dict[key_MIN_HARMONIC_PERIOD]);         //ignore harmonics whose period is below this threshold 
-            int maxPeriod       = Int32.Parse(dict[key_MAX_HARMONIC_PERIOD]);         //ignore harmonics whose period is above this threshold
-            double minAmplitude     = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
-            double eventThreshold   = Double.Parse(dict[key_EVENT_THRESHOLD]);
-            double expectedDuration = Double.Parse(dict[key_DURATION]);         //expected duration of event in seconds 
-            int DRAW_SONOGRAMS      = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
+            try
+            {
+                int minHz = Int32.Parse(dict[key_MIN_HZ]);
+                int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+                double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+                int minPeriod = Int32.Parse(dict[key_MIN_HARMONIC_PERIOD]);         //ignore harmonics whose period is below this threshold 
+                int maxPeriod = Int32.Parse(dict[key_MAX_HARMONIC_PERIOD]);         //ignore harmonics whose period is above this threshold
+                double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
+                double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
+                double expectedDuration = Double.Parse(dict[key_DURATION]);         //expected duration of event in seconds 
+                int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Bounds of harmonic period: " + minPeriod + " - " + maxPeriod + " Hz");
@@ -109,6 +110,14 @@ namespace AnalysisPrograms
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
             }
+
+
+            }
+            catch (KeyNotFoundException ex)
+            {
+                Log.WriteLine("KEY NOT FOUND "+ ex.ToString());
+            }
+
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
