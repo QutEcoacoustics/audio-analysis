@@ -13,6 +13,7 @@ using Microsoft.ComputeCluster;
 using QutSensors.Shared;
 using System.Threading;
 
+
 namespace ProcessorUI
 {
     public partial class MainForm : Form
@@ -25,6 +26,7 @@ namespace ProcessorUI
 
         public MainForm()
         {
+
             InitializeComponent();
 
             _workerName = System.Environment.MachineName;
@@ -80,6 +82,8 @@ namespace ProcessorUI
                 txtLog.AppendText(DateTime.Now.ToString("HH:mm:ss") + ": " + log);
 
                 if (txtLog.Text.Length > 10000) txtLog.Text = txtLog.Text.Substring(2000);
+
+                Manager.Instance.Log(log);
             }
         }
 

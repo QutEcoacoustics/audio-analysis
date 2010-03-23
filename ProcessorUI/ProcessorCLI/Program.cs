@@ -11,8 +11,8 @@ namespace ProcessorCLI
     {
         public static void Main(string[] args)
         {
-            //RunOnce(args);
-            TestCompleteReturn();
+            RunOnce(args);
+            //TestCompleteReturn();
         }
 
         private const string WORKER_NAME_KEY = "WorkerName";
