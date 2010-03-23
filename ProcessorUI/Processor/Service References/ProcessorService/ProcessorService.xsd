@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="http://schemas.datacontract.org/2004/07/QutSensors.Shared" elementFormDefault="qualified" targetNamespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="AnalysisWorkItem">
+    <xs:sequence>
+      <xs:element minOccurs="0" name="AnalysisAdditionalData" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AnalysisGenericType" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AnalysisGenericVersion" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AnalysisRunSettings" nillable="true" type="xs:string" />
+      <xs:element minOccurs="0" name="AudioFileUri" nillable="true" type="xs:anyURI" />
+      <xs:element minOccurs="0" name="JobItemId" type="xs:int" />
+    </xs:sequence>
+  </xs:complexType>
+  <xs:element name="AnalysisWorkItem" nillable="true" type="tns:AnalysisWorkItem" />
   <xs:complexType name="ProcessorResultTag">
     <xs:sequence>
       <xs:element minOccurs="0" name="EndTime" nillable="true" type="xs:int" />
@@ -25,16 +36,6 @@
     </xs:sequence>
   </xs:complexType>
   <xs:element name="ResultProperty" nillable="true" type="tns:ResultProperty" />
-  <xs:complexType name="AnalysisWorkItem">
-    <xs:sequence>
-      <xs:element minOccurs="0" name="AnalysisGenericType" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="AnalysisGenericVersion" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="AnalysisRunSettings" nillable="true" type="xs:string" />
-      <xs:element minOccurs="0" name="AudioFileUri" nillable="true" type="xs:anyURI" />
-      <xs:element minOccurs="0" name="JobItemId" type="xs:int" />
-    </xs:sequence>
-  </xs:complexType>
-  <xs:element name="AnalysisWorkItem" nillable="true" type="tns:AnalysisWorkItem" />
   <xs:complexType name="ArrayOfAnalysisWorkItem">
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="AnalysisWorkItem" nillable="true" type="tns:AnalysisWorkItem" />

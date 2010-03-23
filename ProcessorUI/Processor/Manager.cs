@@ -6,6 +6,7 @@ using System.Text;
 using QutSensors.Shared;
 using QutSensors.Processor.ProcessorService;
 using Microsoft.ComputeCluster;
+using Microsoft.Practices.EnterpriseLibrary.Logging;
 
 namespace QutSensors.Processor
 {
@@ -148,12 +149,14 @@ namespace QutSensors.Processor
                 // audio file location
                 var audioFile = newRunDir.FullName + "\\" + AUDIO_FILE_NAME;
 
-                // audio file must be wav file
+
                 var audioFileUrl = workItem.AudioFileUri;
-                //if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
-                //{
-                //    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
-                //}
+
+                // audio file must be wav file
+                if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
+                {
+                    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
+                }
 
                 // download and save audio file
                 var client = new System.Net.WebClient();
@@ -162,12 +165,14 @@ namespace QutSensors.Processor
                 return newRunDir;
 
             }
-            catch
+            catch (Exception ex)
             {
                 if (Directory.Exists(newRunDirString))
                 {
                     Directory.Delete(newRunDirString, true);
                 }
+
+                Log(ex);
             }
 
             return null;
@@ -271,7 +276,7 @@ namespace QutSensors.Processor
                     // delete run directory
                     if (runDir.Exists && DeleteFinishedRuns)
                     {
-                        runDir.Delete(true);
+                        //runDir.Delete(true);
                     }
                 }
                 else
@@ -294,6 +299,7 @@ namespace QutSensors.Processor
 
                 File.AppendAllText(Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), msg.ToString());
 
+                Log(ex);
             }
 
         }
@@ -317,6 +323,14 @@ namespace QutSensors.Processor
             return finishedDirs.ToList();
         }
 
+        public void Log(object message)
+        {
+            if (Logger.IsLoggingEnabled())
+            {
+                Logger.Write(message);
+            }
+        }
+
         #endregion
 
 
@@ -331,8 +345,9 @@ namespace QutSensors.Processor
                     var item = ws.Proxy.GetWorkItem(new GetWorkItemRequest(workerName));
                     return item.GetWorkItemResult;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log(ex);
                     return null;
                 }
             }
@@ -347,8 +362,9 @@ namespace QutSensors.Processor
                     var item = ws.Proxy.GetWorkItems(new GetWorkItemsRequest(workerName, maxItems));
                     return item.GetWorkItemsResult;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log(ex);
                     return null;
                 }
             }
@@ -363,8 +379,9 @@ namespace QutSensors.Processor
                     var item = ws.Proxy.ReturnWorkItemComplete(new ReturnWorkItemCompleteRequest(workerName, jobItemId, itemRunDetails, results));
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log(ex);
                     return false;
                 }
             }
@@ -379,8 +396,9 @@ namespace QutSensors.Processor
                     var item = ws.Proxy.ReturnWorkItemIncomplete(new ReturnWorkItemIncompleteRequest(workerName, jobItemId, itemRunDetails, errorOccurred));
                     return true;
                 }
-                catch
+                catch (Exception ex)
                 {
+                    Log(ex);
                     return false;
                 }
             }
