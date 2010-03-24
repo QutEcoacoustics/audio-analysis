@@ -30,7 +30,7 @@ let toFillIn (m:matrix) i j t =
 
 let joinHorizontalLines m = Math.Matrix.mapi (fun i j x -> if x = 1.0 || (toFillIn m i j 3) then 1.0 else 0.0) m
     
-let joinVerticalLines = Math.Matrix.transpose << joinHorizontalLines << Math.Matrix.transpose
+let joinVerticalLines = mTranspose << joinHorizontalLines << mTranspose
     
 let aeToMatrix ae =
     let r = ae.Bounds
@@ -89,7 +89,7 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
     
 // TODO it would be nicer if this returned an Option/Either rather than an exception
 let detectEvents intensityThreshold smallAreaThreshold a =
-    let m = Math.Matrix.ofArray2D a |> Math.Matrix.transpose
+    let m = Math.Matrix.ofArray2D a |> mTranspose
     if m.NumRows = 257 then
         let m' = m.Region (1, 0, 256, m.NumCols) // remove first row (DC values) like in matlab
         detectEventsMatlab intensityThreshold smallAreaThreshold m'
