@@ -79,6 +79,7 @@
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
+    <Compile Include="Processing\AudioConversion.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="SnrAnalysis.cs" />
