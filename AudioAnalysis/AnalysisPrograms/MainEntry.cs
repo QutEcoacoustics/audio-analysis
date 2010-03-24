@@ -44,6 +44,9 @@ namespace AnalysisPrograms
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;
+                    case "localrun":
+                        AudioConversion.Convert(r);
+                        break;
                     default:
                         Console.WriteLine("unrecognised");
                         break;

@@ -256,8 +256,6 @@ namespace QutSensors.Processor
                 else
                 {
 
-                    //TODO: does not seem to be returning the results, but the folders are deleted.
-
                     // return completed, even if there are 0 results.
                     List<ProcessorResultTag> results = null;
                     var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
@@ -276,7 +274,7 @@ namespace QutSensors.Processor
                     // delete run directory
                     if (runDir.Exists && DeleteFinishedRuns)
                     {
-                        //runDir.Delete(true);
+                        runDir.Delete(true);
                     }
                 }
                 else
