@@ -12,26 +12,61 @@ namespace AnalysisPrograms.Processing
         public static void Convert(string[] args)
         {
 
+            Write("File Name, Source, BitsPerSample, BytesPerSample, Channels, Epsilon, SampleRate, SampleCount, Time", true, true);
+
 
             string dir = args[0];
-            foreach (var path in Directory.GetFiles(dir))
+            foreach (var path in Directory.GetFiles(dir,"*.ogg"))
             {
-                Console.WriteLine("File: " + path);
-                
                 using (var reader = new WavReader(path))
                 {
-                    Console.WriteLine(reader.BitsPerSample);
-                    Console.WriteLine(reader.BytesPerSample);
-                    Console.WriteLine(reader.Channels);
-                    Console.WriteLine(reader.Epsilon);
-                    Console.WriteLine(reader.SampleRate);
-                    Console.WriteLine(reader.Samples.Length);
-                    Console.WriteLine(reader.Time);
+                    Write(path);
+                    Write("WavReader");
+                    Write(reader.BitsPerSample.ToString());
+                    Write(reader.BytesPerSample.ToString());
+                    Write(reader.Channels.ToString());
+                    Write(reader.Epsilon.ToString());
+                    Write(reader.SampleRate.ToString());
+                    Write(reader.Samples.Length.ToString());
+                    Write(reader.Time.ToString(), true, false);
                 }
-                Console.WriteLine();
+
+
+                Write(path);
+
+                var audioInfo = DShowConverter.GetAudioInfo(path, null);
+
+                Write("AudioInfo");
+                Write(audioInfo.BitsPerSample.ToString());
+                Write(audioInfo.BytesPerSample.ToString());
+                Write(audioInfo.Channels.ToString());
+                Write(string.Empty);
+                Write(audioInfo.SamplesPerSecond.ToString());
+                Write(audioInfo.SampleCount.ToString());
+
+                var duration = DShowConverter.GetDuration(path, null);
+
+                Write(duration.ToString(), true, false);
+
+
             }
 
+            Console.ReadLine();
+        }
 
+        private static void Write(string data, bool appendNewLine, bool overwriteFile)
+        {
+            var path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "file_test_logging.txt");
+
+            if (appendNewLine) data += Environment.NewLine;
+
+            if (overwriteFile) File.WriteAllText(path, data);
+            else File.AppendAllText(path, data);
+        }
+
+        private static void Write(string data)
+        {
+            Write(data + ", ", false, false);
         }
     }
 }
