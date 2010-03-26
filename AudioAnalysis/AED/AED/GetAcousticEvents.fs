@@ -4,7 +4,7 @@ open Util
 
 // TODO can we do p@(i,j) like Haskell?
 let rec spider (m:matrix) xs (v:(int * int) Set) =
-    match xs with // TODO move this up?
+    match xs with
     | []    -> v
     | p::ps -> let (i,j) = p // TODO should this be part of the pattern?
                let (v', ps') = if j < 0 || j >= m.NumCols || i < 0 || i >= m.NumRows || m.[i,j] = 0.0 || v.Contains(p) then (v, ps)
