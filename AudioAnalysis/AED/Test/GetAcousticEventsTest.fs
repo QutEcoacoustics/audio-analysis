@@ -11,9 +11,10 @@ let spiderTest () =
     Assert.Equal(Set.empty, spider m [(0,0)] Set.empty)
     m.[0,2] <- 1.0
     Assert.Equal(Set.ofList [(0,2)], spider m [(0,2)] Set.empty)
-    m.[1,2] <- 1.0 // resulting matrix: 0 0 1 0 0
-    m.[2,1] <- 1.0 //                   1 0 1 0 0
-    m.[1,0] <- 1.0 //                   0 1 0 0 0 
+    m.[0,2] <- 1.0
+    m.[1,2] <- 1.0 // resulting matrix: 0 0 1 0
+    m.[2,1] <- 1.0 //                   1 0 1 0
+    m.[1,0] <- 1.0 //                   0 1 0 0 
     Assert.Equal(Set.ofList [(0,2);(1,0);(1,2);(2,1)], spider m [(0,2)] Set.empty)
  
 [<Fact>]   
