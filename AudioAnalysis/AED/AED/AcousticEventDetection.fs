@@ -70,24 +70,14 @@ let filterOutSmallEvents t rs =
     Seq.filter (fun r -> area r > t') rs
 
 let detectEventsMatlab intensityThreshold smallAreaThreshold m =
-    let start = System.DateTime.Now.TimeOfDay
-    let m1 = Matlab.wiener2 5 m 
-    printfn "wiener2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m2 = removeSubbandModeIntensities m1
-    printfn "removeSubbandModeIntensities2: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m3 = toBlackAndWhite intensityThreshold m2
-    printfn "toBlackAndWhite: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m4 = joinVerticalLines m3
-    printfn "joinVerticalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m5 = joinHorizontalLines m4
-    printfn "joinHorizontalLines: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m6 = getAcousticEvents m5
-    printfn "getAcousticEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m7 = separateLargeEvents m6
-    printfn "separateLargeEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    let m8 = filterOutSmallEvents smallAreaThreshold m7
-    printfn "filterOutSmallEvents: %A" (System.DateTime.Now.TimeOfDay.Subtract(start))
-    m8
+    Matlab.wiener2 5 m 
+        |> removeSubbandModeIntensities
+        |> toBlackAndWhite intensityThreshold
+        |> joinVerticalLines
+        |> joinHorizontalLines 
+        |> getAcousticEvents
+        |> separateLargeEvents
+        |> filterOutSmallEvents smallAreaThreshold
     
 // TODO it would be nicer if this returned an Option/Either rather than an exception
 let detectEvents intensityThreshold smallAreaThreshold a =
