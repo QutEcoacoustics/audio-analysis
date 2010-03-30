@@ -10,9 +10,6 @@ using AudioAnalysisTools;
 
 //Here is link to wiki page containing info about how to write Analysis techniques
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
-
-//HERE ARE COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE
-//     canetoad  C:\SensorNetworks\WavFiles\temp1\ C:\SensorNetworks\Output\OscillationDetection\CaneToadDetectionParams.txt
 //
 
 
@@ -25,7 +22,6 @@ namespace AnalysisPrograms
         //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_DetectionParams.txt events.txt
         //for FEMALE KOALA
         //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\FemaleKoala_DetectionParams.txt events.txt
-
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_MIN_HZ          = "MIN_HZ";
@@ -122,6 +118,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             //Console.ReadLine();
         } //Dev()
+
 
 
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath,

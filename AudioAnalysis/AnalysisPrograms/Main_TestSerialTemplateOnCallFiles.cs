@@ -45,9 +45,7 @@ namespace AnalysisPrograms
 
             //A: READ IN SERIALISED TEMPLATE
             Log.WriteLine("\nA: READ serialised template from file: " + serialPath);
-            var serializedData = FileTools.ReadSerialisedObject(serialPath);
-            var template = QutSensors.Shared.Utilities.BinaryDeserialize(serializedData) as Template_CCAuto;
-            template.mode = Mode.UNDEFINED;
+            var template = ReadSerialisedFile2Template(serialPath);
 
             Log.WriteIfVerbose("\nB: GET VOCALISATIONS");
 
@@ -59,6 +57,15 @@ namespace AnalysisPrograms
             Console.ReadLine();
         }//end Main() method
 
+
+        public static Template_CCAuto ReadSerialisedFile2Template(string serialPath)
+        {
+            //Log.WriteLine("\nA: READ serialised template from file: " + serialPath);
+            var serializedData = FileTools.ReadSerialisedObject(serialPath);
+            var template = QutSensors.Shared.Utilities.BinaryDeserialize(serializedData) as Template_CCAuto;
+            template.mode = Mode.UNDEFINED;
+            return template;
+        }
 
 
 

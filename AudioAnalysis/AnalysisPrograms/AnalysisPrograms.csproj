@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="AED.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
+    <Compile Include="OD_KekKek.cs" />
     <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
