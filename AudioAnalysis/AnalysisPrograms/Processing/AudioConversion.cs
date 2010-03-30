@@ -16,7 +16,7 @@ namespace AnalysisPrograms.Processing
 
 
             string dir = args[0];
-            foreach (var path in Directory.GetFiles(dir, "BAC2_20071008-075040.wav"))
+            foreach (var path in Directory.GetFiles(dir, "*"))
             {
                 var file = new FileInfo(path);
                 using (var reader = new WavReader(path))
