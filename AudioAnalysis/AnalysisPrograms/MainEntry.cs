@@ -40,7 +40,9 @@ namespace AnalysisPrograms
                     case "spt": // spectral peak tracking, currently not used
                         Spt.Dev(r);
                         break;
-
+                    case "kekkek": // special use of MFCCs and OD for Lewin's Rail recognition
+                        OD_KekKek.Dev(r);
+                        break;
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;

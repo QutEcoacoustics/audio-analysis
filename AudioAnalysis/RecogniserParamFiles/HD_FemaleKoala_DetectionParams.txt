@@ -1,0 +1,16 @@
+# min and max of the freq band to search
+MIN_HZ=500          
+MAX_HZ=7000
+# default=0.50; Use 0.75 for koalas 
+FRAME_OVERLAP=0.25
+# ignore harmonic periods below min & above max threshold freq in Hertz
+MIN_HARMONIC_PERIOD=700        
+MAX_HARMONIC_PERIOD=1300
+# minimum acceptable value of a DCT coefficient
+MIN_AMPLITUDE=0.4
+# Expected duration of an event in seconds.
+DURATION=0.6
+# Event threshold - use this to determin FP / FN trade-off for events.
+EVENT_THRESHOLD=0.80
+# save a sonogram for each recording that contained a hit 
+DRAW_SONOGRAMS=2
