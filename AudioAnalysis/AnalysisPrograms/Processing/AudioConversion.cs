@@ -16,11 +16,12 @@ namespace AnalysisPrograms.Processing
 
 
             string dir = args[0];
-            foreach (var path in Directory.GetFiles(dir,"*.ogg"))
+            foreach (var path in Directory.GetFiles(dir, "BAC2_20071008-075040.wav"))
             {
+                var file = new FileInfo(path);
                 using (var reader = new WavReader(path))
                 {
-                    Write(path);
+                    Write(file.Name);
                     Write("WavReader");
                     Write(reader.BitsPerSample.ToString());
                     Write(reader.BytesPerSample.ToString());
@@ -32,7 +33,7 @@ namespace AnalysisPrograms.Processing
                 }
 
 
-                Write(path);
+                Write(file.Name);
 
                 var audioInfo = DShowConverter.GetAudioInfo(path, null);
 
