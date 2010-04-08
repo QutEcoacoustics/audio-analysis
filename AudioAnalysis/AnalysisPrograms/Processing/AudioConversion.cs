@@ -48,8 +48,6 @@ namespace AnalysisPrograms.Processing
                 var duration = DShowConverter.GetDuration(path, null);
 
                 Write(duration.ToString(), true, false);
-
-
             }
 
             Console.ReadLine();
