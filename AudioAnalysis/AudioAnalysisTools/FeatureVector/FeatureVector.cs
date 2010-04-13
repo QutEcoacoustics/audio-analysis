@@ -247,8 +247,7 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows; r++) // Scan over sonogram
             {
                 double[] acousticVector = DataTools.GetRow(acousticM, r);
-                double ccc = CrossCorrelation(acousticVector);  // Cross-correlation coeff
-                scores[r] = ccc;
+                scores[r] = CrossCorrelation(acousticVector);  // Cross-correlation coeff
             }//end of loop over sonogram
 
             return NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);

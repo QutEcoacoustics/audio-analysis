@@ -96,12 +96,12 @@ namespace AudioAnalysisTools
 
 			// FRAME WINDOWING
             //double[,] frames = DSP.Frames(signal, config.WindowSize, config.WindowOverlap);
-            int[,] framesIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
+            int[,] frameIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
             //double[,] frames = DSP.Frames(signal, framesIDs);
-            FrameCount = framesIDs.GetLength(0);
+            FrameCount = frameIDs.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            this.SnrFrames = new SNR(signal, framesIDs);
+            this.SnrFrames = new SNR(signal, frameIDs);
             //this.SnrFrames = new SNR(frames);
             this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
@@ -121,17 +121,17 @@ namespace AudioAnalysisTools
 
 			//generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            var amplitudeM = MakeAmplitudeSonogram(signal, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            var amplitudeM = MakeAmplitudeSonogram(signal, frameIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             //framesIDs = null;
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
 			{
-                amplitudeM = ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz);
-				Log.WriteIfVerbose("\tDim of required sub-band  =" + amplitudeM.GetLength(1));
+                amplitudeM = BaseSonogram.ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz, 
+                             this.Configuration.DoMelScale, this.Configuration.FreqBinCount, this.FBinWidth);
+				Log.WriteIfVerbose("\tDim of required sub-band =" + amplitudeM.GetLength(1));
                 CalculateSubbandSNR(amplitudeM);
             }
-
 			Make(amplitudeM);
         } //end CONSTRUCTOR BaseSonogram(WavReader wav)
 
@@ -210,7 +210,8 @@ namespace AudioAnalysisTools
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
-            return ExtractFreqSubband(amplitudeM, minHz, maxHz);
+            return BaseSonogram.ExtractFreqSubband(amplitudeM, minHz, maxHz, this.Configuration.DoMelScale,
+                                                   this.Configuration.FreqBinCount, this.FBinWidth);
         }
 
 
@@ -218,15 +219,6 @@ namespace AudioAnalysisTools
         {
             var subband = ExtractFreqSubband(wav, minHz, maxHz);
             CalculateSubbandSNR(subband);
-        }
-
-        public double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz)
-        {
-            bool doMelscale = this.Configuration.DoMelScale;
-            int c1;
-            int c2;
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, this.Configuration.FreqBinCount, this.FBinWidth, out c1, out c2);
-            return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
 
         public void CalculateSubbandSNR(double[,] subband)
@@ -564,6 +556,16 @@ namespace AudioAnalysisTools
         }
 
 
+
+        public static double[,] ExtractFreqSubband(double[,] m, int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
+        {
+            int c1;
+            int c2;
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
+        }
+
+
     } //end abstract class BaseSonogram
 
 
@@ -715,6 +717,18 @@ namespace AudioAnalysisTools
                 }
             this.Data = newMatrix;
         }
+
+
+        public double[,] GetCepstrogram(int minHz, int maxHz, bool doMelScale, int ccCount)
+        {
+            Double[,] m = BaseSonogram.ExtractFreqSubband(this.Data, minHz, maxHz, doMelScale, this.Configuration.FreqBinCount, this.FBinWidth);
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
+            m = SNR.NoiseReduce_Standard(m, modalNoise);
+            m = Speech.Cepstra(m, ccCount);
+            m = DataTools.normalise(m);
+            return m; 
+        }
+
     
    } //end of class SpectralSonogram : BaseSonogram
 

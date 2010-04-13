@@ -21,6 +21,8 @@ namespace AnalysisPrograms
     class OscillationRecogniser
     {
         //Following lines are used for the debug command line.
+        //CANETOAD
+        //od  C:\SensorNetworks\WavFiles\temp1\                                                     C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt
         //GECKO
         //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\Gecko_DetectionParams.txt events.txt
         //KOALA MALE EXHALE

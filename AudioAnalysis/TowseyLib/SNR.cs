@@ -148,6 +148,82 @@ namespace TowseyLib
             return logEnergy;
         }
 
+        /// <summary>
+        /// removes modal value and sets modal value to zero.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="Q"></param>
+        /// <returns></returns>
+        public static double[] NoiseSubtractMode(double[] array, out double Q)
+        {
+            int L = array.Length;
+            //CALCULATE THE MIN AND MAX OF THE ARRAY
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+            for (int i = 0; i < L; i++)
+            {
+                if (array[i] < min) min = array[i];
+                else
+                if (array[i] > max) max = array[i];
+            }
+
+            //set up Histogram
+            int binCount = 100;
+            double binWidth = (max - min) / binCount;
+            int[] histo = new int[binCount];
+
+            for (int i = 0; i < L; i++)
+            {
+                    int id = (int)((array[i] - min) / binWidth);
+                    if (id >= binCount)
+                    {
+                        id = binCount - 1;
+                    }
+                    else
+                        if (id < 0) id = 0;
+                    histo[id]++;
+            }
+            double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
+            //DataTools.writeBarGraph(histo);
+
+            // find peak of lowBins histogram
+            int peakID = DataTools.GetMaxIndex(smoothHisto);
+            Q = min + ((peakID + 1) * binWidth); //modal noise level
+
+            // subtract modal noise and return array.
+            double[] newArray = new double[L];
+            for (int i = 0; i < L; i++)
+            {
+                newArray[i] = array[i] - Q;
+                if (newArray[i] < 0.0) newArray[i] = 0.0;
+            }
+            return newArray;
+        }
+
+
+        /// <summary>
+        /// subtract background noise to produce a decibels array in which zero dB = modal noise
+        /// </summary>
+        /// <param name="logEnergy"></param>
+        /// <returns></returns>
+        public void CalculateDecibelsPerFrame()
+        {
+            double Q;
+            double min_dB;
+            double max_dB;
+            this.Decibels = NoiseSubtract(this.LogEnergy, out min_dB, out max_dB, out Q);
+            this.NoiseSubtracted = Q;
+            this.Min_dB = min_dB; //min decibels of all frames 
+            this.Max_dB = max_dB;
+            this.NoiseRange = min_dB - Q;
+            this.Snr = max_dB - Q;
+            //need an appropriate dB reference level for normalising dB arrays.
+            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
+            //this.MaxReference_dBWrtNoise = max_dB - Q;                      // OK
+            this.MaxReference_dBWrtNoise = max_dB - min_dB;                   // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+        }
+
+
 
         /// <summary>
         /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
@@ -228,27 +304,6 @@ namespace TowseyLib
             return dBFrames;
         }
 
-        /// <summary>
-        /// subtract background noise to produce a decibels array in which zero dB = modal noise
-        /// </summary>
-        /// <param name="logEnergy"></param>
-        /// <returns></returns>
-        public void CalculateDecibelsPerFrame()
-        {
-            double Q;
-            double min_dB;
-            double max_dB;
-            this.Decibels = NoiseSubtract(this.LogEnergy, out min_dB, out max_dB, out Q);
-            this.NoiseSubtracted = Q;
-            this.Min_dB = min_dB; //min decibels of all frames 
-            this.Max_dB = max_dB;
-            this.NoiseRange = min_dB - Q;
-            this.Snr = max_dB - Q;
-            //need an appropriate dB reference level for normalising dB arrays.
-            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
-            //this.MaxReference_dBWrtNoise = max_dB - Q;                      // OK
-            this.MaxReference_dBWrtNoise = max_dB - min_dB;                   // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
-        }
 
         public double FractionHighEnergyFrames(double dbThreshold)
         {
