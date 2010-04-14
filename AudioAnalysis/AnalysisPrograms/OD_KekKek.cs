@@ -16,14 +16,17 @@ namespace AnalysisPrograms
     //HERE ARE COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE,  debug command line
     //for LEWIN's RAIL
     // ID, recording, template.zip, working directory.
-    //kekkek C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\Template_2\Template2.zip  C:\SensorNetworks\Output\LewinsRail\
-    class OD_KekKek
+    //kekkek C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\Template_2\KEKKEK1.zip  C:\SensorNetworks\Output\LewinsRail\
+    
+    class MFCC_OD_KekKek
     {
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_MIN_HZ = "MIN_FREQ";
         public static string key_MAX_HZ = "MAX_FREQ";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_DO_MELSCALE = "DO_MELSCALE";
+        public static string key_CC_COUNT = "CC_COUNT";
         public static string key_DCT_DURATION = "DCT_DURATION";
         public static string key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
         public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
@@ -68,23 +71,19 @@ namespace AnalysisPrograms
             //create the working directory if it does not exist
             if (!Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
             string newTemplateDir = workingDirectory + templateName;
-            //if (!Directory.Exists(newTemplateDir)) 
-                ZipUnzip.UnZip(newTemplateDir, templatePath, true);
+            ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
             //B: INI CONFIG and CREATE DIRECTORY STRUCTURE
             Log.WriteLine("# Init CONFIG and creating directory structure");
             Log.WriteLine("# New Template Dir: " + newTemplateDir);
             //READ PARAMETER VALUES FROM INI FILE
-            //HTKConfig htkConfig = new HTKConfig(workingDirectory, templateName);
-            //Log.WriteLine("\tDATA  =" + htkConfig.DataDir);
-            //Log.WriteLine("\tRESULT=" + htkConfig.ResultsDir);
-            string iniPath = workingDirectory + templateFN + "\\" + templateFN + ".txt";
+            string iniPath = workingDirectory + templateFN + "\\Template_" + templateFN + ".txt";
             //read feature vector
             string fvPath  = workingDirectory + templateFN + "\\FV1_" + templateFN + ".txt"; //feature vector path
             double[] fv = FileTools.ReadDoubles2Vector(fvPath);
 
             //NEXT LINE IS A TEMPORARY FIX ################################################### TODO TODO
-            AppendNewParams(iniPath);
+            //AppendNewParams(iniPath);
 
             //C: SET UP CONFIGURATION
             var config = new Configuration(iniPath);
@@ -94,6 +93,11 @@ namespace AnalysisPrograms
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+            int ccCount = Int32.Parse(dict[key_CC_COUNT]);                  //Number of mfcc coefficients
+            bool doMelScale =  Boolean.Parse(dict[key_DO_MELSCALE]);        //not a user option
+            doMelScale = false; //do not want use to change this at present time. STILL NEED TO DEBUG MELSCALE OPTION 
+            bool includeDelta = false;
+            bool includeDoubleDelta = false;
             double dctDuration = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
             int minOscilFreq = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);       //ignore oscillations below this threshold freq
             int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);       //ignore oscillations above this threshold freq
@@ -110,8 +114,8 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
 
             //#############################################################################################################################################
-            var results = Execute_CallDetect(recordingPath, minHz, maxHz, frameOverlap, fv, dctDuration, minOscilFreq, maxOscilFreq, 
-                                             minAmplitude, eventThreshold, minDuration, maxDuration);
+            var results = Execute_CallDetect(recordingPath, minHz, maxHz, frameOverlap, doMelScale, ccCount, includeDelta, includeDoubleDelta,
+                         fv, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, eventThreshold, minDuration, maxDuration);
             Log.WriteLine("# Finished detecting Lewin's Rail calls.");
             //#############################################################################################################################################
 
@@ -129,20 +133,22 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
             }
             else
-                if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
-                {
-                    string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                    DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
-                }
+            if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
+            {
+                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+                DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
+            }
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Finished analysis of recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
 
         public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>> Execute_CallDetect(string wavPath,
-            int minHz, int maxHz, double frameOverlap, double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
-            double eventThreshold, double minDuration, double maxDuration)
+            int minHz, int maxHz, double frameOverlap, bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
+
+            double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, 
+            double minAmplitude, double eventThreshold, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
@@ -161,27 +167,21 @@ namespace AnalysisPrograms
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap*100);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-
-            Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
-            Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
 
             //iii: EXTRACT CEPSTROGRAM - MFCC coefficients 
             Log.WriteLine("GET MFCC SPECTRUM");
-            bool doMelScale = false;
-            int ccCount = 12;
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+            Log.WriteIfVerbose("ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
             double[,] m = ((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount); 
 
-            //iv:  REPLACE THE dB ARRAY for full bandwidth by array init to 0.6
+            //iv:  REPLACE THE dB ARRAY for full bandwidth by array initialized to 0.5 (an average value)
             //THIS IS IN PLACE OF REMOVING THE dB array altogether OR CALCULATING SUB-BAND dB array.
-            //BOTH THESE OPRTIONS ARE TOO TIME CONSUMING IN PRESENT CIRCUMSTANCE.
+            //BOTH THESE OPTIONS ARE TOO TIME CONSUMING IN PRESENT CIRCUMSTANCE.
             //double[] dB = sonogram.DecibelsNormalised;
             double[] dB = new double[sonogram.FrameCount];
-            for (int i=0; i< sonogram.FrameCount; i++) dB[i] = 0.6;
+            for (int i=0; i< sonogram.FrameCount; i++) dB[i] = 0.5;
 
             //v: calculate the full ACOUSTIC VECTORS ie including decibel and deltas, etc
-            bool includeDelta = false;
-            bool includeDoubleDelta = false;
             m = Speech.AcousticVectors(m, dB, includeDelta, includeDoubleDelta);
 
             ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage.jpg");
@@ -190,12 +190,14 @@ namespace AnalysisPrograms
             double[] scores = GetTemplateScores(m, fv, includeDelta, includeDoubleDelta);
             double Q;
             scores = SNR.NoiseSubtractMode(scores, out Q);
-            Log.WriteLine("Noise removal, Q=",Q);
+            Log.WriteLine("Noise removal, Q={0:f3}",Q);
             //normalise scores rather than calculate Z-scores.
             //scores = NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);
             scores = DataTools.normalise(scores);
 
             //vii: DETECT OSCILLATIONS
+            Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
+            Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
             int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
             double[] oscillationScores = DetectOscillations(scores, dctDuration, dctLength, minOscilFreq, maxOscilFreq, minAmplitude);
 
