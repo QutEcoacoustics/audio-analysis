@@ -676,7 +676,7 @@ namespace TowseyLib
             int mfccCount  = mfcc.GetLength(1); //number of MFCCs
             int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
             int dim = coeffcount; //
-            if (includeDelta) dim += coeffcount;
+            if (includeDelta)       dim += coeffcount;
             if (includeDoubleDelta) dim += coeffcount;
             //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
 
