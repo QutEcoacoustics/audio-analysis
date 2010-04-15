@@ -51,7 +51,8 @@ namespace QutSensors.CacheProcessor
 
         void ThreadMain()
         {
-            log.WriteEntry(LogType.Information, "Cache Job Processor starting");
+            if (log != null)
+                log.WriteEntry(LogType.Information, "Cache Job Processor starting");
 
             do
             {
@@ -59,7 +60,8 @@ namespace QutSensors.CacheProcessor
                     stopRequestedEvent.WaitOne(InterJobWaitPeriod); // No job or error so wait for new job to process.
             } while (!stopRequestedEvent.WaitOne(InterJobWaitPeriod));
 
-            log.WriteEntry(LogType.Information, "Cache Job Processor stopping");
+            if (log != null)
+                log.WriteEntry(LogType.Information, "Cache Job Processor stopping");
 
             stopRequestedEvent.Reset();
             workerThread = null;
@@ -92,7 +94,8 @@ namespace QutSensors.CacheProcessor
                 }
                 catch (Exception e)
                 {
-                    log.WriteEntry(LogType.Error, "Error processing job: {0}", e);
+                    if (log != null)
+                        log.WriteEntry(LogType.Error, "Error processing job: {0}", e);
                     cacheManager.SubmitError(request, e.ToString());
                 }
             }
@@ -146,7 +149,8 @@ namespace QutSensors.CacheProcessor
                         }
                     }
 
-                    log.WriteEntry(LogType.Information, "Segmented audio {0} ({1}-{2})", request.AudioReadingID, request.Start, request.End);
+                    if (log != null)
+                        log.WriteEntry(LogType.Information, "Segmented audio {0} ({1}-{2})", request.AudioReadingID, request.Start, request.End);
 
                     return targetStream.GetBuffer();
                 }
