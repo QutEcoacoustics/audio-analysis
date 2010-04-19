@@ -93,8 +93,8 @@ namespace AnalysisPrograms
 
             double avDuration = 0.0; //to determine average duration test vocalisations
             var sb = new StringBuilder("RESULTS ON TEST FILES\n\n");
-            sb.AppendLine("CallID = " + recogniser.Template.CallID + "(" + recogniser.Template.CallName + ")");
-            sb.AppendLine(recogniser.Template.Comment);
+            sb.AppendLine("CallID = " + recogniser.Template.key_TEMPLATE_ID + "(" + recogniser.Template.config.GetString(recogniser.Template.key_TEMPLATE_ID + ")"));
+            sb.AppendLine(recogniser.Template.config.GetString(recogniser.Template.key_COMMENT));
             sb.AppendLine("\nTest directory = " + testDir);
             sb.AppendLine("Number of test vocalisations = " + testFiles.Length);
 
