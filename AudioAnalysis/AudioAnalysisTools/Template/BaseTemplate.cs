@@ -25,10 +25,10 @@ namespace AudioAnalysisTools
 
         #region Properties
         public Mode mode { get; set; }         //MODE in which the template is operating
-      //  public string AuthorName { get; set; }
-      //  public string CallID { get; set; }
-      //  public string CallName { get; set; }
-      //  public string Comment { get; set; }
+        public string AuthorName { get; set; }
+        public string TemplateID { get; set; }
+        public string CallName { get; set; } // used on website
+        public string Comment { get; set; } // used on website
         public string DataPath   { get; set; } // path of saved template file
         public string DataDir { get; set; }    // dir containing saved template data
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
@@ -310,13 +310,13 @@ namespace AudioAnalysisTools
             if (modeStr == null) mode = Mode.UNDEFINED;
             else                 mode = (Mode)Enum.Parse(typeof(Mode), modeStr);
 
-            string AuthorName = config.GetString(key_AUTHOR);       //e.g. Michael Towsey
-            string TemplateID = config.GetString(key_TEMPLATE_ID);
-            string CallName   = config.GetString(key_CALL_NAME);   //e.g.  Lewin's Rail Kek-kek
+             AuthorName = config.GetString(key_AUTHOR);       //e.g. Michael Towsey
+             TemplateID = config.GetString(key_TEMPLATE_ID);
+             CallName   = config.GetString(key_CALL_NAME);   //e.g.  Lewin's Rail Kek-kek
 
             Log.WriteIfVerbose("\n\nINITIALISING TEMPLATE: mode=" + mode.ToString() + " name=" + CallName + " id=" + TemplateID);
 
-            //string Comment = config.GetString(key_COMMENT);  //e.g.Template consists of a single KEK!
+            Comment = config.GetString(key_COMMENT);  //e.g.Template consists of a single KEK!
             SourcePath = config.GetString("WAV_FILE_PATH");
             SourceDir  = Path.GetDirectoryName(SourcePath);
             DataPath = config.GetString("TEMPLATE_PATH");

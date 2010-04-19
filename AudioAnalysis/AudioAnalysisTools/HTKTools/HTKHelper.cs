@@ -101,7 +101,6 @@ namespace AudioAnalysisTools.HTKTools
 
             if (extractLabels) //True by default - i.e. always do this
             {
-                string error = null;
                 try
                 {
                     //TWO - Read segmentation files and write the PHONES.MLF file
