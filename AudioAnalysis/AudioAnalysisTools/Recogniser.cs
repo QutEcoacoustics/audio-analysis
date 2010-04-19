@@ -27,7 +27,7 @@ namespace AudioAnalysisTools
 		public Recogniser(BaseTemplate template)
 		{
             Log.WriteIfVerbose("\n\nINITIALISING RECOGNISER:");
-            Log.WriteIfVerbose("\tTemplate: "+template.CallName);
+            Log.WriteIfVerbose("\tTemplate: "+template.config.GetString(template.key_CALL_NAME));
 
 			Template = template;
             Model    = template.LanguageModel; //the Model was initialised at template init.

@@ -46,12 +46,48 @@ namespace AudioAnalysisTools
             return template;
         }
 
+        /// <summary>
+        /// call this Load method when creating a new template from user provided params
+        /// using only one line of code!
+        /// </summary>
+        public static BaseTemplate Load(string appConfigFile, FileInfo[] recordingFiles, string templateDir, string templateFName)
+        {
+            Log.WriteIfVerbose("\n# STEP ONE: Initialise template with parameters");
+            var config = new Configuration(appConfigFile);
+            config.SetPair(ConfigKeys.Template.Key_TemplateDir, templateDir);
+            config.SetPair(ConfigKeys.Recording.Key_RecordingDirName, recordingFiles[0].DirectoryName);//assume all files in same dir
+            config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
+            return Load(config, recordingFiles, templateDir, templateFName);
+        }
+
+
+        /// <summary>
+        /// call this Load method when creating a new template from user provided params
+        /// using only one line of code!
+        /// </summary>
+        public static BaseTemplate Load(Configuration config, FileInfo[] recordingFiles, string templateDir, string templateFName)
+        {
+            //STEP ONE: Initialise template with parameters
+            var template = new Template_CCAuto(config);
+            //STEP TWO: Extract template
+            Log.WriteIfVerbose("\nSTEP TWO: Extract template");
+            template.ExtractTemplateFromRecordings(recordingFiles);
+            //STEP THREE: Extract template
+            Log.WriteIfVerbose("\nSTEP THREE: Create language model");
+            template.CreateLanguageModel(config);
+            //STEP FOUR: Save template
+            Log.WriteIfVerbose("\nSTEP FOUR: Save template");
+            string opTemplatePath = templateDir + templateFName;
+            template.Save(opTemplatePath);
+            return template;
+        }
+
 
         public Template_CCAuto(Configuration config) : base(config)
 		{
             //Initialise all components of template with parameters
             //this.CallName = config.GetString("WORD" + (i + 1) + "_NAME");
-            this.CallName        = config.GetString("WORD1_NAME");
+            //this.CallName        = config.GetString("WORD1_NAME");
             this.TrainingDirName = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
             this.TestingDirName  = config.GetString(ConfigKeys.Recording.Key_TestingDirName);
             SonogramConfig       = new CepstralSonogramConfig(config);
@@ -126,12 +162,12 @@ namespace AudioAnalysisTools
 		{
 			//throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
             writer.WriteLine("DATE=" + DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
-            writer.WriteConfigValue("AUTHOR", AuthorName);
+            writer.WriteConfigValue("AUTHOR", this.config.GetString(key_AUTHOR));
             writer.WriteLine("#");
             writer.WriteLine("#**************** TEMPLATE DATA");
-            writer.WriteConfigValue("TEMPLATE_ID", CallID);
-            writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
-            writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
+            writer.WriteConfigValue("TEMPLATE_ID", this.config.GetString(key_TEMPLATE_ID));
+            writer.WriteConfigValue("CALL_NAME", this.config.GetString(key_CALL_NAME)); //CALL_NAME=Lewin's Rail Kek-kek
+            writer.WriteConfigValue("COMMENT", this.config.GetString(key_COMMENT));    //COMMENT=Template consists of a single KEK!
             writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE[s]");

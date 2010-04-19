@@ -91,7 +91,7 @@ namespace AnalysisPrograms
             if (template.LanguageModel.ModelType == LanguageModelType.MM_ERGODIC)
             {
                 var r2 = result as Result_MMErgodic;
-                Log.WriteLine("RESULTS FOR TEMPLATE " + template.CallName);
+                Log.WriteLine("RESULTS FOR TEMPLATE " + template.config.GetString(template.key_CALL_NAME));
                 Log.WriteLine("# Number of vocalisations = " + r2.VocalCount);
                 Log.Write("# Best Vocalisation Score    = " + r2.RankingScoreValue.Value.ToString("F1") + " at ");
                 Log.WriteLine(r2.TimeOfMaxScore.Value.ToString("F1") + " sec");

@@ -12,6 +12,12 @@ namespace AudioAnalysisTools
 	[Serializable]
 	public abstract class BaseTemplate
 	{
+
+        public string key_AUTHOR = "AUTHOR";
+        public string key_COMMENT = "COMMENT";
+        public string key_TEMPLATE_ID = "TEMPLATE_ID";
+        public string key_CALL_NAME = "CALL_NAME";
+
         #region Static Variables
         public static bool InTestMode = false;   //set this true when doing a functional test
         #endregion
@@ -19,15 +25,16 @@ namespace AudioAnalysisTools
 
         #region Properties
         public Mode mode { get; set; }         //MODE in which the template is operating
-        public string AuthorName { get; set; }
-        public int CallID { get; set; }
-        public string CallName { get; set; }
-        public string Comment { get; set; }
+      //  public string AuthorName { get; set; }
+      //  public string CallID { get; set; }
+      //  public string CallName { get; set; }
+      //  public string Comment { get; set; }
         public string DataPath   { get; set; } // path of saved template file
         public string DataDir { get; set; }    // dir containing saved template data
         public string SourcePath { get; set; } // Path to original audio recording used to generate the template
         public string SourceDir  { get; set; } // Dir of original audio recording
 
+        public Configuration config { get; set; } 
         public ConfigKeys.Feature_Type FeatureExtractionType { get; set; }
         public CepstralSonogramConfig SonogramConfig { get; set; }
         public FVConfig FeatureVectorConfig { get; set; }
@@ -282,6 +289,10 @@ namespace AudioAnalysisTools
 
         #endregion
 
+
+
+
+
 		public BaseTemplate()
 		{
 		}
@@ -299,13 +310,13 @@ namespace AudioAnalysisTools
             if (modeStr == null) mode = Mode.UNDEFINED;
             else                 mode = (Mode)Enum.Parse(typeof(Mode), modeStr);
 
-            AuthorName = config.GetString("AUTHOR");    //e.g. Michael Towsey
-            CallID = config.GetInt("TEMPLATE_ID");
-            CallName = config.GetString("CALL_NAME");   //e.g.  Lewin's Rail Kek-kek
+            string AuthorName = config.GetString(key_AUTHOR);       //e.g. Michael Towsey
+            string TemplateID = config.GetString(key_TEMPLATE_ID);
+            string CallName   = config.GetString(key_CALL_NAME);   //e.g.  Lewin's Rail Kek-kek
 
-            Log.WriteIfVerbose("\n\nINITIALISING TEMPLATE: mode=" + mode.ToString() + " name=" + CallName + " id=" + CallID);
+            Log.WriteIfVerbose("\n\nINITIALISING TEMPLATE: mode=" + mode.ToString() + " name=" + CallName + " id=" + TemplateID);
 
-            Comment = config.GetString("COMMENT");  //e.g.Template consists of a single KEK!
+            //string Comment = config.GetString(key_COMMENT);  //e.g.Template consists of a single KEK!
             SourcePath = config.GetString("WAV_FILE_PATH");
             SourceDir  = Path.GetDirectoryName(SourcePath);
             DataPath = config.GetString("TEMPLATE_PATH");
@@ -338,12 +349,12 @@ namespace AudioAnalysisTools
         public virtual void Save(TextWriter writer)
         {
             writer.WriteLine("DATE=" + DateTime.Now.ToString("u"));  //u format=2008-11-05 14:40:28Z
-            writer.WriteConfigValue("AUTHOR", AuthorName);
+            writer.WriteConfigValue("AUTHOR", this.config.GetString(key_AUTHOR));
             writer.WriteLine("#");
             writer.WriteLine("#**************** TEMPLATE DATA");
-            writer.WriteConfigValue("TEMPLATE_ID", CallID);
-            writer.WriteConfigValue("CALL_NAME", CallName); //CALL_NAME=Lewin's Rail Kek-kek
-            writer.WriteConfigValue("COMMENT", Comment);    //COMMENT=Template consists of a single KEK!
+            writer.WriteConfigValue("TEMPLATE_ID", this.config.GetString(key_TEMPLATE_ID));
+            writer.WriteConfigValue("CALL_NAME", this.config.GetString(key_CALL_NAME)); //CALL_NAME=Lewin's Rail Kek-kek
+            writer.WriteConfigValue("COMMENT", this.config.GetString(key_COMMENT));    //COMMENT=Template consists of a single KEK!
             writer.WriteConfigValue("THIS_FILE", DataPath);   //THIS_FILE=C:\SensorNetworks\Templates\Template_2\template_2.ini
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE");

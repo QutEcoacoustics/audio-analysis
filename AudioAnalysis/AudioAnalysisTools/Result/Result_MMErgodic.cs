@@ -162,7 +162,7 @@ namespace AudioAnalysisTools
 
         public override string WriteResults()
         {
-            StringBuilder sb = new StringBuilder("RESULTS OF SCANNING RECORDING FOR CALL <" + this.Template.CallName + ">\n");
+            StringBuilder sb = new StringBuilder("RESULTS OF SCANNING RECORDING FOR CALL <" + this.Template.key_CALL_NAME + ">\n");
             for (int i = 0; i < BaseResult.resultItemKeys.Length; i++)
             {
                 ResultProperty item = GetResultItem(BaseResult.resultItemKeys[i]);
