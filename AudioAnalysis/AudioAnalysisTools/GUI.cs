@@ -66,7 +66,7 @@ namespace AudioAnalysisTools
             //FEATURE VECTOR EXTRACTION PARAMETERS
         private int extractionInterval = 5;  //determines complexity of acoustic model.
         public  int ExtractionInterval { get { return extractionInterval; } }
-        private int numberOfSyllables;
+        private int numberOfSyllables = 0;
         public int NumberOfSyllables { get { return numberOfSyllables; } }
         private FV_Source fv_Source = FV_Source.SELECTED_FRAMES;  //FV_Source.MARQUEE;
         public  FV_Source Fv_Source  { get { return fv_Source; } }
