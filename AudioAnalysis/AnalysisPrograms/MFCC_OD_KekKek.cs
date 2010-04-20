@@ -172,7 +172,8 @@ namespace AnalysisPrograms
             Log.WriteLine("GET MFCC SPECTRUM");
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteIfVerbose("ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
-            double[,] m = ((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount); 
+            var tuple =((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
+            double[,] m = tuple.Item1;
 
             //iv:  REPLACE THE dB ARRAY for full bandwidth by array initialized to 0.5 (an average value)
             //THIS IS IN PLACE OF REMOVING THE dB array altogether OR CALCULATING SUB-BAND dB array.

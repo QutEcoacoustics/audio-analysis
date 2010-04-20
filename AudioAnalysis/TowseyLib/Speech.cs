@@ -689,6 +689,23 @@ namespace TowseyLib
             return acousticM;
         } //AcousticVectors()
 
+        public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
+        {
+            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
+            int mfccCount = mfcc.GetLength(1); //number of MFCCs
+            int coeffcount = mfccCount + 1; //number of MFCCs + 1 for energy
+            int dim = coeffcount; //
+            if (includeDelta) dim += coeffcount;
+            if (includeDoubleDelta) dim += coeffcount;
+            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+
+            double[] acousticV = new double[dim];
+            double[] fv = GetFeatureVector(dB, mfcc, index, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+            for (int i = 0; i < dim; i++) acousticV[i] = fv[i];  //transfer feature vector to acoustic Vector.
+            return acousticV;
+        } //AcousticVectors()
+
+
 
         /// <summary>
         /// returns full feature vector from the passed matrix of energy+cepstral+delta+deltaDelta coefficients
