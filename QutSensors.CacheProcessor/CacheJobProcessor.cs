@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-
 using QutSensors.Data.Linq;
 using AudioTools;
 using AudioTools.DirectShow;
@@ -12,6 +11,7 @@ using System.IO;
 using System.Diagnostics;
 using QutSensors.Data;
 using Autofac;
+using QutSensors.Data.Cache;
 
 namespace QutSensors.CacheProcessor
 {
