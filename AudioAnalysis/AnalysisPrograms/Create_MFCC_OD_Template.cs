@@ -75,12 +75,12 @@ namespace AnalysisPrograms
             string newTemplateDir = workingDirectory + templateFN;
             Log.WriteLine("# OP Template Dir=" + newTemplateDir);
 
-            //B: INI CONFIG and CREATE DIRECTORY STRUCTURE
+            //B: INITIALISE CONFIG and CREATE DIRECTORY STRUCTURE
             Log.WriteLine("# Init CONFIG and creating directory structure");
             string templateFName = "Template_" + templateID + ".txt";
             string iniPath = templateDir + "\\" + templateFName;
-            string fvPath  = templateDir + "\\FV1_" + templateID + ".txt"; //feature vector path
-            double[] fv = FileTools.ReadDoubles2Vector(fvPath);
+            //string fvPath  = templateDir + "\\FV1_" + templateID + ".txt"; //feature vector path
+            //double[] fv = FileTools.ReadDoubles2Vector(fvPath);
 
             //C: SET UP CONFIGURATION
             var config = new Configuration(iniPath);
@@ -98,35 +98,40 @@ namespace AnalysisPrograms
             string trainingDir = dict[key_TRAIN_DIR];
             FileInfo[] recordingFiles = FileTools.GetFilesInDirectory(trainingDir, ext);
 
-            //A: CREATE THE TEMPLATE according to parameters in ini file.
-            Log.WriteLine("STEP A: CREATE TEMPLATE");
-            var template = Template_CCAuto.Load(config, recordingFiles, templateDir, templateFName);
-            //reset noise reduction type for normal use
-            template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
-            //reset mode for normal use
-            template.mode = Mode.READ_EXISTING_TEMPLATE;
+            //E: CREATE resources according to parameters in ini file.
+            Log.WriteLine("# RESOURCE 1: Extract Feature Vector from recordings");
+            var tuple = FVExtractor.ExtractSingleFV(recordingFiles, dict);
+            double[] fv    = tuple.Item1;
+            double[] noise = tuple.Item2;
+ 
+            //STEP THREE: Extract template
+            //Log.WriteIfVerbose("\nSTEP THREE: Create language model");
+            //template.CreateLanguageModel(config);
+            //STEP FOUR: Save template
+            Log.WriteIfVerbose("\nSTEP FOUR: Save template");
+            string opTemplatePath = templateDir + "\\"+ templateFName;
+            string opDir = Path.GetDirectoryName(opTemplatePath);
+            if (!Directory.Exists(opDir)) Directory.CreateDirectory(opDir);
 
-            //B: CREATE SERIALISED VERSION OF TEMPLATE
-            Console.WriteLine("STEP B: CREATE SERIALISED VERSION OF TEMPLATE");
-            var serializedData = QutSensors.Shared.Utilities.BinarySerialize(template);
-            Console.WriteLine("\tSerialised byte array: length = " + serializedData.Length + " bytes");
-            string serialPath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(templateFName) + ".serialised");
-            Console.WriteLine("\tWriting serialised template to file: " + serialPath);
-            FileTools.WriteSerialisedObject(serialPath, serializedData);
-            serializedData = null; //to ensure that reading works
-            template = null;       //to ensure that reading works
+            if (File.Exists(opTemplatePath)) File.Copy(opTemplatePath, opTemplatePath + "OLD.txt", true); //overwrite
+
+//            Save(new StreamWriter(opTemplatePath), opDir);
+//            template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;    //reset noise reduction type for normal use
+//            template.mode = Mode.READ_EXISTING_TEMPLATE;  //reset mode for normal use
+
+            //B: CREATE ZIPPED VERSION OF TEMPLATE
+            Log.WriteLine("# STEP B: CREATE ZIPPED RESOURCES");
+
 
             //C: READ IN SERIALISED TEMPLATE
-            Console.WriteLine("STEP C: READ SERIALISED VERSION OF TEMPLATE in file " + serialPath);
-            var serializedData2 = FileTools.ReadSerialisedObject(serialPath);
-            var template2 = QutSensors.Shared.Utilities.BinaryDeserialize(serializedData2) as Template_CCAuto;
+            Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + templatePath);
 
             //D: LOAD TEMPLATE INTO RECOGNISER
-            Console.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
-            var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
+            Log.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
+//            var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
 
             //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
-            Console.WriteLine("STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + serialPath);
+            Log.WriteLine("# STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + templatePath);
             Log.WriteLine("# Recording:     " + recordingFN);
 
             string wavDirName; string wavFileName;
@@ -135,33 +140,33 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
-            var result = recogniser.Analyse(recording);
+//            var result = recogniser.Analyse(recording);
 
 
-            int samplingRate = template2.SonogramConfig.FftConfig.SampleRate;
-            int windowSize = template2.SonogramConfig.WindowSize;
-            int windowOffset = (int)Math.Floor(windowSize * template2.SonogramConfig.WindowOverlap);
-            bool doMelScale = template2.SonogramConfig.DoMelScale;
-            int minF = (int)template2.SonogramConfig.MinFreqBand;
-            int maxF = (int)template2.SonogramConfig.MaxFreqBand;
+  //          int samplingRate = template2.SonogramConfig.FftConfig.SampleRate;
+    //        int windowSize = template2.SonogramConfig.WindowSize;
+      //      int windowOffset = (int)Math.Floor(windowSize * template2.SonogramConfig.WindowOverlap);
+        //    bool doMelScale = template2.SonogramConfig.DoMelScale;
+          //  int minF = (int)template2.SonogramConfig.MinFreqBand;
+            //int maxF = (int)template2.SonogramConfig.MaxFreqBand;
 
-            var events = result.GetAcousticEvents(samplingRate, windowSize, windowOffset, doMelScale, minF, maxF);
-            string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-            template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result, events);
-            int count = 0;
-            foreach (AcousticEvent e in events)
-            {
-                count++;
-                string key = result.RankingScoreName;
-                ResultProperty item = result.GetEventProperty(key, e);
-                Console.WriteLine("Hit Event (" + count + ")  score=" + item.Value.ToString());
-            }
+//            var events = result.GetAcousticEvents(samplingRate, windowSize, windowOffset, doMelScale, minF, maxF);
+//            string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
+//            template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result, events);
+//            int count = 0;
+//            foreach (AcousticEvent e in events)
+            //{
+            //    count++;
+            //    string key = result.RankingScoreName;
+            //    ResultProperty item = result.GetEventProperty(key, e);
+            //    Console.WriteLine("Hit Event (" + count + ")  score=" + item.Value.ToString());
+            //}
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
             var testDirectories = new List<String>();
             testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetTrue");
             testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetFalse");
-            Main_TestSerialTemplateOnCallFiles.ScanTestDirectories(template2, testDirectories);
+        //    Main_TestSerialTemplateOnCallFiles.ScanTestDirectories(template2, testDirectories);
 
 
             Console.WriteLine("\nFINISHED!");

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -719,16 +720,27 @@ namespace AudioAnalysisTools
         }
 
 
-        public double[,] GetCepstrogram(int minHz, int maxHz, bool doMelScale, int ccCount)
+        public System.Tuple<double[,], double[]> GetCepstrogram(int minHz, int maxHz, bool doMelScale, int ccCount)
         {
-            Double[,] m = BaseSonogram.ExtractFreqSubband(this.Data, minHz, maxHz, doMelScale, this.Configuration.FreqBinCount, this.FBinWidth);
+            return GetCepstrogram(this.Data, minHz, maxHz, this.Configuration.FreqBinCount, this.FBinWidth, doMelScale, ccCount);
+        }
+
+
+        public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz, 
+                                                        int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
+        {
+            //ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\LewinsRail\tempImage1.jpg");
+            double[,] m = BaseSonogram.ExtractFreqSubband(data, minHz, maxHz, doMelScale, freqBinCount, freqBinWidth);
+            //ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage2.jpg");
+
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
             m = SNR.NoiseReduce_Standard(m, modalNoise);
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
-            return m; 
-        }
+            //ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage3.jpg");
 
+            return System.Tuple.Create(m, modalNoise);
+        }
     
    } //end of class SpectralSonogram : BaseSonogram
 
