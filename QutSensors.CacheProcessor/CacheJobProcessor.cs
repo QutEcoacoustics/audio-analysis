@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using QutSensors.Data.Cache;
+
 using QutSensors.Data.Linq;
 using AudioTools;
 using AudioTools.DirectShow;
