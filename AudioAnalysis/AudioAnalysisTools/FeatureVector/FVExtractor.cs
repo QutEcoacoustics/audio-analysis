@@ -215,8 +215,10 @@ namespace AudioAnalysisTools
                                            sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                           (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
                 int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-                double[] modalNoise_FullBandwidth = sonogram.SnrFrames.ModalNoiseProfile;
-                double[] modalNoise_NarrowBand = sonogram.SnrSubband.ModalNoiseProfile;
+                
+                //USE FIXED DYNAMIC RANGE FOR NOISE REDUCITON
+                //double[] modalNoise_FullBandwidth = sonogram.SnrFrames.ModalNoiseProfile;
+                //double[] modalNoise_NarrowBand = sonogram.SnrSubband.ModalNoiseProfile;
                
 
                 Log.WriteLine("# Extracting Cepstrogram");
