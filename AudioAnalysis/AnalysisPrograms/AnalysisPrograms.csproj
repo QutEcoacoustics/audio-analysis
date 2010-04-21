@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
     <Compile Include="MFCC_OD_KekKek.cs" />
     <Compile Include="OscillationRecogniser.cs" />

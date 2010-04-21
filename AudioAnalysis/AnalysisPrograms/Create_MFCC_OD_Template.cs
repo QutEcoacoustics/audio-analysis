@@ -121,7 +121,7 @@ namespace AnalysisPrograms
 
             //B: CREATE ZIPPED VERSION OF TEMPLATE
             Log.WriteLine("# STEP B: CREATE ZIPPED RESOURCES");
-            TowseyLib.ZipUnzip.Zip(newTemplateDir, templatePath, true);
+            ZipUnzip.ZipDirectory(newTemplateDir, templatePath);
 
             //C: READ IN SERIALISED TEMPLATE
             Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + templatePath);
