@@ -735,6 +735,7 @@ namespace AudioAnalysisTools
 
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
             m = SNR.NoiseReduce_Standard(m, modalNoise);
+            //m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
             //ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage3.jpg");
