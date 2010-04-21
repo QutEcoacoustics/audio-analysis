@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using ICSharpCode.SharpZipLib.Zip;
 using TowseyLib;
 using AudioAnalysisTools;
 using QutSensors.Shared;
@@ -43,7 +44,6 @@ namespace AnalysisPrograms
             Log.WriteLine(title);
             Log.WriteLine(date);
             Log.WriteLine("");
-
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
@@ -121,7 +121,7 @@ namespace AnalysisPrograms
 
             //B: CREATE ZIPPED VERSION OF TEMPLATE
             Log.WriteLine("# STEP B: CREATE ZIPPED RESOURCES");
-
+            TowseyLib.ZipUnzip.Zip(newTemplateDir, templatePath, true);
 
             //C: READ IN SERIALISED TEMPLATE
             Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + templatePath);
