@@ -99,16 +99,12 @@ namespace AudioAnalysisTools
                 //Make sonogram of each recording
                 //Console.WriteLine("Recording = "+f.Name);
                 AudioRecording recording = new AudioRecording(f.FullName);
-                WavReader wav = recording.GetWavReader();
                 cepstralConfig.SourceFName = Path.GetFileNameWithoutExtension(f.Name);
-                cepstralConfig.FftConfig.SampleRate = wav.SampleRate;
 
                //Extract the FVs from each
-                //Log.WriteIfVerbose("\tInit CepstralSonogram(cepstralConfig, wav)"); 
-                var cs = new CepstralSonogram(cepstralConfig, wav);
+                var cs = new CepstralSonogram(cepstralConfig, recording.GetWavReader());
                 avFrameCount += cs.FrameCount;
                 List<FeatureVector> fvs = GetFeatureVectorsAtFixedIntervals(cs, FVParams, cepstralConfig);
-                //Log.WriteIfVerbose("Have extracted " + fvs.Count+ " feature vectors.");
                 list.AddRange(fvs);
 
                 //use following lines to save image of sonogram for debug purposes
@@ -159,7 +155,8 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Extracts a single feature Vector from the locations noted in parameters file.
+        /// Returns a single feature Vector extracted from the locations noted in parameters file.
+        /// Also returns a modal noise vector.
         /// </summary>
         /// <param name="files"></param>
         /// <param name="dict"></param>
@@ -173,14 +170,18 @@ namespace AudioAnalysisTools
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config - especially full band width
             sonoConfig.WindowSize     = Int32.Parse(parameters["FRAME_SIZE"]);
             sonoConfig.WindowOverlap  = Double.Parse(parameters["FRAME_OVERLAP"]);
+            sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(parameters["NOISE_REDUCTION_TYPE"]);
+            sonoConfig.DynamicRange   = Double.Parse(parameters["DYNAMIC_RANGE"]);
             int minHz                 = Int32.Parse(parameters["MIN_FREQ"]);
             int maxHz                 = Int32.Parse(parameters["MAX_FREQ"]);
             int ccCount               = Int32.Parse(parameters["CC_COUNT"]);                 //Number of mfcc coefficients
             bool doMelScale           = Boolean.Parse(parameters["DO_MELSCALE"]);
-            doMelScale                = false;  //avoid melScale becaues not debugged in this option 
             bool includeDelta         = Boolean.Parse(parameters["INCLUDE_DELTA"]);
             bool includeDoubleDelta   = Boolean.Parse(parameters["INCLUDE_DOUBLE_DELTA"]);
             int deltaT                = Int32.Parse(parameters["DELTA_T"]);
+            doMelScale   = false;    //avoid melScale because not debugged in this option 
+            includeDelta = true;     //collect all coefficients possible - do not have to use them
+            includeDoubleDelta = true;
 
 
             List<double[]> fvList    = new List<double[]>();
@@ -193,8 +194,7 @@ namespace AudioAnalysisTools
                 for (int i = 0; i < sourceCount; i++)
                 {
                     string key = String.Concat("SOURCE", (i + 1));
-                    string source = parameters[key];
-                    string[] words = source.Split('\t');
+                    string[] words = parameters[key].Split('\t');
                     string fileName = words[0];
                     if (! fileName.Equals(fn)) continue;
                     locations = words[1].Split(',');
@@ -215,6 +215,10 @@ namespace AudioAnalysisTools
                                            sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                           (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
                 int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+                double[] modalNoise_FullBandwidth = sonogram.SnrFrames.ModalNoiseProfile;
+                double[] modalNoise_NarrowBand = sonogram.SnrSubband.ModalNoiseProfile;
+               
+
                 Log.WriteLine("# Extracting Cepstrogram");
                 var tuple = ((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
                 double[,] m = tuple.Item1;
@@ -223,7 +227,8 @@ namespace AudioAnalysisTools
                 //calculate default dB array ie frame energy.
                 double[] dB = new double[sonogram.FrameCount];
                 for (int j = 0; j < sonogram.FrameCount; j++) dB[j] = 0.5;
-
+                double[,] avs = Speech.AcousticVectors(m, dB, includeDelta, includeDoubleDelta);
+                
                 //EXTRACT FV FROM EACH LOCATION, MERGE AND AVERAGE
                 for (int i = 0; i < locations.Length; i++)
                 {
@@ -231,7 +236,7 @@ namespace AudioAnalysisTools
                     Log.WriteLine("# Extracting FV from location {0}", locus);
 
                     //v: calculate the full ACOUSTIC VECTORS ie including decibel and deltas, etc
-                    double[] fv = Speech.AcousticVector(locus, m, dB, includeDelta, includeDoubleDelta);
+                    double[] fv = Speech.GetAcousticVector(avs, locus, deltaT);
                     fvList.Add(fv);
                 }
 
@@ -245,6 +250,7 @@ namespace AudioAnalysisTools
             for (int j = 0; j < L; j++) finalFV[j] /= fvList.Count;
 
             //average the extracted modal noise vectors
+            L = noiseList[0].Length;
             var modalNoise = new double[L];
             for (int i = 0; i < noiseList.Count; i++) for (int j = 0; j < L; j++) modalNoise[j] += noiseList[i][j];
             //calculate average
