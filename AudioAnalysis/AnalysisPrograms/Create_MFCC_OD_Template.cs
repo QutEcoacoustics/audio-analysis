@@ -53,93 +53,62 @@ namespace AnalysisPrograms
             CheckArguments(args);
             string testRecordingPath = args[0];
             string templatePath      = args[1];
-            string workingDirectory  = args[2];
+            string testDirectory     = args[2]; //used for testing completed template.
 
-
-            string recordingFN = Path.GetFileName(testRecordingPath);
             string templateDir = Path.GetDirectoryName(templatePath);
             string templateFN  = Path.GetFileNameWithoutExtension(templatePath);
-            string outputDir   = workingDirectory;
-            string opFName     = "events.txt"; ;
-            string opPath      = outputDir + opFName;
 
             Log.WriteLine("# CallID         =" + templateID);
-            Log.WriteLine("# Test Recording =" + recordingFN);
             Log.WriteLine("# Template Dir   =" + templateDir);
-            Log.WriteLine("# Working Dir    =" + workingDirectory);
 
-            //A: SET UP DIRECTORY STRUCTURE
-            //create the working directory if it does not exist
-            if (!Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
-            string newTemplateDir = workingDirectory + templateFN;
-            Log.WriteLine("# OP Template Dir=" + newTemplateDir);
-
-            //B: INITIALISE CONFIG and CREATE DIRECTORY STRUCTURE
-            Log.WriteLine("# Init CONFIG and creating directory structure");
-            string templateFName = "Template_" + templateID + ".txt";
-            string iniPath = templateDir + "\\" + templateFName;
-            //string fvPath  = templateDir + "\\FV1_" + templateID + ".txt"; //feature vector path
-            //double[] fv = FileTools.ReadDoubles2Vector(fvPath);
-
-            //C: SET UP CONFIGURATION
-            var config = new Configuration(iniPath);
+            //A: INITIALISE CONFIG
+            Log.WriteLine("# STEP A: READ CONFIG");
+            var config = new Configuration(templatePath);
             config.SetPair(ConfigKeys.Template.Key_TemplateDir, templateDir);
-            //config.SetPair(ConfigKeys.Recording.Key_RecordingDirName, recordingFiles[0].DirectoryName);//assume all files in same dir
-            config.SetPair("MODE", Mode.CREATE_NEW_TEMPLATE.ToString());
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            // FileTools.WriteTextFile(opPath, date + "\n# Scanning recording for Lewin's Rail Kek Kek\n# Recording file: " + recordingFN);
 
-           // FileTools.WriteTextFile(opPath, date + "\n# Scanning recording for Lewin's Rail Kek Kek\n# Recording file: " + recordingFN);
-           // string appConfigPath = @"C:\SensorNetworks\Templates\sonogram.ini";
-
-            //D: GET TRAINING DATA - i.e. List of Vocalisation Recordings - either paths or URIs
+            //B: GET TRAINING DATA - i.e. List of Vocalisation Recordings - either paths or URIs
+            Log.WriteLine("# STEP B: COLLECT TRAINING FILES");
             string ext = dict[key_FILE_EXT];
             string trainingDir = dict[key_TRAIN_DIR];
             FileInfo[] recordingFiles = FileTools.GetFilesInDirectory(trainingDir, ext);
 
-            //E: CREATE resources according to parameters in ini file.
-            Log.WriteLine("# RESOURCE 1: Extract Feature Vector from recordings");
+            //C: CREATE resources according to parameters in ini file.
+            Log.WriteLine("# STEP C: CREATE RESOURCES");
             var tuple = FVExtractor.ExtractSingleFV(recordingFiles, dict);
             double[] fv    = tuple.Item1;
             double[] noise = tuple.Item2;
- 
-            //STEP THREE: Extract template
-            //Log.WriteIfVerbose("\nSTEP THREE: Create language model");
-            //template.CreateLanguageModel(config);
-            //STEP FOUR: Save template
-            Log.WriteIfVerbose("\nSTEP FOUR: Save template");
-            string opTemplatePath = templateDir + "\\"+ templateFName;
-            string opDir = Path.GetDirectoryName(opTemplatePath);
-            if (!Directory.Exists(opDir)) Directory.CreateDirectory(opDir);
 
-            if (File.Exists(opTemplatePath)) File.Copy(opTemplatePath, opTemplatePath + "OLD.txt", true); //overwrite
-
-//            Save(new StreamWriter(opTemplatePath), opDir);
-//            template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;    //reset noise reduction type for normal use
-//            template.mode = Mode.READ_EXISTING_TEMPLATE;  //reset mode for normal use
-
-            //B: CREATE ZIPPED VERSION OF TEMPLATE
-            Log.WriteLine("# STEP B: CREATE ZIPPED RESOURCES");
-            string zipFName = "Template_" + templateID + ".zip";
-            string zipPath = templateDir + "\\" + templateFName;
+            //D: SAVE THE RESOURCES AND ZIP
+            Log.WriteLine("# STEP D: SAVE THE RESOURCES");
+            string fvPath = templateDir + "\\FV1_" + templateID + ".txt";
+            FileTools.WriteArray2File_Formatted(fv, fvPath, "f8");
+            string noisePath = templateDir + "\\modalNoise_" + templateID + ".txt";
+            FileTools.WriteArray2File_Formatted(noise, noisePath, "f8");
+            Log.WriteLine("# STEP E: ZIP THE RESOURCES");
+            DirectoryInfo parent = Directory.GetParent(templateDir); //place zipped file in parent directory
+            string zipPath = parent.FullName + "\\" + templateID + ".zip";
             ZipUnzip.ZipDirectory(templateDir, zipPath);
 
-            //C: READ IN ZIPPED TEMPLATE CONTAINING RESOURCES
-            Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + zipPath);
+            //E: SET UP ARGUMENTS TO VERIFY THE TEMPLATE
+            string recordingFN = Path.GetFileName(testRecordingPath);
+            Log.WriteLine("# STEP F: VERIFY TEMPLATE: " + templatePath);
+            Log.WriteLine("# SCAN TEST RECORDING:     " + recordingFN);
+            Log.WriteLine("# WORKING DIRECTORY:       " + testDirectory);
+            string[] arguments = new string[3];
+            arguments[0] = testRecordingPath;
+            arguments[1] = zipPath;
+            arguments[2] = testDirectory; //working directory for verification.
+            MFCC_OD_KekKek.Dev(arguments);
+               
 
-            //D: LOAD TEMPLATE INTO RECOGNISER
-            Log.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
-//            var recogniser = new Recogniser(template2 as Template_CCAuto); //GET THE TYPE
-
-            //E: VERIFY TEMPLATE: SCAN SINGLE RECORDING and SAVE RESULTS IMAGE
-            Log.WriteLine("# STEP E: VERIFY TEMPLATE: SCAN SINGLE RECORDING " + templatePath);
-            Log.WriteLine("# Recording:     " + recordingFN);
-
-            string wavDirName; string wavFileName;
-            WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE
-            string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
-            AudioRecording recording = new AudioRecording(wavPath);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //string wavDirName; string wavFileName;
+            //WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE
+            //string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
+            //AudioRecording recording = new AudioRecording(wavPath);
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
 //            var result = recogniser.Analyse(recording);
 
@@ -164,9 +133,9 @@ namespace AnalysisPrograms
             //}
 
             //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
-            var testDirectories = new List<String>();
-            testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetTrue");
-            testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetFalse");
+            //var testDirectories = new List<String>();
+            //testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetTrue");
+            //testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetFalse");
         //    Main_TestSerialTemplateOnCallFiles.ScanTestDirectories(template2, testDirectories);
 
 
