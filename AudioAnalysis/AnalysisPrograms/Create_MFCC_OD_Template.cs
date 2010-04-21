@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using ICSharpCode.SharpZipLib.Zip;
 using TowseyLib;
 using AudioAnalysisTools;
 using QutSensors.Shared;
@@ -121,10 +120,12 @@ namespace AnalysisPrograms
 
             //B: CREATE ZIPPED VERSION OF TEMPLATE
             Log.WriteLine("# STEP B: CREATE ZIPPED RESOURCES");
-            ZipUnzip.ZipDirectory(newTemplateDir, templatePath);
+            string zipFName = "Template_" + templateID + ".zip";
+            string zipPath = templateDir + "\\" + templateFName;
+            ZipUnzip.ZipDirectory(templateDir, zipPath);
 
-            //C: READ IN SERIALISED TEMPLATE
-            Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + templatePath);
+            //C: READ IN ZIPPED TEMPLATE CONTAINING RESOURCES
+            Log.WriteLine("# STEP C: READ ZIPPED TEMPLATE" + zipPath);
 
             //D: LOAD TEMPLATE INTO RECOGNISER
             Log.WriteLine("STEP D: VERIFY TEMPLATE: LOAD IT INTO RECOGNISER");
