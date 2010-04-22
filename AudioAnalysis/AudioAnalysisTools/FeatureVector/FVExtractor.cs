@@ -160,11 +160,10 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="files"></param>
         /// <param name="dict"></param>
-        public static System.Tuple<double[], double[]> ExtractSingleFV(FileInfo[] files, Dictionary<string, string> parameters)
+        public static System.Tuple<double[], double[], double[]> ExtractSingleFV(FileInfo[] files, Dictionary<string, string> parameters)
         {
             Log.WriteIfVerbose("# START FVExtractor.ExtractSingleFV()");
-            Dictionary<string, string>.KeyCollection keys = parameters.Keys;
-            int sourceCount = Int32.Parse(parameters["SOURCE_COUNT"]);
+            //Dictionary<string, string>.KeyCollection keys = parameters.Keys;
 
             //set up the config for extracting sonograms
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config - especially full band width
@@ -172,6 +171,7 @@ namespace AudioAnalysisTools
             sonoConfig.WindowOverlap  = Double.Parse(parameters["FRAME_OVERLAP"]);
             sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(parameters["NOISE_REDUCTION_TYPE"]);
             sonoConfig.DynamicRange   = Double.Parse(parameters["DYNAMIC_RANGE"]);
+            int sourceCount           = Int32.Parse(parameters["SOURCE_COUNT"]);
             int minHz                 = Int32.Parse(parameters["MIN_FREQ"]);
             int maxHz                 = Int32.Parse(parameters["MAX_FREQ"]);
             int ccCount               = Int32.Parse(parameters["CC_COUNT"]);                 //Number of mfcc coefficients
@@ -184,8 +184,9 @@ namespace AudioAnalysisTools
             includeDoubleDelta = true;
 
 
-            List<double[]> fvList    = new List<double[]>();
-            List<double[]> noiseList = new List<double[]>();
+            List<double[]> fvList    = new List<double[]>(); //for storing feature vectors
+            List<double[]> noiseFullBand_List = new List<double[]>(); //for storing modal noise full-band vector
+            List<double[]> noiseSubband_List  = new List<double[]>(); //for storing modal noise sub-band vector
             foreach (FileInfo f in files) //training file
             {
                 string fn = Path.GetFileNameWithoutExtension(f.Name);
@@ -214,17 +215,20 @@ namespace AudioAnalysisTools
                 Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                            sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                           (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
-                int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
                 
-                //USE FIXED DYNAMIC RANGE FOR NOISE REDUCITON
-                //double[] modalNoise_FullBandwidth = sonogram.SnrFrames.ModalNoiseProfile;
-                //double[] modalNoise_NarrowBand = sonogram.SnrSubband.ModalNoiseProfile;
-               
+                //CALCULATE MODAL NOISE PROFILE - USER MAY REQUIRE IT FOR NOISE REDUCTION
+                double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
+                noiseFullBand_List.Add(modalNoise);
+                //extract subband modal noise profile
+                double[] subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale, 
+                                                                         sonogram.Configuration.FreqBinCount, sonogram.FBinWidth); 
+                noiseSubband_List.Add(subband);                
 
+                //CALCULATE CEPSTROGRAM
                 Log.WriteLine("# Extracting Cepstrogram");
                 var tuple = ((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
                 double[,] m = tuple.Item1;
-                noiseList.Add(tuple.Item2);
+                //noiseSubband_List.Add(tuple.Item2);
 
                 //calculate default dB array ie frame energy.
                 double[] dB = new double[sonogram.FrameCount];
@@ -248,18 +252,23 @@ namespace AudioAnalysisTools
             int L = fvList[0].Length;
             var finalFV = new double[L];
             for (int i = 0; i < fvList.Count; i++) for (int j = 0; j < L; j++) finalFV[j] += fvList[i][j];
-            //calculate average
-            for (int j = 0; j < L; j++) finalFV[j] /= fvList.Count;
+            for (int j = 0; j < L; j++) finalFV[j] /= (double)fvList.Count;  //calculate average
 
-            //average the extracted modal noise vectors
-            L = noiseList[0].Length;
-            var modalNoise = new double[L];
-            for (int i = 0; i < noiseList.Count; i++) for (int j = 0; j < L; j++) modalNoise[j] += noiseList[i][j];
-            //calculate average
-            for (int j = 0; j < L; j++) modalNoise[j] /= noiseList.Count;
+            //average the extracted full-band modal noise vectors
+            L     = noiseFullBand_List[0].Length;
+            int C = noiseFullBand_List.Count;
+            var modalNoise_Fullband = new double[L];
+            for (int i = 0; i < C; i++) for (int j = 0; j < L; j++) modalNoise_Fullband[j] += noiseFullBand_List[i][j];
+            for (int j = 0; j < L; j++) modalNoise_Fullband[j] /= (double)C;  //calculate average
 
+            //average the extracted sub-band modal noise vectors
+            L = noiseSubband_List[0].Length;
+            C = noiseSubband_List.Count;
+            var modalNoise_Subband = new double[L];
+            for (int i = 0; i < C; i++) for (int j = 0; j < L; j++) modalNoise_Subband[j] += noiseSubband_List[i][j];
+            for (int j = 0; j < L; j++) modalNoise_Subband[j] /= (double)C;  //calculate average
 
-            return Tuple.Create(finalFV, modalNoise);
+            return Tuple.Create(finalFV, modalNoise_Fullband, modalNoise_Subband);
         } // end ExtractSingleFV()
 
 

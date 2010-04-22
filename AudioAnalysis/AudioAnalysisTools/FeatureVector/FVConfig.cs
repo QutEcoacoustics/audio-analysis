@@ -84,7 +84,7 @@ namespace AudioAnalysisTools
             WavReader wav = new WavReader(FV_DefaultNoisePath);
             var sonoConfig = new CepstralSonogramConfig(config);
             AcousticVectorsSonogram s = new AcousticVectorsSonogram(sonoConfig, wav);
-            this.DefaultModalNoiseProfile = s.SnrFrames.ModalNoiseProfile;
+            this.DefaultModalNoiseProfile = s.SnrFullband.ModalNoiseProfile;
             DefaultNoiseFV = Acoustic_Model.GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
 
             if(DefaultNoiseFV == null)
