@@ -27,6 +27,8 @@ namespace AnalysisPrograms
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string key_DO_MELSCALE = "DO_MELSCALE";
         public static string key_CC_COUNT = "CC_COUNT";
+        public static string key_INCLUDE_DELTA = "INCLUDE_DELTA";
+        public static string key_INCLUDE_DOUBLE_DELTA = "INCLUDE_DOUBLE_DELTA";
         public static string key_DCT_DURATION = "DCT_DURATION";
         public static string key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
         public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
@@ -88,24 +90,29 @@ namespace AnalysisPrograms
             //C: SET UP CONFIGURATION
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int minHz = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+
+
+            int windowSize = Int32.Parse(dict["FRAME_SIZE"]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            int ccCount = Int32.Parse(dict[key_CC_COUNT]);                  //Number of mfcc coefficients
-            bool doMelScale =  Boolean.Parse(dict[key_DO_MELSCALE]);        //not a user option
-            doMelScale = false; //do not want use to change this at present time. STILL NEED TO DEBUG MELSCALE OPTION 
-            bool includeDelta = false;
-            bool includeDoubleDelta = false;
-            double dctDuration = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
-            int minOscilFreq = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);       //ignore oscillations below this threshold freq
-            int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);       //ignore oscillations above this threshold freq
+            ConfigKeys.NoiseReductionType nrt = NoiseReduceConfiguration.SetNoiseReductionType(dict["NOISE_REDUCTION_TYPE"]);
+            double dynamicRange = Double.Parse(dict["DYNAMIC_RANGE"]);
+            int minHz           = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
+            int ccCount         = Int32.Parse(dict[key_CC_COUNT]);                  //Number of mfcc coefficients
+            bool doMelScale     =  Boolean.Parse(dict[key_DO_MELSCALE]);        //not a user option
+            doMelScale          = false; //do not want use to change this at present time. STILL NEED TO DEBUG MELSCALE OPTION 
+            bool includeDelta       = Boolean.Parse(dict[key_INCLUDE_DELTA]);
+            bool includeDoubleDelta = Boolean.Parse(dict[key_INCLUDE_DOUBLE_DELTA]);
+            double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
+            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);       //ignore oscillations below this threshold freq
+            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);       //ignore oscillations above this threshold freq
             double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
-            double minDuration = Double.Parse(dict[key_MIN_DURATION]);      //min duration of event in seconds 
-            double maxDuration = Double.Parse(dict[key_MAX_DURATION]);      //max duration of event in seconds 
-            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);     //options to draw sonogram
+            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);      //min duration of event in seconds 
+            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);      //max duration of event in seconds 
+            int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);     //options to draw sonogram
 
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.", minHz, maxHz);
@@ -114,8 +121,9 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
 
             //#############################################################################################################################################
-            var results = Execute_CallDetect(recordingPath, minHz, maxHz, frameOverlap, doMelScale, ccCount, includeDelta, includeDoubleDelta,
-                         fv, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, eventThreshold, minDuration, maxDuration);
+            var results = Execute_CallDetect(recordingPath, minHz, maxHz, windowSize, frameOverlap, nrt, dynamicRange, 
+                                  doMelScale, ccCount, includeDelta, includeDoubleDelta,
+                                  fv, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, eventThreshold, minDuration, maxDuration);
             Log.WriteLine("# Finished detecting Lewin's Rail calls.");
             //#############################################################################################################################################
 
@@ -145,7 +153,8 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>> Execute_CallDetect(string wavPath,
-            int minHz, int maxHz, double frameOverlap, bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
+            int minHz, int maxHz, int windowSize, double frameOverlap, ConfigKeys.NoiseReductionType nrt, double dynamicRange, 
+            bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
 
             double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, 
             double minAmplitude, double eventThreshold, double minDuration, double maxDuration)
@@ -158,8 +167,14 @@ namespace AnalysisPrograms
             //ii: MAKE SONOGRAM
             Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config - especially full band width
-            sonoConfig.WindowOverlap = frameOverlap;
+            //now set required values in config
             sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.WindowSize = windowSize;
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.NoiseReductionType = nrt;
+            sonoConfig.DynamicRange = dynamicRange;
+
+
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);

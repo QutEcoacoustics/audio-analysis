@@ -33,11 +33,10 @@ namespace AudioAnalysisTools
         public int FrameCount       { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         //energy and dB per frame
-        public SNR SnrFrames { get; private set; }
-        public double[] DecibelsPerFrame { get { return SnrFrames.Decibels; } protected set {} }//decibels per signal frame
+        public SNR SnrFullband { get; private set; }
+        public double[] DecibelsPerFrame { get { return SnrFullband.Decibels; } protected set {} }//decibels per signal frame
 
         //energy and dB per frame sub-band
-       // public bool   ExtractSubband { get; set; } // extract sub-band when making spectrogram image
         protected int subBand_MinHz; //min freq (Hz) of the required subband
         protected int subBand_MaxHz; //max freq (Hz) of the required subband
         public SNR    SnrSubband { get; private set; }
@@ -102,15 +101,15 @@ namespace AudioAnalysisTools
             FrameCount = frameIDs.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            this.SnrFrames = new SNR(signal, frameIDs);
+            this.SnrFullband = new SNR(signal, frameIDs);
             //this.SnrFrames = new SNR(frames);
-            this.Max_dBReference = SnrFrames.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
-            this.DecibelsNormalised = SnrFrames.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
+            this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
+            this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
             //AUDIO SEGMENTATION
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
 
-            var fractionOfHighEnergyFrames = SnrFrames.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
+            var fractionOfHighEnergyFrames = SnrFullband.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
 			if (fractionOfHighEnergyFrames > 0.8)
 			{
                 Log.WriteIfVerbose("\nWARNING ##########################################");
@@ -547,7 +546,7 @@ namespace AudioAnalysisTools
         public void Dispose()
         {
             this.Configuration = null;
-            this.SnrFrames     = null;
+            this.SnrFullband     = null;
             this.SnrSubband    = null;
             this.DecibelsPerFrame = null;
             this.DecibelsInSubband  = null;
@@ -564,6 +563,18 @@ namespace AudioAnalysisTools
             int c2;
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
+        }
+
+
+        public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int binCount, double binWidth)
+        {
+            //extract subband modal noise profile
+            int c1, c2;
+            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            int subbandCount = c2 - c1 + 1;
+            var subband = new double[subbandCount];
+            for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
+            return subband;
         }
 
 
@@ -657,30 +668,30 @@ namespace AudioAnalysisTools
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and store for later use
+            this.SnrFullband.ModalNoiseProfile = modalNoise;
+
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
             {
-                this.SnrFrames.ModalNoiseProfile = modalNoise;
                 m = SNR.NoiseReduce_Standard(m, modalNoise);
             }
             else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
             {
-                Log.WriteIfVerbose("\tNoise reduction: DYNAMIC RANGE = " + this.Configuration.DynamicRange);
+                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + this.Configuration.DynamicRange);
                 m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
             }
             else
             if(Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.SILENCE_MODEL)
             {
                 Log.WriteIfVerbose("\tNoise reduction: SILENCE MODEL - calculated from a seperate file with sufficient silence.");
-                this.SnrFrames.ModalNoiseProfile = this.Configuration.SilenceModel;
+                this.SnrFullband.ModalNoiseProfile = this.Configuration.SilenceModel;
                 m = SNR.NoiseReduce_Standard(m, this.Configuration.SilenceModel);
             }
             else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.PEAK_TRACKING)
             {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING.");
-                double dynamicRange = 40;        //sets the the max dB
-                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
+                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + this.Configuration.DynamicRange);
+                m = SNR.NoiseReduce_PeakTracking(m, this.Configuration.DynamicRange);
             }
             else
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
@@ -689,7 +700,6 @@ namespace AudioAnalysisTools
                 //TODO TODO TODO
                 //modalNoise = have to get at the standby Noise profile currently stored in FVConfig class.
                 //It was put there when initialising the FVConfig class from the DefaultNoise  recording
-                this.SnrFrames.ModalNoiseProfile = modalNoise;
                 m = SNR.NoiseReduce_Standbye(m, modalNoise, this.Configuration.DynamicRange);
             }
             
@@ -729,17 +739,19 @@ namespace AudioAnalysisTools
         public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz, 
                                                         int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
         {
-            //ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\LewinsRail\tempImage1.jpg");
+            ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\LewinsRail\tempImage1.jpg");
             double[,] m = BaseSonogram.ExtractFreqSubband(data, minHz, maxHz, doMelScale, freqBinCount, freqBinWidth);
-            //ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage2.jpg");
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage2.jpg");
 
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
-            m = SNR.NoiseReduce_Standard(m, modalNoise);
+            //DO NOT DO NOISE REDUCTION BECAUSE ALREADY DONE
+            //double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
+            //m = SNR.NoiseReduce_Standard(m, modalNoise);
             //m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
+
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
-            //ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage3.jpg");
-
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage3.jpg");
+            double[] modalNoise = null;
             return System.Tuple.Create(m, modalNoise);
         }
     
@@ -776,7 +788,7 @@ namespace AudioAnalysisTools
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
-            this.SnrFrames.ModalNoiseProfile = modalNoise;
+            this.SnrFullband.ModalNoiseProfile = modalNoise;
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
             {
                 m = SNR.NoiseReduce_Standard(m, modalNoise);
@@ -890,7 +902,7 @@ namespace AudioAnalysisTools
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
-            this.SnrFrames.ModalNoiseProfile = modalNoise;
+            this.SnrFullband.ModalNoiseProfile = modalNoise;
             if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
             {
                 m = SNR.NoiseReduce_Standard(m, modalNoise);

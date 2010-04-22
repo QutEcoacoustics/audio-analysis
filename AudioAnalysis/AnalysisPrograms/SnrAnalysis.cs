@@ -114,16 +114,16 @@ namespace AnalysisPrograms
 
             Log.WriteLine("\nENERGY PARAMETERS");
             Log.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
-            Log.WriteLine("Minimum Log Energy       =" + sonogram.SnrFrames.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
-            Log.WriteLine("Maximum Log Energy       =" + sonogram.SnrFrames.LogEnergy.Max().ToString("F2"));
-            Log.WriteLine("Minimum dB / frame       =" + sonogram.SnrFrames.Min_dB.ToString("F2") + "  (See Note 4)");
-            Log.WriteLine("Maximum dB / frame       =" + sonogram.SnrFrames.Max_dB.ToString("F2"));
+            Log.WriteLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
+            Log.WriteLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
+            Log.WriteLine("Minimum dB / frame       =" + sonogram.SnrFullband.Min_dB.ToString("F2") + "  (See Note 4)");
+            Log.WriteLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2"));
 
             Log.WriteLine("\ndB NOISE SUBTRACTION");
-            Log.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFrames.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
-            double noiseSpan = sonogram.SnrFrames.NoiseRange;
+            Log.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFullband.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
+            double noiseSpan = sonogram.SnrFullband.NoiseRange;
             Log.WriteLine("Noise range              =" + noiseSpan.ToString("F2") + " to +" + (noiseSpan * -1).ToString("F2") + " dB   (See Note 6)");
-            Log.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFrames.Snr.ToString("F2") + " dB   (See Note 7)");
+            Log.WriteLine("SNR (max frame-noise)    =" + sonogram.SnrFullband.Snr.ToString("F2") + " dB   (See Note 7)");
 
 
             Log.WriteLine("\nSEGMENTATION PARAMETERS");
@@ -142,7 +142,7 @@ namespace AnalysisPrograms
             Console.WriteLine("\n\tNote 4:      Log energy values are converted to decibels by multiplying by 10.");
             Console.WriteLine("\n\tNote 5:      The modal background noise per frame is calculated using an algorithm of Lamel et al, 1981, called 'Adaptive Level Equalisatsion'.");
             Console.WriteLine("\t             This sets the modal background noise level to 0 dB.");
-            Console.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.SnrFrames.NoiseRange.ToString("F2")+" dB either side of zero.");
+            Console.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.SnrFullband.NoiseRange.ToString("F2")+" dB either side of zero.");
             Console.WriteLine("\n\tNote 7:      Here are some dB comparisons. NOTE! They are with reference to the auditory threshold at 1 kHz.");
             Console.WriteLine("\t             Our estimates of SNR are with respect to background environmental noise which is typically much higher than hearing threshold!");
             Console.WriteLine("\t             Leaves rustling, calm breathing:  10 dB");
@@ -211,7 +211,7 @@ namespace AnalysisPrograms
 
             var SNR_fullbandEvent = new AcousticEvent(0, 0, 0, 0);
             SNR_fullbandEvent.Name = "SNR(full bandwidth)";
-            SNR_fullbandEvent.Score = sonogram.SnrFrames.Snr;
+            SNR_fullbandEvent.Score = sonogram.SnrFullband.Snr;
             SNR_fullbandEvent.ScoreComment = "dB of max frame minus db of modal noise.";
 
             var SNR_subbandEvent  = new AcousticEvent(0, 0, minHz, maxHz);

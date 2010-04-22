@@ -64,10 +64,9 @@ namespace AnalysisPrograms
             //A: INITIALISE CONFIG
             Log.WriteLine("# STEP A: READ CONFIG");
             var config = new Configuration(templatePath);
-            config.SetPair(ConfigKeys.Template.Key_TemplateDir, templateDir);
+            //config.SetPair(ConfigKeys.Template.Key_TemplateDir, templateDir);
             Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
-            // FileTools.WriteTextFile(opPath, date + "\n# Scanning recording for Lewin's Rail Kek Kek\n# Recording file: " + recordingFN);
+            //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
             //B: GET TRAINING DATA - i.e. List of Vocalisation Recordings - either paths or URIs
             Log.WriteLine("# STEP B: COLLECT TRAINING FILES");
@@ -79,20 +78,23 @@ namespace AnalysisPrograms
             Log.WriteLine("# STEP C: CREATE RESOURCES");
             var tuple = FVExtractor.ExtractSingleFV(recordingFiles, dict);
             double[] fv    = tuple.Item1;
-            double[] noise = tuple.Item2;
+            double[] modalNoise_Fullband = tuple.Item2;
+            double[] modalNoise_Subband  = tuple.Item3;
 
             //D: SAVE THE RESOURCES AND ZIP
             Log.WriteLine("# STEP D: SAVE THE RESOURCES");
             string fvPath = templateDir + "\\FV1_" + templateID + ".txt";
             FileTools.WriteArray2File_Formatted(fv, fvPath, "f8");
-            string noisePath = templateDir + "\\modalNoise_" + templateID + ".txt";
-            FileTools.WriteArray2File_Formatted(noise, noisePath, "f8");
+            string noisePath = templateDir + "\\modalNoiseFullband_" + templateID + ".txt";
+            FileTools.WriteArray2File_Formatted(modalNoise_Fullband, noisePath, "f8");
+            noisePath = templateDir + "\\modalNoiseSubband_" + templateID + ".txt";
+            FileTools.WriteArray2File_Formatted(modalNoise_Subband, noisePath, "f8");
             Log.WriteLine("# STEP E: ZIP THE RESOURCES");
             DirectoryInfo parent = Directory.GetParent(templateDir); //place zipped file in parent directory
             string zipPath = parent.FullName + "\\" + templateID + ".zip";
             ZipUnzip.ZipDirectory(templateDir, zipPath);
 
-            //E: SET UP ARGUMENTS TO VERIFY THE TEMPLATE
+            //E: VERIFY THE TEMPLATE
             string recordingFN = Path.GetFileName(testRecordingPath);
             Log.WriteLine("# STEP F: VERIFY TEMPLATE: " + templatePath);
             Log.WriteLine("# SCAN TEST RECORDING:     " + recordingFN);
@@ -102,42 +104,6 @@ namespace AnalysisPrograms
             arguments[1] = zipPath;
             arguments[2] = testDirectory; //working directory for verification.
             MFCC_OD_KekKek.Dev(arguments);
-               
-
-            //string wavDirName; string wavFileName;
-            //WavChooser.ChooseWavFile(out wavDirName, out wavFileName); //WARNING! CHOOSE WAV FILE
-            //string wavPath = wavDirName + wavFileName + ".wav";        //set the .wav file in method ChooseWavFile()
-            //AudioRecording recording = new AudioRecording(wavPath);
-            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-
-//            var result = recogniser.Analyse(recording);
-
-
-  //          int samplingRate = template2.SonogramConfig.FftConfig.SampleRate;
-    //        int windowSize = template2.SonogramConfig.WindowSize;
-      //      int windowOffset = (int)Math.Floor(windowSize * template2.SonogramConfig.WindowOverlap);
-        //    bool doMelScale = template2.SonogramConfig.DoMelScale;
-          //  int minF = (int)template2.SonogramConfig.MinFreqBand;
-            //int maxF = (int)template2.SonogramConfig.MaxFreqBand;
-
-//            var events = result.GetAcousticEvents(samplingRate, windowSize, windowOffset, doMelScale, minF, maxF);
-//            string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");
-//            template2.SaveSyllablesAndResultsImage(recording.GetWavReader(), imagePath, result, events);
-//            int count = 0;
-//            foreach (AcousticEvent e in events)
-            //{
-            //    count++;
-            //    string key = result.RankingScoreName;
-            //    ResultProperty item = result.GetEventProperty(key, e);
-            //    Console.WriteLine("Hit Event (" + count + ")  score=" + item.Value.ToString());
-            //}
-
-            //F: TEST TEMPLATE ON MULTIPLE VOCALISATIONS
-            //var testDirectories = new List<String>();
-            //testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetTrue");
-            //testDirectories.Add(@"C:\SensorNetworks\Templates\Template_3\TestSetFalse");
-        //    Main_TestSerialTemplateOnCallFiles.ScanTestDirectories(template2, testDirectories);
-
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
