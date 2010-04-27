@@ -65,44 +65,39 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// BASE CONSTRUCTOR
+        /// This constructor contains all steps required to prepare the amplitude spectrogram.
+        /// The third boolean parameter is simply a placefiller to ensure a different Constructor signature
+        /// from the principle Constructore which follows.
         /// </summary>
         /// <param name="config"></param>
         /// <param name="wav"></param>
         /// <param name="doExtractSubband"></param>
-        public BaseSonogram(SonogramConfig config, WavReader wav)
+        public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
+            : this(config)
 		{
-			Configuration = config;
-            //set config params to the current recording
-            config.Duration = wav.Time;
-            config.FftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
-
-			SampleRate      = wav.SampleRate;
-			Duration        = wav.Time;
-			MaxAmplitude    = wav.CalculateMaximumAmplitude();
-            double[] signal = wav.Samples;
-            
-            //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
-            epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
-
-
-			this.subBand_MinHz = config.MinFreqBand ?? 0;
-			this.subBand_MaxHz = config.MaxFreqBand ?? NyquistFrequency;
             bool ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
             if (config.DoFullBandwidth) ExtractSubband = false;   //if sono only intended for image
 
+            //set config params to the current recording
+            this.SampleRate = wav.SampleRate;
+            this.Configuration.Duration = wav.Time;
+            this.Configuration.FftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
+            this.Duration = wav.Time;
+            this.MaxAmplitude = wav.CalculateMaximumAmplitude();
+            double[] signal = wav.Samples;
+
+            //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
+            epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
 			// SIGNAL PRE-EMPHASIS helps with speech signals
             if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
 
 			// FRAME WINDOWING
-            //double[,] frames = DSP.Frames(signal, config.WindowSize, config.WindowOverlap);
             int[,] frameIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
-            //double[,] frames = DSP.Frames(signal, framesIDs);
             FrameCount = frameIDs.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             this.SnrFullband = new SNR(signal, frameIDs);
-            //this.SnrFrames = new SNR(frames);
             this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
             this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
 
@@ -121,8 +116,10 @@ namespace AudioAnalysisTools
 
 			//generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            var amplitudeM = MakeAmplitudeSonogram(signal, frameIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            //framesIDs = null;
+            TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction);
+            double power;
+            var amplitudeM = BaseSonogram.MakeAmplitudeSonogram(signal, frameIDs, w, out power);
+            this.Configuration.WindowPower = power;
 
 			//EXTRACT REQUIRED FREQUENCY BAND
             if (ExtractSubband)
@@ -132,41 +129,54 @@ namespace AudioAnalysisTools
 				Log.WriteIfVerbose("\tDim of required sub-band =" + amplitudeM.GetLength(1));
                 CalculateSubbandSNR(amplitudeM);
             }
-			Make(amplitudeM);
-        } //end CONSTRUCTOR BaseSonogram(WavReader wav)
+
+            this.Data = amplitudeM;
+        } //end CONSTRUCTOR BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
+
+
+        /// <summary>
+        /// this constructor is the one most used - it automatically makes the Amplitude spectrum and then, using a call to Make(),
+        /// converts that matrix to a Spectrogram whose values are decibels. 
+        /// </summary>
+        /// <param name="config">All parameters required to make spectrogram</param>
+        /// <param name="wav">the recording whose spectrogram is to be made</param>
+        public BaseSonogram(SonogramConfig config, WavReader wav) : this(config, wav , false)
+        {
+            Make(this.Data);
+        } //end CONSTRUCTOR BaseSonogram(SonogramConfig config, WavReader wav)
 
 
         protected abstract void Make(double[,] amplitudeM);
 
 
-        [Obsolete]
-        double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
-        {
-            int frameCount = frames.GetLength(0);
-            int N = frames.GetLength(1);  // = FFT windowSize 
-            int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
+        //[Obsolete]
+        //double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
+        //{
+        //    int frameCount = frames.GetLength(0);
+        //    int N = frames.GetLength(1);  // = FFT windowSize 
+        //    int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
 
-            //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
-            var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
-            this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
-            double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+        //    //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
+        //    var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
+        //    this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
+        //    double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
 
-            for (int i = 0; i < frameCount; i++)//foreach frame or time step
-            {
-                double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-                //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+        //    for (int i = 0; i < frameCount; i++)//foreach frame or time step
+        //    {
+        //        double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+        //        //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
-                if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
-                for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
-                {
-                    amplitudeSg[i, j] = f1[j]; //transfer amplitude
-                }
-            } //end of all frames
-            return amplitudeSg;
-        }
+        //        if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+        //        for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
+        //        {
+        //            amplitudeSg[i, j] = f1[j]; //transfer amplitude
+        //        }
+        //    } //end of all frames
+        //    return amplitudeSg;
+        //}
 
 
-        double[,] MakeAmplitudeSonogram(double[] signal, int[,] frames, TowseyLib.FFT.WindowFunc w)
+        private static double[,] MakeAmplitudeSonogram(double[] signal, int[,] frames, TowseyLib.FFT.WindowFunc w, out double power)
         {
             int frameCount = frames.GetLength(0);
             int N = frames[0, 1] + 1;     //window or frame width
@@ -174,7 +184,7 @@ namespace AudioAnalysisTools
 
             //var fft = new TowseyLib.FFT(N, w);     // init class which calculates the FFT
             var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
-            this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
+            power = fft.WindowPower; //store for later use when calculating dB
             double[,] amplitudeSonogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
             double[] window = new double[N]; 
             double[] f1; 
@@ -206,7 +216,8 @@ namespace AudioAnalysisTools
 			//double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
+            double power;
+            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), out power);
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
