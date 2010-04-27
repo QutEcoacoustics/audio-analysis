@@ -47,7 +47,7 @@ namespace AnalysisPrograms
             Console.WriteLine();
 
             SonogramConfig config = SonogramConfig.Load(appConfigPath);
-            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+            config.NoiseReductionType = NoiseReductionType.NONE;
             BaseSonogram sonogram = new SpectralSonogram(config, recording.GetWavReader());
             Console.WriteLine("SampleRate=" + sonogram.SampleRate);
 

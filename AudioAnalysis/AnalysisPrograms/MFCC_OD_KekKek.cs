@@ -44,6 +44,7 @@ namespace AnalysisPrograms
 
         public static void Dev(string[] args)
         {
+            Log.WriteLine("\n");
             string title = "# DETECTING LEWIN's RAIL Kek-Kek USING MFCCs and OD";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
@@ -75,40 +76,33 @@ namespace AnalysisPrograms
             string newTemplateDir = workingDirectory + templateName;
             ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
-            //B: INI CONFIG and CREATE DIRECTORY STRUCTURE
+            //B: READ INI/CONFIG and CREATE DIRECTORY STRUCTURE
             Log.WriteLine("# Init CONFIG and creating directory structure");
             Log.WriteLine("# New Template Dir: " + newTemplateDir);
-            //READ PARAMETER VALUES FROM INI FILE
             string iniPath = workingDirectory + templateFN + "\\Template_" + templateFN + ".txt";
             //read feature vector
             string fvPath  = workingDirectory + templateFN + "\\FV1_" + templateFN + ".txt"; //feature vector path
             double[] fv = FileTools.ReadDoubles2Vector(fvPath);
-
-            //NEXT LINE IS A TEMPORARY FIX ################################################### TODO TODO
-            //AppendNewParams(iniPath);
 
             //C: SET UP CONFIGURATION
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-
-
             int windowSize = Int32.Parse(dict["FRAME_SIZE"]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            ConfigKeys.NoiseReductionType nrt = NoiseReduceConfiguration.SetNoiseReductionType(dict["NOISE_REDUCTION_TYPE"]);
+            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict["NOISE_REDUCTION_TYPE"]);
             double dynamicRange = Double.Parse(dict["DYNAMIC_RANGE"]);
             int minHz           = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
-            int ccCount         = Int32.Parse(dict[key_CC_COUNT]);                  //Number of mfcc coefficients
-            bool doMelScale     =  Boolean.Parse(dict[key_DO_MELSCALE]);        //not a user option
-            doMelScale          = false; //do not want use to change this at present time. STILL NEED TO DEBUG MELSCALE OPTION 
+            int ccCount         = Int32.Parse(dict[key_CC_COUNT]);           //Number of mfcc coefficients
+            bool doMelScale     =  Boolean.Parse(dict[key_DO_MELSCALE]);       
             bool includeDelta       = Boolean.Parse(dict[key_INCLUDE_DELTA]);
             bool includeDoubleDelta = Boolean.Parse(dict[key_INCLUDE_DOUBLE_DELTA]);
             double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
-            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);       //ignore oscillations below this threshold freq
-            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);       //ignore oscillations above this threshold freq
-            double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
+            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);     //ignore oscillations below this threshold freq
+            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);     //ignore oscillations above this threshold freq
+            double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);     //minimum acceptable value of a DCT coefficient
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
             double minDuration  = Double.Parse(dict[key_MIN_DURATION]);      //min duration of event in seconds 
             double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);      //max duration of event in seconds 
@@ -130,6 +124,7 @@ namespace AnalysisPrograms
             var sonogram = results.Item1;
             var scores = results.Item2;
             var predictedEvents = results.Item3;
+            var avMatrix = results.Item4;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
 
             //write event count to results file.            
@@ -139,6 +134,7 @@ namespace AnalysisPrograms
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
+                ImageTools.DrawMatrix(avMatrix, outputDir+"\\acousticVectors.jpg");
             }
             else
             if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
@@ -152,8 +148,8 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>> Execute_CallDetect(string wavPath,
-            int minHz, int maxHz, int windowSize, double frameOverlap, ConfigKeys.NoiseReductionType nrt, double dynamicRange, 
+        public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
+            int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange, 
             bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
 
             double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, 
@@ -171,9 +167,9 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.DoMelScale = doMelScale;
             sonoConfig.NoiseReductionType = nrt;
             sonoConfig.DynamicRange = dynamicRange;
-
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
@@ -184,9 +180,8 @@ namespace AnalysisPrograms
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
 
             //iii: EXTRACT CEPSTROGRAM - MFCC coefficients 
-            Log.WriteLine("GET MFCC SPECTRUM");
-            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-            Log.WriteIfVerbose("ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
+            Log.WriteIfVerbose("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+            Log.WriteIfVerbose("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
             var tuple =((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
             double[,] m = tuple.Item1;
 
@@ -199,8 +194,6 @@ namespace AnalysisPrograms
 
             //v: calculate the full ACOUSTIC VECTORS ie including decibel and deltas, etc
             m = Speech.AcousticVectors(m, dB, includeDelta, includeDoubleDelta);
-
-            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage.jpg");
 
             //vi: GET FEATURE VECTOR SCORES
             double[] scores = GetTemplateScores(m, fv, includeDelta, includeDoubleDelta);
@@ -222,8 +215,7 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = ConvertScores2Events(oscillationScores, minHz, maxHz, sonogram.FramesPerSecond,
                                        sonogram.FBinWidth, eventThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            //return System.Tuple.Create(sonogram, scores, predictedEvents);
-            return System.Tuple.Create(sonogram, oscillationScores, predictedEvents);
+            return System.Tuple.Create(sonogram, oscillationScores, predictedEvents, m);
 
         }//end Execute_CallDetect
 

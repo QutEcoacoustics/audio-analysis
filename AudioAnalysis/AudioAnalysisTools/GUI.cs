@@ -52,8 +52,8 @@ namespace AudioAnalysisTools
         public int FilterBankCount { get { return filterBankCount; } }
         private bool doMelConversion = true;
         public bool DoMelConversion { get { return doMelConversion; } }
-        private ConfigKeys.NoiseReductionType noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
-        public  ConfigKeys.NoiseReductionType NoiseReductionType { get { return noiseReductionType; } set { noiseReductionType = value; } }
+        private NoiseReductionType noiseReductionType = NoiseReductionType.NONE;
+        public  NoiseReductionType NoiseReductionType { get { return noiseReductionType; } set { noiseReductionType = value; } }
         private int ceptralCoeffCount = 12;
         public int CeptralCoeffCount { get { return ceptralCoeffCount; } }
         private bool includeDeltaFeatures = false;
@@ -135,7 +135,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+                    noiseReductionType = NoiseReductionType.NONE;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -188,7 +188,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -241,9 +241,9 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                    //noiseReductionType = ConfigKeys.NoiseReductionType.DEFAULT_STANDBY;
-                    //noiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+                    noiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    //noiseReductionType = NoiseReductionType.DEFAULT_STANDBY;
+                    //noiseReductionType = NoiseReductionType.NONE;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = false;
@@ -283,7 +283,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    noiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
                     //ceptralCoeffCount = 12;
 
                     //FEATURE VECTOR EXTRACTION PARAMETERS
@@ -323,7 +323,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     deltaT = 2; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
@@ -366,7 +366,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     deltaT = 3; // i.e. + and - two frames gap when constructing feature vector
                     includeDeltaFeatures = true;
@@ -416,7 +416,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -461,7 +461,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = true;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -512,7 +512,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;
@@ -564,7 +564,7 @@ namespace AudioAnalysisTools
                     frameOverlap = 0.5;
                     filterBankCount = 64;
                     doMelConversion = false;
-                    noiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+                    noiseReductionType = NoiseReductionType.STANDARD;
                     ceptralCoeffCount = 12;
                     includeDeltaFeatures = true;
                     includeDoubleDeltaFeatures = true;

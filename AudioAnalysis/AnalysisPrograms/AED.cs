@@ -85,7 +85,7 @@ namespace AnalysisPrograms
             AudioRecording recording = new AudioRecording(wavFilePath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             SonogramConfig config = new SonogramConfig(); //default values config
-            config.NoiseReductionType = ConfigKeys.NoiseReductionType.NONE;
+            config.NoiseReductionType = NoiseReductionType.NONE;
             return new SpectralSonogram(config, recording.GetWavReader());
         }
 

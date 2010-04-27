@@ -52,25 +52,25 @@ namespace TowseyLib
         /// </summary>
         /// <param name="amplitudeM"></param>
         /// <returns></returns>
-        public static double[,] DecibelSpectra(double[,] amplitudeM)
-        {
-            int frameCount = amplitudeM.GetLength(0);
-            int binCount   = amplitudeM.GetLength(1);
+        //public static double[,] DecibelSpectra(double[,] amplitudeM)
+        //{
+        //    int frameCount = amplitudeM.GetLength(0);
+        //    int binCount   = amplitudeM.GetLength(1);
 
-            double[,] spectra = new double[frameCount, binCount];
+        //    double[,] spectra = new double[frameCount, binCount];
 
-            for (int i = 0; i < frameCount; i++)//foreach time step
-            {
-                for (int j = 0; j < binCount; j++) //foreach freq bin
-                {
-                    double amplitude = amplitudeM[i, j];
-                    //double power = amplitude * amplitude;
-                    double power = 20 * Math.Log10(amplitude); //convert amplitude to decibels dB = 10*log(amplitude ^2)
-                    spectra[i, j] = power;
-                }
-            } //end of all frames
-            return spectra;
-        }
+        //    for (int i = 0; i < frameCount; i++)//foreach time step
+        //    {
+        //        for (int j = 0; j < binCount; j++) //foreach freq bin
+        //        {
+        //            double amplitude = amplitudeM[i, j];
+        //            //double power = amplitude * amplitude;
+        //            double power = 20 * Math.Log10(amplitude); //convert amplitude to decibels dB = 10*log(amplitude ^2)
+        //            spectra[i, j] = power;
+        //        }
+        //    } //end of all frames
+        //    return spectra;
+        //}
 
 
         /// <summary>

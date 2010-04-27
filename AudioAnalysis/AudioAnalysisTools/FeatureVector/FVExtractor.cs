@@ -169,7 +169,7 @@ namespace AudioAnalysisTools
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config - especially full band width
             sonoConfig.WindowSize     = Int32.Parse(parameters["FRAME_SIZE"]);
             sonoConfig.WindowOverlap  = Double.Parse(parameters["FRAME_OVERLAP"]);
-            sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(parameters["NOISE_REDUCTION_TYPE"]);
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(parameters["NOISE_REDUCTION_TYPE"]);
             sonoConfig.DynamicRange   = Double.Parse(parameters["DYNAMIC_RANGE"]);
             int sourceCount           = Int32.Parse(parameters["SOURCE_COUNT"]);
             int minHz                 = Int32.Parse(parameters["MIN_FREQ"]);
@@ -179,7 +179,7 @@ namespace AudioAnalysisTools
             bool includeDelta         = Boolean.Parse(parameters["INCLUDE_DELTA"]);
             bool includeDoubleDelta   = Boolean.Parse(parameters["INCLUDE_DOUBLE_DELTA"]);
             int deltaT                = Int32.Parse(parameters["DELTA_T"]);
-            doMelScale   = false;    //avoid melScale because not debugged in this option 
+            //doMelScale   = false;    //avoid melScale because not debugged in this option 
             includeDelta = true;     //collect all coefficients possible - do not have to use them
             includeDoubleDelta = true;
 
@@ -220,9 +220,9 @@ namespace AudioAnalysisTools
                 double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
                 noiseFullBand_List.Add(modalNoise);
                 //extract subband modal noise profile
-                double[] subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale, 
-                                                                         sonogram.Configuration.FreqBinCount, sonogram.FBinWidth); 
-                noiseSubband_List.Add(subband);                
+                double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale, 
+                                                                               sonogram.Configuration.FreqBinCount, sonogram.FBinWidth); 
+                noiseSubband_List.Add(noise_subband);                
 
                 //CALCULATE CEPSTROGRAM
                 Log.WriteLine("# Extracting Cepstrogram");

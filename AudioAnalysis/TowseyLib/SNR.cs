@@ -1,12 +1,25 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace TowseyLib
 {
+
+    public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, PEAK_TRACKING }
+
+
+
     public class SNR
     {
+
+        public struct key_Snr
+        {
+            public const string Key_DynamicRange = "DYNAMIC_RANGE";
+            public const string Key_SilenceRecording = "SILENCE_RECORDING_PATH"; //used to determin silence model.
+        }
+
 
         //reference logEnergies for signal segmentation, energy normalisation etc
         public const double MinLogEnergyReference = -7.0;    // typical noise value for BAC2 recordings = -4.5
@@ -434,26 +447,6 @@ namespace TowseyLib
         }
 
 
-        //public static double[,] NoiseReduce_Sobel(double[,] matrix, double dynamicRange)
-        //{
-        //    double[,] mnr = matrix;
-        //    int startFrameCount = 9;
-        //    int smoothingWindow = 7;
-
-        //    //int NH = 11;
-        //    //mnr = ImageTools.WienerFilter(mnr, NH);
-
-        //    double[] modalNoise = CalculateModalNoiseUsingStartFrames(mnr, startFrameCount);
-        //    modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
-        //    mnr = NoiseReduce_Standard(matrix, modalNoise);
-        //    mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
-
-        //    double[,] outM = ImageTools.SobelRidgeDetection(mnr);
-        //    outM = JoinDisconnectedRidgesInBinaryMatrix(outM);
-        //    outM = SNR.RemoveOrphanOnesInBinaryMatrix(outM);
-        //    //double[,] outM = SpectralRidges2Intensity(peaks, mnr);
-        //    return outM;
-        //}
 
         // #############################################################################################################################
         // ################################# NOISE REDUCTION METHODS #################################################################
@@ -1023,38 +1016,57 @@ namespace TowseyLib
         }
 
 
-        public static double[,] RemoveEcho(double[,] sonogram)
+
+        /// <summary>
+        /// Removes noise from a spectrogram. Choice of methods.
+        /// Make sure that do MelScale reduction BEFORE applying noise filter.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="nrt"></param>
+        /// <param name="dynamicRange"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double dynamicRange)
         {
-            double minIntensity; // min value in matrix
-            double maxIntensity; // max value in matrix
-            DataTools.MinMax(sonogram, out minIntensity, out maxIntensity);
-            double range = maxIntensity = minIntensity;
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and return for later use
 
-            int rows = sonogram.GetLength(0);
-            int cols = sonogram.GetLength(1);
-            double[,] outM = new double[rows, cols];
-            double momentum;
-
-            //initialise the output matrix/sonogram to the minimum acoustic intensity
-            for (int c = 0; c < cols; c++)
+            if (nrt == NoiseReductionType.STANDARD)
             {
-                outM[rows - 1, c] = sonogram[rows - 1, c];
-                for (int r = rows-2; r >=0 ; r--) //init matrix to min
-                {
-                    if (sonogram[r, c] < sonogram[r+1, c]) //ie positive slope ie rising towards peak
-                    {
-                        outM[r, c] = sonogram[r, c];
-                        continue;
-                    }
-                    momentum = (maxIntensity - sonogram[r, c]) / range;
-                    outM[r, c] = (momentum * sonogram[r, c]) + ((1 - momentum) * outM[r + 1, c]); //init output matrix to min value
-                    //Console.WriteLine("m=" + momentum.ToString("f2") + "  ip[r, c]=" + sonogram[r, c] + "  op[r+1, c]=" + outM[r + 1, c] + "  outM[r, c]=" + outM[r, c]);
-                }
+                m = SNR.NoiseReduce_Standard(m, modalNoise);
             }
+            else
+            if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + dynamicRange);
+                m = SNR.NoiseReduce_FixedRange(m, dynamicRange);
+            }
+            else
+            if (nrt == NoiseReductionType.PEAK_TRACKING)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + dynamicRange);
+                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
+            }
+            var tuple = System.Tuple.Create(m, modalNoise);
+            return tuple;
+        }
 
-            return outM;
-        } //end of method RemoveEcho()
 
+
+        /// <summary>
+        /// Converts a string interpreted as a key to a NoiseReduction Type.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static NoiseReductionType Key2NoiseReductionType(string key)
+        {
+            if (key.Equals("NONE")) return NoiseReductionType.NONE;
+            else
+                if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
+                else
+                    if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    else
+                    if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
+            return NoiseReductionType.NONE;
+        }
 
     }// end class
 }

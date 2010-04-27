@@ -81,7 +81,7 @@ namespace AudioAnalysisTools
             try
             {
                 config1 = new SonogramConfig(new Configuration(segmentIniPath));
-                config1.NoiseReductionType = ConfigKeys.NoiseReductionType.PEAK_TRACKING;
+                config1.NoiseReductionType = NoiseReductionType.PEAK_TRACKING;
             }
             catch (Exception e)
             {
