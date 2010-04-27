@@ -23,7 +23,7 @@ namespace AudioAnalysisTools
         public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
         public bool DoMelScale { get; set; }
-        public ConfigKeys.NoiseReductionType NoiseReductionType { get; set; }
+        public NoiseReductionType NoiseReductionType { get; set; }
         public string SilenceRecordingPath { get; set; }
         public double[] SilenceModel { get; set; }
         public double   DynamicRange { get; set; }
@@ -69,7 +69,7 @@ namespace AudioAnalysisTools
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, ConfigKeys.NoiseReductionType.NONE.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, NoiseReductionType.NONE.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, TowseyLib.WindowFunctions.HAMMING.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
@@ -112,11 +112,11 @@ namespace AudioAnalysisTools
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
-            DynamicRange = config.GetDouble(ConfigKeys.Snr.Key_DynamicRange);
+            DynamicRange = config.GetDouble(SNR.key_Snr.Key_DynamicRange);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
-            NoiseReductionType = (ConfigKeys.NoiseReductionType)Enum.Parse(typeof(ConfigKeys.NoiseReductionType), noisereduce.ToUpperInvariant());
-            SilenceRecordingPath = config.GetString(ConfigKeys.Snr.Key_SilenceRecording);
+            NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
+            SilenceRecordingPath = config.GetString(SNR.key_Snr.Key_SilenceRecording);
             MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
@@ -139,7 +139,7 @@ namespace AudioAnalysisTools
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.DynamicRange > 1.0)
-                writer.WriteConfigValue(ConfigKeys.Snr.Key_DynamicRange, this.DynamicRange.ToString("F1"));
+                writer.WriteConfigValue(SNR.key_Snr.Key_DynamicRange, this.DynamicRange.ToString("F1"));
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");

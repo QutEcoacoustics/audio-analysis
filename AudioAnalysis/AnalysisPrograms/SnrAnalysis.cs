@@ -199,7 +199,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.FftConfig.WindowFunction = windowFunction;
             sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
-            sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(noiseReduceType);
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
             //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
@@ -238,7 +238,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap  = frameOverlap;
             sonoConfig.FftConfig.WindowFunction = windowFunction;
             sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
-            sonoConfig.NoiseReductionType = NoiseReduceConfiguration.SetNoiseReductionType(noiseReduceType);
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
             //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());

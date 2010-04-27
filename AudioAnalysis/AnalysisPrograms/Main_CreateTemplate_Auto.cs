@@ -45,7 +45,7 @@ namespace AnalysisPrograms
             Console.WriteLine("STEP A: CREATE TEMPLATE");
             var template = Template_CCAuto.Load(appConfigPath, gui, recordingFiles, templateDir, templateFName);
             //reset noise reduction type for normal use
-            template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.STANDARD;
+            template.SonogramConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             //reset mode for normal use
             template.mode = Mode.READ_EXISTING_TEMPLATE;
 

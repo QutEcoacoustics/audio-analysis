@@ -149,32 +149,6 @@ namespace AudioAnalysisTools
         protected abstract void Make(double[,] amplitudeM);
 
 
-        //[Obsolete]
-        //double[,] MakeAmplitudeSonogram(double[,] frames, TowseyLib.FFT.WindowFunc w)
-        //{
-        //    int frameCount = frames.GetLength(0);
-        //    int N = frames.GetLength(1);  // = FFT windowSize 
-        //    int smoothingWindow = 0; //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
-
-        //    //var fft = new TowseyLib.FFT(N, w); // init class which calculates the FFT
-        //    var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
-        //    this.Configuration.WindowPower = fft.WindowPower; //store for later use when calculating dB
-        //    double[,] amplitudeSg = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
-
-        //    for (int i = 0; i < frameCount; i++)//foreach frame or time step
-        //    {
-        //        double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-        //        //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
-
-        //        if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
-        //        for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
-        //        {
-        //            amplitudeSg[i, j] = f1[j]; //transfer amplitude
-        //        }
-        //    } //end of all frames
-        //    return amplitudeSg;
-        //}
-
 
         private static double[,] MakeAmplitudeSonogram(double[] signal, int[,] frames, TowseyLib.FFT.WindowFunc w, out double power)
         {
@@ -668,53 +642,19 @@ namespace AudioAnalysisTools
 		{
             double[,] m = amplitudeM;
 
-            //APPLY FILTER BANK
+            //(i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
             if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
             {
                 m = Speech.MelFilterBank(m, Configuration.FreqBinCount, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
             }
 
-            //CONVERT AMPLITUDES TO DECIBELS
+            //(ii) CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.epsilon);
 
-            //NOISE REDUCTION
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and store for later use
-            this.SnrFullband.ModalNoiseProfile = modalNoise;
-
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
-            {
-                m = SNR.NoiseReduce_Standard(m, modalNoise);
-            }
-            else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + this.Configuration.DynamicRange);
-                m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
-            }
-            else
-            if(Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.SILENCE_MODEL)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: SILENCE MODEL - calculated from a seperate file with sufficient silence.");
-                this.SnrFullband.ModalNoiseProfile = this.Configuration.SilenceModel;
-                m = SNR.NoiseReduce_Standard(m, this.Configuration.SilenceModel);
-            }
-            else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.PEAK_TRACKING)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + this.Configuration.DynamicRange);
-                m = SNR.NoiseReduce_PeakTracking(m, this.Configuration.DynamicRange);
-            }
-            else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.DEFAULT_STANDBY)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: default standby for short high energy vocalisations");
-                //TODO TODO TODO
-                //modalNoise = have to get at the standby Noise profile currently stored in FVConfig class.
-                //It was put there when initialising the FVConfig class from the DefaultNoise  recording
-                m = SNR.NoiseReduce_Standbye(m, modalNoise, this.Configuration.DynamicRange);
-            }
-            
-            this.Data = m; //store data matrix
+            //(iii) NOISE REDUCTION
+            var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.DynamicRange);
+            this.Data = tuple.Item1;   //store data matrix
+            this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
 		}
 
 
@@ -747,12 +687,12 @@ namespace AudioAnalysisTools
         }
 
 
-        public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz, 
+        public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz,
                                                         int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
         {
-            ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\LewinsRail\tempImage1.jpg");
+            ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage1.jpg");
             double[,] m = BaseSonogram.ExtractFreqSubband(data, minHz, maxHz, doMelScale, freqBinCount, freqBinWidth);
-            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage2.jpg");
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage2.jpg");
 
             //DO NOT DO NOISE REDUCTION BECAUSE ALREADY DONE
             //double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
@@ -761,7 +701,7 @@ namespace AudioAnalysisTools
 
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
-            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\LewinsRail\tempImage3.jpg");
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage3.jpg");
             double[] modalNoise = null;
             return System.Tuple.Create(m, modalNoise);
         }
@@ -788,28 +728,45 @@ namespace AudioAnalysisTools
             Data = MakeCepstrogram(amplitudeM, this.DecibelsNormalised, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
         }
 
+        /// <summary>
+        /// NOTE!!!! The decibel array has been normalised in 0 - 1.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="decibels"></param>
+        /// <param name="ccCount"></param>
+        /// <param name="includeDelta"></param>
+        /// <param name="includeDoubleDelta"></param>
+        /// <returns></returns>
         protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
         {
-            //NOTE!!!! The decibel array has been normalised in 0 - 1.
             Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
-
             double[,] m = matrix;
-            if (Configuration.DoMelScale) m = ApplyFilterBank(m);
-            m = Speech.DecibelSpectra(m);
 
-            //NOISE REDUCTION
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
-            this.SnrFullband.ModalNoiseProfile = modalNoise;
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
-            {
-                m = SNR.NoiseReduce_Standard(m, modalNoise);
-            }
-            else
-                if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
-                {
-                    Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
-                    m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
-                }
+            //(i) APPLY FILTER BANK
+            int bandCount   = ((CepstralSonogramConfig)Configuration).MfccConfiguration.FilterbankCount;
+            bool doMelScale = ((CepstralSonogramConfig)Configuration).MfccConfiguration.DoMelScale;
+            int FFTbins = this.Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
+            int minHz   = this.Configuration.MinFreqBand ?? 0;
+            int maxHz   = this.Configuration.MaxFreqBand ?? this.NyquistFrequency;
+
+            Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
+            //error check that filterBankCount < FFTbins
+            if (bandCount > FFTbins)
+                throw new Exception("## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. ("+bandCount + " > " + FFTbins + ")\n\n");
+
+            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
+            if (doMelScale) m = Speech.MelFilterBank(m, bandCount, this.NyquistFrequency, minHz, maxHz); // using the Greg integral
+            else            m = Speech.LinearFilterBank(m, bandCount, this.NyquistFrequency, minHz, maxHz);
+            Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
+
+            //(ii) CONVERT AMPLITUDES TO DECIBELS
+            m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.epsilon); //from spectrogram
+            //m = Speech.DecibelSpectra(m); //oriignal
+
+            //(iii) NOISE REDUCTION
+            var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.DynamicRange);
+            this.Data = tuple.Item1;                          //store data matrix
+            this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
             
 
             //calculate cepstral coefficients and normalise
@@ -819,28 +776,6 @@ namespace AudioAnalysisTools
             return Speech.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
         }
 
-        double[,] ApplyFilterBank(double[,] matrix)
-        {
-            Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
-
-            //error check that filterBankCount < FFTbins
-            int FFTbins = Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
-            var config = Configuration as CepstralSonogramConfig;
-            int bandCount = config.MfccConfiguration.FilterbankCount;
-            if (bandCount > FFTbins)
-                throw new Exception("####### FATAL ERROR:- Sonogram.ApplyFilterBank():- Cannot calculate cepstral coefficients. FilterbankCount > FFTbins. (" + bandCount + " > " + FFTbins + ")\n\n");
-
-            //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
-            double[,] m = matrix;
-
-            if (config.MfccConfiguration.DoMelScale)
-                m = Speech.MelFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency); // using the Greg integral
-            else
-                m = Speech.LinearFilterBank(m, bandCount, NyquistFrequency, Configuration.MinFreqBand ?? 0, Configuration.MaxFreqBand ?? NyquistFrequency);
-            Log.WriteIfVerbose("\tDim after filter bank=" + m.GetLength(1) + " (Max filter bank=" + bandCount + ")");
-
-            return m;
-        } //end ApplyFilterBank(double[,] matrix)
     }
 
 
@@ -909,17 +844,18 @@ namespace AudioAnalysisTools
 
 		double[,] SobelEdgegram(double[,] matrix)
 		{
-			double[,] m = Speech.DecibelSpectra(matrix);
+            double[,] m = Speech.DecibelSpectra(matrix, this.Configuration.WindowPower, this.SampleRate, this.epsilon); //from spectrogram
+            //double[,] m = Speech.DecibelSpectra(matrix);
 
             //NOISE REDUCTION
             double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
             this.SnrFullband.ModalNoiseProfile = modalNoise;
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.STANDARD)
+            if (Configuration.NoiseReductionType == NoiseReductionType.STANDARD)
             {
                 m = SNR.NoiseReduce_Standard(m, modalNoise);
             }
             else
-            if (Configuration.NoiseReductionType == ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE)
+            if (Configuration.NoiseReductionType == NoiseReductionType.FIXED_DYNAMIC_RANGE)
             {
                 Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
                 m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);

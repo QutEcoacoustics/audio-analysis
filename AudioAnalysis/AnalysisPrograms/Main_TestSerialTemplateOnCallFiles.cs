@@ -135,7 +135,7 @@ namespace AnalysisPrograms
                 }
 
                 recogniser.Template.SonogramConfig.FftConfig.SampleRate = wav.SampleRate;
-                recogniser.Template.SonogramConfig.NoiseReductionType = ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                recogniser.Template.SonogramConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
                 //recogniser.Template.FeatureVectorConfig.DefaultNoiseFV  = new FeatureVector(noisePath);
 
                 var result = recogniser.Analyse(recording);

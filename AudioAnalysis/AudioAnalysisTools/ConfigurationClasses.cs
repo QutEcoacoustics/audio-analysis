@@ -15,7 +15,6 @@ namespace AudioAnalysisTools
     {
         public enum SonogramTypes { amplitude, spectral, cepsral, acousticVectors, sobelEdge };
         public enum Feature_Type { UNDEFINED, MFCC, CC_AUTO, DCT_2D }
-        public enum NoiseReductionType { NONE, FALSE, STANDARD, FIXED_DYNAMIC_RANGE, SILENCE_MODEL, PEAK_TRACKING, DEFAULT_STANDBY }
 
 
         public struct Recording 
@@ -52,12 +51,6 @@ namespace AudioAnalysisTools
             public const string Key_IncludeDelta     = "INCLUDE_DELTA";
             public const string Key_IncludeDoubleDelta = "INCLUDE_DOUBLEDELTA";
             public const string Key_DeltaT           = "DELTA_T";
-        }
-
-        public struct Snr
-        {
-            public const string Key_DynamicRange     = "DYNAMIC_RANGE";
-            public const string Key_SilenceRecording = "SILENCE_RECORDING_PATH"; //used to determin silence model.
         }
 
             
@@ -206,25 +199,6 @@ namespace AudioAnalysisTools
     }//end class MfccConfiguration
 
 
-    public static class NoiseReduceConfiguration
-    {
-
-        public static ConfigKeys.NoiseReductionType SetNoiseReductionType(string key)
-        {   
-            if(key.Equals("NONE")) return ConfigKeys.NoiseReductionType.NONE;
-            else
-            if(key.Equals("STANDARD")) return ConfigKeys.NoiseReductionType.STANDARD;
-            else
-            if(key.Equals("FIXED_DYNAMIC_RANGE")) return ConfigKeys.NoiseReductionType.FIXED_DYNAMIC_RANGE;
-            else
-            if(key.Equals("SILENCE_MODEL")) return ConfigKeys.NoiseReductionType.SILENCE_MODEL;
-            else
-            if(key.Equals("PEAK_TRACKING")) return ConfigKeys.NoiseReductionType.PEAK_TRACKING;
-            else 
-            if(key.Equals("DEFAULT_STANDBY")) return ConfigKeys.NoiseReductionType.DEFAULT_STANDBY;
-            return ConfigKeys.NoiseReductionType.NONE;
-        }
-    }
 
     /// <summary>
     /// SETS PARAMETERS CONCERNING ENERGY, END-POINT DETECTION AND SEGMENTATION
