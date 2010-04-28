@@ -802,6 +802,9 @@ namespace AudioAnalysisTools
 
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
+
+            //double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(this.SnrFullband.ModalNoiseProfile, minHz, maxHz, sg.doMelScale,
+            //                                                   sonogram.Configuration.FreqBinCount, sonogram.FBinWidth); 
             this.Data = BaseSonogram.ExtractFreqSubband(sg.Data, minHz, maxHz,
                              this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
             CalculateSubbandSNR(this.Data);
@@ -864,7 +867,8 @@ namespace AudioAnalysisTools
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
             //calculate the full range of MFCC coefficients ie including decibel and deltas, etc
-            return Speech.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
+            m = Speech.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
+            return m; 
         }
 
     }

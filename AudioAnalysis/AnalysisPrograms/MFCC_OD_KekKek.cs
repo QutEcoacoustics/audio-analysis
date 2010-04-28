@@ -171,9 +171,9 @@ namespace AnalysisPrograms
             sonoConfig.DynamicRange = dynamicRange;
 
             //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            SpectralSonogram  sonogram = new SpectralSonogram(basegram);
-            CepstralSonogram cepstrogram = new CepstralSonogram(basegram);
+            AmplitudeSonogram basegram   = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+            SpectralSonogram  sonogram   = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            CepstralSonogram cepstrogram = new CepstralSonogram(basegram);  //cepstrogram has dim[N,13]
             recording.Dispose();
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
@@ -186,6 +186,7 @@ namespace AnalysisPrograms
             //iii: EXTRACT CEPSTROGRAM - MFCC coefficients 
             var tuple = sonogram.GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
             double[,] m = tuple.Item1;
+            //m = cepstrogram.Data;
 
             //iv:  REPLACE THE dB ARRAY for full bandwidth by array initialized to 0.5 (an average value)
             //THIS IS IN PLACE OF REMOVING THE dB array altogether OR CALCULATING SUB-BAND dB array.
