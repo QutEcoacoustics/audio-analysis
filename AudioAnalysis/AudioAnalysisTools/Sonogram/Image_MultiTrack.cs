@@ -139,8 +139,8 @@ namespace AudioAnalysisTools
         
         void DrawEvents(Graphics g)
         {
-            Pen p1 = new Pen(Color.LightCyan);
-            Pen p2 = new Pen(Color.Red);
+            Pen p1 = new Pen(Color.Red);
+            Pen p2 = new Pen(Color.Yellow);
             foreach(AcousticEvent e in this.EventList)
             {
                 //double start = e.StartTime;

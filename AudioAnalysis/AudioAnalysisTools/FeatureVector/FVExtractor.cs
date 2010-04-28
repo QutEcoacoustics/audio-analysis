@@ -208,7 +208,10 @@ namespace AudioAnalysisTools
                 AudioRecording recording = new AudioRecording(f.FullName);
                 int sr = recording.SampleRate;
                 sonoConfig.SourceFName = recording.FileName;
-                BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+                //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+                AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+                SpectralSonogram sonogram  = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+                CepstralSonogram cepstrogram = new CepstralSonogram(basegram, minHz, maxHz);  //cepstrogram has dim[N,13]
                 recording.Dispose();
 
                 Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
@@ -226,7 +229,7 @@ namespace AudioAnalysisTools
 
                 //CALCULATE CEPSTROGRAM
                 Log.WriteLine("# Extracting Cepstrogram");
-                var tuple = ((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
+                var tuple = sonogram.GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
                 double[,] m = tuple.Item1;
                 //noiseSubband_List.Add(tuple.Item2);
 
