@@ -45,7 +45,7 @@ namespace AnalysisPrograms
             Console.WriteLine("STEP A: CREATE TEMPLATE");
             var template = Template_CCAuto.Load(appConfigPath, gui, recordingFiles, templateDir, templateFName);
             //reset noise reduction type for normal use
-            template.SonogramConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            template.sonogramConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             //reset mode for normal use
             template.mode = Mode.READ_EXISTING_TEMPLATE;
 
@@ -79,12 +79,12 @@ namespace AnalysisPrograms
             var result = recogniser.Analyse(recording);
 
 
-            int samplingRate = template2.SonogramConfig.FftConfig.SampleRate;
-            int windowSize   = template2.SonogramConfig.WindowSize;
-            int windowOffset = (int)Math.Floor(windowSize * template2.SonogramConfig.WindowOverlap); 
-            bool doMelScale  = template2.SonogramConfig.DoMelScale;
-            int minF         = (int)template2.SonogramConfig.MinFreqBand;
-            int maxF         = (int)template2.SonogramConfig.MaxFreqBand;
+            int samplingRate = template2.sonogramConfig.fftConfig.SampleRate;
+            int windowSize   = template2.sonogramConfig.WindowSize;
+            int windowOffset = (int)Math.Floor(windowSize * template2.sonogramConfig.WindowOverlap);
+            bool doMelScale  = template2.sonogramConfig.DoMelScale;
+            int minF         = (int)template2.sonogramConfig.MinFreqBand;
+            int maxF         = (int)template2.sonogramConfig.MaxFreqBand;
 
             var events = result.GetAcousticEvents(samplingRate, windowSize, windowOffset, doMelScale, minF, maxF);
             string imagePath = Path.Combine(templateDir, "RESULTS_" + Path.GetFileNameWithoutExtension(recording.FileName) + ".png");

@@ -15,8 +15,8 @@ namespace AudioAnalysisTools
 
 		public Template_CC(Configuration config) : base(config)
 		{
-            SonogramConfig = new CepstralSonogramConfig(config);
-            FeatureVectorConfig   = new FVConfig(config);
+            this.sonogramConfig = new SonogramConfig(config);
+            FVConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);
 
             var modelName = config.GetString("MODEL_TYPE");
@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
         /// <param name="ar"></param>
         protected override void ExtractTemplateFromRecording(AudioRecording ar)
         {
-            FVExtractor.ExtractFVsFromRecording(ar, FeatureVectorConfig, SonogramConfig);
+            FVExtractor.ExtractFVsFromRecording(ar, FVConfig, this.sonogramConfig);
         }
 
 		public override void Save(string targetPath)
@@ -60,8 +60,8 @@ namespace AudioAnalysisTools
 			//throw new NotImplementedException("MMTemplate requires the path to be saved to. Use the Save(string) overload instead");
             base.Save(writer);
             //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
-            SonogramConfig.Save(writer);
-            FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
+            sonogramConfig.Save(writer);
+            FVConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
             AcousticModel.Save(writer);
 
             //write the default language model if only creating a new template
@@ -100,15 +100,15 @@ namespace AudioAnalysisTools
         //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
-            this.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            this.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result, hmmResults);
         }
 
         public void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)
         {
             Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)");
-            double[] hmmScores = ParseHmmScores(hmmResults, this.SonogramConfig.Duration, sonogram.FrameCount);
+            double[] hmmScores = ParseHmmScores(hmmResults, this.sonogramConfig.Duration, sonogram.FrameCount);
 
             bool doHighlightSubband = true;
             bool add1kHzLines = true;

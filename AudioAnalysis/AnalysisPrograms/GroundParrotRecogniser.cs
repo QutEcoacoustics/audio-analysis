@@ -60,7 +60,7 @@ namespace AnalysisPrograms
 
             var config = aed.Item1.Configuration;
             var framesPerSec = 1 / config.GetFrameOffset(); // Surely this should go somewhere else
-            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount; // TODO this is common with AED
+            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount; // TODO this is common with AED
 
             var eprEvents = new List<AcousticEvent>();
             foreach (var rectScore in eprRects)

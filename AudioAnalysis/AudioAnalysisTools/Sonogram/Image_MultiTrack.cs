@@ -139,7 +139,7 @@ namespace AudioAnalysisTools
         
         void DrawEvents(Graphics g)
         {
-            Pen p1 = new Pen(Color.LightGreen);
+            Pen p1 = new Pen(Color.LightCyan);
             Pen p2 = new Pen(Color.Red);
             foreach(AcousticEvent e in this.EventList)
             {

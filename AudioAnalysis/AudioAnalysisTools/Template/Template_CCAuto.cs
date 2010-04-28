@@ -90,8 +90,8 @@ namespace AudioAnalysisTools
             //this.CallName        = config.GetString("WORD1_NAME");
             this.TrainingDirName = config.GetString(ConfigKeys.Recording.Key_TrainingDirName);
             this.TestingDirName  = config.GetString(ConfigKeys.Recording.Key_TestingDirName);
-            SonogramConfig       = new CepstralSonogramConfig(config);
-            FeatureVectorConfig  = new FVConfig(config);
+            this.sonogramConfig  = new SonogramConfig(config);
+            this.FVConfig        = new FVConfig(config);
             AcousticModel        = new Acoustic_Model(config);
         }
 
@@ -108,7 +108,7 @@ namespace AudioAnalysisTools
         protected void ExtractTemplateFromRecordings(FileInfo[] recordingFiles)
         {
             Log.WriteIfVerbose("\nSTART Template_CCAuto.ExtractTemplateFromRecordings()");
-            FVExtractor.ExtractFVsFromVocalisations(recordingFiles, FeatureVectorConfig, SonogramConfig);
+            FVExtractor.ExtractFVsFromVocalisations(recordingFiles, FVConfig, this.sonogramConfig);
             FVExtractor.ExtractSymbolSequencesFromVocalisations(recordingFiles, this);
 
             Log.WriteIfVerbose("END   Template_CCAuto.ExtractTemplateFromRecordings()\n");
@@ -118,7 +118,7 @@ namespace AudioAnalysisTools
         {
             //DEAL WITH THE VOCALISATION MODEL TYPE
             //set up the config file using info obtained from feature extraction
-            config.SetPair(ConfigKeys.Template.Key_FVCount, this.FeatureVectorConfig.FVCount.ToString());
+            config.SetPair(ConfigKeys.Template.Key_FVCount, this.FVConfig.FVCount.ToString());
 
             int wordCount = config.GetInt(ConfigKeys.Template.Key_WordCount); //number of distinct songs or calls
             this.WordNames = new string[wordCount];
@@ -173,13 +173,13 @@ namespace AudioAnalysisTools
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE[s]");
             writer.WriteConfigValue(ConfigKeys.Recording.Key_TrainingDirName, this.TrainingDirName);
             writer.WriteConfigValue(ConfigKeys.Recording.Key_TestingDirName,  this.TestingDirName);
-            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.FftConfig.SampleRate);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, sonogramConfig.fftConfig.SampleRate);
             writer.WriteLine("#");
             writer.Flush();
 
-            SonogramConfig.Save(writer);
+            this.sonogramConfig.Save(writer);
             //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
-            FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
+            FVConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
             AcousticModel.Save(writer);
             LanguageModel.Save(writer);
             writer.Flush();
@@ -208,15 +208,15 @@ namespace AudioAnalysisTools
         //USE THE NEXT THREE METHODS TO DISPLAY RESULTS FROM ALFREDO's HMM
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result, List<string> hmmResults)
         {
-            this.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            this.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result, hmmResults);
         }
 
         public void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)
         {
             Log.WriteIfVerbose("Basetemplate.SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<string> hmmResults)");
-            double[] hmmScores = ParseHmmScores(hmmResults, this.SonogramConfig.Duration, sonogram.FrameCount);
+            double[] hmmScores = ParseHmmScores(hmmResults, this.sonogramConfig.Duration, sonogram.FrameCount);
 
             bool doHighlightSubband = true;
             bool add1kHzLines = true;

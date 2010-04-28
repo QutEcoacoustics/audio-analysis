@@ -197,8 +197,8 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.FftConfig.WindowFunction = windowFunction;
-            sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
+            sonoConfig.fftConfig.WindowFunction = windowFunction;
+            sonoConfig.fftConfig.NPointSmoothFFT = N_PointSmoothFFT;
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
             //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR
@@ -236,8 +236,8 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName    = recording.FileName;
             sonoConfig.WindowSize     = frameSize;
             sonoConfig.WindowOverlap  = frameOverlap;
-            sonoConfig.FftConfig.WindowFunction = windowFunction;
-            sonoConfig.FftConfig.NPointSmoothFFT = N_PointSmoothFFT;
+            sonoConfig.fftConfig.WindowFunction = windowFunction;
+            sonoConfig.fftConfig.NPointSmoothFFT = N_PointSmoothFFT;
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(noiseReduceType);
 
             //iii: MAKE SONOGRAM - this also calculates full bandwidth SNR

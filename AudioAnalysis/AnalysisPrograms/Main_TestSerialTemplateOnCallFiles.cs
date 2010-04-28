@@ -127,15 +127,15 @@ namespace AnalysisPrograms
                 sb.AppendLine("\t" + f.Name + "\tTime=" + wav.Time.TotalSeconds.ToString("F3"));
                 Log.Verbosity = 0;
 
-                if (recogniser.Template.SonogramConfig.FftConfig.SampleRate != wav.SampleRate)
+                if (recogniser.Template.sonogramConfig.fftConfig.SampleRate != wav.SampleRate)
                 {
                     //PANIC
                     Log.WriteIfVerbose("###WARNING! ##### Sample rate of recording not same as that of template. ####");
                     sb.AppendLine("###WARNING! ##### Sample rate of recording not same as that of template. ####");
                 }
 
-                recogniser.Template.SonogramConfig.FftConfig.SampleRate = wav.SampleRate;
-                recogniser.Template.SonogramConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                recogniser.Template.sonogramConfig.fftConfig.SampleRate = wav.SampleRate;
+                recogniser.Template.sonogramConfig.NoiseReductionType = NoiseReductionType.FIXED_DYNAMIC_RANGE;
                 //recogniser.Template.FeatureVectorConfig.DefaultNoiseFV  = new FeatureVector(noisePath);
 
                 var result = recogniser.Analyse(recording);
