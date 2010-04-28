@@ -151,7 +151,6 @@ namespace AnalysisPrograms
         public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
             int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange, 
             bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
-
             double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, 
             double minAmplitude, double eventThreshold, double minDuration, double maxDuration)
         {
@@ -171,18 +170,21 @@ namespace AnalysisPrograms
             sonoConfig.NoiseReductionType = nrt;
             sonoConfig.DynamicRange = dynamicRange;
 
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+            SpectralSonogram  sonogram = new SpectralSonogram(basegram);
+            CepstralSonogram cepstrogram = new CepstralSonogram(basegram);
             recording.Dispose();
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap*100);
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+            Log.WriteLine("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+            Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
 
             //iii: EXTRACT CEPSTROGRAM - MFCC coefficients 
-            Log.WriteIfVerbose("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-            Log.WriteIfVerbose("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
-            var tuple =((SpectralSonogram)sonogram).GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
+            var tuple = sonogram.GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
             double[,] m = tuple.Item1;
 
             //iv:  REPLACE THE dB ARRAY for full bandwidth by array initialized to 0.5 (an average value)
@@ -215,7 +217,7 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = ConvertScores2Events(oscillationScores, minHz, maxHz, sonogram.FramesPerSecond,
                                        sonogram.FBinWidth, eventThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            return System.Tuple.Create(sonogram, oscillationScores, predictedEvents, m);
+            return System.Tuple.Create((BaseSonogram)sonogram, oscillationScores, predictedEvents, m);
 
         }//end Execute_CallDetect
 

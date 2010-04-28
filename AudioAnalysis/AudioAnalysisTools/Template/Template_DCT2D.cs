@@ -17,8 +17,8 @@ namespace AudioAnalysisTools
 
         public Template_DCT2D(Configuration config) : base(config)
 		{
-            SonogramConfig = new CepstralSonogramConfig(config);
-            FeatureVectorConfig   = new FVConfig(config);
+            this.sonogramConfig = new SonogramConfig(config);
+            FVConfig   = new FVConfig(config);
             AcousticModel   = new Acoustic_Model(config);
 
             //DEAL WITH THE VOCALISATION MODEL TYPE
@@ -44,11 +44,11 @@ namespace AudioAnalysisTools
         {
             if (Log.Verbosity == 1) Console.WriteLine("START Template_DCT2D.ExtractTemplateFromRecording()");
             string opDir = this.DataDir;
-            double startTime = this.FeatureVectorConfig.StartTime;
-            double endTime   = this.FeatureVectorConfig.EndTime;
+            double startTime = this.FVConfig.StartTime;
+            double endTime   = this.FVConfig.EndTime;
 
             //save full length spectrogram image
-            var ss = new SpectralSonogram(this.SonogramConfig, ar.GetWavReader());
+            var ss = new SpectralSonogram(this.sonogramConfig, ar.GetWavReader());
             //var image = new Image_MultiTrack(ss.GetImage(false, false));
             string path = opDir + ar.FileName + ".png";
             //image.Save(path);
@@ -75,9 +75,9 @@ namespace AudioAnalysisTools
 
             double[] fv = Extract2D_DCTFromSonogram(s2);
             //init array of configs and then assign extracted 2d-DCT fv
-            FeatureVectorConfig.FVCount = 1;
-            FeatureVectorConfig.FVArray    = new FeatureVector[FeatureVectorConfig.FVCount];
-            FeatureVectorConfig.FVArray[0] = new FeatureVector(fv, "Marquee_2D-DCT");
+            FVConfig.FVCount = 1;
+            FVConfig.FVArray    = new FeatureVector[FVConfig.FVCount];
+            FVConfig.FVArray[0] = new FeatureVector(fv, "Marquee_2D-DCT");
 
             //Console.WriteLine("End of the Line");
             //Console.ReadLine();
@@ -95,8 +95,8 @@ namespace AudioAnalysisTools
             if (Log.Verbosity == 1) Console.WriteLine("START Template.Extract2D_DCTFromSonogram()");
 
             //Assume that the entire spectral sonogram is the marquee part required.
-            var config = s.Configuration as CepstralSonogramConfig;
-            double[,] cepstralM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
+            var config = s.Configuration as SonogramConfig;
+            double[,] cepstralM = Speech.DCT_2D(s.Data, config.mfccConfig.CcCount);
             int frameCount = cepstralM.GetLength(0);
 
             cepstralM = DataTools.normalise(cepstralM);
@@ -107,28 +107,28 @@ namespace AudioAnalysisTools
             //pad to fixed number of frames
             double duration = 0.5; //duration of padded matrix in seconds
             int dim = (int)Math.Round(s.FramesPerSecond * duration);
-            double[,] padM = new double[dim, config.MfccConfiguration.CcCount];
+            double[,] padM = new double[dim, config.mfccConfig.CcCount];
             Log.WriteIfVerbose("dim of padded matrix   = " + padM.GetLength(0) + "*" + padM.GetLength(1));
             for (int r = 0; r < frameCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++) padM[r, c] = cepstralM[r, c];
+                for (int c = 0; c < config.mfccConfig.CcCount; c++) padM[r, c] = cepstralM[r, c];
             ImageTools.DrawMatrix(padM, @"C:\SensorNetworks\Templates\Template_4\matrix2.bmp");
 
             //do the DCT
-            double[,] cosines = Speech.Cosines(dim, config.MfccConfiguration.CcCount + 1); //set up the cosine coefficients
-            double[,] dctM = new double[config.MfccConfiguration.CcCount, config.MfccConfiguration.CcCount];
+            double[,] cosines = Speech.Cosines(dim, config.mfccConfig.CcCount + 1); //set up the cosine coefficients
+            double[,] dctM = new double[config.mfccConfig.CcCount, config.mfccConfig.CcCount];
             Log.WriteIfVerbose("dim of DCT_2D matrix   = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
-            for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+            for (int c = 0; c < config.mfccConfig.CcCount; c++)
             {
                 double[] col = DataTools.GetColumn(padM, c);
                 double[] dct = Speech.DCT(col, cosines);
-                for (int r = 0; r < config.MfccConfiguration.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
+                for (int r = 0; r < config.mfccConfig.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
             }
             ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix3.bmp");
 
             //store as single FV using the zig-zag 2D-DCT matrix
-            if (Speech.zigzag12x12.GetLength(0) != config.MfccConfiguration.CcCount)
+            if (Speech.zigzag12x12.GetLength(0) != config.mfccConfig.CcCount)
             {
-                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) + " != " + config.MfccConfiguration.CcCount);
+                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) + " != " + config.mfccConfig.CcCount);
                 throw new Exception("Fatal Error!");
             }
             else
@@ -136,8 +136,8 @@ namespace AudioAnalysisTools
 
             int FVdim = 70;
             double[] fv = new double[FVdim];
-            for (int r = 0; r < config.MfccConfiguration.CcCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+            for (int r = 0; r < config.mfccConfig.CcCount; r++)
+                for (int c = 0; c < config.mfccConfig.CcCount; c++)
                 {
                     int id = Speech.zigzag12x12[r, c];
                     if (id <= FVdim) fv[id - 1] = dctM[r, c];
@@ -158,7 +158,7 @@ namespace AudioAnalysisTools
         {
             //if (Log.Verbosity == 1) Console.WriteLine("START Template.ExtractFVsFromMarquee()");
 
-            var config = s.Configuration as CepstralSonogramConfig;
+            var config = s.Configuration as SonogramConfig;
 
             //the spectrogram data matrix
             int frameCount = endFrame - startFrame + 1;
@@ -169,33 +169,33 @@ namespace AudioAnalysisTools
                     data[i, j] = s.Data[startFrame + i, j];
 
             //convert spectral data to cepstral and noramlise in [0,1]
-            double[,] cepstralM = Speech.DCT_2D(s.Data, config.MfccConfiguration.CcCount);
+            double[,] cepstralM = Speech.DCT_2D(s.Data, config.mfccConfig.CcCount);
             cepstralM = DataTools.normalise(cepstralM);
             //Log.WriteIfVerbose("dim of cepstral matrix = " + frameCount + "*" + cepstralM.GetLength(1));
 
             //pad to fixed number of frames
             double duration = 0.5; //duration of padded matrix in seconds
             int dim = (int)Math.Round(s.FramesPerSecond * duration);
-            double[,] padM = new double[dim, config.MfccConfiguration.CcCount];
+            double[,] padM = new double[dim, config.mfccConfig.CcCount];
             //Log.WriteIfVerbose("dim of padded matrix   = " + padM.GetLength(0) + "*" + padM.GetLength(1));
             for (int r = 0; r < frameCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++) padM[r, c] = cepstralM[r, c];
+                for (int c = 0; c < config.mfccConfig.CcCount; c++) padM[r, c] = cepstralM[r, c];
 
             //do the DCT
-            double[,] cosines = Speech.Cosines(dim, config.MfccConfiguration.CcCount + 1); //set up the cosine coefficients
-            double[,] dctM = new double[config.MfccConfiguration.CcCount, config.MfccConfiguration.CcCount];
+            double[,] cosines = Speech.Cosines(dim, config.mfccConfig.CcCount + 1); //set up the cosine coefficients
+            double[,] dctM = new double[config.mfccConfig.CcCount, config.mfccConfig.CcCount];
             //Log.WriteIfVerbose("dim of DCT_2D matrix   = " + dctM.GetLength(0) + "*" + dctM.GetLength(1));
-            for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+            for (int c = 0; c < config.mfccConfig.CcCount; c++)
             {
                 double[] col = DataTools.GetColumn(padM, c);
                 double[] dct = Speech.DCT(col, cosines);
-                for (int r = 0; r < config.MfccConfiguration.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
+                for (int r = 0; r < config.mfccConfig.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
             }
 
             //store as single FV using the zig-zag 2D-DCT matrix
-            if (Speech.zigzag12x12.GetLength(0) != config.MfccConfiguration.CcCount)
+            if (Speech.zigzag12x12.GetLength(0) != config.mfccConfig.CcCount)
             {
-                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) + " != " + config.MfccConfiguration.CcCount);
+                Log.WriteLine("zigzag dim != CcCount   " + Speech.zigzag12x12.GetLength(0) + " != " + config.mfccConfig.CcCount);
                 throw new Exception("Fatal Error!");
             }
            // else
@@ -203,8 +203,8 @@ namespace AudioAnalysisTools
 
             int FVdim = 70;
             double[] fv = new double[FVdim];
-            for (int r = 0; r < config.MfccConfiguration.CcCount; r++)
-                for (int c = 0; c < config.MfccConfiguration.CcCount; c++)
+            for (int r = 0; r < config.mfccConfig.CcCount; r++)
+                for (int c = 0; c < config.mfccConfig.CcCount; c++)
                 {
                     int id = Speech.zigzag12x12[r, c];
                     if (id <= FVdim) fv[id - 1] = dctM[r, c];
@@ -220,8 +220,8 @@ namespace AudioAnalysisTools
         public void ScanRecording(AudioRecording recording, string opDir)
         {
             Log.WriteIfVerbose("\n\nSTART Template_DCT2D.ScanRecording(opDir=" + opDir + ")");
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, recording.GetWavReader());
-            var fv1 = this.FeatureVectorConfig.FVArray[0].Features;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, recording.GetWavReader());
+            var fv1 = this.FVConfig.FVArray[0].Features;
             var fv1norm = DataTools.DiffFromMean(fv1);
             int[] segmentation = spectralSono.SigState;
 
@@ -262,8 +262,8 @@ namespace AudioAnalysisTools
 		{
             base.Save(writer);
             //FftConfiguration.Save(writer); //do not print here because printed by FeatureVectorConfig
-            SonogramConfig.Save(writer);
-            FeatureVectorConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
+            this.sonogramConfig.Save(writer);
+            FVConfig.SaveConfigAndFeatureVectors(writer, opDir, this);
             AcousticModel.Save(writer);
 
             //write the default language model if only creating a new template

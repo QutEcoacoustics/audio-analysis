@@ -41,11 +41,11 @@ namespace AudioAnalysisTools
             Wav = recording.GetWavReader();
             //Template.GenerateSymbolSequence(Wav);
             //var wav = ar.GetWavReader();
-            var avSonogram = new AcousticVectorsSonogram(Template.SonogramConfig, Wav);
+            var avSonogram = new AcousticVectorsSonogram(Template.sonogramConfig, Wav);
             Template.AcousticModel.GenerateSymbolSequence(avSonogram, Template);
             Template.AcousticModel.FillGapsInSymbolSequence();
 
-            double frameOffset = Template.SonogramConfig.GetFrameOffset();
+            double frameOffset = Template.sonogramConfig.GetFrameOffset();
             BaseResult result = Template.GetBlankResultCard();
 
             LanguageModelType type = Template.LanguageModel.ModelType;

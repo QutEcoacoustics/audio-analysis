@@ -36,8 +36,8 @@ namespace AudioAnalysisTools
 
         public Configuration config { get; set; } 
         public ConfigKeys.Feature_Type FeatureExtractionType { get; set; }
-        public CepstralSonogramConfig SonogramConfig { get; set; }
-        public FVConfig FeatureVectorConfig { get; set; }
+        public SonogramConfig sonogramConfig { get; set; }
+        public FVConfig FVConfig { get; set; }
         public Acoustic_Model AcousticModel { get; set; }
         public BaseModel LanguageModel { get; set; }
         public LanguageModelType Modeltype { get; set; }
@@ -96,10 +96,10 @@ namespace AudioAnalysisTools
 
             Log.WriteIfVerbose("\nSTEP THREE: Verify template and save scanned recording as image");
             //Set up a spectral sonogram for image with symbol sequence track added
-            bool existingValue = template.SonogramConfig.DoFullBandwidth; //store current value of this boolean 
-            template.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(template.SonogramConfig, recording.GetWavReader());
-            spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.SonogramConfig.MinFreqBand, (int)template.SonogramConfig.MaxFreqBand);
+            bool existingValue = template.sonogramConfig.DoFullBandwidth; //store current value of this boolean 
+            template.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(template.sonogramConfig, recording.GetWavReader());
+            spectralSono.CalculateSubbandSNR(recording.GetWavReader(), (int)template.sonogramConfig.MinFreqBand, (int)template.sonogramConfig.MaxFreqBand);
 
             if (template.FeatureExtractionType == ConfigKeys.Feature_Type.DCT_2D)
             {
@@ -123,7 +123,7 @@ namespace AudioAnalysisTools
                 var imagePath = Path.Combine(templateDir, Path.GetFileNameWithoutExtension(template.SourcePath) + ".png");
                 template.SaveSyllablesImage(spectralSono, imagePath);
             }
-            template.SonogramConfig.DoFullBandwidth = existingValue; //restore value of this boolean 
+            template.sonogramConfig.DoFullBandwidth = existingValue; //restore value of this boolean 
         } //end VerifyTemplate()
 
 
@@ -360,8 +360,8 @@ namespace AudioAnalysisTools
             writer.WriteLine("#**************** INFO ABOUT ORIGINAL .WAV FILE");
             writer.WriteConfigValue("DIR_LOCATION", SourceDir);  //WAV_FILE_PATH=C:\SensorNetworks\WavFiles\
             writer.WriteConfigValue("WAV_FILE_NAME", Path.GetFileName(SourcePath));  //WAV_FILE_PATH=BAC2_20071008-085040.wav
-            writer.WriteConfigValue("WAV_DURATION", SonogramConfig.Duration.TotalSeconds);
-            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, SonogramConfig.FftConfig.SampleRate);
+            writer.WriteConfigValue("WAV_DURATION", sonogramConfig.Duration.TotalSeconds);
+            writer.WriteConfigValue(ConfigKeys.Windowing.Key_SampleRate, this.sonogramConfig.fftConfig.SampleRate);
             writer.WriteLine("#");
             writer.Flush();
         }
@@ -371,14 +371,14 @@ namespace AudioAnalysisTools
 
         public void LoadFeatureVectorsFromFile()
         {
-            this.FeatureVectorConfig.LoadFromFile(this.DataDir);
+            this.FVConfig.LoadFromFile(this.DataDir);
         }
 
         public void GenerateSymbolSequenceAndSave(AudioRecording ar, string opDir)
         {
             //GenerateSymbolSequence(ar.GetWavReader());
             var wav = ar.GetWavReader();
-            var avSonogram = new AcousticVectorsSonogram(this.SonogramConfig, wav);
+            var avSonogram = new AcousticVectorsSonogram(this.sonogramConfig, wav);
             this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
             this.AcousticModel.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
         }
@@ -422,11 +422,11 @@ namespace AudioAnalysisTools
 
         public void SaveResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
-            this.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            bool value = this.sonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, wav);
             SaveResultsImage(spectralSono, imagePath, result);
-            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
+            this.sonogramConfig.DoFullBandwidth = value;      //restore bool value
         }
 
         public virtual void SaveResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
@@ -442,11 +442,11 @@ namespace AudioAnalysisTools
 
         public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result)
         {
-            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
-            this.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            bool value = this.sonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, wav);
             SaveSyllablesAndResultsImage(spectralSono, imagePath, result);
-            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
+            this.sonogramConfig.DoFullBandwidth = value;      //restore bool value
         }
         public virtual void SaveSyllablesAndResultsImage(SpectralSonogram sonogram, string path, BaseResult result)
         {
@@ -463,11 +463,11 @@ namespace AudioAnalysisTools
         }
         public void SaveSyllablesAndResultsImage(WavReader wav, string imagePath, BaseResult result, List<AcousticEvent> list)
         {
-            bool value = this.SonogramConfig.DoFullBandwidth; //store existing value for this bool
-            this.SonogramConfig.DoFullBandwidth = true;
-            var spectralSono = new SpectralSonogram(this.SonogramConfig, wav);
+            bool value = this.sonogramConfig.DoFullBandwidth; //store existing value for this bool
+            this.sonogramConfig.DoFullBandwidth = true;
+            var spectralSono = new SpectralSonogram(this.sonogramConfig, wav);
             SaveSyllablesAndResultsImage(spectralSono, imagePath, result, list);
-            this.SonogramConfig.DoFullBandwidth = value;      //restore bool value
+            this.sonogramConfig.DoFullBandwidth = value;      //restore bool value
         }
         public virtual void SaveSyllablesAndResultsImage(SpectralSonogram sonogram, string path, BaseResult result, List<AcousticEvent> list)
         {

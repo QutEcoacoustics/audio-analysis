@@ -15,7 +15,8 @@ namespace AudioAnalysisTools
         public string SourceFName { get; set; }
         public string CallName { get; set; }//label to use for segmentation of call and silence.
 
-        public FftConfiguration FftConfig { get; set; }
+        public FftConfiguration fftConfig { get; set; }
+        public MfccConfiguration mfccConfig { get; set; }
         public TimeSpan Duration { get; set; }
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
@@ -32,6 +33,14 @@ namespace AudioAnalysisTools
         public int? MaxFreqBand { get; set; }
         public int? MidFreqBand { get; set; }
         public bool DoFullBandwidth { get; set; }
+        public int DeltaT { get; set; }
+
+
+        private bool saveSonogramImage = false;
+        public bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
+        private string imageDir = null;
+        public string ImageDir { get { return imageDir; } set { imageDir = value; } }
+
         #endregion
 
 
@@ -69,29 +78,24 @@ namespace AudioAnalysisTools
             config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
             config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
 
-            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, NoiseReductionType.NONE.ToString());
-            config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, TowseyLib.WindowFunctions.HAMMING.ToString());
-            config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1K2Latency, "0.05");
             config.SetPair(ConfigKeys.EndpointDetection.Key_VocalGap, "0.2");
             config.SetPair(ConfigKeys.EndpointDetection.Key_MinVocalDuration, "0.075");
 
-
+            config.SetPair(ConfigKeys.Mfcc.Key_NoiseReductionType, NoiseReductionType.NONE.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_WindowFunction, TowseyLib.WindowFunctions.HAMMING.ToString());
+            config.SetPair(ConfigKeys.Mfcc.Key_NPointSmoothFFT, "3");
             config.SetPair(ConfigKeys.Mfcc.Key_DoMelScale, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_FilterbankCount, "64");
             config.SetPair(ConfigKeys.Mfcc.Key_CcCount, "12");
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDelta, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_IncludeDoubleDelta, false.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_DeltaT, "2");
-
             config.SetPair(ConfigKeys.Sonogram.Key_SonogramType, ConfigKeys.SonogramTypes.spectral.ToString());
-
             config.SetPair(ConfigKeys.ImageSave.Key_AddGrid, false.ToString());
-
-            Initialize(config);
-                        
+            Initialize(config);                        
         }
         
 
@@ -108,7 +112,7 @@ namespace AudioAnalysisTools
         {
             CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
             SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
-            FftConfig = new FftConfiguration(config);
+            fftConfig = new FftConfiguration(config);
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
@@ -124,6 +128,10 @@ namespace AudioAnalysisTools
             DoFullBandwidth = false;
 
             EndpointDetectionConfiguration.SetConfig(config);
+            mfccConfig = new MfccConfiguration(config);
+            DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+            var duration = config.GetDoubleNullable("WAV_DURATION");
+            if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
         }
 
 
@@ -143,9 +151,13 @@ namespace AudioAnalysisTools
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
-            FftConfig.Save(writer);
-		}
+            fftConfig.Save(writer);
+            mfccConfig.Save(writer);
+            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
+            writer.WriteLine("#");
+            writer.Flush();
 
+		}
 
 		public double GetFrameDuration(int sampleRate)
 		{
@@ -154,7 +166,7 @@ namespace AudioAnalysisTools
 
         public double GetFrameOffset()
         {
-            double frameDuration = GetFrameDuration(this.FftConfig.SampleRate); // Duration of full frame or window in seconds
+            double frameDuration = GetFrameDuration(this.fftConfig.SampleRate); // Duration of full frame or window in seconds
             double frameOffset = frameDuration * (1 - WindowOverlap);           // Duration of non-overlapped part of window/frame in seconds
             return frameOffset; 
         }
@@ -169,45 +181,5 @@ namespace AudioAnalysisTools
 
     } // end BaseSonogramConfig()
 
-
-	[Serializable]
-	public class CepstralSonogramConfig : SonogramConfig
-	{
-		public new static CepstralSonogramConfig Load(string configFile)
-		{
-			var config = new Configuration(configFile);
-			return new CepstralSonogramConfig(config);
-		}
-
-        private bool saveSonogramImage = false;
-        public  bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
-        private string imageDir = null;
-        public  string ImageDir { get { return imageDir; } set { imageDir = value; } }
-        public MfccConfiguration MfccConfiguration { get; set; }
-        public int DeltaT { get; set; }
-
-        /// <summary>
-        /// CONSTRUCTOR
-        /// </summary>
-        /// <param name="config"></param>
-		public CepstralSonogramConfig(Configuration config) : base(config)
-		{
-			MfccConfiguration = new MfccConfiguration(config);
-            //SampleRate   = config.GetInt(ConfigKeys.Windowing.Key_SampleRate);
-            DeltaT       = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
-            var duration = config.GetDoubleNullable("WAV_DURATION");
-            if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
-        }
-
-		public override void Save(TextWriter writer)
-		{
-			base.Save(writer);
-			MfccConfiguration.Save(writer);
-            writer.WriteConfigValue(ConfigKeys.Mfcc.Key_DeltaT, DeltaT);
-            writer.WriteLine("#");
-            writer.Flush();
-        }
-
-    } //end class CepstralSonogramConfig
 
 }

@@ -18,9 +18,9 @@ namespace AudioAnalysisTools
     {
 
         #region Properties
-        public SonogramConfig Configuration { get; private set; }
+        public SonogramConfig Configuration { get; set; }
 
-		public double MaxAmplitude { get; private set; }
+		public double MaxAmplitude { get; set; }
 		public int SampleRate { get; protected set; }
         public TimeSpan Duration { get; protected set; }
 
@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
         public int FrameCount       { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         //energy and dB per frame
-        public SNR SnrFullband { get; private set; }
+        public SNR SnrFullband { get; set; }
         public double[] DecibelsPerFrame { get { return SnrFullband.Decibels; } protected set {} }//decibels per signal frame
 
         //energy and dB per frame sub-band
@@ -81,7 +81,7 @@ namespace AudioAnalysisTools
             //set config params to the current recording
             this.SampleRate = wav.SampleRate;
             this.Configuration.Duration = wav.Time;
-            this.Configuration.FftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
+            this.Configuration.fftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
             this.Duration = wav.Time;
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
             double[] signal = wav.Samples;
@@ -116,7 +116,7 @@ namespace AudioAnalysisTools
 
 			//generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
-            TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction);
+            TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(this.Configuration.fftConfig.WindowFunction);
             double power;
             var amplitudeM = BaseSonogram.MakeAmplitudeSonogram(signal, frameIDs, w, out power);
             this.Configuration.WindowPower = power;
@@ -146,7 +146,7 @@ namespace AudioAnalysisTools
         } //end CONSTRUCTOR BaseSonogram(SonogramConfig config, WavReader wav)
 
 
-        protected abstract void Make(double[,] amplitudeM);
+        public abstract void Make(double[,] amplitudeM);
 
 
 
@@ -191,7 +191,7 @@ namespace AudioAnalysisTools
 
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             double power;
-            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction), out power);
+            var amplitudeM = MakeAmplitudeSonogram(wav.Samples, framesIDs, TowseyLib.FFT.GetWindowFunction(this.Configuration.fftConfig.WindowFunction), out power);
             //this.ExtractSubband = true;
             this.subBand_MinHz = minHz;
             this.subBand_MaxHz = maxHz;
@@ -566,6 +566,28 @@ namespace AudioAnalysisTools
     } //end abstract class BaseSonogram
 
 
+    /// <summary>
+    /// This class is designed to produce a sonogram of full-bandwidth spectral amplitudes 
+    /// and to go no further.
+    /// The constructor calls the three argument BaseSonogram constructor.
+    /// </summary>
+    public class AmplitudeSonogram : BaseSonogram
+    {
+        public AmplitudeSonogram(SonogramConfig config, WavReader wav)
+			: base(config, wav, false)
+		{ }
+
+        /// <summary>
+        /// This method does nothing because do not want to change the amplitude sonogram in any way.
+        /// Actually the constructor of this class calls the the BaseSonogram constructor that does not include a call to make().
+        /// Consequently this method should never be called. Just a place filler.
+        /// </summary>
+        /// <param name="amplitudeM"></param>
+        public override void Make(double[,] amplitudeM)
+        {
+        }
+
+    }
 
 
 
@@ -585,6 +607,24 @@ namespace AudioAnalysisTools
 			: base(config, wav)
 		{ }
 
+        public SpectralSonogram(AmplitudeSonogram sg)
+            : base(sg.Configuration)
+        {
+            this.DecibelsPerFrame = sg.DecibelsPerFrame;
+            this.DecibelsNormalised = sg.DecibelsNormalised;
+            this.Duration = sg.Duration;
+            this.epsilon = sg.epsilon;
+            this.FrameCount = sg.FrameCount;
+            this.Max_dBReference = sg.Max_dBReference;
+            this.MaxAmplitude = sg.MaxAmplitude;
+            this.SampleRate = sg.SampleRate;
+            this.SigState = sg.SigState;
+            this.SnrFullband = sg.SnrFullband;
+            this.Data = sg.Data;
+            this.Make(this.Data); //converts amplitude matrix to dB spectrogram
+        }
+        
+        
         /// <summary>
         /// use this constructor to cut out a portion of a spectrum from start to end time.
         /// </summary>
@@ -638,7 +678,7 @@ namespace AudioAnalysisTools
 
 
 
-		protected override void Make(double[,] amplitudeM)
+		public override void Make(double[,] amplitudeM)
 		{
             double[,] m = amplitudeM;
 
@@ -686,7 +726,17 @@ namespace AudioAnalysisTools
             return GetCepstrogram(this.Data, minHz, maxHz, this.Configuration.FreqBinCount, this.FBinWidth, doMelScale, ccCount);
         }
 
-
+        /// <summary>
+        /// The data passed to this method must be the Spectral sonogram.
+        /// </summary>
+        /// <param name="data">the Spectral sonogram</param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="freqBinCount"></param>
+        /// <param name="freqBinWidth"></param>
+        /// <param name="doMelScale"></param>
+        /// <param name="ccCount"></param>
+        /// <returns></returns>
         public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz,
                                                         int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
         {
@@ -714,18 +764,58 @@ namespace AudioAnalysisTools
     public class CepstralSonogram : BaseSonogram
     {
         public CepstralSonogram(string configFile, WavReader wav)
-            : this(CepstralSonogramConfig.Load(configFile), wav)
+            : this(SonogramConfig.Load(configFile), wav)
         { }
-        public CepstralSonogram(CepstralSonogramConfig config, WavReader wav)
+        public CepstralSonogram(SonogramConfig config, WavReader wav)
             : base(config, wav)
         { }
 
-        public double MaxMel { get; private set; }      // Nyquist frequency on Mel scale
-
-        protected override void Make(double[,] amplitudeM)
+        public CepstralSonogram(AmplitudeSonogram sg) : base(sg.Configuration)
         {
-            var config = Configuration as CepstralSonogramConfig;
-            Data = MakeCepstrogram(amplitudeM, this.DecibelsNormalised, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta);
+            this.Configuration = sg.Configuration;
+            this.DecibelsPerFrame = sg.DecibelsPerFrame;
+            this.DecibelsNormalised = sg.DecibelsNormalised;
+            this.Duration = sg.Duration;
+            this.epsilon = sg.epsilon;
+            this.FrameCount = sg.FrameCount;
+            this.Max_dBReference = sg.Max_dBReference;
+            this.MaxAmplitude = sg.MaxAmplitude;
+            this.SampleRate = sg.SampleRate;
+            this.SigState = sg.SigState;
+            this.SnrFullband = sg.SnrFullband;
+            this.Data = sg.Data;
+            this.Make(this.Data); //converts amplitude matrix to cepstral sonogram
+        }
+
+        public CepstralSonogram(AmplitudeSonogram sg, int minHz, int maxHz): this(sg)
+        {
+            this.DecibelsPerFrame = sg.DecibelsPerFrame;
+            this.DecibelsNormalised = sg.DecibelsNormalised;
+            this.Duration = sg.Duration;
+            this.epsilon = sg.epsilon;
+            this.FrameCount = sg.FrameCount;
+            this.Max_dBReference = sg.Max_dBReference;
+            this.MaxAmplitude = sg.MaxAmplitude;
+            this.SampleRate = sg.SampleRate;
+            this.SigState = sg.SigState;
+            this.SnrFullband = sg.SnrFullband;
+
+            this.subBand_MinHz = minHz;
+            this.subBand_MaxHz = maxHz;
+            this.Data = BaseSonogram.ExtractFreqSubband(sg.Data, minHz, maxHz,
+                             this.Configuration.DoMelScale, sg.Configuration.FreqBinCount, sg.FBinWidth);
+            CalculateSubbandSNR(this.Data);
+            this.Make(this.Data);          //converts amplitude matrix to cepstral sonogram
+        }
+        
+        
+        
+        //  public double MaxMel { get; private set; }      // Nyquist frequency on Mel scale
+
+        public override void Make(double[,] amplitudeM)
+        {
+            var config = Configuration as SonogramConfig;
+            Data = MakeCepstrogram(amplitudeM, this.DecibelsNormalised, config.mfccConfig.IncludeDelta, config.mfccConfig.IncludeDoubleDelta);
         }
 
         /// <summary>
@@ -737,14 +827,15 @@ namespace AudioAnalysisTools
         /// <param name="includeDelta"></param>
         /// <param name="includeDoubleDelta"></param>
         /// <returns></returns>
-        protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta)
+        protected double[,] MakeCepstrogram(double[,] matrix, double[] decibels, bool includeDelta, bool includeDoubleDelta)
         {
             Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
             double[,] m = matrix;
 
             //(i) APPLY FILTER BANK
-            int bandCount   = ((CepstralSonogramConfig)Configuration).MfccConfiguration.FilterbankCount;
-            bool doMelScale = ((CepstralSonogramConfig)Configuration).MfccConfiguration.DoMelScale;
+            int bandCount   = ((SonogramConfig)Configuration).mfccConfig.FilterbankCount;
+            bool doMelScale = ((SonogramConfig)Configuration).mfccConfig.DoMelScale;
+            int ccCount = ((SonogramConfig)this.Configuration).mfccConfig.CcCount;
             int FFTbins = this.Configuration.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
             int minHz   = this.Configuration.MinFreqBand ?? 0;
             int maxHz   = this.Configuration.MaxFreqBand ?? this.NyquistFrequency;
@@ -782,24 +873,24 @@ namespace AudioAnalysisTools
 	public class AcousticVectorsSonogram : CepstralSonogram
 	{
 		public AcousticVectorsSonogram(string configFile, WavReader wav)
-            : base(CepstralSonogramConfig.Load(configFile), wav)
+            : base(SonogramConfig.Load(configFile), wav)
 		{ }
 
-        public AcousticVectorsSonogram(CepstralSonogramConfig config, WavReader wav)
+        public AcousticVectorsSonogram(SonogramConfig config, WavReader wav)
 			: base(config, wav)
 		{ }
 
-		protected override void Make(double[,] amplitudeM)
+		public override void Make(double[,] amplitudeM)
 		{
-            var config = Configuration as CepstralSonogramConfig;
-            Data = MakeAcousticVectors(amplitudeM, this.DecibelsNormalised, config.MfccConfiguration.CcCount, config.MfccConfiguration.IncludeDelta, config.MfccConfiguration.IncludeDoubleDelta, config.DeltaT);
+            var config = Configuration as SonogramConfig;
+            Data = MakeAcousticVectors(amplitudeM, this.DecibelsNormalised, config.mfccConfig.CcCount, config.mfccConfig.IncludeDelta, config.mfccConfig.IncludeDoubleDelta, config.DeltaT);
         }
 
 		double[,] MakeAcousticVectors(double[,] matrix, double[] decibels, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT)
 		{
 			Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
 
-			double[,] m = MakeCepstrogram(matrix, decibels, ccCount, includeDelta, includeDoubleDelta);
+			double[,] m = MakeCepstrogram(matrix, decibels, includeDelta, includeDoubleDelta);
 
 			//initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
 			int frameCount = m.GetLength(0);
@@ -837,7 +928,7 @@ namespace AudioAnalysisTools
 			: base(config, wav)
 		{ }
 
-		protected override void Make(double[,] amplitudeM)
+		public override void Make(double[,] amplitudeM)
 		{
 			Data = SobelEdgegram(amplitudeM);
 		}

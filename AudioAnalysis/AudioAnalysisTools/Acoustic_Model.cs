@@ -57,11 +57,11 @@ namespace AudioAnalysisTools
         public void GenerateSymbolSequence(AcousticVectorsSonogram sonogram, BaseTemplate template)
         {
             this.template = template;
-            this.fvConfig = template.FeatureVectorConfig;
+            this.fvConfig = template.FVConfig;
             this.FrameOffset = sonogram.FrameOffset;
             this.FramesPerSecond = sonogram.FramesPerSecond;
             AcousticMatrix = GenerateAcousticMatrix(sonogram);
-            AcousticMatrix2SymbolSequence(AcousticMatrix, template.SonogramConfig.DeltaT);
+            AcousticMatrix2SymbolSequence(AcousticMatrix, template.sonogramConfig.DeltaT);
         }
 
 

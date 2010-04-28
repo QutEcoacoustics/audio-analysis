@@ -71,7 +71,7 @@ namespace AnalysisPrograms
             Log.WriteLine("AED finished");
 
             SonogramConfig config = sonogram.Configuration;
-            double freqBinWidth = config.FftConfig.NyquistFreq / (double)config.FreqBinCount;
+            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
 
             var events = new List<AcousticEvent>();
             foreach (Oblong o in oblongs)
