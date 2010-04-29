@@ -58,6 +58,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HMMBuilder", "HMMBuilder\HMMBuilder.csproj", "{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Test", "QutSensors.Test\QutSensors.Test.csproj", "{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8E39BFC8-8503-4546-B1B3-A799361C49B1} = {8E39BFC8-8503-4546-B1B3-A799361C49B1}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Shared", "QutSensors.Shared\QutSensors.Shared.csproj", "{13547AB0-068A-4EDD-A2DD-A9644F982E59}"
 EndProject
