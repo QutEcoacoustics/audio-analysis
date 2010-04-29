@@ -669,6 +669,42 @@ namespace TowseyLib
         //*********************************************** GET ACOUSTIC VECTORS
 
 
+        /// <summary>
+        /// This method assumes that the supplied mfcc matrix contains dB values in column one.
+        /// These are added in from the supplied dB array.
+        /// </summary>
+        /// <param name="mfcc"></param>
+        /// <param name="includeDelta"></param>
+        /// <param name="includeDoubleDelta"></param>
+        /// <returns></returns>
+        public static double[,] AcousticVectors(double[,] mfcc, bool includeDelta, bool includeDoubleDelta)
+        {
+            //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
+            int frameCount = mfcc.GetLength(0); //number of frames
+            int coeffcount = mfcc.GetLength(1); //number of MFCCs + 1 for energy
+            int dim = coeffcount; //
+            if (includeDelta) dim += coeffcount;
+            if (includeDoubleDelta) dim += coeffcount;
+
+            double[,] acousticM = new double[frameCount, dim];
+            for (int t = 0; t < frameCount; t++) //for all spectra or time steps
+            {
+                double[] fv = GetFeatureVector(mfcc, t, includeDelta, includeDoubleDelta);//get feature vector for frame (t)
+                for (int i = 0; i < dim; i++) acousticM[t, i] = fv[i];  //transfer feature vector to acoustic matrix.
+            }
+            return acousticM;
+        } //AcousticVectors()
+
+        
+        /// <summary>
+        /// This method assumes that the supplied mfcc matrix DOES NOT contain dB values in column one.
+        /// These are added in from the supplied dB array.
+        /// </summary>
+        /// <param name="mfcc"></param>
+        /// <param name="dBNormed"></param>
+        /// <param name="includeDelta"></param>
+        /// <param name="includeDoubleDelta"></param>
+        /// <returns></returns>
         public static double[,] AcousticVectors(double[,] mfcc, double[] dBNormed, bool includeDelta, bool includeDoubleDelta)
         {
             //both the matrix of mfcc's and the array of decibels have been normed in 0-1.
@@ -688,6 +724,8 @@ namespace TowseyLib
             }
             return acousticM;
         } //AcousticVectors()
+
+
 
         public static double[] AcousticVector(int index, double[,] mfcc, double[] dB, bool includeDelta, bool includeDoubleDelta)
         {
@@ -713,7 +751,7 @@ namespace TowseyLib
         /// <param name="cepstralM"></param>
         /// <param name="timeID"></param>
         /// <returns></returns>
-        public static double[] GetAcousticVector(double[,] cepstralM, int timeID, int deltaT)
+        public static double[] GetTriAcousticVector(double[,] cepstralM, int timeID, int deltaT)
         {
             int frameCount = cepstralM.GetLength(0); //number of frames
             int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
@@ -730,6 +768,63 @@ namespace TowseyLib
         }
 
 
+        public static double[] GetFeatureVector(double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
+        {
+            int frameCount = M.GetLength(0); //number of frames
+            int coeffcount = M.GetLength(1); //number of MFCCs + 1 for energy
+            int dim = coeffcount; //
+            if (includeDelta)       dim += coeffcount;
+            if (includeDoubleDelta) dim += coeffcount;
+            double[] fv = new double[dim];
+
+            //add in the CEPSTRAL coefficients
+            for (int i = 0; i < coeffcount; i++) fv[i] = M[timeID, i];
+
+            //add in the DELTA coefficients
+            int offset = coeffcount;
+            if (includeDelta)
+            {
+                if (((timeID + 1) >= frameCount) || ((timeID - 1) < 0)) //deal with edge effects
+                {
+                    for (int i = offset; i < dim; i++) fv[i] = 0.5;
+                    return fv;
+                }
+                for (int i = 0; i < coeffcount; i++) fv[offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
+                
+                for (int i = offset; i < offset + coeffcount; i++)
+                {
+                    fv[i] = (fv[i] + 1) / 2;   //normalise values that potentially range from -1 to +1
+                    //if (fv[i] < 0.0) fv[i] = 0.0;
+                    //if (fv[i] > 1.0) fv[i] = 1.0;
+                }
+            }
+
+            //add in the DOUBLE DELTA coefficients
+            if (includeDoubleDelta)
+            {
+                offset += coeffcount;
+                if (((timeID + 2) >= frameCount) || ((timeID - 2) < 0)) //deal with edge effects
+                {
+                    for (int i = offset; i < dim; i++) fv[i] = 0.5;
+                    return fv;
+                }
+                for (int i = 0; i < coeffcount; i++)
+                {
+                    fv[offset + i] = (M[timeID + 2, i] - M[timeID, i]) - (M[timeID, i] - M[timeID - 2, i]);
+                }
+                for (int i = offset; i < offset + coeffcount; i++)
+                {
+                    fv[i] = (fv[i] + 2) / 4;   //normalise values that potentially range from -2 to +2
+                    //if (fv[i] < 0.0) fv[i] = 0.0;
+                    //if (fv[i] > 1.0) fv[i] = 1.0;
+                }
+            }
+
+            return fv;
+        }
+
+
+
         public static double[] GetFeatureVector(double[] dB, double[,] M, int timeID, bool includeDelta, bool includeDoubleDelta)
         {
             //the dB array has been normalised in 0-1.
@@ -739,10 +834,9 @@ namespace TowseyLib
             int dim = coeffcount; //
             if (includeDelta) dim += coeffcount;
             if (includeDoubleDelta) dim += coeffcount;
-            //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
+            double[] fv = new double[dim];
 
             //add in the CEPSTRAL coefficients
-            double[] fv = new double[dim];
             fv[0] = dB[timeID];
             for (int i = 0; i < mfccCount; i++) fv[1 + i] = M[timeID, i];
 
@@ -760,39 +854,29 @@ namespace TowseyLib
                 {
                     fv[1 + offset + i] = M[timeID + 1, i] - M[timeID - 1, i];
                 }
-                for (int i = offset; i < offset + mfccCount + 1; i++)
-                {
-                    fv[i] = (fv[i] + 1) / 2;//normalise values that potentially range from -1 to +1
-                    //if (fv[i] < 0) Console.WriteLine("fv[i]="+fv[i]);
-                    //if (fv[i] > 1.0) Console.WriteLine("fv[i]=" + fv[i]);
-                    if (fv[i] < 0.0) fv[i] = 0.0;
-                    if (fv[i] > 1.0) fv[i] = 1.0;
-                }
+                for (int i = offset; i < offset + mfccCount + 1; i++) 
+                    fv[i] = (fv[i] + 1) / 2;    //normalise values that potentially range from -1 to +1
             }
 
             //add in the DOUBLE DELTA coefficients
             if (includeDoubleDelta)
             {
                 offset += coeffcount;
-                //Console.WriteLine(" mfccCount=" + mfccCount + " coeffcount=" + coeffcount + " dim=" + dim);
                 if (((timeID + 2) >= frameCount) || ((timeID - 2) < 0)) //deal with edge effects
                 {
                     for (int i = offset; i < dim; i++) fv[i] = 0.5;
                     return fv;
                 }
                 fv[offset] = (dB[timeID + 2] - dB[timeID]) - (dB[timeID] - dB[timeID - 2]);
-                //Console.WriteLine("fv[offset]=" + fv[offset]);
                 for (int i = 0; i < mfccCount; i++)
                 {
                     fv[1 + offset + i] = (M[timeID + 2, i] - M[timeID, i]) - (M[timeID, i] - M[timeID - 2, i]);
                 }
                 for (int i = offset; i < offset + mfccCount + 1; i++)
                 {
-                    fv[i] = (fv[i] + 2) / 4;//normalise values that potentially range from -2 to +2
-                    //if (fv[i] < 0) Console.WriteLine("fv[i]="+fv[i]);
-                    //if (fv[i] > 1.0) Console.WriteLine("fv[i]=" + fv[i]);
-                    if (fv[i] < 0.0) fv[i] = 0.0;
-                    if (fv[i] > 1.0) fv[i] = 1.0;
+                    fv[i] = (fv[i] + 2) / 4;   //normalise values that potentially range from -2 to +2
+                    //if (fv[i] < 0.0) fv[i] = 0.0;
+                    //if (fv[i] > 1.0) fv[i] = 1.0;
                 }
             }
 

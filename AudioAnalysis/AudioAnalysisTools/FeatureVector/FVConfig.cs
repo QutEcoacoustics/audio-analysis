@@ -83,7 +83,7 @@ namespace AudioAnalysisTools
             Log.WriteLine("CONSTRUCTOR FVConfig: reading wav file for deriving noise FV: <" + FV_DefaultNoisePath + ">");
             WavReader wav = new WavReader(FV_DefaultNoisePath);
             var sonoConfig = new SonogramConfig(config);
-            AcousticVectorsSonogram s = new AcousticVectorsSonogram(sonoConfig, wav);
+            TriAvSonogram s = new TriAvSonogram(sonoConfig, wav);
             this.DefaultModalNoiseProfile = s.SnrFullband.ModalNoiseProfile;
             DefaultNoiseFV = Acoustic_Model.GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
 

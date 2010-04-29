@@ -41,7 +41,7 @@ namespace AudioAnalysisTools
             Wav = recording.GetWavReader();
             //Template.GenerateSymbolSequence(Wav);
             //var wav = ar.GetWavReader();
-            var avSonogram = new AcousticVectorsSonogram(Template.sonogramConfig, Wav);
+            var avSonogram = new TriAvSonogram(Template.sonogramConfig, Wav);
             Template.AcousticModel.GenerateSymbolSequence(avSonogram, Template);
             Template.AcousticModel.FillGapsInSymbolSequence();
 
