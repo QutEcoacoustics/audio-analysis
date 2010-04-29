@@ -1,0 +1,690 @@
+﻿<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Expression.Interactions</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ActionCommand">
+            <summary>
+包裝方法之 ICommand 的基本實作，該方法不採用任何參數或採用一個參數。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.#ctor(System.Action)">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Core.ActionCommand"/> 類別的新例項。
+            </summary>
+<param name="action">動作。</param>
+<remarks>使用此建構函式來提供忽略 ICommand 參數的動作。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.#ctor(System.Action{System.Object})">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Core.ActionCommand"/> 類別的新例項。
+            </summary>
+<param name="objectAction">採用物件參數的動作。</param>
+<remarks>使用此建構函式來提供動作，該動作會使用 Execute 方法所傳送的物件參數。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.System#Windows#Input#ICommand#CanExecute(System.Object)">
+            <summary>
+定義用來判斷命令是否能以其目前狀態執行的方法。
+            </summary>
+<param name="parameter">命令所用的資料。如果命令不需要傳送資料，此物件可設為 Null。</param>
+            <returns>
+永遠傳回 true。
+            </returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.Execute(System.Object)">
+            <summary>
+定義叫用命令時要呼叫的方法。
+            </summary>
+<param name="parameter">命令所用的資料。如果命令不需要傳送資料，此物件可設為 Null。</param>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Core.ActionCommand.System#Windows#Input#ICommand#CanExecuteChanged">
+            <summary>
+在發生影響是否應執行命令的變更時發生。不會由 ActionCommand 觸發。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ChangePropertyAction">
+            <summary>
+叫用時會將指定屬性變更為指定值的動作。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.#ctor">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Core.ChangePropertyAction"/> 類別的新例項。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Invoke(System.Object)">
+            <summary>
+叫用動作。
+            </summary>
+<param name="parameter">動作的參數。如果動作不需要參數，可將參數設為 Null 參照。</param>
+<exception cref="T:System.ArgumentException">在目標上找不到含有 <c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName"/> 的屬性。</exception>
+<exception cref="T:System.ArgumentException">無法將 <c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName"/> 設為 <c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Value"/> 指定的值。</exception>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName">
+            <summary>
+取得或設定要變更的屬性名稱。這是相依性屬性。
+            </summary>
+<value>要變更的屬性名稱。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Value">
+            <summary>
+取得或設定要設定的值。這是相依性屬性。
+            </summary>
+<value>要設定的值。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Duration">
+            <summary>
+取得或設定叫用 ChangePropertyAction 時會出現之動畫的持續時間。這是相依性屬性。如果取消設定持續時間，將不會套用動畫。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Ease">
+            <summary>
+取得或設定叫用 ChangePropertyAction 時要與動畫搭配使用的加/減速功能。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager">
+            <summary>
+ExtendedVisualStateManager 是自訂的 VisualStateManager，可將版面配置屬性的動畫變順暢。利用這個自訂的 VisualStateManager，狀態可包含對 Grid.Column 等屬性的變更、可將元素高度變更為 [自動] 或從 [自動] 變更等等。使用適當切換的 GeneratedDuration 和 GeneratedEasingFunction，可在一段時間後將這些變更變順暢。請參閱下方的「VisualStateManager 覆寫」區域，以取得演算法的一般描述。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.UseFluidLayoutProperty">
+            <summary>
+VisualStateGroup 是否可以使用 [流體版面配置]。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValuesProperty">
+            <summary>
+VisualStateGroup 會將這些原始值的清單保留在附加屬性中。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutStoryboardProperty">
+            <summary>
+擷取每個狀態的版面配置專用屬性，然後附加至狀態。這些屬性會從狀態本身移除。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CurrentStateProperty">
+            <summary>
+記住目前狀態。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.MovingElements">
+            <summary>
+這是目前移動中的一組元素。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutTransitionStoryboard">
+            <summary>
+這是正在以動畫顯示轉換的腳本。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutProperties">
+            <summary>
+此清單包含所有已知的版面配置屬性。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.PathToPropertyMap">
+            <summary>
+Silverlight 不提供從 PropertyPath 取得 DependencyProperty 的直接方法，因此，此結構是用於找出追蹤的路徑。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.StopAnimations">
+            <summary>
+停止動畫並取代為了支援該動畫所進行的版面配置變更。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.FindTransition(System.Windows.VisualStateGroup,System.Windows.VisualState,System.Windows.VisualState)">
+            <summary>
+找出 VisualStateManager 將用於以動畫顯示變更的轉換，讓版面配置動畫可以符合持續時間及加/減速。
+            </summary>
+<param name="group">發生轉換的群組</param>
+<param name="previousState">原本的狀態</param>
+<param name="state">要成為的狀態</param>
+<returns>轉換</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.ExtractLayoutStoryboard(System.Windows.VisualState)">
+            <summary>
+針對狀態從腳本移除所有版面配置影響的屬性，並在附加屬性中快取這些屬性。
+            </summary>
+<param name="state">要移到的狀態</param>
+<returns>包含該狀態之版面配置屬性的腳本</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.FindTargetElements(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+目標元素集就是可能已在版面配置轉換中移動的所有元素集。此集合是下列的終止：- 含有在狀態中以動畫顯示之版面配置屬性的元素。- 集合中元素的同層級項目。- 集合中元素的父項。
+             
+後續的程式碼會在版面配置變更之前及之後檢查這些矩形。
+            </summary>
+<param name="control">其版面配置正在變更狀態的控制項</param>
+<param name="layoutStoryboard">包含版面配置變更的腳本</param>
+<param name="originalValueRecords">先前狀態瀏覽中，可能還原的任何先前值</param>
+<param name="movingElements">目前移動中的一組元素 (如果有狀態變更轉換正在進行)</param>
+<returns>其版面配置可能已經變更的整組元素</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetRectsOfTargets(System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+為目標清單中的所有元素取得一組矩形。
+            </summary>
+<param name="targets">要考慮的元素集</param>
+<param name="movingElements">目前移動中的元素集</param>
+<returns>將元素對應至其矩形的字典</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetLayoutRect(System.Windows.FrameworkElement)">
+            <summary>
+取得元素的版面配置矩形，方法是取得版面配置位置，然後計算使用的是哪個部分的位置。
+            </summary>
+<param name="element">要取得其矩形的元素</param>
+<returns>該元素的版面配置矩形</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetOldOpacities(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+取得狀態變更時元素的不透明度，而非可見度，因為狀態變更可能正在處理中，因此目前的值是最重要的。
+            </summary>
+<param name="control">其狀態正在變更的控制項</param>
+<param name="layoutStoryboard">含有版面配置屬性的腳本</param>
+<param name="originalValueRecords">一組原始值</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.SetLayoutStoryboardProperties(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord})">
+            <summary>
+瀏覽版面配置腳本並使用 SetValue 設定所有屬性，以啟用對 UpdateLayout 的呼叫，而不使時間軸滴答，因為這會導致轉譯。所有遭到覆寫的值會儲存在 OriginalValueRecords 集合中，以便稍後可取代這些值。
+            </summary>
+<param name="control">其狀態正在變更的控制項</param>
+<param name="layoutStoryboard">保存版面配置屬性的腳本</param>
+<param name="originalValueRecords">原始值存放區</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.WrapMovingElementsInCanvases(System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Windows.Rect},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Windows.Rect})">
+            <summary>
+將所有要移動的元素當做版面配置動畫的結果，並將它們包裝在畫布中，使其不影響其同層級元素。
+            </summary>
+<param name="movingElements">要移動的元素集</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.UnwrapMovingElementsFromCanvases(System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+將所有一直在移動的元素當做版面配置動畫的結果，並將它們從其畫布取消包裝。
+            </summary>
+<param name="movingElements">一直在移動的元素集</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CopyLayoutProperties(System.Windows.FrameworkElement,System.Windows.FrameworkElement,System.Boolean)">
+            <summary>
+將版面配置屬性從來源元素複製到目標元素，以便將它們從來源清除。
+            </summary>
+<param name="source">版面配置屬性的來源</param>
+<param name="target">版面配置屬性的目的地</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CreateLayoutTransitionStoryboard(System.Windows.VisualTransition,System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Double})">
+            <summary>
+建立要用於以動畫顯示轉換的實際腳本。使用所有先前計算的結果。
+            </summary>
+<param name="duration">動畫的持續時間</param>
+<param name="ease">要在動畫中使用的加/減速功能</param>
+<param name="movingElements">要移動的元素集</param>
+<param name="oldOpacities">其可見度正在變更之元素的原有不透明度</param>
+<returns>腳本</returns>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord">
+            <summary>
+OriginalValueRecord 會記住在狀態中變更之屬性的原始值。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.FluidMoveScope">
+            <summary>
+這個列舉型別指出 FluidMoveBehavior 是套用至它所附加到的元素，還是套用至該元素的子項。&quot;Self&quot; 適用於單一元素應呈現特殊行為的情況；&quot;Children&quot; 則適用於相同行為應套用至 WrapPanel 所有子項，或套用至 ItemsControl 之 ItemsHost 面板的情況。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior">
+            <summary>
+監控元素 (或一組元素) 之版面配置變更，並在需要時將元素平順地移至新位置的行為。此行為不會以動畫顯示元素的大小或可見度，它只會以動畫顯示該元素在其父容器內的位移。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.DurationProperty">
+            <summary>
+移動持續時間的 DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.AppliesToProperty">
+            <summary>
+行為範圍的 DependencyProperty。如需詳細資訊，請參閱 FluidMoveScope。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.IsActiveProperty">
+            <summary>
+行為之使用中狀態的 DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseXProperty">
+            <summary>
+要用於移動的水平元件之 EasingFunction 的 DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseYProperty">
+            <summary>
+要用於移動的垂直元件之 EasingFunction 的 DependencyProperty。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.Duration">
+            <summary>
+移動的持續時間。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.AppliesTo">
+            <summary>
+指出行為只要套用至此元素，或套用至元素的所有子項 (如果該元素是面板)。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.IsActive">
+            <summary>
+指出行為目前是否使用中。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseX">
+            <summary>
+要用於移動之水平元件的 EasingFunction。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseY">
+            <summary>
+要用於移動之垂直元件的 EasingFunction。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.GoToStateAction">
+            <summary>
+叫用此動作可將 FrameworkElement 轉換為指定的 VisualState。
+            </summary>
+            <remarks>
+如果已設定 TargetName 屬性，此動作會嘗試變更目標元素的狀態。如果未設定，它會查看元素樹狀目錄，以嘗試找出定義狀態的替代目標。ControlTemplate 和 UserControl 是兩個常見的可能目標。
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.GoToStateAction.OnTargetChanged(System.Windows.FrameworkElement,System.Windows.FrameworkElement)">
+            <summary>
+當目標變更時呼叫。如果未設定 TargetName 屬性，此動作會具有自訂行為。
+            </summary>
+            <param name="oldTarget"></param>
+            <param name="newTarget"></param>
+<exception cref="T:System.InvalidOperationException">找不到含有狀態的適當 FrameworkElement。</exception>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.GoToStateAction.Invoke(System.Object)">
+            <summary>
+當符合某些條件且叫用動作時，會呼叫此方法。
+            </summary>
+            <param name="parameter"></param>
+<exception cref="T:System.InvalidOperationException">無法將目標變更為指定的 StateName。</exception>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.GoToStateAction.UseTransitions">
+            <summary>
+是否要使用 VisualTransition 來轉換狀態。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.GoToStateAction.StateName">
+            <summary>
+VisualState 的名稱。  
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.HyperlinkAction">
+            <summary>
+將瀏覽至指定超連結的動作。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.HyperlinkAction.Invoke(System.Object)">
+            <summary>
+當符合某些條件且叫用動作時，會呼叫此方法。
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.HyperlinkAction.NavigateUri">
+            <summary>
+要開啟之頁面的 URI。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.HyperlinkAction.TargetWindow">
+            <summary>
+應在其中開啟 NavigateUri 之視窗或索引標籤的名稱。 
+            </summary>
+            <remarks>
+下面幾個值具有特殊意義：&quot;_blank&quot; 會在新的瀏覽器視窗中載入、&quot;_parent&quot; 會嘗試在父框架中載入，而 &quot;_self&quot; 會以目前的頁面或框架為目標。 
+            </remarks>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Input.KeyTrigger">
+            <summary>
+由鍵盤事件觸發的觸發程序。如果偵測到目標按鍵和輔助按鍵，它就會觸發。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.Key">
+            <summary>
+必須按下以使觸發程序觸發的按鍵。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.Modifiers">
+            <summary>
+必須為使用中才能使觸發程序觸發的修飾詞 (預設為未按下修飾詞)。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.FiredOn">
+            <summary>
+是否要聆聽 KeyDown 或 KeyUp 事件。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior">
+            <summary>
+重新置放附加的元素以回應元素上的滑鼠拖曳筆勢。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.XProperty">
+            <summary>
+拖曳的元素之 X 位置的 DependencyProperty，相對於根元素的左邊。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.YProperty">
+            <summary>
+拖曳的元素之 Y 位置的 DependencyProperty，相對於根元素的頂端。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ConstrainToParentBoundsProperty">
+            <summary>
+ConstrainToParentBounds 屬性的 DependencyProperty。如果為 true，將會限制拖曳的元素要保持在其父容器的界限內。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.UpdatePosition(System.Windows.Point)">
+            <summary>
+嘗試將關聯元素的位置更新為指定的座標。
+            </summary>
+<param name="point">根座標中元素的所要位置。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ApplyTranslation(System.Double,System.Double)">
+            <summary>
+將相對位置平移套用至關聯的元素。
+            </summary>
+<param name="x">根座標中所要平移的 X 元件。</param>
+<param name="y">根座標中所要平移的 Y 元件。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ApplyTranslationTransform(System.Double,System.Double)">
+            <summary>
+將指定平移套用至關聯元素的 RenderTransform。
+            </summary>
+<param name="x">父座標中平移的 X 元件。</param>
+<param name="y">父座標中平移的 Y 元件。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.UpdatePosition">
+            <summary>
+根據關聯元素目前呈現的位置來更新 X 和 Y 屬性。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.IsValidConstrainedMove(System.Windows.Point)">
+            <summary>
+決定指定的游標位置是否應該算是拖曳作業的一部分。
+            </summary>
+<param name="currentPosition">游標位置。</param>
+            <returns>
+	如果提供的位置應視為拖曳作業的一部分則為 <c>true</c>，否則為 <c>false</c>。
+            </returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.RectContainsRect(System.Windows.Rect,System.Windows.Rect)">
+            <summary>
+檢查某個矩形是否由另一個矩形所包含。
+            </summary>
+<param name="rect1">包含的矩形。</param>
+<param name="rect2">被包含的矩形。</param>
+<returns>如果 rect1 包含 rect2 則為 <c>true</c>，否則為 <c>false</c></returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.TransformAsVector(System.Windows.Media.GeneralTransform,System.Double,System.Double)">
+            <summary>
+轉換為向量。
+            </summary>
+<param name="transform">轉換。</param>
+<param name="x">向量的 X 元件。</param>
+<param name="y">向量的 Y 元件。</param>
+<returns>包含由轉換為向量所轉換之 X 和 Y 值的點。</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.GetTransformOffset(System.Windows.Media.GeneralTransform)">
+            <summary>
+取得轉換位移。
+            </summary>
+<param name="transform">轉換。</param>
+<returns>轉換的位移。</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.OnAttached">
+            <summary>
+在行為附加到 AssociatedObject 後呼叫。
+            </summary>
+<remarks>覆寫此設定以便將功能連接至 AssociatedObject。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.OnDetaching">
+            <summary>
+當行為正要從其 AssociatedObject 卸離但尚未實際發生前呼叫。
+            </summary>
+<remarks>覆寫此設定以便從 AssociatedObject 取消連接功能。</remarks>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.DragBegun">
+            <summary>
+起始拖曳筆勢時發生。
+            </summary>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.Dragging">
+            <summary>
+處理拖曳筆勢更新時發生。
+            </summary>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.DragFinished">
+            <summary>
+完成拖曳筆勢時發生。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.X">
+            <summary>
+取得或設定拖曳的元素之 X 位置，相對於根元素的左邊。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.Y">
+            <summary>
+取得或設定拖曳的元素之 Y 位置，相對於根元素的頂端。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ConstrainToParentBounds">
+            <summary>
+取得或設定值，該值指出是否限制拖曳的元素要保持在其父容器的界限內。這是相依性屬性。
+            </summary>
+            <value>
+	如果將拖曳的元素應限制在其父容器的界限內則為 <c>true</c>，否則為 <c>false</c>。
+            </value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ActualPosition">
+            <summary>
+取得根座標中關聯元素的螢幕位置。
+            </summary>
+<value>根座標中關聯元素的螢幕位置。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ElementBounds">
+            <summary>
+取得元素座標中的元素界限。
+            </summary>
+<value>元素座標中的元素界限。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ParentElement">
+            <summary>
+取得關聯物件的父元素。
+            </summary>
+<value>關聯物件的父元素。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.RootElement">
+            <summary>
+取得關聯物件所在之場景的根元素。
+            </summary>
+<value>關聯物件所在之場景的根元素。</value>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.PlaySoundAction">
+            <summary>
+將播放完成聲音的動作。
+            </summary>
+            <remarks>
+此動作適用於不需要停止或控制的短音效。如果您要嘗試建立音樂播放程式或遊戲，它可能不符合您的需求。
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.#ctor">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Media.PlaySoundAction"/> 類別的新例項。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.SetMediaElementProperties(System.Windows.Controls.MediaElement)">
+            <summary>
+當叫用動作時，會使用此方法來自訂動態建立的 MediaElement。
+            </summary>
+            <remarks>
+對於想要延伸 PlaySoundAction 的動作撰寫者，此方法可能很實用。如果您想要控制 MediaElement Balance 屬性，可以從 PlaySoundAction 繼承並覆寫此方法。
+            </remarks>
+            <param name="mediaElement"></param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Invoke(System.Object)">
+            <summary>
+當符合某些條件且應該叫用動作時，會呼叫此方法。 
+            </summary>
+            <remarks>
+每次叫用動作時會播放新的聲音。雖然實作可能隨時變更，呼叫者應預期這會建立新的 MediaElement，當聲音完成或媒體無法播放時會清除該 MediaElement。
+            </remarks>
+            <param name="parameter"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Source">
+            <summary>
+定義聲音檔位置的 URI。這是用於設定 MediaElement 的 Source 屬性。這是相依性屬性。
+            </summary>
+            <remarks>
+聲音可以是 MediaElement 所支援的任何檔案格式。如果是影片，只會播放音訊部分。
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Volume">
+            <summary>
+控制聲音的音量。這是用於設定 MediaElement 的 Volume 屬性。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.RemoveElementAction">
+            <summary>
+叫用時會從樹狀目檔移除目標元素的動作。
+            </summary>
+            <remarks>
+此動作可能會失敗。該動作知道如何從共同父代移除元素，而不是從自訂集合或直接操作視覺化樹狀目錄。
+            </remarks>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardAction">
+            <summary>
+能夠以腳本為目標的抽象類別。
+            </summary>
+            <remarks>
+此類別可為動作撰寫者提供以腳本為目標的標準方式。設計工具可選擇為繼承自此動作的類別提供特殊的編輯經驗，因而改善設計師的經驗。 
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardAction.OnStoryboardChanged(System.Windows.DependencyPropertyChangedEventArgs)">
+            <summary>
+當 Storyboard 屬性變更時，會呼叫此方法。
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.StoryboardAction.Storyboard">
+            <summary>
+目標腳本。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.ControlStoryboardAction">
+            <summary>
+叫用時將變更目標腳本狀態的動作。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.ControlStoryboardAction.Invoke(System.Object)">
+            <summary>
+當符合某些條件且應該叫用動作時，會呼叫此方法。此方法會嘗試依照 ControlStoryboardOption 所定義的方式，變更目標腳本。
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardTrigger">
+            <summary>
+能夠以腳本為目標的抽象類別。
+            </summary>
+            <remarks>
+此類別可為觸發程序撰寫者 提供以腳本為目標的標準方式。設計工具可選擇為繼承自此觸發程序的類別提供特殊的編輯經驗，因而改善設計師的經驗。 
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardTrigger.OnStoryboardChanged(System.Windows.DependencyPropertyChangedEventArgs)">
+            <summary>
+當 Storyboard 屬性變更時，會呼叫此方法。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.StoryboardTrigger.Storyboard">
+            <summary>
+目標腳本。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger">
+            <summary>
+聆聽腳本完成的觸發程序。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger.#ctor">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger"/> 類別的新例項。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.TimerTrigger">
+            <summary>
+觸發程序，由在其來源發生之指定事件所觸發，且會在該事件觸發後經過一段延遲時間再觸發。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.TimerTrigger.#ctor">
+            <summary>
+初始化 <see cref="T:Microsoft.Expression.Interactivity.Core.TimerTrigger"/> 類別的新例項。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.TimerTrigger.MillisecondsPerTick">
+            <summary>
+取得或設定滴答聲之間要等候的毫秒數。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.TimerTrigger.TotalTicks">
+            <summary>
+取得或設定在觸發程序完成前要觸發的滴答聲總數。這是相依性屬性。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.ExceptionStringTable">
+            <summary>
+強型別資源類別，用於查詢當地語系化字串等等。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ResourceManager">
+            <summary>
+傳回此類別所使用的快取 ResourceManager 例項。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.Culture">
+            <summary>
+使用此強型別資源類別，為所有資源查閱覆寫目前執行緒的 CurrentUICulture 屬性。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionCannotFindPropertyNameExceptionMessage">
+            <summary>
+查詢類似「在類型 &quot;{1}&quot; 上找不到名為 &quot;{0}&quot; 的屬性。」的當地語系化字串。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionCannotSetValueExceptionMessage">
+            <summary>
+查詢類似「無法將類型 &quot;{0}&quot; 的值指定給類型 &quot;{2}&quot; 的屬性 &quot;{1}&quot;。&quot;{1}&quot; 屬性只能指定類型 &quot;{2}&quot; 的值。」的當地語系化字串。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionPropertyIsReadOnlyExceptionMessage">
+            <summary>
+查詢類似「類型 &quot;{1}&quot; 所定義的屬性 &quot;{0}&quot; 未公開 set 方法，因此無法修改。」的當地語系化字串。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.GoToStateActionStateChangeFailed">
+            <summary>
+查詢類似「無法將目標 {0} 的狀態變更為 {1}。」的當地語系化字串。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.GoToStateActionTargetHasNoStateGroups">
+            <summary>
+查詢類似「目標 {0} 未定義任何 VisualStateGroups。」的當地語系化字串。 .
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.UnsupportedRemoveTargetExceptionMessage">
+            <summary>
+查詢類似「不支援 RemoveElementAction 的目標。」的當地語系化字串。
+            </summary>
+        </member>
+    </members>
+</doc>

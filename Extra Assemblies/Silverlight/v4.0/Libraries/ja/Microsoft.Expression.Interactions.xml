@@ -1,0 +1,690 @@
+﻿<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Microsoft.Expression.Interactions</name>
+    </assembly>
+    <members>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ActionCommand">
+            <summary>
+パラメーターを取らないメソッド、または 1 つのパラメータを取るメソッドをラップする、ICommand の基本的な実装です。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.#ctor(System.Action)">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Core.ActionCommand"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+<param name="action">アクション。</param>
+<remarks>このコンストラクタを使用し、ICommand パラメーターを無視するアクションを提供します。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.#ctor(System.Action{System.Object})">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Core.ActionCommand"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+<param name="objectAction">オブジェクト パラメーターを取るアクション。</param>
+<remarks>このコンストラクターを使用して、Execute メソッドによって渡されるオブジェクト パラメーターを使用するアクションを提供します。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.System#Windows#Input#ICommand#CanExecute(System.Object)">
+            <summary>
+現在の状態でコマンドが実行可能かどうかを決定するメソッドを定義します。
+            </summary>
+<param name="parameter">コマンドにより使用されるデータです。このコマンドが引き渡すデータを要求しない場合、オブジェクトを null に設定できます。</param>
+            <returns>
+常に真を返します。
+            </returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ActionCommand.Execute(System.Object)">
+            <summary>
+コマンドが起動される際に呼び出すメソッドを定義します。
+            </summary>
+<param name="parameter">コマンドにより使用されるデータです。このコマンドが引き渡すデータを要求しない場合、オブジェクトを null に設定できます。</param>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Core.ActionCommand.System#Windows#Input#ICommand#CanExecuteChanged">
+            <summary>
+コマンドを実行すべきかどうかに影響する変更が発生したときに起こります。ActionCommand によっては実行されません。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ChangePropertyAction">
+            <summary>
+起動されたときに、特定のプロパティを特定の値に変更するアクションです。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.#ctor">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Core.ChangePropertyAction"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Invoke(System.Object)">
+            <summary>
+アクションを起動します。
+            </summary>
+<param name="parameter">アクションへのパラメーター。Action がパラメーターを要求しない場合、パラメーターを null 参照に設定できます。</param>
+<exception cref="T:System.ArgumentException"><c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName"/> を伴うプロパティは、ターゲット上で見つかりませんでした。</exception>
+<exception cref="T:System.ArgumentException"><c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Value"/> で指定された値に<c cref="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName"/> を設定できませんでした。</exception>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.PropertyName">
+            <summary>
+変更するプロパティの名前を取得または設定します。これは依存関係プロパティです。
+            </summary>
+<value>変更するプロパティの名前。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Value">
+            <summary>
+設定する値を取得または設定します。これは依存関係プロパティです。
+            </summary>
+<value>設定する値。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Duration">
+            <summary>
+ChangePropertyAction が起動されたときに表示されるアニメーションの再生時間を取得または設定します。これは依存関係プロパティです。時間を設定しないと、アニメーションは適用されません。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.ChangePropertyAction.Ease">
+            <summary>
+ChangePropertyAction が起動されたときにアニメーションと共に使用されるイージング機能を取得または設定します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager">
+            <summary>
+ExtendedVisualStateManager は、レイアウト プロパティのアニメーションを滑らかにするカスタム VisualStateManager です。このカスタム VisualStateManager により、状態は Grid.Column などのプロパティの変更を含むことができ、要素の高さを [自動] に切り替えたり、戻したりできます。これらの変更は、適切な切り替え効果の GeneratedDuration および GeneratedEasingFunction を使用することによって、徐々に滑らかになります。このアルゴリズムの一般的な説明については、以下の "VisualStateManager オーバーライド" を参照してください。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.UseFluidLayoutProperty">
+            <summary>
+VisualStateGroup は、場合によっては Fluid Layout を使用できません。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValuesProperty">
+            <summary>
+VisualStateGroup はこれらの元の値のリストをアタッチされたプロパティに保持します。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutStoryboardProperty">
+            <summary>
+すべての状態について、レイアウト固有のプロパティを抽出し、状態に添付します。これらのプロパティは、状態自体から削除されます。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CurrentStateProperty">
+            <summary>
+現在の状況を保存します。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.MovingElements">
+            <summary>
+これは、現在モーション中の要素のセットです。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutTransitionStoryboard">
+            <summary>
+これは、移行をアニメーション化するストーリーボードです。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.LayoutProperties">
+            <summary>
+この一覧には、すべての既知のレイアウト プロパティが含まれます。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.PathToPropertyMap">
+            <summary>
+Silverlight は、PropertyPath から DependencyProperty を取得する直接的手段を提供しませんので、この構造は追跡パスを探すために使用されます。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.StopAnimations">
+            <summary>
+アニメーションを停止し、アニメーションをサポートするために行ったレイアウト変更を置き換えます。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.FindTransition(System.Windows.VisualStateGroup,System.Windows.VisualState,System.Windows.VisualState)">
+            <summary>
+変更をアニメーション化するために VisualStateManager が使用する移行を見つけ、レイアウト アニメーションがデュレーションおよびイーズに一致するようにします。
+            </summary>
+<param name="group">移行が発生するグループ</param>
+<param name="previousState">移行前の状態</param>
+<param name="state">移行後の状態</param>
+<returns>移行</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.ExtractLayoutStoryboard(System.Windows.VisualState)">
+            <summary>
+状態のストーリーボードからレイアウトに影響を及ぼすすべてのプロパティを削除し、アタッチされたプロパティにキャッシュします。
+            </summary>
+<param name="state">移行後の状態</param>
+<returns>状態内にレイアウト プロパティを含むストーリーボード</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.FindTargetElements(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+このターゲット要素のセットは、レイアウト移行へ移動した可能性のあるすべての要素です。このセットは次を終了します: 状態内でアニメーション化されるレイアウト プロパティを伴う要素 - セット内の要素の兄弟 - セット内の要素の親
+             
+以降のコードは、レイアウトの変更前後にこれらの四角形をチェックします。
+            </summary>
+<param name="control">状態が変化しているレイアウトのコントロール</param>
+<param name="layoutStoryboard">レイアウトの変更を含むストーリーボード</param>
+<param name="originalValueRecords">戻せる可能性がある、以前の状態ナビゲーションからの前の値</param>
+<param name="movingElements">状態の変化が移行中の場合の、現在モーション中の要素のセット</param>
+<returns>レイアウトが変更された可能性のあるすべての要素のセット</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetRectsOfTargets(System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+ターゲット一覧内のすべての要素に対して四角形のセットを取得します。
+            </summary>
+<param name="targets">対象となる要素のセット</param>
+<param name="movingElements">現在モーション中の要素のセット</param>
+<returns>要素をそれらの四角形にマッピングするディクショナリ</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetLayoutRect(System.Windows.FrameworkElement)">
+            <summary>
+レイアウト スロットを取得してからスロットの使用される部分を計算することによって、要素のレイアウト四角形を取得します。
+            </summary>
+<param name="element">求めている四角形が所属する要素</param>
+<returns>要素のレイアウト四角形</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.GetOldOpacities(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord},System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+可視性ではなく状態変化時の要素の不透明度を取得します。これは、状態の変化が途中である可能性があり、現在の値が最も重要であるためです。
+            </summary>
+<param name="control">状態が変化しているコントロール</param>
+<param name="layoutStoryboard">レイアウトのプロパティを伴うストーリーボード</param>
+<param name="originalValueRecords">元の値のセット</param>
+            <returns></returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.SetLayoutStoryboardProperties(System.Windows.Controls.Control,System.Windows.FrameworkElement,System.Windows.Media.Animation.Storyboard,System.Collections.Generic.List{Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord})">
+            <summary>
+ストーリーボードの中で SetValue を使用してすべてのプロパティを設定し、表示の原因となるタイムラインのティッキングを行わずに UpdateLayout を呼び出せるようにします。上書きされるすべての値は、後で置換できるように OriginalValueRecords のコレクションに保管されます。
+            </summary>
+<param name="control">状態が変化しているコントロール</param>
+<param name="layoutStoryboard">レイアウトのプロパティを保持するストーリーボード</param>
+<param name="originalValueRecords">元の値の保管</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.WrapMovingElementsInCanvases(System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Windows.Rect},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Windows.Rect})">
+            <summary>
+レイアウトのアニメーション化の結果として移動するすべての要素を取得し、それらが兄弟要素に影響を与えないようにキャンバスにラップします。
+            </summary>
+<param name="movingElements">移動する要素のセット</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.UnwrapMovingElementsFromCanvases(System.Collections.Generic.List{System.Windows.FrameworkElement})">
+            <summary>
+レイアウトのアニメーション化の結果として移動中のすべての要素を取得し、Canvases からラップ解除します。
+            </summary>
+<param name="movingElements">移動中の要素のセット</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CopyLayoutProperties(System.Windows.FrameworkElement,System.Windows.FrameworkElement,System.Boolean)">
+            <summary>
+レイアウト プロパティをソース要素からターゲット要素にコピーし、ソースから削除します。
+            </summary>
+<param name="source">レイアウト プロパティのソース</param>
+<param name="target">レイアウト プロパティのコピー先</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.CreateLayoutTransitionStoryboard(System.Windows.VisualTransition,System.Collections.Generic.List{System.Windows.FrameworkElement},System.Collections.Generic.Dictionary{System.Windows.FrameworkElement,System.Double})">
+            <summary>
+以降のアニメーション化に使用する実際のストーリーボードを作成します。以前の計算結果をすべて使用します。
+            </summary>
+<param name="duration">アニメーションの時間</param>
+<param name="ease">アニメーションに使用するイージング機能</param>
+<param name="movingElements">移動する要素のセット</param>
+<param name="oldOpacities">可視性が変化中の要素の元の不透明度</param>
+<returns>ストーリーボード</returns>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.ExtendedVisualStateManager.OriginalLayoutValueRecord">
+            <summary>
+OriginalValueRecord は状態に変化のあったプロパティの元の値を保存しています。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.FluidMoveScope">
+            <summary>
+この列挙型は、それが添付されている要素か、またはその要素の子のどちらに FluidMoveBehavior が適用するかを示します。特別なビヘイビアーが必要な単一の要素がある場合は "Self" を使用し、同じ動作を WrapPanel のすべての子または ItemsControl の ItemsHost Panel に適用する場合は "Children" を使用します。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior">
+            <summary>
+レイアウトの変更について要素 (または要素のセット) を監視し、必要に応じて新しい位置に要素を滑らかに移動するビヘイビアー。この動作は要素のサイズまたは可視性をアニメーション化せず、その親コンテナ内部の要素のオフセットをアニメーション化するだけです。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.DurationProperty">
+            <summary>
+移動期間に対する DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.AppliesToProperty">
+            <summary>
+動作のスコープに対する DependencyProperty。詳細については、「FluidMoveScope」を参照してください。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.IsActiveProperty">
+            <summary>
+動作のアクティブな状態に対する DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseXProperty">
+            <summary>
+移動の水平方向コンポーネントに使用する EasingFunction の DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseYProperty">
+            <summary>
+移動の垂直方向コンポーネントに使用する EasingFunction の DependencyProperty。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.Duration">
+            <summary>
+移動の時間。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.AppliesTo">
+            <summary>
+動作がこの要素のみに適用するか、または要素のすべての子に適用するかを示します (要素が Panel の場合)。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.IsActive">
+            <summary>
+動作が現在アクティブ化どうかを示します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseX">
+            <summary>
+移動の水平方向コンポーネントに使用する EasingFunction。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.FluidMoveBehavior.EaseY">
+            <summary>
+移動の垂直方向コンポーネントに使用する EasingFunction。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.GoToStateAction">
+            <summary>
+起動されたときに、FrameworkElement を特定 FrameworkElement に移行するアクションです。
+            </summary>
+            <remarks>
+TargetName プロパティが設定されると、このアクションはターゲット要素の状態の変更を試みます。設定されなければ、要素ツリー上で状態を定義する別のターゲットを検索します。ControlTemplate および UserControl が 可能性の高い 2 つの選択肢です。
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.GoToStateAction.OnTargetChanged(System.Windows.FrameworkElement,System.Windows.FrameworkElement)">
+            <summary>
+ターゲットが変化すると呼び出されます。TargetName プロパティが設定されない場合、このアクションはカスタム動作を有します。
+            </summary>
+            <param name="oldTarget"></param>
+            <param name="newTarget"></param>
+<exception cref="T:System.InvalidOperationException">状態のある適切な FrameworkElement  が見つかりませんでした。</exception>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.GoToStateAction.Invoke(System.Object)">
+            <summary>
+一部の条件が一致し、アクションが起動されると、このメソッドが呼び出されます。
+            </summary>
+            <param name="parameter"></param>
+<exception cref="T:System.InvalidOperationException">ターゲットを指定の StateName に変更できませんでした。</exception>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.GoToStateAction.UseTransitions">
+            <summary>
+状態間の移行に VisualTransition を使用するかどうか。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.GoToStateAction.StateName">
+            <summary>
+VisualState の名前。  
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.HyperlinkAction">
+            <summary>
+指定されたハイパーリンクに移動するアクション。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.HyperlinkAction.Invoke(System.Object)">
+            <summary>
+一部の条件が一致し、アクションが起動されると、このメソッドが呼び出されます。
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.HyperlinkAction.NavigateUri">
+            <summary>
+開こうとするページの URI。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.HyperlinkAction.TargetWindow">
+            <summary>
+NavigateUri を開くためのウィンドウまたはタブの名前。 
+            </summary>
+            <remarks>
+いくつかの値には、特別な意味があります。"_blank" は新規のブラウザ ウィンドウを読み込み、"_parent" は親フレームの読み込みを試行し、"_self" は現在のページまたはフレームを対象とします。 
+            </remarks>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Input.KeyTrigger">
+            <summary>
+キーボード イベントによってトリガーされる Trigger。ターゲットのキーおよび修飾子が検出されると起動します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.Key">
+            <summary>
+Trigger を起動するために押す必要のあるキー。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.Modifiers">
+            <summary>
+Trigger が起動するためには、修飾子がアクティブである必要があります (既定では修飾子は選択されていません)。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Input.KeyTrigger.FiredOn">
+            <summary>
+KeyDown または KeyUp イベントにリッスンするかどうか。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior">
+            <summary>
+アタッチされた要素をマウスをドラッグのジェスチャに応答して要素の上に再配置します。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.XProperty">
+            <summary>
+ルート要素の左との相対で、ドラッグされる要素の X 位置に対する DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.YProperty">
+            <summary>
+ルート要素の上方との相対で、ドラッグされる要素の Y 位置に対する DependencyProperty。
+            </summary>
+        </member>
+        <member name="F:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ConstrainToParentBoundsProperty">
+            <summary>
+ConstrainToParentBounds プロパティに対する DependencyProperty。true の場合、ドラッグされた要素はその親コンテナーの境界内に固定するように制約されます。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.UpdatePosition(System.Windows.Point)">
+            <summary>
+特定の座標に関連要素の位置を更新しようとします。
+            </summary>
+<param name="point">ルート座標内の要素の目的の位置。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ApplyTranslation(System.Double,System.Double)">
+            <summary>
+関連要素に相対位置移動を適用します。
+            </summary>
+<param name="x">ルート座標内の X コンポーネントの必要な移動。</param>
+<param name="y">ルート座標内の Y コンポーネントの必要な移動。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ApplyTranslationTransform(System.Double,System.Double)">
+            <summary>
+特定の移動を関連要素の RenderTransform に適用します。
+            </summary>
+<param name="x">親座標内の X コンポーネントの移動。</param>
+<param name="y">親座標内の Y コンポーネントの移動。</param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.UpdatePosition">
+            <summary>
+関連要素の現在レンダリングされた位置に基づいて X および Y のプロパティを更新します。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.IsValidConstrainedMove(System.Windows.Point)">
+            <summary>
+特定のカーソル位置をドラッグ操作の一部としてカウントすべきかどうか決定します。
+            </summary>
+<param name="currentPosition">カーソル位置。</param>
+            <returns>
+	提供される位置をドラッグ操作の一部としてカウントする場合は<c>true</c>、それ以外の場合は<c>false</c>。
+            </returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.RectContainsRect(System.Windows.Rect,System.Windows.Rect)">
+            <summary>
+1 つの四角形が別の四角形に含まれるかどうかチェックします。
+            </summary>
+<param name="rect1">含む四角形。</param>
+<param name="rect2">含まれる四角形。</param>
+<returns><c>true</c> rect1 が rect2 を含む場合、それ以外の場合は <c>false</c></returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.TransformAsVector(System.Windows.Media.GeneralTransform,System.Double,System.Double)">
+            <summary>
+ベクターとして変換します。
+            </summary>
+<param name="transform">変換。</param>
+<param name="x">ベクターの X コンポーネント。</param>
+<param name="y">ベクターの Y コンポーネント。</param>
+<returns>ベクターとしての変換により変換された X 値および Y 値を含む点。</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.GetTransformOffset(System.Windows.Media.GeneralTransform)">
+            <summary>
+変換オフセットを取得します。
+            </summary>
+<param name="transform">変換。</param>
+<returns>変換のオフセット。</returns>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.OnAttached">
+            <summary>
+ビヘイビアーが AssociatedObject にアタッチされた後で呼び出されます。
+            </summary>
+<remarks>これを上書きし、AssociatedObject に機能をフックアップします。</remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.OnDetaching">
+            <summary>
+ビヘイビアーが AssociatedObject からデタッチされるとき、その前に呼び出されます。
+            </summary>
+<remarks>これを上書きし、機能を AssociatedObject からアンフックします。</remarks>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.DragBegun">
+            <summary>
+ドラッグ ジェスチャの開始時に発生します。
+            </summary>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.Dragging">
+            <summary>
+ドラッグ ジェスチャの更新処理時に発生します。
+            </summary>
+        </member>
+        <member name="E:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.DragFinished">
+            <summary>
+ドラッグ ジェスチャの終了時に発生します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.X">
+            <summary>
+ルート要素の左との相対で、ドラッグされる要素の X 位置を取得または設定します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.Y">
+            <summary>
+ルート要素の上方との相対で、ドラッグされる要素の Y 位置を取得または設定します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ConstrainToParentBounds">
+            <summary>
+ドラッグされる要素がその親コンテナーの境界内に固定するように制約されるかどうかを示す値を取得または設定します。これは依存関係プロパティです。
+            </summary>
+            <value>
+	ドラッグされる要素が親領域内に制約される必要がある場合は<c>true</c>、それ以外の場合は<c>false</c>。
+            </value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ActualPosition">
+            <summary>
+ルート座標内の関連要素の画面上の位置を取得します。
+            </summary>
+<value>ルート座標内の関連要素の画面上の位置。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ElementBounds">
+            <summary>
+要素座標内にバインドする要素を取得します。
+            </summary>
+<value>要素座標内にバインドする要素。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.ParentElement">
+            <summary>
+関連オブジェクトの親要素を取得します。
+            </summary>
+<value>関連オブジェクトの親要素。</value>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Layout.MouseDragElementBehavior.RootElement">
+            <summary>
+関連オブジェクトがあるシーンのルート要素を取得します。
+            </summary>
+<value>関連オブジェクトがあるシーンのルート要素。</value>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.PlaySoundAction">
+            <summary>
+完了時にサウンドを鳴らす Action。
+            </summary>
+            <remarks>
+この Action は、停止または制御する必要のない短いサウンド効果の利用を想定しています。音楽プレーヤやゲームを作成する場合には役に立たないかも知れません。
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.#ctor">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Media.PlaySoundAction"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.SetMediaElementProperties(System.Windows.Controls.MediaElement)">
+            <summary>
+Action を起動するとき、動的に作成された MediaElement をカスタマイズするためにこのメソッドが利用されます。
+            </summary>
+            <remarks>
+このメソッドは、Action 作成者が PlaySoundAction を拡張したい場合に役立つ可能性があります。MediaElement バランス プロパティを管理する場合、PlaySoundAction から継承してこのメソッドを上書きすることができます。
+            </remarks>
+            <param name="mediaElement"></param>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Invoke(System.Object)">
+            <summary>
+一部の条件が一致し、アクションを呼び出す必要がある場合に、このメソッドが呼び出されます。 
+            </summary>
+            <remarks>
+Action を呼び出すごとに新しいサウンドが再生されます。実装は変更される可能性がありますが、発信者はこれにより新しい MediaElement が作成され、再生の終了時またはメディアが再生に失敗した場合に消去されることを覚えておいてください。
+            </remarks>
+            <param name="parameter"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Source">
+            <summary>
+サウンド ファイルの場所を定義する URI。これは、MediaElement のソース プロパティの設定に使用します。これは依存関係プロパティです。
+            </summary>
+            <remarks>
+サウンドのファイル形式は MediaElement でサポートされていればどれでも使用できます。動画の場合には、オーディオのみが再生されます。
+            </remarks>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.PlaySoundAction.Volume">
+            <summary>
+サウンドの音量制御。これは、MediaElement の音量プロパティの設定に使用します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.RemoveElementAction">
+            <summary>
+起動されたときに、ターゲット要素をツリーから削除する Action です。
+            </summary>
+            <remarks>
+この Action は失敗する場合があります。この Action は、共通の親から要素を削除する方法は認識しますが、カスタム コレクションからの削除またはビジュアル ツリーの直接操作は認識しません。
+            </remarks>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardAction">
+            <summary>
+ストーリーボードをターゲットにする能力を提供する抽象的なクラス。
+            </summary>
+            <remarks>
+このクラスは、Action 作成者にストーリーボードをターゲットにするための標準的な方法を提供します。設計ツールは、デザイナが腕を磨けるように、この Action から継承するクラスの特殊な編集体験を提供する場合があります。 
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardAction.OnStoryboardChanged(System.Windows.DependencyPropertyChangedEventArgs)">
+            <summary>
+このメソッドは、ストーリーボード プロパティが変更される場合に呼び出されます。
+            </summary>
+            <param name="args"></param>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.StoryboardAction.Storyboard">
+            <summary>
+対象のストーリーボード。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.ControlStoryboardAction">
+            <summary>
+起動されたときに、ターゲット ストーリーボードの状態を変更する Action です。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.ControlStoryboardAction.Invoke(System.Object)">
+            <summary>
+一部の条件が一致し、アクションを起動する必要がある場合に、このメソッドが呼び出されます。このメソッドは、ControlStoryboardOption で定義された方法でターゲット ストーリーボードの変更を試行します。
+            </summary>
+            <param name="parameter"></param>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardTrigger">
+            <summary>
+ストーリーボードをターゲットにする能力を提供する抽象的なクラス。
+            </summary>
+            <remarks>
+このクラスは、Trigger 作成者にストーリーボードをターゲットにするための標準的な方法を提供します。設計ツールは、デザイナが腕を磨けるように、この Trigger から継承するクラスの特殊な編集体験を提供する場合があります。 
+            </remarks>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardTrigger.OnStoryboardChanged(System.Windows.DependencyPropertyChangedEventArgs)">
+            <summary>
+このメソッドは、ストーリーボード プロパティが変更される場合に呼び出されます。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Media.StoryboardTrigger.Storyboard">
+            <summary>
+対象のストーリーボード。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger">
+            <summary>
+ストーリーボードの完了をリッスンする Trigger。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger.#ctor">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Media.StoryboardCompletedTrigger"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.Core.TimerTrigger">
+            <summary>
+ソース上で発生する指定されたイベントによりトリガーされ、イベントが起動されたときに遅れて起動する Trigger。
+            </summary>
+        </member>
+        <member name="M:Microsoft.Expression.Interactivity.Core.TimerTrigger.#ctor">
+            <summary>
+<see cref="T:Microsoft.Expression.Interactivity.Core.TimerTrigger"/> クラスの新しいインスタンスを初期化します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.TimerTrigger.MillisecondsPerTick">
+            <summary>
+目盛の間の待ち時間 (ミリ秒) を取得または設定します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.Core.TimerTrigger.TotalTicks">
+            <summary>
+Trigger が終了する前に起動される目盛の合計数を取得または設定します。これは依存関係プロパティです。
+            </summary>
+        </member>
+        <member name="T:Microsoft.Expression.Interactivity.ExceptionStringTable">
+            <summary>
+ローカライズされた文字列などを調べるために、厳密に型指定されたリソース クラス。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ResourceManager">
+            <summary>
+このクラスで使用される、キャッシュされた ResourceManager インスタンスに戻ります。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.Culture">
+            <summary>
+この厳密に型指定されたリソース クラスを使用して、すべてのリソース ルックアップに対して現在のスレッドの CurrentUICulture プロパティを上書きします。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionCannotFindPropertyNameExceptionMessage">
+            <summary>
+「型 "{1}" に "{0}" という名前のプロパティが見つかりません。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionCannotSetValueExceptionMessage">
+            <summary>
+「型 "{2}" の "{1}" プロパティに、型 "{0}" の値を割り当てることはできません。"{1}" プロパティは、型 "{2}" の値のみ割り当てることができます。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.ChangePropertyActionPropertyIsReadOnlyExceptionMessage">
+            <summary>
+「型 "{1}" で定義されたプロパティ "{0}" は set メソッドを公開しないため、変更できません。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.GoToStateActionStateChangeFailed">
+            <summary>
+「ターゲット {0} の状態を {1} に変更できませんでした。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.GoToStateActionTargetHasNoStateGroups">
+            <summary>
+「ターゲット {0} は VisualStateGroups を定義しません。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+        <member name="P:Microsoft.Expression.Interactivity.ExceptionStringTable.UnsupportedRemoveTargetExceptionMessage">
+            <summary>
+「RemoveElementAction のターゲットはサポートされていません。」に類似したローカライズされた文字列を検索します。
+            </summary>
+        </member>
+    </members>
+</doc>
