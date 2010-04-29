@@ -58,7 +58,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CacheJobProcessor.cs" />
+    <Compile Include="CacheJobProcessor.cs">
+    </Compile>
     <Compile Include="ConsoleLogProvider.cs" />
     <Compile Include="MultiLogProvider.cs" />
     <Compile Include="EventLogProvider.cs" />
