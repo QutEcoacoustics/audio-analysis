@@ -54,7 +54,7 @@ namespace AudioAnalysisTools
 
 
 
-        public void GenerateSymbolSequence(AcousticVectorsSonogram sonogram, BaseTemplate template)
+        public void GenerateSymbolSequence(TriAvSonogram sonogram, BaseTemplate template)
         {
             this.template = template;
             this.fvConfig = template.FVConfig;
@@ -68,7 +68,7 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Scans a sonogram with predefined feature vectors using a previously loaded template.
         /// </summary>
-        double[,] GenerateAcousticMatrix(AcousticVectorsSonogram s)
+        double[,] GenerateAcousticMatrix(TriAvSonogram s)
         {
             //##################### DERIVE NOISE FEATURE VECTOR OR READ PRE-COMPUTED NOISE FILE
             Log.WriteIfVerbose("\nSCAN SONOGRAM WITH TEMPLATE AND GENERATE ACOUSTIC MODEL");

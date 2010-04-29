@@ -22,19 +22,20 @@ namespace AnalysisPrograms
     {
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_MIN_HZ = "MIN_FREQ";
-        public static string key_MAX_HZ = "MAX_FREQ";
-        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_DO_MELSCALE = "DO_MELSCALE";
-        public static string key_CC_COUNT = "CC_COUNT";
-        public static string key_INCLUDE_DELTA = "INCLUDE_DELTA";
+        public static string key_MIN_HZ         = "MIN_FREQ";
+        public static string key_MAX_HZ         = "MAX_FREQ";
+        public static string key_FRAME_OVERLAP  = "FRAME_OVERLAP";
+        public static string key_DO_MELSCALE    = "DO_MELSCALE";
+        public static string key_CC_COUNT       = "CC_COUNT";
+        public static string key_INCLUDE_DELTA  = "INCLUDE_DELTA";
         public static string key_INCLUDE_DOUBLE_DELTA = "INCLUDE_DOUBLE_DELTA";
-        public static string key_DCT_DURATION = "DCT_DURATION";
+        public static string key_DELTA_T        = "DELTA_T";
+        public static string key_DCT_DURATION   = "DCT_DURATION";
         public static string key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
         public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
-        public static string key_MIN_AMPLITUDE = "MIN_AMPLITUDE";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_MAX_DURATION = "MAX_DURATION";
+        public static string key_MIN_AMPLITUDE  = "MIN_AMPLITUDE";
+        public static string key_MIN_DURATION   = "MIN_DURATION";
+        public static string key_MAX_DURATION   = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
@@ -99,6 +100,7 @@ namespace AnalysisPrograms
             bool doMelScale     =  Boolean.Parse(dict[key_DO_MELSCALE]);       
             bool includeDelta       = Boolean.Parse(dict[key_INCLUDE_DELTA]);
             bool includeDoubleDelta = Boolean.Parse(dict[key_INCLUDE_DOUBLE_DELTA]);
+            int deltaT          = Int32.Parse(dict[key_DELTA_T]);           //distance between tri-acoustic vectors
             double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
             int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);     //ignore oscillations below this threshold freq
             int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);     //ignore oscillations above this threshold freq
@@ -116,7 +118,7 @@ namespace AnalysisPrograms
 
             //#############################################################################################################################################
             var results = Execute_CallDetect(recordingPath, minHz, maxHz, windowSize, frameOverlap, nrt, dynamicRange, 
-                                  doMelScale, ccCount, includeDelta, includeDoubleDelta,
+                                  doMelScale, ccCount, includeDelta, includeDoubleDelta, deltaT,
                                   fv, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, eventThreshold, minDuration, maxDuration);
             Log.WriteLine("# Finished detecting Lewin's Rail calls.");
             //#############################################################################################################################################
@@ -150,8 +152,8 @@ namespace AnalysisPrograms
 
         public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
             int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange, 
-            bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta,
-            double[] fv, double dctDuration, int minOscilFreq, int maxOscilFreq, 
+            bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT,
+            double[] pattern, double dctDuration, int minOscilFreq, int maxOscilFreq, 
             double minAmplitude, double eventThreshold, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
@@ -169,40 +171,24 @@ namespace AnalysisPrograms
             sonoConfig.DoMelScale = doMelScale;
             sonoConfig.NoiseReductionType = nrt;
             sonoConfig.DynamicRange = dynamicRange;
+            sonoConfig.mfccConfig.CcCount = ccCount;                 //Number of mfcc coefficients
+            sonoConfig.mfccConfig.DoMelScale = doMelScale;
+            sonoConfig.mfccConfig.IncludeDelta = includeDelta;
+            sonoConfig.mfccConfig.IncludeDoubleDelta = includeDoubleDelta;
+            sonoConfig.DeltaT = deltaT;
 
-            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            AmplitudeSonogram basegram   = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            SpectralSonogram  sonogram   = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
-            CepstralSonogram cepstrogram = new CepstralSonogram(basegram);  //cepstrogram has dim[N,13]
-            recording.Dispose();
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap*100);
-            Log.WriteLine("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
-            Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
 
-            //iii: EXTRACT CEPSTROGRAM - MFCC coefficients 
-            var tuple = sonogram.GetCepstrogram(minHz, maxHz, doMelScale, ccCount);
-            double[,] m = tuple.Item1;
-            //m = cepstrogram.Data;
-
-            //iv:  REPLACE THE dB ARRAY for full bandwidth by array initialized to 0.5 (an average value)
-            //THIS IS IN PLACE OF REMOVING THE dB array altogether OR CALCULATING SUB-BAND dB array.
-            //BOTH THESE OPTIONS ARE TOO TIME CONSUMING IN PRESENT CIRCUMSTANCE.
-            //double[] dB = sonogram.DecibelsNormalised;
-            double[] dB = new double[sonogram.FrameCount];
-            for (int i=0; i< sonogram.FrameCount; i++) dB[i] = 0.5;
-
-            //v: calculate the full ACOUSTIC VECTORS ie including decibel and deltas, etc
-            m = Speech.AcousticVectors(m, dB, includeDelta, includeDoubleDelta);
+            var tuple = BaseSonogram.GetAllSonograms(wavPath, sonoConfig, minHz, maxHz);
+            SpectralSonogram sonogram = tuple.Item1;
+            CepstralSonogram cepstrogram = tuple.Item2;
+            double[,] avs = cepstrogram.Data;
+            //double[,] avs = Speech.AcousticVectors(cepstrogram.Data, includeDelta, includeDoubleDelta);
 
             //vi: GET FEATURE VECTOR SCORES
-            double[] scores = GetTemplateScores(m, fv, includeDelta, includeDoubleDelta);
+            double[] scores = GetTemplateScores(avs, pattern, ccCount, includeDelta, includeDoubleDelta, deltaT);
             double Q;
             scores = SNR.NoiseSubtractMode(scores, out Q);
-            Log.WriteLine("Noise removal, Q={0:f3}",Q);
+            Log.WriteLine("Score array - noise removal, Q={0:f3}",Q);
             //normalise scores rather than calculate Z-scores.
             //scores = NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);
             scores = DataTools.normalise(scores);
@@ -218,29 +204,39 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = ConvertScores2Events(oscillationScores, minHz, maxHz, sonogram.FramesPerSecond,
                                        sonogram.FBinWidth, eventThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            return System.Tuple.Create((BaseSonogram)sonogram, oscillationScores, predictedEvents, m);
+            return System.Tuple.Create((BaseSonogram)sonogram, oscillationScores, predictedEvents, avs);
 
         }//end Execute_CallDetect
 
 
 
-        static double[] GetTemplateScores(Double[,] m, Double[] fv, bool includeDelta, bool includeDoubleDelta)
+        static double[] GetTemplateScores(Double[,] mfccM, Double[] pattern, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT)
         {
-            int frameCount   = m.GetLength(0);
-            int featureCount = m.GetLength(1);
+            int frameCount   = mfccM.GetLength(0);
+            int featureCount = mfccM.GetLength(1);
             double[] scores = new double[frameCount];
             //extract relevant part of the feature vector.
-            int length = 13;
+            includeDelta  = false;
+            includeDoubleDelta = false;
+
+            int length = ccCount + 1;
+            if (featureCount == (2 * length)) 
+                includeDelta = true; 
+            if (featureCount == (3 * length)) 
+            {
+                includeDelta = true;
+                includeDoubleDelta = true;
+            } 
             int skip = length * 3;
             if (includeDelta)       length += 13;
             if (includeDoubleDelta) length += 13; 
             double[] trimFV = new double[length];
-            for (int i = 0; i < length; i++) trimFV[i] = fv[skip+i];
+            for (int i = 0; i < length; i++) trimFV[i] = pattern[skip+i];
             double[] normFV = DataTools.DiffFromMean(trimFV); //required for cross correlation
 
             for (int r = 0; r < frameCount; r++)
             {
-                double[] v = DataTools.GetRow(m, r);
+                double[] v = DataTools.GetRow(mfccM, r);
                 scores[r] = DataTools.DotProduct(normFV, DataTools.DiffFromMean(v));  // Cross-correlation coeff
             }
             scores = DataTools.normalise(scores);

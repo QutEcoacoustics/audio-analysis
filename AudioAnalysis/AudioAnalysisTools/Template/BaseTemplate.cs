@@ -378,7 +378,7 @@ namespace AudioAnalysisTools
         {
             //GenerateSymbolSequence(ar.GetWavReader());
             var wav = ar.GetWavReader();
-            var avSonogram = new AcousticVectorsSonogram(this.sonogramConfig, wav);
+            var avSonogram = new TriAvSonogram(this.sonogramConfig, wav);
             this.AcousticModel.GenerateSymbolSequence(avSonogram, this);
             this.AcousticModel.SaveSymbolSequence(Path.Combine(opDir, "symbolSequences.txt"), false);
         }
