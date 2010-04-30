@@ -28,6 +28,9 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		VWDVirtualPath = "/"
 		ProjOutputReferences = "{CCD85AA5-FD9F-49A9-B6D6-046A3BF55DCB}|ClientBin|false;"
 	EndProjectSection
+	ProjectSection(ProjectDependencies) = postProject
+		{EC323929-0160-46BC-A04B-B4A66D02E757} = {EC323929-0160-46BC-A04B-B4A66D02E757}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
 EndProject
