@@ -124,9 +124,10 @@ namespace AnalysisPrograms
             //#############################################################################################################################################
 
             var sonogram = results.Item1;
-            var scores = results.Item2;
-            var predictedEvents = results.Item3;
-            var avMatrix = results.Item4;
+            var mfccScores = results.Item2;
+            var oscilScores = results.Item3;
+            var predictedEvents = results.Item4;
+            var avMatrix = results.Item5;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
 
             //write event count to results file.            
@@ -135,14 +136,14 @@ namespace AnalysisPrograms
             if (DRAW_SONOGRAMS == 2)
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, mfccScores, oscilScores, predictedEvents, eventThreshold);
                 ImageTools.DrawMatrix(avMatrix, outputDir+"\\acousticVectors.jpg");
             }
             else
             if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, mfccScores, oscilScores, predictedEvents, eventThreshold);
             }
 
             Log.WriteLine("# Finished analysis of recording:- " + Path.GetFileName(recordingPath));
@@ -150,7 +151,7 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        public static System.Tuple<BaseSonogram, double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
+        public static System.Tuple<BaseSonogram, double[], double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
             int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange, 
             bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT,
             double[] pattern, double dctDuration, int minOscilFreq, int maxOscilFreq, 
@@ -197,6 +198,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
             Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
             int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
+            //scores = DataTools.filterMovingAverage(scores, 3);
             double[] oscillationScores = DetectOscillations(scores, dctDuration, dctLength, minOscilFreq, maxOscilFreq, minAmplitude);
 
             //viii:  EXTRACT ACOUSTIC EVENTS
@@ -204,7 +206,7 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = ConvertScores2Events(oscillationScores, minHz, maxHz, sonogram.FramesPerSecond,
                                        sonogram.FBinWidth, eventThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            return System.Tuple.Create((BaseSonogram)sonogram, oscillationScores, predictedEvents, avs);
+            return System.Tuple.Create((BaseSonogram)sonogram, scores, oscillationScores, predictedEvents, avs);
 
         }//end Execute_CallDetect
 
@@ -214,30 +216,44 @@ namespace AnalysisPrograms
         {
             int frameCount   = mfccM.GetLength(0);
             int featureCount = mfccM.GetLength(1);
-            double[] scores = new double[frameCount];
+            //check vector lengths are compatible.
+            int patternLength = pattern.Length;
+            int fvLength = mfccM.GetLength(1);
+            if (deltaT != 0) fvLength *= 3;
+            if (fvLength != patternLength)
+            {
+                Console.WriteLine("WARNING! Length of pattern vector (" + patternLength + ") not same as length of extracted FV (" + fvLength + ")!");
+                return null;
+            }
+
             //extract relevant part of the feature vector.
-            includeDelta  = false;
-            includeDoubleDelta = false;
+            double[] normPattern = DataTools.DiffFromMean(pattern); //normalise the pattern - required for cross correlation
 
-            int length = ccCount + 1;
-            if (featureCount == (2 * length)) 
-                includeDelta = true; 
-            if (featureCount == (3 * length)) 
+            double[] scores = new double[frameCount];
+            if (deltaT == 0)
             {
-                includeDelta = true;
-                includeDoubleDelta = true;
-            } 
-            int skip = length * 3;
-            if (includeDelta)       length += 13;
-            if (includeDoubleDelta) length += 13; 
-            double[] trimFV = new double[length];
-            for (int i = 0; i < length; i++) trimFV[i] = pattern[skip+i];
-            double[] normFV = DataTools.DiffFromMean(trimFV); //required for cross correlation
-
-            for (int r = 0; r < frameCount; r++)
+                for (int r = 0; r < frameCount; r++)
+                {
+                    double[] v = DataTools.GetRow(mfccM, r);
+                    scores[r] = DataTools.DotProduct(normPattern, DataTools.DiffFromMean(v));  // Cross-correlation coeff
+                }
+            }
+            else if (deltaT > 0)
             {
-                double[] v = DataTools.GetRow(mfccM, r);
-                scores[r] = DataTools.DotProduct(normFV, DataTools.DiffFromMean(v));  // Cross-correlation coeff
+                for (int r = deltaT; r < frameCount - deltaT; r++)
+                {
+                    double[] v1 = DataTools.GetRow(mfccM, r-deltaT);
+                    double[] v2 = DataTools.GetRow(mfccM, r);
+                    double[] v3 = DataTools.GetRow(mfccM, r + deltaT);
+                    List<double> fv = new List<double>(v1.Concat(v2));
+                    fv = new List<double>(fv.Concat(v3));
+                    scores[r] = DataTools.DotProduct(normPattern, DataTools.DiffFromMean(fv.ToArray()));  // Cross-correlation coeff
+                }
+            }
+            else
+            {
+                Console.WriteLine("WARNING! INVALID VALUE FOR DeltaT!");
+                return null;
             }
             scores = DataTools.normalise(scores);
             return scores;
@@ -266,7 +282,6 @@ namespace AnalysisPrograms
                   double[] dct = Speech.DCT(array, cosines);
                   for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                   for (int i = 0; i < 5; i++)         dct[i] = 0.0; //remove low freq oscillations from consideration
-                  dct = DataTools.normalise2UnitLength(dct);
                   
                   int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                   double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
@@ -277,7 +292,8 @@ namespace AnalysisPrograms
                   //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                   if ((oscilFreq >= minOscilFreq) && (oscilFreq <= maxOscilFreq) && (dct[indexOfMaxValue] > minAmplitude))
                   {
-                      for (int i = 0; i < dctLength; i++) oscillationScores[r + i] = oscilFreq;
+                      for (int i = 0; i < dctLength; i++)
+                          if (oscillationScores[r + i] < dct[indexOfMaxValue]) oscillationScores[r + i] = dct[indexOfMaxValue];
                   }
                   r += 1; //skip positions
               }
@@ -302,7 +318,7 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static List<AcousticEvent> ConvertScores2Events(double[] scores, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth,
-                                                               double threshold, double minDuration, double maxDuration, string fileName)
+                                                               double eventThreshold, double minDuration, double maxDuration, string fileName)
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
@@ -313,14 +329,14 @@ namespace AnalysisPrograms
 
             for (int i = 0; i < count; i++)//pass over all frames
             {
-                if ((isHit == false) && (scores[i] >= threshold))//start of an event
+                if ((isHit == false) && (scores[i] >= eventThreshold))//start of an event
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
                 else  //check for the end of an event
-                    if ((isHit == true) && (scores[i] < threshold))//this is end of an event, so initialise it
+                    if ((isHit == true) && (scores[i] < eventThreshold))//this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
@@ -338,7 +354,7 @@ namespace AnalysisPrograms
                         //calculate average oscillation freq and assign to ev.Score2 
                         ev.Score2Name = "OscRate"; //score2 name
                         av = 0.0;
-                        //for (int n = startFrame; n <= i; n++) av += oscFreq[n];
+                        //for (int n = startFrame; n <= i; n++) av += oscFreq[n]; //DO NOT CALCULATE OSCILLATION RATE
                         ev.Score2 = av / (double)(i - startFrame + 1);
                         events.Add(ev);
                     }
@@ -348,7 +364,7 @@ namespace AnalysisPrograms
 
 
 
-        static void DrawSonogram(BaseSonogram sonogram, string path, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static void DrawSonogram(BaseSonogram sonogram, string path, double[] mfccScores, double[] oscScores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -360,7 +376,8 @@ namespace AnalysisPrograms
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                image.AddTrack(Image_Track.GetScoreTrack(mfccScores, 0.0, 1.0, eventThreshold));
+                image.AddTrack(Image_Track.GetScoreTrack(oscScores, 0.0, 1.0, eventThreshold));
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }

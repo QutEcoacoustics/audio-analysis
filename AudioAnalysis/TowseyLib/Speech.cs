@@ -755,11 +755,17 @@ namespace TowseyLib
         {
             int frameCount = cepstralM.GetLength(0); //number of frames
             int coeffcount = cepstralM.GetLength(1); //number of MFCC deltas etcs
-            int featureCount = coeffcount * 3;
+            int featureCount = coeffcount;
+            if (deltaT > 0) featureCount *= 3;
             //Console.WriteLine("frameCount=" + frameCount + " coeffcount=" + coeffcount + " featureCount=" + featureCount + " deltaT=" + deltaT);
-
             double[] fv = new double[featureCount];
 
+            if (deltaT == 0)
+            {
+                for (int i = 0; i < coeffcount; i++) fv[i] = cepstralM[timeID, i];
+                return fv;
+            }
+            //else extract tri-acoustic vector
             for (int i = 0; i < coeffcount; i++) fv[i] = cepstralM[timeID - deltaT, i];
             for (int i = 0; i < coeffcount; i++) fv[coeffcount+i] = cepstralM[timeID, i];
             for (int i = 0; i < coeffcount; i++) fv[coeffcount + coeffcount+ i] = cepstralM[timeID + deltaT, i];
