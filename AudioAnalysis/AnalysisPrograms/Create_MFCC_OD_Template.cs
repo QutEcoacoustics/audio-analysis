@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     class Create_MFCC_OD_Template
     {
         //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_TEMPLATE_ID = "TEMPLATE_ID";
         public static string key_FILE_EXT  = "FILE_EXT";
         public static string key_TRAIN_DIR = "TRAIN_DIR";
         public static string key_MIN_HZ = "MIN_FREQ";
@@ -46,7 +47,6 @@ namespace AnalysisPrograms
 
             //#######################################################################################################
             // KEY PARAMETERS TO CHANGE
-            string templateID = "KEKKEK1";
             Log.Verbosity = 1;
             //#######################################################################################################
 
@@ -58,14 +58,14 @@ namespace AnalysisPrograms
             string templateDir = Path.GetDirectoryName(templatePath);
             string templateFN  = Path.GetFileNameWithoutExtension(templatePath);
 
-            Log.WriteLine("# CallID         =" + templateID);
-            Log.WriteLine("# Template Dir   =" + templateDir);
-
             //A: INITIALISE CONFIG
             Log.WriteLine("# STEP A: READ CONFIG");
+            Log.WriteLine("# Template Dir   =" + templateDir);
             var config = new Configuration(templatePath);
             Dictionary<string, string> dict = config.GetTable();
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            string templateID = dict[key_TEMPLATE_ID];
+            Log.WriteLine("# CallID         =" + templateID);
 
             //B: GET TRAINING DATA - i.e. List of Vocalisation Recordings - either paths or URIs
             Log.WriteLine("# STEP B: COLLECT TRAINING FILES");

@@ -174,8 +174,8 @@ namespace AudioAnalysisTools
             bool includeDelta         = Boolean.Parse(parameters["INCLUDE_DELTA"]);
             bool includeDoubleDelta   = Boolean.Parse(parameters["INCLUDE_DOUBLE_DELTA"]);
             int deltaT                = Int32.Parse(parameters["DELTA_T"]);
-            includeDelta       = true; //collect all coefficients possible - do not have to use them
-            includeDoubleDelta = true;
+            //includeDelta       = true; //collect all coefficients possible - do not have to use them
+            //includeDoubleDelta = true;
 
             // initialise the config for later use
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config - especially full band width
@@ -214,18 +214,15 @@ namespace AudioAnalysisTools
 
                 var tuple = BaseSonogram.GetAllSonograms(f.FullName, sonoConfig, minHz, maxHz);
                 CepstralSonogram cepstrogram = tuple.Item2;
-                double[,] avs = cepstrogram.Data;
                 noiseFullBand_List.Add(tuple.Item3);
                 noiseSubband_List.Add(tuple.Item4);
                 
                 //EXTRACT FV FROM EACH LOCATION, MERGE AND AVERAGE
-                //double[,] avs = Speech.AcousticVectors(cepstrogram.Data, includeDelta, includeDoubleDelta);
                 for (int i = 0; i < locations.Length; i++)
                 {
                     int locus = Int32.Parse(locations[i]);
                     Log.WriteLine("# Extracting FV from cepstrogram location {0}", locus);
-                    //v: calculate the full ACOUSTIC VECTORS ie including decibel and deltas, etc
-                    double[] fv = Speech.GetTriAcousticVector(avs, locus, deltaT);
+                    double[] fv = Speech.GetTriAcousticVector(cepstrogram.Data, locus, deltaT);
                     fvList.Add(fv);
                 }
 
