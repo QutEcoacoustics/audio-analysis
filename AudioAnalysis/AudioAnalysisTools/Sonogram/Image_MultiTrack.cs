@@ -188,7 +188,7 @@ namespace AudioAnalysisTools
             //int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
             double[] bounds = { 0.0, 0.14, 0.28, 0.42, 0.56, 0.70, 0.85, 1.0 }; //for normalised score
 
-            for (int c = 0; c < cols; c++)//traverse columns - skip DC column
+            for (int c = 1; c < cols; c++)//traverse columns - skip DC column
             {
                 for (int r = 0; r < rows; r++)
                 {
@@ -210,7 +210,9 @@ namespace AudioAnalysisTools
                     if ((normScore > bounds[6]) && (normScore <= bounds[7])) pen = pens[6];
                     else pen = new Pen(Color.Brown);
                     g.DrawLine(pen, r, imageHt - c, r, imageHt - c + 1);
+                    r +=8;
                 }
+                //c +=2;
             }
 
 

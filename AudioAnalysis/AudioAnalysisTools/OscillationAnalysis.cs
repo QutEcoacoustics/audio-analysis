@@ -78,8 +78,6 @@ namespace AudioAnalysisTools
             int cols = sonogram.Data.GetLength(1);
             Double[,] hits = new Double[rows, cols];
             Double[,] matrix = sonogram.Data;
-            //matrix = ImageTools.WienerFilter(sonogram.Data, 3);// DO NOT USE - SMUDGES EVERYTHING
-
 
             double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -91,22 +89,23 @@ namespace AudioAnalysisTools
             //ImageTools.DrawMatrix(cosines, fPath);
 
 
-
             for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
                     var array = new double[dctLength];
                     //accumulate J columns of values
+                    int N = 5; //average five rows
                     for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < 5; j++) array[i] += matrix[r + i, c + j];
+                        for (int j = 0; j < N; j++) array[i] += matrix[r + i, c + j];
+                    for (int i = 0; i < dctLength; i++) array[i] /= N;
 
                     array = DataTools.SubtractMean(array);
                     //     DataTools.writeBarGraph(array);
 
                     double[] dct = Speech.DCT(array, cosines);
-                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
-                    dct[0] = 0.0; dct[1] = 0.0; dct[2] = 0.0; dct[3] = 0.0; dct[4] = 0.0;//remove low freq oscillations from consideration
+                    //for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                    for (int i = 0; i < 5; i++) dct[i] = 0.0; //remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);
                     //dct = DataTools.normalise(dct); //another option to normalise
                     int indexOfMaxValue = DataTools.GetMaxIndex(dct);
