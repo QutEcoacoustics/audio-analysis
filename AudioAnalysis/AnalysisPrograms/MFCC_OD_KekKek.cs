@@ -16,7 +16,7 @@ namespace AnalysisPrograms
     //HERE ARE COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE,  debug command line
     //for LEWIN's RAIL
     // ID, recording, template.zip, working directory.
-    //kekkek C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\Template_2\KEKKEK1.zip  C:\SensorNetworks\Output\LewinsRail\
+    //kekkek C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\KEKKEK1.zip  C:\SensorNetworks\Output\MFCC_LewinsRail\
     
     class MFCC_OD_KekKek
     {
@@ -152,15 +152,16 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, double[], double[], List<AcousticEvent>, double[,]> Execute_CallDetect(string wavPath,
-            int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange, 
+            int minHz, int maxHz, int windowSize, double frameOverlap, NoiseReductionType nrt, double dynamicRange,
             bool doMelScale, int ccCount, bool includeDelta, bool includeDoubleDelta, int deltaT,
-            double[] pattern, double dctDuration, int minOscilFreq, int maxOscilFreq, 
+            double[] pattern, double dctDuration, int minOscilFreq, int maxOscilFreq,
             double minAmplitude, double eventThreshold, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
+            int nyquist = sr / 2;
 
             //ii: MAKE SONOGRAM
             Log.WriteLine("Start sonogram.");
@@ -182,11 +183,18 @@ namespace AnalysisPrograms
             var tuple = BaseSonogram.GetAllSonograms(wavPath, sonoConfig, minHz, maxHz);
             SpectralSonogram sonogram = tuple.Item1;
             CepstralSonogram cepstrogram = tuple.Item2;
-            double[,] avs = cepstrogram.Data;
-            //double[,] avs = Speech.AcousticVectors(cepstrogram.Data, includeDelta, includeDoubleDelta);
+
+            //Segment the spectrogram for acoustic energy in freq band of interest.
+            int midband = minHz + ((maxHz - minHz) / 2);
+            int deltaF = 100; //herz
+            int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
+            if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
+            int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);
+            double[] segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+
 
             //vi: GET FEATURE VECTOR SCORES
-            double[] scores = GetTemplateScores(avs, pattern, ccCount, includeDelta, includeDoubleDelta, deltaT);
+            double[] scores = GetTemplateScores(cepstrogram.Data, pattern, ccCount, includeDelta, includeDoubleDelta, deltaT);
             double Q;
             scores = SNR.NoiseSubtractMode(scores, out Q);
             Log.WriteLine("Score array - noise removal, Q={0:f3}",Q);
@@ -198,7 +206,6 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
             Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
             int dctLength = (int)Math.Round(sonogram.FramesPerSecond * dctDuration);
-            //scores = DataTools.filterMovingAverage(scores, 3);
             double[] oscillationScores = DetectOscillations(scores, dctDuration, dctLength, minOscilFreq, maxOscilFreq, minAmplitude);
 
             //viii:  EXTRACT ACOUSTIC EVENTS
@@ -206,7 +213,8 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents = ConvertScores2Events(oscillationScores, minHz, maxHz, sonogram.FramesPerSecond,
                                        sonogram.FBinWidth, eventThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            return System.Tuple.Create((BaseSonogram)sonogram, scores, oscillationScores, predictedEvents, avs);
+            //return System.Tuple.Create((BaseSonogram)sonogram, scores, oscillationScores, predictedEvents, cepstrogram.Data);
+            return System.Tuple.Create((BaseSonogram)sonogram, scores, segments, predictedEvents, cepstrogram.Data);
 
         }//end Execute_CallDetect
 
@@ -245,9 +253,8 @@ namespace AnalysisPrograms
                     double[] v1 = DataTools.GetRow(mfccM, r-deltaT);
                     double[] v2 = DataTools.GetRow(mfccM, r);
                     double[] v3 = DataTools.GetRow(mfccM, r + deltaT);
-                    List<double> fv = new List<double>(v1.Concat(v2));
-                    fv = new List<double>(fv.Concat(v3));
-                    scores[r] = DataTools.DotProduct(normPattern, DataTools.DiffFromMean(fv.ToArray()));  // Cross-correlation coeff
+                    var all = v1.Concat(v2.Concat(v3));
+                    scores[r] = DataTools.DotProduct(normPattern, DataTools.DiffFromMean(all.ToArray()));  // Cross-correlation coeff
                 }
             }
             else
@@ -260,8 +267,10 @@ namespace AnalysisPrograms
         }
 
 
-        public static double[] DetectOscillations(double[] scores, double dctDuration, int dctLength, int minOscilFreq, int maxOscilFreq, double minAmplitude)
+        public static double[] DetectOscillations(double[] scores1, double dctDuration, int dctLength, int minOscilFreq, int maxOscilFreq, double minAmplitude)
         {
+
+            var scores = DataTools.filterMovingAverage(scores1, 3);
 
               double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
               int L = scores.Length;
@@ -280,18 +289,17 @@ namespace AnalysisPrograms
                   for (int i = 0; i < dctLength; i++) array[i] = scores[r+i];
 
                   double[] dct = Speech.DCT(array, cosines);
-                  for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                  //for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                   for (int i = 0; i < 5; i++)         dct[i] = 0.0; //remove low freq oscillations from consideration
                   
                   int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                   double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
-                  //DataTools.MinMax(dct, out min, out max);
-                  //      DataTools.writeBarGraph(dct);
-
                   //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                   if ((oscilFreq >= minOscilFreq) && (oscilFreq <= maxOscilFreq) && (dct[indexOfMaxValue] > minAmplitude))
                   {
+                      //DataTools.writeBarGraph(dct);
+                      //for (int i = 0; i < dctLength; i++) Console.WriteLine(i+ "  {0:f3}  {1:f3}", array[i], dct[i]);
                       for (int i = 0; i < dctLength; i++)
                           if (oscillationScores[r + i] < dct[indexOfMaxValue]) oscillationScores[r + i] = dct[indexOfMaxValue];
                   }

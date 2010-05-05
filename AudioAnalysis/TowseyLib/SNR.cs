@@ -237,6 +237,65 @@ namespace TowseyLib
         }
 
 
+        /// <summary>
+        /// Birgit's algorithm for segmenting a signal based on average freq bin intensity in a reduced bandwidth 
+        /// </summary>
+        /// <param name="sonogram">sonogram of signal - values in dB</param>
+        /// <param name="midband">middle of band to sample</param>
+        /// <param name="deltaF">half band width</param>
+        /// <param name="nyquist">signal nyquist - used to caluclate hz per bin</param>
+        /// <param name="windowConstant">used for smoothing average sig intenisty per bin</param>
+        /// <param name="minDuration"></param>
+        /// <returns></returns>
+        public static double[] SegmentSignal(double[,] sonogram, int midband, int deltaF, int nyquist, int windowConstant, int minFrames)
+        {
+            int frameCount = sonogram.GetLength(0);
+            int binCount   = sonogram.GetLength(1);
+            double binWidth = nyquist / (double)binCount;
+            int midbin = (int)Math.Round(midband / binWidth);
+            int deltaBins = (int)Math.Round(deltaF / binWidth);
+            int bandCount = (2 * deltaBins) + 1;
+            double[] intensity = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                for (int j = midbin-deltaBins; j < midbin+deltaBins; j++) intensity[i] += sonogram[i,j];
+                intensity[i] /= bandCount;
+            }
+
+            intensity = DataTools.filterMovingAverage(intensity, windowConstant);
+            double threshold = 0.0;
+            double[] segments = SNR.SegmentSignal(intensity, threshold, minFrames);
+            return segments;
+        }
+
+        public static double[] SegmentSignal(double[] intensity, double threshold, int minFrames)
+        {
+            int frameCount = intensity.Length;
+            double[] segments = new double[frameCount];
+            bool inCall = false;
+            int callLength = 0;
+            int startIndex = 0;
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                if (intensity[i] > threshold)
+                {
+                    if (inCall == false) startIndex = i;
+                    inCall = true;                   
+                    callLength++;
+                }
+                if ((inCall) && (intensity[i] <= threshold))
+                {
+                    if (callLength > minFrames)
+                    {
+                        for (int j = startIndex; j <= i; j++) segments[j] = intensity[j];
+                    }
+                    inCall = false;
+                    callLength = 0;
+                }
+            }
+            return segments;
+        }
+
 
         /// <summary>
         /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
