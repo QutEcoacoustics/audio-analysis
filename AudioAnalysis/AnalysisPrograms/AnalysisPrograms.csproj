@@ -97,15 +97,12 @@
     <Compile Include="AED.cs" />
     <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
-    <Compile Include="MFCC_OD_KekKek.cs" />
+    <Compile Include="MFCC_OD.cs" />
     <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
     <Compile Include="Main_ClusterAcousticEvents.cs" />
     <Compile Include="Main_Create4Sonograms.cs" />
-    <Compile Include="Main_CreateTemplate_Auto.cs" />
-    <Compile Include="Main_CreateTemplate_Part1.cs" />
-    <Compile Include="Main_CreateTemplate_Part2.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
@@ -115,7 +112,6 @@
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="HTKRecogniser.cs" />
-    <Compile Include="Main_TestSerialTemplateOnCallFiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spt.cs" />
   </ItemGroup>

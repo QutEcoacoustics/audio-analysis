@@ -143,6 +143,7 @@ namespace AnalysisPrograms
 
 
                 BaseSonogram sonogram = null;
+                double[] segments = null;   //predefinition of segmentation of the recording
                 List<AcousticEvent> predictedEvents = null; //predefinition of results event list
                 double[] scores = null;   //predefinition of score array
                 Double[,] hits  = null;   //predefinition of hits matrix - to superimpose on sonogram image
@@ -181,7 +182,8 @@ namespace AnalysisPrograms
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
                         OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
-                                                    minAmplitude, scoreThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+                                                    minAmplitude, scoreThreshold, minDuration, maxDuration, 
+                                                    out scores, out predictedEvents, out hits, out segments);
                         break;
 
                     case HTK_RECOGNISER:

@@ -106,6 +106,7 @@ namespace AnalysisPrograms
             var hits = results.Item2;
             var scores = results.Item3;
             var predictedEvents = results.Item4;
+            var segmentation = results.Item5;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
 
             //write event count to results file.            
@@ -114,13 +115,13 @@ namespace AnalysisPrograms
             if (DRAW_SONOGRAMS==2)
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, segmentation);
             }
             else
             if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, segmentation);
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
@@ -128,7 +129,7 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_ODDetect(string wavPath,
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[]> Execute_ODDetect(string wavPath,
             int minHz, int maxHz, double frameOverlap, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
             double eventThreshold, double minDuration, double maxDuration)
         {
@@ -159,19 +160,22 @@ namespace AnalysisPrograms
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
+            double[] segments;                    //predefinition of segmentation of recording
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, minDuration, maxDuration, out scores, out predictedEvents, out hits);
+                                         minAmplitude, eventThreshold, minDuration, maxDuration, 
+                                         out scores, out predictedEvents, out hits, out segments);
 
-            return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents, segments);
 
         }//end CaneToadRecogniser
 
 
-        static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
+                                        List<AcousticEvent> predictedEvents, double eventThreshold, double[] segmentation)
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            double maxScore = 50.0; //assumed max posisble oscillations per second
+            //double maxScore = 50.0; //assumed max posisble oscillations per second
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
@@ -181,13 +185,14 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                 //image.AddSuperimposedMatrix(hits, maxScore);
+                image.AddTrack(Image_Track.GetScoreTrack(segmentation, 0.0, 1.0, eventThreshold));
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }
         }
 
 
-        static void WriteEventsInfo2TextFile(List<AcousticEvent>predictedEvents, string path)
+        public static void WriteEventsInfo2TextFile(List<AcousticEvent>predictedEvents, string path)
         {
             StringBuilder sb = new StringBuilder("# EVENT COUNT = " + predictedEvents.Count() + "\n");
             AcousticEvent.WriteEvents(predictedEvents, ref sb);
@@ -220,7 +225,7 @@ namespace AnalysisPrograms
         //}
 
 
-        private static void CheckArguments(string[] args)
+        public static void CheckArguments(string[] args)
         {
             if (args.Length < 3)
             {
@@ -236,7 +241,7 @@ namespace AnalysisPrograms
         /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
         /// </summary>
         /// <param name="args"></param>
-        private static void CheckPaths(string[] args)
+        public static void CheckPaths(string[] args)
         {
             if (!File.Exists(args[0]))
             {
@@ -256,7 +261,7 @@ namespace AnalysisPrograms
         }
 
 
-        private static void Usage()
+        public static void Usage()
         {
             Console.WriteLine("INCORRECT COMMAND LINE.");
             Console.WriteLine("USAGE:");
