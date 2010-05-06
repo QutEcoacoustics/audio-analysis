@@ -30,6 +30,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{EC323929-0160-46BC-A04B-B4A66D02E757} = {EC323929-0160-46BC-A04B-B4A66D02E757}
+		{4EC9FD7E-6543-44A9-B872-906DFCB229AF} = {4EC9FD7E-6543-44A9-B872-906DFCB229AF}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"

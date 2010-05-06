@@ -78,6 +78,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TextFileLogProvider.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AudioTools\AudioTools.csproj">
@@ -103,6 +104,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="ServiceInstall.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="ServiceUninstall.bat">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -112,4 +119,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Bin\" (copy "$(TargetPath)"  "$(SolutionDir)WebFrontend\Bin\")</PostBuildEvent>
+  </PropertyGroup>
 </Project>

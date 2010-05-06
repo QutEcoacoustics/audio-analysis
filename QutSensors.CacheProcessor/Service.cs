@@ -24,7 +24,7 @@ namespace QutSensors.CacheProcessor
         protected override void OnStart(string[] args)
         {
             if (processor == null)
-                processor = CreateProcessor(new EventLogProvider(EventLog));
+                processor = CreateProcessor(new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider()));
             processor.Start();
         }
 

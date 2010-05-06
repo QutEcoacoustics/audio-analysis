@@ -161,7 +161,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Processor\ParameterFiles\" (
- copy "$(ProjectDir)..\RecogniserParamFiles\*.*"  "$(SolutionDir)WebFrontend\Processor\ParameterFiles\")</PreBuildEvent>
+    <PreBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Processor\" (copy "$(SolutionDir)AudioAnalysis\RecogniserParamFiles\*.*"  "$(SolutionDir)WebFrontend\Processor\ParameterFiles\")</PreBuildEvent>
   </PropertyGroup>
 </Project>
