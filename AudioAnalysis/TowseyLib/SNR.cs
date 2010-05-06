@@ -200,6 +200,7 @@ namespace TowseyLib
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
+            for (int i = binCount/2; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min + ((peakID + 1) * binWidth); //modal noise level
 
@@ -239,6 +240,7 @@ namespace TowseyLib
 
         /// <summary>
         /// Birgit's algorithm for segmenting a signal based on average freq bin intensity in a reduced bandwidth 
+        /// WARNING!!!!! THIS IMPLEMENTATION ASSUMES THAT SONOGRAM BACKGROUND NOISE REMOVED AND BACKGROUND = 0 dB
         /// </summary>
         /// <param name="sonogram">sonogram of signal - values in dB</param>
         /// <param name="midband">middle of band to sample</param>
@@ -261,9 +263,13 @@ namespace TowseyLib
                 for (int j = midbin-deltaBins; j < midbin+deltaBins; j++) intensity[i] += sonogram[i,j];
                 intensity[i] /= bandCount;
             }
-
+            //
+            double Q;
             intensity = DataTools.filterMovingAverage(intensity, windowConstant);
-            double threshold = 0.0;
+            intensity = SNR.NoiseSubtractMode(intensity, out Q);
+            Log.WriteLine("Acoustic intensity array - noise removal, Q={0:f3}", Q);
+
+            double threshold = 0.0; //THIS WORKS BECASUE BACKGROUND NOISE REMOVED AND BG = 0 dB
             double[] segments = SNR.SegmentSignal(intensity, threshold, minFrames);
             return segments;
         }
@@ -287,7 +293,8 @@ namespace TowseyLib
                 {
                     if (callLength > minFrames)
                     {
-                        for (int j = startIndex; j <= i; j++) segments[j] = intensity[j];
+                        //for (int j = startIndex; j <= i; j++) segments[j] = intensity[j]; //real value
+                        for (int j = startIndex; j <= i; j++) segments[j] = 1.0; // binary decision
                     }
                     inCall = false;
                     callLength = 0;

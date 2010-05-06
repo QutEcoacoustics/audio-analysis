@@ -30,12 +30,26 @@ namespace AudioAnalysisTools
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, 
                                    double minAmplitude, double scoreThreshold,
-                                   double minDuration, double maxDuration, 
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+                                   double minDuration, double maxDuration,
+                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] segments)
         {
+            DateTime startTime = DateTime.Now; 
+
+            //DO SEGMENTATION
+            //Segment the spectrogram for acoustic energy in freq band of interest.
+            int midband = minHz + ((maxHz - minHz) / 2);
+            int deltaF = 100; //herz
+            int nyquist = sonogram.SampleRate / 2;
+            int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
+            if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
+            //int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);//used for Lewins rail where dctDuration = minCallDuration.
+            int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
+            //##################################################################### USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
+            segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            //segments = null;
 
             //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude);
+            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, segments);
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -43,6 +57,10 @@ namespace AudioAnalysisTools
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
+
+            DateTime endTime = DateTime.Now;
+            TimeSpan span = endTime.Subtract(startTime);
+            Console.WriteLine(" TIME SPAN = "+ span.ToString());
         }//end method
 
 
@@ -63,8 +81,8 @@ namespace AudioAnalysisTools
         /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
         /// <param name="minAmplitude">threshold - do not accept a DCT value if its amplitude is less than this threshold</param>
         /// <returns></returns>
-        public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz,
-                                                   double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude)
+        public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, 
+                                                     int minOscilFreq, int maxOscilFreq, double minAmplitude, double[] segments)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -77,7 +95,6 @@ namespace AudioAnalysisTools
             int rows = sonogram.Data.GetLength(0);
             int cols = sonogram.Data.GetLength(1);
             Double[,] hits = new Double[rows, cols];
-            Double[,] matrix = sonogram.Data;
 
             double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
             //following two lines write matrix of cos values for checking.
@@ -89,29 +106,27 @@ namespace AudioAnalysisTools
             //ImageTools.DrawMatrix(cosines, fPath);
 
 
-            for (int c = minBin; c <= maxBin; c++)//traverse columns - skip DC column
+            for (int c = minBin; c <= maxBin; c++)//traverse columns
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
+                    if (segments[r] == 0.0) continue;  //############## SKIP ROW IF NOT IN SEGMENT ########## FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     int N = 5; //average five rows
                     for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < N; j++) array[i] += matrix[r + i, c + j];
+                    { for (int j = 0; j < N; j++) array[i] += sonogram.Data[r + i, c + j]; }
                     for (int i = 0; i < dctLength; i++) array[i] /= N;
 
                     array = DataTools.SubtractMean(array);
                     //     DataTools.writeBarGraph(array);
 
                     double[] dct = Speech.DCT(array, cosines);
-                    //for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
-                    for (int i = 0; i < 5; i++) dct[i] = 0.0; //remove low freq oscillations from consideration
+                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                    for (int i = 0; i < 5; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration
                     dct = DataTools.normalise2UnitLength(dct);
-                    //dct = DataTools.normalise(dct); //another option to normalise
                     int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                     double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
-
-                    //DataTools.MinMax(dct, out min, out max);
                     //      DataTools.writeBarGraph(dct);
 
                     //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude

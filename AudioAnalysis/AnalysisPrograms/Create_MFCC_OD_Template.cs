@@ -102,7 +102,7 @@ namespace AnalysisPrograms
             arguments[0] = testRecordingPath;
             arguments[1] = zipPath;
             arguments[2] = testDirectory; //working directory for verification.
-            MFCC_OD_KekKek.Dev(arguments);
+            MFCC_OD.Dev(arguments);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
