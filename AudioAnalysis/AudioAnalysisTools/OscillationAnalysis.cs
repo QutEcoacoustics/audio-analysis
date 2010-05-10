@@ -47,6 +47,10 @@ namespace AudioAnalysisTools
             //##################################################################### USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
             segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
             //segments = null;
+            DateTime endTime = DateTime.Now;
+            TimeSpan span = endTime.Subtract(startTime);
+            Console.WriteLine(" SEGMENTATION OUTSIDE TIME SPAN = " + span.ToString());
+            startTime = DateTime.Now; 
 
             //DETECT OSCILLATIONS
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, segments);
@@ -58,9 +62,9 @@ namespace AudioAnalysisTools
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            DateTime endTime = DateTime.Now;
-            TimeSpan span = endTime.Subtract(startTime);
-            Console.WriteLine(" TIME SPAN = "+ span.ToString());
+            endTime = DateTime.Now;
+            span = endTime.Subtract(startTime);
+            Console.WriteLine(" OscRec TIME SPAN = "+ span.ToString());
         }//end method
 
 
@@ -110,7 +114,7 @@ namespace AudioAnalysisTools
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
-                    if (segments[r] == 0.0) continue;  //############## SKIP ROW IF NOT IN SEGMENT ########## FILTER SAVES TIME
+ //                   if (segments[r] == 0.0) continue;  //############## SKIP ROW IF NOT IN SEGMENT ########## FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     int N = 5; //average five rows
