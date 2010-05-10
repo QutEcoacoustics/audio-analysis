@@ -33,7 +33,7 @@ namespace AudioAnalysisTools
                                    double minDuration, double maxDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] segments)
         {
-            DateTime startTime = DateTime.Now; 
+            DateTime startTime1 = DateTime.Now; 
 
             //DO SEGMENTATION
             //Segment the spectrogram for acoustic energy in freq band of interest.
@@ -46,11 +46,14 @@ namespace AudioAnalysisTools
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //##################################################################### USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
             segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
-            //segments = null;
-            DateTime endTime = DateTime.Now;
-            TimeSpan span = endTime.Subtract(startTime);
-            Console.WriteLine(" SEGMENTATION OUTSIDE TIME SPAN = " + span.ToString());
-            startTime = DateTime.Now; 
+            int count = segments.Count(p => p == 1.0);
+
+            //DateTime endTime1 = DateTime.Now;
+            //TimeSpan span1 = endTime1.Subtract(startTime1);
+            TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
+            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.Milliseconds.ToString() + "ms   Content={0}%", (100 * count / sonogram.FrameCount));
+            
+            DateTime startTime2 = DateTime.Now; 
 
             //DETECT OSCILLATIONS
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, segments);
@@ -62,9 +65,9 @@ namespace AudioAnalysisTools
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
-            endTime = DateTime.Now;
-            span = endTime.Subtract(startTime);
-            Console.WriteLine(" OscRec TIME SPAN = "+ span.ToString());
+            DateTime endTime2 = DateTime.Now;
+            TimeSpan span2 = endTime2.Subtract(startTime2);
+            Console.WriteLine(" OscRec TIME SPAN = "+ span2.ToString());
         }//end method
 
 
@@ -114,7 +117,7 @@ namespace AudioAnalysisTools
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
- //                   if (segments[r] == 0.0) continue;  //############## SKIP ROW IF NOT IN SEGMENT ########## FILTER SAVES TIME
+                    if ((segments != null)&&(segments[r] == 0.0)) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     int N = 5; //average five rows
