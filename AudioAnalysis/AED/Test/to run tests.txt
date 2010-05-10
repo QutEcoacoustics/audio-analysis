@@ -1,0 +1,6 @@
+1. download and install xunit
+2. run xunit like this:
+
+cd "<path to svn trunk>\AudioAnalysis\AED\Test"
+
+"C:\Program Files\xunit\xunit.console.exe" "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\Test.dll" /nunit "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\test.xml"
