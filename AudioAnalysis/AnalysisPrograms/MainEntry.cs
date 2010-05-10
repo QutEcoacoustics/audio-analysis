@@ -43,8 +43,8 @@ namespace AnalysisPrograms
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(r);
                         break;
-                    case "kekkek": // special use of MFCCs and OD for Lewin's Rail recognition
-                        //MFCC_OD.Dev(r);
+                    case "kekkek": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
+                        MFCC_OD.Dev(r);
                         break;
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);

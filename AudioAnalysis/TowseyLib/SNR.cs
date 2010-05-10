@@ -251,12 +251,14 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[] SegmentSignal(double[,] sonogram, int midband, int deltaF, int nyquist, int windowConstant, int minFrames)
         {
+            //DateTime startTime = DateTime.Now;
             int frameCount = sonogram.GetLength(0);
             int binCount   = sonogram.GetLength(1);
             double binWidth = nyquist / (double)binCount;
             int midbin = (int)Math.Round(midband / binWidth);
             int deltaBins = (int)Math.Round(deltaF / binWidth);
             int bandCount = (2 * deltaBins) + 1;
+            //A: Calculate mean intensityin the subband.
             double[] intensity = new double[frameCount];
             for (int i = 0; i < frameCount; i++) //foreach frame
             {
@@ -265,12 +267,17 @@ namespace TowseyLib
             }
             //
             double Q;
+            //B: SMOOTH THE INTENSITY ARRAY
             intensity = DataTools.filterMovingAverage(intensity, windowConstant);
             intensity = SNR.NoiseSubtractMode(intensity, out Q);
             Log.WriteLine("Acoustic intensity array - noise removal, Q={0:f3}", Q);
 
+            //C: SEGMENT THE SIGNAL
             double threshold = 0.0; //THIS WORKS BECASUE BACKGROUND NOISE REMOVED AND BG = 0 dB
             double[] segments = SNR.SegmentSignal(intensity, threshold, minFrames);
+            //DateTime endTime = DateTime.Now;
+            //TimeSpan span = endTime.Subtract(startTime);
+            //Console.WriteLine(" SEGMENTATION TIME = " + span.ToString());
             return segments;
         }
 

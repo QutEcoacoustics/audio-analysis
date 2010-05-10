@@ -97,6 +97,7 @@
     <Compile Include="AED.cs" />
     <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
+    <Compile Include="MFCC_OD.cs" />
     <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
     <Compile Include="MainEntry.cs" />
