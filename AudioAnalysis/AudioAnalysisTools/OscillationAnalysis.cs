@@ -31,7 +31,8 @@ namespace AudioAnalysisTools
                                    double dctDuration, int minOscilFreq, int maxOscilFreq, 
                                    double minAmplitude, double scoreThreshold,
                                    double minDuration, double maxDuration,
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] segments)
+                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] segments,
+                                   out TimeSpan totalTime)
         {
             DateTime startTime1 = DateTime.Now; 
 
@@ -42,20 +43,20 @@ namespace AudioAnalysisTools
             int nyquist = sonogram.SampleRate / 2;
             int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
-            //int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);//used for Lewins rail where dctDuration = minCallDuration.
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
-            //##################################################################### USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
+            //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
             segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
             int count = segments.Count(p => p == 1.0);
 
             //DateTime endTime1 = DateTime.Now;
             //TimeSpan span1 = endTime1.Subtract(startTime1);
             TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
-            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.Milliseconds.ToString() + "ms   Content={0}%", (100 * count / sonogram.FrameCount));
+            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.TotalMilliseconds.ToString() + "ms   Content={0}%", (100 * count / sonogram.FrameCount));
             
             DateTime startTime2 = DateTime.Now; 
 
             //DETECT OSCILLATIONS
+            //segments = null; //comment this line if do not want to use the segment array.
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, segments);
             hits = RemoveIsolatedOscillations(hits);
 
@@ -68,6 +69,7 @@ namespace AudioAnalysisTools
             DateTime endTime2 = DateTime.Now;
             TimeSpan span2 = endTime2.Subtract(startTime2);
             Console.WriteLine(" OscRec TIME SPAN = "+ span2.ToString());
+            totalTime = endTime2.Subtract(startTime1);
         }//end method
 
 
@@ -117,7 +119,8 @@ namespace AudioAnalysisTools
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
-                    if ((segments != null)&&(segments[r] == 0.0)) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
+                    if (segments[r] == 0.0) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
+                    //   if ((segments != null)&&(segments[r] == 0.0)) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     int N = 5; //average five rows
