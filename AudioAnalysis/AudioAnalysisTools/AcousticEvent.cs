@@ -302,15 +302,27 @@ namespace AudioAnalysisTools
 
         public static void WriteEvents(List<AcousticEvent> eventList, ref StringBuilder sb)
         {
-            if (eventList.Count == 0) return;
-            string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
-                                        "     Event Name", "Start", "End", "MinF", "MaxF", "Score", eventList[0].Score2Name, "SourceFile");
-            sb.Append(line + "\n");
-            foreach (AcousticEvent ae in eventList)
+            if (eventList.Count == 0)
             {
-                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
-                                            ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
-                sb.Append(line + "\n");
+                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                                            "     Event Name", "Start", "End", "MinF", "MaxF", "Score1", "Score2", "SourceFile");
+                sb.Append(line);
+                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                                     "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
+                sb.Append(line);
+            }
+            else
+            {
+                AcousticEvent ae1 = eventList[0];
+                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                                            "     Event Name", "Start", "End", "MinF", "MaxF", "Score", ae1.Score2Name, "SourceFile");
+                sb.Append(line);
+                foreach (AcousticEvent ae in eventList)
+                {
+                    line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                                         ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
+                    sb.Append(line);
+                }
             }
         }
 
