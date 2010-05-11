@@ -143,11 +143,12 @@ namespace AnalysisPrograms
 
 
                 BaseSonogram sonogram = null;
-                double[] segments = null;   //predefinition of segmentation of the recording
+                double[] segments = null;     //predefinition of segmentation of the recording
                 List<AcousticEvent> predictedEvents = null; //predefinition of results event list
-                double[] scores = null;   //predefinition of score array
-                Double[,] hits  = null;   //predefinition of hits matrix - to superimpose on sonogram image
-                double scoreThreshold = 0.0; //USE THIS TO DETERMINE FP / FN trade-off.
+                double[] scores = null;       //predefinition of score array
+                Double[,] hits  = null;       //predefinition of hits matrix - to superimpose on sonogram image
+                double scoreThreshold = 0.0;  //USE THIS TO DETERMINE FP / FN trade-off.
+                TimeSpan analysisTime;        //predefinition of time taken to do the analysis 
 
                 //C: DETECT EVENTS USING ONE oF FOLLOWING METHODS
                 switch (recogniserType)
@@ -182,8 +183,8 @@ namespace AnalysisPrograms
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
                         OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
-                                                    minAmplitude, scoreThreshold, minDuration, maxDuration, 
-                                                    out scores, out predictedEvents, out hits, out segments);
+                                                    minAmplitude, scoreThreshold, minDuration, maxDuration,
+                                                    out scores, out predictedEvents, out hits, out segments, out analysisTime);
                         break;
 
                     case HTK_RECOGNISER:

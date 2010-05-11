@@ -68,11 +68,9 @@ namespace AnalysisPrograms
             string iniPath   = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\";
             string opFName   = args[2];
-            string opPath    = outputDir + opFName; 
-                       
+            string opPath    = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
-            Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+                       
 
             //READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
@@ -107,10 +105,18 @@ namespace AnalysisPrograms
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var segmentation = results.Item5;
+            var analysisDuration = results.Item6;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
 
-            //write event count to results file.            
-            WriteEventsInfo2TextFile(predictedEvents, opPath);
+            //write event count to results file. 
+            double sigDuration = sonogram.Duration.TotalSeconds;
+            string fname = Path.GetFileName(recordingPath);
+            int count = predictedEvents.Count;
+            string str = String.Format("#RecordingName\tDuration(sec)\tEventCount\tAnalysisTime(ms)\n{0}\t{1}\t{2}\t{3}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds);
+            StringBuilder sb = new StringBuilder(str);
+            AcousticEvent.WriteEvents(predictedEvents, ref sb);
+            FileTools.WriteTextFile(opPath, sb.ToString());
+
 
             if (DRAW_SONOGRAMS==2)
             {
@@ -125,11 +131,11 @@ namespace AnalysisPrograms
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
+            //Console.ReadLine();
         } //Dev()
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[]> Execute_ODDetect(string wavPath,
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(string wavPath,
             int minHz, int maxHz, double frameOverlap, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
             double eventThreshold, double minDuration, double maxDuration)
         {
@@ -161,11 +167,12 @@ namespace AnalysisPrograms
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] segments;                    //predefinition of segmentation of recording
+            TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file  
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, minDuration, maxDuration, 
-                                         out scores, out predictedEvents, out hits, out segments);
+                                         minAmplitude, eventThreshold, minDuration, maxDuration,
+                                         out scores, out predictedEvents, out hits, out segments, out analysisTime);
 
-            return System.Tuple.Create(sonogram, hits, scores, predictedEvents, segments);
+            return System.Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
 
         }//end CaneToadRecogniser
 
@@ -189,15 +196,6 @@ namespace AnalysisPrograms
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }
-        }
-
-
-        public static void WriteEventsInfo2TextFile(List<AcousticEvent>predictedEvents, string path)
-        {
-            StringBuilder sb = new StringBuilder("# EVENT COUNT = " + predictedEvents.Count() + "\n");
-            AcousticEvent.WriteEvents(predictedEvents, ref sb);
-            sb.Append("#############################################################################");
-            FileTools.Append2TextFile(path, sb.ToString());
         }
 
 
