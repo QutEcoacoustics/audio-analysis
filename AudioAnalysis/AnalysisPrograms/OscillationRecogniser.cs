@@ -114,7 +114,7 @@ namespace AnalysisPrograms
             double sigDuration = sonogram.Duration.TotalSeconds;
             string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
-            string str = String.Format("#RecordingName\tDuration(sec)\tEventCount\tAnalysisTime(ms)\t%hiIntensity\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
+            string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiIntensity\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             StringBuilder sb = new StringBuilder(str);
             AcousticEvent.WriteEvents(predictedEvents, ref sb);
             FileTools.WriteTextFile(opPath, sb.ToString());
