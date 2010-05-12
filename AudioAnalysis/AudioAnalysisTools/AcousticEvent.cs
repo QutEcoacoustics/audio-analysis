@@ -304,24 +304,24 @@ namespace AudioAnalysisTools
         {
             if (eventList.Count == 0)
             {
-                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             "     Event Name", "Start", "End", "MinF", "MaxF", "Score1", "Score2", "SourceFile");
-                sb.Append(line);
-                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                sb.AppendLine(line);
+                line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                      "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
-                sb.Append(line);
+                sb.AppendLine(line);
             }
             else
             {
                 AcousticEvent ae1 = eventList[0];
-                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                string line = String.Format("#{0}\t{1,8:f3}\t{2,6:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                             "     Event Name", "Start", "End", "MinF", "MaxF", "Score", ae1.Score2Name, "SourceFile");
-                sb.Append(line);
+                sb.AppendLine(line);
                 foreach (AcousticEvent ae in eventList)
                 {
-                    line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}\n",
+                    line = String.Format("{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
                                          ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
-                    sb.Append(line);
+                    sb.AppendLine(line);
                 }
             }
         }

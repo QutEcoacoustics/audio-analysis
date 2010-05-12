@@ -46,12 +46,11 @@ namespace AudioAnalysisTools
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
             segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
-            int count = segments.Count(p => p == 1.0);
 
             //DateTime endTime1 = DateTime.Now;
             //TimeSpan span1 = endTime1.Subtract(startTime1);
             TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
-            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.TotalMilliseconds.ToString() + "ms   Content={0}%", (100 * count / sonogram.FrameCount));
+            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.TotalMilliseconds.ToString() + "ms");
             
             DateTime startTime2 = DateTime.Now; 
 
@@ -119,7 +118,7 @@ namespace AudioAnalysisTools
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
-                    if (segments[r] == 0.0) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
+                    //if (segments[r] == 0.0) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
                     //   if ((segments != null)&&(segments[r] == 0.0)) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values

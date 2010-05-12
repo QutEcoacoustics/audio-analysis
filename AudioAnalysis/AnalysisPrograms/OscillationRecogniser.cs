@@ -107,12 +107,14 @@ namespace AnalysisPrograms
             var segmentation = results.Item5;
             var analysisDuration = results.Item6;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
+            int hifCount = segmentation.Count(p => p == 1.0); //count of high intensity frames
+            int pcHIF = 100 * hifCount / sonogram.FrameCount;
 
             //write event count to results file. 
             double sigDuration = sonogram.Duration.TotalSeconds;
             string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
-            string str = String.Format("#RecordingName\tDuration(sec)\tEventCount\tAnalysisTime(ms)\n{0}\t{1}\t{2}\t{3}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds);
+            string str = String.Format("#RecordingName\tDuration(sec)\tEventCount\tAnalysisTime(ms)\t%hiIntensity\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             StringBuilder sb = new StringBuilder(str);
             AcousticEvent.WriteEvents(predictedEvents, ref sb);
             FileTools.WriteTextFile(opPath, sb.ToString());
