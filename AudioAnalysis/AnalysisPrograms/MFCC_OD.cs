@@ -80,7 +80,7 @@ namespace AnalysisPrograms
             //B: READ INI/CONFIG and CREATE DIRECTORY STRUCTURE
             Log.WriteLine("# Init CONFIG and creating directory structure");
             Log.WriteLine("# New Template Dir: " + newTemplateDir);
-            string iniPath = workingDirectory + templateFN + "\\Template_" + templateFN + ".txt";
+            string iniPath = workingDirectory + templateFN + "\\MFCC-OD_" + templateFN + "_Params.txt";
             //read feature vector
             string fvPath  = workingDirectory + templateFN + "\\FV1_" + templateFN + ".txt"; //feature vector path
             double[] fv = FileTools.ReadDoubles2Vector(fvPath);
@@ -100,7 +100,7 @@ namespace AnalysisPrograms
             bool doMelScale     =  Boolean.Parse(dict[key_DO_MELSCALE]);       
             bool includeDelta       = Boolean.Parse(dict[key_INCLUDE_DELTA]);
             bool includeDoubleDelta = Boolean.Parse(dict[key_INCLUDE_DOUBLE_DELTA]);
-            int deltaT          = Int32.Parse(dict[key_DELTA_T]);           //distance between tri-acoustic vectors
+            int deltaT          = Int32.Parse(dict[key_DELTA_T]);            //distance between tri-acoustic vectors
             double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
             int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);     //ignore oscillations below this threshold freq
             int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);     //ignore oscillations above this threshold freq

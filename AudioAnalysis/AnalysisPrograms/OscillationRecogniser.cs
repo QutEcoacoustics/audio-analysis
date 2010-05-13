@@ -22,16 +22,16 @@ namespace AnalysisPrograms
     {
         //Following lines are used for the debug command line.
         //CANETOAD
-        //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt events.txt
+        //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\OD_CaneToad_Params.txt events.txt
         //GECKO
-        //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\Gecko_DetectionParams.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\OD_Gecko_Params.txt events.txt
         //KOALA MALE EXHALE
-        //od "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_DetectionParams.txt events.txt
-        //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_DetectionParams.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_Params.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_Params.txt events.txt
         //KOALA MALE FOREPLAY
-        //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleForeplay_LargeTestSet\KoalaMaleForeplay_DetectionParams.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleForeplay_LargeTestSet\KoalaMaleForeplay_Params.txt events.txt
         //BRIDGE CREEK
-        //od "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_DetectionParams.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_Params.txt events.txt
 
 
 
@@ -107,14 +107,18 @@ namespace AnalysisPrograms
             var segmentation = results.Item5;
             var analysisDuration = results.Item6;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
-            int hifCount = segmentation.Count(p => p == 1.0); //count of high intensity frames
-            int pcHIF = 100 * hifCount / sonogram.FrameCount;
+            int pcHIF = 100;
+            if (segmentation != null) 
+            {
+                int hifCount = segmentation.Count(p => p == 1.0); //count of high intensity frames
+                pcHIF = 100 * hifCount / sonogram.FrameCount;
+            }
 
             //write event count to results file. 
             double sigDuration = sonogram.Duration.TotalSeconds;
             string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
-            string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiIntensity\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
+            string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             StringBuilder sb = new StringBuilder(str);
             AcousticEvent.WriteEvents(predictedEvents, ref sb);
             FileTools.WriteTextFile(opPath, sb.ToString());
