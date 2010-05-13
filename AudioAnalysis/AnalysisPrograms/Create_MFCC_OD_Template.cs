@@ -11,7 +11,7 @@ using QutSensors.Shared;
 //HERE ARE THE FOUR (4) COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE,  debug command line
 //USED TO CREATE A MFCC-OD TEMPLATE for LEWIN's RAIL
 // ID, recording, template.zip, working directory.
-//createtemplate_mfccod C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\Template_KEKKEK1\Template_KEKKEK1.txt  C:\SensorNetworks\Output\MFCC_LewinsRail\
+//createtemplate_mfccod C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-075040.wav C:\SensorNetworks\Templates\Template_KEKKEK1\MFCC-OD_KEKKEK1_Params.txt  C:\SensorNetworks\Output\MFCC_LewinsRail\
 //
 namespace AnalysisPrograms
 {

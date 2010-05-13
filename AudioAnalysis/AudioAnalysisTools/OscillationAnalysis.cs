@@ -45,7 +45,8 @@ namespace AudioAnalysisTools
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
-            segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            //segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            segments = null;
 
             //DateTime endTime1 = DateTime.Now;
             //TimeSpan span1 = endTime1.Subtract(startTime1);
