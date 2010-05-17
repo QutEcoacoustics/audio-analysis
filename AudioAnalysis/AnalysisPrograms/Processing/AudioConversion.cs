@@ -1,21 +1,36 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioTools;
-using System.IO;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="AudioConversion.cs" company="MQUTeR">
+//   -
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms.Processing
 {
+    using System;
+    using System.IO;
+    using System.Reflection;
+
+    using AudioTools;
+
+    /// <summary>
+    /// The audio conversion.
+    /// </summary>
     internal class AudioConversion
     {
+        /// <summary>
+        /// The convert.
+        /// </summary>
+        /// <param name="args">
+        /// Working directory.
+        /// </param>
         public static void Convert(string[] args)
         {
+            Write(
+                "File Name, Source, BitsPerSample, BytesPerSample, Channels, Epsilon, SampleRate, SampleCount, Time", 
+                true, 
+                true);
 
-            Write("File Name, Source, BitsPerSample, BytesPerSample, Channels, Epsilon, SampleRate, SampleCount, Time", true, true);
-
-
-            string dir = args[0];
+            var dir = args[0];
             foreach (var path in Directory.GetFiles(dir, "*"))
             {
                 var file = new FileInfo(path);
@@ -31,7 +46,6 @@ namespace AnalysisPrograms.Processing
                     Write(reader.Samples.Length.ToString());
                     Write(reader.Time.ToString(), true, false);
                 }
-
 
                 Write(file.Name);
 
@@ -55,12 +69,22 @@ namespace AnalysisPrograms.Processing
 
         private static void Write(string data, bool appendNewLine, bool overwriteFile)
         {
-            var path = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "file_test_logging.txt");
+            string path = Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "file_test_logging.txt");
 
-            if (appendNewLine) data += Environment.NewLine;
+            if (appendNewLine)
+            {
+                data += Environment.NewLine;
+            }
 
-            if (overwriteFile) File.WriteAllText(path, data);
-            else File.AppendAllText(path, data);
+            if (overwriteFile)
+            {
+                File.WriteAllText(path, data);
+            }
+            else
+            {
+                File.AppendAllText(path, data);
+            }
         }
 
         private static void Write(string data)

@@ -62,7 +62,7 @@ namespace ProcessorCLI
             }
             catch (Exception e)
             {
-                Console.WriteLine("ERROR: {0}", e.ToString());
+                Console.WriteLine("ERROR: {0}", e);
             }
 
             Console.WriteLine("Press enter to exit.");
@@ -75,11 +75,9 @@ namespace ProcessorCLI
                         "TESTER",
                         0,
                         "Just Testing",
-                        new List<ProcessorResultTag>()
+                        new List<ProcessorResultTag>
                         {
-                            new ProcessorResultTag(){
-                                
-                            }
+                            new ProcessorResultTag {  }
                         }
                     );
         }

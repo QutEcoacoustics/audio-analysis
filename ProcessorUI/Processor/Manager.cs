@@ -516,14 +516,13 @@ namespace QutSensors.Processor
         {
             if (pi != null)
             {
-
                 File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDOUT_FILE_NAME), pi.OutputData);
                 File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDERR_FILE_NAME), pi.ErrorData);
-            }
 
-            if (!string.IsNullOrEmpty(workerName))
-            {
-                ReturnFinishedRun(pi.RunDir, workerName);
+                if (!string.IsNullOrEmpty(workerName))
+                {
+                    ReturnFinishedRun(pi.RunDir, workerName);
+                }
             }
         }
 
