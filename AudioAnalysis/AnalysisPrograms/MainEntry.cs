@@ -19,22 +19,22 @@ namespace AnalysisPrograms
                 string[] r = args.Skip(1).ToArray();
                 switch (args[0])
                 {
-                    case "aed":  //acoustic event detection
+                    case "aed":  // acoustic event detection
                         AED.Dev(r);
                         break;
-                    case "od":   //Oscillation Recogniser
+                    case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(r);
                         break;
-                    case "hd":   //Harmonic Recogniser
+                    case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(r);
                         break;
-                    case "groundparrot":
-                        GroundParrotRecogniser.Dev(r); //event pattern recognition
+                    case "groundparrot": // event pattern recognition
+                        GroundParrotRecogniser.Dev(r);
                         break;
-                    case "snr":   //signal to noise ratio
+                    case "snr":   // signal to noise ratio
                         SnrAnalysis.Dev(r);
                         break;
-                    case "htk":   //run an HTK template over a recording
+                    case "htk":   // run an HTK template over a recording
                         HTKRecogniser.Dev(r);
                         break;
                     case "spt": // spectral peak tracking, currently not used
@@ -49,7 +49,7 @@ namespace AnalysisPrograms
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;
-                    case "localrun":
+                    case "localrun": // audio conversion tests
                         AudioConversion.Convert(r);
                         break;
                     default:
