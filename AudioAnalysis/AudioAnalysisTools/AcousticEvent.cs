@@ -326,6 +326,32 @@ namespace AudioAnalysisTools
             }
         }
 
+        /// <summary>
+        /// used to write lists of acousitc event data to an excell spread sheet.
+        /// </summary>
+        /// <param name="eventList"></param>
+        /// <param name="str"></param>
+        public static StringBuilder WriteEvents(List<AcousticEvent> eventList, string str)
+        {
+            StringBuilder sb = new StringBuilder();
+            if (eventList.Count == 0)
+            {
+                string line = String.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                                     "NoEvent", 0.000, 0.000, "N/A", "N/A", 0.000, 0.000, "N/A");
+                sb.AppendLine(line);
+            }
+            else
+            {
+                foreach (AcousticEvent ae in eventList)
+                {
+                    string line = String.Format(str + "\t{0}\t{1,8:f3}\t{2,8:f3}\t{3}\t{4}\t{5:f2}\t{6:f1}\t{7}",
+                                         ae.Name, ae.StartTime, ae.EndTime, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2, ae.SourceFile);
+                    sb.AppendLine(line);
+                }
+            }
+            return sb;
+        }
+
 
 
 

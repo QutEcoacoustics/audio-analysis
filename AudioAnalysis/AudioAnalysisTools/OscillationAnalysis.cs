@@ -45,8 +45,8 @@ namespace AudioAnalysisTools
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
-            //segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
-            segments = null;
+            segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            //segments = null;
 
             //DateTime endTime1 = DateTime.Now;
             //TimeSpan span1 = endTime1.Subtract(startTime1);
@@ -119,8 +119,7 @@ namespace AudioAnalysisTools
             {
                 for (int r = 0; r < rows - dctLength; r++)
                 {
-                    //if (segments[r] == 0.0) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
-                    //   if ((segments != null)&&(segments[r] == 0.0)) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
+                    if (segments[r] == 0.0) continue;  //####### SKIP ROW IF NOT IN SEGMENT ####### FILTER SAVES TIME
                     var array = new double[dctLength];
                     //accumulate J columns of values
                     int N = 5; //average five rows
