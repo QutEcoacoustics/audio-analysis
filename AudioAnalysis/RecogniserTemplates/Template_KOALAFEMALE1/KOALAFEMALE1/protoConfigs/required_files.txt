@@ -1,6 +1,0 @@
-- proto.pcf
-
-if a file 'WORD'.pcf exists in which the variable 'nStates' has a value
-different from the one in 'proto', the program will look for a file 'WORD' 
-that is supposed to contain the related transition matrix of size (nStates+2)x(nStates+2)
-
