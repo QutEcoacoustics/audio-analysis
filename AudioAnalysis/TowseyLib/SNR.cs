@@ -251,7 +251,6 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[] SegmentSignal(double[,] sonogram, int midband, int deltaF, int nyquist, int windowConstant, int minFrames)
         {
-            //DateTime startTime = DateTime.Now;
             int frameCount = sonogram.GetLength(0);
             int binCount   = sonogram.GetLength(1);
             double binWidth = nyquist / (double)binCount;
@@ -275,9 +274,6 @@ namespace TowseyLib
             //C: SEGMENT THE SIGNAL
             double threshold = 0.0; //THIS WORKS BECASUE BACKGROUND NOISE REMOVED AND BG = 0 dB
             double[] segments = SNR.SegmentSignal(intensity, threshold, minFrames);
-            //DateTime endTime = DateTime.Now;
-            //TimeSpan span = endTime.Subtract(startTime);
-            //Console.WriteLine(" SEGMENTATION TIME = " + span.ToString());
             return segments;
         }
 
@@ -300,8 +296,8 @@ namespace TowseyLib
                 {
                     if (callLength > minFrames)
                     {
-                        //for (int j = startIndex; j <= i; j++) segments[j] = intensity[j]; //real value
-                        for (int j = startIndex; j <= i; j++) segments[j] = 1.0; // binary decision
+                        for (int j = startIndex; j <= i; j++) segments[j] = intensity[j]; //real value
+                        //for (int j = startIndex; j <= i; j++) segments[j] = 1.0; // binary decision
                     }
                     inCall = false;
                     callLength = 0;
