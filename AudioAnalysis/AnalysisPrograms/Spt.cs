@@ -52,7 +52,7 @@
 
         public static Tuple<BaseSonogram,double[,]> doSPT(string wavPath, double intensityThreshold)
         {
-            var sonogram = AED.fileToSonogram(wavPath);
+            var sonogram = AED.FileToSonogram(wavPath);
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
 
             // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way

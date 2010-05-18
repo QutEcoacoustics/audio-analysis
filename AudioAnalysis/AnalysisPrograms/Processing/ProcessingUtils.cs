@@ -22,29 +22,53 @@ namespace AnalysisPrograms.Processing
     public static class ProcessingUtils
     {
         // input files
-        private const string SETTINGS_FILE_NAME = "processing_input_settings.txt";
-
-        private const string AUDIO_FILE_NAME = "processing_input_audio.wav";
-
-        private const string RESOURCE_FILE_NAME = "processing_resources.zip";
+        private const string SettingsFileName = "processing_input_settings.txt";
+        private const string AudioFileName = "processing_input_audio.wav";
+        private const string ResourceFileName = "processing_resources.zip";
 
         // standard out and error
-        private const string STDERR_FILE_NAME = "output_stderr.txt";
-
-        private const string STDOUT_FILE_NAME = "output_stdout.txt";
+        private const string StderrFileName = "output_stderr.txt";
+        private const string StdoutFileName = "output_stdout.txt";
 
         // analysis program file names
-        private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
-
-        private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
-
-        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.txt";
+        private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
+        private const string ProgramOutputResultsFileName = "output_results.xml";
+        private const string ProgramOutputErrorFileName = "output_error.txt";
 
         /// <summary>
-        /// The run.
+        /// Uses the information in Michael Towsey's AcousticEvent class to initialise an instance of the ProcessorResultTag class.
+        /// </summary>
+        /// <param name="ae">
+        /// instance of the AcousticEvent class.
+        /// </param>
+        /// <param name="normalisedScore">
+        /// The normalised Score.
+        /// </param>
+        /// <returns>Processing result tag.
+        /// </returns>
+        public static ProcessorResultTag GetProcessorResultTag(AcousticEvent ae, ResultProperty normalisedScore)
+        {
+            var prt = new ProcessorResultTag
+            {
+                NormalisedScore = normalisedScore,
+                StartTime = (int?)Math.Round(ae.StartTime * 1000),
+                EndTime = (int?)Math.Round(ae.EndTime * 1000),
+                MinFrequency = ae.MinFreq,
+                MaxFrequency = ae.MaxFreq,
+                ExtraDetail =
+                    ae.ResultPropertyList != null
+                        ? ae.ResultPropertyList.ToList() // TODO: store more info about AcousticEvents?
+                        : null
+            };
+
+            return prt;
+        }
+
+        /// <summary>
+        /// Run an analysis.
         /// </summary>
         /// <param name="args">
-        /// The args.
+        /// Arguments for analysis.
         /// </param>
         internal static void Run(string[] args)
         {
@@ -53,9 +77,9 @@ namespace AnalysisPrograms.Processing
                 var analysisType = args[0];
                 var rundir = args[1];
 
-                var finishedFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_FINISHED_FILE_NAME));
-                var errorFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_ERROR_FILE_NAME));
-                var resultsFile = new FileInfo(Path.Combine(rundir, PROGRAM_OUTPUT_RESULTS_FILE_NAME));
+                var finishedFile = new FileInfo(Path.Combine(rundir, ProgramOutputFinishedFileName));
+                var errorFile = new FileInfo(Path.Combine(rundir, ProgramOutputErrorFileName));
+                var resultsFile = new FileInfo(Path.Combine(rundir, ProgramOutputResultsFileName));
 
                 var finishedMessages = new StringBuilder();
                 var errorMessages = new StringBuilder();
@@ -100,7 +124,7 @@ namespace AnalysisPrograms.Processing
                 }
 
                 // write messages
-                int exitCode = 0;
+                var exitCode = 0;
                 if (errorMessages.Length > 0)
                 {
                     exitCode = 1;
@@ -132,6 +156,11 @@ namespace AnalysisPrograms.Processing
             Console.WriteLine();
         }
 
+        /// <summary>
+        /// Validate input parameters.
+        /// </summary>
+        /// <param name="args">Parameters given to program.</param>
+        /// <returns>True if validation succeeded, otherwise false.</returns>
         private static bool Validate(string[] args)
         {
             Console.WriteLine("Given " + args.Length + " arguments: " + string.Join(" , ", args));
@@ -149,15 +178,15 @@ namespace AnalysisPrograms.Processing
                 return false;
             }
 
-            if (!File.Exists(Path.Combine(args[1], SETTINGS_FILE_NAME)))
+            if (!File.Exists(Path.Combine(args[1], SettingsFileName)))
             {
-                Console.Error.WriteLine("Settings file does not exist: " + SETTINGS_FILE_NAME);
+                Console.Error.WriteLine("Settings file does not exist: " + SettingsFileName);
                 return false;
             }
 
-            if (!File.Exists(Path.Combine(args[1], AUDIO_FILE_NAME)))
+            if (!File.Exists(Path.Combine(args[1], AudioFileName)))
             {
-                Console.Error.WriteLine("Audio file does not exist: " + AUDIO_FILE_NAME);
+                Console.Error.WriteLine("Audio file does not exist: " + AudioFileName);
                 return false;
             }
 
@@ -168,54 +197,80 @@ namespace AnalysisPrograms.Processing
         /// Run analysis and get results.
         /// </summary>
         /// <param name="analysisType">
+        /// String id of type of analysis to run (see method for options).
         /// </param>
         /// <param name="runDirectory">
+        /// Working directory.
         /// </param>
         /// <returns>
+        /// Processing Results.
         /// </returns>
-        /// <exception cref="ArgumentException">resourceFile</exception>
+        /// <exception cref="ArgumentException">
+        /// resourceFile.
+        /// </exception>
+        /// <exception cref="InvalidOperationException">Invaild resource file path.</exception>
         private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory)
         {
             IEnumerable<ProcessorResultTag> results = null;
 
             var runDir = new DirectoryInfo(runDirectory);
-            var settingsFile = new FileInfo(Path.Combine(runDir.FullName, SETTINGS_FILE_NAME));
-            var audioFile = new FileInfo(Path.Combine(runDir.FullName, AUDIO_FILE_NAME));
-            var resourceFile = new FileInfo(Path.Combine(runDir.FullName, RESOURCE_FILE_NAME));
+            var settingsFile = new FileInfo(Path.Combine(runDir.FullName, SettingsFileName));
+            var audioFile = new FileInfo(Path.Combine(runDir.FullName, AudioFileName));
+            var resourceFile = new FileInfo(Path.Combine(runDir.FullName, ResourceFileName));
 
             Console.WriteLine("Analysis Type: " + analysisType);
 
             // select analysis from name
             switch (analysisType)
             {
+                    // utilities
                 case "aed": // acoustic event detection
-                    results = ProcessingTypes.RunAED(settingsFile, audioFile);
-                    break;
-                case "od": // Oscillation Recogniser
-                    results = ProcessingTypes.RunOD(settingsFile, audioFile);
-                    break;
-                case "hd": // Harmonic Recogniser
-                    results = ProcessingTypes.RunHD(settingsFile, audioFile);
-                    break;
-                case "epr": // event pattern recognition - groundparrot
-                    results = ProcessingTypes.RunEPR(audioFile);
+                    results = ProcessingTypes.RunAed(settingsFile, audioFile);
                     break;
                 case "snr": // signal to noise ratio
-                    results = ProcessingTypes.RunSNR(settingsFile, audioFile);
+                    results = ProcessingTypes.RunSnr(settingsFile, audioFile);
                     break;
+                case "seg": // segmentation (in progress)
+                    results = ProcessingTypes.RunSegmentation(settingsFile, audioFile);
+                    break;
+
+                    // recognisers
+                case "od": // Oscillation Recogniser
+                    results = ProcessingTypes.RunOd(settingsFile, audioFile);
+                    break;
+                case "hd": // Harmonic Recogniser
+                    results = ProcessingTypes.RunHd(settingsFile, audioFile);
+                    break;
+                case "epr": // event pattern recognition - groundparrot (in progress)
+                    results = ProcessingTypes.RunEpr(settingsFile, audioFile);
+                    break;
+                case "spt": // spectral peak tracking (in progress)
+                    results = ProcessingTypes.RunSpt(settingsFile, audioFile);
+                    break;
+
+                    // require extra resources
                 case "htk": // run an HTK template over a recording
                     if (resourceFile.Exists)
                     {
-                        results = ProcessingTypes.RunHTK(resourceFile, runDir, audioFile);
+                        results = ProcessingTypes.RunHtk(resourceFile, runDir, audioFile);
                     }
                     else
                     {
-                        throw new ArgumentException("Invalid resource file: " + resourceFile, "resourceFile");
+                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
                     }
 
                     break;
-                case "spt": // spectral peak tracking
-                    Console.WriteLine("not used yet...");
+
+                case "mfcc_od": // TODO: description of MFCC_OD
+                    if (resourceFile.Exists)
+                    {
+                        results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
+                    }
+
                     break;
                 default:
                     Console.Error.WriteLine("Unrecognised analysis type.");
@@ -223,35 +278,6 @@ namespace AnalysisPrograms.Processing
             }
 
             return results;
-        }
-
-        /// <summary>
-        /// Uses the information in Michael Towsey's AcousticEvent class to initialise an instance of the ProcessorResultTag class.
-        /// </summary>
-        /// <param name="ae">
-        /// instance of the AcousticEvent class.
-        /// </param>
-        /// <param name="normalisedScore">
-        /// The normalised Score.
-        /// </param>
-        /// <returns>
-        /// </returns>
-        public static ProcessorResultTag GetProcessorResultTag(AcousticEvent ae, ResultProperty normalisedScore)
-        {
-            var prt = new ProcessorResultTag
-                {
-                    NormalisedScore = normalisedScore,
-                    StartTime = (int?)Math.Round(ae.StartTime * 1000),
-                    EndTime = (int?)Math.Round(ae.EndTime * 1000),
-                    MinFrequency = ae.MinFreq,
-                    MaxFrequency = ae.MaxFreq,
-                    ExtraDetail =
-                        ae.ResultPropertyList != null
-                            ? ae.ResultPropertyList.ToList() // TODO: store more info about AcousticEvents?
-                            : null
-                };
-
-            return prt;
         }
     }
 }
