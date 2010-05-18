@@ -69,7 +69,7 @@ namespace AnalysisPrograms.Processing
 
         private static void Write(string data, bool appendNewLine, bool overwriteFile)
         {
-            string path = Path.Combine(
+            var path = Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "file_test_logging.txt");
 
             if (appendNewLine)
