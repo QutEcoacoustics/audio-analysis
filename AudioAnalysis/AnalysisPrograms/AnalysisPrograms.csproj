@@ -109,6 +109,7 @@
     <Compile Include="Processing\AudioConversion.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
+    <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="HTKRecogniser.cs" />

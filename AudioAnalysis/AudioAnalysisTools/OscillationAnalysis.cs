@@ -43,20 +43,20 @@ namespace AudioAnalysisTools
             int nyquist = sonogram.SampleRate / 2;
             int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
+            Log.WriteLine(" Segmentation window Constant = " + windowConstant);
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
             segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
-            //segments = null;
+            //segments = null;  //comment this line if do not want to use the segment array.
 
             //DateTime endTime1 = DateTime.Now;
             //TimeSpan span1 = endTime1.Subtract(startTime1);
             TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
-            Console.WriteLine(" SEGMENTATION TIME SPAN = " + span1.TotalMilliseconds.ToString() + "ms");
+            Log.WriteLine(" SEGMENTATION COMP DURATION = " + span1.TotalMilliseconds.ToString() + "ms");
             
             DateTime startTime2 = DateTime.Now; 
 
             //DETECT OSCILLATIONS
-            //segments = null; //comment this line if do not want to use the segment array.
             hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude, segments);
             hits = RemoveIsolatedOscillations(hits);
 
@@ -68,7 +68,7 @@ namespace AudioAnalysisTools
 
             DateTime endTime2 = DateTime.Now;
             TimeSpan span2 = endTime2.Subtract(startTime2);
-            Console.WriteLine(" OscRec TIME SPAN = "+ span2.ToString());
+            Log.WriteLine(" OscRec TIME SPAN = " + span2.ToString());
             totalTime = endTime2.Subtract(startTime1);
         }//end method
 
