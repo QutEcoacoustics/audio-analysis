@@ -51,14 +51,13 @@ namespace AnalysisPrograms.Processing
             var prt = new ProcessorResultTag
             {
                 NormalisedScore = normalisedScore,
-                StartTime = (int?)Math.Round(ae.StartTime * 1000),
-                EndTime = (int?)Math.Round(ae.EndTime * 1000),
+                StartTime = (int?)Math.Round(ae.StartTime * 1000), // convert from double seconds to int milliseconds
+                EndTime = (int?)Math.Round(ae.EndTime * 1000), // convert from double seconds to int milliseconds
                 MinFrequency = ae.MinFreq,
                 MaxFrequency = ae.MaxFreq,
-                ExtraDetail =
-                    ae.ResultPropertyList != null
-                        ? ae.ResultPropertyList.ToList() // TODO: store more info about AcousticEvents?
-                        : null
+
+                // TODO: store more info about AcousticEvents?
+                ExtraDetail = ae.ResultPropertyList != null ? ae.ResultPropertyList.ToList() : null
             };
 
             return prt;
@@ -223,7 +222,7 @@ namespace AnalysisPrograms.Processing
             // select analysis from name
             switch (analysisType)
             {
-                    // utilities
+                // utilities
                 case "aed": // acoustic event detection
                     results = ProcessingTypes.RunAed(settingsFile, audioFile);
                     break;
@@ -234,7 +233,7 @@ namespace AnalysisPrograms.Processing
                     results = ProcessingTypes.RunSegmentation(settingsFile, audioFile);
                     break;
 
-                    // recognisers
+                // recognisers
                 case "od": // Oscillation Recogniser
                     results = ProcessingTypes.RunOd(settingsFile, audioFile);
                     break;
@@ -248,7 +247,7 @@ namespace AnalysisPrograms.Processing
                     results = ProcessingTypes.RunSpt(settingsFile, audioFile);
                     break;
 
-                    // require extra resources
+                // require extra resources
                 case "htk": // run an HTK template over a recording
                     if (resourceFile.Exists)
                     {
