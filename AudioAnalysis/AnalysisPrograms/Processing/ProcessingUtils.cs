@@ -229,7 +229,7 @@ namespace AnalysisPrograms.Processing
                 case "snr": // signal to noise ratio
                     results = ProcessingTypes.RunSnr(settingsFile, audioFile);
                     break;
-                case "seg": // segmentation (in progress)
+                case "segmentation": // segmentation (in progress)
                     results = ProcessingTypes.RunSegmentation(settingsFile, audioFile);
                     break;
 
