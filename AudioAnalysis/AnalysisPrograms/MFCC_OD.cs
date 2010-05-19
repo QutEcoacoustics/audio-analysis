@@ -190,14 +190,15 @@ namespace AnalysisPrograms
             int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
             int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);
-            double[] segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            double[] segments = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
 
 
             //vi: GET FEATURE VECTOR SCORES
             double[] scores = GetTemplateScores(cepstrogram.Data, pattern, ccCount, includeDelta, includeDoubleDelta, deltaT);
             double Q;
-            scores = SNR.NoiseSubtractMode(scores, out Q);
-            Log.WriteLine("Score array - noise removal, Q={0:f3}",Q);
+            double oneSD; //one sd of modal noise in dB
+            scores = SNR.NoiseSubtractMode(scores, out Q, out oneSD);
+            Log.WriteLine("Intensity array - noise removal: Q={0:f3} dB. 1SD={1:f3} dB", Q, oneSD);
             //normalise scores rather than calculate Z-scores.
             //scores = NormalDist.CalculateZscores(scores, this.NoiseAv, this.NoiseSd);
             scores = DataTools.normalise(scores);
