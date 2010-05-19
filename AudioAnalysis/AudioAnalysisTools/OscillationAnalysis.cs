@@ -12,7 +12,7 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// 
+        /// Segments a spectrogram based on acoustic energy in freq band of interest.
         /// </summary>
         /// <param name="sonogram">sonogram derived from the recording</param>
         /// <param name="minHz">min bound freq band to search</param>
@@ -37,16 +37,16 @@ namespace AudioAnalysisTools
             DateTime startTime1 = DateTime.Now; 
 
             //DO SEGMENTATION
-            //Segment the spectrogram for acoustic energy in freq band of interest.
-            int midband = minHz + ((maxHz - minHz) / 2);
-            int deltaF = 100; //herz
             int nyquist = sonogram.SampleRate / 2;
             int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
             if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
             Log.WriteLine(" Segmentation window Constant = " + windowConstant);
             int minFrames = (int)Math.Round(dctDuration * sonogram.FramesPerSecond);
             //################################################################# USE FOR FILTER ---- COMMENT NEXT LINE WHEN NOT FILTERING
-            segments = SNR.SegmentSignal(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            segments = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, minDuration, sonogram.FramesPerSecond);
+            //WARNING#### ABOVE METHOD DOES NOT REMOVE SHORT EVENTS.
+            //WARNING#### NEED SOMETHING LIKE FOLLOWING LINE
+            //double[] segments = SNR.SegmentIntensityArray(values, threshold, minFrames, maxFrames);
             //segments = null;  //comment this line if do not want to use the segment array.
 
             //DateTime endTime1 = DateTime.Now;
