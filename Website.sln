@@ -113,6 +113,7 @@ Global
 		WebOnly|Any CPU = WebOnly|Any CPU
 		WebOnly|Mixed Platforms = WebOnly|Mixed Platforms
 		WebOnly|x86 = WebOnly|x86
+		Description = Qut Sensors Website
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{8E39BFC8-8503-4546-B1B3-A799361C49B1}.Debug|.NET.ActiveCfg = Debug|.NET
