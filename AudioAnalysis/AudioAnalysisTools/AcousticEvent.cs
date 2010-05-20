@@ -122,7 +122,7 @@ namespace AudioAnalysisTools
         {
             //this.FrameDuration = frameDuration;     //frame duration in seconds
             this.FramesPerSecond = framesPerSec;      //inverse of the frame offset
-            this.FrameOffset = 1 / framesPerSec;  //frame offset in seconds
+            this.FrameOffset = 1 / framesPerSec;      //frame offset in seconds
 
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
@@ -633,6 +633,69 @@ namespace AudioAnalysisTools
         } //end method
 
 
+
+//##############################################################################################################################################
+//  THE NEXT TWO METHODS CONVERT BETWEEN SCORE ARRYS AND ACOUSTIC EVENTS
+//  THE NEXT METHOD CONVERTS An ARRAY OF SCORE (USUALLy INTENSITY VALUES IN A SUB-BAND) TO ACOUSTIC EVENTS.
+//  THE METHOD AFTER NEXT PRODUCES A SCORE ARRAY GIVEN A LIST OF EVENTS.
+
+        /// <summary>
+        /// Converts an array of sub-band intensity values to a list of AcousticEvents. 
+        /// </summary>
+        /// <param name="values">the array of acoustic intensity values</param>
+        /// <param name="minHz">lower freq bound of the acoustic event</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event</param>
+        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
+        /// <param name="threshold">array value must exceed this threshold to count as an event</param>
+        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
+        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
+        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <returns>a list of acoustic events</returns>
+        public static List<AcousticEvent> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
+                                                               double framesPerSec, double freqBinWidth,
+                                                               double threshold, double minDuration, double maxDuration, string fileName)
+        {
+            int count = values.Length;
+            var events = new List<AcousticEvent>();
+            bool isHit = false;
+            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
+            double startTime = 0.0;
+            int startFrame = 0;
+
+            for (int i = 0; i < count; i++)//pass over all frames
+            {
+                if ((isHit == false) && (values[i] > threshold))//start of an event
+                {
+                    isHit = true;
+                    startTime = i * frameOffset;
+                    startFrame = i;
+                }
+                else  //check for the end of an event
+                    if ((isHit == true) && (values[i] <= threshold))//this is end of an event, so initialise it
+                    {
+                        isHit = false;
+                        double endTime = i * frameOffset;
+                        double duration = endTime - startTime;
+                        if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
+                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        ev.Name = "Acoustic Segment"; //default name
+                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                        ev.SourceFile = fileName;
+
+                        //obtain average intensity score.
+                        double av = 0.0;
+                        for (int n = startFrame; n <= i; n++) av += values[n];
+                        ev.Score = av / (double)(i - startFrame + 1);
+                        events.Add(ev);
+                    }
+            } //end of pass over all frames
+            return events;
+        }//end method ConvertScores2Events()
+
+
+
+
         /// <summary>
         /// Extracts an array of scores from a list of events.
         /// The events are required to have the passed name.
@@ -686,5 +749,9 @@ namespace AudioAnalysisTools
             }
             return scores;
         } //end method
+
+        //##############################################################################################################################################
+
+
     }
 }

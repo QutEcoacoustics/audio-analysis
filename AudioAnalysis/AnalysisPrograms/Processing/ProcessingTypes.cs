@@ -172,10 +172,10 @@ namespace AnalysisPrograms.Processing
             var minHz = Int32.Parse(dict[OscillationRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[OscillationRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[OscillationRecogniser.key_FRAME_OVERLAP]);
-            var dctDuration = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);
+            var dctDuration  = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);
+            var dctThreshold = Double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);
             var minOscilFreq = Int32.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);
             var maxOscilFreq = Int32.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);
-            var minAmplitude = Double.Parse(dict[OscillationRecogniser.key_MIN_AMPLITUDE]);
             var eventThreshold = Double.Parse(dict[OscillationRecogniser.key_EVENT_THRESHOLD]);
             var minDuration = Double.Parse(dict[OscillationRecogniser.key_MIN_DURATION]);
             var maxDuration = Double.Parse(dict[OscillationRecogniser.key_MAX_DURATION]);
@@ -188,9 +188,9 @@ namespace AnalysisPrograms.Processing
                     maxHz,
                     frameOverlap,
                     dctDuration,
+                    dctThreshold,
                     minOscilFreq,
                     maxOscilFreq,
-                    minAmplitude,
                     eventThreshold,
                     minDuration,
                     maxDuration);

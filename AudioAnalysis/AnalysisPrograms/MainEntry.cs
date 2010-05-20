@@ -22,12 +22,14 @@ namespace AnalysisPrograms
                     case "segment":  // segmentation of a recording
                         Segment.Dev(r);
                         break;
-                    case "snr":   // signal to noise ratio
+                    case "snr":      // signal to noise ratio
                         SnrAnalysis.Dev(r);
                         break;
-                    case "aed":  // acoustic event detection
+                    case "aed":      // acoustic event detection
                         AED.Dev(r);
                         break;
+
+
                     case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(r);
                         break;

@@ -25,6 +25,7 @@ namespace AnalysisPrograms
         //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\OD_CaneToad_Params.txt events.txt
         //GECKO
         //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\OD_Gecko_Params.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrial\OD_GeckoTrial_Params.txt events.txt
         //KOALA MALE EXHALE
         //od "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_Params.txt events.txt
         //od "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_Params.txt events.txt
@@ -42,9 +43,9 @@ namespace AnalysisPrograms
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
         public static string key_DCT_DURATION    = "DCT_DURATION";
+        public static string key_DCT_THRESHOLD   = "DCT_THRESHOLD";
         public static string key_MIN_OSCIL_FREQ  = "MIN_OSCIL_FREQ";
         public static string key_MAX_OSCIL_FREQ  = "MAX_OSCIL_FREQ";
-        public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
         public static string key_MIN_DURATION    = "MIN_DURATION";
         public static string key_MAX_DURATION    = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
@@ -80,22 +81,22 @@ namespace AnalysisPrograms
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            double dctDuration = Double.Parse(dict[key_DCT_DURATION]);     //duration of DCT in seconds 
-            int minOscilFreq = Int32.Parse(dict[key_MIN_OSCIL_FREQ]); //ignore oscillations below this threshold freq
-            int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);    //ignore oscillations above this threshold freq
-            double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
-            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
-            double minDuration = Double.Parse(dict[key_MIN_DURATION]);     //min duration of event in seconds 
-            double maxDuration = Double.Parse(dict[key_MAX_DURATION]);     //max duration of event in seconds 
-            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
+            double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
+            double dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);     //minimum acceptable value of a DCT coefficient
+            int minOscilFreq = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);        //ignore oscillations below this threshold freq
+            int maxOscilFreq = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);        //ignore oscillations above this threshold freq
+            double minDuration = Double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds 
+            double maxDuration = Double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds 
+            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]); //min score for an acceptable event
+            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);      //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Oscill bounds: " + minOscilFreq + " - " + maxOscilFreq + " Hz");
-            Log.WriteIfVerbose("minAmplitude = " + minAmplitude);
+            Log.WriteIfVerbose("minAmplitude = " + dctThreshold);
             Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");   
                     
 //#############################################################################################################################################
-            var results = Execute_ODDetect(recordingPath, minHz, maxHz, frameOverlap, dctDuration, minOscilFreq, maxOscilFreq, minAmplitude,
+            var results = Execute_ODDetect(recordingPath, minHz, maxHz, frameOverlap, dctDuration, dctThreshold, minOscilFreq, maxOscilFreq, 
                                                 eventThreshold, minDuration,  maxDuration);
             Log.WriteLine("# Finished detecting oscillation events.");
 //#############################################################################################################################################
@@ -104,13 +105,13 @@ namespace AnalysisPrograms
             var hits = results.Item2;
             var scores = results.Item3;
             var predictedEvents = results.Item4;
-            var segmentation = results.Item5;
+            var intensity = results.Item5;
             var analysisDuration = results.Item6;
             Log.WriteLine("# Event Count = " + predictedEvents.Count());
             int pcHIF = 100;
-            if (segmentation != null) 
+            if (intensity != null) 
             {
-                int hifCount = segmentation.Count(p => p == 1.0); //count of high intensity frames
+                int hifCount = intensity.Count(p => p >= 0.001); //count of high intensity frames
                 pcHIF = 100 * hifCount / sonogram.FrameCount;
             }
 
@@ -126,25 +127,32 @@ namespace AnalysisPrograms
             FileTools.WriteTextFile(opPath, sb.ToString());
 
 
-            if (DRAW_SONOGRAMS==2)
+            //draw images of sonograms
+            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            double min, max;
+            DataTools.MinMax(intensity, out min, out max);
+            double threshold_norm = eventThreshold / max; //min = 0.0;
+            intensity = DataTools.normalise(intensity);
+            if (DRAW_SONOGRAMS == 2)
             {
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, segmentation);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, threshold_norm, intensity);
             }
             else
             if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
             {
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold, segmentation);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, threshold_norm, intensity);
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Console.ReadLine();
+            Console.ReadLine();
         } //Dev()
 
 
+
+
+
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, double[], TimeSpan> Execute_ODDetect(string wavPath,
-            int minHz, int maxHz, double frameOverlap, double dctDuration, int minOscilFreq, int maxOscilFreq, double minAmplitude,
+            int minHz, int maxHz, double frameOverlap, double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq, 
             double eventThreshold, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
@@ -167,7 +175,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
             Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
-            Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
+            Log.WriteIfVerbose("Score threshold for oscil events=" + eventThreshold);
             Log.WriteLine("Start OD event detection");
 
             //iii: DETECT OSCILLATIONS
@@ -176,8 +184,8 @@ namespace AnalysisPrograms
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] segments;                    //predefinition of segmentation of recording
             TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file  
-            OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, minDuration, maxDuration,
+            OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctThreshold, minOscilFreq, maxOscilFreq,
+                                         eventThreshold, minDuration, maxDuration,
                                          out scores, out predictedEvents, out hits, out segments, out analysisTime);
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents, segments, analysisTime);
@@ -205,30 +213,6 @@ namespace AnalysisPrograms
                 image.Save(path);
             }
         }
-
-
-        // TODO this is duplicated with the ini file?
-        //public static string GetDefaultParameterValues()
-        //{
-        //    var sb = new StringBuilder("# LIST OF DEFAULT PARAMETER VALUES FOR CANETOAD RECOGNITION\n");
-        //    sb.Append("# min and max of the freq band to search\n");
-        //    sb.Append("MIN_HZ=500   \n");       
-        //    sb.Append("MAX_HZ=1000\n");
-        //    sb.Append("# default=0.50; Use 0.75 for koalas \n");
-        //    sb.Append("FRAME_OVERLAP=0.75\n");
-        //    sb.Append("# duration of DCT in seconds \n");
-        //    sb.Append("DCT_DURATION=0.5\n");
-        //    sb.Append("# ignore oscillation rates below the min & above the max threshold OSCILLATIONS PER SECOND\n");
-        //    sb.Append("MIN_OSCIL_FREQ=10 \n");       
-        //    sb.Append("MAX_OSCIL_FREQ=20\n");
-        //    sb.Append("# minimum acceptable value of a DCT coefficient\n");
-        //    sb.Append("MIN_AMPLITUDE=0.6\n");
-        //    sb.Append("# Event threshold - use this to determin FP / FN trade-off for events.\n");
-        //    sb.Append("EVENT_THRESHOLD=0.40\n");
-        //    sb.Append("# save a sonogram for each recording that contained a hit \n");
-        //    sb.Append("DRAW_SONOGRAMS=true\n");
-        //    return sb.ToString();
-        //}
 
 
         public static void CheckArguments(string[] args)
