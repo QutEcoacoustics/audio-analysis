@@ -38,20 +38,21 @@ namespace AnalysisPrograms.Processing
             var minDuration = Double.Parse(dict[Segment.key_MIN_DURATION]);   
             var maxDuration = Double.Parse(dict[Segment.key_MAX_DURATION]);   
 
-            var results = Segment.Execute_Segmentation(audioFile.FullName, minHz, maxHz, frameOverlap, threshold, minDuration, maxDuration);
-            var events = results.Item2;
+            throw new Exception("Maaaaaarrrrkkkk, I'm broken");
+            ////var results = Segment.Execute_Segmentation(audioFile.FullName, minHz, maxHz, frameOverlap, threshold, minDuration, maxDuration);
+            ////var events = results.Item2;
 
-            // AcousticEvent results
-            return
-                events.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name, ae.NormalisedScore,
-                            new Dictionary<string, string>
-                                {
-                                    { "Description", "Normalised score" }
-                                })));
+            ////// AcousticEvent results
+            ////return
+            ////    events.Select(
+            ////        ae =>
+            ////        ProcessingUtils.GetProcessorResultTag(
+            ////            ae,
+            ////            new ResultProperty(ae.Name, ae.NormalisedScore,
+            ////                new Dictionary<string, string>
+            ////                    {
+            ////                        { "Description", "Normalised score" }
+            ////                    })));
         }
 
         /// <summary>
