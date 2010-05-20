@@ -185,12 +185,12 @@ namespace AnalysisPrograms
             CepstralSonogram cepstrogram = tuple.Item2;
 
             //Segment the spectrogram for acoustic energy in freq band of interest.
-            int midband = minHz + ((maxHz - minHz) / 2);
-            int deltaF = 100; //herz
-            int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
-            if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
-            int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);
-            double[] segments = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
+            //int midband = minHz + ((maxHz - minHz) / 2);
+            //int deltaF = 100; //herz
+            //int windowConstant = (int)Math.Round(sonogram.FramesPerSecond / (double)minOscilFreq);
+            //if ((windowConstant % 2) == 0) windowConstant += 1; //Convert to odd number
+            //int minFrames = (int)Math.Round(minDuration * sonogram.FramesPerSecond);
+            //double[] segment = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, midband, deltaF, nyquist, windowConstant, minFrames);
 
 
             //vi: GET FEATURE VECTOR SCORES

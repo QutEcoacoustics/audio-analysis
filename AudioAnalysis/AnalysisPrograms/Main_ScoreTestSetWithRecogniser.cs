@@ -161,7 +161,7 @@ namespace AnalysisPrograms
                         double dctDuration = 0.25;  //duration of DCT in seconds 
                         int minOscilFreq = 10;      //ignore oscillations below this threshold freq
                         int maxOscilFreq = 20;      //ignore oscillations above this threshold freq
-                        double minAmplitude = 0.6;  //minimum acceptable value of a DCT coefficient
+                        double dctThreshold = 0.6;  //minimum acceptable value of a DCT coefficient
                         scoreThreshold = 0.25; //USE THIS TO DETERMINE FP / FN trade-off.
                         double minDuration = 1.0;
                         double maxDuration = 10.0;
@@ -182,8 +182,8 @@ namespace AnalysisPrograms
                         Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
-                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, minOscilFreq, maxOscilFreq, 
-                                                    minAmplitude, scoreThreshold, minDuration, maxDuration,
+                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctThreshold, minOscilFreq, maxOscilFreq, 
+                                                    scoreThreshold, minDuration, maxDuration,
                                                     out scores, out predictedEvents, out hits, out segments, out analysisTime);
                         break;
 

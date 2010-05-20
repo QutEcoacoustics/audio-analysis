@@ -200,11 +200,11 @@ namespace TowseyLib
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
+            // FIND MAX VALUE IN BOTTOM HALF OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
             for (int i = binCount/2; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min + ((peakID + 1) * binWidth); //modal noise level
-            int oneSD_ID = peakID /3;
-            oneSD = oneSD_ID * binWidth;
+            oneSD = (Q - min) / 3;
 
             // subtract modal noise and return array.
             double[] newArray = new double[L];
@@ -240,38 +240,15 @@ namespace TowseyLib
         }
 
        
-        /// <summary>
-        /// Use this segmentation method as default
-        /// </summary>
-        /// <param name="sonogram">sonogram of signal - values in dB</param>
-        /// <param name="midband">middle of band to sample</param>
-        /// <param name="deltaF">half band width</param>
-        /// <param name="nyquist">signal nyquist - used to caluclate hz per bin</param>
-        /// <param name="minFrame"></param>
-        /// <returns></returns>
-        //public static double[] SegmentSignal(double[,] sonogram, int minHz, int maxHz, int nyquist, int minFrames)
-        //{
-        //    //A: CALCULATE THE INTENSITY ARRAY
-        //    double[] intensity = CalculateFreqBandAvIntensity(sonogram, minHz, maxHz, nyquist);
-        //    //B: SMOOTH THE INTENSITY ARRAY
-        //    intensity = DataTools.filterMovingAverage(intensity, minFrames);
-        //    //C: REMOVE NOISE FROM INTENSITY ARRAY
-        //    double Q;
-        //    intensity = SNR.NoiseSubtractMode(intensity, out Q);
-        //    Log.WriteLine("Acoustic intensity array - noise removal, Q={0:f3}", Q);
-        //    return intensity;
-        //}
-
-        /// <summary>
-        /// Use this segmentation method when looking for oscillating events
         /// </summary>
         /// <param name="sonogram">sonogram of signal - values in dB</param>
         /// <param name="minHz">min of freq band to sample</param>
         /// <param name="maxHz">max of freq band to sample</param>
         /// <param name="nyquist">signal nyquist - used to caluclate hz per bin</param>
-        /// <param name="windowConstant">window width (in frames) to smooth sig intenisty</param>
+        /// <param name="smoothDuration">window width (in seconds) to smooth sig intenisty</param>
+        /// <param name="framesPerSec">time scale of the sonogram</param>
         /// <returns></returns>
-        public static double[] SubbandIntensity_NoiseReduced(double[,] sonogram, int minHz, int maxHz, int nyquist, double smoothDuration, double framesPerSec)
+        public static System.Tuple<double[], double, double> SubbandIntensity_NoiseReduced(double[,] sonogram, int minHz, int maxHz, int nyquist, double smoothDuration, double framesPerSec)
         {
             //A: CALCULATE THE INTENSITY ARRAY
             double[] intensity = CalculateFreqBandAvIntensity(sonogram, minHz, maxHz, nyquist);
@@ -283,8 +260,8 @@ namespace TowseyLib
             double Q; //modal noise in DB
             double oneSD; //one sd of modal noise in dB
             intensity = SNR.NoiseSubtractMode(intensity, out Q, out oneSD);
-            Log.WriteLine("Intensity array - noise removal: Q={0:f3} dB. 1SD={1:f3} dB", Q, oneSD);
-            return intensity;
+            var tuple = System.Tuple.Create(intensity, Q, oneSD);
+            return tuple;
         }
 
         /// <summary>
@@ -312,33 +289,6 @@ namespace TowseyLib
             return intensity;
         }
 
-        //public static double[] SegmentIntensityArray(double[] intensity, double threshold, int minFrames, int maxFrames)
-        //{
-        //    int frameCount = intensity.Length;
-        //    double[] segments = new double[frameCount];
-        //    bool inCall = false;
-        //    int callLength = 0;
-        //    int startIndex = 0;
-        //    for (int i = 0; i < frameCount; i++) //foreach frame
-        //    {
-        //        if (intensity[i] > threshold)
-        //        {
-        //            if (inCall == false) startIndex = i;
-        //            inCall = true;
-        //            callLength++;
-        //        }
-        //        if (inCall && (intensity[i] <= threshold))
-        //        {
-        //            if ((callLength >= minFrames) && ((callLength <= maxFrames)))
-        //            {
-        //                for (int j = startIndex; j < i; j++) segments[j] = intensity[j]; //real value
-        //            }
-        //            inCall = false;
-        //            callLength = 0;
-        //        }
-        //    }
-        //    return segments;
-        //}
 
         /// <summary>
         /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
