@@ -15,30 +15,21 @@ namespace QutSensors.Processor
     /// </summary>
     public class Manager
     {
-        #region Singleton
+        #region Singleton Pattern
 
-        private static readonly object syncLock = new object();
-
-        // we don't want the compiler to emit beforefieldinit
-        static Manager()
+        private Manager() {}
+        internal class ManagerSingleton
         {
+            static ManagerSingleton() {}
+            internal static readonly Manager instance = new Manager();
         }
-
-        // private ctor is below
-
-        static Manager instance;
+        
         public static Manager Instance
         {
             get
             {
-                lock (syncLock)
-                {
-                    if (instance == null)
-                        instance = new Manager();
-                    return instance;
-                }
+                return ManagerSingleton.instance;
             }
-            set { instance = value; }
         }
 
         #endregion
@@ -116,15 +107,6 @@ namespace QutSensors.Processor
         private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
         private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
         private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.txt";
-
-        /// <summary>
-        /// Private ctor for Singleton pattern
-        /// </summary>
-        private Manager()
-        {
-
-        }
-
 
         #region Common
 
