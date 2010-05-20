@@ -1,0 +1,19 @@
+# save a sonogram for each recording that contains a hit 
+DRAW_SONOGRAMS=2
+################################################################################
+# Above parameters NOT user modifiable
+# Below parameters ARE user modifiable.
+################################################################################
+# min and max of the freq band to search
+MIN_HZ=7000          
+MAX_HZ=8000
+# default=0.50; Use 0.00 for geckos and 0.75 for koalas 
+FRAME_OVERLAP=0.0
+# Window (duration in seconds) for smoothing acoustic intensity before segmentation.
+SMOOTH_WINDOW=0.1
+# Minimum duration for the length of a segment (seconds).
+MIN_DURATION=1.0
+# Maximum duration for the length of a segment.
+MAX_DURATION=30.0
+# Acoustic event threshold - number of SD above zero noise level
+THRESHOLD=2.0
