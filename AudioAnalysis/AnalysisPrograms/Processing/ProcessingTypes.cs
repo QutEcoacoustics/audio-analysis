@@ -26,10 +26,32 @@ namespace AnalysisPrograms.Processing
         /// <param name="settingsFile">Settings file.</param>
         /// <param name="audioFile">Audio file.</param>
         /// <returns>Processing results.</returns>
-        /// <exception cref="NotImplementedException">Implementation will be added when Mike completes the algorithm.</exception>
         internal static IEnumerable<ProcessorResultTag> RunSegmentation(FileInfo settingsFile, FileInfo audioFile)
         {
-            throw new NotImplementedException();
+            var config = new Configuration(settingsFile.FullName);
+            var dict = config.GetTable();
+
+            var minHz = Int32.Parse(dict[Segment.key_MIN_HZ]);
+            var maxHz = Int32.Parse(dict[Segment.key_MAX_HZ]);
+            var frameOverlap = Double.Parse(dict[Segment.key_FRAME_OVERLAP]);
+            var threshold = Double.Parse(dict[Segment.key_THRESHOLD]);      
+            var minDuration = Double.Parse(dict[Segment.key_MIN_DURATION]);   
+            var maxDuration = Double.Parse(dict[Segment.key_MAX_DURATION]);   
+
+            var results = Segment.Execute_Segmentation(audioFile.FullName, minHz, maxHz, frameOverlap, threshold, minDuration, maxDuration);
+            var events = results.Item2;
+
+            // AcousticEvent results
+            return
+                events.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(
+                        ae,
+                        new ResultProperty(ae.Name, ae.NormalisedScore,
+                            new Dictionary<string, string>
+                                {
+                                    { "Description", "Normalised score" }
+                                })));
         }
 
         /// <summary>

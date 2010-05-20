@@ -229,7 +229,7 @@ namespace AnalysisPrograms.Processing
                 case "snr": // signal to noise ratio
                     results = ProcessingTypes.RunSnr(settingsFile, audioFile);
                     break;
-                case "segmentation": // segmentation (in progress)
+                case "segmentation": // segmentation
                     results = ProcessingTypes.RunSegmentation(settingsFile, audioFile);
                     break;
 
@@ -248,7 +248,7 @@ namespace AnalysisPrograms.Processing
                     break;
 
                 // require extra resources
-                case "htk": // run an HTK template over a recording
+                case "htk": // run HTK template over a recording
                     if (resourceFile.Exists)
                     {
                         results = ProcessingTypes.RunHtk(resourceFile, runDir, audioFile);
