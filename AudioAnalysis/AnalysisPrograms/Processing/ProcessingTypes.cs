@@ -34,25 +34,33 @@ namespace AnalysisPrograms.Processing
             var minHz = Int32.Parse(dict[Segment.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[Segment.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[Segment.key_FRAME_OVERLAP]);
-            var threshold = Double.Parse(dict[Segment.key_THRESHOLD]);      
+            var smoothWindow = Double.Parse(dict[Segment.key_SMOOTH_WINDOW]);
+            var thresholdSd = Double.Parse(dict[Segment.key_THRESHOLD]);      
             var minDuration = Double.Parse(dict[Segment.key_MIN_DURATION]);   
             var maxDuration = Double.Parse(dict[Segment.key_MAX_DURATION]);   
 
-            throw new Exception("Maaaaaarrrrkkkk, I'm broken");
-            ////var results = Segment.Execute_Segmentation(audioFile.FullName, minHz, maxHz, frameOverlap, threshold, minDuration, maxDuration);
-            ////var events = results.Item2;
+            var results = Segment.Execute_Segmentation(
+                audioFile.FullName, 
+                minHz, 
+                maxHz, 
+                frameOverlap,
+                smoothWindow,
+                thresholdSd,
+                minDuration, 
+                maxDuration);
+            var events = results.Item2;
 
-            ////// AcousticEvent results
-            ////return
-            ////    events.Select(
-            ////        ae =>
-            ////        ProcessingUtils.GetProcessorResultTag(
-            ////            ae,
-            ////            new ResultProperty(ae.Name, ae.NormalisedScore,
-            ////                new Dictionary<string, string>
-            ////                    {
-            ////                        { "Description", "Normalised score" }
-            ////                    })));
+            // AcousticEvent results
+            return
+                events.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(
+                        ae,
+                        new ResultProperty(ae.Name, ae.NormalisedScore,
+                            new Dictionary<string, string>
+                                {
+                                    { "Description", "Normalised score" }
+                                })));
         }
 
         /// <summary>
