@@ -200,8 +200,9 @@ namespace TowseyLib
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
-            // FIND MAX VALUE IN BOTTOM HALF OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
-            for (int i = binCount/2; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
+            // FIND MAX VALUE IN BOTTOM 80% OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
+            int upperBound = (int)(binCount * 0.8);
+            for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min + ((peakID + 1) * binWidth); //modal noise level
             oneSD = (Q - min) / 3;

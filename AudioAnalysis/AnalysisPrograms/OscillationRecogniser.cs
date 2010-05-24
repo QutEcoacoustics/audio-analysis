@@ -24,7 +24,7 @@ namespace AnalysisPrograms
         //CANETOAD
         //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\OD_CaneToad_Params.txt events.txt
         //GECKO
-        //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrain\OD_Gecko_Params.txt events.txt
+        //od "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3" C:\SensorNetworks\Output\OD_GeckoTrial\OD_GeckoTrial_Params.txt events.txt
         //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrial\OD_GeckoTrial_Params.txt events.txt
         //KOALA MALE EXHALE
         //od "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\OD_KoalaMaleExhale\KoalaMaleExhale_Params.txt events.txt
@@ -144,7 +144,7 @@ namespace AnalysisPrograms
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            Console.ReadLine();
+            //Console.ReadLine();
         } //Dev()
 
 
@@ -207,6 +207,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                //double maxScore = 100.0;
                 //image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddTrack(Image_Track.GetScoreTrack(segmentation, 0.0, 1.0, eventThreshold));
                 image.AddEvents(predictedEvents);
