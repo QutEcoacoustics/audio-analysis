@@ -48,9 +48,14 @@ namespace AudioAnalysisTools
             double dBThreshold = 0.0001; // thresholdSD* oneSD; NOTE:setting threhsold=0.0 works because have subtracte BG noise.
             Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
             Log.WriteLine("Start event detection");
-            List<AcousticEvent> segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, 
-                                                                sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                                dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            //do proper segmentation
+            //List<AcousticEvent> segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, 
+            //                                                    sonogram.FramesPerSecond, sonogram.FBinWidth,
+            //                                                    dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            //by-pass segmentation and make entire recording just one event.
+            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
+            segmentEvents.Add(new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz));
+            Log.WriteLine("Number of segments={0}", segmentEvents.Count);
             //segmentEvents = null; //do this if want do not want to segment before search.
             //################################################### END OF FILTER/SEGMENTATION CODE
 
@@ -67,7 +72,6 @@ namespace AudioAnalysisTools
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
-            //events = segmentEvents; //return the segment events just for testing purposes
 
             DateTime endTime2 = DateTime.Now;
             TimeSpan span2 = endTime2.Subtract(startTime2);
@@ -98,6 +102,7 @@ namespace AudioAnalysisTools
         public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold, 
                                                      int minOscilFreq, int maxOscilFreq, List<AcousticEvent>events)
         {
+            if (events == null) return null;
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
 
