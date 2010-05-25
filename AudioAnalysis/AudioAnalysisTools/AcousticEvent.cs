@@ -354,6 +354,39 @@ namespace AudioAnalysisTools
 
 
 
+        public static List<AcousticEvent> GetSegmentationEvents(SpectralSonogram sonogram, bool doSegmentation, int minHz, int maxHz,
+                                                int minOscilFreq, double minDuration, double maxDuration, out double[] intensity)
+        {
+            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
+            if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
+            {
+                intensity = null;
+                segmentEvents.Add(new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz));
+                return segmentEvents;
+            }
+
+            //DO SEGMENTATION
+            int nyquist = sonogram.SampleRate / 2;
+            double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
+            Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
+
+            var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
+            intensity = tuple.Item1;
+            double Q = tuple.Item2;
+            double oneSD = tuple.Item3;
+            double thresholdSD = 0.1; //set threshold to 1/5th of a standard deviation of the background noise.
+            double dBThreshold = thresholdSD* oneSD; //NOTE: setting a low threshold works because have subtracted BG noise ....
+            // but do not set threshold too low or else get events longer than the maxDuration limit.
+           
+            Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
+            Log.WriteLine("Start event detection");
+            segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz,
+                                                                       sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                                       dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            return segmentEvents;
+        }
+
+
 
         /// <summary>
         /// returns all the events in a list that occur in the recording with passed file name.
@@ -647,7 +680,7 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="threshold">array value must exceed this threshold to count as an event</param>
+        /// <param name="threshold">array value must exceed this dB threshold to count as an event</param>
         /// <param name="minDuration">duration of event must exceed this to count as an event</param>
         /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
@@ -677,7 +710,8 @@ namespace AudioAnalysisTools
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
-                        if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
+                        if (duration < minDuration) continue; //skip events with duration shorter than threshold
+                        //if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "Acoustic Segment"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);

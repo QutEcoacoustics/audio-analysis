@@ -178,6 +178,7 @@ namespace AnalysisPrograms.Processing
             var config = new Configuration(settingsFile.FullName);
             var dict = config.GetTable();
 
+            bool doSegmentation = Boolean.Parse(dict[OscillationRecogniser.key_DO_SEGMENTATION]);
             var minHz = Int32.Parse(dict[OscillationRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[OscillationRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[OscillationRecogniser.key_FRAME_OVERLAP]);
@@ -193,6 +194,7 @@ namespace AnalysisPrograms.Processing
             var results =
                 OscillationRecogniser.Execute_ODDetect(
                     audioFile.FullName,
+                    doSegmentation,
                     minHz,
                     maxHz,
                     frameOverlap,

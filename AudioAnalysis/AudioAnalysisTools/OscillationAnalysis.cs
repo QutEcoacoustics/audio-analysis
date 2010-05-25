@@ -27,38 +27,17 @@ namespace AudioAnalysisTools
         /// <param name="scores">return an array of scores over the entire recording</param>
         /// <param name="events">return a list of acoustic events</param>
         /// <param name="hits"></param>
-        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
+        public static void Execute(SpectralSonogram sonogram, bool doSegmentation, int minHz, int maxHz,
                                    double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq, 
                                    double scoreThreshold, double minDuration, double maxDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] intensity,
                                    out TimeSpan totalTime)
         {
-            DateTime startTime1 = DateTime.Now; 
+            DateTime startTime1 = DateTime.Now;
 
-            //DO SEGMENTATION
-            int nyquist = sonogram.SampleRate / 2;
-            double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
-            Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
-
-            //################################################### USE FOR FILTER ---- COMMENT NEXT LINES WHEN NOT FILTERING
-            var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
-            intensity = tuple.Item1;
-            double Q = tuple.Item2;
-            double oneSD = tuple.Item3;
-            double dBThreshold = 0.0001; // thresholdSD* oneSD; NOTE:setting threhsold=0.0 works because have subtracte BG noise.
-            Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
-            Log.WriteLine("Start event detection");
-            //do proper segmentation
-            //List<AcousticEvent> segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, 
-            //                                                    sonogram.FramesPerSecond, sonogram.FBinWidth,
-            //                                                    dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
-            //by-pass segmentation and make entire recording just one event.
-            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
-            segmentEvents.Add(new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz));
+            //EXTRACT SEGMENTATIOn EVENTS
+            List<AcousticEvent> segmentEvents = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, minHz, maxHz, minOscilFreq, minDuration, maxDuration, out intensity);
             Log.WriteLine("Number of segments={0}", segmentEvents.Count);
-            //segmentEvents = null; //do this if want do not want to segment before search.
-            //################################################### END OF FILTER/SEGMENTATION CODE
-
             TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
             Log.WriteLine(" SEGMENTATION COMP TIME = " + span1.TotalMilliseconds.ToString() + "ms");            
             DateTime startTime2 = DateTime.Now; 
@@ -73,6 +52,7 @@ namespace AudioAnalysisTools
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
+            //events = segmentEvents;  //#################################### to see segment events in output image.
             DateTime endTime2 = DateTime.Now;
             TimeSpan span2 = endTime2.Subtract(startTime2);
             Log.WriteLine(" TOTAL COMP TIME = " + span2.ToString()+"s");
@@ -263,17 +243,15 @@ namespace AudioAnalysisTools
         /// <param name="maxHz">upper freq bound of the acoustic event</param>
         /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
         /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="maxThreshold">OD score must exceed this threshold to count as an event</param>
+        /// <param name="scoreThreshold">OD score must exceed this threshold to count as an event</param>
         /// <param name="minDuration">duration of event must exceed this to count as an event</param>
         /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth,
-                                                               double minThreshold, double minDuration, double maxDuration, string fileName)
+                                                               double scoreThreshold, double minDuration, double maxDuration, string fileName)
         {
-            //double maxThreshold = 0.9;            //MAXIMUM BOUND OF ADAPTIVE SCORE THRESHOLD
-            double scoreThreshold = minThreshold; //set this to the minimum threshold to start with
             int count = scores.Length;
             //int minBin = (int)(minHz / freqBinWidth);
             //int maxBin = (int)(maxHz / freqBinWidth);
@@ -301,7 +279,6 @@ namespace AudioAnalysisTools
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
-                        //ev.SetTimeAndFreqScales(22050, 512, 128);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
                         //obtain average score.
@@ -315,13 +292,6 @@ namespace AudioAnalysisTools
                         ev.Score2 = av / (double)(i - startFrame + 1);
                         events.Add(ev);
                     }
-
-                //adapt the threshold
-                //if ((scores[i] >= maxThreshold) && (maxThreshold >= scoreThreshold)) scoreThreshold *= 1.01;
-                //else
-                //if ((scores[i] <= minThreshold) && (minThreshold <= scoreThreshold)) scoreThreshold *= 0.95;
-                
-
             } //end of pass over all frames
             return events;
         }//end method ConvertODScores2Events()
