@@ -156,6 +156,7 @@ namespace AnalysisPrograms
                     case OD_RECOGNISER:
                         //###############################################################################################");
                         //C1    OSCILLATION DETECTION - KEY PARAMETERS TO CHANGE for DETECT OSCILLATIONS
+                        bool doSegmentation = true;
                         int minHz = 100;  //koalas range = 100-2000
                         int maxHz = 2000;
                         double dctDuration = 0.25;  //duration of DCT in seconds 
@@ -182,8 +183,8 @@ namespace AnalysisPrograms
                         Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
-                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, dctDuration, dctThreshold, minOscilFreq, maxOscilFreq, 
-                                                    scoreThreshold, minDuration, maxDuration,
+                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, 
+                                                    minOscilFreq, maxOscilFreq, scoreThreshold, minDuration, maxDuration,
                                                     out scores, out predictedEvents, out hits, out segments, out analysisTime);
                         break;
 

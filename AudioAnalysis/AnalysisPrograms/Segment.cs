@@ -16,7 +16,7 @@ namespace AnalysisPrograms
         //segment  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3"                               C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
         //GECKO
         //segment "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3"                       C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
-        //segment "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_106.mp3"                                C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
+        //segment "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_38.mp3"                                C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
         //KOALA MALE EXHALE
         //segment "C:\SensorNetworks\WavFiles\Koala_Male\Recordings\KoalaMale\LargeTestSet\WestKnoll_Bees_20091103-190000.wav" C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
         //segment "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav"                 C:\SensorNetworks\Output\SEGMENT\SEGMENT_Params.txt events.txt
@@ -242,6 +242,39 @@ namespace AnalysisPrograms
             Console.ReadLine();
             System.Environment.Exit(1);
         }
+
+
+        public static List<AcousticEvent> GetSegmentationEvents(SpectralSonogram sonogram, bool doSegmentation, int minHz, int maxHz,
+                                                int minOscilFreq, double minDuration, double maxDuration, out double[] intensity)
+        {
+            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
+            if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
+            {
+                intensity = null;
+                segmentEvents.Add(new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz));
+                return segmentEvents;
+            }
+
+            //DO SEGMENTATION
+            int nyquist = sonogram.SampleRate / 2;
+            double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
+            Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
+
+            var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
+            intensity = tuple.Item1;
+            double Q = tuple.Item2;
+            double oneSD = tuple.Item3;
+            double dBThreshold = 0.0001; // thresholdSD* oneSD; NOTE:setting threhsold=0.0 works because have subtracte BG noise.
+            Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
+            Log.WriteLine("Start event detection");
+            segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz,
+                                                                       sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                                       dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
+            return segmentEvents;
+        }
+
+
+
 
     }
 }

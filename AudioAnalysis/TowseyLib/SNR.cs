@@ -205,7 +205,18 @@ namespace TowseyLib
             for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min + ((peakID + 1) * binWidth); //modal noise level
-            oneSD = (Q - min) / 3;
+
+            //calculate SD of the background noise
+            //oneSD = (Q - min) / 3;
+            double total = 0;
+            double ssd = 0.0; //sum of squared deviations
+            for (int i = 0; i < peakID; i++)
+            {
+                total += smoothHisto[i];
+                double dev = (peakID - i) * binWidth;
+                ssd += dev * dev; //sum of squared deviations
+            }
+            oneSD = Math.Sqrt(ssd / total);
 
             // subtract modal noise and return array.
             double[] newArray = new double[L];
