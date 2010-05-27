@@ -83,13 +83,13 @@ namespace AnalysisPrograms
             int minHz           = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);      //duration of DCT in seconds 
-            double dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);     //minimum acceptable value of a DCT coefficient
-            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);        //ignore oscillations below this threshold freq
-            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);        //ignore oscillations above this threshold freq
+            double dctDuration  = Double.Parse(dict[key_DCT_DURATION]);       //duration of DCT in seconds 
+            double dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
+            int minOscilFreq    = Int32.Parse(dict[key_MIN_OSCIL_FREQ]);      //ignore oscillations below this threshold freq
+            int maxOscilFreq    = Int32.Parse(dict[key_MAX_OSCIL_FREQ]);      //ignore oscillations above this threshold freq
             double minDuration  = Double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds 
             double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds 
-            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]); //min score for an acceptable event
+            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
             int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);      //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);

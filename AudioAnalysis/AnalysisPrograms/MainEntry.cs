@@ -28,6 +28,9 @@ namespace AnalysisPrograms
                     case "aed":      // acoustic event detection
                         AED.Dev(r);
                         break;
+                    case "felt":     // find other acoustic events like this
+                        FindEventsLikeThis.Dev(r);
+                        break;
 
 
                     case "od":   // Oscillation Recogniser

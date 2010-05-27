@@ -36,7 +36,15 @@ namespace AudioAnalysisTools
             DateTime startTime1 = DateTime.Now;
 
             //EXTRACT SEGMENTATIOn EVENTS
-            List<AcousticEvent> segmentEvents = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, minHz, maxHz, minOscilFreq, minDuration, maxDuration, out intensity);
+            //DO SEGMENTATION
+            double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
+            Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
+            double thresholdSD = 0.1;       //Set threshold to 1/5th of a standard deviation of the background noise.
+            maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
+
+            var tuple = AcousticEvent.GetSegmentationEvents(sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
+            var segmentEvents = tuple.Item1;
+            intensity = tuple.Item5;
             Log.WriteLine("Number of segments={0}", segmentEvents.Count);
             TimeSpan span1 = DateTime.Now.Subtract(startTime1); 
             Log.WriteLine(" SEGMENTATION COMP TIME = " + span1.TotalMilliseconds.ToString() + "ms");            
@@ -253,12 +261,9 @@ namespace AudioAnalysisTools
                                                                double scoreThreshold, double minDuration, double maxDuration, string fileName)
         {
             int count = scores.Length;
-            //int minBin = (int)(minHz / freqBinWidth);
-            //int maxBin = (int)(maxHz / freqBinWidth);
-            //int binCount = maxBin - minBin + 1;
             var events = new List<AcousticEvent>();
             bool isHit = false;
-            double frameOffset = 1 / framesPerSec;
+            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
             double startTime = 0.0;
             int startFrame = 0;
 
@@ -276,11 +281,13 @@ namespace AudioAnalysisTools
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
+                        //if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
+
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
