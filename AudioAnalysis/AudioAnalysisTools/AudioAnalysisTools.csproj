@@ -89,7 +89,7 @@
     <Compile Include="FeatureVector\FeatureVector.cs" />
     <Compile Include="FeatureVector\FVConfig.cs" />
     <Compile Include="FeatureVector\FVExtractor.cs" />
-    <Compile Include="FindEvents.cs" />
+    <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="HTKTools\BKGTrainer.cs" />
