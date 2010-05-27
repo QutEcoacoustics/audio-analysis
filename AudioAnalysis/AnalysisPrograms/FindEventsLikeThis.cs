@@ -158,7 +158,7 @@ namespace AnalysisPrograms
             var intensity     = tuple.Item5;
 
             //iv DETECT EVENTS LIKE TARGET
-            var tuple2 = FindEvents.Execute((SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, eventThreshold, minDuration);
+            var tuple2 = FindMatchingEvents.Execute((SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, eventThreshold, minDuration);
             List<AcousticEvent> predictedEvents = tuple.Item1;
 
             return System.Tuple.Create(sonogram, predictedEvents, intensity);
