@@ -71,9 +71,9 @@ namespace AnalysisPrograms
             double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds 
             int DRAW_SONOGRAMS  = Int32.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
-            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
-            Log.WriteIfVerbose("Smoothing Window: {0}s.", smoothWindow);
-            Log.WriteIfVerbose("Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
+            Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
+            Log.WriteIfVerbose("# Smoothing Window: {0}s.", smoothWindow);
+            Log.WriteIfVerbose("# Duration bounds: " + minDuration + " - " + maxDuration + " seconds");
 
             //#############################################################################################################################################
             var results = Execute_Segmentation(recordingPath, minHz, maxHz, frameOverlap, smoothWindow, thresholdSD, minDuration, maxDuration);
@@ -82,13 +82,22 @@ namespace AnalysisPrograms
 
             var sonogram = results.Item1;
             var predictedEvents = results.Item2; //contain the segments detected
-            var intensity = results.Item3;
-            var threshold_dB = results.Item4;
-            Log.WriteLine("# Event Count = " + predictedEvents.Count());
+            var Q = results.Item3;
+            var oneSD_dB = results.Item4;
+            var dBThreshold = results.Item5;
+            var intensity = results.Item6;
+            Log.WriteLine("# Signal:  Duration={0}, Sample Rate={1}", sonogram.Duration, sonogram.SampleRate);
+            Log.WriteLine("# Frames:  Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
+                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+            Log.WriteLine("# FreqBand: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount); 
+            Log.WriteLine("# Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD_dB, dBThreshold);
+            Log.WriteLine("# Events:  Count={0}", predictedEvents.Count());
             int pcHIF = 100;
             if (intensity != null)
             {
-                int hifCount = intensity.Count(p => p > threshold_dB); //count of high intensity frames
+                int hifCount = intensity.Count(p => p > dBThreshold); //count of high intensity frames
                 pcHIF = 100 * hifCount / sonogram.FrameCount;
             }
 
@@ -107,7 +116,7 @@ namespace AnalysisPrograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
             double min, max;
             DataTools.MinMax(intensity, out min, out max);
-            double threshold_norm = threshold_dB / max; //min = 0.0;
+            double threshold_norm = dBThreshold / max; //min = 0.0;
             intensity = DataTools.normalise(intensity);
             if (DRAW_SONOGRAMS == 2)
             {
@@ -134,47 +143,33 @@ namespace AnalysisPrograms
         /// <param name="minDuration">used for smoothing intensity as well as for removing short events</param>
         /// <param name="maxDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<BaseSonogram, List<AcousticEvent>, double[], double> Execute_Segmentation(string wavPath,
+        public static System.Tuple<BaseSonogram, List<AcousticEvent>, double, double, double, double[]> Execute_Segmentation(string wavPath,
             int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration, double maxDuration)
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-            int sr = recording.SampleRate;
 
             //ii: MAKE SONOGRAM
-            Log.WriteLine("Start sonogram.");
+            Log.WriteLine("# Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
-            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
-            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
             //iii: DETECT SEGMENTS
-            int nyquist = sonogram.SampleRate / 2;
-            var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
-            double[] intensity = tuple.Item1;
-            double Q = tuple.Item2;
-            double oneSD = tuple.Item3;
-            double dBThreshold = thresholdSD * oneSD;
-            Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
-            Log.WriteLine("Start event detection");
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                  dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
-            return System.Tuple.Create(sonogram, predictedEvents, intensity, dBThreshold);
-
+            Log.WriteLine("# Start event detection");
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, minHz, maxHz, smoothWindow, 
+                                                                      thresholdSD, minDuration, maxDuration);
+            var tuple2 = System.Tuple.Create(sonogram, tuple.Item1, tuple.Item2, tuple.Item3, tuple.Item4, tuple.Item5);
+            return tuple2;
         }//end Execute_Segmentation
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double eventThreshold, double[] segmentation)
         {
-            Log.WriteLine("# Start to draw image of sonogram.");
+            Log.WriteLine("# Start sono image.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
             //double maxScore = 50.0; //assumed max posisble oscillations per second
 
@@ -242,37 +237,6 @@ namespace AnalysisPrograms
             Console.ReadLine();
             System.Environment.Exit(1);
         }
-
-
-        public static List<AcousticEvent> GetSegmentationEvents(SpectralSonogram sonogram, bool doSegmentation, int minHz, int maxHz,
-                                                int minOscilFreq, double minDuration, double maxDuration, out double[] intensity)
-        {
-            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
-            if (!doSegmentation)//by-pass segmentation and make entire recording just one event.
-            {
-                intensity = null;
-                segmentEvents.Add(new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz));
-                return segmentEvents;
-            }
-
-            //DO SEGMENTATION
-            int nyquist = sonogram.SampleRate / 2;
-            double smoothWindow = 1 / (double)minOscilFreq; //window = max oscillation period
-            Log.WriteLine(" Segmentation smoothing window = {0:f2} seconds", smoothWindow);
-
-            var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
-            intensity = tuple.Item1;
-            double Q = tuple.Item2;
-            double oneSD = tuple.Item3;
-            double dBThreshold = 0.0001; // thresholdSD* oneSD; NOTE:setting threhsold=0.0 works because have subtracte BG noise.
-            Log.WriteLine("Intensity array - noise removal: Q={0:f1}dB. 1SD={1:f3}dB. Threshold={2:f3}dB.", Q, oneSD, dBThreshold);
-            Log.WriteLine("Start event detection");
-            segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz,
-                                                                       sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                                       dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);
-            return segmentEvents;
-        }
-
 
 
 
