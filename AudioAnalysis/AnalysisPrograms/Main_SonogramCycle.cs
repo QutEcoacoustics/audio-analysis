@@ -86,7 +86,7 @@ namespace AnalysisPrograms
             if (!File.Exists(serialPath)) throw new Exception("SERIALISED FILE DOES NOT EXIST. TERMINATE!");
             BaseTemplate.LoadStaticConfig(appConfigPath);
             var serializedData = FileTools.ReadSerialisedObject(serialPath);
-            var template = QutSensors.Shared.Utilities.BinaryDeserialize(serializedData) as Template_CC;
+            var template = serializedData.BinaryDeserialize() as Template_CC;
             //################################################################################################################
 
 
