@@ -30,6 +30,7 @@ namespace AudioAnalysisTools.HTKTools
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
+        public string SilenceModelSrc { get; set; }  // source of the silence .wav recording
         public string SilenceModelPath { get; set; } // the silence .wav recording
         public string NoiseModelFN { get; set; }     // noise model is derived from the silence .wav recording
 
