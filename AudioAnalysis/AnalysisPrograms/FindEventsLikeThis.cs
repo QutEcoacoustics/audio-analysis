@@ -31,17 +31,12 @@ namespace AnalysisPrograms
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        //public static string key_FILE_EXT        = "FILE_EXT";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_MIN_HZ = "MIN_HZ";
         public static string key_MAX_HZ = "MAX_HZ";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
-        //public static string key_DCT_THRESHOLD = "DCT_THRESHOLD";
-        //public static string key_MIN_OSCIL_FREQ = "MIN_OSCIL_FREQ";
-        //public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
         public static string key_MIN_DURATION = "MIN_DURATION";
-        //public static string key_MAX_DURATION = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 

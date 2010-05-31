@@ -10,14 +10,14 @@ namespace TowseyLib
     public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, PEAK_TRACKING }
 
 
-
     public class SNR
     {
 
         public struct key_Snr
         {
-            public const string Key_DynamicRange = "DYNAMIC_RANGE";
-            public const string Key_SilenceRecording = "SILENCE_RECORDING_PATH"; //used to determin silence model.
+            public const string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+            public const string key_DYNAMIC_RANGE        = "DYNAMIC_RANGE";
+            //public const string Key_SilenceRecording   = "SILENCE_RECORDING_PATH"; //used to determin silence model.
         }
 
 
