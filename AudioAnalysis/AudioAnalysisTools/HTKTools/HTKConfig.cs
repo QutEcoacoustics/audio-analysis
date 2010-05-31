@@ -454,8 +454,12 @@ namespace AudioAnalysisTools.HTKTools
                 "#**************** INFO ABOUT SONOGRAM\n" +
                 "MIN_FREQ = " + LOFREQ + "\n" +
                 "MAX_FREQ = " + HIFREQ + "\n" +
-                "NOISE_REDUCTION_TYPE=SILENCE_MODEL\n" +
-                "SILENCE_RECORDING_PATH="+SilenceModelPath + "\n" +
+                "#\n" + 
+                "#**************** NOISE REDUCTION\n" +
+                "#NOISE_REDUCTION_TYPE=NONE\n" +
+                "#NOISE_REDUCTION_TYPE=STANDARD\n" +
+                "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
+                "DYNAMIC_RANGE=60.0\n" +
                 "#\n" +
                 "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
                 "# See Lamel et al 1981.\n" +
