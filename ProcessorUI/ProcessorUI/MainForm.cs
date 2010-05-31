@@ -1,21 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Windows.Forms;
-using QutSensors.Processor;
-using Microsoft.ComputeCluster;
-using QutSensors.Shared;
-using System.Threading;
-
-
-namespace ProcessorUI
+﻿namespace ProcessorUI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Threading;
+    using System.Windows.Forms;
+
+    using Microsoft.ComputeCluster;
+
+    using QutSensors.Processor;
+    using QutSensors.Shared;
+
     public partial class MainForm : Form
     {
         // finished jobs hang arround for 5 days (TTLCompletedJobs setting).
@@ -226,36 +221,31 @@ namespace ProcessorUI
 
             if (workItems == null || workItems.Count() == 0) return null;
 
-            List<ITask> preparedTasks = new List<ITask>();
+            var preparedTasks = new List<ITask>();
             int problemCount = 0;
 
-            foreach (var workItem in workItems)
+            foreach (var item in
+                from workItem in workItems
+                where workItem != null
+                select Manager.Instance.PC_PrepareTask(cluster, workItem))
             {
-                if (workItem != null)
+                if (item != null)
                 {
-                    var item = Manager.Instance.PC_PrepareTask(cluster, workItem);
-                    if (item != null)
-                    {
-                        preparedTasks.Add(item);
-                    }
-                    else
-                    {
-                        problemCount++;
-                    }
+                    preparedTasks.Add(item);
+                }
+                else
+                {
+                    problemCount++;
                 }
             }
 
+            var msg = "Prepared " + preparedTasks.Count + " out of " + workItems.Count() + " tasks.";
+            if (problemCount > 0)
+            {
+                msg += " " + problemCount + " tasks were not prepared due to errors.";
+            }
 
-            if (preparedTasks == null || (preparedTasks.Count() == 0 && workItems.Count() > 0))
-            {
-                Log(this, "Problem converting AnalysisItems to ITasks - no tasks prepared.");
-            }
-            else
-            {
-                var msg = "Prepared " + preparedTasks.Count + " tasks.";
-                if (problemCount > 0) msg += " " + problemCount + " tasks could not be prepared.";
-                Log(this, msg);
-            }
+            Log(this, msg);
 
             return preparedTasks;
         }
