@@ -201,7 +201,7 @@ namespace AudioAnalysisTools
             //**************** FEATURE PARAMETERS
             //config.SetPair("WAV_SAMPLE_RATE",);   //set when recording is loaded
             config.SetPair("FEATURE_TYPE", gui.FeatureType.ToString());
-            config.SetPair(SNR.key_Snr.Key_DynamicRange, gui.DynamicRange.ToString());
+            config.SetPair(SNR.key_Snr.key_DYNAMIC_RANGE, gui.DynamicRange.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_MinFreq, gui.Min_Freq.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_MaxFreq, gui.Max_Freq.ToString());
             config.SetPair(ConfigKeys.Mfcc.Key_StartTime, gui.StartTime.ToString()); //used for defining a marqueed vocalisation

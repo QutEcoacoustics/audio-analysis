@@ -243,16 +243,40 @@ namespace AudioAnalysisTools
             return GetImage(1, doHighlightSubband, add1kHzLines);
 		}
 
+        public static double[,] Data2ImageData(double[,] M)
+        {
+            int width   = M.GetLength(0);   // Number of spectra in sonogram
+            int fftBins = M.GetLength(1);
+            double min; double max;
+            DataTools.MinMax(M, out min, out max);
+            double range = max - min; //for normalisation
+
+            
+            double[,] Mt = new double[fftBins, width];
+            for (int f = 0; f < fftBins; f++)
+                for (int t = 0; t < width; t++)
+                {
+                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    double value = (M[t, f] - min) / (double)range;
+                    int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                    if (c < 0)
+                        c = 0;
+                    else if (c >= 256)
+                        c = 255;
+                    Mt[fftBins - 1 - f, t] = c;
+                }
+            return Mt;
+        }
+
 		protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
 		{
-			var data = this.Data;
-			int width = data.GetLength(0); // Number of spectra in sonogram
-            int fftBins = data.GetLength(1);
+            int width = this.Data.GetLength(0); // Number of spectra in sonogram
+            int fftBins = this.Data.GetLength(1);
             int imageHeight = fftBins * binHeight; // image ht = sonogram ht. Later include grid and score scales
             
             //set up min, max, range for normalising of dB values
 			double min; double max;
-			DataTools.MinMax(data, out min, out max);
+            DataTools.MinMax(this.Data, out min, out max);
 			double range = max - min;
 
             //int? minHighlightFreq = this.subBand_MinHz;
@@ -276,14 +300,14 @@ namespace AudioAnalysisTools
 
 			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
 			int yOffset = imageHeight;
-			for (int y = 0; y < data.GetLength(1); y++) //over all freq bins
+            for (int y = 0; y < fftBins; y++) //over all freq bins
 			{
 				for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
 				{
 					for (int x = 0; x < width; x++) //for pixels in the line
 					{
 						// normalise and bound the value - use min bound, max and 255 image intensity range
-						double value = (data[x, y] - min) / (double)range;
+                        double value = (this.Data[x, y] - min) / (double)range;
 						int c = 255 - (int)Math.Floor(255.0 * value); //original version
 						if (c < 0)
 							c = 0;
@@ -549,6 +573,17 @@ namespace AudioAnalysisTools
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
+        public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset, 
+                                             int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
+        {
+            int r1;
+            int r2;
+            AcousticEvent.Time2RowIDs(start, end-start, frameOffset, out r1, out r2);
+            int c1;
+            int c2;
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            return DataTools.Submatrix(m, r1, c1, r2, c2);
+        }
 
 
         public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int binCount, double binWidth)
@@ -561,7 +596,6 @@ namespace AudioAnalysisTools
             for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
             return subband;
         }
-
 
         public static System.Tuple<SpectralSonogram, CepstralSonogram, double[], double[]> GetAllSonograms(string path, SonogramConfig sonoConfig, int minHz, int maxHz)
         {

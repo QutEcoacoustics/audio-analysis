@@ -1506,7 +1506,11 @@ namespace TowseyLib
             return grayScale;
         }
 
-
+        /// <summary>
+        /// Draws matrix but automatically determines the scale to fit 1000x1000 pixel image.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
         public static void DrawMatrix(double[,] matrix, string pathName)
         {
             int maxYpixels = 1000;
@@ -1529,6 +1533,48 @@ namespace TowseyLib
             Color[] grayScale = GrayScale();
 
 
+            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+
+            double[,] norm = DataTools.normalise(matrix);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    double val = norm[r, c];
+                    int colorId = (int)Math.Floor(norm[r, c] * 255);
+                    int xOffset = (cellXpixels * c);
+                    int yOffset = (cellYpixels * r);
+                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+
+                    for (int x = 0; x < cellXpixels; x++)
+                    {
+                        for (int y = 0; y < cellYpixels; y++)
+                        {
+                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
+                        }
+                    }
+                }//end all columns
+            }//end all rows
+
+
+            bmp.Save(pathName);
+        }
+
+        /// <summary>
+        /// Draws matrix according to user defined scale
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="cellXpixels">X axis scale - pixels per cell</param>
+        /// <param name="cellYpixels">Y axis scale - pixels per cell</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrix(double[,] matrix, int cellXpixels, int cellYpixels,  string pathName)
+        {
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+            int Ypixels = cellYpixels * rows;
+            int Xpixels = cellXpixels * cols;
+            Color[] grayScale = GrayScale();
             Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
 
             double[,] norm = DataTools.normalise(matrix);

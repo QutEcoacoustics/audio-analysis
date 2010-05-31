@@ -10,6 +10,9 @@ namespace AudioAnalysisTools
 	[Serializable]
 	public class SonogramConfig
 	{
+        public const int DEFAULT_WINDOW_SIZE = 512;
+        public const double DEFAULT_WINDOW_OVERLAP = 0.5;
+
 
         #region Properties
         public string SourceFName { get; set; }
@@ -77,8 +80,8 @@ namespace AudioAnalysisTools
             Configuration config = new Configuration();
 
             config.SetPair(ConfigKeys.Windowing.Key_SampleRate, "0");
-            config.SetPair(ConfigKeys.Windowing.Key_WindowSize, "512");
-            config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, "0.5");
+            config.SetPair(ConfigKeys.Windowing.Key_WindowSize,    DEFAULT_WINDOW_SIZE.ToString());
+            config.SetPair(ConfigKeys.Windowing.Key_WindowOverlap, DEFAULT_WINDOW_OVERLAP.ToString());
 
             config.SetPair(ConfigKeys.EndpointDetection.Key_K1SegmentationThreshold, "3.5");
             config.SetPair(ConfigKeys.EndpointDetection.Key_K2SegmentationThreshold, "6.0");
@@ -118,11 +121,11 @@ namespace AudioAnalysisTools
             WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
             WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
 
-            DynamicRange = config.GetDouble(SNR.key_Snr.Key_DynamicRange);
+            DynamicRange = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
             DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
             NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
-            SilenceRecordingPath = config.GetString(SNR.key_Snr.Key_SilenceRecording);
+            //SilenceRecordingPath = config.GetString(SNR.key_Snr.Key_SilenceRecording);
             MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
             MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
             int? delta = MaxFreqBand - MinFreqBand;
@@ -149,7 +152,7 @@ namespace AudioAnalysisTools
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
             if (this.DynamicRange > 1.0)
-                writer.WriteConfigValue(SNR.key_Snr.Key_DynamicRange, this.DynamicRange.ToString("F1"));
+                writer.WriteConfigValue(SNR.key_Snr.key_DYNAMIC_RANGE, this.DynamicRange.ToString("F1"));
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");
