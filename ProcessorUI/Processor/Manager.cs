@@ -15,15 +15,30 @@ namespace QutSensors.Processor
     /// </summary>
     public class Manager
     {
+        // NOTE: if you change these file names, they also need to be changed in AnalysisPrograms.Processing.ProcessingUtils
+
+        // input files
+        private const string SettingsFileName = "processing_input_settings.txt";
+        private const string AudioFileName = "processing_input_audio.wav";
+
+        // standard out and error
+        private const string StderrFileName = "output_stderr.txt";
+        private const string StdoutFileName = "output_stdout.txt";
+
+        // analysis program file names
+        private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
+        private const string ProgramOutputResultsFileName = "output_results.xml";
+        private const string ProgramOutputErrorFileName = "output_error.txt";
+
         #region Singleton Pattern
 
-        private Manager() {}
+        private Manager() { }
         internal class ManagerSingleton
         {
-            static ManagerSingleton() {}
+            static ManagerSingleton() { }
             internal static readonly Manager instance = new Manager();
         }
-        
+
         public static Manager Instance
         {
             get
@@ -95,43 +110,25 @@ namespace QutSensors.Processor
             }
         }
 
-        // input files
-        private const string SETTINGS_FILE_NAME = "input_settings.txt";
-        private const string AUDIO_FILE_NAME = "input_audio.wav";
-
-        // standard out and error
-        private const string STDERR_FILE_NAME = "output_stderr.txt";
-        private const string STDOUT_FILE_NAME = "output_stdout.txt";
-
-        // analysis program file names
-        private const string PROGRAM_OUTPUT_FINISHED_FILE_NAME = "output_finishedmessage.txt";
-        private const string PROGRAM_OUTPUT_RESULTS_FILE_NAME = "output_results.xml";
-        private const string PROGRAM_OUTPUT_ERROR_FILE_NAME = "output_error.txt";
-
         #region Common
 
         public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
         {
             if (workItem == null) return null;
 
-            var newRunDirString = DirRunBase.FullName + "\\" + workItem.JobItemId.ToString() + "-Run-" + Guid.NewGuid().ToString();
+            var newRunDirString = DirRunBase.FullName + "\\" + workItem.JobItemId + "-Run-" + Guid.NewGuid();
 
             try
             {
-
                 // create new run folder
                 var newRunDir = Directory.CreateDirectory(newRunDirString);
 
-
                 // create settings file
-                var settingsFile = newRunDir.FullName + "\\" + SETTINGS_FILE_NAME;
+                var settingsFile = newRunDir.FullName + "\\" + SettingsFileName;
                 File.WriteAllText(settingsFile, workItem.AnalysisRunSettings);
 
-
                 // audio file location
-                var audioFile = newRunDir.FullName + "\\" + AUDIO_FILE_NAME;
-
-
+                var audioFile = newRunDir.FullName + "\\" + AudioFileName;
                 var audioFileUrl = workItem.AudioFileUri;
 
                 // audio file must be wav file
@@ -145,7 +142,6 @@ namespace QutSensors.Processor
                 client.DownloadFile(audioFileUrl, audioFile);
 
                 return newRunDir;
-
             }
             catch (Exception ex)
             {
@@ -160,26 +156,14 @@ namespace QutSensors.Processor
             return null;
         }
 
-        public FileInfo GetProgramFile(string version)
-        {
-            // program file from version
-
-            // get program file location
-            var programFile = DirProgramBase.FullName + "\\" + version + "\\" + ProgramName;
-
-            // while testing, directly use debug version of AnalysisPrograms.exe
-            //var programFile = DirProgramBase.FullName + "\\" + ProgramName;
-
-            return new FileInfo(programFile);
-        }
-
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
             if (item == null || runDirectory == null) return string.Empty;
             return
-                " processing" +                             // execute cluster version, not dev version
-                " " + item.AnalysisGenericType +            // type of analysis to run
-                " \"" + runDirectory.FullName + "\""       // run directory
+                " processing" + // execute cluster version, not dev version
+                " " + item.AnalysisGenericType + // type of analysis to run
+                " \"" + runDirectory.FullName + "\"" + // run directory
+                " \"" + Shared.Utilities.ExecutingDirectory + "\\" + item.AnalysisAdditionalData + "\""  // resource file name
                 ;
         }
 
@@ -214,11 +198,11 @@ namespace QutSensors.Processor
             int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
 
             // possible files
-            var errors = GetTextFromFile("Errors", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), itemRunDetails);
-            var info = GetTextFromFile("Information", Path.Combine(runDir.FullName, PROGRAM_OUTPUT_FINISHED_FILE_NAME), itemRunDetails);
+            var errors = GetTextFromFile("Errors", Path.Combine(runDir.FullName, ProgramOutputErrorFileName), itemRunDetails);
+            var info = GetTextFromFile("Information", Path.Combine(runDir.FullName, ProgramOutputFinishedFileName), itemRunDetails);
 
-            var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, STDOUT_FILE_NAME), itemRunDetails);
-            var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, STDERR_FILE_NAME), itemRunDetails);
+            var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, StdoutFileName), itemRunDetails);
+            var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, StderrFileName), itemRunDetails);
 
 
             try
@@ -240,7 +224,7 @@ namespace QutSensors.Processor
 
                     // return completed, even if there are 0 results.
                     List<ProcessorResultTag> results = null;
-                    var resultsFile = Path.Combine(runDir.FullName, PROGRAM_OUTPUT_RESULTS_FILE_NAME);
+                    var resultsFile = Path.Combine(runDir.FullName, ProgramOutputResultsFileName);
                     if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
 
                     webServiceCallSuccess = this.ReturnComplete(
@@ -266,7 +250,7 @@ namespace QutSensors.Processor
                     msg.AppendLine();
                     msg.AppendLine("**Error Sending Run via webservice. ");
 
-                    File.AppendAllText(Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), msg.ToString());
+                    File.AppendAllText(Path.Combine(runDir.FullName, ProgramOutputErrorFileName), msg.ToString());
                 }
             }
             catch (Exception ex)
@@ -277,7 +261,7 @@ namespace QutSensors.Processor
                 msg.AppendLine("**Error Sending Run: ");
                 msg.AppendLine(ex.ToString());
 
-                File.AppendAllText(Path.Combine(runDir.FullName, PROGRAM_OUTPUT_ERROR_FILE_NAME), msg.ToString());
+                File.AppendAllText(Path.Combine(runDir.FullName, ProgramOutputErrorFileName), msg.ToString());
 
                 Log(ex);
             }
@@ -292,7 +276,7 @@ namespace QutSensors.Processor
             {
                 foreach (var file in dir.GetFiles("*.txt"))
                 {
-                    if (file.Name == PROGRAM_OUTPUT_FINISHED_FILE_NAME || file.Name == STDERR_FILE_NAME)
+                    if (file.Name == ProgramOutputFinishedFileName || file.Name == StderrFileName)
                     {
                         finishedDirs.Add(dir);
                         break;
@@ -312,7 +296,6 @@ namespace QutSensors.Processor
         }
 
         #endregion
-
 
         #region Web service
 
@@ -386,7 +369,6 @@ namespace QutSensors.Processor
 
         #endregion
 
-
         #region Processing Cluster
 
         /// <summary>
@@ -400,7 +382,7 @@ namespace QutSensors.Processor
             job.IsExclusive = false;
 
             job.MinimumNumberOfProcessors = 1;
-            job.Name = "Processor " + DateTime.Now.ToString();
+            job.Name = "Processor " + DateTime.Now;
             job.Project = "QUT Sensors";
 
             return job;
@@ -432,26 +414,54 @@ namespace QutSensors.Processor
 
         public ITask PC_PrepareTask(ICluster cluster, AnalysisWorkItem item)
         {
-
             var newRunDir = PrepareNewRun(item);
-            if (newRunDir == null || !newRunDir.Exists) return null;
+            if (newRunDir == null || !newRunDir.Exists)
+            {
+                this.Log("Problem creating '" + newRunDir + "' or downloading audio.");
+                return null;
+            }
 
-            var programFile = GetProgramFile(item.AnalysisGenericVersion);
-            if (programFile == null || !programFile.Exists) return null;
+            // program file from version
+            FileInfo programFile;
+            try
+            {
+                if (string.IsNullOrEmpty(item.AnalysisGenericVersion))
+                {
+                    this.Log("Null or empty AnalysisGenericVersion.");
+                    return null;
+                }
+
+                programFile = new FileInfo(DirProgramBase.FullName + "\\" + item.AnalysisGenericVersion + "\\" + ProgramName);
+                if (!programFile.Exists)
+                {
+                    this.Log("Problem finding program file '" + programFile + "'.");
+                    return null;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.Log("Problem finding program file." + Environment.NewLine + ex);
+                return null;
+            }
 
             var programArgs = CreateArgumentString(item, newRunDir);
-            if (string.IsNullOrEmpty(programArgs)) return null;
+            if (string.IsNullOrEmpty(programArgs))
+            {
+                this.Log("Problem creating program argument string.");
+                return null;
+            }
 
             var task = PC_CreateTask(cluster);
+            this.Log("Created task: " + task);
 
-            task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now.ToString();
+            task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now;
             task.WorkDirectory = programFile.DirectoryName;
 
             task.CommandLine = programFile.Name + " " + programArgs;
-            //task.CommandLine = programArgs;
+            ////task.CommandLine = programArgs;
 
-            task.Stderr = Path.Combine(newRunDir.FullName, STDERR_FILE_NAME);
-            task.Stdout = Path.Combine(newRunDir.FullName, STDOUT_FILE_NAME);
+            task.Stderr = Path.Combine(newRunDir.FullName, StderrFileName);
+            task.Stdout = Path.Combine(newRunDir.FullName, StdoutFileName);
 
             return task;
         }
@@ -462,7 +472,6 @@ namespace QutSensors.Processor
         }
 
         #endregion
-
 
         #region Development
 
@@ -498,8 +507,8 @@ namespace QutSensors.Processor
         {
             if (pi != null)
             {
-                File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDOUT_FILE_NAME), pi.OutputData);
-                File.WriteAllText(Path.Combine(pi.RunDir.FullName, STDERR_FILE_NAME), pi.ErrorData);
+                File.WriteAllText(Path.Combine(pi.RunDir.FullName, StdoutFileName), pi.OutputData);
+                File.WriteAllText(Path.Combine(pi.RunDir.FullName, StderrFileName), pi.ErrorData);
 
                 if (!string.IsNullOrEmpty(workerName))
                 {
@@ -509,6 +518,5 @@ namespace QutSensors.Processor
         }
 
         #endregion
-
     }
 }

@@ -24,7 +24,7 @@
 
             InitializeComponent();
 
-            _workerName = System.Environment.MachineName;
+            _workerName = Environment.MachineName;
             lblInfo.Text = "Name: " + _workerName;
 
             _timerIntervalMilliseconds = Convert.ToDouble(System.Configuration.ConfigurationManager.AppSettings["ActionIntervalMilliseconds"]);
@@ -73,10 +73,17 @@
             }
             else
             {
-                if (txtLog.Text.Length > 0) txtLog.AppendText(Environment.NewLine);
+                if (txtLog.Text.Length > 0)
+                {
+                    txtLog.AppendText(Environment.NewLine);
+                }
+
                 txtLog.AppendText(DateTime.Now.ToString("HH:mm:ss") + ": " + log);
 
-                if (txtLog.Text.Length > 10000) txtLog.Text = txtLog.Text.Substring(2000);
+                if (txtLog.Text.Length > 10000)
+                {
+                    txtLog.Text = txtLog.Text.Substring(2000);
+                }
 
                 Manager.Instance.Log(log);
             }
@@ -224,11 +231,9 @@
             var preparedTasks = new List<ITask>();
             int problemCount = 0;
 
-            foreach (var item in
-                from workItem in workItems
-                where workItem != null
-                select Manager.Instance.PC_PrepareTask(cluster, workItem))
+            foreach (var workItem in workItems)
             {
+                var item = Manager.Instance.PC_PrepareTask(cluster, workItem);
                 if (item != null)
                 {
                     preparedTasks.Add(item);
