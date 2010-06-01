@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dotNetBridgeSink", "dotNetBridgeSink\Dump.vcproj", "{A44243DA-9677-49A3-AC13-689EAA8A4E9D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dotNetBridgeSink", "dotNetBridgeSink\dump.vcproj", "{A44243DA-9677-49A3-AC13-689EAA8A4E9D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BridgeTest", "BridgeTest\BridgeTest.csproj", "{B21CAABE-33CE-433A-8C6B-59EB5F893625}"
 EndProject
@@ -50,7 +50,8 @@ Global
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|Win32.Build.0 = Debug|Win32
-		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|x64.ActiveCfg = Debug|Win32
+		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|x64.ActiveCfg = Debug|x64
+		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Debug|x64.Build.0 = Debug|x64
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Release|Any CPU.ActiveCfg = Release|Win32
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Release|Mixed Platforms.ActiveCfg = Release|Win32
 		{76FC45D6-69EF-41D6-91A4-BD3DAFAC67EB}.Release|Mixed Platforms.Build.0 = Release|Win32
