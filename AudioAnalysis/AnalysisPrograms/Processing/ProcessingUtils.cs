@@ -21,14 +21,11 @@ namespace AnalysisPrograms.Processing
     /// </summary>
     public static class ProcessingUtils
     {
+        // NOTE: if you change these file names, they also need to be changed in QutSensors.Processor.Manager
+
         // input files
         private const string SettingsFileName = "processing_input_settings.txt";
         private const string AudioFileName = "processing_input_audio.wav";
-        private const string ResourceFileName = "processing_resources.zip";
-
-        // standard out and error
-        private const string StderrFileName = "output_stderr.txt";
-        private const string StdoutFileName = "output_stdout.txt";
 
         // analysis program file names
         private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
@@ -75,6 +72,7 @@ namespace AnalysisPrograms.Processing
             {
                 var analysisType = args[0];
                 var rundir = args[1];
+                var resourceFileFullPath = args.Count() > 2 ? args[2] : string.Empty;
 
                 var finishedFile = new FileInfo(Path.Combine(rundir, ProgramOutputFinishedFileName));
                 var errorFile = new FileInfo(Path.Combine(rundir, ProgramOutputErrorFileName));
@@ -91,7 +89,7 @@ namespace AnalysisPrograms.Processing
 
                     try
                     {
-                        results = RunAnalysis(analysisType, rundir);
+                        results = RunAnalysis(analysisType, rundir, resourceFileFullPath);
                     }
                     catch (Exception ex)
                     {
@@ -201,6 +199,7 @@ namespace AnalysisPrograms.Processing
         /// <param name="runDirectory">
         /// Working directory.
         /// </param>
+        /// <param name="resourceFileFullPath">Absolute path to resource file.</param>
         /// <returns>
         /// Processing Results.
         /// </returns>
@@ -208,14 +207,14 @@ namespace AnalysisPrograms.Processing
         /// resourceFile.
         /// </exception>
         /// <exception cref="InvalidOperationException">Invaild resource file path.</exception>
-        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory)
+        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory, string resourceFileFullPath)
         {
             IEnumerable<ProcessorResultTag> results = null;
 
             var runDir = new DirectoryInfo(runDirectory);
             var settingsFile = new FileInfo(Path.Combine(runDir.FullName, SettingsFileName));
             var audioFile = new FileInfo(Path.Combine(runDir.FullName, AudioFileName));
-            var resourceFile = new FileInfo(Path.Combine(runDir.FullName, ResourceFileName));
+            var resourceFile = new FileInfo(resourceFileFullPath);
 
             Console.WriteLine("Analysis Type: " + analysisType);
 
@@ -260,7 +259,7 @@ namespace AnalysisPrograms.Processing
 
                     break;
 
-                case "mfcc_od": // TODO: description of MFCC_OD
+                case "mfcc_od": // MFCCs and OD for calls haveing oscillating character
                     if (resourceFile.Exists)
                     {
                         results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);

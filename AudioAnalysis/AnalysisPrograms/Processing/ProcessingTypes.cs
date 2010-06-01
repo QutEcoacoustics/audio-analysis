@@ -328,7 +328,7 @@ namespace AnalysisPrograms.Processing
         /// <summary>
         /// HTK template Recogniser.
         /// </summary>
-        /// <param name="templateFile">
+        /// <param name="resourceFile">
         /// A zip file containing the resources required to run HTK.
         /// </param>
         /// <param name="workingDirectory">
@@ -340,9 +340,9 @@ namespace AnalysisPrograms.Processing
         /// <returns>
         /// Processing results.
         /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo templateFile, DirectoryInfo workingDirectory, FileInfo audioFile)
+        internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo resourceFile, DirectoryInfo workingDirectory, FileInfo audioFile)
         {
-            var results = HTKRecogniser.Execute(audioFile.FullName, templateFile.FullName, workingDirectory.FullName);
+            var results = HTKRecogniser.Execute(audioFile.FullName, resourceFile.FullName, workingDirectory.FullName);
 
             var events = results.Item2;
 
