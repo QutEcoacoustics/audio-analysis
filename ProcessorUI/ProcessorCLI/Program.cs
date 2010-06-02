@@ -7,6 +7,8 @@ using QutSensors.Shared;
 
 namespace ProcessorCLI
 {
+    using Utilities = QutSensors.Shared.Utilities;
+
     class Program
     {
         public static void Main(string[] args)
@@ -24,8 +26,6 @@ namespace ProcessorCLI
 
             try
             {
-
-
                 Console.WriteLine("Get work item.");
                 var workItem = Manager.Instance.GetWorkItem(workerName);
                 Console.WriteLine("Work item retrieved.");
