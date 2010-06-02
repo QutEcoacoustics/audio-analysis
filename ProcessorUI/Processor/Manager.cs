@@ -32,7 +32,10 @@ namespace QutSensors.Processor
 
         #region Singleton Pattern
 
-        private Manager() { }
+        private Manager()
+        {
+        }
+
         internal class ManagerSingleton
         {
             static ManagerSingleton() { }
@@ -110,6 +113,32 @@ namespace QutSensors.Processor
             }
         }
 
+        private readonly object currentlyRetrievingFinishedRunsLock = new object();
+
+        private bool currentlyRetrievingFinishedRuns;
+
+        /// <summary>
+        /// Gets a value indicating whether Currently Retrieving Finished Runs.
+        /// </summary>
+        public bool CurrentlyRetrievingFinishedRuns
+        {
+            get
+            {
+                lock (this.currentlyRetrievingFinishedRunsLock)
+                {
+                    return this.currentlyRetrievingFinishedRuns;
+                }
+            }
+
+            private set
+            {
+                lock (this.currentlyRetrievingFinishedRunsLock)
+                {
+                    this.currentlyRetrievingFinishedRuns = value;
+                }
+            }
+        }
+
         #region Common
 
         public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
@@ -159,12 +188,18 @@ namespace QutSensors.Processor
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
             if (item == null || runDirectory == null) return string.Empty;
-            return
+
+            var argString =
                 " processing" + // execute cluster version, not dev version
                 " " + item.AnalysisGenericType + // type of analysis to run
-                " \"" + runDirectory.FullName + "\"" + // run directory
-                " \"" + Shared.Utilities.ExecutingDirectory + "\\" + item.AnalysisAdditionalData + "\""  // resource file name
-                ;
+                " \"" + runDirectory.FullName + "\""; // run directory
+
+            if (!string.IsNullOrEmpty(item.AnalysisAdditionalData.Trim()))
+            {
+                argString += " \"" + Shared.Utilities.ExecutingDirectory + "\\Resources\\" + item.AnalysisAdditionalData + "\""; // resource file name
+            }
+
+            return argString;
         }
 
         private StringBuilder GetTextFromFile(string fileDescr, string filePath, StringBuilder itemRunDetails)
@@ -191,10 +226,17 @@ namespace QutSensors.Processor
 
         public void ReturnFinishedRun(DirectoryInfo runDir, string workerName)
         {
-            var itemRunDetails = new StringBuilder();
-            bool webServiceCallSuccess;
+            if (CurrentlyRetrievingFinishedRuns)
+            {
+                this.Log("Currently Retrieving Finished Runs.");
+                return;
+            }
 
-            //get jobitemId from folder name
+            CurrentlyRetrievingFinishedRuns = true;
+
+            var itemRunDetails = new StringBuilder();
+
+            // get jobitemId from folder name
             int jobItemId = Convert.ToInt32(runDir.Name.Substring(0, runDir.Name.IndexOf("-")));
 
             // possible files
@@ -204,11 +246,9 @@ namespace QutSensors.Processor
             var stdOut = GetTextFromFile("Application Output", Path.Combine(runDir.FullName, StdoutFileName), itemRunDetails);
             var stdErr = GetTextFromFile("Application Errors", Path.Combine(runDir.FullName, StderrFileName), itemRunDetails);
 
-
             try
             {
-
-
+                bool webServiceCallSuccess;
                 if (errors.Length > 0 || stdErr.Length > 0)
                 {
                     // ignore results file, send back as error
@@ -216,23 +256,23 @@ namespace QutSensors.Processor
                         workerName,
                         jobItemId,
                         itemRunDetails.ToString(),
-                        true
-                    );
+                        true);
                 }
                 else
                 {
-
                     // return completed, even if there are 0 results.
                     List<ProcessorResultTag> results = null;
                     var resultsFile = Path.Combine(runDir.FullName, ProgramOutputResultsFileName);
-                    if (File.Exists(resultsFile)) results = ProcessorResultTag.Read(resultsFile);
+                    if (File.Exists(resultsFile))
+                    {
+                        results = ProcessorResultTag.Read(resultsFile);
+                    }
 
                     webServiceCallSuccess = this.ReturnComplete(
                         workerName,
                         jobItemId,
                         itemRunDetails.ToString(),
-                        results
-                    );
+                        results);
                 }
 
                 if (webServiceCallSuccess)
@@ -252,6 +292,8 @@ namespace QutSensors.Processor
 
                     File.AppendAllText(Path.Combine(runDir.FullName, ProgramOutputErrorFileName), msg.ToString());
                 }
+
+                CurrentlyRetrievingFinishedRuns = false;
             }
             catch (Exception ex)
             {
@@ -264,27 +306,27 @@ namespace QutSensors.Processor
                 File.AppendAllText(Path.Combine(runDir.FullName, ProgramOutputErrorFileName), msg.ToString());
 
                 Log(ex);
+                CurrentlyRetrievingFinishedRuns = false;
             }
-
         }
 
         public IEnumerable<DirectoryInfo> GetFinishedRuns()
         {
-            var finishedDirs = new List<DirectoryInfo>();
-
-            foreach (var dir in DirRunBase.GetDirectories())
+            if (CurrentlyRetrievingFinishedRuns)
             {
-                foreach (var file in dir.GetFiles("*.txt"))
-                {
-                    if (file.Name == ProgramOutputFinishedFileName || file.Name == StderrFileName)
-                    {
-                        finishedDirs.Add(dir);
-                        break;
-                    }
-                }
+                this.Log("Currently Retrieving Finished Runs.");
+                return new List<DirectoryInfo>();
             }
 
-            return finishedDirs.ToList();
+            CurrentlyRetrievingFinishedRuns = true;
+
+            var finishedDirs = this.DirRunBase.GetDirectories()
+                .Where(dir => dir.GetFiles("*.txt")
+                    .Any(file => file.Name == ProgramOutputFinishedFileName || file.Name == StderrFileName)).ToList();
+
+            CurrentlyRetrievingFinishedRuns = false;
+
+            return finishedDirs;
         }
 
         public void Log(object message)
@@ -452,7 +494,6 @@ namespace QutSensors.Processor
             }
 
             var task = PC_CreateTask(cluster);
-            this.Log("Created task: " + task);
 
             task.Name = item.AnalysisGenericType + " " + item.AnalysisGenericVersion + " " + DateTime.Now;
             task.WorkDirectory = programFile.DirectoryName;

@@ -101,8 +101,7 @@ namespace AnalysisPrograms.Processing
                         if (results != null && results.Count() > 0)
                         {
                             ProcessorResultTag.Write(results.ToList(), resultsFile.FullName);
-                            finishedMessages.AppendLine(
-                                "Analysis-Run--Results: " + results.Count() + " results available.");
+                            finishedMessages.AppendLine("Analysis-Run--Results: " + results.Count() + " results available.");
                         }
                         else
                         {
@@ -146,10 +145,11 @@ namespace AnalysisPrograms.Processing
         {
             Console.WriteLine();
             Console.WriteLine("This console app is used to run analyses on a compute node in the processing cluster.");
-            Console.WriteLine("It requires these parameters:");
-            Console.WriteLine("\t1. 'processing' - indicates this is a processing run.");
-            Console.WriteLine("\t2. Type of analysis to run.");
-            Console.WriteLine("\t3. Path of run directory.");
+            Console.WriteLine("It takes these parameters:");
+            Console.WriteLine("\t1. [Required] 'processing' - indicates this is a processing run.");
+            Console.WriteLine("\t2. [Required] Type of analysis to run.");
+            Console.WriteLine("\t3. [Required] Path of run directory.");
+            Console.WriteLine("\t4. [Optional] Absolute path to resource file.");
             Console.WriteLine();
         }
 
@@ -160,12 +160,12 @@ namespace AnalysisPrograms.Processing
         /// <returns>True if validation succeeded, otherwise false.</returns>
         private static bool Validate(string[] args)
         {
-            Console.WriteLine("Given " + args.Length + " arguments: " + string.Join(" , ", args));
+            Console.WriteLine("Given " + args.Length + " arguments: " + Environment.NewLine + string.Join(Environment.NewLine, args));
 
             // validate
-            if (args.Length != 2)
+            if (args.Length != 2 && args.Length != 3)
             {
-                Console.Error.WriteLine("Incorrect number of arguments given: " + args.Length + ".");
+                Console.Error.WriteLine("Incorrect number of arguments. Given " + args.Length + ", should be 2 or 3.");
                 return false;
             }
 
@@ -184,6 +184,12 @@ namespace AnalysisPrograms.Processing
             if (!File.Exists(Path.Combine(args[1], AudioFileName)))
             {
                 Console.Error.WriteLine("Audio file does not exist: " + AudioFileName);
+                return false;
+            }
+
+            if (args.Length == 3 && !File.Exists(args[2]))
+            {
+                Console.Error.WriteLine("Resource file was specified, but does not exist: " + args[2]);
                 return false;
             }
 
@@ -214,7 +220,18 @@ namespace AnalysisPrograms.Processing
             var runDir = new DirectoryInfo(runDirectory);
             var settingsFile = new FileInfo(Path.Combine(runDir.FullName, SettingsFileName));
             var audioFile = new FileInfo(Path.Combine(runDir.FullName, AudioFileName));
-            var resourceFile = new FileInfo(resourceFileFullPath);
+
+            // make sure path is valid
+            FileInfo resourceFile = null;
+            resourceFileFullPath = resourceFileFullPath.Trim();
+
+            if (!string.IsNullOrEmpty(resourceFileFullPath) &&
+                !resourceFileFullPath.Any(s =>
+                    Path.GetInvalidFileNameChars().Contains(s) ||
+                    Path.GetInvalidPathChars().Contains(s)))
+            {
+                resourceFile = new FileInfo(resourceFileFullPath);
+            }
 
             Console.WriteLine("Analysis Type: " + analysisType);
 
@@ -248,7 +265,7 @@ namespace AnalysisPrograms.Processing
 
                 // require extra resources
                 case "htk": // run HTK template over a recording
-                    if (resourceFile.Exists)
+                    if (resourceFile != null && resourceFile.Exists)
                     {
                         results = ProcessingTypes.RunHtk(resourceFile, runDir, audioFile);
                     }
@@ -260,7 +277,7 @@ namespace AnalysisPrograms.Processing
                     break;
 
                 case "mfcc_od": // MFCCs and OD for calls haveing oscillating character
-                    if (resourceFile.Exists)
+                    if (resourceFile != null && resourceFile.Exists)
                     {
                         results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);
                     }

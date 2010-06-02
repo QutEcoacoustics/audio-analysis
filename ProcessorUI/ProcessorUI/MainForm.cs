@@ -21,7 +21,6 @@
 
         public MainForm()
         {
-
             InitializeComponent();
 
             _workerName = Environment.MachineName;
@@ -35,14 +34,12 @@
             _timer.Interval = _timerIntervalMilliseconds;
             _timer.SynchronizingObject = this;
 
-
             /* // enumerate cluster settings
             foreach (NameValue item in _cluster.Parameters)
             {
                 Log(this, item.Name + " = " + item.Value);
             }
             */
-
         }
 
         protected void cmdStart_Click(object sender, EventArgs e)
@@ -53,13 +50,16 @@
                 Log(this, "Stopping...");
                 cmdStart.Text = "&Start";
                 _timer.Stop();
-
             }
             else
             {
                 Log(this, "DeleteFinishedRuns: " + Manager.Instance.DeleteFinishedRuns);
                 Log(this, "Started...");
                 cmdStart.Text = "&Stop";
+
+                // start straight away
+                var doWork = new WaitCallback(TickAction);
+                ThreadPool.QueueUserWorkItem(doWork);
 
                 _timer.Start();
             }
@@ -109,7 +109,6 @@
 
             using (ICluster cluster = new Cluster())
             {
-
                 // 1. check for complete runs and send them back to the database.
                 SubmitCompleteRuns();
 
@@ -123,50 +122,49 @@
                 // create a new job on the cluster head node
                 var newJob = CreateNewJob(cluster);
 
-                if (newJob != null)
+                if (newJob == null || workItems == null || workItems.Count() == 0)
                 {
-                    IEnumerable<ITask> preparedTasks = new List<ITask>();
+                    return;
+                }
 
-                    if (workItems != null)
+                // create ITasks from AnalysisItems
+                var preparedTasks = this.PrepareTasks(cluster, workItems);
+                if (preparedTasks != null && preparedTasks.Count() > 0)
+                {
+                    this.Log(this, "Add new tasks to job...");
+
+                    // add all new ITasks to new IJob
+                    foreach (var task in preparedTasks)
                     {
-                        // create ITasks from AnalysisItems
-                        preparedTasks = PrepareTasks(cluster, workItems);
-                        if (preparedTasks != null && preparedTasks.Count() > 0)
-                        {
-                            Log(this, "Add new tasks to job...");
+                        newJob.AddTask(task);
+                    }
 
-                            // add all new ITasks to new IJob
-                            foreach (var task in preparedTasks)
-                            {
-                                newJob.AddTask(task);
-                            }
+                    this.Log(this, preparedTasks.Count() + " tasks added to job.");
 
-                            Log(this, preparedTasks.Count() + " tasks added to job.");
+                    if (newJob.TaskCount > 0)
+                    {
+                        this.Log(this, "Queuing job...");
 
-                            if (newJob.TaskCount > 0)
-                            {
-                                Log(this, "Queuing job...");
+                        // set the max num processors based on the number of tasks in the job.
+                        newJob.MaximumNumberOfProcessors = newJob.TaskCount;
 
-                                // set the max num processors based on the number of tasks in the job.
-                                newJob.MaximumNumberOfProcessors = newJob.TaskCount;
+                        // set the job running
+                        int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
 
-                                // set the job running
-                                int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
-
-                                Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
-                            }
-                            else
-                            {
-                                Log(this, "Job not queued as it contains 0 tasks.");
-                            }
-                        }
-                        else
-                        {
-                            Log(this, "No tasks prepared.");
-                        }
+                        this.Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
+                    }
+                    else
+                    {
+                        this.Log(this, "Job not queued as it contains 0 tasks.");
                     }
                 }
+                else
+                {
+                    this.Log(this, "No tasks prepared.");
+                }
             }
+
+            Log(this, "Submit and retrieve complete. Done.");
         }
 
         private void SubmitCompleteRuns()
@@ -198,13 +196,11 @@
 
             if (workItems == null || workItems.Count() == 0)
             {
-                Log(this, "No new work items available from web service. " + maxItems + " processors available.");
-            }
-            else
-            {
-                Log(this, "Retrieved " + workItems.Count() + " new work items from web service. " + maxItems + " processors available.");
+                Log(this, "No new work items available from web service.");
+                return null;
             }
 
+            Log(this, "Retrieved " + workItems.Count() + " new work items from web service. " + maxItems + " processors available.");
             return workItems;
         }
 
