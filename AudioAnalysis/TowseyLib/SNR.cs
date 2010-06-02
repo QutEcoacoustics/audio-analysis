@@ -449,13 +449,6 @@ namespace TowseyLib
             return mnr;
         }
 
-        public static double[,] NoiseReduce_Standbye(double[,] matrix, double[] modalNoise, double dynamicRange)
-        {
-            double[,] mnr = NoiseReduce_Standard(matrix, modalNoise);
-            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
-            return mnr;
-        }
-
         /// <summary>
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
         /// </summary>
@@ -463,8 +456,11 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] NoiseReduce_FixedRange(double[,] matrix, double dynamicRange)
         {
-            double[,] mnr = SNR.NoiseReduce_Standard(matrix);
-            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+            //calculate modal noise for each freq bin
+            double[] modalNoise = SNR.CalculateModalNoise(matrix);     //calculate modal noise profile
+            modalNoise = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
+            double[,] mnr = SNR.SubtractModalNoise(matrix, modalNoise);
+            mnr = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);
             return mnr;
         }
 
@@ -537,6 +533,26 @@ namespace TowseyLib
             return outM;
         }// end of RemoveModalNoise()
 
+        /// <summary>
+        /// Subtracts the supplied modal noise value for each freq bin BUT DOES NOT set negative values to zero.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] SubtractModalNoise(double[,] matrix, double[] modalNoise)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[,] outM = new double[rowCount, colCount];          //to contain noise reduced matrix
+
+            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            {
+                for (int y = 0; y < rowCount; y++)  //for all rows
+                {
+                    outM[y, col] = matrix[y, col] - modalNoise[col];
+                }//end for all rows
+            }//end for all cols
+            return outM;
+        }// end of SubtractModalNoise()
 
         public static double[] CalculateModalNoise(double[,] matrix, int smoothingWindow)
         {
