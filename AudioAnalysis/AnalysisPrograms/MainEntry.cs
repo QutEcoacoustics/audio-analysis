@@ -65,7 +65,7 @@ namespace AnalysisPrograms
                         AudioConversion.Convert(r);
                         break;
                     default:
-                        Console.WriteLine("Analysis option unrecognised");
+                        Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
                         Console.ReadLine();
                         break;
                 }
