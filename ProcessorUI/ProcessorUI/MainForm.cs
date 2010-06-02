@@ -105,7 +105,7 @@
         private void TickAction(object obj)
         {
             // action to take when _timer 'ticks'
-            Log(this, "Performing submit and retrieve...");
+            Log(this, "*** Performing submit and retrieve... ***");
 
             using (ICluster cluster = new Cluster())
             {
@@ -113,58 +113,59 @@
                 SubmitCompleteRuns();
 
                 // 2. obtain and run more jobitems
-
-                var maxItems = cluster.ClusterCounter.NumberOfIdleProcessors - cluster.ClusterCounter.NumberOfUnreachableProcessors;
+                var maxItems = cluster.ClusterCounter.NumberOfIdleProcessors -
+                               cluster.ClusterCounter.NumberOfUnreachableProcessors;
 
                 // get analysisItems from web service
                 var workItems = GetWorkItems(cluster, maxItems);
 
-                // create a new job on the cluster head node
-                var newJob = CreateNewJob(cluster);
-
-                if (newJob == null || workItems == null || workItems.Count() == 0)
+                if (workItems != null && workItems.Count() > 0)
                 {
-                    return;
-                }
+                    // create a new job on the cluster head node
+                    var newJob = CreateNewJob(cluster);
 
-                // create ITasks from AnalysisItems
-                var preparedTasks = this.PrepareTasks(cluster, workItems);
-                if (preparedTasks != null && preparedTasks.Count() > 0)
-                {
-                    this.Log(this, "Add new tasks to job...");
-
-                    // add all new ITasks to new IJob
-                    foreach (var task in preparedTasks)
+                    if (newJob != null)
                     {
-                        newJob.AddTask(task);
+                        // create ITasks from AnalysisItems
+                        var preparedTasks = this.PrepareTasks(cluster, workItems);
+                        if (preparedTasks != null && preparedTasks.Count() > 0)
+                        {
+                            this.Log(this, "Add new tasks to job...");
+
+                            // add all new ITasks to new IJob
+                            foreach (var task in preparedTasks)
+                            {
+                                newJob.AddTask(task);
+                            }
+
+                            this.Log(this, preparedTasks.Count() + " tasks added to job.");
+
+                            if (newJob.TaskCount > 0)
+                            {
+                                this.Log(this, "Queuing job...");
+
+                                // set the max num processors based on the number of tasks in the job.
+                                newJob.MaximumNumberOfProcessors = newJob.TaskCount;
+
+                                // set the job running
+                                int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
+
+                                this.Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + " containing " + preparedTasks.Count() + " tasks.");
+                            }
+                            else
+                            {
+                                this.Log(this, "Job not queued as it contains no tasks.");
+                            }
+                        }
+                        else
+                        {
+                            this.Log(this, "No tasks prepared.");
+                        }
                     }
-
-                    this.Log(this, preparedTasks.Count() + " tasks added to job.");
-
-                    if (newJob.TaskCount > 0)
-                    {
-                        this.Log(this, "Queuing job...");
-
-                        // set the max num processors based on the number of tasks in the job.
-                        newJob.MaximumNumberOfProcessors = newJob.TaskCount;
-
-                        // set the job running
-                        int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
-
-                        this.Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + ". It contains " + preparedTasks.Count() + " tasks.");
-                    }
-                    else
-                    {
-                        this.Log(this, "Job not queued as it contains 0 tasks.");
-                    }
-                }
-                else
-                {
-                    this.Log(this, "No tasks prepared.");
                 }
             }
 
-            Log(this, "Submit and retrieve complete. Done.");
+            Log(this, "*** Submit and retrieve complete. ***" + Environment.NewLine + Environment.NewLine);
         }
 
         private void SubmitCompleteRuns()
