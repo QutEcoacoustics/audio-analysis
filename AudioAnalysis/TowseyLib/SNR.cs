@@ -216,7 +216,9 @@ namespace TowseyLib
                 double dev = (peakID - i) * binWidth;
                 ssd += dev * dev; //sum of squared deviations
             }
-            oneSD = Math.Sqrt(ssd / total);
+            oneSD = 0.0;
+            if (peakID > 0) oneSD = Math.Sqrt(ssd / total); //prevent division when total = 0;
+            
 
             // subtract modal noise and return array.
             double[] newArray = new double[L];

@@ -707,7 +707,7 @@ namespace AudioAnalysisTools
         
         /// <summary>
         /// Converts an array of sub-band acoustic intensity values to a list of AcousticEvents.
-        /// USE THIS METHOD WHEN SEGMENTING A SINGAL ON ACOUSTIC INTENSITY
+        /// USE THIS METHOD WHEN SEGMENTING A SIGNAL ON ACOUSTIC INTENSITY
         /// </summary>
         /// <param name="values">the array of acoustic intensity values</param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
