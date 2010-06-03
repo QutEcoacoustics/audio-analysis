@@ -231,6 +231,11 @@ namespace TowseyLib
             return V;
         }
 
+        /// <summary>
+        /// reads a text file of doubles formatted in rows and columns 
+        /// </summary>
+        /// <param name="fName"></param>
+        /// <returns></returns>
         public static double[,] ReadDoubles2Matrix(string fName)
         {
             var lines = ReadTextFile(fName);

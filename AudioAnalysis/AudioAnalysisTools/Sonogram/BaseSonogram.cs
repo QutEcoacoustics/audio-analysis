@@ -243,6 +243,11 @@ namespace AudioAnalysisTools
             return GetImage(1, doHighlightSubband, add1kHzLines);
 		}
 
+        /// <summary>
+        /// converts the dB data in sonogram.Data to grey scale image of spectrogram.
+        /// </summary>
+        /// <param name="M"></param>
+        /// <returns></returns>
         public static double[,] Data2ImageData(double[,] M)
         {
             int width   = M.GetLength(0);   // Number of spectra in sonogram
@@ -256,13 +261,11 @@ namespace AudioAnalysisTools
             for (int f = 0; f < fftBins; f++)
                 for (int t = 0; t < width; t++)
                 {
-                    // normalise and bound the value - use min bound, max and 255 image intensity range
+                    // normalise and bound the value - use 0-255 image intensity range
                     double value = (M[t, f] - min) / (double)range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                    if (c < 0)
-                        c = 0;
-                    else if (c >= 256)
-                        c = 255;
+                    if (c < 0)          c = 0;
+                    else if (c >= 256)  c = 255;
                     Mt[fftBins - 1 - f, t] = c;
                 }
             return Mt;
