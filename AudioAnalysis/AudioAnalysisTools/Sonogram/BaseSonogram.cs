@@ -885,7 +885,7 @@ namespace AudioAnalysisTools
 
         public override void Make(double[,] amplitudeM)
         {
-            var tuple = MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
+            var tuple = CepstralSonogram.MakeCepstrogram(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
             this.Data = tuple.Item1;
             this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
         }

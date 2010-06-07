@@ -15,6 +15,9 @@ namespace AnalysisPrograms
         //eventX "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
 
 
+        //eventX "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.mp3" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt  FELT_Currawong1
+
+
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_EVENT_START = "EVENT_START";
@@ -106,7 +109,8 @@ namespace AnalysisPrograms
             //vi: TEST THE EVENT ON ANOTHER FILE
             //felt  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\FELT_CaneToad\FELT_CaneToad_Params.txt events.txt
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3";
-            string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
+            //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
+            string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
             string paramsPath    = iniPath;
             string[] arguments = new string[3];
             arguments[0] = testRecording;

@@ -562,12 +562,10 @@ namespace TowseyLib
         public static double[,] Cepstra(double[,] spectra, int coeffCount)
         {
             int frameCount = spectra.GetLength(0);  //number of frames
-            int binCount = spectra.GetLength(1);    // number of filters in filter bank
+            int binCount   = spectra.GetLength(1);  //number of filters in filter bank
 
-            double[,] M = spectra;
-
-            double[,] cosines = Cosines(binCount, coeffCount + 1); //set up the cosine coefficients
-
+            //set up the cosine coefficients. Need one extra to compensate for DC coeff.
+            double[,] cosines = Speech.Cosines(binCount, coeffCount + 1); 
             //following two lines write matrix of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
             //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
@@ -576,17 +574,38 @@ namespace TowseyLib
             //string fPath = @"C:\SensorNetworks\Sonograms\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
 
-
             double[,] OP = new double[frameCount, coeffCount];
             for (int i = 0; i < frameCount; i++)//foreach time step
             {
-                double[] spectrum = DataTools.GetRow(M, i); //transfer matrix row=i to vector
+                double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
                 double[] cepstrum = DCT(spectrum, cosines);
 
                 for (int j = 0; j < coeffCount; j++) OP[i, j] = cepstrum[j+1]; //+1 in order to skip first DC value
             } //end of all frames
             return OP;
         }
+        /// <summary>
+        /// use this version when want to make matrix of Cosines only one time.
+        /// </summary>
+        /// <param name="spectra"></param>
+        /// <param name="coeffCount"></param>
+        /// <param name="cosines"></param>
+        /// <returns></returns>
+        public static double[,] Cepstra(double[,] spectra, int coeffCount, double[,] cosines)
+        {
+            int frameCount = spectra.GetLength(0);  //number of frames
+            //int binCoun = spectra.GetLength(1);    // number of filters in filter bank
+            double[,] OP = new double[frameCount, coeffCount];
+            for (int i = 0; i < frameCount; i++)//foreach time step
+            {
+                double[] spectrum = DataTools.GetRow(spectra, i); //transfer matrix row=i to vector
+                double[] cepstrum = DCT(spectrum, cosines);
+
+                for (int j = 0; j < coeffCount; j++) OP[i, j] = cepstrum[j + 1]; //+1 in order to skip first DC value
+            } //end of all frames
+            return OP;
+        }
+
 
 
 
