@@ -98,7 +98,7 @@ namespace AnalysisPrograms
             var sonogram       = results.Item1;
             var matchingEvents = results.Item2;
             var scores         = results.Item3;
-            scores = DataTools.normalise(scores);
+            double matchThreshold = results.Item4;
             Log.WriteLine("# Finished detecting events like the target.");
             int count = matchingEvents.Count;
             Log.WriteLine("# Matching Event Count = " + matchingEvents.Count());
@@ -116,12 +116,12 @@ namespace AnalysisPrograms
             string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_matchEvents.png";
             if (DRAW_SONOGRAMS == 2)
             {
-                DrawSonogram(sonogram, imagePath, matchingEvents, eventThreshold, scores);
+                DrawSonogram(sonogram, imagePath, matchingEvents, matchThreshold, scores);
             }
             else
             if ((DRAW_SONOGRAMS == 1) && (matchingEvents.Count > 0))
             {
-                DrawSonogram(sonogram, imagePath, matchingEvents, eventThreshold, scores);
+                DrawSonogram(sonogram, imagePath, matchingEvents, matchThreshold, scores);
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
@@ -145,17 +145,12 @@ namespace AnalysisPrograms
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
-                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                //image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                //double maxScore = 100.0;
-                //image.AddSuperimposedMatrix(hits, maxScore);
                 if (scores != null)
                 {
                     double min, max;
                     DataTools.MinMax(scores, out min, out max);
                     double threshold_norm = eventThreshold / max; //min = 0.0;
-                    scores = DataTools.normalise(scores);
-                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                    image.AddTrack(Image_Track.GetScoreTrack(DataTools.normalise(scores), 0.0, 1.0, threshold_norm));
                 }
                 image.AddEvents(predictedEvents);
                 image.Save(path);
