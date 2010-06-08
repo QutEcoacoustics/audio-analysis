@@ -230,6 +230,21 @@ namespace TowseyLib
             return newArray;
         }
 
+        public static double[,] NegValues2Zero(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var M = new double[rows, cols];
+            for (int r = 0; r < rows; r++) //foreach row
+            {
+                for (int c = 0; c < cols; c++)  
+                {
+                    if (m[r, c] < 0.0) M[r, c] = 0.0; else M[r, c] = m[r, c];
+                }
+            }
+            return M;
+        }
+
 
         /// <summary>
         /// subtract background noise to produce a decibels array in which zero dB = modal noise
