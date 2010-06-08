@@ -67,7 +67,7 @@ namespace AudioAnalysisTools
         /// BASE CONSTRUCTOR
         /// This constructor contains all steps required to prepare the amplitude spectrogram.
         /// The third boolean parameter is simply a placefiller to ensure a different Constructor signature
-        /// from the principle Constructore which follows.
+        /// from the principle Constructor which follows.
         /// </summary>
         /// <param name="config"></param>
         /// <param name="wav"></param>
@@ -605,6 +605,22 @@ namespace AudioAnalysisTools
             Log.WriteLine("# Extract spectrogram and cepstrogram from from file: " + Path.GetFileName(path));
             AudioRecording recording = new AudioRecording(path);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            var tuple = GetAllSonograms(recording, sonoConfig, minHz, maxHz);
+            return tuple;
+        }
+
+        /// <summary>
+        /// Returns a Spectrogram and Cepstrogram from the passed recording. These are NOT noise reduced.
+        /// however, tuple also returns the modal noise and subband modal noise.
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="sonoConfig"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <returns></returns>
+        public static System.Tuple<SpectralSonogram, CepstralSonogram, double[], double[]> GetAllSonograms(AudioRecording recording, SonogramConfig sonoConfig, int minHz, int maxHz)
+        {
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
             bool doMelScale = sonoConfig.DoMelScale;
             int ccCount = sonoConfig.mfccConfig.CcCount;
@@ -613,21 +629,21 @@ namespace AudioAnalysisTools
             sonoConfig.SourceFName = recording.FileName;
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
-            SpectralSonogram sonogram  = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
             recording.Dispose();
 
-            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                            sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                           (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, sonoConfig.WindowOverlap * 100);
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Freqs : {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             Log.WriteLine("MFCCs : doMelScale=" + doMelScale + ";  ccCount=" + ccCount + ";  includeDelta=" + includeDelta + ";  includeDoubleDelta=" + includeDoubleDelta);
-                
+
             //CALCULATE MODAL NOISE PROFILE - USER MAY REQUIRE IT FOR NOISE REDUCTION
             double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
             //extract subband modal noise profile
-            double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale, 
+            double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale,
                                                                            sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
             //CALCULATE CEPSTROGRAM
             Log.WriteLine("# Extracting Cepstrogram");
@@ -637,6 +653,10 @@ namespace AudioAnalysisTools
         }
 
     } //end abstract class BaseSonogram
+
+
+
+    //##################################################################################################################################
 
 
     /// <summary>
@@ -652,7 +672,7 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// This method does nothing because do not want to change the amplitude sonogram in any way.
-        /// Actually the constructor of this class calls the the BaseSonogram constructor that does not include a call to make().
+        /// Actually the constructor of this class calls the BaseSonogram constructor that does NOT include a call to make().
         /// Consequently this method should never be called. Just a place filler.
         /// </summary>
         /// <param name="amplitudeM"></param>
@@ -663,6 +683,8 @@ namespace AudioAnalysisTools
     }
 
 
+
+    //##################################################################################################################################
 
 	public class SpectralSonogram : BaseSonogram
 	{
@@ -828,10 +850,10 @@ namespace AudioAnalysisTools
             double[] modalNoise = null;
             return System.Tuple.Create(m, modalNoise);
         }
-    
    } //end of class SpectralSonogram : BaseSonogram
 
 
+    //##################################################################################################################################
 
 
     public class CepstralSonogram : BaseSonogram
@@ -934,16 +956,21 @@ namespace AudioAnalysisTools
             var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.DynamicRange);
             m = tuple1.Item1;         
 
-            //calculate cepstral coefficients and normalise
+            //(iv) calculate cepstral coefficients 
             m = Speech.Cepstra(m, ccCount);
+            //(v) normalise
             m = DataTools.normalise(m);
-            //calculate the full range of MFCC coefficients ie including decibel and deltas, etc
+            //(vi) Calculate the full range of MFCC coefficients ie including decibel and deltas, etc
             m = Speech.AcousticVectors(m, decibels, includeDelta, includeDoubleDelta);
             var tuple2 = System.Tuple.Create(m, tuple1.Item2);
             return tuple2; // return matrix and full bandwidth modal noise profile
         }
 
     } // end class CepstralSonogram
+
+
+    //##################################################################################################################################
+
 
 
 	public class TriAvSonogram : CepstralSonogram
@@ -997,6 +1024,7 @@ namespace AudioAnalysisTools
 
 
 
+    //##################################################################################################################################
 
 
 

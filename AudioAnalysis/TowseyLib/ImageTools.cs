@@ -444,13 +444,18 @@ namespace TowseyLib
         }
 
 
+        public static double[,] SobelEdgeDetection(double[,] m)
+        {
+            double relThreshold = 0.2;
+            return SobelEdgeDetection(m, relThreshold);
+        }
         /// <summary>
         /// This version of Sobel's edge detection taken from  Graig A. Lindley, Practical Image Processing
         /// which includes C code.
         /// </summary>
         /// <param name="m"></param>
         /// <returns></returns>
-        public static double[,] SobelEdgeDetection(double[,] m)
+        public static double[,] SobelEdgeDetection(double[,] m, double relThreshold)
         {
             //define indices into grid using Lindley notation
             const int a = 0; const int b = 1; const int c = 2; const int d = 3; const int e = 4;
@@ -498,7 +503,8 @@ namespace TowseyLib
                     if(max < gridMax) max = gridMax;
                 }
 
-            double threshold = min + (max - min) / 5;
+            //double relThreshold = 0.2;
+            double threshold = min + ((max - min) * relThreshold);
 
             for (int y = 1; y < mRows - 1; y++)
                 for (int x = 1; x < mCols - 1; x++)
