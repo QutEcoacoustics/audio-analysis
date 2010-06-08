@@ -1507,12 +1507,12 @@ namespace TowseyLib
 
 
 //***************************************************************************************************************************************
-  
-  /**
-   * returns the min and max of a set of integer values
-   * @param data
-   * @return
-   */
+  /// <summary>
+  ///  Returns the min and max of a set of integer values in the passed array
+  /// </summary>
+  /// <param name="data">array ofintegers</param>
+  /// <param name="min">min value to return</param>
+  /// <param name="max">max value to return</param>
   static public void MinMax(int[] data, out int min, out int max)
   { min = data[0];
     max = data[0];
