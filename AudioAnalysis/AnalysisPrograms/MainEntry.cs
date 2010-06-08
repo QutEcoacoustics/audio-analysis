@@ -6,7 +6,7 @@ using AnalysisPrograms.Processing;
 
 namespace AnalysisPrograms
 {
-    class MainEntry
+    public class MainEntry
     {
         public static void Main(string[] args)
         {
