@@ -20,13 +20,19 @@ namespace AudioAnalysisTools.HTKTools
         public string ResultsDir { get; set; }
         public string Author      { get; set; }
         public string CallName    { get; set; }
+        public string singleWord  { get; set; }
         public string Comment     { get; set; }
         public string numHmmStates { get; set; }
+        public string numHmmSilStates { get; set; }
         public string numHmmBkgStates { get; set; }
         public int numIterations { get; set; }
         public int numBkgIterations { get; set; }
         public bool bkgTraining = false;
+
+        public bool useBKGModel = true;    //true -> use BKG model; flase -> use SIL model
         public bool LLRNormalization = true;    //perform LLR normalization on the output from HVite
+        public bool noSegmentation = false;   //'true' -> each recording is considered as a single word ...
+                                               // no SIL model is generated/trained from the recordings.
 
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
@@ -95,8 +101,7 @@ namespace AudioAnalysisTools.HTKTools
         public string trainF       { get { return ConfigDir + "\\train.scp"; } }
         public string trainFBkg    { get { return ConfigDirBkg + "\\train.scp"; } }
         public string tFalseF      { get { return ConfigDir + "\\testfalse.scp"; } }
-        public string tTrueF       { get { return ConfigDir + "\\testtrue.scp"; } }
-        public string singleWord = "BACKGROUND";
+        public string tTrueF       { get { return ConfigDir + "\\testtrue.scp"; } }        
         public string wltF         { get { return ConfigDir + "\\phones.mlf";  } }//file containing segmentation info into SONG SYLLABLES + SILENCE
         public string wltFBkg      { get { return ConfigDirBkg + "\\phones.mlf"; } }
         public string wordNet      { get { return ConfigDir + "\\phone.net"; } }
@@ -113,6 +118,7 @@ namespace AudioAnalysisTools.HTKTools
         //HMM files
         public string HmmDir       { get { return ConfigDir + "\\hmms"; } }
         public string HmmDirBkg    { get { return ConfigDirBkg + "\\hmms"; } }
+        public string HmmDirBkgLLR { get { return "\\hmmBKG"; } }
         public string tgtDir0      { get { return HmmDir + "\\hmm.0"; } }
         public string tgtDir0Bkg   { get { return HmmDirBkg + "\\hmm.0"; } }
         public string tgtDir1      { get { return HmmDir + "\\hmm.1"; }}
@@ -368,9 +374,8 @@ namespace AudioAnalysisTools.HTKTools
                     "#HQuant: n\n" +
                     "#HLEd: y\n" +
                     "#HInit: y\n" +
-                    "#HRest: n\n" +
-                    "HERest: y\n" +         //train VOCALIZATION/SIL models
-                    "#HERestBKG: n\n" +      //train BACKGROUND model
+                    "HERest: n\n" +         //y -> use HERest; n -> use HRest
+                    "HERestBKG: n\n" +      //train BACKGROUND model
                     "#HSmooth: n\n" +
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
@@ -386,18 +391,21 @@ namespace AudioAnalysisTools.HTKTools
         public void WritePrototypeFiles(string protoTypeDir)
         {
             string content =
-                "<BEGINproto_config_file>\n\n<COMMENT>\n\tThis PCF produces a 3 state prototype system\n\n" +
-                "<BEGINsys_setup>\n\tnStates: 3\n<ENDsys_setup>\n\n" +
+                "<BEGINproto_config_file>\n\n<COMMENT>\n\tThis PCF produces a " + numHmmSilStates + " state prototype system\n\n" +
+                "<BEGINsys_setup>\n\tnStates:  " + numHmmSilStates + " \n<ENDsys_setup>\n\n" +
                 "<ENDproto_config_file>";
             WriteTextFile(protoTypeDir + "\\SIL.pcf", content);
 
-            content =
-            "0.000e+0 1.000e+0 0.000e+0 0.000e+0 0.000e+0\n" +
-            "0.000e+0 4.000e-1 2.000e-1 4.000e-1 0.000e+0\n" +
-            "0.000e+0 0.000e+0 6.000e-1 4.000e-1 0.000e+0\n" +
-            "0.000e+0 4.000e-1 0.000e+0 3.000e-1 3.000e-1\n" +
-            "0.000e+0 0.000e+0 0.000e+0 0.000e+0 0.000e+0";
-            WriteTextFile(protoTypeDir+"\\SIL", content);
+            //if (int.Parse(numHmmSilStates) == 3)
+            //{
+            //    content =
+            //            "0.000e+0 1.000e+0 0.000e+0 0.000e+0 0.000e+0\n" +
+            //            "0.000e+0 4.000e-1 2.000e-1 4.000e-1 0.000e+0\n" +
+            //            "0.000e+0 0.000e+0 6.000e-1 4.000e-1 0.000e+0\n" +
+            //            "0.000e+0 4.000e-1 0.000e+0 3.000e-1 3.000e-1\n" +
+            //            "0.000e+0 0.000e+0 0.000e+0 0.000e+0 0.000e+0";
+            //    WriteTextFile(protoTypeDir+"\\SIL", content);
+            //}
 
             //- proto.pcf
             //If a file 'WORD'.pcf exists in which the variable 'nStates' has a value
