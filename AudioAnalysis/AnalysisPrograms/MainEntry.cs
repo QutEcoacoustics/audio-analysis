@@ -19,6 +19,9 @@ namespace AnalysisPrograms
                 string[] r = args.Skip(1).ToArray();
                 switch (args[0])
                 {
+                    case "dimred" :  // dimensionality reduction
+                        DimReduction.Dev(r);
+                        break;
                     case "segment":  // segmentation of a recording
                         Segment.Dev(r);
                         break;
