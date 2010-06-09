@@ -218,7 +218,11 @@ namespace AudioAnalysisTools.HTKTools
 
                 //Create script containing logical files: segments of the mfc files indicized by frame numbers
                 //Also close the stream writer as the file will be used by HVite
-                CreateAudioSegmentsScript(resultsReader, scriptWriter);
+                if(!CreateAudioSegmentsScript(resultsReader, scriptWriter))
+                {
+                    Console.WriteLine("No '{0}' call found in {1}. Nothing to score.", htkConfig.CallName, resultsReaderF);
+                    return;
+                }
 
                 if (scriptWriter != null)
                 {
@@ -228,7 +232,6 @@ namespace AudioAnalysisTools.HTKTools
                 if (resultsReader != null) resultsReader.Close();
 
                 //Score the BKG model over the VOCALIZATION frames
-                //True calls
                 HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2Bkg, scriptWriterF, htkConfig.wordNetBkg,
                                 htkConfig.DictFileBkg, bckScoreReaderF, htkConfig.monophonesBkg, htkConfig.HViteExecutable);
                              
@@ -256,13 +259,72 @@ namespace AudioAnalysisTools.HTKTools
             }
         }
 
-        public void CreateAudioSegmentsScript(StreamReader fReader, StreamWriter fWriter)
+        public void ScoreModel(string MfccConfig2FN, string tgtDir2Bkg, string resultsReaderF,
+                            string wordNetBkg, string DictFileBkg, string monophonesBkg,
+                            string scriptWriterF, string modifResultsWriterF, string bckScoreReaderF)
+        {
+            StreamReader resultsReader = null;
+            StreamWriter scriptWriter = null;
+            StreamWriter modifResultsWriter = null;
+            StreamReader bckScoreReader = null;
+
+            try
+            {
+
+                resultsReader = new StreamReader(resultsReaderF);
+                scriptWriter = File.CreateText(scriptWriterF);
+
+                //Create script containing logical files: segments of the mfc files indicized by frame numbers
+                //Also close the stream writer as the file will be used by HVite
+                if (!CreateAudioSegmentsScript(resultsReader, scriptWriter))
+                {
+                    Console.WriteLine("No '{0}' call found in {1}. Nothing to score.", htkConfig.CallName, resultsReaderF);
+                    return;
+                }
+
+                if (scriptWriter != null)
+                {
+                    scriptWriter.Flush();
+                    scriptWriter.Close();
+                }
+                if (resultsReader != null) resultsReader.Close();
+
+                //Score the BKG model over the VOCALIZATION frames
+                HTKHelper.HVite(MfccConfig2FN, tgtDir2Bkg, scriptWriterF, 
+                                wordNetBkg, DictFileBkg, bckScoreReaderF, monophonesBkg, htkConfig.HViteExecutable);
+
+                resultsReader = new StreamReader(resultsReaderF);
+                modifResultsWriter = new StreamWriter(modifResultsWriterF);
+                //Open the result file produced by HVite
+                bckScoreReader = new StreamReader(bckScoreReaderF);
+
+                //Modify the result file by adding the BKG scores
+                AddBkgScores(resultsReader, bckScoreReader, modifResultsWriter);
+
+                if (modifResultsWriter != null)
+                {
+                    modifResultsWriter.Flush();
+                    modifResultsWriter.Close();
+                }
+                if (resultsReader != null) resultsReader.Close();
+                if (bckScoreReader != null) bckScoreReader.Close();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Could not score the BACKGROUND model.");
+                throw (e);
+            }
+        }
+
+        public bool CreateAudioSegmentsScript(StreamReader fReader, StreamWriter fWriter)
         {
             string regex = @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+";
             string txtLine = "";
             int intIndex = 0;
             string logicalFile, physicalFile, currPath = null;
             bool valid = false;
+            bool callPresent = false;
 
             while ((txtLine = fReader.ReadLine()) != null)
             {
@@ -302,8 +364,11 @@ namespace AudioAnalysisTools.HTKTools
                     physicalFile = currPath + "[" + frameStart.ToString() + "," + frameEnd.ToString() + "]";
 
                     fWriter.WriteLine(logicalFile + "=" + physicalFile);
+
+                    callPresent = true;
                 }
-            }
+            }            
+            return callPresent;
         }
 
         public void AddBkgScores(StreamReader resultsReader, StreamReader bckScoreReader, StreamWriter modifResultsWriter)
