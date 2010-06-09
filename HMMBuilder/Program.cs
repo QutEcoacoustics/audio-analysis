@@ -5,6 +5,7 @@ using System.Text;
 using TowseyLib;
 using AudioAnalysisTools.HTKTools;
 using AudioAnalysisTools;
+using System.Text.RegularExpressions;
 
 namespace HMMBuilder
 {
@@ -17,11 +18,13 @@ namespace HMMBuilder
             HTKConfig htkConfig = new HTKConfig();            
             BKGTrainer bkgModel = new BKGTrainer(htkConfig);
 
-            //htkConfig.CallName = "CURLEW1";
-            //htkConfig.Comment = "Parameters for Curlew";
-            //htkConfig.LOFREQ = "1000";
-            //htkConfig.HIFREQ = "7000"; //try 6000, 7000 and 8000 Hz as max for Curlew
-            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            htkConfig.CallName = "CURLEW1";
+            htkConfig.Comment = "Parameters for Curlew";
+            htkConfig.LOFREQ = "1000";
+            htkConfig.HIFREQ = "6000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            htkConfig.numHmmSilStates = "3";
+            htkConfig.numIterations = 5;
 
             //htkConfig.CallName = "CURRAWONG1";
             //htkConfig.Comment = "Parameters for Currawong";
@@ -35,11 +38,11 @@ namespace HMMBuilder
             //htkConfig.HIFREQ = "9000"; 
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
 
-            htkConfig.CallName = "KOALAMALE1";
-            htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
-            htkConfig.LOFREQ = "500";
-            htkConfig.HIFREQ = "7000";
-            htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            //htkConfig.CallName = "KOALAMALE1";
+            //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
+            //htkConfig.LOFREQ = "500";
+            //htkConfig.HIFREQ = "7000";
+            //htkConfig.numHmmStates = "10";  //number of hmm states for call model
             //htkConfig.numIterations = 6;
 
             //htkConfig.CallName = "KOALAFEMALE1";
@@ -81,7 +84,8 @@ namespace HMMBuilder
             htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
 
             //BACKGROUND MODEL PARAMETERS
-            htkConfig.numBkgIterations = 3; //number of iterations for re-estimating the BG model
+            htkConfig.singleWord = "BACKGROUND";
+            htkConfig.numBkgIterations = 5; //number of iterations for re-estimating the BG model
             htkConfig.numHmmBkgStates = "1";
 
             //parse all the above strings to ints or reals
@@ -108,13 +112,18 @@ namespace HMMBuilder
             htkConfig.WorkingDir      = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
             htkConfig.WorkingDirBkg   = "C:\\SensorNetworks\\Templates\\Template_BACKGROUND";
             htkConfig.HTKDir          = "C:\\SensorNetworks\\Software\\HTK";
-            htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
+            //htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
+            htkConfig.SilenceModelSrc = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            
             htkConfig.ConfigDir       = htkConfig.WorkingDir    + "\\" + htkConfig.CallName;
             htkConfig.DataDir         = htkConfig.WorkingDir    + "\\data";
             htkConfig.DataDirBkg      = htkConfig.WorkingDirBkg + "\\data";
             htkConfig.ConfigDirBkg    = htkConfig.WorkingDirBkg;
             htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
-            htkConfig.SilenceModelPath= "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+
+            htkConfig.SegmentationDir = htkConfig.WorkingDir + "\\Segmentation";
+            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            
             htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + HTKConfig.noiseModelExt;
             
             Console.WriteLine("CWD=" + htkConfig.WorkingDir);
@@ -164,13 +173,17 @@ namespace HMMBuilder
                         htkConfig.ComputeFVSize(); //Compute Feature Vectors size given htkConfig.TARGETKIND
                         if(! Directory.Exists(htkConfig.ConfigDir))   Directory.CreateDirectory(htkConfig.ConfigDir);
                         if(! Directory.Exists(htkConfig.ProtoConfDir))Directory.CreateDirectory(htkConfig.ProtoConfDir);
+                        if (!Directory.Exists(htkConfig.SegmentationDir)) Directory.CreateDirectory(htkConfig.SegmentationDir);
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
 
-                        //write the segmentation ini file
-                        string segmentationIniFile = htkConfig.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
+                        //1.write the segmentation ini file
+                        //string segmentationIniFile = htkConfig.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
+                        string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
                         htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                        //2.Copy the silence model in the same folder
+                        System.IO.File.Copy(htkConfig.SilenceModelSrc, htkConfig.SilenceModelPath, true);
 
                         //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                         //           ALSO COPY INI FILE TO THE TRAINING DATA DIRECTORIES
@@ -276,14 +289,17 @@ namespace HMMBuilder
                     #region THREE: Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
                     try
                     {
-                        Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");
                         bool extractLabels = true;
+#if EXTRACT_SEGMENTS
+                        Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");                  
 
                         if (!multisyllabic)
-                        {   
+                        {
+
                             if (extractLabels) //True by default - i.e. always segment the training data files
                             {
                                 //copy segmentation ini file to the data directory.
+                                //string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
                                 string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
                                 string fn = System.IO.Path.GetFileName(segmentationIniFile);
                                 System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
@@ -300,15 +316,23 @@ namespace HMMBuilder
                             int verbosity = 0;
                             foreach (string word in htkConfig.multiSyllableList)
                             {
-                                string trnDir = htkConfig.trnDirPath + "\\" + word;   
+                                string trnDir = htkConfig.trnDirPath + "\\" + word;
                                 AudioSegmentation.Execute(trnDir, trnDir, verbosity);
-                            }                        
+                            }
                         }
+#endif
 
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
                     }
-                    catch
+                    catch (System.IO.IOException e)
                     {
+                        Console.WriteLine(e.Message);
+                        good = false;
+                        break;
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE Data Preparation Region");
                         good = false;
                         break;
@@ -359,26 +383,153 @@ namespace HMMBuilder
                         break;
                     }
 
-                    Console.WriteLine("\nTRAINING: HMM Model re-estimation using HTK.HERest");
+                    Console.WriteLine("\nTRAINING: HMM Model re-estimation");                   
+
                     try
                     {
-                        if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
-                        {
-                            numIters = int.Parse(tmpVal);
-                            if (numIters <= 0) //backward compatibility
-                                numIters = 3;
-                        }
-                        else
-                        {
-                            Console.WriteLine("'HEREST_ITER' parameter not specified. Default (3) value used.");
-                            numIters = 3;
-                        }
-                        Console.WriteLine("\n\nNumber of iterations for re-estimating the VOCALIZATION/SIL models set to : " + numIters);
-                        HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
+                        if (HMMSettings.ConfigParam.TryGetValue("HEREST", out tmpVal))
+                            if (!tmpVal.Equals("Y") && !htkConfig.noSegmentation)
+                            {
+                                if (!htkConfig.useBKGModel) //use SIL model and train both SIL and WORD models on 'our' timestamps
+                                {
+                                    //1-estimate SIL model
+                                    HTKHelper.HRest(aOptionsStr, htkConfig, "SIL");
+
+                                    string tmpSrcLine = "";                                    
+                                    //2-copy the SIL info into the BKG model folder for LLR normalization
+#if !TEMP_TEST
+                                    if (htkConfig.LLRNormalization)
+                                    {
+                                        //copy model file
+                                        string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
+                                        string destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.hmmdefFN);
+                                        StreamReader sourceReader = new StreamReader(sourceF);
+                                        StreamWriter destWriter = new StreamWriter(destF);                                        
+                                        while ((tmpSrcLine = sourceReader.ReadLine()) != null)
+                                        {
+                                            if (tmpSrcLine.StartsWith("~h"))
+                                                tmpSrcLine = "~h \"BACKGROUND\"";
+                                            destWriter.WriteLine(tmpSrcLine);
+                                        }
+                                        sourceReader.Close();
+                                        destWriter.Close();
+
+                                        //copy macros file
+                                        sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.macrosFN);
+                                        destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.macrosFN);
+                                        File.Copy(sourceF, destF, true);
+                                    }
+#endif
+
+                                    //3-make a temporary copy of SIL model
+                                    FileTools.BackupFile(htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN);
+                                    //4-estimate WORD model
+                                    HTKHelper.HRest(aOptionsStr, htkConfig, htkConfig.CallName);
+#if TEMP_TEST
+                                    if (htkConfig.LLRNormalization)
+                                    {
+                                        //copy model file
+                                        string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
+                                        string destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.hmmdefFN);
+                                        StreamReader sourceReader = new StreamReader(sourceF);
+                                        StreamWriter destWriter = new StreamWriter(destF);
+                                        while ((tmpSrcLine = sourceReader.ReadLine()) != null)
+                                        {
+                                            if (tmpSrcLine.StartsWith("~h"))
+                                                tmpSrcLine = "~h \"BACKGROUND\"";
+                                            destWriter.WriteLine(tmpSrcLine);
+                                        }
+                                        sourceReader.Close();
+                                        destWriter.Close();
+
+                                        //copy macros file
+                                        sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.macrosFN);
+                                        destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.macrosFN);
+                                        File.Copy(sourceF, destF, true);
+                                    }
+#endif
+                                    //5-merge models
+                                    //The 'tmp' dir contains a copy of the estimated SIL model
+                                    string dstHmm = htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN;
+                                    string srcHmm = htkConfig.tgtDir2 + "\\copy_of_" + htkConfig.hmmdefFN;
+
+                                    StreamReader srcFileReader = File.OpenText(srcHmm);
+                                    string bodyToAdd = "";
+                                    bool validLines = false;
+                                    while ((tmpSrcLine = srcFileReader.ReadLine()) != null)
+                                    {
+                                        if (tmpSrcLine.StartsWith("~h"))
+                                            validLines = true;
+                                        
+                                        if (validLines)
+                                            bodyToAdd += tmpSrcLine + "\n";
+                                    }
+                                    FileTools.Append2TextFile(dstHmm, bodyToAdd, false);
+
+                                }
+                                else //use BKG model and train the WORD model on our timestamps
+                                    HTKHelper.HRest(aOptionsStr, htkConfig, htkConfig.CallName);
+                            }
+                            else
+                            {
+                                if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
+                                {
+                                    numIters = int.Parse(tmpVal);
+                                    if (numIters <= 0) //backward compatibility
+                                        numIters = 3;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("'HEREST_ITER' parameter not specified. Default value (3) will be used.");
+                                    numIters = 3;
+                                }
+                                Console.WriteLine("\n\nNumber of iterations for re-estimating the VOCALIZATION/SIL models set to : " + numIters);
+
+                                HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
+
+                                //copy the SIL info into the BKG model folder for LLR normalization
+                                if (!htkConfig.useBKGModel && htkConfig.LLRNormalization && !htkConfig.noSegmentation) 
+                                { 
+                                    //1-extract SIL model and copy it into the BKG folder
+                                    string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
+                                    string destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.hmmdefFN);
+                                    StreamReader sourceReader = new StreamReader(sourceF);
+                                    StreamWriter destWriter = new StreamWriter(destF);
+                                    string tmpSrcLine = "";
+                                    bool validLines = true;
+                                    while ((tmpSrcLine = sourceReader.ReadLine()) != null)
+                                    {
+                                        if (tmpSrcLine.StartsWith("~h"))
+                                        {
+                                            string[] param = Regex.Split(tmpSrcLine, @"\s+");
+#if !TEMP_TEST
+                                            if (param[1].Equals("\"SIL\""))
+#else
+                                            if (param[1].Equals("\""+htkConfig.CallName+"\""))
+#endif
+                                            {
+                                                tmpSrcLine = "~h \"BACKGROUND\"";
+                                                validLines = true;
+                                            }
+                                            else
+                                                validLines = false;
+                                        }
+                                        if (validLines) destWriter.WriteLine(tmpSrcLine);
+                                    }
+                                    sourceReader.Close();
+                                    destWriter.Close();
+
+                                    //2-copy macros file to the BKG folder
+                                    sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.macrosFN);
+                                    destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.macrosFN);
+                                    File.Copy(sourceF, destF, true);                                    
+                                }
+                            }
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig)");
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE PARAMETERS ESTIMATION");
+                        Console.WriteLine(ex);
                         good = false;
                         break; 
                     }
@@ -389,7 +540,7 @@ namespace HMMBuilder
                     {
                         if (tmpVal.Equals("Y"))
                         {
-                            Console.WriteLine("\n\nEstimating the BACKGROUND model ...");
+                            Console.WriteLine("\n\nEstimating the BACKGROUND model ...");                           
 
                             if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
                             {
@@ -416,7 +567,6 @@ namespace HMMBuilder
                                 good = false;
                                 break;
                             }
-
                         }
                         else //the BG model does not need to be re-trained
                         {
@@ -448,6 +598,30 @@ namespace HMMBuilder
                         {
                             //TO DO: Ask the user for the word network file
                         }
+                        
+                        //Use the BACKGROUND model rather than the SIL model. 
+                        if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.useBKGModel))
+                        {
+                            //The 'tmp' dir contains a copy of the estimated BKG model
+                            string dstHmm = htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN;
+                            string srcHmm = htkConfig.tgtDir2Bkg + "\\" + htkConfig.hmmdefFN;
+                            
+                            StreamReader srcFileReader = File.OpenText(srcHmm);
+                            string tmpSrcLine = ""; string bodyToAdd = "";
+                            bool validLines = false;
+                            while ((tmpSrcLine = srcFileReader.ReadLine()) != null)
+                            {
+                                if (tmpSrcLine.StartsWith("~h")) //turn 'BACKGROUND' into 'SIL'
+                                {
+                                    tmpSrcLine = "~h \"SIL\"";
+                                    validLines = true;
+                                }
+                                if (validLines)
+                                    bodyToAdd += tmpSrcLine + "\n";
+                            }
+                            FileTools.Append2TextFile(dstHmm, bodyToAdd, false);
+                        }
+
                         //True calls
                         HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tTrueF, htkConfig.wordNet,
                                         htkConfig.DictFile, htkConfig.resultTrue, htkConfig.monophones, htkConfig.HViteExecutable);
@@ -455,8 +629,9 @@ namespace HMMBuilder
                         HTKHelper.HVite(htkConfig.MfccConfig2FN, htkConfig.tgtDir2, htkConfig.tFalseF, htkConfig.wordNet,
                                         htkConfig.DictFile, htkConfig.resultFalse, htkConfig.monophones, htkConfig.HViteExecutable);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine(ex.Message);
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HVite()");
                         good = false;
                         break; 
@@ -466,7 +641,8 @@ namespace HMMBuilder
 
                     #region Score BACKGROUND model
                     //Modify the output from HVite so as to include the scores from background model
-                    if (htkConfig.LLRNormalization)
+                    if (htkConfig.noSegmentation || 
+                        (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
                     {
                         //Generate the word network for the backgroung word
                         HTKHelper.HBuild(htkConfig.monophonesBkg, htkConfig.wordNetBkg, htkConfig.HBuildExecutable);
@@ -474,6 +650,26 @@ namespace HMMBuilder
                         bkgModel.ScoreModel(true);
                         //Score the BCK model on the false set
                         bkgModel.ScoreModel(false);
+                        //Copy the model files to the working directory
+                        string newBKGDir = htkConfig.ConfigDir + htkConfig.HmmDirBkgLLR;
+                        if (Directory.Exists(newBKGDir))
+                            Directory.Delete(newBKGDir, true);
+                        Directory.CreateDirectory(newBKGDir);
+                        string sourceFN = htkConfig.tgtDir2Bkg + "\\" + htkConfig.macrosFN;
+                        string destFN = newBKGDir + "\\" + htkConfig.macrosFN;
+                        File.Copy(sourceFN, destFN, true);
+                        sourceFN = htkConfig.tgtDir2Bkg + "\\" + htkConfig.hmmdefFN;
+                        destFN = newBKGDir + "\\" + htkConfig.hmmdefFN;
+                        File.Copy(sourceFN, destFN, true);
+                        sourceFN = htkConfig.wordNetBkg;
+                        destFN = newBKGDir + "\\phone.net";
+                        File.Copy(sourceFN, destFN, true);
+                        sourceFN = htkConfig.DictFileBkg;
+                        destFN = newBKGDir + "\\dict";
+                        File.Copy(sourceFN, destFN, true);
+                        sourceFN = htkConfig.monophonesBkg;
+                        destFN = newBKGDir + "\\labelList.txt";
+                        File.Copy(sourceFN, destFN, true);
                      }
                     #endregion
 
@@ -484,7 +680,7 @@ namespace HMMBuilder
                     double frameRate = 10000000 / double.Parse(htkConfig.TARGETRATE);
                     Console.WriteLine("\nFrame rate = "+ frameRate+"\n");
 
-                    //calculate the mean and sd of the training call durations
+                    //calculate the TRUE mean and sd of the training call durations
                     string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
                     double mean = 0;
                     double trnSD = 0;
@@ -497,7 +693,7 @@ namespace HMMBuilder
                         Console.WriteLine("Training song durations= " + mean.ToString("f4") + "+/-" + trnSD.ToString("f4") + " seconds or " +
                                           (mean * frameRate).ToString("f1") + " frames\n");
 
-                        //calculate the mean and sd of the testing call durations
+                        //calculate the PROBABLE mean and sd of the testing call durations
                         masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
                         double mean2;
                         double sd2;
@@ -519,8 +715,15 @@ namespace HMMBuilder
                             float accuracy = 0.0f;
                             float avTPScore = 0.0f;
                             float avFPScore = 0.0f;
-                            float threshold = -50f;      //set a central threshold value suitable to create a ROC curve  
-                            int step = 2; //to step the threshold
+                            float threshold = 0.0f;
+
+                            //set a central threshold value suitable to create a ROC curve  
+                            if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+                                threshold = 2000; //2500;  for noSegmentation 
+                            else
+                                threshold = -50;  //-50
+
+                            int step = 50; //to step the threshold
                             double maxScore = -Double.MaxValue;
                             int maxTpCount = 0;
                             int maxTnCount = 0;
@@ -529,9 +732,16 @@ namespace HMMBuilder
                                 trueSCount = 0;
                                 falseSCount = 0;
                                 float t = threshold - (i * step);
-                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
+
+                                if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+                                    Helper.ComputeAccuracy2(htkConfig.modifResultTrue, htkConfig.modifResultFalse, mean, trnSD, frameRate,
                                                   vocalization, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                                   out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                                else
+                                    Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
+                                                      vocalization, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                                      out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+
                                 Console.WriteLine("TP={0:f1}\tTN={1:f1}\tAcc={2:f1}%\tavTPscore={3:f0}\tavFPscore={4:f0} \t(threshold={5})", tppercent, tnpercent, accuracy, avTPScore, avFPScore, t);
                                 if (accuracy > maxScore)
                                 {
@@ -546,9 +756,17 @@ namespace HMMBuilder
                             Console.WriteLine("TP=" + maxTpCount + "/" + trueSCount + "  TN=" + maxTnCount + "/" + falseSCount);
                             Console.WriteLine("FN=" + (trueSCount - maxTpCount) + "     FP=" + (falseSCount - maxTnCount));
                             //repeat in order to print the PDF file of individual results
-                            Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
-                                   vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
-                                   out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+
+                            if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+                                Helper.ComputeAccuracy2(htkConfig.modifResultTrue, htkConfig.modifResultFalse, mean, trnSD, frameRate,
+                                                vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                                out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+                            else
+                                Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, mean, trnSD, frameRate,
+                                                    vocalization, optimumThreshold, out tpCount, out fpCount, out trueSCount, out falseSCount,
+                                                    out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
+
+
                             Console.WriteLine("You can check individual hits in the template's results directory.");
 
                             //Append threshold and quality info to ini file
@@ -664,22 +882,22 @@ namespace HMMBuilder
 
                     #region EIGHT: SET UP THE TEMPLATE ZIP FILE
 
-                    try
-                    {
-                        //COPY SILENCE MODEL FILES TO CONFIG DIR
-                        string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
-                        string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
-                        string ext = HTKConfig.noiseModelExt;
-                        string oldNoiseModel = oldNoiseDir + "\\" + noiseModelFN + ext;
-                        string newNoiseModel = htkConfig.ConfigDir + "\\" + noiseModelFN + ext;
-                        File.Copy(oldNoiseModel, newNoiseModel, true);
-                    }
-                    catch (IOException ex)
-                    {
-                        Console.WriteLine("ERROR! FAILED TO COPY SILENCE FILES");
-                        Console.WriteLine(ex.ToString());
-                        good = false;
-                    }
+                    //try
+                    //{
+                    //    //COPY SILENCE MODEL FILES TO CONFIG DIR
+                    //    string oldNoiseDir = Path.GetDirectoryName(htkConfig.SilenceModelPath);
+                    //    string noiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath);
+                    //    string ext = HTKConfig.noiseModelExt;
+                    //    string oldNoiseModel = oldNoiseDir + "\\" + noiseModelFN + ext;
+                    //    string newNoiseModel = htkConfig.ConfigDir + "\\" + noiseModelFN + ext;
+                    //    File.Copy(oldNoiseModel, newNoiseModel, true);
+                    //}
+                    //catch (IOException ex)
+                    //{
+                    //    Console.WriteLine("ERROR! FAILED TO COPY SILENCE FILES");
+                    //    Console.WriteLine(ex.ToString());
+                    //    good = false;
+                    //}
 
                     Console.WriteLine("\n\nWRITE HTK FILES");
                     try
