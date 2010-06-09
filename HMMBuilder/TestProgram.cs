@@ -21,14 +21,17 @@ namespace HMMBuilder
 
             #region Variables
             HTKConfig htkConfig = new HTKConfig();
+            htkConfig.TARGETRATE = "116100.0";
+            BKGTrainer bkgModel = new BKGTrainer(htkConfig);
             //htkConfig.WorkingDir      = Directory.GetCurrentDirectory();
 
             //SET THESE DEFAULT VALUES FOR THE COMMAND LINE ARGUMENTS
             htkConfig.WorkingDir = "C:\\SensorNetworks\\temp"; //set default working directory             // ARG 0  
             //string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURRAWONG1\\CURRAWONG1.zip";    // ARG 1
-            //string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";          // ARG 1
-            string templateFN = "C:\\SensorNetworks\\Templates\\Template_WHIPBIRD1\\WHIPBIRD1.zip";    // ARG 1
-            string testWavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\St_Bees_Currawong_20080919-060000_13.wav"; //ARG 2
+            string templateFN = "C:\\SensorNetworks\\Templates\\Template_CURLEW1\\CURLEW1.zip";          // ARG 1
+            //string templateFN = "C:\\SensorNetworks\\Templates\\Template_WHIPBIRD1\\WHIPBIRD1.zip";    // ARG 1
+            //string testWavFile = "C:\\SensorNetworks\\WavFiles\\TestWaveFile\\West_Knoll_Bees_20091102-063000.wav"; //ARG 2
+            string testWavFile;
 
             //GET THE COMMAND LINE ARGUMENTS
             if (args.Length >= 1) htkConfig.WorkingDir = args[0]; //where to place output
@@ -42,7 +45,7 @@ namespace HMMBuilder
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
-            testWavFile = @"C:\SensorNetworks\WavFiles\BridgeCreek\\cabin_GoldenWhistler_file0127_extract1.wav";
+            testWavFile = @"C:\\SensorNetworks\\WavFiles\\TestWaveFile\\WestKnollStBees_20080928-193000_2.wav";
             //*******************************************************************************************************************
 
 
@@ -53,7 +56,7 @@ namespace HMMBuilder
             htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
             htkConfig.HTKDir          = htkConfig.ConfigDir  + "\\HTK"; 
             htkConfig.SegmentationDir = htkConfig.ConfigDir  + "\\Segmentation";
-            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            //htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             
         
             //Console.WriteLine("CWD=" + htkConfig.WorkingDir);
@@ -95,19 +98,43 @@ namespace HMMBuilder
                             htkConfig.DictFile, htkConfig.resultTest, htkConfig.monophones, htkConfig.HViteExecutable);
 
 
+            List<string> hmmResults;
+
+            if (htkConfig.noSegmentation ||(!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+            { 
+                /* Score BKG model */
+                string resultsReaderF = htkConfig.resultTest;
+                string scriptWriterF = target + "\\audioSegmTrue.scp";
+                string modifResultsWriterF = htkConfig.ResultsDir + "\\bckRecount.mlf";
+                string bckScoreReaderF = htkConfig.ResultsDir + "\\bckScore.mlf";
+                string MfccConfig2FN = target + "\\mfccConfig.txt";;
+                string tgtDir2Bkg = target + htkConfig.HmmDirBkgLLR;
+                string wordNetBkg = target + htkConfig.HmmDirBkgLLR + "\\phone.net";
+                string DictFileBkg = target + htkConfig.HmmDirBkgLLR + "\\dict";
+                string monophonesBkg = target + htkConfig.HmmDirBkgLLR + "\\labelList.txt";
+
+                bkgModel.ScoreModel(MfccConfig2FN, tgtDir2Bkg, resultsReaderF, 
+                                    wordNetBkg, DictFileBkg, monophonesBkg, 
+                                    scriptWriterF, modifResultsWriterF, bckScoreReaderF);
+
+                hmmResults = FileTools.ReadTextFile(modifResultsWriterF);//There must be ONE AND ONLY ONE header line.
+            }
+            else
+                hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);//There must be ONE AND ONLY ONE header line.
+
             Console.WriteLine("HTK DONE");
             //Console.ReadLine();
 
             //GET THRESHOLDS FROM INI FILE
-            string key = "HTK_THRESHOLD";
+            string key = htkConfig.CallName + "_HTK_THRESHOLD";
             string str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
             float HTKThreshold = float.Parse(str);
             Console.WriteLine("HTKThreshold= " + HTKThreshold);
-            key = "DURATION_MEAN";
+            key = htkConfig.CallName + "_DURATION_MEAN";
             str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
             float QualityMean = float.Parse(str);
             Console.WriteLine("DurationMean= " + QualityMean);
-            key = "DURATION_SD";
+            key = htkConfig.CallName + "_DURATION_SD";
             str = FileTools.ReadPropertyFromFile(target + "\\segmentation.ini", key);
             float QualitySD = float.Parse(str);
             Console.WriteLine("DurationSD= " + QualitySD);
@@ -118,7 +145,6 @@ namespace HMMBuilder
 
 
             Console.WriteLine("\nParsing the HMM results file");
-            List<string> hmmResults = FileTools.ReadTextFile(htkConfig.resultTest);//There must be ONE AND ONLY ONE header line.
 
             Console.WriteLine("\nPreparing sonogram");
             AudioAnalysisTools.SonogramConfig sonoConfig = new SonogramConfig();
@@ -135,8 +161,13 @@ namespace HMMBuilder
             //QualityThreshold = 40.0f;
 
             Console.WriteLine("HTKThreshold=" + HTKThreshold + "    QualityThreshold=" + QualityThreshold + "   frameRate=" + sonogram.FramesPerSecond);
-            double[] scores = ParseHmmScores(hmmResults, sonogram.FrameCount, sonogram.FramesPerSecond, htkConfig.CallName,
-                                             HTKThreshold, QualityMean, QualitySD, QualityThreshold);
+            double[] scores;
+            if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+                scores = ParseHmmScores(hmmResults, sonogram.FrameCount, sonogram.FramesPerSecond, htkConfig.CallName,
+                                             HTKThreshold, QualityMean, QualitySD, QualityThreshold, htkConfig.CallName, true);
+            else
+                scores = ParseHmmScores(hmmResults, sonogram.FrameCount, sonogram.FramesPerSecond, htkConfig.CallName,
+                                             HTKThreshold, QualityMean, QualitySD, QualityThreshold, htkConfig.CallName, false);
 
             double thresholdFraction = 0.2;//for display purposes only. Fraction of the score track devoted to sub-threshold scores
             double[] finalScores = NormaliseScores(scores, HTKThreshold, thresholdFraction);
@@ -193,6 +224,7 @@ namespace HMMBuilder
                 double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
                 double normScore, qualityScore, frameLength;
                 bool isHit;
+                
                 Helper.ComputeHit(score, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
                                   out frameLength, out normScore, out qualityScore, out isHit);
 
@@ -225,6 +257,86 @@ namespace HMMBuilder
             return scores;
         }
 
+        public static double[] ParseHmmScores(List<string> results, int frameCount, double frameRate, string targetClass,
+                                      double scoreThreshold, double qualityMean, double qualitySD, double qualityThreshold, 
+                                      string vocalization, bool LLR)
+        {
+            double[] scores = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) scores[i] = Double.NaN; //init to NaNs.
+            int count = results.Count;
+
+            double avScore = 0.0;
+            double avDuration = 0.0;
+            double avFrames = 0.0;
+            int hitCount = 0;
+
+            for (int i = 0; i < count; i++)
+            {
+                if ((results[i] == "") || (results[i].StartsWith("."))) continue;
+                if ((results[i].StartsWith("\"")) || (results[i].StartsWith("#"))) continue;
+                //Helper.ParseResultLine(results[i], out start, out end, out className, out score);
+                string[] param = Regex.Split(results[i], @"\s+");
+                long start = long.Parse(param[0]);
+                long end = long.Parse(param[1]);
+                string vocalName = param[2];
+                float bkgScore = 0.0f;
+                float score = 0.0f;
+
+                if (vocalName.Equals(vocalization))
+                {
+                    if (LLR) bkgScore = float.Parse(param[4]);
+
+                    score = float.Parse(param[3]);
+
+                    if (!vocalName.StartsWith(targetClass)) continue; //skip irrelevant lines
+
+                    hitCount++; //count hits
+
+                    //calculate hmm and quality scores
+                    double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //call duration in seconds
+                    double normScore, qualityScore, frameLength;
+                    bool isHit;
+
+                    if (LLR)
+                    {
+                        Helper.ComputeHit2(score, bkgScore, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
+                            out frameLength, out normScore, out qualityScore, out isHit);
+                    }
+                    else
+                    {
+                        Helper.ComputeHit(score, duration, frameRate, qualityMean, qualitySD, scoreThreshold, qualityThreshold,
+                            out frameLength, out normScore, out qualityScore, out isHit);
+                    }
+
+                    double startSec = start / (double)10000000;  //start in seconds
+                    double endSec = end / (double)10000000;  //end   in seconds
+                    int startFrame = (int)(startSec * frameRate);
+                    int endFrame = (int)(endSec * frameRate);
+                    //double frameLength = (endSec - startSec) * frameRate;
+
+                    Console.WriteLine("sec=" + startSec.ToString("f1") + "-" + endSec.ToString("f1") +
+                                      "\t " + (endSec - startSec).ToString("f2") + "s" +
+                                      "\t frames=" + frameLength.ToString("f0") +
+                                      "\t score=" + score.ToString("f1") +
+                                      "\t normScore=" + normScore.ToString("f1") +
+                                      "\t qualityScore=" + qualityScore.ToString("f1") + "\t HIT=" + isHit);
+
+                    avScore += normScore;
+                    avDuration += (endSec - startSec);
+                    avFrames += frameLength;
+
+                    if (!isHit)
+                    {
+                        normScore = scoreThreshold + (normScore / 5);
+                        //continue;
+                    }
+                    for (int s = startFrame; s <= endFrame-1; s++) scores[s] = normScore;
+                }
+            }//end for all hits
+            Console.WriteLine("avNormScore=" + (avScore / hitCount).ToString("f2"));
+            Console.WriteLine("av Duration=" + (avDuration / hitCount).ToString("f3") + " or " + (avFrames / hitCount).ToString("f1") + " frames.");
+            return scores;
+        }
 
         public static double[] NormaliseScores(double[] scores, float threshold, double thresholdFraction)
         {
