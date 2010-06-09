@@ -54,7 +54,6 @@ namespace AudioAnalysisTools.HTKTools
         } //end method CopyAll()
 
 
-
         public static void SegmentDataFiles(HTKConfig htkConfig, ref string vocalization)
         {
             string segmentationExecutable = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationExe;
@@ -103,7 +102,7 @@ namespace AudioAnalysisTools.HTKTools
             {
                 try
                 {
-                    //TWO - Read segmentation files and write the PHONES.MLF file
+                    //TWO - Read in segmentation files and transcribe them into PHONES.MLF
                     //read the labelSeq file containing the label sequence
 
                     StreamReader wltReader = null;
@@ -149,36 +148,62 @@ namespace AudioAnalysisTools.HTKTools
                                 currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
 
                                 wltWriter.WriteLine(currLine);
+                                
                                 //read related label file
                                 string segFile = Path.GetFileNameWithoutExtension(FI.FullName) + segmentationFileExt;
                                 wltReader = new StreamReader(currTrnDir + "\\" + segFile);
                                 wltReader.ReadLine(); //remove first line
-                                while ((txtLine = wltReader.ReadLine()) != null)
+
+                                if (!htkConfig.noSegmentation) //consider SIL/VOCALIZATION segmentents
                                 {
-                                    param = Regex.Split(txtLine, @"\s+");
-                                    if (param[0].StartsWith("SIL"))
-                                        word = "SIL";
-                                    else
+                                    while ((txtLine = wltReader.ReadLine()) != null)
                                     {
-                                        word = param[0];
-                                        vocalization = word;
+                                        param = Regex.Split(txtLine, @"\s+");
+                                        if (param[0].StartsWith("SIL"))
+                                            word = "SIL";
+                                        else
+                                        {
+                                            word = param[0];
+                                            vocalization = word;
+                                        }
+
+                                        //add word to word list
+                                        if (!syllableList.Contains(word))
+                                            syllableList.Add(word);
+
+                                        sTime = float.Parse(param[2]);
+                                        sTime *= 1e+7f; //conversion to HTK units
+                                        srtTime = sTime.ToString();
+                                        eTime = float.Parse(param[4]);
+                                        eTime *= 1e+7f; //conversion to HTK units
+                                        endTime = eTime.ToString();
+                                        currLine = srtTime + " " + endTime + " " + word;
+                                        wltWriter.WriteLine(currLine);                                        
                                     }
+                                    wltWriter.WriteLine(".");
+                                }
+                                else
+                                {
+                                    string bottomLine = "";
+                                    while ((txtLine = wltReader.ReadLine()) != null)
+                                    {
+                                        bottomLine = txtLine;
+                                    }
+                                    param = Regex.Split(bottomLine, @"\s+");
 
-                                    //add word to word list
-                                    if (!syllableList.Contains(word))
-                                        syllableList.Add(word);
-
-                                    sTime = float.Parse(param[2]);
-                                    sTime *= 1e+7f; //conversion to HTK units
-                                    srtTime = sTime.ToString();
+                                    sTime *= 0.0f; srtTime = sTime.ToString();
                                     eTime = float.Parse(param[4]);
                                     eTime *= 1e+7f; //conversion to HTK units
                                     endTime = eTime.ToString();
+                                    word = htkConfig.CallName;
                                     currLine = srtTime + " " + endTime + " " + word;
                                     wltWriter.WriteLine(currLine);
-                                }
-
-                                wltWriter.WriteLine(".");
+                                    wltWriter.WriteLine(".");
+                                    //populate syllable list
+                                    if (!syllableList.Contains(word))
+                                        syllableList.Add(word);
+                                    vocalization = word;
+                                }                                
                             }
 
                             //TO DO: check if each entry of labParam has a related .pcf file
@@ -1139,6 +1164,149 @@ namespace AudioAnalysisTools.HTKTools
             }
         }
 
+        public static void HRest(string aOtpStr, HTKConfig htkConfig, string callName)
+        {
+            Console.WriteLine("Model '{0}' re-estimation: HRest", callName);
+
+            string HRestExecutable = htkConfig.HTKDir + "\\HRest.exe";
+
+            StreamReader stdErr = null;
+
+            //StreamReader stdOut = null;
+            //string output = null;
+            string error = null;
+
+            //Create directories
+            string tmpD;
+            string tgtDir0;
+            string tgtDir1;
+            string tgtDir2;
+            string MfccConfig2FN;
+            string wltF;
+            string trainF;
+            string monophones;
+
+            if (!htkConfig.bkgTraining)
+            {
+                tmpD = htkConfig.tgtDirTmp;
+                tgtDir1 = htkConfig.tgtDir1;
+                tgtDir2 = htkConfig.tgtDir2;
+                tgtDir0 = htkConfig.tgtDir0;
+                MfccConfig2FN = htkConfig.MfccConfig2FN;
+                wltF = htkConfig.wltF;
+                trainF = htkConfig.trainF;
+                monophones = htkConfig.monophones;
+            }
+            else
+            {
+                tmpD = htkConfig.tgtDirTmpBkg;
+                tgtDir1 = htkConfig.tgtDir1Bkg;
+                tgtDir2 = htkConfig.tgtDir2Bkg;
+                tgtDir0 = htkConfig.tgtDir0Bkg;
+                MfccConfig2FN = htkConfig.MfccConfig2FNBkg;
+                wltF = htkConfig.wltFBkg;
+                trainF = htkConfig.trainFBkg;
+                monophones = htkConfig.monophonesBkg;
+            }
+
+            try
+            {
+                if (!Directory.Exists(tgtDir1)) // Remove hmm1 dir if it exists
+                {
+                    Directory.CreateDirectory(tgtDir1);
+                }                
+                DirectoryInfo srcDir = new DirectoryInfo(tgtDir1); //hmm1 becomes source dir
+
+                if (!Directory.Exists(tgtDir2))// Remove hmm2 dir if it exists
+                {
+                    Directory.CreateDirectory(tgtDir2);
+                }                
+                DirectoryInfo tgtDir = new DirectoryInfo(tgtDir2); //hmm2 becomes target dir
+
+                if (!Directory.Exists(tmpD)) // Remove temp dir if exists
+                {
+                    Directory.CreateDirectory(tmpD);
+                }                
+                DirectoryInfo tmpDir = new DirectoryInfo(tmpD); // create temporary directory
+
+
+                //Copy hmm0 to hmm1. hmm0 contains the initial parameter values
+                DirectoryInfo hmm0 = new DirectoryInfo(tgtDir0);
+                CopyAll(hmm0, srcDir);
+                if (File.Exists(tgtDir1 + "\\" + htkConfig.protoFN))
+                    File.Delete(tgtDir1 + "\\" + htkConfig.protoFN);
+                if (File.Exists(tgtDir1 + "\\" + htkConfig.vFloorsFN))
+                    File.Delete(tgtDir1 + "\\" + htkConfig.vFloorsFN);
+
+
+                //Now do HMM training
+                try
+                {
+                    int i = 1;
+
+                    //SET UP COMMAND LINE FOR HRest.exe
+                    //HRest.exe -A -D -T 1 
+                    //      -C ./configs/config_train 
+                    //      -I ./configs/phones.mlf 
+                    //      -S ./configs/train.scp 
+                    //      -H ./hmms/hmmx/macros 
+                    //      -H ./hmms/hmmx/hmmdefs 
+                    //      -M ./hmms/hmm(x+1) 
+                    //      VOCALIZATION
+
+                    string commandLine = "";
+                    commandLine = " " + aOtpStr + " -C " + MfccConfig2FN + " -I " + wltF +
+                                  " -S " + trainF +
+                                  " -H " + srcDir.ToString() + "\\" + htkConfig.macrosFN +
+                                  " -H " + srcDir.ToString() + "\\" + htkConfig.hmmdefFN +
+                                  " -M " + tgtDir.ToString() + " " + callName;
+
+                    Process herest = new Process();
+                    ProcessStartInfo psI = new ProcessStartInfo(HRestExecutable);
+                    psI.UseShellExecute = false;
+                    //psI.RedirectStandardOutput = true;
+                    psI.RedirectStandardError = true;
+                    psI.CreateNoWindow = true;
+                    psI.Arguments = commandLine;
+                    herest.StartInfo = psI;
+                    herest.Start();
+                    herest.WaitForExit();
+                    stdErr = herest.StandardError;
+                    //stdOut = herest.StandardOutput;
+                    //output = stdOut.ReadToEnd();
+                    error = stdErr.ReadToEnd();
+                    //Console.WriteLine(output);
+                    if (error.Contains("ERROR"))
+                    {
+                        throw new Exception();
+                    }
+                    CopyAll(tgtDir, tmpDir);
+                }
+                catch (Win32Exception e)
+                {
+                    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+                    {
+                        Console.WriteLine(e.Message + ". Check the path.");
+                    }
+                    throw (e);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(error);
+                    throw (e);
+                }
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw (e);
+            }
+            finally
+            {               
+            }
+        }
+
 
 
         public static void HBuild(string monophones_test, string wordNet, string HBuildExecutable)
@@ -1191,7 +1359,6 @@ namespace AudioAnalysisTools.HTKTools
 
             }
         } // end HBuild()
-
 
 
         public static void HVite(string confTrain, string tgtDir2, string testF,
