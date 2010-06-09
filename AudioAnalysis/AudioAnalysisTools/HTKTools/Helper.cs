@@ -254,6 +254,29 @@ namespace AudioAnalysisTools.HTKTools
             accuracy = (tpCount + tnCount) * 100 / (float)(trueSCount + falseSCount);
         } //end method ComputeAccuracy()
 
+        public static void ComputeAccuracy2(string resultTrue, string resultFalse,
+                                    double mean, double SD, double frameRate,
+                                    string vocalization, float threshold,
+                                    out int tpCount, out int fpCount,
+                                    out int trueSCount, out int falseSCount,
+                                    out float tpPercent, out float tnPercent,
+                                    out float accuracy, out float avTPScore,
+                                    out float avFPScore)
+        {
+            avTPScore = 0.0f;
+            avFPScore = 0.0f;
+
+            CountHits2(resultTrue, vocalization, mean, SD, frameRate, threshold, out tpCount, out trueSCount, out avTPScore);
+            CountHits2(resultFalse, vocalization, mean, SD, frameRate, threshold, out fpCount, out falseSCount, out avFPScore);
+
+            int tnCount = falseSCount - fpCount;
+            tpPercent = tpCount * 100 / (float)trueSCount;
+            tnPercent = tnCount * 100 / (float)falseSCount;
+            accuracy = (tpCount + tnCount) * 100 / (float)(trueSCount + falseSCount);
+        } //end method ComputeAccuracy2()
+
+
+
         
         /// <summary>
         /// Computes a normsalised HMM score and a QULAITY SCORE based on hit duration
@@ -360,6 +383,100 @@ namespace AudioAnalysisTools.HTKTools
         } //end Method CountHits()
 
 
+        public static void CountHits2(string resultFile, string vocalization,
+                             double mean, double SD, double frameRate,
+                             float scoreThreshold, out int hits, out int total, out float avScore)
+        {
+            //TO DO: check if the file exists
+            StreamReader reader = null;
+            StreamWriter writer = null;
+            //double lengthProb = 0.0f;
+            hits = 0;
+            total = 0;
+            avScore = 0.0f;
+
+            string txtLine = null;
+            try
+            {
+
+                reader = new StreamReader(resultFile);
+
+                writer = new StreamWriter(Path.ChangeExtension(resultFile, vocalization));
+
+                bool valid = true;
+                while ((txtLine = reader.ReadLine()) != null)
+                {
+                    if (Regex.IsMatch(txtLine, @"[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?\s+\w+")
+                        && valid)
+                    {
+                        //Console.WriteLine(txtLine);
+                        string[] param = Regex.Split(txtLine, @"\s+");
+                        long start = long.Parse(param[0]);
+                        long end = long.Parse(param[1]);
+                        string name = param[2];
+                        float vocScore = float.Parse(param[3]);                        
+
+                        //if (param[2].Equals(vocalization) && score >= threshold)
+                        if (name.Equals(vocalization))
+                        {
+                            float bkgScore = float.Parse(param[4]); //there will be the BKG score
+                            //normalise the score
+                            double duration = TimeSpan.FromTicks(end - start).TotalSeconds; //duration in seconds
+                            double qualityThreshold = 1.96;
+                            double normScore, qualityScore, frameLength;
+                            bool isHit;
+                            ComputeHit2(vocScore, bkgScore, duration, frameRate, mean, SD, scoreThreshold, qualityThreshold,
+                                       out frameLength, out normScore, out qualityScore, out isHit);
+
+                            txtLine += " " + normScore.ToString("f1") + "  " + qualityScore.ToString("f5");
+                            if (isHit)
+                            {
+                                //Console.WriteLine("duration=" + duration.ToString("f3") + " (p=" + lengthProb.ToString("f3") + ")   normScore=" + normScore.ToString("f0"));
+                                avScore += (float)normScore;
+                                hits++;
+                                valid = false;
+                                txtLine += " " + "  ##TP HIT!! Thresholds: score=" + scoreThreshold.ToString("f1") + "  quality=" + qualityThreshold.ToString("f2");
+                            }
+                            //else
+                            //{
+                            //    txtLine += " " + normScore.ToString("f1") + "  " + qualityScore.ToString("f5") + "  ##TN MISS";
+
+                            //}
+                        } //end if vocalisation
+                    }
+                    writer.WriteLine(txtLine);
+
+                    if (Regex.IsMatch(txtLine, @"^\.$"))
+                    {
+                        total++;
+                        valid = true;
+                    }
+                }
+            }// end try
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw (e);
+            }
+            finally
+            {
+                if (hits == 0) avScore = 0.0f;
+                else
+                    avScore /= hits;
+                //Console.WriteLine("hits=" + hits + "/" + total + "   avScore=" + avScore);
+                if (reader != null)
+                    reader.Close();
+
+                if (writer != null)
+                {
+                    writer.Flush();
+                    writer.Close();
+                }
+
+            } //end finally
+        } //end Method CountHits2()
+
+
 
         public static void ComputeHit(double score, double duration, double frameRate, double mean, double sd,
                                       double scoreThreshold, double qualityThreshold, out double frameCount,
@@ -377,9 +494,26 @@ namespace AudioAnalysisTools.HTKTools
             else isHit = false;
         }
 
+        public static void ComputeHit2(double vocScore, double bckScore, double duration, double frameRate, double mean, double sd,
+                              double scoreThreshold, double qualityThreshold, out double frameCount,
+                              out double normScore, out double qualityScore, out bool isHit)
+        {
+            //normalise the score
+            frameCount = duration * frameRate;
+            normScore = vocScore - bckScore + 0.7f; //Log Likelihood Ratio (-0.7 is the LLR value returned if the
+                                                    //WORD model is scored with itself through the BKG score mechanism)
+            //qualityScore = PDFvalue(duration, mean, sd);
+            qualityScore = Math.Abs((duration - mean) / sd);
+
+            //if (normScore > scoreThreshold) isHit = true; else isHit = false;  //ignore quality score
+            //use of quality score gives better result on false test instances
+            //if ((normScore > scoreThreshold) && (qualityScore < qualityThreshold)) isHit = true;
+            if ((normScore > scoreThreshold) && (qualityScore < qualityThreshold)) isHit = true;
+            else isHit = false;
+        }
+
         
         //private static readonly double OneOverRoot2Pi = 1.0 / Math.Sqrt(2 * Math.PI);
-
 
 
         /// <summary>
