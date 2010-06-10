@@ -356,8 +356,8 @@ namespace AudioAnalysisTools.HTKTools
                         continue;
 
                     float denomin = float.Parse(htkConfig.TARGETRATE);
-                    int frameStart = (int)(start / denomin);
-                    int frameEnd = (int)(end / denomin) - 1;
+                    int frameStart = (int)Math.Floor(start / denomin);//(int)(start / denomin);
+                    int frameEnd = (int)Math.Floor(end / denomin) - 1;//(int)(end / denomin) - 1;
 
                     logicalFile = Path.GetFileNameWithoutExtension(currPath);
                     logicalFile += "_" + intIndex++ + ".mfc";
@@ -403,9 +403,11 @@ namespace AudioAnalysisTools.HTKTools
                     }                       
                 }
             }
-            //closing char for the mlf file
-            modifResultsWriter.WriteLine(".");
-
+            if (resultsLine != null) //write the rest of the file
+            { 
+                while ((resultsLine = resultsReader.ReadLine()) != null)
+                    modifResultsWriter.WriteLine(resultsLine);
+            }
         }
  
     }
