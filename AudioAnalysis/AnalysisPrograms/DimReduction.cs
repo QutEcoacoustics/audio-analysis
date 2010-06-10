@@ -17,8 +17,8 @@ namespace AnalysisPrograms
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         //public static string key_FILE_EXT    = "FILE_EXT";
-        public static string key_MIN_HZ = "MIN_HZ";
-        public static string key_MAX_HZ = "MAX_HZ";
+        public static string key_TIME_REDUCTION_FACTOR = "TIME_REDUCTION_FACTOR";
+        public static string key_FREQ_REDUCTION_FACTOR = "FREQ_REDUCTION_FACTOR";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
         public static string key_MIN_DURATION = "MIN_DURATION";
@@ -53,8 +53,9 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int minHz = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+            int timeRedFactor = Int32.Parse(dict[key_TIME_REDUCTION_FACTOR]);
+            int freqRedFactor = Int32.Parse(dict[key_FREQ_REDUCTION_FACTOR]);
+
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
             double smoothWindow = Double.Parse(dict[key_SMOOTH_WINDOW]);   //smoothing window (seconds) before segmentation
             double thresholdSD = Double.Parse(dict[key_THRESHOLD]);       //segmentation threshold in noise SD
@@ -62,19 +63,44 @@ namespace AnalysisPrograms
             //double maxDuration = Double.Parse(dict[key_MAX_DURATION]);    //max duration of segment in seconds 
             int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);   //options to draw sonogram
 
-            Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
+            Log.WriteIfVerbose("# Freq band: {0} Hz - {1} Hz.)", timeRedFactor, freqRedFactor);
             Log.WriteIfVerbose("# Smoothing Window: {0}s.", smoothWindow);
 
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(recordingPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
 
+            //ii: MAKE SONOGRAM
+            Log.WriteLine("# Start sonogram.");
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.WindowOverlap  = frameOverlap;
+            sonoConfig.SourceFName    = recording.FileName;
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            //sonoConfig.DynamicRange = dynamicRange;
+
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            recording.Dispose();
+
+
             //#############################################################################################################################################
-            var results = Execute_DimRed(recording, minHz, maxHz, frameOverlap, smoothWindow, thresholdSD, minDuration);
-            Log.WriteLine("# Finished detecting segments.");
+            // reduced energy sonogram
+            var results = AI_DimRed(sonogram, timeRedFactor, freqRedFactor); //acoustic intensity
+            var reducedSono = results.Item1;
+            Log.WriteLine("# Finished intensity reduction.");
+            //#############################################################################################################################################
+            // reduced oscillation sonogram
+            var tuple2 = OR_DimRed(sonogram, timeRedFactor, freqRedFactor);
+            var orHits = tuple2.Item1;
+            var orReduced = tuple2.Item2;
+            Log.WriteLine("# Finished oscillation reduction.");
+            //#############################################################################################################################################
+            // reduced oscillation sonogram
+            var tuple3 = SH_DimRed(reducedSono, timeRedFactor, freqRedFactor, sonogram.FBinWidth);
+            var shHits = tuple3.Item1;
+            var shReduced = tuple3.Item2;
+            Log.WriteLine("# Finished stacked harmonics reduction.");
             //#############################################################################################################################################
 
-            var sonogram = results.Item1;
             //var predictedEvents = results.Item2; //contain the segments detected
             //var Q = results.Item3;
             //var oneSD_dB = results.Item4;
@@ -103,7 +129,11 @@ namespace AnalysisPrograms
             //FileTools.WriteTextFile(opPath, sb.ToString());
 
             //draw images of sonograms
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            string imagePath   = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            string reducedPath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_reduced.png";
+            string orHitsPath  = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_OR.png";
+            string shHitsPath  = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_SH.png";
+
             //double min, max;
             //DataTools.MinMax(intensity, out min, out max);
             //double threshold_norm = dBThreshold / max; //min = 0.0;
@@ -111,6 +141,17 @@ namespace AnalysisPrograms
             if (DRAW_SONOGRAMS > 0)
             {
                 DrawSonogram(sonogram, imagePath);
+
+                //SAVE extracted event as noise reduced image 
+                //alter matrix dynamic range so user can determine correct dynamic range from image 
+                //reducedSono = SNR.SetDynamicRange(reducedSono, 0.0, dynamicRange); //set event's dynamic range
+                var targetImage = BaseSonogram.Data2ImageData(reducedSono);
+                ImageTools.DrawMatrix(targetImage, 1, 1, reducedPath);
+
+                DrawSonogram(sonogram, orHits, orHitsPath);
+
+                DrawSonogram(sonogram, shHits, shHitsPath);
+
             }
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
@@ -118,19 +159,10 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        public static System.Tuple<BaseSonogram, double[,]> Execute_DimRed(AudioRecording recording,
-            double reductionTime, int freqRedFactor, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration)
+        public static System.Tuple<double[,]> AI_DimRed(BaseSonogram sonogram, int timeRedFactor, int freqRedFactor)
         {
 
-            //ii: MAKE SONOGRAM
-            Log.WriteLine("# Start sonogram.");
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.WindowOverlap = frameOverlap;
-            sonoConfig.SourceFName = recording.FileName;
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            recording.Dispose();
 
-            int timeRedFactor = (int)Math.Floor(reductionTime * sonogram.FramesPerSecond);
             int freqBinCount  = sonogram.Configuration.FreqBinCount;
             int frameCount    = sonogram.FrameCount;
 
@@ -138,11 +170,137 @@ namespace AnalysisPrograms
             int freqReducedCount = freqBinCount / freqRedFactor;
 
             var reducedMatrix = new double[timeReducedCount, freqReducedCount];
+            int cellArea = timeRedFactor  * freqRedFactor;
+            for(int r=0; r< timeReducedCount; r++)
+                for (int c = 0; c < freqReducedCount; c++)
+                {
+                    int or = r * timeRedFactor;
+                    int oc = c * freqRedFactor;
+                    double sum = 0.0;
+                    for (int i = 0; i < timeRedFactor; i++)
+                        for (int j = 0; j < freqRedFactor; j++)
+                        {
+                            sum += sonogram.Data[or+i, oc+j];
+                        }
+                    reducedMatrix[r, c] = sum / cellArea;
+                }
 
-
-            var tuple2 = System.Tuple.Create(sonogram, reducedMatrix);
+            var tuple2 = System.Tuple.Create(reducedMatrix);
             return tuple2;
-        }//end Execute_DimRed
+        }//end AI_DimRed
+
+
+
+        public static System.Tuple<double[,], double[,]> OR_DimRed(BaseSonogram sonogram, int timeRedFactor, int freqRedFactor)
+        {
+            bool doSegmentation = false;
+            int minHz = 0;
+            int maxHz = sonogram.NyquistFrequency - 300;
+            double dctDuration = 0.5;
+            double dctThreshold = 13.0;
+            bool normaliseDCT = false;
+            int minOscilFreq = 4;
+            int maxOscilFreq = 100;
+            double eventThreshold = 0.5;    
+            double minDuration = 0.5;  //sec
+            double maxDuration = 10.0; //seconds
+
+
+            List<AcousticEvent> predictedEvents;  //predefinition of results event list
+            double[] scores;                      //predefinition of score array
+            Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
+            double[] segments;                    //predefinition of segmentation of recording
+            TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file  
+            OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
+                                         minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
+                                         out scores, out predictedEvents, out hits, out segments, out analysisTime);
+
+
+
+            int freqBinCount = sonogram.Configuration.FreqBinCount;
+            int frameCount = sonogram.FrameCount;
+
+            int timeReducedCount = frameCount / timeRedFactor;
+            int freqReducedCount = freqBinCount / freqRedFactor;
+
+            var reducedMatrix = new double[timeReducedCount, freqReducedCount];
+            int cellArea = timeRedFactor * freqRedFactor;
+            for (int r = 0; r < timeReducedCount; r++)
+                for (int c = 0; c < freqReducedCount; c++)
+                {
+                    int or = r * timeRedFactor;
+                    int oc = c * freqRedFactor;
+                    double sum = 0.0;
+                    for (int i = 0; i < timeRedFactor; i++)
+                        for (int j = 0; j < freqRedFactor; j++)
+                        {
+                            sum += sonogram.Data[or + i, oc + j];
+                        }
+                    reducedMatrix[r, c] = sum / cellArea;
+                }
+
+            var tuple2 = System.Tuple.Create(hits, reducedMatrix);
+            return tuple2;
+        }//end OR_DimRed
+
+        /// <summary>
+        /// search for stacked harmonics
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="timeRedFactor"></param>
+        /// <param name="freqRedFactor"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[,], double[,]> SH_DimRed(double[,] matrix, int timeRedFactor, int freqRedFactor, double freqBinWidth)
+        {
+            int minHz = 500;
+            int maxHz = 5000;
+            double dctThreshold = 40.0;
+            bool normaliseDCT = false;
+            int minPeriod = 500;
+            int maxPeriod = 2500;
+            double eventThreshold = 0.5;
+            double minDuration = 0.5;  //sec
+
+
+            //DETECT OSCILLATIONS
+            int minBin = (int)(minHz / freqBinWidth);
+            int maxBin = (int)(maxHz / freqBinWidth);
+            int hzWidth = maxHz - minHz;
+            Double[,] hits = HarmonicAnalysis.DetectHarmonics(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
+            hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
+
+            //EXTRACT SCORES AND ACOUSTIC EVENTS
+            double[] scores = HarmonicAnalysis.GetHarmonicScores(hits, minHz, maxHz, freqBinWidth);
+            //double[] oscFreq = HarmonicAnalysis.GetHDFrequency(hits, minHz, maxHz, freqBinWidth);
+
+            //TRANSFER HITS TO REDUCED MATRIX
+            int frameCount   = matrix.GetLength(0);
+            int freqBinCount = matrix.GetLength(1);
+
+            int timeReducedCount = frameCount / timeRedFactor;
+            int freqReducedCount = freqBinCount / freqRedFactor;
+
+            var reducedMatrix = new double[timeReducedCount, freqReducedCount];
+            int cellArea = timeRedFactor * freqRedFactor;
+            //for (int r = 0; r < timeReducedCount; r++)
+            //    for (int c = 0; c < freqReducedCount; c++)
+            //    {
+            //        int or = r * timeRedFactor;
+            //        int oc = c * freqRedFactor;
+            //        double sum = 0.0;
+            //        for (int i = 0; i < timeRedFactor; i++)
+            //            for (int j = 0; j < freqRedFactor; j++)
+            //            {
+            //                sum += sonogram.Data[or + i, oc + j];
+            //            }
+            //        reducedMatrix[r, c] = sum / cellArea;
+            //    }
+
+            var tuple2 = System.Tuple.Create(hits, reducedMatrix);
+            return tuple2;
+        }//end SH_DimRed
+
+
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path)
@@ -159,6 +317,24 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 //image.AddTrack(Image_Track.GetScoreTrack(segmentation, 0.0, 1.0, eventThreshold));
                 //image.AddEvents(predictedEvents);
+                image.Save(path);
+            }
+        }
+        public static void DrawSonogram(BaseSonogram sonogram, double[,]hits, string path)
+        {
+            Log.WriteLine("# Start sono image with hits.");
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            //double maxScore = 50.0; //assumed max posisble oscillations per second
+
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                //image.AddTrack(Image_Track.GetScoreTrack(segmentation, 0.0, 1.0, eventThreshold));
+                double maxScore = 42.0; //6 oscillations per each of 7 colour. Brown = score > 42
+                image.AddSuperimposedMatrix(hits, maxScore);
                 image.Save(path);
             }
         }

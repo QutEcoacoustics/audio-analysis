@@ -148,6 +148,7 @@ namespace AnalysisPrograms
             Log.WriteLine("Start harmonic event detection");
 
             //iii: DETECT HARMONICS
+            //bool normaliseDCT = true;
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image

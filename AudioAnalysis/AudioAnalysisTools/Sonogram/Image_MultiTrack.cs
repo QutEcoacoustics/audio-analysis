@@ -184,8 +184,6 @@ namespace AudioAnalysisTools
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
             int imageHt = this.SonoImage.Height-1; //subtract 1 because indices start at zero
-            //int[] bounds = {0,7,14,21,28,35,42,49}; //for max value around 50
-            //int[] bounds = { 0, 6, 12, 18, 24, 30, 34, 44 }; //for max value = 44
             double[] bounds = { 0.0, 0.14, 0.28, 0.42, 0.56, 0.70, 0.85, 1.0 }; //for normalised score
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
@@ -195,24 +193,24 @@ namespace AudioAnalysisTools
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    if ((normScore > bounds[0]) && (normScore <= bounds[1])) pen = pens[0];
+                    if ((normScore > bounds[0]) && (normScore <= bounds[1])) pen = pens[0]; //red
                     else
-                    if ((normScore > bounds[1]) && (normScore <= bounds[2])) pen = pens[1];
+                    if ((normScore > bounds[1]) && (normScore <= bounds[2])) pen = pens[1]; //orange
                     else
-                    if ((normScore > bounds[2]) && (normScore <= bounds[3])) pen = pens[2];
+                    if ((normScore > bounds[2]) && (normScore <= bounds[3])) pen = pens[2]; //yellow
                     else
-                    if ((normScore > bounds[3]) && (normScore <= bounds[4])) pen = pens[3];
+                    if ((normScore > bounds[3]) && (normScore <= bounds[4])) pen = pens[3]; //green
                     else
-                    if ((normScore > bounds[4]) && (normScore <= bounds[5])) pen = pens[4];
+                    if ((normScore > bounds[4]) && (normScore <= bounds[5])) pen = pens[4]; //blue
                     else
-                    if ((normScore > bounds[5]) && (normScore <= bounds[6])) pen = pens[5];
+                    if ((normScore > bounds[5]) && (normScore <= bounds[6])) pen = pens[5]; //indigo
                     else
-                    if ((normScore > bounds[6]) && (normScore <= bounds[7])) pen = pens[6];
-                    else pen = new Pen(Color.Brown);
+                    if ((normScore > bounds[6]) && (normScore <= bounds[7])) pen = pens[6]; //violet
+                    else pen = new Pen(Color.Brown);                                        //brown
                     g.DrawLine(pen, r, imageHt - c, r, imageHt - c + 1);
-                    r +=8;
+                    r +=1;
                 }
-                //c +=2;
+                c +=1;
             }
 
 

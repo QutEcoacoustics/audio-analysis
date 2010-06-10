@@ -29,7 +29,8 @@ namespace AudioAnalysisTools
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
         {
             //DETECT OSCILLATIONS
-            hits = DetectHarmonics(sonogram, minHz, maxHz, minPeriod, maxPeriod, minAmplitude);
+            bool normaliseDCT = true;
+            hits = DetectHarmonics(sonogram, minHz, maxHz, normaliseDCT, minPeriod, maxPeriod, minAmplitude);
             hits = RemoveIsolatedHits(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -59,28 +60,33 @@ namespace AudioAnalysisTools
         /// <returns></returns>
 
 
-        public static Double[,] DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz,
-                                                   int minPeriod, int maxPeriod, double minAmplitude)
+        public static Double[,] DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
+                                                   int minPeriod, int maxPeriod, double dctThreshold)
         {
             //find freq bins
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
 
             int hzWidth   = maxHz  - minHz;
-            int dctLength = maxBin - minBin + 1; //DCT spans N freq bins
 
-            //int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
-            //int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            Double[,] hits = DetectHarmonics(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
+            return hits;
+        }
+
+        public static Double[,] DetectHarmonics(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
+                                                                         int minPeriod, int maxPeriod, double dctThreshold)
+        {
+
+            int dctLength = maxBin - minBin + 1; //DCT spans N freq bins
 
             int minIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
             int maxIndex = (int)(hzWidth / (double)minPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
             //double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
             if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
 
-            int rows = sonogram.Data.GetLength(0);
-            int cols = sonogram.Data.GetLength(1);
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
             Double[,] hits = new Double[rows, cols];
-            Double[,] matrix = sonogram.Data;
 
             double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
 
@@ -88,30 +94,31 @@ namespace AudioAnalysisTools
             {
                 //for (int c = minBin; c <= minBin; c++)//traverse columns - skip DC column
                 //{
-                    var array = new double[dctLength];
-                    //accumulate J rows of values
-                    for (int i = 0; i < dctLength; i++)
-                        for (int j = 0; j < 5; j++) array[i] += matrix[r + j, minBin + i];
+                var array = new double[dctLength];
+                //accumulate J rows of values
+                for (int i = 0; i < dctLength; i++)
+                    for (int j = 0; j < 5; j++) array[i] += matrix[r + j, minBin + i];
 
-                    array = DataTools.SubtractMean(array);
-                    //     DataTools.writeBarGraph(array);
+                array = DataTools.SubtractMean(array);
+                //     DataTools.writeBarGraph(array);
 
-                    double[] dct = Speech.DCT(array, cosines);
-                    for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]); //convert to absolute values
-                    for (int i = 0; i < 5; i++) dct[i] = 0.0;  //remove low freq values from consideration
-                    dct = DataTools.normalise2UnitLength(dct);
-                    //dct = DataTools.normalise(dct); //another option to normalise
-                    int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                double[] dct = Speech.DCT(array, cosines);
+                for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]); //convert to absolute values
+                for (int i = 0; i < 5; i++) dct[i] = 0.0;  //remove low freq values from consideration
+                if (normaliseDCT) dct = DataTools.normalise2UnitLength(dct);
+                int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                //DataTools.writeBarGraph(dct);
 
-                    double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
+                double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
 
-                    //mark DCT location with harmonic freq, only if harmonic freq is in correct range and amplitude
-                    if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > minAmplitude))
-                    {
-                        for (int i = 0; i < dctLength; i++) hits[r, minBin + i] = period;
-                        //Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, dct[indexOfMaxValue]);
-                    }
-                    //c += 5; //skip columns
+                //mark DCT location with harmonic freq, only if harmonic freq is in correct range and amplitude
+                if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
+                {
+                    for (int i = 0; i < dctLength; i++) hits[r, minBin + i] = period;
+                    for (int i = 0; i < dctLength; i++) hits[r + 1, minBin + i] = period; //alternate row
+                    //Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, dct[indexOfMaxValue]);
+                }
+                //c += 5; //skip columns
                 //}
                 r++; //do alternate row
             }
