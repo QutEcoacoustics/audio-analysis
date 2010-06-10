@@ -134,6 +134,9 @@ namespace HMMBuilder
             string tmpVal       = "";
             string aOptionsStr = htkConfig.aOptionsStr;
             string pOptionsStr = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
+
+            bool htkTimestamps = false;
+
             bool good = true;
             int numIters = htkConfig.numIterations;           //number of training iterations
             int numBkgIters = htkConfig.numBkgIterations;    //number of background training iterations
@@ -472,6 +475,8 @@ namespace HMMBuilder
                             }
                             else
                             {
+                                htkTimestamps = true; //HTK will line up SIL and WORD timestamps
+
                                 if (HMMSettings.ConfigParam.TryGetValue("HEREST_ITER", out tmpVal))
                                 {
                                     numIters = int.Parse(tmpVal);
@@ -600,7 +605,7 @@ namespace HMMBuilder
                         }
                         
                         //Use the BACKGROUND model rather than the SIL model. 
-                        if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.useBKGModel))
+                        if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.useBKGModel && !htkTimestamps))
                         {
                             //The 'tmp' dir contains a copy of the estimated BKG model
                             string dstHmm = htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN;
