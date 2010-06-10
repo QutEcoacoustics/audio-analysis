@@ -183,7 +183,8 @@ namespace AnalysisPrograms
                         Console.WriteLine("DCT    PARAMETERS: Duration={0}, #frames={1}, Search for oscillations>{2}, Frame overlap>={3}",
                                           dctDuration, (int)Math.Round(dctDuration * sonogram.FramesPerSecond), minOscilFreq, config.WindowOverlap);
                         //iii: detect oscillations
-                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, 
+                        bool normaliseDCT = true;
+                        OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, 
                                                     minOscilFreq, maxOscilFreq, scoreThreshold, minDuration, maxDuration,
                                                     out scores, out predictedEvents, out hits, out segments, out analysisTime);
                         break;

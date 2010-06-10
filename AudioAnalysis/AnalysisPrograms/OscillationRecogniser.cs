@@ -177,12 +177,13 @@ namespace AnalysisPrograms
             Log.WriteLine("Start OD event detection");
 
             //iii: DETECT OSCILLATIONS
+            bool normaliseDCT = true;
             List<AcousticEvent> predictedEvents;  //predefinition of results event list
             double[] scores;                      //predefinition of score array
             Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] segments;                    //predefinition of segmentation of recording
             TimeSpan analysisTime;                //predefinition of Time duration taken to do analysis on this file  
-            OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold,
+            OscillationAnalysis.Execute((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out scores, out predictedEvents, out hits, out segments, out analysisTime);
 

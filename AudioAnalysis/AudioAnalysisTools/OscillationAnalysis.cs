@@ -28,7 +28,7 @@ namespace AudioAnalysisTools
         /// <param name="events">return a list of acoustic events</param>
         /// <param name="hits"></param>
         public static void Execute(SpectralSonogram sonogram, bool doSegmentation, int minHz, int maxHz,
-                                   double dctDuration, double dctThreshold, int minOscilFreq, int maxOscilFreq, 
+                                   double dctDuration, double dctThreshold, bool normaliseDCT, int minOscilFreq, int maxOscilFreq, 
                                    double scoreThreshold, double minDuration, double maxDuration,
                                    out double[] scores, out List<AcousticEvent> events, out Double[,] hits, out double[] intensity,
                                    out TimeSpan totalTime)
@@ -51,7 +51,7 @@ namespace AudioAnalysisTools
             DateTime startTime2 = DateTime.Now; 
 
             //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, dctThreshold, minOscilFreq, maxOscilFreq, segmentEvents);
+            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq, segmentEvents);
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -88,7 +88,7 @@ namespace AudioAnalysisTools
         /// <param name="events"></param>
         /// <returns></returns>
         public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold, 
-                                                     int minOscilFreq, int maxOscilFreq, List<AcousticEvent>events)
+                                                    bool normaliseDCT, int minOscilFreq, int maxOscilFreq, List<AcousticEvent>events)
         {
             if (events == null) return null;
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -111,8 +111,6 @@ namespace AudioAnalysisTools
             //following two lines write bmp image of cos values for checking.
             //string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
             //ImageTools.DrawMatrix(cosines, fPath);
-
-            //WARNING TODO:  NEED TO CHECK CASE WHERE events = NULL!
 
             foreach (AcousticEvent av in events)
             {
@@ -139,17 +137,19 @@ namespace AudioAnalysisTools
                         double[] dct = Speech.DCT(array, cosines);
                         for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
                         for (int i = 0; i < 5; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration
-                        dct = DataTools.normalise2UnitLength(dct);
+                        if(normaliseDCT) dct = DataTools.normalise2UnitLength(dct);
                         int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                         double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
                         //      DataTools.writeBarGraph(dct);
+                        //Console.WriteLine("oscilFreq = " + oscilFreq);
 
                         //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                         if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
                         {
                             for (int i = 0; i < dctLength; i++) hits[r + i, c] = oscilFreq;
+                            for (int i = 0; i < dctLength; i++) hits[r + i, c+1] = oscilFreq; //write alternate column
                         }
-                        r += 5; //skip rows
+                        r += 6; //skip rows
                     }
                     c++; //do alternate columns
                 }
