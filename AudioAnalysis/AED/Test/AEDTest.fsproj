@@ -40,6 +40,9 @@
       <HintPath>..\..\..\Extra Assemblies\FsCheck.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="FSharp.PowerPack">
+      <HintPath>..\..\..\Extra Assemblies\PowerPack\FSharp.PowerPack.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.PowerPack, Version=1.9.6.16, Culture=neutral, PublicKeyToken=a19089b1c74d0809">
       <Name>FSharp.PowerPack</Name>
       <AssemblyName>FSharp.PowerPack.dll</AssemblyName>
