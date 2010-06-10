@@ -45,7 +45,7 @@ namespace HMMBuilder
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Top_Knoll_St_Bees_Curlew2_20080922-030000.wav";         //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\Honeymoon_Bay_St_Bees_KoalaBellow_20080905-001000.wav"; //ARG 2
             //testWavFile = "C:\\SensorNetworks\\WavFiles\\StBees\\WestKnoll_StBees_KoalaBellow20080919-073000.wav";//contains currawong
-            testWavFile = @"C:\\SensorNetworks\\WavFiles\\TestWaveFile\\WestKnollStBees_20080928-193000_2.wav";
+            testWavFile = @"C:\\SensorNetworks\\WavFiles\\TestWaveFile\\West_Knoll_Bees_20091102-170000.wav";
             //*******************************************************************************************************************
 
 
