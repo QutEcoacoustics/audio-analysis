@@ -374,7 +374,7 @@ namespace AudioAnalysisTools.HTKTools
                     "#HQuant: n\n" +
                     "#HLEd: y\n" +
                     "#HInit: y\n" +
-                    "HERest: n\n" +         //y -> use HERest; n -> use HRest
+                    "HERest: y\n" +         //y -> use HERest; n -> use HRest
                     "HERestBKG: n\n" +      //train BACKGROUND model
                     "#HSmooth: n\n" +
                     "HVite: y\n" +
