@@ -26,42 +26,64 @@ namespace AnalysisPrograms.Processing
         public static void Convert(string[] args)
         {
             Write(
-                "File Name, Source, BitsPerSample, BytesPerSample, Channels, Epsilon, SampleRate, SampleCount, Time", 
-                true, 
+                "File Name, Source, BitsPerSample, BytesPerSample, Channels, Epsilon, SampleRate, SampleCount, Time",
+                true,
                 true);
 
             var dir = args[0];
             foreach (var path in Directory.GetFiles(dir, "*"))
             {
                 var file = new FileInfo(path);
-                using (var reader = new WavReader(path))
-                {
-                    Write(file.Name);
-                    Write("WavReader");
-                    Write(reader.BitsPerSample.ToString());
-                    Write(reader.BytesPerSample.ToString());
-                    Write(reader.Channels.ToString());
-                    Write(reader.Epsilon.ToString());
-                    Write(reader.SampleRate.ToString());
-                    Write(reader.Samples.Length.ToString());
-                    Write(reader.Time.ToString(), true, false);
-                }
-
                 Write(file.Name);
 
-                var audioInfo = DShowConverter.GetAudioInfo(path, null);
+                Write("WavReader");
+
+                try
+                {
+                    using (var reader = new WavReader(path))
+                    {
+
+                        Write(reader.BitsPerSample.ToString());
+                        Write(reader.BytesPerSample.ToString());
+                        Write(reader.Channels.ToString());
+                        Write(reader.Epsilon.ToString());
+                        Write(reader.SampleRate.ToString());
+                        Write(reader.Samples.Length.ToString());
+                        Write(reader.Time.ToString(), true, false);
+                    }
+                }
+                catch
+                {
+                }
 
                 Write("AudioInfo");
-                Write(audioInfo.BitsPerSample.ToString());
-                Write(audioInfo.BytesPerSample.ToString());
-                Write(audioInfo.Channels.ToString());
-                Write(string.Empty);
-                Write(audioInfo.SamplesPerSecond.ToString());
-                Write(audioInfo.SampleCount.ToString());
 
-                var duration = DShowConverter.GetDuration(path, null);
+                try
+                {
+                    var audioInfo = DShowConverter.GetAudioInfo(path, null);
 
-                Write(duration.ToString(), true, false);
+                    Write(audioInfo.BitsPerSample.ToString());
+                    Write(audioInfo.BytesPerSample.ToString());
+                    Write(audioInfo.Channels.ToString());
+                    Write(string.Empty);
+                    Write(audioInfo.SamplesPerSecond.ToString());
+                    Write(audioInfo.SampleCount.ToString());
+                }
+                catch
+                {
+                }
+
+                Write("DShowConverter.GetDuration");
+
+                try
+                {
+                    var duration = DShowConverter.GetDuration(path, null);
+
+                    Write(duration.ToString(), true, false);
+                }
+                catch
+                {
+                }
             }
 
             Console.ReadLine();
