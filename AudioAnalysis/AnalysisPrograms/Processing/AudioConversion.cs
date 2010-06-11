@@ -36,61 +36,78 @@ namespace AnalysisPrograms.Processing
                 var file = new FileInfo(path);
                 Write(file.Name);
 
-                Write("WavReader");
-
-                try
-                {
-                    using (var reader = new WavReader(path))
-                    {
-
-                        Write(reader.BitsPerSample.ToString());
-                        Write(reader.BytesPerSample.ToString());
-                        Write(reader.Channels.ToString());
-                        Write(reader.Epsilon.ToString());
-                        Write(reader.SampleRate.ToString());
-                        Write(reader.Samples.Length.ToString());
-                        Write(reader.Time.ToString(), true, false);
-                    }
-                }
-                catch
-                {
-                }
-
-                Write("AudioInfo");
-
-                try
-                {
-                    var audioInfo = DShowConverter.GetAudioInfo(path, null);
-
-                    Write(audioInfo.BitsPerSample.ToString());
-                    Write(audioInfo.BytesPerSample.ToString());
-                    Write(audioInfo.Channels.ToString());
-                    Write(string.Empty);
-                    Write(audioInfo.SamplesPerSecond.ToString());
-                    Write(audioInfo.SampleCount.ToString());
-                }
-                catch
-                {
-                }
-
-                Write("DShowConverter.GetDuration");
-
-                try
-                {
-                    var duration = DShowConverter.GetDuration(path, null);
-
-                    Write(duration.ToString(), true, false);
-                }
-                catch
-                {
-                }
+                UseWavReader(file);
+                UseAudioInfo(file);
+                UseDSGetDuration(file);
             }
 
             Console.ReadLine();
         }
 
+        private static void UseWavReader(FileInfo file)
+        {
+            Write("WavReader");
+
+            try
+            {
+                using (var reader = new WavReader(file.FullName))
+                {
+                    Write(reader.BitsPerSample.ToString());
+                    Write(reader.BytesPerSample.ToString());
+                    Write(reader.Channels.ToString());
+                    Write(reader.Epsilon.ToString());
+                    Write(reader.SampleRate.ToString());
+                    Write(reader.Samples.Length.ToString());
+                    Write(reader.Time.ToString(), true, false);
+                }
+            }
+            catch
+            {
+                Write("WavReader could not read file.");
+            }
+        }
+
+        private static void UseAudioInfo(FileInfo file)
+        {
+            Write("AudioInfo");
+
+            try
+            {
+                var audioInfo = DShowConverter.GetAudioInfo(file.FullName, null);
+
+                Write(audioInfo.BitsPerSample.ToString());
+                Write(audioInfo.BytesPerSample.ToString());
+                Write(audioInfo.Channels.ToString());
+                Write(string.Empty);
+                Write(audioInfo.SamplesPerSecond.ToString());
+                Write(audioInfo.SampleCount.ToString());
+            }
+            catch
+            {
+                Write("AudioInfo could not read file.");
+            }
+        }
+
+        private static void UseDSGetDuration(FileInfo file)
+        {
+            Write("DShowConverter.GetDuration");
+
+            try
+            {
+                var duration = DShowConverter.GetDuration(file.FullName, null);
+
+                Write(duration.ToString(), true, false);
+            }
+            catch
+            {
+                Write("DShowConverter.GetDuration could not read file.");
+            }
+        }
+
         private static void Write(string data, bool appendNewLine, bool overwriteFile)
         {
+            Console.WriteLine(data);
+
             var path = Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "file_test_logging.txt");
 
