@@ -18,26 +18,34 @@ namespace HMMBuilder
             HTKConfig htkConfig = new HTKConfig();            
             BKGTrainer bkgModel = new BKGTrainer(htkConfig);
 
-            htkConfig.CallName = "CURLEW1";
+            //==================================================================================================================
+            htkConfig.CallName = "CURLEW2";
             htkConfig.Comment = "Parameters for Curlew";
             htkConfig.LOFREQ = "1000";
-            htkConfig.HIFREQ = "6000"; //try 6000, 7000 and 8000 Hz as max for Curlew
+            htkConfig.HIFREQ = "6000";      //try 6000, 7000 and 8000 Hz as max for Curlew
             htkConfig.numHmmStates = "10";  //number of hmm states for call model
             htkConfig.numHmmSilStates = "3";
             htkConfig.numIterations = 5;
 
+            //==================================================================================================================
             //htkConfig.CallName = "CURRAWONG1";
             //htkConfig.Comment = "Parameters for Currawong";
             //htkConfig.LOFREQ = "800";
             //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            //htkConfig.numHmmSilStates = "3";
+            //htkConfig.numIterations = 5;
 
+            //==================================================================================================================
             //htkConfig.CallName = "WHIPBIRD1";
             //htkConfig.Comment = "Parameters for whip bird";
             //htkConfig.LOFREQ = "500";
             //htkConfig.HIFREQ = "9000"; 
             //htkConfig.numHmmStates = "6";  //number of hmm states for call model
+            //htkConfig.numHmmSilStates = "3";
+            //htkConfig.numIterations = 5;
 
+            //==================================================================================================================
             //htkConfig.CallName = "KOALAMALE1";
             //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
             //htkConfig.LOFREQ = "500";
@@ -45,30 +53,40 @@ namespace HMMBuilder
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
             //htkConfig.numIterations = 6;
 
+            //==================================================================================================================
             //htkConfig.CallName = "KOALAFEMALE1";
             //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
             //htkConfig.LOFREQ = "500";
             //htkConfig.HIFREQ = "7000";
+            //htkConfig.numHmmSilStates = "3";
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
+            //==================================================================================================================
             //htkConfig.CallName = "KOALAFEMALE2";
             //htkConfig.Comment = "Trained on female koala calls with clear structure of stacked formants and duration > 0.5s";
             //htkConfig.LOFREQ = "500";
             //htkConfig.HIFREQ = "7000";
+            //htkConfig.numHmmSilStates = "3";
             //htkConfig.numHmmStates = "10";  //number of hmm states for call model
+            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
+            //==================================================================================================================
             //htkConfig.CallName = "KOALAMALE_IE";
             //htkConfig.Comment = "Two models trained on separate inhale and exhale syllables";
             //htkConfig.LOFREQ = "150";
             //htkConfig.HIFREQ = "6000";
             //htkConfig.numHmmStates = "4";  //number of hmm states for call model
+            //htkConfig.numHmmSilStates = "3";
             //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
 
+            //==================================================================================================================
             //htkConfig.CallName = "KOALAMALE_EXHALE";
             //htkConfig.Comment = "One model trained on exhale syllables";
             //htkConfig.LOFREQ = "150";
             //htkConfig.HIFREQ = "6000";
             //htkConfig.numHmmStates = "4";  //number of hmm states for call model
+            //htkConfig.numHmmSilStates = "3";
             //htkConfig.numIterations = 6;   //number of iterations for re-estimating the VOCALIZATION/SIL models
 
             //==================================================================================================================
