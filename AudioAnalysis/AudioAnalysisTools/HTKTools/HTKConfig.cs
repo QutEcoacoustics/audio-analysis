@@ -29,11 +29,10 @@ namespace AudioAnalysisTools.HTKTools
         public int numBkgIterations { get; set; }
         public bool bkgTraining = false;
 
-        public bool useBKGModel = true;    //true -> use BKG model; flase -> use SIL model
-        public bool LLRNormalization = true;    //perform LLR normalization on the output from HVite
-        public bool noSegmentation = false;   //'true' -> each recording is considered as a single word ...
-                                               // no SIL model is generated/trained from the recordings.
-
+        public bool useBKGModel = true;        //true -> use BKG model;    false -> use SIL model
+        public bool LLRNormalization = true;   //perform LLR normalization on the output from HVite
+        public bool noSegmentation = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
+                                               //false-> each recording segmented. SIL model is generated/trained from the traiing recordings.
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
         public string SilenceModelSrc { get; set; }  // source of the silence .wav recording
