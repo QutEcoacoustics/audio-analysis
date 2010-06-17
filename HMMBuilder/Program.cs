@@ -15,17 +15,16 @@ namespace HMMBuilder
         {
             #region Variables
 
-            HTKConfig htkConfig = new HTKConfig();            
-            BKGTrainer bkgModel = new BKGTrainer(htkConfig);
+            string parentDir  = "C:\\SensorNetworks\\Templates\\";
+            string configPath = "C:\\SensorNetworks\\Templates\\Template_CURLEW2\\CURLEW2_Config.ini";
 
-            //==================================================================================================================
-            htkConfig.CallName = "CURLEW2";
-            htkConfig.Comment = "Parameters for Curlew";
-            htkConfig.LOFREQ = "1000";
-            htkConfig.HIFREQ = "6000";      //try 6000, 7000 and 8000 Hz as max for Curlew
-            htkConfig.numHmmStates = "10";  //number of hmm states for call model
-            htkConfig.numHmmSilStates = "3";
-            htkConfig.numIterations = 5;
+
+            HTKConfig htkConfig = new HTKConfig(parentDir, configPath);            
+            BKGTrainer bkgModel = new BKGTrainer(htkConfig);
+            Console.WriteLine("CWD=" + htkConfig.WorkingDir);
+            Console.WriteLine("CFG=" + htkConfig.ConfigDir);
+            Console.WriteLine("DAT=" + htkConfig.DataDir);
+
 
             //==================================================================================================================
             //htkConfig.CallName = "CURRAWONG1";
@@ -92,71 +91,15 @@ namespace HMMBuilder
             //==================================================================================================================
             //==================================================================================================================
 
-            htkConfig.Author       = "Michael Towsey";
-            htkConfig.SOURCEFORMAT = "WAV";
-            htkConfig.TARGETKIND   = "MFCC"; //components to include in feature vector
-
-            //FRAMING PARAMETERS
-            htkConfig.SampleRate     = "22050";    //samples per second //this must be put first inlist of framing parameters
-            htkConfig.TARGETRATE     = "116100.0"; //=10e-7 seconds - that is a frame every 11.6 millisconds.
-            htkConfig.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
-
-            //BACKGROUND MODEL PARAMETERS
-            htkConfig.singleWord = "BACKGROUND";
-            htkConfig.numBkgIterations = 5; //number of iterations for re-estimating the BG model
-            htkConfig.numHmmBkgStates = "1";
-
-            //parse all the above strings to ints or reals
-            double tr;
-            Double.TryParse(htkConfig.TARGETRATE, out tr);
-            double wd; //window duration
-            Double.TryParse(htkConfig.WINDOWDURATION, out wd);
-            int sr;  //not actually used - HTK does not need. Segmentation requires only framing info derived from SR below.
-            Int32.TryParse(htkConfig.SampleRate, out sr); 
-
-            htkConfig.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString(); 
-            htkConfig.FrameOverlap = (tr / wd).ToString();
-            htkConfig.SAVECOMPRESSED = "T";
-            htkConfig.SAVEWITHCRC    = "T";
-
-            //MFCC PARAMETERS
-            htkConfig.USEHAMMING = "T";
-            htkConfig.PREEMCOEF  = "0.97"; //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
-            htkConfig.NUMCHANS   = "26";   //size of filter bank - default = 26
-            htkConfig.CEPLIFTER  = "22";
-            htkConfig.NUMCEPS    = "12";   //number of cepstral coefficients - default = 12
-
-            //htkConfig.WorkingDir    = Directory.GetCurrentDirectory();
-            htkConfig.WorkingDir      = "C:\\SensorNetworks\\Templates\\Template_" + htkConfig.CallName;
-            htkConfig.WorkingDirBkg   = "C:\\SensorNetworks\\Templates\\Template_BACKGROUND";
-            htkConfig.HTKDir          = "C:\\SensorNetworks\\Software\\HTK";
-            //htkConfig.SegmentationDir = "C:\\SensorNetworks\\Software\\HMMBuilder\\VocalSegmentation";
-            htkConfig.SilenceModelSrc = "C:\\SensorNetworks\\Software\\HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
-            
-            htkConfig.ConfigDir       = htkConfig.WorkingDir    + "\\" + htkConfig.CallName;
-            htkConfig.DataDir         = htkConfig.WorkingDir    + "\\data";
-            htkConfig.DataDirBkg      = htkConfig.WorkingDirBkg + "\\data";
-            htkConfig.ConfigDirBkg    = htkConfig.WorkingDirBkg;
-            htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
-
-            htkConfig.SegmentationDir = htkConfig.WorkingDir + "\\Segmentation";
-            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
-            
-            htkConfig.NoiseModelFN = Path.GetFileNameWithoutExtension(htkConfig.SilenceModelPath) + HTKConfig.noiseModelExt;
-            
-            Console.WriteLine("CWD=" + htkConfig.WorkingDir);
-            Console.WriteLine("CFG=" + htkConfig.ConfigDir);
-            Console.WriteLine("DAT=" + htkConfig.DataDir);
-
             string vocalization = "";
             string tmpVal       = "";
-            string aOptionsStr = htkConfig.aOptionsStr;
-            string pOptionsStr = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
+            string aOptionsStr  = htkConfig.aOptionsStr;
+            string pOptionsStr  = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
 
             bool htkTimestamps = false;
 
             bool good = true;
-            int numIters = htkConfig.numIterations;           //number of training iterations
+            int numIters    = htkConfig.numIterations;       //number of training iterations
             int numBkgIters = htkConfig.numBkgIterations;    //number of background training iterations
             #endregion
 
@@ -165,33 +108,12 @@ namespace HMMBuilder
 
                 default:
 
-                    #region ZERO: Determine if the vocalization is monosyllabic
-                    // If the file 'gram.txt' is found in the config folder the vocalization is assumed to be multisyllabic. 
-                    bool multisyllabic = false;
-                    if (Directory.Exists(htkConfig.ConfigDir))
-                        if (File.Exists(htkConfig.gramF))
-                        {
-                            multisyllabic = true;
-                            //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
-                            try
-                            {
-                                HTKHelper.HParse(htkConfig.gramF, htkConfig.wordNet, htkConfig);
-                            }
-                            catch
-                            {
-                                Console.WriteLine("ERROR! FAILED TO CREATE NETWORK FILE: {0}", htkConfig.wordNet);
-                                good = false;
-                                break;
-                            }  
-                        }
-                    #endregion
-
-
                     #region ONE: Write Configuration Files
-                    Console.WriteLine("WRITE ALL CONFIGURATION FILES");
-                    try
+                    Console.WriteLine("1: WRITE ALL CONFIGURATION FILES");
+                    try //to write config files
                     {
-                        htkConfig.ComputeFVSize(); //Compute Feature Vectors size given htkConfig.TARGETKIND
+                        //1.create directories and write the MFCC, HMM files
+                        htkConfig.ComputeFVSize();         //Compute Feature Vectors size given htkConfig.TARGETKIND
                         if(! Directory.Exists(htkConfig.ConfigDir))   Directory.CreateDirectory(htkConfig.ConfigDir);
                         if(! Directory.Exists(htkConfig.ProtoConfDir))Directory.CreateDirectory(htkConfig.ProtoConfDir);
                         if (!Directory.Exists(htkConfig.SegmentationDir)) Directory.CreateDirectory(htkConfig.SegmentationDir);
@@ -201,15 +123,28 @@ namespace HMMBuilder
 
                         //1.write the segmentation ini file
                         //string segmentationIniFile = htkConfig.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
-                        string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
-                        htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                        //string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
+                        //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                        
                         //2.Copy the silence model in the same folder
                         System.IO.File.Copy(htkConfig.SilenceModelSrc, htkConfig.SilenceModelPath, true);
 
+
                         //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                         //           ALSO COPY INI FILE TO THE TRAINING DATA DIRECTORIES
-                        if (multisyllabic)
+                        if (htkConfig.multisyllabic)
                         {
+                            Console.WriteLine("PREPARING MULTI-SYLLABIC TEMPLATE");
+                            try  //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
+                            {
+                                HTKHelper.HParse(htkConfig.grammarF, htkConfig.wordNet, htkConfig);
+                            }
+                            catch
+                            {
+                                Console.WriteLine("ERROR! FAILED TO CREATE NETWORK FILE: {0}", htkConfig.wordNet);
+                                good = false;
+                                break;
+                            }
                             // 1. Populate syllable list
                             htkConfig.PopulateSyllableList(htkConfig.wordNet);
                             // 2. Create as many iniFiles as the number of syllables.
@@ -224,15 +159,15 @@ namespace HMMBuilder
                                     throw new Exception();
                                 }
 
-                                segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
+                                //segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
                                 string tmpString = htkConfig.CallName;
                                 htkConfig.CallName = word;
-                                htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                                //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
                                 htkConfig.CallName = tmpString;
                            
-                            }                        
-                        }
-                    }
+                            } // foreach
+                        } // end if (multisyllabic)
+                    } //end writing config files
                     catch
                     {
                         Console.WriteLine("ERROR! FAILED TO WRITE FIVE CONFIGURATION FILES");
@@ -242,8 +177,10 @@ namespace HMMBuilder
                     #endregion
 
 
+
+
                     #region TWO: DATA PREPARATION TOOLS:- Read Two Configuration Files and do Feature Extraction
-                    Console.WriteLine("DATA PREPARATION TOOLS:- READ TWO CONFIGURATION FILES");
+                    Console.WriteLine("2: DATA PREPARATION TOOLS:- READ TWO CONFIGURATION FILES");
                     try
                     {
                         Console.WriteLine("Read  MFCC params from file: " + htkConfig.MfccConfigFN);
@@ -257,23 +194,13 @@ namespace HMMBuilder
                         break;
                     }
 
-                    //if (HMMSettings.ConfParam.TryGetValue("COVKIND", out tmpVal))
-                    //{
-                    //    cK = tmpVal;
-                    //}
-                    //else
-                    //{
-                    //    Console.WriteLine("Covariance kind set to 'FULLC'");
-                    //    cK = "F";
-                    //}
-
                     if (HMMSettings.ConfigParam.TryGetValue("TRACE_TOOL_CALLS", out tmpVal))
                     {
                         if (tmpVal.Equals("Y")) aOptionsStr = htkConfig.aOptionsStr; //aOptionsStr = "-A -D -T 1";
                     }
 
                     // HCOPY is the HTK tool to parameterise .wav files ie to extract mfcc features
-                    // - AT PRESENT WE ALWAYS DO FEATURE EXTRACTION
+                    // AT PRESENT WE ALWAYS DO FEATURE EXTRACTION
                     if (HMMSettings.ConfigParam.TryGetValue("HCOPY", out tmpVal))
                     {
                         if (tmpVal.Equals("Y"))//feature vectors have not been extracted yet 
@@ -285,7 +212,6 @@ namespace HMMBuilder
                             catch
                             {
                                 Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HTKHelper.HCopy(aOptionsStr, htkConfig, true)");
-                                //Console.WriteLine(ex.ToString());
                                 good = false;
                                 break;
                             }
@@ -308,13 +234,12 @@ namespace HMMBuilder
 
 
                     #region THREE: Data Preparation (see manual 2.3.1):- Segment the training data; Get PHONE LABELS
+                    Console.WriteLine("\n3: ABOUT TO SEGMENT WAV TRAINING FILES");
                     try
                     {
                         bool extractLabels = true;
-#if EXTRACT_SEGMENTS
-                        Console.WriteLine("\nABOUT TO SEGMENT WAV TRAINING FILES");                  
 
-                        if (!multisyllabic)
+                        if (! htkConfig.multisyllabic)
                         {
 
                             if (extractLabels) //True by default - i.e. always segment the training data files
@@ -341,8 +266,6 @@ namespace HMMBuilder
                                 AudioSegmentation.Execute(trnDir, trnDir, verbosity);
                             }
                         }
-#endif
-
                         HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
                     }
                     catch (System.IO.IOException e)
@@ -368,7 +291,7 @@ namespace HMMBuilder
                     }
                     catch
                     {
-                        Console.WriteLine("ERROR!! FAILED TO COMPLETE Write Dicitonary Region");
+                        Console.WriteLine("ERROR!! FAILED TO COMPLETE Write Dictionary Region");
                         good = false;
                         break;
                     }
@@ -376,7 +299,7 @@ namespace HMMBuilder
 
 
                     #region FIVE: TRAINING TOOLS:-  (see manual 2.3.2)
-                    Console.WriteLine("\nTRAINING: READING THE PROTOTYPE CONFIGURATION FILES");
+                    Console.WriteLine("\n5: TRAINING: READING THE PROTOTYPE CONFIGURATION FILES");
                     try
                     {
                         HMMSettings.ReadPCF(htkConfig.ProtoConfDir);
@@ -558,7 +481,8 @@ namespace HMMBuilder
                     }
                     #endregion
 
-                    #region Background Model Estimation
+                    #region SIX: Background Model Estimation
+                    Console.WriteLine("\n6: Estimation of Background Noise Model");
                     if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG", out tmpVal))
                     {
                         if (tmpVal.Equals("Y"))
@@ -599,19 +523,20 @@ namespace HMMBuilder
                     }
                     #endregion
 
-                    #region SIX: Test the HMMs
+                    #region SEVEN: Test the HMMs
+                    Console.WriteLine("\n7: Test the HMMs");
                     try
                     {
                         if (HMMSettings.ConfigParam.TryGetValue("HBUILD", out tmpVal))
                         {
                             if (tmpVal.Equals("Y")) //Generate the network file
                             {
-                                if (!multisyllabic)
+                                if (!htkConfig.multisyllabic)
                                     HTKHelper.HBuild(htkConfig.monophones, htkConfig.wordNet, htkConfig.HBuildExecutable);
                             }
                             else
                             {
-                                if (!multisyllabic)
+                                if (!htkConfig.multisyllabic)
                                 {
                                     //TO DO: Ask the user for the word network file
                                 }
@@ -662,7 +587,8 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region Score BACKGROUND model
+                    #region EIGHT: Score BACKGROUND model
+                    Console.WriteLine("\n8: Score Background Noise Model");
                     //Modify the output from HVite so as to include the scores from background model
                     if (htkConfig.noSegmentation || 
                         (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
@@ -697,7 +623,8 @@ namespace HMMBuilder
                     #endregion
 
 
-                    #region SEVEN: Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
+                    #region NINE: Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
+                    Console.WriteLine("\n9: Accuracy Measurements");
 
                     //calculate frame rate = 1sec / frame duration
                     double frameRate = 10000000 / double.Parse(htkConfig.TARGETRATE);
@@ -709,7 +636,7 @@ namespace HMMBuilder
                     double trnSD = 0;
                     string regex = null;
                     int optimumThreshold = -Int32.MaxValue; //to be removed from here
-                    if (!multisyllabic)
+                    if (!htkConfig.multisyllabic)
                     {
                         Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, vocalization, out mean, out trnSD);
 
@@ -903,7 +830,8 @@ namespace HMMBuilder
 
 
 
-                    #region EIGHT: SET UP THE TEMPLATE ZIP FILE
+                    #region TEN: SET UP THE TEMPLATE ZIP FILE
+                    Console.WriteLine("\n\n10: WRITE HTK FILES");
 
                     //try
                     //{
@@ -922,7 +850,6 @@ namespace HMMBuilder
                     //    good = false;
                     //}
 
-                    Console.WriteLine("\n\nWRITE HTK FILES");
                     try
                     {
                         //COPY HTK FILES ACROSS TO CONFIG DIR.

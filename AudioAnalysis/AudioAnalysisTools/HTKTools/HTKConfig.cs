@@ -9,32 +9,63 @@ namespace AudioAnalysisTools.HTKTools
 {
     public class HTKConfig
     {
-        public string WorkingDir { get; set; }
-        public string WorkingDirBkg { get; set; }
-        public string DataDir     { get; set; }
-        public string DataDirBkg { get; set; }
-        public string ConfigDir   { get; set; }
-        public string ConfigDirBkg { get; set; }
-        public string HTKDir      { get; set; }
-        public string SegmentationDir { get; set; }
-        public string ResultsDir { get; set; }
-        public string Author      { get; set; }
+
+        public static string Key_CALL_NAME     = "CALL_NAME";
+        public static string Key_AUTHOR        = "AUTHOR";
+        public static string Key_COMMENT       = "COMMENT";
+        public static string Key_FRAME_SIZE    = "FRAME_SIZE";
+        public static string Key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string Key_SAMPLE_RATE   = "SAMPLE_RATE";
+        public static string Key_MIN_FREQ      = "MIN_FREQ";
+        public static string Key_MAX_FREQ      = "MAX_FREQ";
+        public static string Key_HTK_THRESHOLD = "HTK_THRESHOLD";
+        public static string Key_DURATION_MEAN = "DURATION_MEAN";
+        public static string Key_DURATION_SD   = "DURATION_SD";
+        public static string Key_SD_THRESHOLD  = "SD_THRESHOLD";
+
+        //###########################################################################################################################
+        // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
+        // SET VALUES In CONSTRUCTOR
+        public bool multisyllabic   = false;   //default: single syllable call
+        //public bool multisyllabic = true;    //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
+        public bool useBKGModel     = true;        //true -> use BKG model;    false -> use SIL model
+        public bool LLRNormalization = true;   //perform LLR normalization on the output from HVite
+        public bool noSegmentation  = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
+        public string UseHERest;     //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
+        public string UseHERestBKG;  //train BACKGROUND model
+        //false-> each recording segmented. SIL model is generated/trained from the traiing recordings.
+        //###########################################################################################################################
+
+
+        public string Author      { get; private set; }
         public string CallName    { get; set; }
-        public string singleWord  { get; set; }
-        public string Comment     { get; set; }
+        public string BkgName     { get; private set; }
+        public string SilName     { get; private set; }
+        public string Comment     { get; private set; }
+
+        public string WorkingDir   { get; set; }
+        public string BkgWorkingDir{ get; set; }
+        public string DataDir      { get; set; }
+        public string BkgDataDir   { get; set; }
+        public string ConfigDir    { get; set; }
+        public string BkgConfigDir { get; set; }
+        public string HTKDir       { get; set; }
+        public string SegmentationDir { get; set; }
+        public string ResultsDir   { get; set; }
+
+        
+        //PARAMETERS FOR TRAINING OF HMM MODEL & BACKGROUND MODEL 
         public string numHmmStates { get; set; }
         public string numHmmSilStates { get; set; }
         public string numHmmBkgStates { get; set; }
-        public int numIterations { get; set; }
-        public int numBkgIterations { get; set; }
-        public bool bkgTraining = false;
-
-        public bool useBKGModel = true;        //true -> use BKG model;    false -> use SIL model
-        public bool LLRNormalization = true;   //perform LLR normalization on the output from HVite
-        public bool noSegmentation = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
-                                               //false-> each recording segmented. SIL model is generated/trained from the traiing recordings.
+        public int    numIterations { get; set; }
+        public int    numBkgIterations { get; set; }
+        public bool   bkgTraining = false;
+        
         public string SampleRate  { get; set; }
         public string FrameOverlap { get; set; }
+        public string MinHz { get; set; }
+        public string MaxHz { get; set; }
         public string SilenceModelSrc { get; set; }  // source of the silence .wav recording
         public string SilenceModelPath { get; set; } // the silence .wav recording
         public string NoiseModelFN { get; set; }     // noise model is derived from the silence .wav recording
@@ -60,6 +91,7 @@ namespace AudioAnalysisTools.HTKTools
         public Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
         public Dictionary<string, int> threshold = new Dictionary<string, int>();
         
+
         /// <summary>
         /// Table used for computing feature vectors size 
         /// </summary>
@@ -71,40 +103,39 @@ namespace AudioAnalysisTools.HTKTools
         public static string mfccConfigFN      = "mfccConfig.txt";
         public static string labelListFN       = "labelList.txt";
 
-
         //dir and path names
-        public string trnDirPath      { get { return DataDir       + "\\train"; } }
-        public string trnDirPathBkg   { get { return DataDirBkg ; } }
-        public string tstFalseDirPath { get { return DataDir       + "\\test\\testFalse"; } }
-        public string tstTrueDirPath  { get { return DataDir       + "\\test\\testTrue"; } }
+        public string trnDirPath       { get { return DataDir       + "\\train"; } }
+        public string trnDirPathBkg    { get { return BkgDataDir ; } }
+        public string tstFalseDirPath  { get { return DataDir       + "\\test\\testFalse"; } }
+        public string tstTrueDirPath   { get { return DataDir       + "\\test\\testTrue"; } }
 
-        public string ProtoConfDir    { get { return ConfigDir     + "\\protoConfigs"; } }
-        public string ProtoConfDirBkg { get { return ConfigDirBkg  + "\\protoConfigs"; } }
-        public string ConfigFN        { get { return ConfigDir     + "\\monPlainM1S1.dcf"; } }
-        public string MfccConfigFN    { get { return ConfigDir     + "\\mfccConfig"; } }
-        public string MfccConfigFNBkg { get { return ConfigDirBkg  + "\\mfccConfig"; } }
-        public string MfccConfig2FN   { get { return ConfigDir     + "\\" + mfccConfigFN; } }   //need this copy for training
-        public string MfccConfig2FNBkg { get { return ConfigDirBkg + "\\mfccConfig.txt"; } }
+        public string ProtoConfDir     { get { return ConfigDir     + "\\protoConfigs"; } }
+        public string ProtoConfDirBkg  { get { return BkgConfigDir  + "\\protoConfigs"; } }
+        public string ConfigFN         { get { return ConfigDir     + "\\monPlainM1S1.dcf"; } }
+        public string MfccConfigFN     { get { return ConfigDir     + "\\mfccConfig"; } }
+        public string MfccConfigFNBkg  { get { return BkgConfigDir  + "\\mfccConfig"; } }
+        public string MfccConfig2FN    { get { return ConfigDir     + "\\" + mfccConfigFN; } }   //need this copy for training
+        public string MfccConfig2FNBkg { get { return BkgConfigDir + "\\mfccConfig.txt"; } }
 
         //grammar file for multisyllabic calls
-        public string gramF { get { return ConfigDir + "\\gram.bnf"; } }
+        public string grammarF { get { return ConfigDir + "\\gram.bnf"; } }
         //syllable list for multisyllabic calls
         public List<string> multiSyllableList = new List<string>();
 
-        public string DictFile     { get { return ConfigDir + "\\dict"; } }
-        public string DictFileBkg  { get { return ConfigDirBkg + "\\dict"; } }
-        public string cTrainF      { get { return ConfigDir + "\\codetrain.scp"; } }
-        public string cTrainFBkg   { get { return ConfigDirBkg + "\\codetrain.scp"; } }
-        public string cTestFalseF  { get { return ConfigDir + "\\codetestfalse.scp"; } }
-        public string cTestTrueF   { get { return ConfigDir + "\\codetesttrue.scp"; } }
-        public string trainF       { get { return ConfigDir + "\\train.scp"; } }
-        public string trainFBkg    { get { return ConfigDirBkg + "\\train.scp"; } }
-        public string tFalseF      { get { return ConfigDir + "\\testfalse.scp"; } }
-        public string tTrueF       { get { return ConfigDir + "\\testtrue.scp"; } }        
-        public string wltF         { get { return ConfigDir + "\\phones.mlf";  } }//file containing segmentation info into SONG SYLLABLES + SILENCE
-        public string wltFBkg      { get { return ConfigDirBkg + "\\phones.mlf"; } }
-        public string wordNet      { get { return ConfigDir + "\\phone.net"; } }
-        public string wordNetBkg   { get { return ConfigDirBkg + "\\phone.net"; } }
+        public string DictFile     { get { return ConfigDir    + "\\dict"; } }
+        public string DictFileBkg  { get { return BkgConfigDir + "\\dict"; } }
+        public string cTrainF      { get { return ConfigDir    + "\\codetrain.scp"; } }
+        public string cTrainFBkg   { get { return BkgConfigDir + "\\codetrain.scp"; } }
+        public string cTestFalseF  { get { return ConfigDir    + "\\codetestfalse.scp"; } }
+        public string cTestTrueF   { get { return ConfigDir    + "\\codetesttrue.scp"; } }
+        public string trainF       { get { return ConfigDir    + "\\train.scp"; } }
+        public string trainFBkg    { get { return BkgConfigDir + "\\train.scp"; } }
+        public string tFalseF      { get { return ConfigDir    + "\\testfalse.scp"; } }
+        public string tTrueF       { get { return ConfigDir    + "\\testtrue.scp"; } }        
+        public string wltF         { get { return ConfigDir    + "\\phones.mlf";  } }//file containing segmentation info into SONG SYLLABLES + SILENCE
+        public string wltFBkg      { get { return BkgConfigDir + "\\phones.mlf"; } }
+        public string wordNet      { get { return ConfigDir    + "\\phone.net"; } }
+        public string wordNetBkg   { get { return BkgConfigDir + "\\phone.net"; } }
         //for scanning a single test file
         public string TestFileCode { get { return ConfigDir + "\\Test_CodeSingle.scp"; } }
         public string TestFile     { get { return ConfigDir + "\\Test_Single.scp"; } }
@@ -112,26 +143,26 @@ namespace AudioAnalysisTools.HTKTools
         //lists directory
         //public string ListsDir   { get { return ConfigDir + "\\lists"; } }
         public string monophones   { get { return ConfigDir + "\\" + labelListFN; } } //contains list of syllables to recognise including SIL
-        public string monophonesBkg   { get { return ConfigDirBkg + "\\" + labelListFN; } }
+        public string monophonesBkg   { get { return BkgConfigDir + "\\" + labelListFN; } }
 
         //HMM files
         public string HmmDir       { get { return ConfigDir + "\\hmms"; } }
-        public string HmmDirBkg    { get { return ConfigDirBkg + "\\hmms"; } }
+        public string HmmDirBkg    { get { return BkgConfigDir + "\\hmms"; } }
         public string HmmDirBkgLLR { get { return "\\hmmBKG"; } }
         public string tgtDir0      { get { return HmmDir + "\\hmm.0"; } }
         public string tgtDir0Bkg   { get { return HmmDirBkg + "\\hmm.0"; } }
         public string tgtDir1      { get { return HmmDir + "\\hmm.1"; }}
         public string tgtDir1Bkg   { get { return HmmDirBkg + "\\hmm.1"; } }
         public string tgtDir2      { get { return HmmDir + "\\hmm.2"; }}
-        public string tgtDir2Bkg { get { return HmmDirBkg + "\\hmm.2"; } }
+        public string tgtDir2Bkg   { get { return HmmDirBkg + "\\hmm.2"; } }
         public string tgtDirTmp    { get { return HmmDir + "\\tmp"; } }
         public string tgtDirTmpBkg { get { return HmmDirBkg + "\\tmp"; } }
         public string macrosFN        = "macros";
         public string hmmdefFN        = "hmmdefs";
         public string protoFN         = "proto"; //CANNOT CHANGE THIS NAME !!??
         public string vFloorsFN       = "vFloors";
-        public string prototypeHMM { get { return ConfigDir + "\\" + protoFN; } }
-        public string prototypeHMMBkg { get { return ConfigDirBkg + "\\" + protoFN; } }
+        public string prototypeHMM    { get { return ConfigDir    + "\\" + protoFN; } }
+        public string prototypeHMMBkg { get { return BkgConfigDir + "\\" + protoFN; } }
 
         //results files
         public string resultTrue  { get { return ResultsDir + "\\recountTrue.mlf";} }
@@ -168,39 +199,6 @@ namespace AudioAnalysisTools.HTKTools
         public const int ERROR_FILE_NOT_FOUND = 2;
         public const double  qualityThreshold = 2.57; // 1.96 for p=95% :: 2.57 for p=99%
 
-        //KEYS USED IN PARAMETERS AND INI FILES
-//DATE=2009-07-02
-//AUTHOR=Michael Towsey
-//CALL_NAME=KOALAMALE1
-//COMMENT=Trained on separate inhale and exhale syllables
-//SAMPLE_RATE=22050
-//FRAME_SIZE=512
-//FRAME_OVERLAP=0.5
-//WINDOW_FUNCTION=HAMMING
-//N_POINT_SMOOTH_FFT=3
-//DO_MEL_CONVERSION=false
-//MIN_FREQ = 150
-//MAX_FREQ = 6000
-//NOISE_REDUCTION_TYPE=SILENCE_MODEL
-//SILENCE_RECORDING_PATH=etc
-//SEGMENTATION_THRESHOLD_K1=3.0
-//SEGMENTATION_THRESHOLD_K2=5.0
-//K1_K2_LATENCY=0.05
-//VOCAL_GAP=0.2
-//MIN_VOCAL_DURATION=0.075
-//KOALA1_I_HTK_THRESHOLD=-46
-//KOALA1_I_DURATION_MEAN=0.286677
-//KOALA1_I_DURATION_SD=0.132726
-//KOALA1_E_HTK_THRESHOLD=-48
-//KOALA1_E_DURATION_MEAN=0.745611
-//KOALA1_E_DURATION_SD=0.311209
-//SD_THRESHOLD=2.57
-        public static string Key_SAMPLE_RATE   = "SAMPLE_RATE";
-        public static string Key_HTK_THRESHOLD = "HTK_THRESHOLD";
-        public static string Key_DURATION_MEAN = "DURATION_MEAN";
-        public static string Key_DURATION_SD   = "DURATION_SD";
-        public static string Key_SD_THRESHOLD  = "SD_THRESHOLD";
-        
 
 
 
@@ -324,33 +322,30 @@ namespace AudioAnalysisTools.HTKTools
         public void WriteMfccConfigFile(string filename)
         {
             string content = 
-                         "SOURCEFORMAT = WAV\n" +
-                         "TARGETKIND   = " + TARGETKIND + "\n" +
-                         //"TARGETKIND   = MFCC_E_D\n" +   //##################################################
-                         "TARGETRATE = " + TARGETRATE + "\n" +
-                         "SAVECOMPRESSED = T\n" +
-                         "SAVEWITHCRC = T\n" +
-                         "WINDOWSIZE = " + WINDOWDURATION + "\n" +
-                         "USEHAMMING = T\n" +
-                         "PREEMCOEF = 0.97\n" +
-                         "NUMCHANS = 26\n" +
-                         "CEPLIFTER = 22\n" +
-                         "NUMCEPS = 12\n" +
-                         "LOFREQ = " + LOFREQ + "\n" +
-                         "HIFREQ = " + HIFREQ + "\n";
-
+                         "SOURCEFORMAT = " + this.SOURCEFORMAT+"\n" +
+                         "TARGETKIND   = " + this.TARGETKIND + "\n" +
+                         "TARGETRATE   = " + this.TARGETRATE + "\n" +
+                         "SAVECOMPRESSED = " + this.SAVECOMPRESSED + "\n" +
+                         "SAVEWITHCRC = "  + this.SAVEWITHCRC + "\n" +
+                         "WINDOWSIZE = "   + this.WINDOWDURATION + "\n" +
+                         "USEHAMMING = "   + this.USEHAMMING + "\n" +
+                         "PREEMCOEF = "    + this.PREEMCOEF + "\n" + //pre-emphasis filter removes low freq content, emphasises high freq content.
+                         "NUMCHANS = "     + this.NUMCHANS + "\n" +  //size of filter bank - default = 26
+                         "CEPLIFTER = "    + this.CEPLIFTER + "\n" +
+                         "NUMCEPS = "      + this.NUMCEPS + "\n" +   //number of cepstral coefficients - default = 12
+                         "LOFREQ = "       + this.LOFREQ + "\n" +
+                         "HIFREQ = "       + this.HIFREQ + "\n";
             WriteTextFile(filename, content);
         }//end method
 
         public void WriteHmmConfigFile(string filename)
         {
             string content = 
-                "<BEGINtest_config_file>\n\n"+
+            "<BEGINtest_config_file>\n\n"+
                 "<COMMENT>\n" +
                     "This TCF produces a plain single mixture, single stream diagonal covariance monophone system\n\n" +
 
                 "<BEGINsys_setup>\n\n" +
-
                     "#hsKind: P\n" +
                     "#covKind: F\n" +
                     "#nStreams: 1\n" +
@@ -358,30 +353,19 @@ namespace AudioAnalysisTools.HTKTools
                     "#Context: M\n" +
                     "#TiedState: n\n" +
                     "#VQ_clust: L\n" +
-                    "HERest_Iter: " + numIterations.ToString() + "\n" + //################ NUMBER OF ITERATIONS #############################
+                    "HERest_Iter: "    + numIterations.ToString() + "\n" + //############## NUMBER OF ITERATIONS ##############
                     "HERestBKG_Iter: " + numBkgIterations.ToString() + "\n" + 
-                    "#HERest_par_mode: n\n" +
-                    "#Clean_up: n\n" +
-                    "Trace_tool_calls: y\n\n" +
-        
-                    "<ENDsys_setup>:\n\n" +
+                    "Trace_tool_calls: y\n\n" +       
+                "<ENDsys_setup>:\n\n" +
 
-                    "<BEGINtool_steps>\n\n" +
-
+                "<BEGINtool_steps>\n\n" +
                     "HCopy: y\n" +
-                    "#HList: n\n" +
-                    "#HQuant: n\n" +
-                    "#HLEd: y\n" +
-                    "#HInit: y\n" +
-                    "HERest: y\n" +         //y -> use HERest; n -> use HRest
-                    "HERestBKG: n\n" +      //train BACKGROUND model
-                    "#HSmooth: n\n" +
+                    "HERest: y\n" +    //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
+                    "HERestBKG: n\n" + //train BACKGROUND model
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
-
-                    "<ENDtool_steps>:\n\n" +
-
-                    "<ENDtest_config_file>:";
+                "<ENDtool_steps>:\n\n" +
+            "<ENDtest_config_file>:";
 
             WriteTextFile(filename, content);
         }//end method
@@ -438,61 +422,59 @@ namespace AudioAnalysisTools.HTKTools
 
 
 
-        public void WriteSegmentationIniFile(string iniFN)
-        {
-            string content =
-                "DATE=2009-07-02\n" +
-                "AUTHOR="+this.Author+"\n" +
-                "#\n" +
-                "CALL_NAME="+ this.CallName+"\n" +
-                "COMMENT="  + this.Comment+"\n" +
-                "#\n" +
-                "#**************** INFO ABOUT ORIGINAL .WAV FILE[s]\n" +
-                "#WAV_DIR_NAME="+WorkingDir+"\\data\\train\n" +
-                "SAMPLE_RATE="  +SampleRate+"\n" +
-                "#\n" +
-                "#**************** INFO ABOUT FRAMES\n" +
-                "FRAME_SIZE="+FRAMESIZE+"\n" +
-                "FRAME_OVERLAP="+FrameOverlap+"\n" +
-                "WINDOW_FUNCTION=HAMMING\n" + //DEFAULT
-                "N_POINT_SMOOTH_FFT=3\n" +
-                "DO_MEL_CONVERSION=false\n" +
-                "#\n" +
-                "#**************** INFO ABOUT SONOGRAM\n" +
-                "MIN_FREQ = " + LOFREQ + "\n" +
-                "MAX_FREQ = " + HIFREQ + "\n" +
-                "#\n" + 
-                "#**************** NOISE REDUCTION\n" +
-                "#NOISE_REDUCTION_TYPE=NONE\n" +
-                "#NOISE_REDUCTION_TYPE=STANDARD\n" +
-                "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
-                "DYNAMIC_RANGE=60.0\n" +
-                "#\n" +
-                "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
-                "# See Lamel et al 1981.\n" +
-                "# They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.\n" +
-                "# Here we set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames)\n" +
-                "#                  and \"minimum pulse length\" = 0.075s (2 frames) \n" +
-                "# SEGMENTATION_THRESHOLD_K1 = decibels above the minimum level\n" +
-                "# SEGMENTATION_THRESHOLD_K2 = decibels above the minimum level\n" +
-                "# K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds\n" +
-                "# VOCAL_GAP = gap (in seconds) required to separate vocalisations \n" +
-                "# MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.\n" +
-                "SEGMENTATION_THRESHOLD_K1=3.0\n" +
-                "SEGMENTATION_THRESHOLD_K2=5.0\n" +
-                "K1_K2_LATENCY=0.05\n" +
-                "VOCAL_GAP=0.2\n" +
-                "MIN_VOCAL_DURATION=0.075";
+        //public void WriteSegmentationIniFile(string iniFN)
+        //{
+        //    string content =
+        //        "DATE=2009-07-02\n" +
+        //        "AUTHOR="+this.Author+"\n" +
+        //        "#\n" +
+        //        "CALL_NAME="+ this.CallName+"\n" +
+        //        "COMMENT="  + this.Comment+"\n" +
+        //        "#\n" +
+        //        "#**************** INFO ABOUT ORIGINAL .WAV FILE[s]\n" +
+        //        "#WAV_DIR_NAME="+WorkingDir+"\\data\\train\n" +
+        //        "SAMPLE_RATE="  +SampleRate+"\n" +
+        //        "#\n" +
+        //        "#**************** INFO ABOUT FRAMES\n" +
+        //        "FRAME_SIZE="+FRAMESIZE+"\n" +
+        //        "FRAME_OVERLAP="+FrameOverlap+"\n" +
+        //        "WINDOW_FUNCTION=HAMMING\n" + //DEFAULT
+        //        "N_POINT_SMOOTH_FFT=3\n" +
+        //        "DO_MEL_CONVERSION=false\n" +
+        //        "#\n" +
+        //        "#**************** INFO ABOUT SONOGRAM\n" +
+        //        "MIN_FREQ = " + LOFREQ + "\n" +
+        //        "MAX_FREQ = " + HIFREQ + "\n" +
+        //        "#\n" + 
+        //        "#**************** NOISE REDUCTION\n" +
+        //        "#NOISE_REDUCTION_TYPE=NONE\n" +
+        //        "#NOISE_REDUCTION_TYPE=STANDARD\n" +
+        //        "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
+        //        "DYNAMIC_RANGE=60.0\n" +
+        //        "#\n" +
+        //        "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
+        //        "# See Lamel et al 1981.\n" +
+        //        "# They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.\n" +
+        //        "# Here we set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames)\n" +
+        //        "#                  and \"minimum pulse length\" = 0.075s (2 frames) \n" +
+        //        "# SEGMENTATION_THRESHOLD_K1 = decibels above the minimum level\n" +
+        //        "# SEGMENTATION_THRESHOLD_K2 = decibels above the minimum level\n" +
+        //        "# K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds\n" +
+        //        "# VOCAL_GAP = gap (in seconds) required to separate vocalisations \n" +
+        //        "# MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.\n" +
+        //        "SEGMENTATION_THRESHOLD_K1=3.0\n" +
+        //        "SEGMENTATION_THRESHOLD_K2=5.0\n" +
+        //        "K1_K2_LATENCY=0.05\n" +
+        //        "VOCAL_GAP=0.2\n" +
+        //        "MIN_VOCAL_DURATION=0.075";
 
-            WriteTextFile(iniFN, content);
-        }
+        //    WriteTextFile(iniFN, content);
+        //}
 
 
         public static void WriteTextFile(string path, string text)
         {
-            //Console.WriteLine("");
             StreamWriter wltWriter = null;
-
             try
             {
                 wltWriter = File.CreateText(path);
@@ -568,12 +550,43 @@ namespace AudioAnalysisTools.HTKTools
         #region Constructor
         public HTKConfig()
         {
+            // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
+            this.multisyllabic = false;     //single syllable call
+            this.useBKGModel = true;        //true -> use BKG model;    false -> use SIL model
+            this.LLRNormalization = true;   //perform LLR normalization on the output from HVite
+            this.noSegmentation = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
+            this.UseHERest      = "y";      //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
+            this.UseHERestBKG   = "n";      //train BACKGROUND model
+
+            this.numHmmStates    = "10";    //number of hmm states for CALL model
+            this.numHmmSilStates = "3";     //number of hmm states for SILENCE model
+            this.numIterations   = 5;       //number of iterations for re-estimating the 
+
+            this.numHmmBkgStates  = "1";    //number of hmm states for BKG model
+            this.numBkgIterations = 5;      //number of iterations for re-estimating the BG model
+
+            //###########################################################################################################################
+            this.SOURCEFORMAT   = "WAV";
+            this.SAVECOMPRESSED = "T";
+            this.SAVEWITHCRC    = "T";
+
+            //MFCC PARAMETERS
+            this.TARGETKIND = "MFCC";  //components to include in feature vector
+            this.USEHAMMING = "T";
+            this.PREEMCOEF  = "0.97";    //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
+            this.NUMCHANS   = "26";      //size of filter bank - default = 26
+            this.CEPLIFTER  = "22";
+            this.NUMCEPS    = "12";      //number of cepstral coefficients - default = 12
+            
             //initialize dictionary
             smFeatureDict.Add("MFCC", 1);
             smFeatureDict.Add("0", 2);
             smFeatureDict.Add("E", 2);
             smFeatureDict.Add("D", 3);
             smFeatureDict.Add("A", 3);
+
+            this.SilName = "SIL";
+            this.BkgName = "BACKGROUND";
         }
 
         /// <summary>
@@ -581,23 +594,61 @@ namespace AudioAnalysisTools.HTKTools
         /// </summary>
         /// <param name="workingDir"></param>
         /// <param name="templateName"></param>
-        public HTKConfig(string workingDir, string templateName)
+        public HTKConfig(string parentDir, string iniPath) : this()
         {
-            this.WorkingDir = workingDir;
-            this.CallName   = templateName;
-            this.DataDir    = workingDir + "\\data";
-            this.ConfigDir  = workingDir + "\\" + templateName;
-            this.ResultsDir = workingDir + "\\results";
-            this.HTKDir     = this.ConfigDir  + "\\HTK";
-            this.SegmentationDir  = this.ConfigDir + "\\Segmentation"; //NOT USED FOR TESTING
-           // this.SilenceModelPath = this.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav"; //NOT USED IN TESTING
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            //initialize dictionary
-            smFeatureDict.Add("MFCC", 1);
-            smFeatureDict.Add("0", 2);
-            smFeatureDict.Add("E", 2);
-            smFeatureDict.Add("D", 3);
-            smFeatureDict.Add("A", 3);
+            this.CallName   = dict[Key_CALL_NAME];
+            this.Author     = dict[Key_AUTHOR];
+            this.Comment    = dict[Key_COMMENT];
+
+
+            //FRAMING PARAMETERS
+            this.SampleRate = dict[Key_SAMPLE_RATE];
+            this.FRAMESIZE = dict[Key_FRAME_SIZE];
+            this.FrameOverlap = dict[Key_FRAME_OVERLAP];
+            this.TARGETRATE = "116100.0"; //=10e-7 seconds - that is a frame every 11.6 millisconds.
+            this.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
+            //parse all the above strings to ints or reals
+            //double tr;
+            //Double.TryParse(this.TARGETRATE, out tr);
+            //double wd; //window duration
+            //Double.TryParse(this.WINDOWDURATION, out wd);
+            //int sr;  //not actually used - HTK does not need. Segmentation requires only framing info derived from SR below.
+            //Int32.TryParse(this.SampleRate, out sr);
+            //this.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString();
+            //this.FrameOverlap = (tr / wd).ToString();
+
+
+            //BANDWIDTH
+            this.MinHz = dict[Key_MIN_FREQ];
+            this.MaxHz = dict[Key_MAX_FREQ];
+            this.LOFREQ = dict[Key_MIN_FREQ];
+            this.HIFREQ = dict[Key_MAX_FREQ];
+
+
+            //SET UP DIRECTORY STRUCTURE
+            //htkConfig.WorkingDir    = Directory.GetCurrentDirectory();
+            this.WorkingDir = parentDir + "Template_" + this.CallName;
+            this.ConfigDir  = this.WorkingDir + "\\" + this.CallName;
+            this.DataDir    = this.WorkingDir + "\\data";
+            this.ResultsDir = this.WorkingDir + "\\results";
+            this.SegmentationDir = this.WorkingDir + "\\Segmentation";  //NOT USED FOR TESTING
+
+            //SET UP BACKGROUND DIRECTORY STRUCTURE
+            this.BkgWorkingDir = parentDir + "Template_BACKGROUND";
+            this.BkgConfigDir  = this.BkgWorkingDir;
+            this.BkgDataDir    = this.BkgWorkingDir + "\\data";
+
+            //RESOURCES DIR
+            string resourcesDir = "C:\\SensorNetworks\\Software\\";
+            this.HTKDir         = resourcesDir + "Extra Assemblies\\HTK\\";
+
+            this.SilenceModelSrc  = resourcesDir + "HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            this.SilenceModelPath = this.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav"; //NOT USED IN TESTING
+            this.NoiseModelFN     = Path.GetFileNameWithoutExtension(this.SilenceModelPath) + HTKConfig.noiseModelExt;
         }
 
         #endregion

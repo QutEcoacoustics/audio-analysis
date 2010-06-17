@@ -257,10 +257,10 @@ namespace AudioAnalysisTools.HTKTools
 
                 try
                 {
-                    if (!syllableList.Contains(htkConfig.singleWord))
-                        syllableList.Add(htkConfig.singleWord); 
+                    if (!syllableList.Contains(htkConfig.BkgName))
+                        syllableList.Add(htkConfig.BkgName); 
                     
-                    vocalization = htkConfig.singleWord;
+                    vocalization = htkConfig.BkgName;
 
                     Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltFBkg + ">");
                     wltWriter = File.CreateText(htkConfig.wltFBkg);
@@ -274,7 +274,7 @@ namespace AudioAnalysisTools.HTKTools
                     {
                         currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
                         wltWriter.WriteLine(currLine);
-                        wltWriter.WriteLine(htkConfig.singleWord);
+                        wltWriter.WriteLine(htkConfig.BkgName);
                         wltWriter.WriteLine(".");
                     }
                 }
@@ -427,7 +427,7 @@ namespace AudioAnalysisTools.HTKTools
             //write the script files for training and test data
             try
             {
-                //check that we are not traiing the BACKGROUND model right now
+                //check that we are not training the BACKGROUND model right now
                 if (!htkConfig.bkgTraining)
                 {
                     //check if the call is multisyllabic
