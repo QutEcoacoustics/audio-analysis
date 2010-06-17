@@ -35,7 +35,7 @@ namespace AudioAnalysisTools.HTKTools
                 }
                 
                 //Create Code config file for the extraction of MFCC features
-                if (!Directory.Exists(htkConfig.ConfigDirBkg)) Directory.CreateDirectory(htkConfig.ConfigDirBkg);                
+                if (!Directory.Exists(htkConfig.BkgConfigDir)) Directory.CreateDirectory(htkConfig.BkgConfigDir);                
                 htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFNBkg);
 
                 //Create Train Code File for training the model
