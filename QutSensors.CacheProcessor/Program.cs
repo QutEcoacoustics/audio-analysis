@@ -1,37 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.ServiceProcess;
-using System.Text;
-using Autofac;
-using Autofac.Core;
-using QutSensors.Data;
-using QutSensors.Data.Providers;
-using QutSensors.Data.Cache;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Program.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the Program type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace QutSensors.CacheProcessor
 {
-    static class Program
+    using System;
+    using System.ServiceProcess;
+
+    using Autofac;
+
+    using QutSensors.Data;
+    using QutSensors.Data.Cache;
+    using QutSensors.Data.Providers;
+
+    /// <summary>
+    /// Cache Job Processor Program.
+    /// </summary>
+    public static class Program
     {
-        static void SetupIocContainer()
-        {
-            var builder = new ContainerBuilder();
-
-            builder.RegisterType<AudioReadingManager>()
-                    .WithParameter(new NamedParameter("audioSegmentationPolicy", new QutSensors.Data.Cache.SegmentCachePolicy()))
-                    .WithParameter(new NamedParameter("spectrogramCachePolicy", new QutSensors.Data.Cache.SpectrogramCachePolicy()))
-                    .As<IAudioReadingManager>();
-            builder.RegisterType<FileSystemDataStagingProvider>().As<IDataStagingProvider>();
-            builder.RegisterType<AudioTools.DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
-            builder.RegisterType<CacheManager>().As<ICacheManager>();
-            builder.RegisterType<CacheJobProcessor>();
-            QutDependencyContainer.Instance.Container = builder.Build();
-        }
-
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
-        static void Main(string[] args)
+        /// <param name="args">
+        /// Program Arguments.
+        /// </param>
+        public static void Main(string[] args)
         {
             SetupIocContainer();
 
@@ -45,13 +43,27 @@ namespace QutSensors.CacheProcessor
             }
             else
             {
-                ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[] 
-			    { 
-				    new Service() 
-			    };
-                ServiceBase.Run(ServicesToRun);
+                var servicesToRun = new ServiceBase[] { new Service() };
+                ServiceBase.Run(servicesToRun);
             }
+        }
+
+        /// <summary>
+        /// Set up Inversion of Control Container.
+        /// </summary>
+        private static void SetupIocContainer()
+        {
+            var builder = new ContainerBuilder();
+
+            builder.RegisterType<AudioReadingManager>()
+                    .WithParameter(new NamedParameter("audioSegmentationPolicy", new SegmentCachePolicy()))
+                    .WithParameter(new NamedParameter("spectrogramCachePolicy", new SpectrogramCachePolicy()))
+                    .As<IAudioReadingManager>();
+            builder.RegisterType<FileSystemDataStagingProvider>().As<IDataStagingProvider>();
+            builder.RegisterType<AudioTools.DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
+            builder.RegisterType<CacheManager>().As<ICacheManager>();
+            builder.RegisterType<CacheJobProcessor>();
+            QutDependencyContainer.Instance.Container = builder.Build();
         }
     }
 }

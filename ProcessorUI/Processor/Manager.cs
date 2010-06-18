@@ -1,15 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using QutSensors.Shared;
-using QutSensors.Processor.ProcessorService;
-using Microsoft.ComputeCluster;
-using Microsoft.Practices.EnterpriseLibrary.Logging;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Manager.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Retrieves, prepares, runs and submits analysis work items.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace QutSensors.Processor
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    using Microsoft.ComputeCluster;
+    using Microsoft.Practices.EnterpriseLibrary.Logging;
+
+    using QutSensors.Processor.ProcessorService;
+    using QutSensors.Shared;
+
     /// <summary>
     /// Retrieves, prepares, runs and submits analysis work items.
     /// </summary>
@@ -52,6 +63,12 @@ namespace QutSensors.Processor
 
         #endregion
 
+        /// <summary>
+        /// Gets the dir run base.
+        /// </summary>
+        /// <exception cref="DirectoryNotFoundException">
+        /// <c>DirectoryNotFoundException</c>.
+        /// </exception>
         public DirectoryInfo DirRunBase
         {
             get
@@ -60,27 +77,37 @@ namespace QutSensors.Processor
                 var runsFolder = System.Configuration.ConfigurationManager.AppSettings["RunDirectory"];
 
                 if (string.IsNullOrEmpty(runsFolder) || !Directory.Exists(runsFolder))
-                    throw new Exception("Analysis run directory does not exist: " + runsFolder);
+                    throw new DirectoryNotFoundException("Analysis run directory does not exist: " + runsFolder);
 
                 return new DirectoryInfo(runsFolder);
             }
         }
 
+        /// <summary>
+        /// Gets the dir program base.
+        /// </summary>
+        /// <exception cref="Exception">
+        /// <c>Exception</c>.
+        /// </exception>
         public DirectoryInfo DirProgramBase
         {
             get
             {
-                //set the programs directory
+                // set the programs directory
                 var programsFolder = System.Configuration.ConfigurationManager.AppSettings["ProgramDirectory"];
 
                 if (string.IsNullOrEmpty(programsFolder) || !Directory.Exists(programsFolder))
+                {
                     throw new Exception("Analysis program directory does not exist: " + programsFolder);
+                }
 
                 return new DirectoryInfo(programsFolder);
-
             }
         }
 
+        /// <summary>
+        /// Gets ProgramName.
+        /// </summary>
         public string ProgramName
         {
             get
@@ -89,6 +116,9 @@ namespace QutSensors.Processor
             }
         }
 
+        /// <summary>
+        /// Gets UserName.
+        /// </summary>
         public string UserName
         {
             get
@@ -97,6 +127,9 @@ namespace QutSensors.Processor
             }
         }
 
+        /// <summary>
+        /// Gets Password.
+        /// </summary>
         public string Password
         {
             get
@@ -105,6 +138,9 @@ namespace QutSensors.Processor
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether DeleteFinishedRuns.
+        /// </summary>
         public bool DeleteFinishedRuns
         {
             get
@@ -141,6 +177,13 @@ namespace QutSensors.Processor
 
         #region Common
 
+        /// <summary>
+        /// </summary>
+        /// <param name="workItem">
+        /// The work item.
+        /// </param>
+        /// <returns>
+        /// </returns>
         public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
         {
             if (workItem == null) return null;
