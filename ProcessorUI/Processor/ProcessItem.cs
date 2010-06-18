@@ -1,85 +1,152 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using QutSensors.Shared;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="ProcessItem.cs" company="MQUTeR">
+//   -
+// </copyright>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace QutSensors.Processor
 {
+    using System;
+    using System.Diagnostics;
+    using System.IO;
+
+    using QutSensors.Shared;
+
+    /// <summary>
+    /// The process item.
+    /// </summary>
     public class ProcessItem
     {
-        public FileInfo ProgramFile { get; private set; }
-        public DirectoryInfo RunDir { get; private set; }
-
-        public AnalysisWorkItem WorkItem { get; private set; }
-
-
-        public string UniqueName { get; private set; }
-        public string OutputData { get; private set; }
-        public string ErrorData { get; private set; }
-
-
-        private string Arguments { get; set; }
-        private Process Worker { get; set; }
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProcessItem"/> class.
+        /// </summary>
+        /// <param name="item">
+        /// Analysis Work Item.
+        /// </param>
+        /// <param name="programFile">
+        /// The program file.
+        /// </param>
+        /// <param name="runDir">
+        /// The run dir.
+        /// </param>
+        /// <param name="arguments">
+        /// The arguments.
+        /// </param>
         public ProcessItem(AnalysisWorkItem item, FileInfo programFile, DirectoryInfo runDir, string arguments)
         {
-            RunDir = runDir;
-            ProgramFile = programFile;
-            WorkItem = item;
+            this.RunDir = runDir;
+            this.ProgramFile = programFile;
+            this.WorkItem = item;
 
-            Arguments = arguments;
-            UniqueName = Guid.NewGuid().ToString();
+            this.Arguments = arguments;
+            this.UniqueName = Guid.NewGuid().ToString();
         }
 
+        /// <summary>
+        /// Gets ProgramFile.
+        /// </summary>
+        public FileInfo ProgramFile { get; private set; }
+
+        /// <summary>
+        /// Gets RunDir.
+        /// </summary>
+        public DirectoryInfo RunDir { get; private set; }
+
+        /// <summary>
+        /// Gets WorkItem.
+        /// </summary>
+        public AnalysisWorkItem WorkItem { get; private set; }
+
+        /// <summary>
+        /// Gets UniqueName.
+        /// </summary>
+        public string UniqueName { get; private set; }
+
+        /// <summary>
+        /// Gets OutputData.
+        /// </summary>
+        public string OutputData { get; private set; }
+
+        /// <summary>
+        /// Gets ErrorData.
+        /// </summary>
+        public string ErrorData { get; private set; }
+
+        private string Arguments { get; set; }
+
+        private Process Worker { get; set; }
+
+        /// <summary>
+        /// The start.
+        /// </summary>
+        /// <param name="onComplete">
+        /// The on complete.
+        /// </param>
         public void Start(Action<int> onComplete)
         {
-            using (Worker = new Process())
+            using (this.Worker = new Process())
             {
-                Worker.StartInfo = new ProcessStartInfo()
-                {
-                    CreateNoWindow = true,
-                    RedirectStandardError = true,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    UseShellExecute = false,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    WorkingDirectory = ProgramFile.DirectoryName,
-                    Arguments = Arguments,
-                    FileName = ProgramFile.FullName,
-                };
+                this.Worker.StartInfo = new ProcessStartInfo
+                    {
+                        CreateNoWindow = true, 
+                        RedirectStandardError = true, 
+                        RedirectStandardInput = true, 
+                        RedirectStandardOutput = true, 
+                        UseShellExecute = false, 
+                        WindowStyle = ProcessWindowStyle.Hidden, 
+                        WorkingDirectory = this.ProgramFile.DirectoryName, 
+                        Arguments = this.Arguments, 
+                        FileName = this.ProgramFile.FullName, 
+                    };
 
-                Worker.EnableRaisingEvents = true;
-                Worker.ErrorDataReceived += new DataReceivedEventHandler(proc_ErrorDataReceived);
-                Worker.OutputDataReceived += new DataReceivedEventHandler(proc_OutputDataReceived);
+                this.Worker.EnableRaisingEvents = true;
+                this.Worker.ErrorDataReceived += this.ProcErrorDataReceived;
+                this.Worker.OutputDataReceived += this.ProcOutputDataReceived;
 
-                Worker.Start();
+                this.Worker.Start();
 
-                Worker.BeginErrorReadLine();
-                Worker.BeginOutputReadLine();
+                this.Worker.BeginErrorReadLine();
+                this.Worker.BeginOutputReadLine();
 
-                Worker.WaitForExit();
+                this.Worker.WaitForExit();
 
                 // Worker completed
-                onComplete(Worker.ExitCode);
+                onComplete(this.Worker.ExitCode);
             }
-
         }
 
-        protected void proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        /// <summary>
+        /// The proc_ output data received.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// Data received event args.
+        /// </param>
+        protected void ProcOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                OutputData += e.Data + Environment.NewLine;
+                this.OutputData += e.Data + Environment.NewLine;
             }
         }
 
-        protected void proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)
+        /// <summary>
+        /// The proc_ error data received.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// Data received event args.
+        /// </param>
+        protected void ProcErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (!string.IsNullOrEmpty(e.Data))
             {
-                ErrorData += e.Data + Environment.NewLine;
+                this.ErrorData += e.Data + Environment.NewLine;
             }
         }
-
     }
 }

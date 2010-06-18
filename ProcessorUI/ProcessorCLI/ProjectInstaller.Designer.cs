@@ -1,17 +1,6 @@
-﻿// --------------------------------------------------------------------------------------------------------------------
-// <copyright file="ProjectInstaller.Designer.cs" company="MQUTeR">
-//   -
-// </copyright>
-// <summary>
-//   Defines the ProjectInstaller type.
-// </summary>
-// --------------------------------------------------------------------------------------------------------------------
-
-namespace QutSensors.CacheProcessor
+﻿namespace QutSensors.Processor
 {
-    /// <summary>
-    /// </summary>
-    public partial class ProjectInstaller
+    partial class ProjectInstaller
     {
         /// <summary>
         /// Required designer variable.
@@ -39,8 +28,15 @@ namespace QutSensors.CacheProcessor
         /// </summary>
         private void InitializeComponent()
         {
-            this.serviceProcessInstaller = new System.ServiceProcess.ServiceProcessInstaller();
             this.serviceInstaller = new System.ServiceProcess.ServiceInstaller();
+            this.serviceProcessInstaller = new System.ServiceProcess.ServiceProcessInstaller();
+            // 
+            // serviceInstaller
+            // 
+            this.serviceInstaller.Description = "Processes analysis tasks for the QUT Sensors Project.";
+            this.serviceInstaller.DisplayName = "QUT Sensors - Analysis Job Procesor";
+            this.serviceInstaller.ServiceName = "QUTSensorsAnalysisJobProcesor";
+            this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // serviceProcessInstaller
             // 
@@ -48,24 +44,18 @@ namespace QutSensors.CacheProcessor
             this.serviceProcessInstaller.Password = null;
             this.serviceProcessInstaller.Username = null;
             // 
-            // serviceInstaller
-            // 
-            this.serviceInstaller.Description = "Processes cache jobs for the QUT Sensors project.";
-            this.serviceInstaller.DisplayName = "QUT Sensors - Cache Job Processor";
-            this.serviceInstaller.ServiceName = "QutSensorsCacheJobProcessor";
-            this.serviceInstaller.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
-            // 
             // ProjectInstaller
             // 
             this.Installers.AddRange(new System.Configuration.Install.Installer[] {
-            this.serviceProcessInstaller,
-            this.serviceInstaller});
+            this.serviceInstaller,
+            this.serviceProcessInstaller});
 
         }
 
         #endregion
 
-        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller;
         private System.ServiceProcess.ServiceInstaller serviceInstaller;
+        private System.ServiceProcess.ServiceProcessInstaller serviceProcessInstaller;
+
     }
 }

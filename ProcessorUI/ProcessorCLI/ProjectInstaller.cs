@@ -7,13 +7,13 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace QutSensors.CacheProcessor
+namespace QutSensors.Processor
 {
     using System.ComponentModel;
     using System.Configuration.Install;
 
     /// <summary>
-    /// Installer for CacheJobProcessor Service.
+    /// Project installer for AnalysisProcessor.
     /// </summary>
     [RunInstaller(true)]
     public partial class ProjectInstaller : Installer

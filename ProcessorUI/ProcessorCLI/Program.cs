@@ -1,86 +1,44 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using QutSensors.Processor;
-using QutSensors.Shared;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="Program.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the Program type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace ProcessorCLI
 {
-    using Utilities = QutSensors.Shared.Utilities;
+    using System;
+    using System.ServiceProcess;
 
-    class Program
+    using QutSensors.Processor;
+
+    /// <summary>
+    /// Analysis Job Processor Program.
+    /// </summary>
+    public class Program
     {
+        /// <summary>
+        /// The main entry point for the application.
+        /// </summary>
+        /// <param name="args">
+        /// Program Arguments.
+        /// </param>
         public static void Main(string[] args)
         {
-            RunOnce(args);
-            //TestCompleteReturn();
-        }
-
-        private const string WORKER_NAME_KEY = "WorkerName";
-
-        private static void RunOnce(string[] args)
-        {
-            string workerName = System.Environment.GetEnvironmentVariable("WORKER_NAME") ?? System.Configuration.ConfigurationManager.AppSettings[WORKER_NAME_KEY] ?? System.Environment.MachineName;
-            Console.WriteLine("Worker name: {0}", workerName);
-
-            try
+            if (args.Length > 0 && args[0].ToLower() == "debug")
             {
-                Console.WriteLine("Get work item.");
-                var workItem = Manager.Instance.GetWorkItem(workerName);
-                Console.WriteLine("Work item retrieved.");
-
-                Console.WriteLine("Prepare work item.");
-                var pi = Manager.Instance.Dev_PrepareItem(workItem);
-                Console.WriteLine("Work item prepared.");
-
-                Console.WriteLine("Start worker...");
-                Manager.Instance.Dev_StartWorker(workerName, pi, () =>
-                {
-                    Console.WriteLine("Finished processing...");
-
-                    Console.WriteLine("Get finished runs...");
-                    var finishedRuns = Manager.Instance.GetFinishedRuns();
-
-                    if (finishedRuns != null && finishedRuns.Count() > 0)
-                    {
-                        foreach (var finishedRunDir in finishedRuns)
-                        {
-
-                            Manager.Instance.ReturnFinishedRun(finishedRunDir, workerName);
-                        }
-
-                        Console.WriteLine("Submitted " + finishedRuns.Count() + " completed runs.");
-                    }
-                    else
-                    {
-                        Console.WriteLine("No complete runs to submit.");
-                    }
-
-                });
-
+                var service = new Service();
+                service.DebugStart();
+                Console.WriteLine("Press enter to exit.");
+                Console.ReadLine();
             }
-            catch (Exception e)
+            else
             {
-                Console.WriteLine("ERROR: {0}", e);
+                var servicesToRun = new ServiceBase[] { new Service() };
+                ServiceBase.Run(servicesToRun);
             }
-
-            Console.WriteLine("Press enter to exit.");
-            Console.ReadLine();
         }
-
-        private static void TestCompleteReturn()
-        {
-            var webServiceCallSuccess = Manager.Instance.ReturnComplete(
-                        "TESTER",
-                        0,
-                        "Just Testing",
-                        new List<ProcessorResultTag>
-                        {
-                            new ProcessorResultTag {  }
-                        }
-                    );
-        }
-
     }
 }
