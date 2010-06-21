@@ -18,6 +18,10 @@ namespace AudioAnalysisTools.HTKTools
         public static string Key_SAMPLE_RATE   = "SAMPLE_RATE";
         public static string Key_MIN_FREQ      = "MIN_FREQ";
         public static string Key_MAX_FREQ      = "MAX_FREQ";
+        public static string Key_WINDOW_DURATION = "WINDOW_DURATION";
+        public static string Key_TARGET_RATE   = "TARGET_RATE";
+        public static string Key_NUM_HMM_ITERATIONS = "NUM_HMM_ITERATIONS";
+        public static string Key_NUM_HMM_STATES = "NUM_HMM_STATES";
         public static string Key_HTK_THRESHOLD = "HTK_THRESHOLD";
         public static string Key_DURATION_MEAN = "DURATION_MEAN";
         public static string Key_DURATION_SD   = "DURATION_SD";
@@ -26,14 +30,13 @@ namespace AudioAnalysisTools.HTKTools
         //###########################################################################################################################
         // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
         // SET VALUES In CONSTRUCTOR
-        public bool multisyllabic   = false;   //default: single syllable call
-        //public bool multisyllabic = true;    //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
-        public bool useBKGModel     = true;        //true -> use BKG model;    false -> use SIL model
-        public bool LLRNormalization = true;   //perform LLR normalization on the output from HVite
-        public bool noSegmentation  = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
-        public string UseHERest;     //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
-        public string UseHERestBKG;  //train BACKGROUND model
-        //false-> each recording segmented. SIL model is generated/trained from the traiing recordings.
+        public bool multisyllabic  = false; //default=false=single syllable call;  true=Parse grammar file & create word network file 'htkConfig.wordNet'
+        public bool doSegmentation = true;  //false = each recording is considered single word; default=True= SIL model trained from the recordings.
+        public bool useBKGModel = true;     //default=true -> use BKG model;    false -> use SIL model
+        public bool LLRNormalization = true; //perform LLR normalization on the output from HVite
+        public string UseHERest;             //y = use my labels BUT use HTK timestamps; no = use my labels AND my timestamps; 
+        public string UseHERestBKG;          //y -> train BACKGROUND model
+                                             //n -> each recording segmented. SIL model is generated/trained from SIL in training recordings.
         //###########################################################################################################################
 
 
@@ -53,19 +56,23 @@ namespace AudioAnalysisTools.HTKTools
         public string SegmentationDir { get; set; }
         public string ResultsDir   { get; set; }
 
-        
-        //PARAMETERS FOR TRAINING OF HMM MODEL & BACKGROUND MODEL 
-        public string numHmmStates { get; set; }
-        public string numHmmSilStates { get; set; }
-        public string numHmmBkgStates { get; set; }
-        public int    numIterations { get; set; }
-        public int    numBkgIterations { get; set; }
-        public bool   bkgTraining = false;
-        
-        public string SampleRate  { get; set; }
+        //FRAMEING PARAMETERS
+        public string SampleRate { get; set; }
         public string FrameOverlap { get; set; }
         public string MinHz { get; set; }
         public string MaxHz { get; set; }
+
+        
+        //PARAMETERS FOR TRAINING HMM MODEL
+        public string numHmmStates { get; set; }
+        public int numIterations { get; set; }
+
+        //PARAMETERS FOR TRAINING BACKGROUND MODEL 
+        public string numHmmBkgStates { get; set; }
+        public int    numBkgIterations { get; set; }
+        public bool   bkgTraining = false;
+
+        public string numHmmSilStates { get; set; }
         public string SilenceModelSrc { get; set; }  // source of the silence .wav recording
         public string SilenceModelPath { get; set; } // the silence .wav recording
         public string NoiseModelFN { get; set; }     // noise model is derived from the silence .wav recording
@@ -86,16 +93,13 @@ namespace AudioAnalysisTools.HTKTools
         public string LOFREQ { get; set; }
         public string HIFREQ { get; set; }
         public int VecSize { get; set; }
+
         //Statistical Data: duration mean and variation of vocalizations in the training set
         public Dictionary<string, double> meanDuration = new Dictionary<string, double>();
         public Dictionary<string, double> varianceDuration = new Dictionary<string, double>();
         public Dictionary<string, int> threshold = new Dictionary<string, int>();
-        
 
-        /// <summary>
-        /// Table used for computing feature vectors size 
-        /// </summary>
-        private Dictionary<string, int> smFeatureDict = new Dictionary<string, int>();
+        private Dictionary<string, int> smFeatureDict;     //Table used for computing feature vectors size 
 
         //file names
         public static string segmentationIniFN = "segmentation.ini";
@@ -178,11 +182,11 @@ namespace AudioAnalysisTools.HTKTools
         public string modifResultFalse { get { return ResultsDir + "\\bckRecountFalse.mlf"; } }
 
         // file extentions
-        public static string mfcExt       = ".mfc";
-        public static string wavExt       = ".wav";
-        public static string labelFileExt = ".lab";
-        public static string segmentFileExt    = ".segmentation.txt";
-        public static string noiseModelExt     = ".noiseModel";
+        public static string mfcExt         = ".mfc";
+        public static string wavExt         = ".wav";
+        public static string labelFileExt   = ".lab";
+        public static string segmentFileExt = ".segmentation.txt";
+        public static string noiseModelExt  = ".noiseModel";
 
         //HTK executable files
         public string HBuildExecutable { get { return HTKDir + "\\HBuild.exe"; } }
@@ -360,8 +364,8 @@ namespace AudioAnalysisTools.HTKTools
 
                 "<BEGINtool_steps>\n\n" +
                     "HCopy: y\n" +
-                    "HERest: y\n" +    //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
-                    "HERestBKG: n\n" + //train BACKGROUND model
+                    "HERest: "    + this.UseHERest + "\n"    + //y = use my labels, use HTK timestamps; no = use my labels AND my timestamps 
+                    "HERestBKG: " + this.UseHERestBKG + "\n" + //train BACKGROUND model
                     "HVite: y\n" +
                     "HBuild: y\n\n" +
                 "<ENDtool_steps>:\n\n" +
@@ -396,11 +400,11 @@ namespace AudioAnalysisTools.HTKTools
             //that is supposed to contain the related transition matrix of size (nStates+2)x(nStates+2)
             content =
                 "<BEGINproto_config_file>\n" +
-                "<COMMENT>\n\tThis PCF produces a " + numHmmStates + " state prototype system\n" +
+                "<COMMENT>\n\tThis PCF produces a " + this.numHmmStates + " state prototype system\n" +
                 "<BEGINsys_setup>\n\tnStates: " + numHmmStates + "\n"+
                    "\tsWidths: " + VecSize + "\n" +      //################################################# 
                    "\t#mixes: 1\n"+
-                   "\tparmKind: " + TARGETKIND + "\n" +  //#################################################
+                   "\tparmKind: " + this.TARGETKIND + "\n" +  //#################################################
                    "\tvecSize: " + VecSize + "\n" +      //#################################################
                    "\t#outDir: "+protoFN+"\n\n" +
                 "<ENDsys_setup>\n" +
@@ -422,54 +426,80 @@ namespace AudioAnalysisTools.HTKTools
 
 
 
-        //public void WriteSegmentationIniFile(string iniFN)
-        //{
-        //    string content =
-        //        "DATE=2009-07-02\n" +
-        //        "AUTHOR="+this.Author+"\n" +
-        //        "#\n" +
-        //        "CALL_NAME="+ this.CallName+"\n" +
-        //        "COMMENT="  + this.Comment+"\n" +
-        //        "#\n" +
-        //        "#**************** INFO ABOUT ORIGINAL .WAV FILE[s]\n" +
-        //        "#WAV_DIR_NAME="+WorkingDir+"\\data\\train\n" +
-        //        "SAMPLE_RATE="  +SampleRate+"\n" +
-        //        "#\n" +
-        //        "#**************** INFO ABOUT FRAMES\n" +
-        //        "FRAME_SIZE="+FRAMESIZE+"\n" +
-        //        "FRAME_OVERLAP="+FrameOverlap+"\n" +
-        //        "WINDOW_FUNCTION=HAMMING\n" + //DEFAULT
-        //        "N_POINT_SMOOTH_FFT=3\n" +
-        //        "DO_MEL_CONVERSION=false\n" +
-        //        "#\n" +
-        //        "#**************** INFO ABOUT SONOGRAM\n" +
-        //        "MIN_FREQ = " + LOFREQ + "\n" +
-        //        "MAX_FREQ = " + HIFREQ + "\n" +
-        //        "#\n" + 
-        //        "#**************** NOISE REDUCTION\n" +
-        //        "#NOISE_REDUCTION_TYPE=NONE\n" +
-        //        "#NOISE_REDUCTION_TYPE=STANDARD\n" +
-        //        "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
-        //        "DYNAMIC_RANGE=60.0\n" +
-        //        "#\n" +
-        //        "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
-        //        "# See Lamel et al 1981.\n" +
-        //        "# They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.\n" +
-        //        "# Here we set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames)\n" +
-        //        "#                  and \"minimum pulse length\" = 0.075s (2 frames) \n" +
-        //        "# SEGMENTATION_THRESHOLD_K1 = decibels above the minimum level\n" +
-        //        "# SEGMENTATION_THRESHOLD_K2 = decibels above the minimum level\n" +
-        //        "# K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds\n" +
-        //        "# VOCAL_GAP = gap (in seconds) required to separate vocalisations \n" +
-        //        "# MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.\n" +
-        //        "SEGMENTATION_THRESHOLD_K1=3.0\n" +
-        //        "SEGMENTATION_THRESHOLD_K2=5.0\n" +
-        //        "K1_K2_LATENCY=0.05\n" +
-        //        "VOCAL_GAP=0.2\n" +
-        //        "MIN_VOCAL_DURATION=0.075";
+        public void WriteSegmentationIniFile(string iniPath)
+        {
+            string content =
+                "DATE="+ DateTime.Today +"\n" +
+                "AUTHOR=" + this.Author + "\n" +
+                "#\n" +
+                "CALL_NAME=" + this.CallName + "\n" +
+                "COMMENT=" + this.Comment + "\n" +
+                "#\n" +
+                "#**************** INFO ABOUT ORIGINAL .WAV FILE[s]\n" +
+                "RESOURCES_DIR=" + this.WorkingDir + "\n" +
+                "SAMPLE_RATE="   + this.SampleRate + "\n" +
+                "#\n" +
+                "#**************** INFO ABOUT FRAMES\n" +
+                "# unit=10e-7 seconds i.e. frame offset=11.6 ms, frame duration=23.22 ms\n" +
+                "# will be constructed at sr=22050\n" +
+                "TARGET_RATE=" + this.TARGETRATE + "\n" +
+                "WINDOW_DURATION=" + this.WINDOWDURATION + "\n"+ 
+                "FRAME_SIZE=" + this.FRAMESIZE + "\n" +
+                "FRAME_OVERLAP=" + this.FrameOverlap + "\n" +
+                "WINDOW_FUNCTION=HAMMING\n" + //DEFAULT
+                "N_POINT_SMOOTH_FFT=3\n" +
+                "DO_MEL_CONVERSION=false\n" +
+                "#\n" +
+                "#**************** INFO ABOUT SONOGRAM\n" +
+                "MIN_FREQ = " + this.LOFREQ + "\n" +
+                "MAX_FREQ = " + this.HIFREQ + "\n" +
+                "#\n" +
+                "#**************** NOISE REDUCTION\n" +
+                "#NOISE_REDUCTION_TYPE=NONE\n" +
+                "#NOISE_REDUCTION_TYPE=STANDARD\n" +
+                "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
+                "DYNAMIC_RANGE=60.0\n" +
+                "#\n" +
+                "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
+                "# See Lamel et al 1981.\n" +
+                "# They use k1, k2, k3 and k4, minimum pulse length and k1_k2Latency.\n" +
+                "# Here we set k1 = k3, k4 = k2,  k1_k2Latency = 0.186s (5 frames)\n" +
+                "#                  and \"minimum pulse length\" = 0.075s (2 frames) \n" +
+                "# SEGMENTATION_THRESHOLD_K1 = decibels above the minimum level\n" +
+                "# SEGMENTATION_THRESHOLD_K2 = decibels above the minimum level\n" +
+                "# K1_K2_LATENCY = seconds delay between signal reaching k1 and k2 thresholds\n" +
+                "# VOCAL_GAP = gap (in seconds) required to separate vocalisations \n" +
+                "# MIN_VOCAL_DURATION = minimum length of energy pulse - do not use this - accept all pulses.\n" +
+                "SEGMENTATION_THRESHOLD_K1=3.0\n" +
+                "SEGMENTATION_THRESHOLD_K2=5.0\n" +
+                "K1_K2_LATENCY=0.05\n" +
+                "VOCAL_GAP=0.2\n" +
+                "MIN_VOCAL_DURATION=0.075" +
+                "#**************** HMM PARAMETERS\n" +
+                "# Number of states in the HMM\n" +
+                "NUM_HMM_STATES="+ this.numHmmStates + "\n" +
+                "# number of iterations for re-estimating the model\n"+
+                "NUM_HMM_ITERATIONS=" + this.numIterations + "\n";
+            WriteTextFile(iniPath, content);
+        }
 
-        //    WriteTextFile(iniFN, content);
-        //}
+
+        public void AppendThresholdInfo2IniFile(string iniPath, string syllName, double htkThreshold, double durationMean, double durationSD)
+        {
+            //Append optimum threshold and duration threshold info to segmentation ini file
+            string ToAppend = "#\n#**************** CALL THRESHOLDS FOR " + syllName + " HMM AND QUALITY/DURATION\n" +
+                      "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
+                      "#    NOTE 2: Duration values in seconds.\n" +
+                      "#    NOTE 3: SD threshold = number of SD either side of mean. 1.96=95% confidence\n" +
+                      "#            that you are NOT excluding a call with a valid duration.\n" +
+                      syllName + "_HTK_THRESHOLD=" + htkThreshold + "\n" +
+                      syllName + "_DURATION_MEAN=" + durationMean.ToString("f6") + "\n" +
+                      syllName + "_DURATION_SD=" + durationSD.ToString("f6") + "\n" +
+                      "SD_THRESHOLD=" + qualityThreshold;  //1.96 for p=95% :: 2.57 for p=99%
+
+            FileTools.Append2TextFile(iniPath, ToAppend, false);
+        }
+
 
 
         public static void WriteTextFile(string path, string text)
@@ -499,6 +529,7 @@ namespace AudioAnalysisTools.HTKTools
 
         public static List<string> GetSyllableNames(string fileName)
         {
+            string silName = "SIL";
             string txtLine = "";
             List<string> list = new List<string>();
             try
@@ -512,10 +543,7 @@ namespace AudioAnalysisTools.HTKTools
                     //remove white character at the end of the string
                     //string word = Regex.Replace(param[1], @"\s+", "");
                     string word = txtLine.Trim();
-                    if (word.Equals("SIL")) continue;
-                        //&& !word.Equals("SENT_START") &&
-                        //!word.Equals("SENT_END") &&
-                        //!word.Equals("NULL")
+                    if (word.Equals(silName)) continue;
                     if (!list.Contains(word)) list.Add(word);
                 }
 
@@ -529,49 +557,38 @@ namespace AudioAnalysisTools.HTKTools
         }//end method GetSyllableNames()
 
 
-        public void AppendThresholdInfo2IniFile(string syllName, double htkThreshold, double durationMean, double durationSD)
-        {
-            //Append optimum threshold and duration threshold info to segmentation ini file
-            string ToAppend = "#\n#**************** CALL THRESHOLDS FOR " + syllName + " HMM AND QUALITY/DURATION\n" +
-                      "#    NOTE 1: HMM threshold is valid for HMM scores normalised to hit duration.\n" +
-                      "#    NOTE 2: Duration values in seconds.\n" +
-                      "#    NOTE 3: SD threshold = number of SD either side of mean. 1.96=95% confidence\n" +
-                      "#            that you are NOT excluding a call with a valid duration.\n" +
-                      syllName+"_HTK_THRESHOLD=" + htkThreshold + "\n" +
-                      syllName + "_DURATION_MEAN=" + durationMean.ToString("f6") + "\n" +
-                      syllName + "_DURATION_SD=" + durationSD.ToString("f6") + "\n" +
-                      "SD_THRESHOLD=" + qualityThreshold;  //1.96 for p=95% :: 2.57 for p=99%
-
-            string iniPath = this.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
-            FileTools.Append2TextFile(iniPath, ToAppend, false);
-        }
 
 
-        #region Constructor
+
+        #region CONSTRUCTORS
         public HTKConfig()
         {
-            // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
-            this.multisyllabic = false;     //single syllable call
-            this.useBKGModel = true;        //true -> use BKG model;    false -> use SIL model
-            this.LLRNormalization = true;   //perform LLR normalization on the output from HVite
-            this.noSegmentation = false;    //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
-            this.UseHERest      = "y";      //y -> use HERest i.e. use my labels, use HTK timestamps; n -> use HRest i.e. use my labels AND my timestamps 
-            this.UseHERestBKG   = "n";      //train BACKGROUND model
-
-            this.numHmmStates    = "10";    //number of hmm states for CALL model
-            this.numHmmSilStates = "3";     //number of hmm states for SILENCE model
-            this.numIterations   = 5;       //number of iterations for re-estimating the 
-
-            this.numHmmBkgStates  = "1";    //number of hmm states for BKG model
-            this.numBkgIterations = 5;      //number of iterations for re-estimating the BG model
-
+            //THE VARIABLES IN THIS CONSTRUCTOR ARE NOT USER MODIFIABLE
             //###########################################################################################################################
+
+            // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
+            // Adjust the below 6 variables to change some aspect of training.
+            this.multisyllabic = false;     //single syllable call
+            this.doSegmentation = true;     //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
+            this.useBKGModel = true;        //default=true=use BKG model;    false -> use SIL model
+            this.UseHERest      = "y";      //default=y=use my labels BUT use HTK timestamps; no = use my labels AND my timestamps 
+            this.UseHERestBKG   = "n";      //y->BACKGROUND model trained from external recording provided
+                                            //default=n=SIL model trained from SIL in training recordings.
+            this.LLRNormalization = false;   //default=true=do LLR normalization on HVite output.  False= 
+            //###########################################################################################################################
+            
+            this.SilName = "SIL";
+            this.numHmmSilStates = "3";     //number of hmm states for SILENCE model
+            this.BkgName = "BACKGROUND";
+            this.numHmmBkgStates = "1";     //number of hmm states for BKG noise model
+            this.numBkgIterations = 5;      //number of iterations for re-estimating the BKG noise model
+
             this.SOURCEFORMAT   = "WAV";
             this.SAVECOMPRESSED = "T";
             this.SAVEWITHCRC    = "T";
 
             //MFCC PARAMETERS
-            this.TARGETKIND = "MFCC";  //components to include in feature vector
+            this.TARGETKIND = "MFCC";    //components to include in feature vector
             this.USEHAMMING = "T";
             this.PREEMCOEF  = "0.97";    //pre-emphasis filter removes low frequency content and gives more importance to high freq content.
             this.NUMCHANS   = "26";      //size of filter bank - default = 26
@@ -579,14 +596,12 @@ namespace AudioAnalysisTools.HTKTools
             this.NUMCEPS    = "12";      //number of cepstral coefficients - default = 12
             
             //initialize dictionary
+            smFeatureDict = new Dictionary<string, int>();
             smFeatureDict.Add("MFCC", 1);
             smFeatureDict.Add("0", 2);
-            smFeatureDict.Add("E", 2);
-            smFeatureDict.Add("D", 3);
-            smFeatureDict.Add("A", 3);
-
-            this.SilName = "SIL";
-            this.BkgName = "BACKGROUND";
+            smFeatureDict.Add("E", 2); //use the energy or DC values
+            smFeatureDict.Add("D", 3); //use the delta values
+            smFeatureDict.Add("A", 3); //use the acceleration or delta-delta values
         }
 
         /// <summary>
@@ -594,8 +609,13 @@ namespace AudioAnalysisTools.HTKTools
         /// </summary>
         /// <param name="workingDir"></param>
         /// <param name="templateName"></param>
-        public HTKConfig(string parentDir, string iniPath) : this()
+        public HTKConfig(string resourcesDir, string callIdentifier)
+            : this()
         {
+
+            this.WorkingDir = resourcesDir + "Template_" + callIdentifier;
+            string iniPath  = WorkingDir + "\\" + callIdentifier + "_Config.ini";       
+
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
@@ -604,13 +624,20 @@ namespace AudioAnalysisTools.HTKTools
             this.Author     = dict[Key_AUTHOR];
             this.Comment    = dict[Key_COMMENT];
 
+            if (!callIdentifier.Equals(this.CallName))
+            {
+                Console.WriteLine("MISMATCH BETWEEN CALL IDENTIFIER AND CALL NAME IN TEMPLATE INI FILE:" + callIdentifier + " != " + this.CallName);
+                Console.WriteLine("FATAL ERROR - TERMINATING!");
+                Console.ReadLine();
+                System.Environment.Exit(999);
+            }
 
             //FRAMING PARAMETERS
-            this.SampleRate = dict[Key_SAMPLE_RATE];
-            this.FRAMESIZE = dict[Key_FRAME_SIZE];
-            this.FrameOverlap = dict[Key_FRAME_OVERLAP];
-            this.TARGETRATE = "116100.0"; //=10e-7 seconds - that is a frame every 11.6 millisconds.
-            this.WINDOWDURATION = "232200.0"; //=23.22 milliseconds
+            this.SampleRate     = dict[Key_SAMPLE_RATE];     //not used by HTK. Segmentation requires only framing info derived from SR below.
+            this.FRAMESIZE      = dict[Key_FRAME_SIZE];
+            this.FrameOverlap   = dict[Key_FRAME_OVERLAP];
+            this.TARGETRATE     = dict[Key_TARGET_RATE];     //unit=10e-7 seconds - that is a frame every 11.6 millisconds.
+            this.WINDOWDURATION = dict[Key_WINDOW_DURATION]; //=23.22 milliseconds
             //parse all the above strings to ints or reals
             //double tr;
             //Double.TryParse(this.TARGETRATE, out tr);
@@ -623,32 +650,35 @@ namespace AudioAnalysisTools.HTKTools
 
 
             //BANDWIDTH
-            this.MinHz = dict[Key_MIN_FREQ];
-            this.MaxHz = dict[Key_MAX_FREQ];
+            this.MinHz  = dict[Key_MIN_FREQ];
+            this.MaxHz  = dict[Key_MAX_FREQ];
             this.LOFREQ = dict[Key_MIN_FREQ];
             this.HIFREQ = dict[Key_MAX_FREQ];
 
+            //HMM parameters
+            this.numHmmStates  = dict[Key_NUM_HMM_STATES];    //number of hmm states for CALL model
+            this.numIterations = Int32.Parse(dict[Key_NUM_HMM_ITERATIONS]);//number of iterations for re-estimating the 
+
+            //HTK DIR
+            this.HTKDir = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";
 
             //SET UP DIRECTORY STRUCTURE
             //htkConfig.WorkingDir    = Directory.GetCurrentDirectory();
-            this.WorkingDir = parentDir + "Template_" + this.CallName;
             this.ConfigDir  = this.WorkingDir + "\\" + this.CallName;
             this.DataDir    = this.WorkingDir + "\\data";
             this.ResultsDir = this.WorkingDir + "\\results";
             this.SegmentationDir = this.WorkingDir + "\\Segmentation";  //NOT USED FOR TESTING
 
             //SET UP BACKGROUND DIRECTORY STRUCTURE
-            this.BkgWorkingDir = parentDir + "Template_BACKGROUND";
+            string parentDir = 
+            this.BkgWorkingDir = resourcesDir + "Template_BACKGROUND";
             this.BkgConfigDir  = this.BkgWorkingDir;
             this.BkgDataDir    = this.BkgWorkingDir + "\\data";
 
-            //RESOURCES DIR
-            string resourcesDir = "C:\\SensorNetworks\\Software\\";
-            this.HTKDir         = resourcesDir + "Extra Assemblies\\HTK\\";
-
-            this.SilenceModelSrc  = resourcesDir + "HMMBuilder\\SilenceModel\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
-            this.SilenceModelPath = this.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav"; //NOT USED IN TESTING
-            this.NoiseModelFN     = Path.GetFileNameWithoutExtension(this.SilenceModelPath) + HTKConfig.noiseModelExt;
+            string bkgRecording   = "West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+            this.SilenceModelSrc  = BkgWorkingDir + "\\moreData\\" + bkgRecording;
+            this.SilenceModelPath = this.SegmentationDir + "\\" + bkgRecording; //NOT USED IN TESTING
+            this.NoiseModelFN     = Path.GetFileNameWithoutExtension(bkgRecording) + HTKConfig.noiseModelExt;
         }
 
         #endregion

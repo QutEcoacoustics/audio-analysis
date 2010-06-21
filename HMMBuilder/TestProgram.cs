@@ -100,7 +100,7 @@ namespace HMMBuilder
 
             List<string> hmmResults;
 
-            if (htkConfig.noSegmentation ||(!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+            if (!htkConfig.doSegmentation ||(htkConfig.doSegmentation && htkConfig.LLRNormalization))
             { 
                 /* Score BKG model */
                 string resultsReaderF = htkConfig.resultTest;
@@ -162,7 +162,7 @@ namespace HMMBuilder
 
             Console.WriteLine("HTKThreshold=" + HTKThreshold + "    QualityThreshold=" + QualityThreshold + "   frameRate=" + sonogram.FramesPerSecond);
             double[] scores;
-            if (htkConfig.noSegmentation || (!htkConfig.noSegmentation && htkConfig.LLRNormalization))
+            if (!htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRNormalization))
                 scores = ParseHmmScores(hmmResults, sonogram.FrameCount, sonogram.FramesPerSecond, htkConfig.CallName,
                                              HTKThreshold, QualityMean, QualitySD, QualityThreshold, htkConfig.CallName, true);
             else
