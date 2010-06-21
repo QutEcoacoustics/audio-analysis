@@ -154,7 +154,7 @@ namespace AudioAnalysisTools.HTKTools
                                 wltReader = new StreamReader(currTrnDir + "\\" + segFile);
                                 wltReader.ReadLine(); //remove first line
 
-                                if (!htkConfig.noSegmentation) //consider SIL/VOCALIZATION segmentents
+                                if (htkConfig.doSegmentation) //consider SIL/VOCALIZATION segmentents
                                 {
                                     while ((txtLine = wltReader.ReadLine()) != null)
                                     {
