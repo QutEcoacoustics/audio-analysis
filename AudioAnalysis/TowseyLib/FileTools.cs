@@ -183,14 +183,40 @@ namespace TowseyLib
                     writer.WriteLine(line);
         }// end WriteTextFile()
 
-        public static void WriteTextFile(string path, string line)
+        //public static void WriteTextFile(string path, string line)
+        //{
+        //    if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
+        //    using (TextWriter writer = new StreamWriter(path))
+        //    {
+        //            writer.WriteLine(line);
+        //    }//end using
+        //}// end WriteTextFile()
+
+
+        public static void WriteTextFile(string path, string text)
         {
             if (File.Exists(path)) File.Copy(path, path + "OLD.txt", true); //overwrite
-            using (TextWriter writer = new StreamWriter(path))
+            StreamWriter wltWriter = null;
+            try
             {
-                    writer.WriteLine(line);
-            }//end using
-        }// end WriteTextFile()
+                wltWriter = File.CreateText(path);
+                wltWriter.WriteLine(text);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw (e);
+            }
+            finally
+            {
+                if (wltWriter != null)
+                {
+                    wltWriter.Flush();
+                    wltWriter.Close();
+                }
+
+            }// end finally
+        }
 
         public static void Append2TextFile(string fPath, string line)
         {
