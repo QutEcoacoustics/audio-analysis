@@ -24,7 +24,7 @@ namespace AnalysisPrograms
     {
         //COMMAND LINES
         //for CURRAWONG
-        //htk C:\SensorNetworks\WavFiles\StBees\West_Knoll_St_Bees_Currawong3_20080919-060000.wav C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip C:\SensorNetworks\temp
+        //htk C:\SensorNetworks\WavFiles\StBees\West_Knoll_St_Bees_Currawong3_20080919-060000.wav C:\SensorNetworks\Templates\Template_CURRAWONG2\CURRAWONG2.zip C:\SensorNetworks\temp
         //htk C:\SensorNetworks\WavFiles\StBees\West_Knoll_St_Bees_Currawong1_20080923-120000.wav C:\SensorNetworks\Templates\Template_CURRAWONG1\CURRAWONG1.zip C:\SensorNetworks\temp
         //for CURLEW
         //htk C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav     C:\SensorNetworks\Templates\Template_CURLEW1\CURLEW1.zip C:\SensorNetworks\temp
@@ -63,15 +63,19 @@ namespace AnalysisPrograms
             Log.WriteLine(title);
             Log.WriteLine(date);
 
-            //GET THE COMMAND LINE ARGUMENTS
-            CheckArguments(args);
-
             string recordingPath      = args[0];
             string templateFN         = args[1];
             string workingDirectory   = args[2];
             
-            Log.WriteLine("# Recording:   " + Path.GetFileName(recordingPath));
-            Log.WriteLine("# Working Dir: " + workingDirectory);
+            Log.WriteLine("# Recording:     " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Template File: " + templateFN);
+            Log.WriteLine("# Working Dir:   " + workingDirectory);
+
+            //create the working directory if it does not exist
+            if (!Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
+
+            //GET THE COMMAND LINE ARGUMENTS
+            CheckArguments(args);
 
 
             //##############################################################################################################################
@@ -116,17 +120,15 @@ namespace AnalysisPrograms
         {
             string templateName = Path.GetFileNameWithoutExtension(templatePath);
 
-            //create the working directory if it does not exist
-            if (!Directory.Exists(workingDirectory)) Directory.CreateDirectory(workingDirectory);
-
-
             //A: SHIFT TEMPLATE TO WORKING DIRECTORY AND UNZIP IF NOT ALREADY DONE
-            string newTemplateDir = workingDirectory + "\\" + templateName;
-            if (!Directory.Exists(newTemplateDir)) ZipUnzip.UnZip(newTemplateDir, templatePath, true);
+            string newTemplateDir = workingDirectory + templateName;
+            //if (!Directory.Exists(newTemplateDir)) 
+            ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
             //C: INI CONFIG and CREATE DIRECTORY STRUCTURE
             Log.WriteLine("Init CONFIG and creating directory structure");
-            HTKConfig htkConfig = new HTKConfig(workingDirectory, templateName);
+            string iniPath = workingDirectory + templateName + "\\segmentation.ini";
+            HTKConfig htkConfig = new HTKConfig(iniPath);
             Log.WriteLine("\tCONFIG=" + newTemplateDir);
             Log.WriteLine("\tDATA  =" + htkConfig.DataDir);
             Log.WriteLine("\tRESULT=" + htkConfig.ResultsDir);

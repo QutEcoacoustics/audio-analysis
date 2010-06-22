@@ -15,8 +15,10 @@ namespace HMMBuilder
         {
             #region Variables
 
-            string resourcesDir   = "C:\\SensorNetworks\\Templates\\"; //Template_CURLEW2\\"; //arg[0]
-            string callIdentifier = "CURLEW2";                                                //arg[1]
+            //string callIdentifier = "CURLEW2";                                              //arg[0]
+            //string callIdentifier = "CURRAWONG2";                                           //arg[0]
+            string callIdentifier = "KOALAMALE_EXHALE2";                                      //arg[0]
+            string resourcesDir   = "C:\\SensorNetworks\\Templates\\";                        //arg[1]
             string htkExes        = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";  //arg[2]
 
             //GET PARAMETERS AND SET UP DIRECTORY STRUCTURE
@@ -26,62 +28,9 @@ namespace HMMBuilder
             //HTK DIR
             htkConfig.HTKDir = htkExes;
 
-
             Console.WriteLine("WORK DIR=" + htkConfig.WorkingDir);
             Console.WriteLine("CNFG DIR=" + htkConfig.ConfigDir);
             Console.WriteLine("DATA DIR=" + htkConfig.DataDir);
-           
-
-            //==================================================================================================================
-            //htkConfig.CallName = "CURRAWONG1";
-            //htkConfig.Comment = "Parameters for Currawong";
-            //htkConfig.LOFREQ = "800";
-            //htkConfig.HIFREQ = "6000";     //try 6000, 7000 and 8000 Hz
-            //htkConfig.numHmmStates = "6";  //number of hmm states for call model
-            //htkConfig.numHmmSilStates = "3";
-            //htkConfig.numIterations = 5;
-            //==================================================================================================================
-            //htkConfig.CallName = "KOALAMALE1";
-            //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
-            //htkConfig.LOFREQ = "500";
-            //htkConfig.HIFREQ = "7000";
-            //htkConfig.numHmmStates = "10";  //number of hmm states for call model
-            //htkConfig.numIterations = 6;
-            //==================================================================================================================
-            //htkConfig.CallName = "KOALAFEMALE1";
-            //htkConfig.Comment = "Trained on female koala calls with mixed (clear to indistinct) structure of stacked formants and wide range of duration (0.2-1.2s)";
-            //htkConfig.LOFREQ = "500";
-            //htkConfig.HIFREQ = "7000";
-            //htkConfig.numHmmSilStates = "3";
-            //htkConfig.numHmmStates = "10";  //number of hmm states for call model
-            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
-            //==================================================================================================================
-            //htkConfig.CallName = "KOALAFEMALE2";
-            //htkConfig.Comment = "Trained on female koala calls with clear structure of stacked formants and duration > 0.5s";
-            //htkConfig.LOFREQ = "500";
-            //htkConfig.HIFREQ = "7000";
-            //htkConfig.numHmmSilStates = "3";
-            //htkConfig.numHmmStates = "10";  //number of hmm states for call model
-            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
-            //==================================================================================================================
-            //htkConfig.CallName = "KOALAMALE_IE";
-            //htkConfig.Comment = "Two models trained on separate inhale and exhale syllables";
-            //htkConfig.LOFREQ = "150";
-            //htkConfig.HIFREQ = "6000";
-            //htkConfig.numHmmStates = "4";  //number of hmm states for call model
-            //htkConfig.numHmmSilStates = "3";
-            //htkConfig.numIterations = 6;  //number of iterations for re-estimating the VOCALIZATION/SIL models
-            //==================================================================================================================
-            //htkConfig.CallName = "KOALAMALE_EXHALE";
-            //htkConfig.Comment = "One model trained on exhale syllables";
-            //htkConfig.LOFREQ = "150";
-            //htkConfig.HIFREQ = "6000";
-            //htkConfig.numHmmStates = "4";  //number of hmm states for call model
-            //htkConfig.numHmmSilStates = "3";
-            //htkConfig.numIterations = 6;   //number of iterations for re-estimating the VOCALIZATION/SIL models
-            //==================================================================================================================
-            //==================================================================================================================
-
 
             string vocalization = "";
             string tmpVal       = "";
@@ -217,17 +166,12 @@ namespace HMMBuilder
                     Console.WriteLine("\n3: ABOUT TO SEGMENT WAV TRAINING FILES");
                     try
                     {
-                        bool extractLabels = true;
-
                         if (! htkConfig.multisyllabic)
                         {
-                            if (extractLabels) //True by default - i.e. always segment the training data files
-                            {
-                                //copy segmentation ini file to the data directory.
-                                System.IO.File.Copy(htkConfig.ConfigPath, htkConfig.trnDirPath + "\\" + HTKConfig.segmentationIniFN, true);
-                                int verbosity = 1;
-                                AudioSegmentation.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
-                            }
+                           //copy segmentation ini file to the data directory.
+                            System.IO.File.Copy(htkConfig.ConfigPath, htkConfig.trnDirPath + "\\" + HTKConfig.segmentationIniFN, true);
+                            int verbosity = 1;
+                            AudioSegmentation.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
                         }
                         else // multisyllabic call
                         {
@@ -238,7 +182,7 @@ namespace HMMBuilder
                                 AudioSegmentation.Execute(trnDir, trnDir, verbosity);
                             }
                         }
-                        HTKHelper.CreateWLT(htkConfig, ref vocalization, extractLabels);
+                        HTKHelper.CreateWLT(htkConfig, ref vocalization, true);
                     }
                     catch (System.IO.IOException e)
                     {
@@ -304,7 +248,7 @@ namespace HMMBuilder
                         if (HMMSettings.ConfigParam.TryGetValue("HEREST", out tmpVal))
                             if (!tmpVal.Equals("Y") && htkConfig.doSegmentation)
                             {
-                                if (!htkConfig.useBKGModel) //use SIL model and train both SIL and WORD models on 'our' timestamps
+                                if (!htkConfig.LLRusesBKG) //use SIL model and train both SIL and WORD models on 'our' timestamps
                                 {
                                     //1-estimate SIL model
                                     HTKHelper.HRest(aOptionsStr, htkConfig, "SIL");
@@ -404,7 +348,7 @@ namespace HMMBuilder
                                 HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
 
                                 //copy the SIL info into the BKG model folder for LLR normalization
-                                if (!htkConfig.useBKGModel && htkConfig.LLRNormalization && htkConfig.doSegmentation) 
+                                if (!htkConfig.LLRusesBKG && htkConfig.LLRNormalization && htkConfig.doSegmentation) 
                                 { 
                                     //1-extract SIL model and copy it into the BKG folder
                                     string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
@@ -518,7 +462,7 @@ namespace HMMBuilder
                         }
                         
                         //Use the BACKGROUND model rather than the SIL model. 
-                        if (! htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.useBKGModel && !htkTimestamps))
+                        if (! htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRusesBKG && !htkTimestamps))
                         {
                             //The 'tmp' dir contains a copy of the estimated BKG model
                             string dstHmm = htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN;

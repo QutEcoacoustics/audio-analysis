@@ -81,7 +81,6 @@ namespace AudioAnalysisTools
             try
             {
                 config1 = new SonogramConfig(new Configuration(segmentIniPath));
-                //config1.NoiseReductionType = NoiseReductionType.PEAK_TRACKING;
             }
             catch (Exception e)
             {
@@ -115,12 +114,8 @@ namespace AudioAnalysisTools
         {
             //Make sonogram of each recording
             AudioRecording recording = new AudioRecording(f.FullName);
-
-            //convert all recordings to SR=22050 to get spectrogram with correct range 0-11025 Hz.
-            recording.ConvertSampleRate22kHz();
-
-            var wr = recording.GetWavReader();
-            var ss = new SpectralSonogram(config, wr);
+            recording.ConvertSampleRate22kHz();  //convert all recordings to SR=22050 to get spectrogram with correct range 0-11025 Hz.
+            var ss = new SpectralSonogram(config, recording.GetWavReader());
             var image = new Image_MultiTrack(ss.GetImage(false, false));
             image.AddTrack(Image_Track.GetTimeTrack(ss.Duration));
             image.AddTrack(Image_Track.GetSegmentationTrack(ss));
