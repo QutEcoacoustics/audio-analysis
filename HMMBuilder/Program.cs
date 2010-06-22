@@ -17,10 +17,15 @@ namespace HMMBuilder
 
             string resourcesDir   = "C:\\SensorNetworks\\Templates\\"; //Template_CURLEW2\\"; //arg[0]
             string callIdentifier = "CURLEW2";                                                //arg[1]
+            string htkExes        = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";  //arg[2]
 
             //GET PARAMETERS AND SET UP DIRECTORY STRUCTURE
             HTKConfig htkConfig = new HTKConfig(resourcesDir, callIdentifier);            
             BKGTrainer bkgModel = new BKGTrainer(htkConfig);
+
+            //HTK DIR
+            htkConfig.HTKDir = htkExes;
+
 
             Console.WriteLine("WORK DIR=" + htkConfig.WorkingDir);
             Console.WriteLine("CNFG DIR=" + htkConfig.ConfigDir);
@@ -103,19 +108,9 @@ namespace HMMBuilder
                         htkConfig.ComputeFVSize();         //Compute Feature Vectors size given htkConfig.TARGETKIND
                         if(! Directory.Exists(htkConfig.ConfigDir))   Directory.CreateDirectory(htkConfig.ConfigDir);
                         if(! Directory.Exists(htkConfig.ProtoConfDir))Directory.CreateDirectory(htkConfig.ProtoConfDir);
-                        if (!Directory.Exists(htkConfig.SegmentationDir)) Directory.CreateDirectory(htkConfig.SegmentationDir);
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
-
-                        //1.write the segmentation ini file
-                        //string segmentationIniFile = htkConfig.ConfigDir + "\\" + HTKConfig.segmentationIniFN;
-                        //string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
-                        //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
-                        
-                        //2.Copy the silence model in the same folder
-                        System.IO.File.Copy(htkConfig.SilenceModelSrc, htkConfig.SilenceModelPath, true);
-
 
                         //IMPORTANT: WRITE PROTOTYPE FILES FOR BIRD CALL OF INTEREST
                         //           ALSO COPY INI FILE TO THE TRAINING DATA DIRECTORIES
@@ -226,21 +221,13 @@ namespace HMMBuilder
 
                         if (! htkConfig.multisyllabic)
                         {
-
                             if (extractLabels) //True by default - i.e. always segment the training data files
                             {
                                 //copy segmentation ini file to the data directory.
-                                //string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
-                                string segmentationIniFile = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
-                                string fn = System.IO.Path.GetFileName(segmentationIniFile);
-                                System.IO.File.Copy(segmentationIniFile, htkConfig.trnDirPath + "\\" + fn, true);
-
-                                //REWORKED FOLLOWING LINE TO CALL METHOD DIRECTLY AND NOT EXECUTE PROCESS
-                                //HTKHelper.SegmentDataFiles(htkConfig, ref vocalization);
+                                System.IO.File.Copy(htkConfig.ConfigPath, htkConfig.trnDirPath + "\\" + HTKConfig.segmentationIniFN, true);
                                 int verbosity = 1;
                                 AudioSegmentation.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
                             }
-
                         }
                         else // multisyllabic call
                         {

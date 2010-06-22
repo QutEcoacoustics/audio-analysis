@@ -55,7 +55,7 @@ namespace HMMBuilder
             htkConfig.ConfigDir       = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
             htkConfig.ResultsDir      = htkConfig.WorkingDir + "\\results";
             htkConfig.HTKDir          = htkConfig.ConfigDir  + "\\HTK"; 
-            htkConfig.SegmentationDir = htkConfig.ConfigDir  + "\\Segmentation";
+           // htkConfig.SegmentationDir = htkConfig.ConfigDir  + "\\Segmentation";
             //htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
             
         
@@ -383,8 +383,8 @@ namespace HMMBuilder
             htkConfig.ConfigDir = htkConfig.WorkingDir + "\\" + htkConfig.CallName;
             htkConfig.ResultsDir = htkConfig.WorkingDir + "\\results";
             htkConfig.HTKDir = htkConfig.ConfigDir + "\\HTK";
-            htkConfig.SegmentationDir = htkConfig.ConfigDir + "\\Segmentation";
-            htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
+           // htkConfig.SegmentationDir = htkConfig.ConfigDir + "\\Segmentation";
+          //  htkConfig.SilenceModelPath = htkConfig.SegmentationDir + "\\West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
 
 
             //Console.WriteLine("CWD=" + htkConfig.WorkingDir);

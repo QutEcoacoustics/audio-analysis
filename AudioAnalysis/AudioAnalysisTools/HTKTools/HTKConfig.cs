@@ -20,6 +20,8 @@ namespace AudioAnalysisTools.HTKTools
         public static string Key_MAX_FREQ      = "MAX_FREQ";
         public static string Key_WINDOW_DURATION = "WINDOW_DURATION";
         public static string Key_TARGET_RATE   = "TARGET_RATE";
+        public static string Key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+        public static string Key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
         public static string Key_NUM_HMM_ITERATIONS = "NUM_HMM_ITERATIONS";
         public static string Key_NUM_HMM_STATES = "NUM_HMM_STATES";
         public static string Key_HTK_THRESHOLD = "HTK_THRESHOLD";
@@ -39,7 +41,7 @@ namespace AudioAnalysisTools.HTKTools
                                              //n -> each recording segmented. SIL model is generated/trained from SIL in training recordings.
         //###########################################################################################################################
 
-
+        public string ConfigPath  { get; private set; }
         public string Author      { get; private set; }
         public string CallName    { get; set; }
         public string BkgName     { get; private set; }
@@ -53,7 +55,6 @@ namespace AudioAnalysisTools.HTKTools
         public string ConfigDir    { get; set; }
         public string BkgConfigDir { get; set; }
         public string HTKDir       { get; set; }
-        public string SegmentationDir { get; set; }
         public string ResultsDir   { get; set; }
 
         //FRAMEING PARAMETERS
@@ -62,6 +63,9 @@ namespace AudioAnalysisTools.HTKTools
         public string MinHz { get; set; }
         public string MaxHz { get; set; }
 
+        //NOISE REDUCTION for segmentation of training examples
+        public NoiseReductionType nrt { get; set; }
+        public string DynamicRange { get; set; }
         
         //PARAMETERS FOR TRAINING HMM MODEL
         public string numHmmStates { get; set; }
@@ -73,9 +77,6 @@ namespace AudioAnalysisTools.HTKTools
         public bool   bkgTraining = false;
 
         public string numHmmSilStates { get; set; }
-        public string SilenceModelSrc { get; set; }  // source of the silence .wav recording
-        public string SilenceModelPath { get; set; } // the silence .wav recording
-        public string NoiseModelFN { get; set; }     // noise model is derived from the silence .wav recording
 
         //Following parameters names used by HTK in the MFCC file.
         public string SOURCEFORMAT { get; set; }
@@ -103,7 +104,6 @@ namespace AudioAnalysisTools.HTKTools
 
         //file names
         public static string segmentationIniFN = "segmentation.ini";
-        public static string segmentationExe   = "VocalSegmentation.exe";
         public static string mfccConfigFN      = "mfccConfig.txt";
         public static string labelListFN       = "labelList.txt";
 
@@ -145,7 +145,6 @@ namespace AudioAnalysisTools.HTKTools
         public string TestFile     { get { return ConfigDir + "\\Test_Single.scp"; } }
 
         //lists directory
-        //public string ListsDir   { get { return ConfigDir + "\\lists"; } }
         public string monophones   { get { return ConfigDir + "\\" + labelListFN; } } //contains list of syllables to recognise including SIL
         public string monophonesBkg   { get { return BkgConfigDir + "\\" + labelListFN; } }
 
@@ -339,7 +338,7 @@ namespace AudioAnalysisTools.HTKTools
                          "NUMCEPS = "      + this.NUMCEPS + "\n" +   //number of cepstral coefficients - default = 12
                          "LOFREQ = "       + this.LOFREQ + "\n" +
                          "HIFREQ = "       + this.HIFREQ + "\n";
-            WriteTextFile(filename, content);
+            FileTools.WriteTextFile(filename, content);
         }//end method
 
         public void WriteHmmConfigFile(string filename)
@@ -371,7 +370,7 @@ namespace AudioAnalysisTools.HTKTools
                 "<ENDtool_steps>:\n\n" +
             "<ENDtest_config_file>:";
 
-            WriteTextFile(filename, content);
+            FileTools.WriteTextFile(filename, content);
         }//end method
 
 
@@ -381,7 +380,7 @@ namespace AudioAnalysisTools.HTKTools
                 "<BEGINproto_config_file>\n\n<COMMENT>\n\tThis PCF produces a " + numHmmSilStates + " state prototype system\n\n" +
                 "<BEGINsys_setup>\n\tnStates:  " + numHmmSilStates + " \n<ENDsys_setup>\n\n" +
                 "<ENDproto_config_file>";
-            WriteTextFile(protoTypeDir + "\\SIL.pcf", content);
+            FileTools.WriteTextFile(protoTypeDir + "\\SIL.pcf", content);
 
             //if (int.Parse(numHmmSilStates) == 3)
             //{
@@ -409,7 +408,7 @@ namespace AudioAnalysisTools.HTKTools
                    "\t#outDir: "+protoFN+"\n\n" +
                 "<ENDsys_setup>\n" +
                 "<ENDproto_config_file>\n";
-            WriteTextFile(protoTypeDir + "\\" + protoFN + ".pcf", content);
+            FileTools.WriteTextFile(protoTypeDir + "\\" + protoFN + ".pcf", content);
 
             WriteRequiredFilesInfo(protoTypeDir + "\\required_files.txt");
         }
@@ -421,7 +420,7 @@ namespace AudioAnalysisTools.HTKTools
                 "if a file 'WORD'.pcf exists in which the variable 'nStates' has a value\n" +
                 "different from the one in 'proto', the program will look for a file 'WORD' \n" +
                 "that is supposed to contain the related transition matrix of size (nStates+2)x(nStates+2)\n";
-            WriteTextFile(infoFN, content);
+            FileTools.WriteTextFile(infoFN, content);
         }
 
 
@@ -429,7 +428,7 @@ namespace AudioAnalysisTools.HTKTools
         public void WriteSegmentationIniFile(string iniPath)
         {
             string content =
-                "DATE="+ DateTime.Today +"\n" +
+                "DATE="+ DateTime.Now +"\n" +
                 "AUTHOR=" + this.Author + "\n" +
                 "#\n" +
                 "CALL_NAME=" + this.CallName + "\n" +
@@ -457,8 +456,8 @@ namespace AudioAnalysisTools.HTKTools
                 "#**************** NOISE REDUCTION\n" +
                 "#NOISE_REDUCTION_TYPE=NONE\n" +
                 "#NOISE_REDUCTION_TYPE=STANDARD\n" +
-                "NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE\n" +
-                "DYNAMIC_RANGE=60.0\n" +
+                "NOISE_REDUCTION_TYPE="+this.nrt+"\n" +
+                "DYNAMIC_RANGE="+this.DynamicRange+"\n" +
                 "#\n" +
                 "#**************** INFO ABOUT SEGMENTATION:- ENDPOINT DETECTION of VOCALISATIONS \n" +
                 "# See Lamel et al 1981.\n" +
@@ -474,13 +473,13 @@ namespace AudioAnalysisTools.HTKTools
                 "SEGMENTATION_THRESHOLD_K2=5.0\n" +
                 "K1_K2_LATENCY=0.05\n" +
                 "VOCAL_GAP=0.2\n" +
-                "MIN_VOCAL_DURATION=0.075" +
+                "MIN_VOCAL_DURATION=0.075\n" +
                 "#**************** HMM PARAMETERS\n" +
                 "# Number of states in the HMM\n" +
                 "NUM_HMM_STATES="+ this.numHmmStates + "\n" +
                 "# number of iterations for re-estimating the model\n"+
-                "NUM_HMM_ITERATIONS=" + this.numIterations + "\n";
-            WriteTextFile(iniPath, content);
+                "NUM_HMM_ITERATIONS=" + this.numIterations + "\n#";
+            FileTools.WriteTextFile(iniPath, content);
         }
 
 
@@ -502,29 +501,29 @@ namespace AudioAnalysisTools.HTKTools
 
 
 
-        public static void WriteTextFile(string path, string text)
-        {
-            StreamWriter wltWriter = null;
-            try
-            {
-                wltWriter = File.CreateText(path);
-                wltWriter.WriteLine(text);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw (e);
-            }
-            finally
-            {
-                if (wltWriter != null)
-                {
-                    wltWriter.Flush();
-                    wltWriter.Close();
-                }
+        //public static void WriteTextFile(string path, string text)
+        //{
+        //    StreamWriter wltWriter = null;
+        //    try
+        //    {
+        //        wltWriter = File.CreateText(path);
+        //        wltWriter.WriteLine(text);
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e);
+        //        throw (e);
+        //    }
+        //    finally
+        //    {
+        //        if (wltWriter != null)
+        //        {
+        //            wltWriter.Flush();
+        //            wltWriter.Close();
+        //        }
 
-            }// end finally
-        }
+        //    }// end finally
+        //}
 
 
         public static List<string> GetSyllableNames(string fileName)
@@ -614,7 +613,8 @@ namespace AudioAnalysisTools.HTKTools
         {
 
             this.WorkingDir = resourcesDir + "Template_" + callIdentifier;
-            string iniPath  = WorkingDir + "\\" + callIdentifier + "_Config.ini";       
+            string iniPath  = WorkingDir + "\\" + callIdentifier + "_Config.ini";
+            this.ConfigPath = iniPath;
 
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -648,37 +648,31 @@ namespace AudioAnalysisTools.HTKTools
             //this.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString();
             //this.FrameOverlap = (tr / wd).ToString();
 
-
             //BANDWIDTH
             this.MinHz  = dict[Key_MIN_FREQ];
             this.MaxHz  = dict[Key_MAX_FREQ];
             this.LOFREQ = dict[Key_MIN_FREQ];
             this.HIFREQ = dict[Key_MAX_FREQ];
 
+            //NOISE REDUCTION TYPE
+            this.nrt          = SNR.Key2NoiseReductionType(dict[Key_NOISE_REDUCTION_TYPE]);
+            this.DynamicRange = dict[Key_DYNAMIC_RANGE];
+
+
             //HMM parameters
             this.numHmmStates  = dict[Key_NUM_HMM_STATES];    //number of hmm states for CALL model
             this.numIterations = Int32.Parse(dict[Key_NUM_HMM_ITERATIONS]);//number of iterations for re-estimating the 
 
-            //HTK DIR
-            this.HTKDir = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";
-
             //SET UP DIRECTORY STRUCTURE
-            //htkConfig.WorkingDir    = Directory.GetCurrentDirectory();
             this.ConfigDir  = this.WorkingDir + "\\" + this.CallName;
             this.DataDir    = this.WorkingDir + "\\data";
             this.ResultsDir = this.WorkingDir + "\\results";
-            this.SegmentationDir = this.WorkingDir + "\\Segmentation";  //NOT USED FOR TESTING
 
             //SET UP BACKGROUND DIRECTORY STRUCTURE
             string parentDir = 
             this.BkgWorkingDir = resourcesDir + "Template_BACKGROUND";
             this.BkgConfigDir  = this.BkgWorkingDir;
             this.BkgDataDir    = this.BkgWorkingDir + "\\data";
-
-            string bkgRecording   = "West_Knoll_St_Bees_Currawong1_20080923-120000.wav";
-            this.SilenceModelSrc  = BkgWorkingDir + "\\moreData\\" + bkgRecording;
-            this.SilenceModelPath = this.SegmentationDir + "\\" + bkgRecording; //NOT USED IN TESTING
-            this.NoiseModelFN     = Path.GetFileNameWithoutExtension(bkgRecording) + HTKConfig.noiseModelExt;
         }
 
         #endregion

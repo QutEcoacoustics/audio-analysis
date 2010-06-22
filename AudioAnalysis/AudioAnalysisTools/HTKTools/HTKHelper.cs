@@ -54,36 +54,36 @@ namespace AudioAnalysisTools.HTKTools
         } //end method CopyAll()
 
 
-        public static void SegmentDataFiles(HTKConfig htkConfig, ref string vocalization)
-        {
-            string segmentationExecutable = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationExe;
-            string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
+        //public static void SegmentDataFiles(HTKConfig htkConfig, ref string vocalization)
+        //{
+        //    string segmentationExecutable = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationExe;
+        //    string segmentationIniFile    = htkConfig.SegmentationDir + "\\" + HTKConfig.segmentationIniFN;
 
-            string cmdLineArgument = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
-            cmdLineArgument = "\"" + cmdLineArgument + "\""; //enclose line in quotes in case have sapce
-            //Console.WriteLine(" commandLine=" + cmdLineArgument);
+        //    string cmdLineArgument = Path.GetFullPath(htkConfig.trnDirPath);//get dir contining training data
+        //    cmdLineArgument = "\"" + cmdLineArgument + "\""; //enclose line in quotes in case have sapce
+        //    //Console.WriteLine(" commandLine=" + cmdLineArgument);
 
-            //check that the directory contains a file called "segmentation.ini"`
-            if (File.Exists(segmentationIniFile))
-            {
-                Console.WriteLine(" Found segmentIni file: " + segmentationIniFile);
-            }
-            else
-              throw new Exception(" The directory <" + cmdLineArgument + "> must contain a file called " + segmentationIniFile);
+        //    //check that the directory contains a file called "segmentation.ini"`
+        //    if (File.Exists(segmentationIniFile))
+        //    {
+        //        Console.WriteLine(" Found segmentIni file: " + segmentationIniFile);
+        //    }
+        //    else
+        //      throw new Exception(" The directory <" + cmdLineArgument + "> must contain a file called " + segmentationIniFile);
             
-            if (File.Exists(segmentationExecutable))
-            {
-                Console.WriteLine(" Found executable file: " + segmentationExecutable);
-            }
-            else
-            {
-                Console.WriteLine(" Cannot find Executable: " + segmentationExecutable);
-                throw new Exception(" Cannot find Executable: " + segmentationExecutable);
-            }
+        //    if (File.Exists(segmentationExecutable))
+        //    {
+        //        Console.WriteLine(" Found executable file: " + segmentationExecutable);
+        //    }
+        //    else
+        //    {
+        //        Console.WriteLine(" Cannot find Executable: " + segmentationExecutable);
+        //        throw new Exception(" Cannot find Executable: " + segmentationExecutable);
+        //    }
 
-            //segment all wav files in data dir.
-            CallProcess(segmentationExecutable, cmdLineArgument);
-        }
+        //    //segment all wav files in data dir.
+        //    CallProcess(segmentationExecutable, cmdLineArgument);
+        //}
 
         
         /// <summary>
