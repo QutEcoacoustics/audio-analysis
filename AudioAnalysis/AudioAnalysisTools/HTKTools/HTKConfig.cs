@@ -34,7 +34,7 @@ namespace AudioAnalysisTools.HTKTools
         // SET VALUES In CONSTRUCTOR
         public bool multisyllabic  = false; //default=false=single syllable call;  true=Parse grammar file & create word network file 'htkConfig.wordNet'
         public bool doSegmentation = true;  //false = each recording is considered single word; default=True= SIL model trained from the recordings.
-        public bool useBKGModel = true;     //default=true -> use BKG model;    false -> use SIL model
+        public bool LLRusesBKG = true;     //default=true -> use BKG model;    false -> use SIL model
         public bool LLRNormalization = true; //perform LLR normalization on the output from HVite
         public string UseHERest;             //y = use my labels BUT use HTK timestamps; no = use my labels AND my timestamps; 
         public string UseHERestBKG;          //y -> train BACKGROUND model
@@ -567,13 +567,16 @@ namespace AudioAnalysisTools.HTKTools
 
             // MAJOR STRUCTURAL TRAINING PARAMETERS -- DEFAULT VALUES
             // Adjust the below 6 variables to change some aspect of training.
-            this.multisyllabic = false;     //single syllable call
-            this.doSegmentation = true;     //true -> each recording is considered as single word. No SIL model is generated/trained from the recordings.
-            this.useBKGModel = true;        //default=true=use BKG model;    false -> use SIL model
-            this.UseHERest      = "y";      //default=y=use my labels BUT use HTK timestamps; no = use my labels AND my timestamps 
-            this.UseHERestBKG   = "n";      //y->BACKGROUND model trained from external recording provided
-                                            //default=n=SIL model trained from SIL in training recordings.
-            this.LLRNormalization = false;   //default=true=do LLR normalization on HVite output.  False= 
+            this.multisyllabic  = false;    //single syllable call
+            //the next for vars discriminate the training model
+            this.doSegmentation = true;     //paleblue||true=segment & train SIL model; false=each recording is single word. No SIL model is trained from the recordings.
+            this.UseHERest      = "y";      //yellow||default=y=use my labels BUT use HTK timestamps; no = use my labels AND my timestamps 
+            this.LLRNormalization = false;   //grBlue ||default=true=do LLR normalization on HVite output.  False= Do Length normalisation
+            this.LLRusesBKG      = true;    //green ||default=true=use BKG model for LLR normalisation;   false -> use SIL model for LLR norm.
+
+            this.UseHERestBKG = "n";        //y->forces training of BACKGROUND model from external recordings provided.
+                                            //default=n= uses whatever model is in the BKG folder - might be SIL model.
+
             //###########################################################################################################################
             
             this.SilName = "SIL";
@@ -669,12 +672,67 @@ namespace AudioAnalysisTools.HTKTools
             this.ResultsDir = this.WorkingDir + "\\results";
 
             //SET UP BACKGROUND DIRECTORY STRUCTURE
-            string parentDir = 
+            //string parentDir = 
             this.BkgWorkingDir = resourcesDir + "Template_BACKGROUND";
             this.BkgConfigDir  = this.BkgWorkingDir;
             this.BkgDataDir    = this.BkgWorkingDir + "\\data";
         }
 
+
+        /// <summary>
+        /// Use this constuctor for scanning a recording with trained HMM.
+        /// </summary>
+        /// <param name="iniPath"></param>
+        public HTKConfig(string iniPath)
+            : this()
+        {
+            this.ConfigPath = iniPath;
+            this.WorkingDir = Path.GetDirectoryName(iniPath);
+
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+
+            this.CallName = dict[Key_CALL_NAME];
+            this.Author = dict[Key_AUTHOR];
+            this.Comment = dict[Key_COMMENT];
+
+            //FRAMING PARAMETERS
+            this.SampleRate = dict[Key_SAMPLE_RATE];     //not used by HTK. Segmentation requires only framing info derived from SR below.
+            this.FRAMESIZE = dict[Key_FRAME_SIZE];
+            this.FrameOverlap = dict[Key_FRAME_OVERLAP];
+            this.TARGETRATE = dict[Key_TARGET_RATE];     //unit=10e-7 seconds - that is a frame every 11.6 millisconds.
+            this.WINDOWDURATION = dict[Key_WINDOW_DURATION]; //=23.22 milliseconds
+            //parse all the above strings to ints or reals
+            //double tr;
+            //Double.TryParse(this.TARGETRATE, out tr);
+            //double wd; //window duration
+            //Double.TryParse(this.WINDOWDURATION, out wd);
+            //int sr;  //not actually used - HTK does not need. Segmentation requires only framing info derived from SR below.
+            //Int32.TryParse(this.SampleRate, out sr);
+            //this.FRAMESIZE = (Math.Floor(wd / 10000000 * sr)).ToString();
+            //this.FrameOverlap = (tr / wd).ToString();
+
+            //BANDWIDTH
+            this.MinHz = dict[Key_MIN_FREQ];
+            this.MaxHz = dict[Key_MAX_FREQ];
+            this.LOFREQ = dict[Key_MIN_FREQ];
+            this.HIFREQ = dict[Key_MAX_FREQ];
+
+            //NOISE REDUCTION TYPE
+            this.nrt = SNR.Key2NoiseReductionType(dict[Key_NOISE_REDUCTION_TYPE]);
+            this.DynamicRange = dict[Key_DYNAMIC_RANGE];
+
+
+            //HMM parameters
+            this.numHmmStates = dict[Key_NUM_HMM_STATES];    //number of hmm states for CALL model
+            this.numIterations = Int32.Parse(dict[Key_NUM_HMM_ITERATIONS]);//number of iterations for re-estimating the 
+
+            //SET UP DIRECTORY STRUCTURE
+            this.ConfigDir  = this.WorkingDir + "\\" + this.CallName;
+            this.DataDir    = this.WorkingDir + "\\data";
+            this.ResultsDir = this.WorkingDir + "\\results";
+        }
         #endregion
 
 
