@@ -71,7 +71,7 @@ namespace QutSensors.CacheProcessor
         {
             if (workerThread != null)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException("Worker thread already started.");
             }
 
             workerThread = new Thread(ThreadMain);
