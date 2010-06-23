@@ -122,7 +122,7 @@ namespace AnalysisPrograms
 
             //A: SHIFT TEMPLATE TO WORKING DIRECTORY AND UNZIP IF NOT ALREADY DONE
             string newTemplateDir = workingDirectory + templateName;
-            //if (!Directory.Exists(newTemplateDir)) 
+            if (!Directory.Exists(newTemplateDir)) Directory.CreateDirectory(newTemplateDir); 
             ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
             //C: INI CONFIG and CREATE DIRECTORY STRUCTURE
