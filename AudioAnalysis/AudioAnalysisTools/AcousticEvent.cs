@@ -782,15 +782,12 @@ namespace AudioAnalysisTools
         public static double[] ExtractScoreArrayFromEvents(List<AcousticEvent> events, int arraySize, string targetName)
         //public static double[] ExtractScoreArray(List<AcousticEvent> events, string iniFile, int arraySize, string targetName)
         {
-
+            double[] scores = new double[arraySize];
+            if ((events == null) || (events.Count == 0)) return scores;
+ 
             double windowOffset = events[0].FrameOffset;
             double frameRate = 1 / windowOffset; //frames per second
 
-            // string[] files = new string[1];
-            // files[0] = iniFile;
-            // Configuration config = new Configuration(files);
-
-            double[] scores = new double[arraySize];
             //for (int i = 0; i < arraySize; i++) scores[i] = Double.NaN; //init to NaNs.
             int count = events.Count;
 

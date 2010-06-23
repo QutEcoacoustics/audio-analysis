@@ -607,7 +607,8 @@ namespace AudioAnalysisTools.HTKTools
         }
 
         /// <summary>
-        /// This constuctor sets up the directory structure.
+        /// NOTE: ONLY USE THIS CONSTRUCTOR WHEN TAINING A NEW HMM.
+        /// This constuctor sets up the directory structure for training.
         /// </summary>
         /// <param name="workingDir"></param>
         /// <param name="templateName"></param>
@@ -680,14 +681,14 @@ namespace AudioAnalysisTools.HTKTools
 
 
         /// <summary>
-        /// Use this constuctor for scanning a recording with trained HMM.
+        /// NOTE: ONLY USE THIS constuctor for scanning a recording with an already trained HMM.
+        /// This constuctor sets up the directory structure for testing or scanning a new recording.
         /// </summary>
-        /// <param name="iniPath"></param>
+        /// <param name="iniPath">location of the ini file</param>
         public HTKConfig(string iniPath)
             : this()
         {
             this.ConfigPath = iniPath;
-            this.WorkingDir = Path.GetDirectoryName(iniPath);
 
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -729,7 +730,9 @@ namespace AudioAnalysisTools.HTKTools
             this.numIterations = Int32.Parse(dict[Key_NUM_HMM_ITERATIONS]);//number of iterations for re-estimating the 
 
             //SET UP DIRECTORY STRUCTURE
-            this.ConfigDir  = this.WorkingDir + "\\" + this.CallName;
+            this.ConfigDir = Path.GetDirectoryName(iniPath);
+            this.WorkingDir = Directory.GetParent(this.ConfigDir).FullName;
+            this.HTKDir     = this.ConfigDir + "\\HTK";
             this.DataDir    = this.WorkingDir + "\\data";
             this.ResultsDir = this.WorkingDir + "\\results";
         }
