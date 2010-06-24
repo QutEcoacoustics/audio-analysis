@@ -533,24 +533,25 @@ namespace AudioAnalysisTools.HTKTools
             List<string> list = new List<string>();
             try
             {
-                StreamReader fileReader = new StreamReader(fileName);
-                while ((txtLine = fileReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
+                using (StreamReader fileReader = new StreamReader(fileName))
                 {
-                    //if(!txtLine.StartsWith("I=")) continue;
+                    while ((txtLine = fileReader.ReadLine()) != null) //write all lines to file except SOURCEFORMAT
+                    {
+                        //if(!txtLine.StartsWith("I=")) continue;
 
-                    //string[] param = Regex.Split(txtLine, @"\s+[wW]=[^\w]*");
-                    //remove white character at the end of the string
-                    //string word = Regex.Replace(param[1], @"\s+", "");
-                    string word = txtLine.Trim();
-                    if (word.Equals(silName)) continue;
-                    if (!list.Contains(word)) list.Add(word);
+                        //string[] param = Regex.Split(txtLine, @"\s+[wW]=[^\w]*");
+                        //remove white character at the end of the string
+                        //string word = Regex.Replace(param[1], @"\s+", "");
+                        string word = txtLine.Trim();
+                        if (word.Equals(silName)) continue;
+                        if (!list.Contains(word)) list.Add(word);
+                    }
                 }
-
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw (e);
+                throw;
             }
             return list;
         }//end method GetSyllableNames()
