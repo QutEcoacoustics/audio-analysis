@@ -662,7 +662,6 @@ namespace AudioAnalysisTools.HTKTools
             this.nrt          = SNR.Key2NoiseReductionType(dict[Key_NOISE_REDUCTION_TYPE]);
             this.DynamicRange = dict[Key_DYNAMIC_RANGE];
 
-
             //HMM parameters
             this.numHmmStates  = dict[Key_NUM_HMM_STATES];    //number of hmm states for CALL model
             this.numIterations = Int32.Parse(dict[Key_NUM_HMM_ITERATIONS]);//number of iterations for re-estimating the 

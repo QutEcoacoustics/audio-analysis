@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
+    <StartupObject>AnalysisPrograms.Main_HTKScanDir</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
@@ -108,13 +108,12 @@
     <Compile Include="Main_Create4Sonograms.cs" />
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
-    <Compile Include="Main_ScoreTestSetWithRecogniser.cs" />
+    <Compile Include="Main_HTKScanDir.cs" />
     <Compile Include="Processing\AudioConversion.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
-    <Compile Include="Main_SonogramCycle.cs" />
     <Compile Include="HTKRecogniser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Spt.cs" />

@@ -6,6 +6,7 @@ using ICSharpCode.SharpZipLib.Zip;
 using TowseyLib;
 using AudioAnalysisTools;
 using AudioAnalysisTools.HTKTools;
+using AudioTools;
 
 
 namespace AnalysisPrograms
@@ -47,8 +48,8 @@ namespace AnalysisPrograms
         //string workingDirectory = "C:\\SensorNetworks\\temp";                                            // ARG 2  
         //*******************************************************************************************************************
 
-        
-        
+
+
         /// <summary>
         /// Runs a prepared HTK template over a file
         /// </summary>
@@ -59,14 +60,14 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
 
             string title = "# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
-            string recordingPath      = args[0];
-            string templateFN         = args[1];
-            string workingDirectory   = args[2];
-            
+            string recordingPath = args[0];
+            string templateFN = args[1];
+            string workingDirectory = args[2];
+
             Log.WriteLine("# Recording:     " + Path.GetFileName(recordingPath));
             Log.WriteLine("# Template File: " + templateFN);
             Log.WriteLine("# Working Dir:   " + workingDirectory);
@@ -77,14 +78,29 @@ namespace AnalysisPrograms
             //GET THE COMMAND LINE ARGUMENTS
             CheckArguments(args);
 
+            // check to see if conversion from .MP3 to .WAV is necessary
+            string sourceDir = Path.GetDirectoryName(recordingPath);
+            var destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
+
+            Log.WriteLine("Checking to see if conversion necessary...");
+            if (WavReader.ConvertToWav(recordingPath, destinationAudioFile))
+            {
+                Log.WriteLine("Wav pcm file created.");
+            }
+            else
+            {
+                Log.WriteLine("Could not get wav pcm file.");
+                Console.WriteLine("Press enter to exit.");
+                Console.ReadLine();
+                return;
+            }
 
             //##############################################################################################################################
             //#### A: GET LIST OF HTK RECOGNISED EVENTS.
-            var op = HTKRecogniser.Execute(recordingPath, templateFN, workingDirectory);
+            var op = HTKRecogniser.Execute(destinationAudioFile, templateFN, workingDirectory);
             HTKConfig config = op.Item1;
             List<AcousticEvent> events = op.Item2;
             Log.WriteLine("# Finished scan with HTK.");
-
             //##############################################################################################################################
 
             //#### B: DISPLAY EVENTS IN SONOGRAM
@@ -116,13 +132,13 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<HTKConfig, List<AcousticEvent>> Execute(string wavFile, string templatePath, string workingDirectory)
+        public static System.Tuple<HTKConfig, List<AcousticEvent>> Execute(string audioFile, string templatePath, string workingDirectory)
         {
             string templateName = Path.GetFileNameWithoutExtension(templatePath);
 
             //A: SHIFT TEMPLATE TO WORKING DIRECTORY AND UNZIP IF NOT ALREADY DONE
             string newTemplateDir = workingDirectory + templateName;
-            if (!Directory.Exists(newTemplateDir)) Directory.CreateDirectory(newTemplateDir); 
+            if (!Directory.Exists(newTemplateDir)) Directory.CreateDirectory(newTemplateDir);
             ZipUnzip.UnZip(newTemplateDir, templatePath, true);
 
             //C: INI CONFIG and CREATE DIRECTORY STRUCTURE
@@ -136,8 +152,10 @@ namespace AnalysisPrograms
             //B: move the data/TEST file to its own directory
             if (Directory.Exists(htkConfig.DataDir)) Directory.Delete(htkConfig.DataDir, true); //delete data dir if it exists
             Directory.CreateDirectory(htkConfig.DataDir);
-            string dataFN = Path.GetFileName(wavFile);
-            File.Copy(wavFile, htkConfig.DataDir + "\\" + dataFN, true);
+            string dataFN = Path.GetFileName(audioFile);
+
+            var destinationAudioFile = Path.Combine(htkConfig.DataDir, Path.GetFileNameWithoutExtension(audioFile) + ".wav");
+            File.Copy(audioFile, destinationAudioFile, true);
 
             //D: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
             Log.WriteLine("Executing HTK_Recogniser - scanning recording: " + dataFN);
@@ -192,7 +210,7 @@ namespace AnalysisPrograms
             string fName = Path.GetFileNameWithoutExtension(wavFile);
             string opFile = outputDir + "\\" + fName + ".png";
             Log.WriteLine("Sonogram will be written to file: " + opFile);
-            image_mt.Save(opFile); 
+            image_mt.Save(opFile);
         }
 
 

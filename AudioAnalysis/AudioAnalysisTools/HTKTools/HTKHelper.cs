@@ -586,11 +586,11 @@ namespace AudioAnalysisTools.HTKTools
                     psI.CreateNoWindow = true;
                     psI.WindowStyle = ProcessWindowStyle.Hidden;
                     psI.Arguments = commandLineArguments;
-                    hcopy.StartInfo = psI;
+                    hcopy.StartInfo = psI;           
                     hcopy.Start();
-                    //hcopy.WaitForExit();
                     stdErr = hcopy.StandardError;
                     stdOut = hcopy.StandardOutput;
+                    hcopy.WaitForExit();
                     output = stdOut.ReadToEnd();
                     error = stdErr.ReadToEnd();
                     //Console.WriteLine(output);  //writes contents of the training script file
