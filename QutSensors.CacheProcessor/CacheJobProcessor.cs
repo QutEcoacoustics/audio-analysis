@@ -85,7 +85,7 @@ namespace QutSensors.CacheProcessor
         {
             stopRequestedEvent.Set();
         }
-
+        
         private static DirectShowStream ConvertStream(Guid readingId, string srcType, string dstType, long? start, long? end)
         {
             var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, readingId);
@@ -99,28 +99,35 @@ namespace QutSensors.CacheProcessor
 
         private void ThreadMain()
         {
-            if (log != null)
+            try
             {
-                log.WriteEntry(LogType.Information, "Cache Job Processor starting");
-            }
-
-            do
-            {
-                if (!ProcessJob())
+                if (log != null)
                 {
-                    // No job or error so wait for new job to process.
-                    stopRequestedEvent.WaitOne(InterJobWaitPeriod);
+                    log.WriteEntry(LogType.Information, "Cache Job Processor starting");
                 }
-            }
-            while (!stopRequestedEvent.WaitOne(InterJobWaitPeriod));
 
-            if (log != null)
+                do
+                {
+                    if (!ProcessJob())
+                    {
+                        // No job or error so wait for new job to process.
+                        stopRequestedEvent.WaitOne(InterJobWaitPeriod);
+                    }
+                }
+                while (!stopRequestedEvent.WaitOne(InterJobWaitPeriod));
+
+                if (log != null)
+                {
+                    log.WriteEntry(LogType.Information, "Cache Job Processor stopping");
+                }
+
+                stopRequestedEvent.Reset();
+                workerThread = null;
+            }
+            catch (Exception ex)
             {
-                log.WriteEntry(LogType.Information, "Cache Job Processor stopping");
+                File.WriteAllText("C:\\Temp\\debug-cache-processor.log", ex.ToString());
             }
-
-            stopRequestedEvent.Reset();
-            workerThread = null;
         }
 
         /// <summary>
