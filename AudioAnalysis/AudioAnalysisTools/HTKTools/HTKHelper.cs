@@ -22,7 +22,7 @@ namespace AudioAnalysisTools.HTKTools
 
         public static List<string> SyllableList
         {
-            get { return syllableList;  }  
+            get { return syllableList; }
         }
 
         #endregion
@@ -70,7 +70,7 @@ namespace AudioAnalysisTools.HTKTools
         //    }
         //    else
         //      throw new Exception(" The directory <" + cmdLineArgument + "> must contain a file called " + segmentationIniFile);
-            
+
         //    if (File.Exists(segmentationExecutable))
         //    {
         //        Console.WriteLine(" Found executable file: " + segmentationExecutable);
@@ -85,7 +85,7 @@ namespace AudioAnalysisTools.HTKTools
         //    CallProcess(segmentationExecutable, cmdLineArgument);
         //}
 
-        
+
         /// <summary>
         /// Writes the Segmentation info files showing how wav files are segmented
         /// </summary>
@@ -112,7 +112,7 @@ namespace AudioAnalysisTools.HTKTools
 
                     try
                     {
-                        Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltF+">");
+                        Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltF + ">");
                         wltWriter = File.CreateText(htkConfig.wltF);
                         wltWriter.WriteLine(heading);
 
@@ -148,7 +148,7 @@ namespace AudioAnalysisTools.HTKTools
                                 currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
 
                                 wltWriter.WriteLine(currLine);
-                                
+
                                 //read related label file
                                 string segFile = Path.GetFileNameWithoutExtension(FI.FullName) + segmentationFileExt;
                                 wltReader = new StreamReader(currTrnDir + "\\" + segFile);
@@ -178,7 +178,7 @@ namespace AudioAnalysisTools.HTKTools
                                         eTime *= 1e+7f; //conversion to HTK units
                                         endTime = eTime.ToString();
                                         currLine = srtTime + " " + endTime + " " + word;
-                                        wltWriter.WriteLine(currLine);                                        
+                                        wltWriter.WriteLine(currLine);
                                     }
                                     wltWriter.WriteLine(".");
                                 }
@@ -203,7 +203,7 @@ namespace AudioAnalysisTools.HTKTools
                                     if (!syllableList.Contains(word))
                                         syllableList.Add(word);
                                     vocalization = word;
-                                }                                
+                                }
                             }
 
                             //TO DO: check if each entry of labParam has a related .pcf file
@@ -258,8 +258,8 @@ namespace AudioAnalysisTools.HTKTools
                 try
                 {
                     if (!syllableList.Contains(htkConfig.BkgName))
-                        syllableList.Add(htkConfig.BkgName); 
-                    
+                        syllableList.Add(htkConfig.BkgName);
+
                     vocalization = htkConfig.BkgName;
 
                     Console.WriteLine("Writing Phones Segmentation File: <" + htkConfig.wltFBkg + ">");
@@ -269,7 +269,7 @@ namespace AudioAnalysisTools.HTKTools
                     DirectoryInfo Dir = new DirectoryInfo(htkConfig.trnDirPathBkg);
                     FileInfo[] FileList = Dir.GetFiles("*" + HTKConfig.wavExt, SearchOption.TopDirectoryOnly);
 
-                    string currLine = "";                        
+                    string currLine = "";
                     foreach (FileInfo FI in FileList)
                     {
                         currLine = "\"*/" + Path.GetFileNameWithoutExtension(FI.FullName) + labelFileExt + "\"";
@@ -301,9 +301,9 @@ namespace AudioAnalysisTools.HTKTools
         /// </summary>
         /// <param name="htkConfig"></param>
         public static void WriteDictionary(HTKConfig htkConfig)
-        {            
+        {
             //THREE: generate dictionary file 'dict' and monophones file 'monophones'
-            if(!htkConfig.bkgTraining)
+            if (!htkConfig.bkgTraining)
                 Console.WriteLine("HMMBuilder: Generate dictionary file '{0}' and monophones file '{1}'",
                                                             htkConfig.DictFile, htkConfig.monophones);
             else
@@ -320,20 +320,20 @@ namespace AudioAnalysisTools.HTKTools
                 syllableList.Add("SENT_END");
                 //sort dictionary
                 syllableList.Sort();
-                
+
                 //while ((txtLine = dictStrm.ReadLine()) != null)
-                foreach(string word in syllableList)
+                foreach (string word in syllableList)
                 {
                     //param = Regex.Split(txtLine, @"\s+\[\w*\]\s+");
                     //if (!Regex.IsMatch(param[0].ToUpper(), @"SENT_END") &&
                     //    !Regex.IsMatch(param[0].ToUpper(), @"SENT_START"))
-                    if(!word.Equals("SENT_START") && !word.Equals("SENT_END"))
+                    if (!word.Equals("SENT_START") && !word.Equals("SENT_END"))
                     {
                         bcpList.Add(word);
                         dictList.Add(word + "\t[" + word + "]\t" + word);
                     }
                     else
-                        dictList.Add(word + "\t[]\t" + "SIL");                    
+                        dictList.Add(word + "\t[]\t" + "SIL");
                 }
 
                 syllableList.Remove("SENT_START");
@@ -342,7 +342,7 @@ namespace AudioAnalysisTools.HTKTools
                 //Save list of phones to be recognised to files
                 //Check if the target directory exists. If not, create it.
                 string bcpDir;
-                if(!htkConfig.bkgTraining)
+                if (!htkConfig.bkgTraining)
                     bcpDir = Path.GetDirectoryName(htkConfig.monophones);
                 else
                     bcpDir = Path.GetDirectoryName(htkConfig.monophonesBkg);
@@ -351,7 +351,7 @@ namespace AudioAnalysisTools.HTKTools
                 {
                     Directory.CreateDirectory(bcpDir);
                 }
-                StreamWriter bcpWriter  = null; //to contain list of names of syllables/phones to recognise
+                StreamWriter bcpWriter = null; //to contain list of names of syllables/phones to recognise
                 StreamWriter dictWriter = null; //contains another list of phones/syllables
 
                 if (!htkConfig.bkgTraining)
@@ -403,7 +403,7 @@ namespace AudioAnalysisTools.HTKTools
         /// <param name="htkConfig"></param>
         /// <returns>Void</returns> 
         public static void HParse(string sourceF, string destF, HTKConfig htkConfig)
-        {         
+        {
             string commandLineArguments = sourceF + " " + destF;
             Console.WriteLine("\nHTKHelper.HParse");
             Console.WriteLine("  Command Line Arguments = " + commandLineArguments);
@@ -495,11 +495,9 @@ namespace AudioAnalysisTools.HTKTools
             {
                 ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainFBkg, htkConfig.HCopyExecutable); //training data
             }
-            //Console.WriteLine("HMMBuilder: GOT TO HERE 1");
-            //Console.ReadLine();
         } //end Method HCopy()
 
-   
+
         public static void AppendScriptFiles(string dirPath, string scriptFN_code, string scriptFN, string sourceExt, string outExt)
         {
             DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
@@ -527,13 +525,13 @@ namespace AudioAnalysisTools.HTKTools
 
         //call as follows  WriteScriptFiles(htkConfig.tstTrueDirPath, htkConfig.cTestTrueF, htkConfig.tTrueF, htkConfig.wavExt, htkConfig.mfcExt)
         public static void WriteScriptFiles(string dirPath, string scriptFN_code, string scriptFN, string sourceExt, string outExt)
-        {                    
+        {
             Console.WriteLine("WRITING TWO SCRIPT FILES");
 
             DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
             FileInfo[] FileList = dirInfo.GetFiles("*" + sourceExt, SearchOption.TopDirectoryOnly);
 
-            StreamWriter objWriter  = File.CreateText(scriptFN_code);//list of .wav > .mfc files
+            StreamWriter objWriter = File.CreateText(scriptFN_code);//list of .wav > .mfc files
             StreamWriter objWriter2 = File.CreateText(scriptFN);
 
             foreach (FileInfo FI in FileList)
@@ -553,68 +551,71 @@ namespace AudioAnalysisTools.HTKTools
         } //end method
 
 
-        //call as follows: ExtractFeatures(optStr, htkConfig.MfccConfigFN, htkConfig.cTrainF) 
-        public static void ExtractFeatures(string optStr, string mfccConfigFN, string scriptF, string HCopyExecutable) 
+        //call as follows: ExtractFeatures(options, htkConfig.MfccConfigFN, htkConfig.cTrainF) 
+        public static void ExtractFeatures(string options, string mfccConfigFN, string scriptF, string HCopyExecutable)
         {
-            Console.WriteLine("\nHTKHelper.ExtractFeatures: options=" + optStr);
             Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
-            
-            //const string HCopyExecutable = "HCopy.exe";
+            if (File.Exists(mfccConfigFN)) 
+                Console.WriteLine("  Found Script file=" + scriptF);
+            else Console.WriteLine("  WARNING Could NOT FIND Script file=" + scriptF);
 
-            StreamReader stdErr = null;
-            StreamReader stdOut = null;
-            string output = null;
-            string error = null;
-            //string options = optStr;
-                
-            //Extract feature vectors for train data
-            string commandLineArguments = optStr + " -C " + mfccConfigFN + " -S " + scriptF;
+            string commandLineArguments = options + " -C " + mfccConfigFN + " -S " + scriptF;
             Console.WriteLine("  Command Line Arguments=" + commandLineArguments);
-            if (File.Exists(mfccConfigFN)) Console.WriteLine("  Found Script file=" + scriptF);
-            else                           Console.WriteLine("  WARNING Could NOT FIND Script file=" + scriptF);
-            //look for HTK.HCopy file
-            if (File.Exists(HCopyExecutable)) Console.WriteLine("  Found HCopy.exe file=" + HCopyExecutable);
-            else                              Console.WriteLine("  WARNING Could NOT FIND file=" + HCopyExecutable);
+            RunHTKExecutable(commandLineArguments, HCopyExecutable);
 
-            try
-            {
-                    Process hcopy = new Process();
-                    ProcessStartInfo psI = new ProcessStartInfo(HCopyExecutable);
-                    psI.UseShellExecute = false;
-                    psI.RedirectStandardOutput = true;
-                    psI.RedirectStandardError = true;
-                    psI.CreateNoWindow = true;
-                    psI.WindowStyle = ProcessWindowStyle.Hidden;
-                    psI.Arguments = commandLineArguments;
-                    hcopy.StartInfo = psI;           
-                    hcopy.Start();
-                    stdErr = hcopy.StandardError;
-                    stdOut = hcopy.StandardOutput;
-                    hcopy.WaitForExit();
-                    output = stdOut.ReadToEnd();
-                    error = stdErr.ReadToEnd();
-                    //Console.WriteLine(output);  //writes contents of the training script file
-                    if (error.Contains("ERROR"))
-                    {
-                        throw new Exception();
-                    }
-            }
-            catch (Win32Exception e)
-            {
-                    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
-                    {
-                        Console.WriteLine(error);
-                        Console.WriteLine(e.Message + "..... Check the path.");
-                    }
-                    throw (e);
-            }
-            catch (Exception e)
-            {
-                    Console.WriteLine(error);
-                    throw (e);
-            }
         } //end method ExtractFeatures(string optStr) 
 
+
+
+        public static void RunHTKExecutable(string commandLineArguments, string executable)
+        {
+            Console.WriteLine("  HTKHelper.RunHTKExecutable: " + Path.GetFileName(executable));
+
+            //make sure executable exists
+            if (!File.Exists(executable))
+            {
+                Console.WriteLine("WARNING! Could NOT FIND EXE FILE");
+                Console.WriteLine("Press any key to exit");
+                Console.ReadLine();
+                System.Environment.Exit(999);
+            }
+
+            string output = null;
+            string error = null;
+            // try
+            //{
+            var proc = new ProcessRunner
+            {
+                ProgramToRun = new FileInfo(executable),
+                Arguments = commandLineArguments,
+            };
+
+            proc.Start();
+            output = proc.OutputData;
+            error = proc.ErrorData;
+
+            if (!string.IsNullOrEmpty(error) && error.Contains("ERROR"))
+            {
+                throw new Exception("Error from executable: " + error);
+            }
+            /*
+        }
+        catch (Win32Exception e)
+        {
+            if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+            {
+                Console.WriteLine(error);
+                Console.WriteLine(e.Message + "..... Check the path.");
+            }
+            throw (e);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(error);
+            throw (e);
+        }
+        */
+        } //end method RunHTKExecutable() 
 
 
         public static void InitSys(string aOtpStr, HTKConfig htkConfig)
@@ -624,7 +625,7 @@ namespace AudioAnalysisTools.HTKTools
             string tgtDir;
             string mfccConf2;
             string trainF;
-            
+
             if (!htkConfig.bkgTraining)
             {
                 protoCfgDir = htkConfig.ProtoConfDir;
@@ -663,9 +664,9 @@ namespace AudioAnalysisTools.HTKTools
 
                 //Calling HCompV.exe with following arguments creates the proto and vFloors in dir hmms\hmm.0 
                 //HCompV.exe -A -D -T 1 -C config_train -f 0.01 -m -S train.scp -M hmm.0 proto    
-                string commandLine = " " + aOtpStr + " -C " + mfccConf2 + " -f 0.01 -m -S " + trainF 
+                string commandLine = " " + aOtpStr + " -C " + mfccConf2 + " -f 0.01 -m -S " + trainF
                                    + " -M " + tgtDir + " " + prototypeHMM;
-                Console.WriteLine("commandLine = "+commandLine);
+                Console.WriteLine("commandLine = " + commandLine);
 
                 Process hcompv = new Process();
                 ProcessStartInfo psI = new ProcessStartInfo(HCompVExecutable);
@@ -694,7 +695,7 @@ namespace AudioAnalysisTools.HTKTools
                 //If the file 'WORD' is not found a default transition matrix will be used.
 
                 string prototypeFN = Path.GetFileName(prototypeHMM);
-                
+
                 //StreamWriter protoWriter = null;
                 StreamReader protoReader = null;
 
@@ -702,7 +703,7 @@ namespace AudioAnalysisTools.HTKTools
 
                 Queue<string> protoLineQueue = new Queue<string>();
                 Queue<string> hmmDefsQueue = new Queue<string>();
-                
+
                 string txtLine = null;
                 while ((txtLine = protoReader.ReadLine()) != null)
                 {
@@ -721,8 +722,8 @@ namespace AudioAnalysisTools.HTKTools
                     throw new Exception();
                 }
 
-                
-                foreach(string match in syllableList)
+
+                foreach (string match in syllableList)
                 {
                     Console.WriteLine("syllable = " + match + " in syllableList");
 
@@ -730,21 +731,21 @@ namespace AudioAnalysisTools.HTKTools
                     Dictionary<string, string> tmpWordDict = new Dictionary<string, string>();
                     if (HMMSettings.confProtoDict.TryGetValue(match, out tmpWordDict))
                         protoWordPresent = true;
-                    else 
+                    else
                         protoWordPresent = false;
-                    
+
                     //Score Threshold defined?  
                     int tmpThr = 0;
                     string strScoreThr = "";
                     if (protoWordPresent && tmpWordDict.TryGetValue("SCORETHR", out strScoreThr))
                     {
-                        if(htkConfig.threshold.TryGetValue(match, out tmpThr))
+                        if (htkConfig.threshold.TryGetValue(match, out tmpThr))
                             htkConfig.threshold[match] = tmpThr; //override the old value
                         else
                             htkConfig.threshold.Add(match, int.Parse(strScoreThr));
                     }
 
-                    
+
                     int maxStates = int.MaxValue;
                     string strMaxStates = "";
                     if (protoWordPresent && tmpWordDict.TryGetValue("NSTATES", out strMaxStates))
@@ -759,15 +760,15 @@ namespace AudioAnalysisTools.HTKTools
 
                         bool valid = false;
                         //Populate the file
-                        foreach(string protoLine in protoLineQueue)
+                        foreach (string protoLine in protoLineQueue)
                         {
-                                                      
-                            if(Regex.IsMatch(protoLine, @"~h"))
+
+                            if (Regex.IsMatch(protoLine, @"~h"))
                             {
                                 hmmDefsQueue.Enqueue("~h \"" + match + "\"");
                                 valid = false;
                             }
-                            else if(Regex.IsMatch(protoLine, @"<NUMSTATES>"))
+                            else if (Regex.IsMatch(protoLine, @"<NUMSTATES>"))
                             {
                                 if (maxStates < int.MaxValue) //number of states has been redefined
                                 {
@@ -781,25 +782,25 @@ namespace AudioAnalysisTools.HTKTools
                                     valid = true;
                                 }
                             }
-                            else if(Regex.IsMatch(protoLine, @"<STATE>"))
+                            else if (Regex.IsMatch(protoLine, @"<STATE>"))
                             {
                                 string[] param = Regex.Split(protoLine, @">\s+");
                                 int currState = int.Parse(param[1]);
-                                if (currState -1 <= maxStates) 
-                                {                                    
-                                    valid = true; 
+                                if (currState - 1 <= maxStates)
+                                {
+                                    valid = true;
                                 }
                                 else
                                 {
                                     valid = false;
                                 }
                             }
-                            else if(Regex.IsMatch(protoLine, @"<TRANSP>")) 
+                            else if (Regex.IsMatch(protoLine, @"<TRANSP>"))
                             {
                                 string[] param = Regex.Split(protoLine, @">\s+");
                                 if (maxStates < int.MaxValue) //nStates has been re-defined ...                                   
                                 {
-                                    if(int.Parse(param[1]) != maxStates+2) // ... and is different from 'proto'
+                                    if (int.Parse(param[1]) != maxStates + 2) // ... and is different from 'proto'
                                     {
                                         int tmpInt = maxStates + 2;
                                         string tmpStr = "<TRANSP> " + tmpInt.ToString();
@@ -861,8 +862,8 @@ namespace AudioAnalysisTools.HTKTools
                                     else
                                     {
                                         //TO DO: the user may want to define its own initial transition matrix
-                                        
-                                        valid = true; 
+
+                                        valid = true;
                                     }
                                 }
                                 else //nStates has not been re-defined
@@ -881,7 +882,7 @@ namespace AudioAnalysisTools.HTKTools
                                         }
                                         pReader.Close();
                                         valid = false;
-                                    } 
+                                    }
                                     else
                                     {
                                         valid = true; //if matrix is not provided copy it from the 'proto' file
@@ -897,8 +898,8 @@ namespace AudioAnalysisTools.HTKTools
                             {
                                 valid = true;
                             }
-                            
-                            if (valid) hmmDefsQueue.Enqueue(protoLine);   
+
+                            if (valid) hmmDefsQueue.Enqueue(protoLine);
                         }
                     }
                     catch (IOException e)
@@ -907,7 +908,7 @@ namespace AudioAnalysisTools.HTKTools
                         throw (e);
                     }
                     catch (Exception e)
-                    {                        
+                    {
                         throw (e);
                     }
                     finally
@@ -934,7 +935,7 @@ namespace AudioAnalysisTools.HTKTools
                     macros = File.CreateText(tgtDir + "\\" + htkConfig.macrosFN);
 
                     bool valid = false;
-                    foreach(string protoLine in protoLineQueue)
+                    foreach (string protoLine in protoLineQueue)
                     {
                         if (Regex.IsMatch(protoLine, @"~o"))
                         {
@@ -988,8 +989,8 @@ namespace AudioAnalysisTools.HTKTools
                 {
                     Console.WriteLine(e.Message + ". Check the path.");
                 }
-                throw(e);
-            }            
+                throw (e);
+            }
             catch (Exception e)
             {
                 Console.WriteLine(error);
@@ -1000,7 +1001,7 @@ namespace AudioAnalysisTools.HTKTools
 
             }
         } //end method
-        
+
 
 
         public static void HERest(int numIters, string aOtpStr, string pOptStr, HTKConfig htkConfig)
@@ -1034,9 +1035,9 @@ namespace AudioAnalysisTools.HTKTools
                 tgtDir1 = htkConfig.tgtDir1;
                 tgtDir2 = htkConfig.tgtDir2;
                 tgtDir0 = htkConfig.tgtDir0;
-                MfccConfig2FN = htkConfig.MfccConfig2FN; 
-                wltF = htkConfig.wltF; 
-                trainF = htkConfig.trainF; 
+                MfccConfig2FN = htkConfig.MfccConfig2FN;
+                wltF = htkConfig.wltF;
+                trainF = htkConfig.trainF;
                 monophones = htkConfig.monophones;
             }
             else
@@ -1068,7 +1069,7 @@ namespace AudioAnalysisTools.HTKTools
                 DirectoryInfo tgtDir = new DirectoryInfo(tgtDir2); //hmm2 becomes target dir
 
                 if (Directory.Exists(tmpD)) // Remove temp dir if exists
-                {                   
+                {
                     Directory.Delete(tmpD, true);
                 }
                 Directory.CreateDirectory(tmpD);
@@ -1089,10 +1090,10 @@ namespace AudioAnalysisTools.HTKTools
                 try
                 {
                     int i = 1;
-                    while(i<=numIters)
+                    while (i <= numIters)
                     {
                         Console.WriteLine("HMM Iteration {0}", i);
-                        
+
                         //SET UP COMMAND LINE FOR HERest.exe
                         //HERest.exe -A -D -T 1 
                         //      -C ./configs/config_train 
@@ -1129,10 +1130,10 @@ namespace AudioAnalysisTools.HTKTools
                         if (error.Contains("ERROR"))
                         {
                             throw new Exception();
-                        } 
-                        if(numIters >1)
+                        }
+                        if (numIters > 1)
                         {
-                            CopyAll(tgtDir,tmpDir);
+                            CopyAll(tgtDir, tmpDir);
                             srcDir = tmpDir;
                         }
                         i++;
@@ -1144,7 +1145,7 @@ namespace AudioAnalysisTools.HTKTools
                     {
                         Console.WriteLine(e.Message + ". Check the path.");
                     }
-                    throw(e);
+                    throw (e);
                 }
                 catch (Exception e)
                 {
@@ -1152,8 +1153,8 @@ namespace AudioAnalysisTools.HTKTools
                     throw (e);
                 }
 
-            }        
-            catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 throw (e);
@@ -1214,19 +1215,19 @@ namespace AudioAnalysisTools.HTKTools
                 if (!Directory.Exists(tgtDir1)) // Remove hmm1 dir if it exists
                 {
                     Directory.CreateDirectory(tgtDir1);
-                }                
+                }
                 DirectoryInfo srcDir = new DirectoryInfo(tgtDir1); //hmm1 becomes source dir
 
                 if (!Directory.Exists(tgtDir2))// Remove hmm2 dir if it exists
                 {
                     Directory.CreateDirectory(tgtDir2);
-                }                
+                }
                 DirectoryInfo tgtDir = new DirectoryInfo(tgtDir2); //hmm2 becomes target dir
 
                 if (!Directory.Exists(tmpD)) // Remove temp dir if exists
                 {
                     Directory.CreateDirectory(tmpD);
-                }                
+                }
                 DirectoryInfo tmpDir = new DirectoryInfo(tmpD); // create temporary directory
 
 
@@ -1303,7 +1304,7 @@ namespace AudioAnalysisTools.HTKTools
                 throw (e);
             }
             finally
-            {               
+            {
             }
         }
 
@@ -1312,60 +1313,70 @@ namespace AudioAnalysisTools.HTKTools
         public static void HBuild(string monophones_test, string wordNet, string HBuildExecutable)
         {
             //./HBuild ./configs/monophones_test ./configs/phone.net
-            StreamReader stdErr = null;
-            StreamReader stdOut = null;
-            string output = null;
-            string error = null;
-            try
-            {
-                string commandLine = " " + monophones_test + " " + wordNet;
-                Process hbuild = new Process();
-                ProcessStartInfo psI = new ProcessStartInfo(HBuildExecutable);
-                psI.UseShellExecute = false;
-                psI.RedirectStandardOutput = true;
-                psI.RedirectStandardError = true;
-                psI.CreateNoWindow = true;
-                psI.Arguments = commandLine;
-                hbuild.StartInfo = psI;
-                hbuild.Start();
-                hbuild.WaitForExit();
-                stdErr = hbuild.StandardError;
-                stdOut = hbuild.StandardOutput;
-                output = stdOut.ReadToEnd();
-                error = stdErr.ReadToEnd();
-                Console.WriteLine(output);
-                if (error.Contains("ERROR"))
-                {
-                    throw new Exception();
-                } 
-            }
-            catch (Win32Exception e)
-            {
-                if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
-                {
-                    Console.WriteLine("ERROR 1!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");                    
-                    Console.WriteLine(e.Message + ". Check the path.");
-                }
-                throw(e);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("ERROR 2!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");
-                Console.WriteLine(error);
-                throw (e);
-            }
-            finally
-            {
+            //StreamReader stdErr = null;
+            //StreamReader stdOut = null;
+            //string output = null;
+            //string error = null;
+            //try
+            //{
+            //    string commandLine = " " + monophones_test + " " + wordNet;
+            //    Process hbuild = new Process();
+            //    ProcessStartInfo psI = new ProcessStartInfo(HBuildExecutable);
+            //    psI.UseShellExecute = false;
+            //    psI.RedirectStandardOutput = true;
+            //    psI.RedirectStandardError = true;
+            //    psI.CreateNoWindow = true;
+            //    psI.Arguments = commandLine;
+            //    hbuild.StartInfo = psI;
+            //    hbuild.Start();
+            //    hbuild.WaitForExit();
+            //    stdErr = hbuild.StandardError;
+            //    stdOut = hbuild.StandardOutput;
+            //    output = stdOut.ReadToEnd();
+            //    error = stdErr.ReadToEnd();
+            //    Console.WriteLine(output);
+            //    if (error.Contains("ERROR"))
+            //    {
+            //        throw new Exception();
+            //    }
+            //}
+            //catch (Win32Exception e)
+            //{
+            //    if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
+            //    {
+            //        Console.WriteLine("ERROR 1!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");
+            //        Console.WriteLine(e.Message + ". Check the path.");
+            //    }
+            //    throw (e);
+            //}
+            //catch (Exception e)
+            //{
+            //    Console.WriteLine("ERROR 2!! FAILED TO COMPLETE HTKHelper.HBuild(string monophones_test, string wordNet)");
+            //    Console.WriteLine(error);
+            //    throw (e);
+            //}
+            //finally
+            //{
 
-            }
+            //}
+            string commandLine = " " + monophones_test + " " + wordNet;
+            RunHTKExecutable(commandLine, HBuildExecutable);
+
         } // end HBuild()
 
 
         public static void HVite(string confTrain, string tgtDir2, string testF,
                                  string wordNet, string dict, string resultPath, string monophones_test, string HViteExecutable)
         {
+            //Check for results directory
+            string resultsDir = Path.GetDirectoryName(resultPath);
+            if (!Directory.Exists(resultsDir))
+            {
+                Directory.CreateDirectory(resultsDir);
+            }
+
             //Console.WriteLine(
-            //    "\n confTrain      ="+confTrain+
+            //    "\n confTrain      =" +confTrain+
             //    "\n tgtDir2        =" + tgtDir2 +
             //    "\n testF          =" + testF +
             //    "\n wordNet        =" + wordNet +
@@ -1377,74 +1388,15 @@ namespace AudioAnalysisTools.HTKTools
             //const string HViteExecutable = "HVite.exe";
             //string exePath = htkDir + "\\" + HViteExecutable;
 
-            //look for HTK.HVite file
-            if (File.Exists(HViteExecutable)) Console.WriteLine("  Found HVite.exe file=" + HViteExecutable);
-            else                              Console.WriteLine("  WARNING! Could NOT FIND HVite=" + HViteExecutable);
-
-
             //HVite.exe -C ./configs/config_train -H ./hmms/hmm.2/macros -H ./hmms/hmm.2/hmmdefs 
             //  -S ./configs/testfalse.scp -i ./results/recountFalse.mlf -w ./configs/phone.net 
             //  ./configs/dict ./configs/monophones_test
-            StreamReader stdErr = null;
-            StreamReader stdOut = null;
-            string output = null;
-            string error = null;
-            try
-            {
-                ////check if the call is multisyllabic
-                //if (htkConfig.multiSyllableList.Count == 0)
-                //{ 
-                
-                //}                
-                
-                //Check for results directory
-                string resultsDir = Path.GetDirectoryName(resultPath);
-                if (!Directory.Exists(resultsDir))
-                {
-                    Directory.CreateDirectory(resultsDir);
-                }
-                
-                string commandLine = " -C " + confTrain + " -H " + tgtDir2 + "\\macros" + 
-                    " -H " + tgtDir2 + "\\hmmdefs" + " -S " + testF + " -i " + resultPath +
-                    " -w " + wordNet + " " + dict + " " + monophones_test;
 
-                Process hvite = new Process();
-                ProcessStartInfo psI = new ProcessStartInfo(HViteExecutable);
-                psI.UseShellExecute = false;
-                psI.RedirectStandardOutput = true;
-                psI.RedirectStandardError = true;
-                psI.CreateNoWindow = true;
-                psI.Arguments = commandLine;
-                hvite.StartInfo = psI;
-                hvite.Start();
-                hvite.WaitForExit();
-                stdErr = hvite.StandardError;
-                stdOut = hvite.StandardOutput;
-                output = stdOut.ReadToEnd();
-                error = stdErr.ReadToEnd();
-                Console.WriteLine(output);
-                if (error.Contains("ERROR"))
-                {
-                    throw new Exception();
-                }
-            }            
-            catch (Win32Exception e)
-            {
-                if (e.NativeErrorCode == ERROR_FILE_NOT_FOUND)
-                {
-                    Console.WriteLine(e.Message + ". Check the path.");
-                }
-                throw(e);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(error);
-                throw (e);
-            }
-            finally
-            {
+            string commandLine = " -C " + confTrain + " -H " + tgtDir2 + "\\macros" +
+                   " -H " + tgtDir2 + "\\hmmdefs" + " -S " + testF + " -i " + resultPath +
+                   " -w " + wordNet + " " + dict + " " + monophones_test;
 
-            }
+            RunHTKExecutable(commandLine, HViteExecutable);
         } //end HVite
         #endregion
 

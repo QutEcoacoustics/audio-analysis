@@ -127,10 +127,19 @@ namespace TowseyLib
                     RedirectStandardOutput = true,
                     UseShellExecute = false,
                     WindowStyle = ProcessWindowStyle.Hidden,
-                    WorkingDirectory = this.WorkingDirectory.FullName,
                     Arguments = this.Arguments,
                     FileName = this.ProgramToRun.FullName,
                 };
+
+                if (this.WorkingDirectory != null)
+                {
+                    this.Worker.StartInfo.WorkingDirectory = this.WorkingDirectory.FullName;
+                }
+
+                if (this.ProgramToRun != null)
+                {
+                    this.Worker.StartInfo.FileName = this.ProgramToRun.FullName;
+                }
 
                 this.Worker.EnableRaisingEvents = true;
                 this.Worker.ErrorDataReceived += this.ProcErrorDataReceived;
