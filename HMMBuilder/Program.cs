@@ -16,8 +16,8 @@ namespace HMMBuilder
             #region Variables
 
             //string callIdentifier = "CURLEW2";                                              //arg[0]
-            //string callIdentifier = "CURRAWONG2";                                           //arg[0]
-            string callIdentifier = "KOALAMALE_EXHALE2";                                      //arg[0]
+            string callIdentifier = "CURRAWONG2";                                           //arg[0]
+            //string callIdentifier = "KOALAMALE_EXHALE2";                                      //arg[0]
             string resourcesDir   = "C:\\SensorNetworks\\Templates\\";                        //arg[1]
             string htkExes        = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";  //arg[2]
 
@@ -66,37 +66,37 @@ namespace HMMBuilder
                         if (htkConfig.multisyllabic)
                         {
                             Console.WriteLine("PREPARING MULTI-SYLLABIC TEMPLATE");
-                            try  //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
-                            {
-                                HTKHelper.HParse(htkConfig.grammarF, htkConfig.wordNet, htkConfig);
-                            }
-                            catch
-                            {
-                                Console.WriteLine("ERROR! FAILED TO CREATE NETWORK FILE: {0}", htkConfig.wordNet);
-                                good = false;
-                                break;
-                            }
-                            // 1. Populate syllable list
-                            htkConfig.PopulateSyllableList(htkConfig.wordNet);
-                            // 2. Create as many iniFiles as the number of syllables.
-                            //    Each, specifying the related vocalization to use for segmentation                            
-                            foreach (string word in htkConfig.multiSyllableList)
-                            {
-                                //check if the training folder exists
-                                string trnDir = htkConfig.trnDirPath + "\\" + word;
-                                if (!Directory.Exists(trnDir))
-                                {
-                                    Console.WriteLine("ERROR! Could not find folder '{0}'", trnDir);
-                                    throw new Exception();
-                                }
+                            //try  //Parse the grammar file: creates the word network file 'htkConfig.wordNet'
+                            //{
+                            //    HTKHelper.HParse(htkConfig.grammarF, htkConfig.wordNet, htkConfig);
+                            //}
+                            //catch
+                            //{
+                            //    Console.WriteLine("ERROR! FAILED TO CREATE NETWORK FILE: {0}", htkConfig.wordNet);
+                            //    good = false;
+                            //    break;
+                            //}
+                            //// 1. Populate syllable list
+                            //htkConfig.PopulateSyllableList(htkConfig.wordNet);
+                            //// 2. Create as many iniFiles as the number of syllables.
+                            ////    Each, specifying the related vocalization to use for segmentation                            
+                            //foreach (string word in htkConfig.multiSyllableList)
+                            //{
+                            //    //check if the training folder exists
+                            //    string trnDir = htkConfig.trnDirPath + "\\" + word;
+                            //    if (!Directory.Exists(trnDir))
+                            //    {
+                            //        Console.WriteLine("ERROR! Could not find folder '{0}'", trnDir);
+                            //        throw new Exception();
+                            //    }
 
-                                //segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
-                                string tmpString = htkConfig.CallName;
-                                htkConfig.CallName = word;
-                                //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
-                                htkConfig.CallName = tmpString;
+                            //    //segmentationIniFile = trnDir + "\\" + HTKConfig.segmentationIniFN;
+                            //    string tmpString = htkConfig.CallName;
+                            //    htkConfig.CallName = word;
+                            //    //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
+                            //    htkConfig.CallName = tmpString;
                            
-                            } // foreach
+                            //} // foreach
                         } // end if (multisyllabic)
                     } //end writing config files
                     catch

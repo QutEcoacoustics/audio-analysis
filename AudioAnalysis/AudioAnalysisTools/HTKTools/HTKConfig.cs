@@ -571,7 +571,7 @@ namespace AudioAnalysisTools.HTKTools
             this.multisyllabic  = false;    //single syllable call
             //the next for vars discriminate the training model
             this.doSegmentation = true;     //paleblue||true=segment & train SIL model; false=each recording is single word. No SIL model is trained from the recordings.
-            this.UseHERest      = "y";      //yellow||default=y=use my labels BUT use HTK timestamps; no = use my labels AND my timestamps 
+            this.UseHERest      = "y";      //yellow||default=yes=use my labels BUT use HTK timestamps; no = use my labels AND my timestamps 
             this.LLRNormalization = false;   //grBlue ||default=true=do LLR normalization on HVite output.  False= Do Length normalisation
             this.LLRusesBKG      = true;    //green ||default=true=use BKG model for LLR normalisation;   false -> use SIL model for LLR norm.
 

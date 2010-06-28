@@ -450,12 +450,12 @@ namespace AudioAnalysisTools
                 string[] words = Regex.Split(lines[i], @"\t");
                 if ((words.Length < 8) || (words[4].Equals(null)) || (words[4].Equals("")))
                     continue; //ignore entries that do not have full data
-                string file = words[0];
-                if ((match != null) && (!file.StartsWith(match))) continue;  //ignore events not from the required file
+                if (! match.Equals(words[5]))  continue;  //ignore events without required tag
+                //if (!file.StartsWith(match))) continue;  //ignore events not from the required file
 
+                string file = words[0];
                 string date = words[1];
                 string time = words[2];
-
                 double start = Double.Parse(words[3]);
                 double end = Double.Parse(words[4]);
                 string tag = words[5];
@@ -479,6 +479,16 @@ namespace AudioAnalysisTools
             return events;
         } //end method GetLabelsInFile(List<string> labels, string file)
 
+
+        public static List<AcousticEvent> GetTaggedEventsInFile(List<AcousticEvent> labeledEvents, string filename)
+        {
+            var events = new List<AcousticEvent>();
+            foreach (AcousticEvent ae in events)
+            {
+                if(ae.SourceFile.Equals(filename)) events.Add(ae);
+            }
+            return events;
+        }
 
 
 
