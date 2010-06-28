@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
+    <StartupObject>AnalysisPrograms.Main_HTKScanDir</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>

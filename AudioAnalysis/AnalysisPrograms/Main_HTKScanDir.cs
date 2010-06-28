@@ -29,32 +29,36 @@ namespace AnalysisPrograms
 
             //#######################################################################################################
             //CALL ID
-            string callID = "CURRAWONG2";
-            string templatePath = @"C:\SensorNetworks\Templates\Template_"+callID+"\\"+callID+".zip";
+            //string callID = "CURRAWONG2";
+            //string callID = "CURLEW2";
+            string callID = "KOALAMALE_EXHALE2";
+            string templatePath = @"C:\SensorNetworks\Templates\Template_" + callID + "\\" + callID + ".zip";
 
             //MATCH STRING -search directory for matches to this file name
-            string fileMatch = "*.mp3";
-            //string fileMatch = "*.wav";
+            //string fileMatch = "*.mp3";
+            string fileMatch = "*.wav";
             //string fileMatch = "HoneymoonBay_Bees_20091030*.wav";   //1
 
             //RECORDING DIRECTORY
-            string recordingDir = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged";
+            //string recordingDir = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged";
+            //string recordingDir = @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged";
             //string recordingDir = @"C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\";
-            //string recordingDir = @"C:\SensorNetworks\Recordings\KoalaMale\LargeTestSet\";
+            string recordingDir = @"C:\SensorNetworks\WavFiles\Koala_Male\KoalaLargeTestSet\HoneymoonBay_StBees_20091030-173000\";
 
             //OUTPUT DIRECTORY
             string outputFolder = @"C:\SensorNetworks\Output\HTKScan_" + callID+"\\";
-            //string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_IE_OD\";
-            //string outputFolder = @"C:\SensorNetworks\TestResults\KoalaMale_EXHALE_HTK\"; 
 
             //RESULTS FILE
-            //string resultsFile = "HoneymoonBay_Bees_20091030.results.txt";  //1
-            //string resultsFile = "TopKnoll_Bees_20091030.results.txt";      //2
-            //string resultsFile = "WestKnoll_Bees_20091030.results.txt";     //3
-            //string resultsFile = "WestKnoll_Bees_200911.results.txt";       //4
-            string resultsFile = "KoalaCalls_All_2009.results.txt";         //5
+            string resultsFile = callID + ".results.txt";     
 
-            string labelsFileName = "Currawong.txt";
+            //TAG FILE and tag match
+            //string labelsFileName = "Currawong.txt";
+            //string labelMatch     = "Currawong";
+            //string labelsFileName = "Curlew.txt";
+            //string labelMatch     = "Curlew";
+            string labelsFileName = "KoalaCalls_HoneymoonBay_30October2009.txt";
+            string labelMatch     = "Koala Bellow";
+            
 
             //#######################################################################################################
             // CHeck template exists
@@ -90,7 +94,8 @@ namespace AnalysisPrograms
             if (!Directory.Exists(outputFolder))
             {
                 Console.WriteLine("Cannot find output directory <" + outputFolder + ">");
-                outputFolder = System.Environment.CurrentDirectory;
+                //outputFolder = System.Environment.CurrentDirectory;
+                Directory.CreateDirectory(outputFolder);
                 Console.WriteLine("Have set output directory = <" + outputFolder + ">");
                 Console.WriteLine("Press <ENTER> key to continue.");
                 Console.ReadLine();
@@ -112,13 +117,12 @@ namespace AnalysisPrograms
             }
 
             //PRINT LIST OF ALL LABELLED EVENTS
+            Log.WriteIfVerbose("TAG="+labelMatch);
             string labelsText;
-            List<AcousticEvent> labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, null, out labelsText);
-            Log.WriteIfVerbose("NUMBER OF TAGGED EVENTS="+labels.Count+"\n");
+            List<AcousticEvent> labeledEvents = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, labelMatch, out labelsText);
+            Log.WriteIfVerbose("NUMBER OF TAGGED EVENTS=" + labeledEvents.Count + "\n");
             Log.WriteIfVerbose(labelsText + "\n");
             sb.Append(labelsText + "\n\n");
-
-
             //Console.ReadLine();
             //System.Environment.Exit(999);
 
@@ -129,25 +133,25 @@ namespace AnalysisPrograms
             int fn_total = 0;
             int file_count = 0;
             //string wavPath = fileNames[0];
-            foreach (string wavPath in fileNames) //for each recording
+            foreach (string recordingPath in fileNames) //for each recording
             {
                 file_count++;
                 int progress = 100 * file_count / fileNames.Count;
                 Log.WriteIfVerbose("\n\n#### " + file_count + " ({0}%) ###################################################################################", progress);
                 sb.Append("\n\n" + file_count + " ###############################################################################################\n");
-                string destinationAudioFile = null; 
+                string destinationAudioFile = null;
 
-                if (File.Exists(wavPath))
+                if (File.Exists(recordingPath))
                 {
-                    Log.WriteIfVerbose("Recording Path =" + wavPath);
-                    sb.Append("Recording Path = <" + wavPath + ">\n");
+                    Log.WriteIfVerbose("Recording Path =" + recordingPath);
+                    sb.Append("Recording Path = <" + recordingPath + ">\n");
 
                     // check to see if conversion from .MP3 to .WAV is necessary
-                    string sourceDir = Path.GetDirectoryName(wavPath);
-                    destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(wavPath) + ".wav");
+                    string sourceDir = Path.GetDirectoryName(recordingPath);
+                    destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
 
                     Log.WriteLine("Checking to see if conversion necessary...");
-                    if (WavReader.ConvertToWav(wavPath, destinationAudioFile))
+                    if (WavReader.ConvertToWav(recordingPath, destinationAudioFile))
                     {
                         Log.WriteLine("Wav pcm file created.");
                     }
@@ -161,8 +165,8 @@ namespace AnalysisPrograms
                 }
                 else
                 {
-                    Log.WriteIfVerbose("WARNING!!  CANNOT FIND FILE <" + wavPath + ">");
-                    sb.Append("WARNING!!  CANNOT FIND FILE <" + wavPath + ">\n");
+                    Log.WriteIfVerbose("WARNING!!  CANNOT FIND FILE <" + recordingPath + ">");
+                    sb.Append("WARNING!!  CANNOT FIND FILE <" + recordingPath + ">\n");
                     //Console.WriteLine("Press <ENTER> key to exit.");
                     //Console.ReadLine();
                     //System.Environment.Exit(999);
@@ -177,7 +181,8 @@ namespace AnalysisPrograms
                 Log.WriteLine("# Finished scan with HTK.");
                 //##############################################################################################################################
 
-                if ((predictedEvents == null)||(predictedEvents.Count == 0))
+                //#### B: DISPLAY EVENTS IN SONOGRAM
+                if ((predictedEvents == null) || (predictedEvents.Count == 0))
                 {
                     Log.WriteIfVerbose("WARNING!!  PREDICTED EVENTS == NULL");
                     sb.Append("WARNING!!  PREDICTED EVENTS == NULL\n");
@@ -185,18 +190,25 @@ namespace AnalysisPrograms
                     //Console.ReadLine();
                     //System.Environment.Exit(999);
                 }
+                else
+                {
+                    Log.WriteLine("PREDICTED EVENTS = " + predictedEvents.Count);
+                    sb.AppendLine("PREDICTED EVENTS = " + predictedEvents.Count);
+                    DisplayAcousticEvents(recordingPath, predictedEvents, htkConfig.ConfigDir, htkConfig.ResultsDir);
+                }
+
+                //C: get labelled events from file
+                string filename = Path.GetFileNameWithoutExtension(destinationAudioFile);
+                List<AcousticEvent> taggedEventsInThisFile = AcousticEvent.GetTaggedEventsInFile(labeledEvents, filename);
+                //sb.Append(labelsText + "\n");
+                //Console.WriteLine(labelsText);
+
 
                 //D: CALCULATE ACCURACY
-                //D1:  get events from labels file
-                string filename = Path.GetFileNameWithoutExtension(destinationAudioFile);
-                labels = AcousticEvent.GetAcousticEventsFromLabelsFile(labelsPath, filename, out labelsText);
-                sb.Append(labelsText + "\n");
-                Console.WriteLine(labelsText);
-               
                 int tp, fp, fn;
                 double precision, recall, accuracy;
                 string resultsText;
-                AcousticEvent.CalculateAccuracyOnOneRecording(predictedEvents, labels, out tp, out fp, out fn, 
+                AcousticEvent.CalculateAccuracyOnOneRecording(predictedEvents, taggedEventsInThisFile, out tp, out fp, out fn, 
                                                               out precision, out recall, out accuracy, out resultsText);
                 //sb.Append("PREDICTED EVENTS:\n");
                 //Console.WriteLine("PREDICTED EVENTS:");
@@ -236,6 +248,36 @@ namespace AnalysisPrograms
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }//end Main
+
+
+        public static void DisplayAcousticEvents(string wavFile, List<AcousticEvent> events, string templateDir, string outputDir)
+        {
+            SonogramConfig sonoConfig = new SonogramConfig();
+            AudioRecording ar = new AudioRecording(wavFile);
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, ar.GetWavReader());
+            Log.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image_mt.AddEvents(events);
+
+            //D: PARSE THE RESULTS FILE TO GET SCORE ARRAY
+            string syllableFile = templateDir + "\\" + HTKConfig.labelListFN;
+            List<string> sylNames = HTKConfig.GetSyllableNames(syllableFile);
+            foreach (string name in sylNames)
+            {
+                double[] scores = AcousticEvent.ExtractScoreArrayFromEvents(events, sonogram.FrameCount, name);
+                double thresholdFraction = 0.2; //for display purposes only. Fraction of the score track devoted to sub-threshold scores
+                //double[] finalScores = NormaliseScores(scores, scoreThreshold, thresholdFraction);
+                image_mt.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, thresholdFraction));
+            }
+
+            string fName = Path.GetFileNameWithoutExtension(wavFile);
+            string opFile = outputDir + "\\" + fName + ".png";
+            Log.WriteLine("Sonogram will be written to file: " + opFile);
+            image_mt.Save(opFile);
+        }
 
     }//end class
 }
