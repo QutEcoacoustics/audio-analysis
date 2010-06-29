@@ -34,18 +34,21 @@ let colIndicesToMatrix m n (ps:int Set seq) =
 let allPeaks t (m:matrix) =
     let f = horizontalTracks << verticalPeaks t
     colIndicesToMatrix m.NumRows m.NumCols (f m) + (mTranspose m |> f |> colIndicesToMatrix m.NumCols m.NumRows |> mTranspose)
-    
-let removeSmall m =
-    let aes = getAcousticEvents m |> List.filter (fun ae -> ae.Elements.Count < 15)
+
+//st = small threshold
+//m  = matrix    
+let removeSmall st m =
+    let aes = getAcousticEvents m |> List.filter (fun ae -> ae.Elements.Count < st)
     let m' = Math.Matrix.copy m
     List.iter (fun ae -> Set.iter (fun (i,j) -> m'.[i,j] <- 0.0) ae.Elements) aes
     m'
     
-let dilate t (m:matrix) ps =
+let dilate t nh (m:matrix) ps =
+    //let nh = 3
     let m' = Math.Matrix.zero m.NumRows m.NumCols
     let f i j x =
         if x = 0.0 then () else
-            let (si, sj, li, lj) = neighbourhoodBounds 3 (m.NumRows) (m.NumCols) i j
+            let (si, sj, li, lj) = neighbourhoodBounds nh (m.NumRows) (m.NumCols) i j
             for ic = si to (si + li - 1) do
                 for jc = sj to (sj + lj - 1) do
                     if m.[ic,jc] >= t then m'.[ic,jc] <- m.[ic,jc] else ()
@@ -53,5 +56,9 @@ let dilate t (m:matrix) ps =
             done
     Array2D.iteri f (Math.Matrix.toArray2D ps)
     m'
-    
-let spt t m = allPeaks t m |> removeSmall |> dilate t m
+
+// m = matrix
+// it = intensity threshold
+// nh = neighbourhood parameter    
+// st = small threshold
+let spt m it nh st = allPeaks it m |> removeSmall st |> dilate it nh m

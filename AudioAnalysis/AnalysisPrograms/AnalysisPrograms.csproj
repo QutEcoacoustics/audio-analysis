@@ -12,7 +12,7 @@
     <AssemblyName>AnalysisPrograms</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <StartupObject>AnalysisPrograms.Main_HTKScanDir</StartupObject>
+    <StartupObject>AnalysisPrograms.MainEntry</StartupObject>
     <TargetZone>LocalIntranet</TargetZone>
     <GenerateManifests>false</GenerateManifests>
     <CodeContractsAssemblyMode>0</CodeContractsAssemblyMode>
@@ -62,12 +62,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="FSharp.PowerPack, Version=1.9.9.9, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="FSharp.PowerPack, Version=2.0.0.0, Culture=neutral, PublicKeyToken=a19089b1c74d0809, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -116,7 +112,8 @@
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="HTKRecogniser.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Spt.cs" />
+    <Compile Include="SPR.cs" />
+    <Compile Include="SPT.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
