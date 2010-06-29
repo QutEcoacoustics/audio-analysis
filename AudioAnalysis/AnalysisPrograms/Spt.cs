@@ -12,33 +12,36 @@
     using QutSensors.AudioAnalysis.AED;
     using TowseyLib;
 
-    public class Spt
+    public class SPT
     {
         public static void Dev(string[] args)
         {
+            //spt C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3 C:\SensorNetworks\Output\SPT\ 2.0
+
             Log.Verbosity = 1;
 
-            if (args.Length != 2)
+            if (args.Length != 3)
             {
                 Console.WriteLine("The arguments for SPT are: wavFile intensityThreshold");
                 Console.WriteLine();
-                Console.WriteLine("wavFile:            path to .wav recording.");
-                Console.WriteLine(
-                    "                    eg: \"trunk\\AudioAnalysis\\AED\\Test\\matlab\\SPT\\Female1_HoneymoonBay_StBees_20081027-023000.wav\"");
+                Console.WriteLine("wavFile:            path to recording file.");
+                Console.WriteLine("output dir:         where output files and images will be placed.");
                 Console.WriteLine("intensityThreshold: is mandatory");
+                Console.ReadLine();
                 Environment.Exit(1);
             }
 
             string wavFilePath = args[0];
-            double intensityThreshold = Convert.ToDouble(args[1]);
+            string opDir = args[1];
+            double intensityThreshold = Convert.ToDouble(args[2]);
+            int smallLengthThreshold = 50;
 
-            var result = doSPT(wavFilePath, intensityThreshold);
+            var result = doSPT(wavFilePath, intensityThreshold, smallLengthThreshold);
             var sonogram = result.Item1;
-
             sonogram.Data = result.Item2;
 
-            // TODO: do something with this?
-            string savePath = System.Environment.CurrentDirectory + "\\" + Path.GetFileNameWithoutExtension(wavFilePath);
+            // SAVE IMAGE
+            string savePath = opDir + Path.GetFileNameWithoutExtension(wavFilePath);
             string suffix = string.Empty;
             while (File.Exists(savePath + suffix + ".jpg"))
             {
@@ -46,11 +49,23 @@
             }
 
             Image im = sonogram.GetImage(false, false);
-            im.Save(savePath + suffix + ".jpg");
-            Log.WriteIfVerbose("imagePath = " + savePath);
-        }
+            string newPath = savePath + suffix + ".jpg";
+            Log.WriteIfVerbose("imagePath = " + newPath);
+            im.Save(newPath);
 
-        public static Tuple<BaseSonogram,double[,]> doSPT(string wavPath, double intensityThreshold)
+            Console.WriteLine("\nFINISHED!");
+            Console.ReadLine();
+        }//end Main
+
+        /// <summary>
+        /// Performs Spectral Peak Tracking on a recording
+        /// Returns a sonogram.
+        /// </summary>
+        /// <param name="wavPath">the recording</param>
+        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
+        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
+        /// <returns></returns>
+        public static Tuple<BaseSonogram, double[,]> doSPT(string wavPath, double intensityThreshold, int smallLengthThreshold)
         {
             var sonogram = AED.FileToSonogram(wavPath);
             Log.WriteLine("intensityThreshold = " + intensityThreshold);
@@ -67,7 +82,8 @@
             Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");
-            var p = SpectralPeakTrack.spt(intensityThreshold, s);
+            int nh = 3;
+            var p = SpectralPeakTrack.spt(s, intensityThreshold, nh, smallLengthThreshold);
             Log.WriteLine("SPT finished");
 
             var r = MatrixModule.toArray2D(MatrixModule.transpose(p));

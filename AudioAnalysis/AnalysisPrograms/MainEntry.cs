@@ -31,7 +31,6 @@ namespace AnalysisPrograms
                     case "aed":      // acoustic event detection
                         AED.Dev(r);
                         break;
-
                     case "eventX":   // extract an acoustic event
                         ExtractEvent.Dev(r);
                         break;
@@ -49,8 +48,11 @@ namespace AnalysisPrograms
                     case "epr":  // event pattern recognition - used for ground-parrots
                         GroundParrotRecogniser.Dev(r);
                         break;
-                    case "spt":  // spectral peak tracking, currently not used
-                        Spt.Dev(r);
+                    case "spt":  // spectral peak tracking
+                        SPT.Dev(r);
+                        break;
+                    case "spr":  // syntactic pattern recognition
+                        SPR.Dev(r);
                         break;
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
                         MFCC_OD.Dev(r);

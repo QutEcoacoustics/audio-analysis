@@ -1243,7 +1243,7 @@ namespace AudioAnalysisTools.HTKTools
                 //Now do HMM training
                 try
                 {
-                    int i = 1;
+                    //int i = 1;
 
                     //SET UP COMMAND LINE FOR HRest.exe
                     //HRest.exe -A -D -T 1 

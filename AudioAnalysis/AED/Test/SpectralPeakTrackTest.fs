@@ -46,13 +46,13 @@ let testAllPeaks () =
     
 [<Fact>]
 let testRemoveSmall () =
-    let peaksI3_2 = loadTestFile2 "SPT" "peaksI3.csv" |> removeSmall
+    let peaksI3_2 = loadTestFile2 "SPT" "peaksI3.csv" |> removeSmall 15
     let peaksI3_2m = loadTestFile2 "SPT" "peaksI3_2.csv"
     Assert.True (matrixFloatEquals peaksI3_2m peaksI3_2 0.0001)
     
 [<Fact>]
 let testDilate () =
     let m = loadTestFile2 "SPT" "I3.csv"
-    let peaksI3_3 = loadTestFile2 "SPT" "peaksI3_2.csv" |> dilate 9.0 m
+    let peaksI3_3 = loadTestFile2 "SPT" "peaksI3_2.csv" |> dilate 9.0 3 m
     let peaksI3_3m = loadTestFile2 "SPT" "peaksI3_3.csv"
     Assert.True (matrixFloatEquals peaksI3_3m peaksI3_3 0.0001)
