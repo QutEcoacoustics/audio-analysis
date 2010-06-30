@@ -101,6 +101,7 @@
     <Compile Include="ImageTools.cs" />
     <Compile Include="LLR.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="PolarCoordinates.cs" />
     <Compile Include="ProcessTools.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />

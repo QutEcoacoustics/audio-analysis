@@ -12,7 +12,7 @@ using AudioAnalysisTools;
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
 
 //HERE ARE COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE
-//  od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt events.txt
+//od  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\OD_CaneToad\CaneToad_DetectionParams.txt events.txt
 //
 
 
@@ -23,6 +23,7 @@ namespace AnalysisPrograms
         //Following lines are used for the debug command line.
         //CANETOAD
         //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420011\DM420011_00m_00s__02m_00s.wav" C:\SensorNetworks\Output\OD_CaneToad2_DM420011_NoFilter\OD_CaneToad2_DM420011_NoFilter_Params.txt events.txt
+        //od  "C:\SensorNetworks\WavFiles\Canetoad\\FromPaulRoe\canetoad_CubberlaCreek_100529.WAV"  C:\SensorNetworks\Output\OD_CaneToad_PRoe\OD_CaneToad_Params.txt events.txt
         //GECKO
         //od "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3" C:\SensorNetworks\Output\OD_GeckoTrial\OD_GeckoTrial_Params.txt events.txt
         //od "C:\SensorNetworks\WavFiles\Gecko\Gecko05012010\DM420008_26m_00s__28m_00s - Gecko.mp3" C:\SensorNetworks\Output\OD_GeckoTrial\OD_GeckoTrial_Params.txt events.txt
@@ -68,7 +69,7 @@ namespace AnalysisPrograms
 
             string recordingPath = args[0];
             string iniPath   = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
             string opFName   = args[2];
             string opPath    = outputDir + opFName;
             Log.WriteIfVerbose("# Output folder =" + outputDir);

@@ -1,3 +1,9 @@
+# save a sonogram for each recording that contained a hit 
+DRAW_SONOGRAMS=1
+################################################################################
+# Above parameters NOT user modifiable
+# Below parameters ARE user modifiable.
+################################################################################
 # min and max of the freq band to search
 MIN_HZ=100          
 MAX_HZ=2000
@@ -5,16 +11,14 @@ MAX_HZ=2000
 FRAME_OVERLAP=0.5
 # duration of DCT in seconds 
 DCT_DURATION=1.5
+# minimum acceptable value of a DCT coefficient
+DCT_THRESHOLD=0.6
 # ignore oscillation rates below the min & above the max threshold OSCILLATIONS PER SECOND
 MIN_OSCIL_FREQ=5        
 MAX_OSCIL_FREQ=10
-# minimum acceptable value of a DCT coefficient
-MIN_AMPLITUDE=0.6
 # Minimum duration for the length of a true event.
 MIN_DURATION=0.2
 # Maximum duration for the length of a true event.
 MAX_DURATION=15.0
 # Event threshold - use this to determin FP / FN trade-off for events.
 EVENT_THRESHOLD=0.60
-# save a sonogram for each recording that contained a hit 
-DRAW_SONOGRAMS=true
