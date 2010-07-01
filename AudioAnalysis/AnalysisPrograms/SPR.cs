@@ -18,6 +18,7 @@ namespace AnalysisPrograms
     class SPR  //Syntactic Pattern Recognition
     {
         //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_CALL_NAME       = "CALL_NAME";
         //public static string key_FILE_EXT        = "FILE_EXT";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_MIN_HZ          = "MIN_HZ";
@@ -31,6 +32,8 @@ namespace AnalysisPrograms
         //public static string key_MAX_OSCIL_FREQ = "MAX_OSCIL_FREQ";
         //public static string key_MIN_DURATION = "MIN_DURATION";
         //public static string key_MAX_DURATION = "MAX_DURATION";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_MAX_DURATION = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
@@ -70,63 +73,94 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-
+            string callName = dict[key_CALL_NAME];
+            int minHz = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
             double intensityThreshold = Convert.ToDouble(dict[key_SPT_INTENSITY_THRESHOLD]);
             int smallLengthThreshold = Convert.ToInt32(dict[key_SPT_SMALL_LENGTH_THRESHOLD]);
             //SPT_SMALL_LENGTH_THRESHOLD
+            double minDuration  = Double.Parse(dict[key_MIN_DURATION]);       //min duration of event in seconds 
+            double maxDuration  = Double.Parse(dict[key_MAX_DURATION]);       //max duration of event in seconds 
+            double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
+            int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
 
-            var result1 = SPT.doSPT(recordingPath, intensityThreshold, smallLengthThreshold);
+            BaseSonogram sonogram = null;
+            List<AcousticEvent> predictedEvents = null;
+            double[,] hits = null;
+            double[] scores = null;
+            if (callName.Equals("WHIPBIRD"))
+            {
+                //SPT
+                var result1 = SPT.doSPT(recordingPath, intensityThreshold, smallLengthThreshold);
+                //var result2 = SPR.doSPR(result1.Item2, intensityThreshold + 1.0, smallLengthThreshold);
 
-            var result2 = SPR.doSPR(result1.Item2, intensityThreshold+1.0, smallLengthThreshold);
+                //SPR
+                Log.WriteLine("SPR start - Intensity Threshold = " + intensityThreshold);
+                double sensitivity = 0.7; //lower value = more sensitive
+                var mHori = MarkLine(result1.Item2, smallLengthThreshold, intensityThreshold, 0, sensitivity);
+                //var mHori = MarkLine(matrix, lineLength, intensityThreshold, 180);
+                sensitivity = 0.8;        //lower value = more sensitive
+                var mVert = MarkLine(result1.Item2, smallLengthThreshold - 3, intensityThreshold, 85, sensitivity);
+                //var mBack = MarkLine(matrix, lineLength, intensityThreshold, 100);
+                Log.WriteLine("SPR finished");
 
-            var events = DetectWhipBird(result2.Item1);
+                hits = DataTools.AddMatrices(mHori, mVert);
+                var result3 = DetectWhipBird(mHori, mVert, smallLengthThreshold);
+                scores = result3.Item2;
+                sonogram = result1.Item1;
+
+                string fileName = Path.GetFileNameWithoutExtension(recordingPath);
+                predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                              eventThreshold, minDuration, maxDuration, fileName);
+            }
 
             // SAVE IMAGE
-            var sonogram = result1.Item1;
-            sonogram.Data = result2.Item1;
-            string savePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
+            //draw images of sonograms
+            //double eventThreshold = 0.2;
+            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
             string suffix = string.Empty;
-            while (File.Exists(savePath + suffix + ".jpg"))
+            while (File.Exists(imagePath + suffix + ".png"))
             {
                 suffix = (suffix == string.Empty) ? "1" : (int.Parse(suffix) + 1).ToString();
             }
+            string newPath = imagePath + suffix + ".png";
+            if (DRAW_SONOGRAMS == 2)
+            {
+                DrawSonogram(sonogram, newPath, hits, scores, predictedEvents, eventThreshold);
+            }
+            else
+                if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
+                {
+                    DrawSonogram(sonogram, newPath, hits, scores, predictedEvents, eventThreshold);
+                }
 
-            Image im = sonogram.GetImage(false, false);
-            string newPath = savePath + suffix + ".jpg";
-            Log.WriteIfVerbose("imagePath = " + newPath);
-            im.Save(newPath);
+
+            Log.WriteIfVerbose("Image saved to: " + imagePath);
+            //string savePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
+            //string suffix = string.Empty;
+            //Image im = sonogram.GetImage(false, false);
+            //string newPath = savePath + suffix + ".jpg";
+            //im.Save(newPath);
 
             Console.WriteLine("\nFINISHED!");
             Console.ReadLine();
         }//end Main
 
 
-        public static Tuple<double[,]> doSPR(double[,] matrix, double intensityThreshold, int lineLength)
-        {
-            Log.WriteLine("SPR start");
-            Log.WriteLine("SPR Intensity Threshold = " + intensityThreshold);
-            var mHori = MarkLine(matrix, lineLength, intensityThreshold, 0);
-            //var mHori = MarkLine(matrix, lineLength, intensityThreshold, 180);
-            var mVert = MarkLine(matrix, lineLength, intensityThreshold, 90);
-            var mOut = DataTools.AddMatrices(mHori, mVert);
-            Log.WriteLine("SPR finished");
-            return Tuple.Create(mOut);
-        }
-
-        public static double[,] MarkLine(double[,] m, int lineLength, double intensityThreshold, int degrees)
+        public static double[,] MarkLine(double[,] m, int lineLength, double intensityThreshold, int degrees, double sensitivity)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
             var mOut = new double[rows, cols];
-            double sumThreshold = lineLength * 0.75;
+            double sumThreshold = lineLength * sensitivity;
 
             switch (degrees)
             {
 
-                case 0:                 // find horizontal lines
+                case 0:                 // find horizontal lines in spectorgram
                     for (int r = lineLength; r < rows - lineLength; r++)
                     {
-                        for (int c = lineLength; c < cols - lineLength; c++)
+                        for (int c = 5; c < cols - lineLength; c++)
                         {
                             if(m[r, c] < 0.00001) continue;
                             double sum = 0.0;
@@ -136,10 +170,10 @@ namespace AnalysisPrograms
                     }
                     break;
 
-                case 90:                 // find vertical lines
+                case 90:                 // find vertical lines in spectorgram
                     for (int r = lineLength; r < rows - lineLength; r++)
                     {
-                        for (int c = lineLength; c < cols - lineLength; c++)
+                        for (int c = 5; c < cols - lineLength; c++)
                         {
                             if (m[r, c] < 0.00001) continue;
                             double sum = 0.0;
@@ -154,7 +188,7 @@ namespace AnalysisPrograms
                     double sinAngle = Math.Sin(Math.PI * degrees / 180);
                     for (int r = lineLength; r < rows - lineLength; r++)
                     {
-                        for (int c = lineLength; c < cols - lineLength; c++)
+                        for (int c = 5; c < cols - lineLength; c++)
                         {
                             if (m[r, c] < 0.00001) continue;
                             double sum = 0.0;
@@ -170,13 +204,107 @@ namespace AnalysisPrograms
             return mOut;
         }// MarkLine()
 
-        public static List<AcousticEvent> DetectWhipBird(double[,] m)
-        {
-            int rows = m.GetLength(0);
-            int cols = m.GetLength(1);
 
+        public static Tuple<List<AcousticEvent>, double[]> DetectWhipBird(double[,] mHori, double[,] mVert, int lineLength)
+        {
+            int rows = mHori.GetLength(0);
+            int cols = mHori.GetLength(1);
+
+            double optimumWhistleDuration = 86 * 1.4; //86 = frames/sec.
+            int minBound_Whistle = 60;
+            int maxBound_Whistle = 70;
+            int whistleBand = maxBound_Whistle - minBound_Whistle;
+            var whistleScores = new double[rows];
+
+
+            int whipDuration = 12; //frames
+            int minBound_Whip = 15;
+            int maxBound_Whip = 200;
+            int whipBand = maxBound_Whip - minBound_Whip;
+            double whipThreshold = (whipDuration * whipBand) * 0.33;
+            var whipScores = new double[rows];
+
+            for (int r = (int)optimumWhistleDuration; r < rows - lineLength; r++)
+            {
+                //whistle detector
+                var whistle = new double[whistleBand];
+                for (int j = 0; j < whistleBand; j++)
+                {
+                    for (int i = r - (int)optimumWhistleDuration; i <= r; i++)
+                    {
+                        if (mHori[r, minBound_Whistle + j] < 0.0001) continue;
+                        whistle[j] += mHori[i, minBound_Whistle + j];
+                    }
+                }
+                whistleScores[r] = whistle[DataTools.GetMaxIndex(whistle)];
+
+                //whip detector
+                var whip = new double[whipBand];
+                for (int i = 0; i < whipDuration; i++)
+                {
+                    for (int j = 0; j < whipBand; j++)
+                    {
+                        whip[j] += mVert[r + i, minBound_Whip + j];
+                    }
+                }
+                double total = 0.0;
+                for (int j = 0; j < whipBand; j++) total += whip[j];
+                whipScores[r] = total;
+
+            } //for all rows
+            
+            //normalise whistle scores
+            for (int i = 0; i < whistleScores.Length; i++)
+            {
+                whistleScores[i] = whistleScores[i] / optimumWhistleDuration;
+                if (whistleScores[i] > 1.0) whistleScores[i] = 1.0;
+            }
+            //normalise whip scores
+            for (int i = 0; i < whipScores.Length; i++)
+            {
+                whipScores[i] = whipScores[i] / whipThreshold;
+                if (whipScores[i] > 1.0) whipScores[i] = 1.0;
+            }
+
+            //combine scores and extract events
             var predictedEvents = new List<AcousticEvent>();
-            return predictedEvents;
+            var scores = new double[rows];
+            for (int i = 0; i < whipScores.Length; i++)
+                if ((whistleScores[i] > 0.4) && (whipScores[i] > 0.4)) scores[i] = (whistleScores[i] + whipScores[i]) /2;
+            var tuple = Tuple.Create(predictedEvents, scores);
+            return tuple;
         }//end detect Whipbird
-    }
+
+
+        public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
+                                List<AcousticEvent> predictedEvents, double eventThreshold)
+        {
+            Log.WriteLine("# Start to draw image of sonogram.");
+            bool doHighlightSubband = false; bool add1kHzLines = true;
+            //double maxScore = 50.0; //assumed max posisble oscillations per second
+
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                double maxScore = 50.0;
+                image.AddSuperimposedMatrix(hits, maxScore);
+                //if (intensity != null)
+                //{
+                //    double min, max;
+                //    DataTools.MinMax(intensity, out min, out max);
+                //    double threshold_norm = eventThreshold / max; //min = 0.0;
+                //    intensity = DataTools.normalise(intensity);
+                //    image.AddTrack(Image_Track.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
+                //}
+                image.AddEvents(predictedEvents);
+                image.Save(path);
+            }
+        }//drawSonogram()
+
+
+
+    }//class
 }
