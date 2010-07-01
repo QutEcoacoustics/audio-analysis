@@ -270,7 +270,7 @@ namespace AnalysisPrograms
             var predictedEvents = new List<AcousticEvent>();
             var scores = new double[rows];
             for (int i = 0; i < whipScores.Length; i++)
-                if ((whistleScores[i] > 0.4) && (whipScores[i] > 0.4)) scores[i] = (whistleScores[i] + whipScores[i]) /2;
+                if ((whistleScores[i] > 0.2) && (whipScores[i] > 0.2)) scores[i] = (whistleScores[i] + whipScores[i]) /2;
             var tuple = Tuple.Create(predictedEvents, scores);
             return tuple;
         }//end detect Whipbird
