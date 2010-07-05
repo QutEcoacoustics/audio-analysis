@@ -85,7 +85,7 @@ namespace QutSensors.CacheProcessor
         {
             stopRequestedEvent.Set();
         }
-        
+
         private static DirectShowStream ConvertStream(Guid readingId, string srcType, string dstType, long? start, long? end)
         {
             var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, readingId);
@@ -120,13 +120,19 @@ namespace QutSensors.CacheProcessor
                 {
                     log.WriteEntry(LogType.Information, "Cache Job Processor stopping");
                 }
-
-                stopRequestedEvent.Reset();
-                workerThread = null;
             }
             catch (Exception ex)
             {
                 File.WriteAllText("C:\\Temp\\debug-cache-processor.log", ex.ToString());
+                if (log != null)
+                {
+                    log.WriteEntry(LogType.Error, ex.ToString());
+                }
+            }
+            finally
+            {
+                stopRequestedEvent.Reset();
+                workerThread = null;
             }
         }
 

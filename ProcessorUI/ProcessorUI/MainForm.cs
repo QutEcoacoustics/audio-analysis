@@ -84,8 +84,6 @@
                 {
                     txtLog.Text = txtLog.Text.Substring(2000);
                 }
-
-                Manager.Instance.Log(log);
             }
         }
 
@@ -213,7 +211,9 @@
 
             if (newJob == null)
             {
-                Log(this, "Could not create new job.");
+                const string Msg = "Could not create new job.";
+                Log(this, Msg);
+                Manager.Instance.Log(Msg);
             }
 
             return newJob;

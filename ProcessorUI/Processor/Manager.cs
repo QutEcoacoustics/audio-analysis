@@ -178,11 +178,13 @@ namespace QutSensors.Processor
         #region Common
 
         /// <summary>
+        /// Prepare folders and files for a new run.
         /// </summary>
         /// <param name="workItem">
         /// The work item.
         /// </param>
         /// <returns>
+        /// Directory for new run.
         /// </returns>
         public DirectoryInfo PrepareNewRun(AnalysisWorkItem workItem)
         {
@@ -271,7 +273,7 @@ namespace QutSensors.Processor
         {
             if (CurrentlyRetrievingFinishedRuns)
             {
-                this.Log("Currently Retrieving Finished Runs.");
+                this.Log("Already retrieving finished runs (ReturnFinishedRun(" + runDir.FullName + ", " + workerName + ")).");
                 return;
             }
 
@@ -357,7 +359,7 @@ namespace QutSensors.Processor
         {
             if (CurrentlyRetrievingFinishedRuns)
             {
-                this.Log("Currently Retrieving Finished Runs.");
+                this.Log("Already retrieving finished runs (in GetFinishedRuns()).");
                 return new List<DirectoryInfo>();
             }
 
@@ -372,6 +374,12 @@ namespace QutSensors.Processor
             return finishedDirs;
         }
 
+        /// <summary>
+        /// Log error or warning message.
+        /// </summary>
+        /// <param name="message">
+        /// The message.
+        /// </param>
         public void Log(object message)
         {
             if (Logger.IsLoggingEnabled())
