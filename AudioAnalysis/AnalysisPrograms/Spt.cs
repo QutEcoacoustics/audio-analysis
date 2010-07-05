@@ -34,11 +34,14 @@
             string wavFilePath = args[0];
             string opDir = args[1];
             double intensityThreshold = Convert.ToDouble(args[2]);
+            Log.WriteLine("intensityThreshold = " + intensityThreshold);
             int smallLengthThreshold = 50;
+            Log.WriteLine("smallLengthThreshold = " + smallLengthThreshold);
 
-            var result = doSPT(wavFilePath, intensityThreshold, smallLengthThreshold);
-            var sonogram = result.Item1;
-            sonogram.Data = result.Item2;
+            var sonogram = AED.FileToSonogram(wavFilePath);
+
+            var result = doSPT(sonogram, intensityThreshold, smallLengthThreshold);
+            sonogram.Data = result.Item1;
 
             // SAVE IMAGE
             string savePath = opDir + Path.GetFileNameWithoutExtension(wavFilePath);
@@ -65,11 +68,8 @@
         /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
         /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
         /// <returns></returns>
-        public static Tuple<BaseSonogram, double[,]> doSPT(string wavPath, double intensityThreshold, int smallLengthThreshold)
+        public static Tuple<double[,]> doSPT(BaseSonogram sonogram, double intensityThreshold, int smallLengthThreshold)
         {
-            var sonogram = AED.FileToSonogram(wavPath);
-            Log.WriteLine("intensityThreshold = " + intensityThreshold);
-
             // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
             var m = MatrixModule.transpose(MatrixModule.ofArray2D(sonogram.Data));
 
@@ -87,7 +87,7 @@
             Log.WriteLine("SPT finished");
 
             var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
-            return Tuple.Create(sonogram, r);
+            return Tuple.Create(r);
         }
     }
 }
