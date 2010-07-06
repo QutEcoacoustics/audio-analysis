@@ -82,7 +82,7 @@
             Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");
-            int nh = 3;
+            int nh = 5;
             var p = SpectralPeakTrack.spt(s, intensityThreshold, nh, smallLengthThreshold);
             Log.WriteLine("SPT finished");
 
