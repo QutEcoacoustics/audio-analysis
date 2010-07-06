@@ -7,6 +7,7 @@ using System.Text;
 
 using AudioAnalysisTools;
 using TowseyLib;
+using AudioTools;
 
 
 
@@ -36,7 +37,8 @@ namespace AnalysisPrograms
         public static void Dev(string[] args)
         {
             //WHIPBIRD
-            //spr C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3  C:\SensorNetworks\Output\SPT\SPR_WHIPBIRD_Params.txt events.txt 
+            //spr C:\SensorNetworks\WavFiles\BridgeCreek\cabin_GoldenWhistler_file0127_extract1.mp3  C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
+            //spr C:\SensorNetworks\WavFiles\BridgeCreek\WhipbirdCalls\file0151mono.wav_segment_19.wav C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
             //CURLEW
             //spr C:\SensorNetworks\WavFiles\Curlew\Curlew2\HoneymoonBay_StBees_20080914-003000.wav  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
             //CURRAWONG
@@ -67,7 +69,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
 
-            //READ PARAMETER VALUES FROM INI FILE
+            // A: READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
@@ -90,22 +92,28 @@ namespace AnalysisPrograms
             int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
 
 
+            // B: CHECK to see if conversion from .MP3 to .WAV is necessary
+            var destinationAudioFile = recordingPath;
+
             //LOAD RECORDING AND MAKE SONOGRAM
-            var recording = new AudioRecording(recordingPath);
-            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); //down sample if necessary
-
-            var sonoConfig = new SonogramConfig
+            BaseSonogram sonogram = null;
+            using (var recording = new AudioRecording(destinationAudioFile))
             {
-                NoiseReductionType = NoiseReductionType.NONE,
-                WindowOverlap = frameOverlap
-            };
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //BaseSonogram sonogram = sonogram = AED.FileToSonogram(recordingPath);
+                if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); //down sample if necessary
 
+                var sonoConfig = new SonogramConfig
+                {
+                    NoiseReductionType = NoiseReductionType.NONE,
+                    WindowOverlap = frameOverlap
+                };
+                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            }
 
             List<AcousticEvent> predictedEvents = null;
             double[,] hits = null;
             double[] scores = null;
+
+            var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile);
 
             if (callName.Equals("WHIPBIRD"))
             {
@@ -135,11 +143,12 @@ namespace AnalysisPrograms
                 scores = result3.Item2;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = Path.GetFileNameWithoutExtension(recordingPath);
+                string fileName = audioFileName;
                 double maxDuration = 2 * (optimumWhistleDuration + whipDuration);
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whip_MinHz, whip_MaxHz, 
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                               eventThreshold, whipDuration*0.6, maxDuration, fileName);
+                sonogram.Data = result1.Item1;
             }
             else if (callName.Equals("CURLEW"))
             {
@@ -164,7 +173,7 @@ namespace AnalysisPrograms
                 scores = result3.Item2;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = Path.GetFileNameWithoutExtension(recordingPath);
+                string fileName = audioFileName;
                 double maxDuration = 3 * optimumWhistleDuration;
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
@@ -193,7 +202,7 @@ namespace AnalysisPrograms
                 scores = result3.Item2;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = Path.GetFileNameWithoutExtension(recordingPath);
+                string fileName = audioFileName;
                 double maxDuration = 3 * optimumWhistleDuration;
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
@@ -201,24 +210,28 @@ namespace AnalysisPrograms
             }
 
             Log.WriteIfVerbose("Number of Events: " + predictedEvents.Count);
+
             // SAVE IMAGE
-            //draw images of sonograms
-            //double eventThreshold = 0.2;
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath);
-            string suffix = string.Empty;
-            while (File.Exists(imagePath + suffix + ".png"))
+            string imagePath = outputDir + audioFileName + ".png";
+            if (File.Exists(imagePath))
             {
-                suffix = (suffix == string.Empty) ? "1" : (int.Parse(suffix) + 1).ToString();
+                File.Delete(outputDir + audioFileName + ".PREVIOUS.png");
+                File.Move(imagePath, outputDir + audioFileName + ".PREVIOUS.png");
             }
-            string newPath = imagePath + suffix + ".png";
+            //string suffix = string.Empty;
+            //while (File.Exists(imagePath + suffix + ".png"))
+            //{
+            //    suffix = (suffix == string.Empty) ? "1" : (int.Parse(suffix) + 1).ToString();
+            //}
+            //string newPath = imagePath + suffix + ".png";
             if (DRAW_SONOGRAMS == 2)
             {
-                DrawSonogram(sonogram, newPath, hits, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
             }
             else
                 if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
                 {
-                    DrawSonogram(sonogram, newPath, hits, scores, predictedEvents, eventThreshold);
+                    DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
                 }
 
 
@@ -229,7 +242,7 @@ namespace AnalysisPrograms
             //string newPath = savePath + suffix + ".jpg";
             //im.Save(newPath);
 
-            Console.WriteLine("\nFINISHED!");
+            Console.WriteLine("\nFINISHED RECORDING!");
             Console.ReadLine();
         }//end Main
 

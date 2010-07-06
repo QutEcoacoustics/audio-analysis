@@ -104,6 +104,7 @@
     <Compile Include="ExtractEvent.cs" />
     <Compile Include="FindEventsLikeThis.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
+    <Compile Include="Main_SPRScanDir.cs" />
     <Compile Include="MFCC_OD.cs" />
     <Compile Include="OscillationRecogniser.cs" />
     <Compile Include="GroundParrotRecogniser.cs" />
