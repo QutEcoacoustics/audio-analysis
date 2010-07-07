@@ -74,7 +74,7 @@
             var m = MatrixModule.transpose(MatrixModule.ofArray2D(sonogram.Data));
 
             Log.WriteLine("Wiener filter start");
-            var w = Matlab.wiener2(5, m);
+            var w = Matlab.wiener2(7, m);
             Log.WriteLine("Wiener filter end");
 
             Log.WriteLine("Remove subband mode intensities start");
@@ -82,7 +82,7 @@
             Log.WriteLine("Remove subband mode intensities end");
 
             Log.WriteLine("SPT start");
-            int nh = 5;
+            int nh = 3;
             var p = SpectralPeakTrack.spt(s, intensityThreshold, nh, smallLengthThreshold);
             Log.WriteLine("SPT finished");
 
