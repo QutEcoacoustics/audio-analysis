@@ -123,7 +123,6 @@ namespace QutSensors.CacheProcessor
             }
             catch (Exception ex)
             {
-                File.WriteAllText("C:\\Temp\\debug-cache-processor.log", ex.ToString());
                 if (log != null)
                 {
                     log.WriteEntry(LogType.Error, ex.ToString());
@@ -217,7 +216,7 @@ namespace QutSensors.CacheProcessor
                     if (stream == null)
                     {
                         // No conversion required
-                        var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, reading.AudioReadingID);
+                        using(var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, reading.AudioReadingID))
                         using (var fileStream = new System.Data.SqlTypes.SqlFileStream(sqlFile.FileName, sqlFile.Context, FileAccess.Read))
                         {
                             var buffer = new byte[BufferSize];
