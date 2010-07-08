@@ -237,16 +237,7 @@ namespace QutSensors.CacheProcessor
                     {
                         using (stream)
                         {
-                            var onReceivedData = new ReceiveData(delegate(int size, byte[] data)
-                            {
-                                if (size != -1)
-                                {
-                                    targetStream.Write(data, 0, data.Length);
-                                }
-                            });
-                            stream.ReceivedData += onReceivedData;
-                            stream.WaitForCompletion();
-                            stream.ReceivedData -= onReceivedData;
+                            stream.WriteToStream(targetStream);
                         }
                     }
 
