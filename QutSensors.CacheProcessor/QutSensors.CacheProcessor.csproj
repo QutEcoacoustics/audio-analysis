@@ -80,6 +80,10 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\QutSensors.Business\QutSensors.Business.csproj">
+      <Project>{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}</Project>
+      <Name>QutSensors.Business</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
       <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
       <Name>QutSensors.Data</Name>

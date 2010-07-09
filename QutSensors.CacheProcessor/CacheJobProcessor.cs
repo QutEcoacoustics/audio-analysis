@@ -17,11 +17,14 @@ namespace QutSensors.CacheProcessor
 
     using AudioTools;
     using AudioTools.DirectShow;
+    using Autofac;
 
+    using QutSensors.Data;
     using QutSensors.Data.Cache;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
+    using QutSensors.Business;
 
     /// <summary>
     /// Cache Processor.
@@ -84,17 +87,6 @@ namespace QutSensors.CacheProcessor
         public void Stop()
         {
             stopRequestedEvent.Set();
-        }
-
-        private static DirectShowStream ConvertStream(Guid readingId, string srcType, string dstType, long? start, long? end)
-        {
-            var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, readingId);
-            var retVal = DShowConverter.ConvertTo(sqlFile, srcType, dstType, start, end);
-            if (retVal == null)
-                sqlFile.Dispose();
-            else
-                retVal.AssociatedObjects.Add(sqlFile);
-            return retVal;
         }
 
         private void ThreadMain()
@@ -209,37 +201,20 @@ namespace QutSensors.CacheProcessor
                     throw new InvalidOperationException("Unable to find referenced AudioReading");
                 }
 
-                var stream = ConvertStream(reading.AudioReadingID, reading.MimeType, request.MimeType, request.Start, reading.Length == request.End ? null : request.End);
+                var segment = new AudioReadingSegments(
+                    reading,
+                    QutDependencyContainer.Instance.Container.Resolve<IAudioReadingManager>(),
+                    QutDependencyContainer.Instance.Container.Resolve<ICacheManager>());
 
                 using (var targetStream = new MemoryStream())
                 {
-                    if (stream == null)
-                    {
-                        // No conversion required
-                        using(var sqlFile = SqlFilestream.CreateAudioReading(QutSensorsDb.ConnectionString, reading.AudioReadingID))
-                        using (var fileStream = new System.Data.SqlTypes.SqlFileStream(sqlFile.FileName, sqlFile.Context, FileAccess.Read))
-                        {
-                            var buffer = new byte[BufferSize];
-                            int read;
-
-                            do
-                            {
-                                read = fileStream.Read(buffer, 0, BufferSize);
-                                if (read > 0)
-                                {
-                                    targetStream.Write(buffer, 0, read);
-                                }
-                            }
-                            while (read > 0);
-                        }
-                    }
-                    else
-                    {
-                        using (stream)
-                        {
-                            stream.WriteToStream(targetStream);
-                        }
-                    }
+                    segment.GetAudio(
+                        request.Start,
+                        reading.Length == request.End ? null : request.End,
+                        request.MimeType,
+                        targetStream,
+                        BufferSize,
+                        false);
 
                     if (log != null)
                     {
