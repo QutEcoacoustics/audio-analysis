@@ -14,6 +14,7 @@ namespace QutSensors.CacheProcessor
 
     using Autofac;
 
+    using QutSensors.Business;
     using QutSensors.Data;
     using QutSensors.Data.Cache;
     using QutSensors.Data.Providers;
@@ -63,6 +64,8 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<AudioTools.DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
             builder.RegisterType<CacheManager>().As<ICacheManager>();
             builder.RegisterType<CacheJobProcessor>();
+            builder.RegisterType<SpectrogramGenerator>().As<ISpectrogramGenerator>();
+            builder.RegisterType<AudioReadingSegments>();
             QutDependencyContainer.Instance.Container = builder.Build();
         }
     }
