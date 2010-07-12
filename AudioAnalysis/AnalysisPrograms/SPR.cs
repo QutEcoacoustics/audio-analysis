@@ -125,18 +125,14 @@ namespace AnalysisPrograms
                 int slope = 0; //degrees of the circle. i.e. 90 = vertical line.
                 double sensitivity = 0.7; //lower value = more sensitive
                 var mHori = MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
-                slope = 84;
-                sensitivity = 0.7;        //lower value = more sensitive
+                slope = 87; //84
+                sensitivity = 0.8;        //lower value = more sensitive
                 var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold+1, sensitivity);
                 Log.WriteLine("SPR finished");
 
-                //int minBound_Whistle = 60;
-                //int maxBound_Whistle = 70;
                 int minBound_Whistle = (int)(whistle_MinHz / sonogram.FBinWidth);
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
                 int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); //86 = frames/sec.
-                //int minBound_Whip = 15;
-                //int maxBound_Whip = 200;
                 int minBound_Whip = (int)(whip_MinHz / sonogram.FBinWidth);
                 int maxBound_Whip = (int)(whip_MaxHz / sonogram.FBinWidth);
                 int whipFrames = (int)(sonogram.FramesPerSecond * whipDuration); //86 = frames/sec.
@@ -148,7 +144,7 @@ namespace AnalysisPrograms
                 double maxDuration = 2 * (optimumWhistleDuration + whipDuration);
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whip_MinHz, whip_MaxHz, 
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, whipDuration*0.6, maxDuration, fileName);
+                                                              eventThreshold, whipDuration*0.1, maxDuration, fileName);
                 sonogram.Data = result1.Item1;
             }
             else if (callName.Equals("CURLEW"))
@@ -309,7 +305,7 @@ namespace AnalysisPrograms
 
 
         public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert, 
-                                                 int minBound_Whistle, int maxBound_Whistle, int whistleDuration, 
+                                                 int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration, 
                                                  int minBound_Whip,    int maxBound_Whip,    int whipDuration, int lineLength)
         {
             int rows = mHori.GetLength(0);
@@ -319,41 +315,25 @@ namespace AnalysisPrograms
             var whistleScores = new double[rows];
 
             int whipBand = maxBound_Whip - minBound_Whip;
-            //double whipThreshold = (whipDuration * whipBand) * 0.33;
-            double whipThreshold = whipBand * 0.8;
+            int whipThreshold = 3;
+            double whipNormalise = whipBand * 0.8;
             var whipScores = new double[rows];
 
             for (int r = 0; r < rows - lineLength; r++)
             {
                 // whistle detector
                 var whistle = new double[whistleBand];
-                int start = r - whistleDuration;
+                int start = r - optimumWhistleDuration;
                 if (start < 0) start = 0;
                 for (int j = 0; j < whistleBand; j++)
                 {
-                    //if (mHori[r, minBound_Whistle + j] < 0.0001) continue;
                     for (int i = start; i <= r; i++)
                     {
-                        //if (mHori[r, minBound_Whistle + j] < 0.0001) continue;
                         whistle[j] += mHori[i, minBound_Whistle + j];
                     }
                 }
-                whistleScores[r] = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration; //normalise;
+                whistleScores[r] = whistle[DataTools.GetMaxIndex(whistle)] / (double)optimumWhistleDuration; //normalise;
                 if (whistleScores[r] > 1.0) whistleScores[r] = 1.0;
-
-
-                // whip detector
-                //var whip = new double[whipBand];
-                //for (int i = 0; i < whipDuration; i++)
-                //{
-                //    for (int j = 0; j < whipBand; j++)
-                //    {
-                //        whip[j] += mVert[r + i, minBound_Whip + j];
-                //    }
-                //}
-                //double total = 0.0;
-                //for (int j = 0; j < whipBand; j++) total += whip[j];
-                //whipScores[r] = total;
 
                 //whip detector
                 var whip = new double[whipBand];
@@ -361,31 +341,22 @@ namespace AnalysisPrograms
                 for (int j = 0; j < whipBand; j++)//for each freq bin
                 {
                     for (int i = 0; i < whipDuration; i++) whip[j] += mVert[r + i, minBound_Whip + j];
-                    if (whip[j] > 3) total ++;
+                    if (whip[j] > whipThreshold) total++;
                 }
-                whipScores[r] = total / whipThreshold;
-            //    if (whipScores[r] > 1.0) Console.ReadLine();
-                if (whipScores[r] > 1.0) whipScores[r] = 1.0;
+                double score = total / whipNormalise;
+                if (score > 1.0) score = 1.0;
+                //extent the whip score
+                for (int i = 0; i < whipDuration; i++)
+                {
+                    if (whipScores[r+i] < score) whipScores[r + i] = score;
+                }
 
             } //for all rows
             
-            //normalise whistle scores
-            //for (int i = 0; i < whistleScores.Length; i++)
-            //{
-            //    whistleScores[i] = whistleScores[i] / (double)whistleDuration;
-            //    if (whistleScores[i] > 1.0) whistleScores[i] = 1.0;
-            //}
-            //normalise whip scores
-            //for (int i = 0; i < whipScores.Length; i++)
-            //{
-            //    whipScores[i] = whipScores[i] / whipThreshold;
-            //    if (whipScores[i] > 1.0) whipScores[i] = 1.0;
-            //}
-
             //combine scores and extract events
             var scores = new double[rows];
             for (int i = 0; i < whipScores.Length; i++)
-                if ((whistleScores[i] > 0.3) && (whipScores[i] > 0.3))
+                if ((whistleScores[i] > 0.3) && (whipScores[i] > 0.3))//impose score thresholds
                 {
                     scores[i] = (whistleScores[i] + whipScores[i]) / 2;
                     //if (scores[i]>0.45) Console.WriteLine("{0}\t{1:f3}\t{2:f3}\t{3:f3}", i, whistleScores[i], whipScores[i], scores[i]);
@@ -478,7 +449,7 @@ namespace AnalysisPrograms
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
                 //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                 double maxScore = 50.0;
                 image.AddSuperimposedMatrix(hits, maxScore);

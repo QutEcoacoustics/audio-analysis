@@ -68,6 +68,7 @@ namespace AudioAnalysisTools
         private double[,] doubleMatrix = null;
 
         TimeSpan timeSpan { set; get; }
+        double timeScale { set; get; } //pixels per second
 
         private double[] doubleData1 = null;
         private double[] doubleData2 = null;
@@ -121,10 +122,11 @@ namespace AudioAnalysisTools
             this.doubleMatrix = data;
             this.height = SetTrackHeight();
         }
-        public Image_Track(TrackType type, TimeSpan t)
+        public Image_Track(TrackType type, TimeSpan t, double pixelsPerSecond)
         {
             this.TrackType = type;
             this.timeSpan = t;
+            this.timeScale = pixelsPerSecond;
             this.height = SetTrackHeight();
         }
         public Image_Track(TrackType type)
@@ -232,6 +234,9 @@ namespace AudioAnalysisTools
             int width = bmp.Width;
             int height = bmp.Height;
 
+            Graphics g = Graphics.FromImage(bmp);
+            DateTime start = new DateTime(0); 
+
             byte[] hScale = CreateXaxis(width, this.timeSpan);
             Color black = Color.Black;
             Color gray = Color.Gray;
@@ -249,11 +254,15 @@ namespace AudioAnalysisTools
                 //top axis
                 //for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, h, c);
                 //bmp.SetPixel(x, timeScaleHt - 1, black);
+                int secs = (int)Math.Round(x / timeScale);
+                DateTime dt = new DateTime((long)(secs * 10000000));
+                TimeSpan span = dt.Subtract(start);
 
                 //bottom axis tick marks
                 for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
                 bmp.SetPixel(x, topOffset, black);                    // top line of scale
                 bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
+                if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
             } //end of adding time grid
             return bmp;
         }
@@ -526,9 +535,9 @@ namespace AudioAnalysisTools
             return track;
         }
 
-        public static Image_Track GetTimeTrack(TimeSpan t)
+        public static Image_Track GetTimeTrack(TimeSpan t, double pixelsPerSecond)
         {
-            var track = new Image_Track(TrackType.timeTics, t);
+            var track = new Image_Track(TrackType.timeTics, t, pixelsPerSecond);
             //int height = track.Height;
             return track;
         }
