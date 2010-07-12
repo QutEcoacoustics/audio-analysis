@@ -61,7 +61,7 @@ namespace AnalysisPrograms
           //  if(! File.Exists(fn))
           //  {
                 image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.Save(fn);
@@ -96,7 +96,7 @@ namespace AnalysisPrograms
             //sonogram.Data = SNR.SpectralRidges2Intensity(binary, originalSg);
             
             image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, false));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.SonoImage.Width));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             fn = outputFolder + wavFileName + "_tracks.png";

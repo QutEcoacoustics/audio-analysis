@@ -410,7 +410,7 @@ namespace AudioAnalysisTools
             bool doHighlightSubband = true;
             bool add1kHzLines       = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             //image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image4.Image.Width));
             //image.AddTrack(Image_Track.GetDecibelTrack(sonogram));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
@@ -435,7 +435,7 @@ namespace AudioAnalysisTools
             bool doHighlightSubband = true;
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetScoreTrack(result.Scores, result.MinDisplayScore, result.MaxDisplayScore, result.DisplayThreshold));
             image.Save(path);
         }
@@ -454,7 +454,7 @@ namespace AudioAnalysisTools
             bool doHighlightSubband = true;
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));
@@ -476,7 +476,7 @@ namespace AudioAnalysisTools
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image.AddEvents(list);
-            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;
             image.AddTrack(Image_Track.GetSyllablesTrack(this.AcousticModel.SyllableIDs, garbageID));

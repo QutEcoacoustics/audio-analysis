@@ -153,7 +153,7 @@ namespace HMMBuilder
             Console.WriteLine(" Duration=" + sonogram.Duration.TotalSeconds + " s.      Frame count=" + sonogram.FrameCount);
             bool doHighlightSubband = false; bool add1kHzLines = true;
             var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
+            image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
 
             //can reset thresholds here for experimentation
