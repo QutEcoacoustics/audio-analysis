@@ -26,8 +26,21 @@ namespace QutSensors.Processor
     /// </summary>
     public class Manager
     {
-        // NOTE: if you change these file names, they also need to be changed in AnalysisPrograms.Processing.ProcessingUtils
+        private const string AnalysisProgramsExe = "AnalysisPrograms.exe";
 
+        private const string DeleteFinishedRunsAppSettingsString = "DeleteFinishedRuns";
+
+        private const string JobRunPassword = "JobRunPassword";
+
+        private const string JobRunUserName = "JobRunUserName";
+
+        private const string ProgramDirectory = "ProgramDirectory";
+
+        private const string ProgramNameAppSettingsString = "ProgramName";
+
+        private const string RunDirectory = "RunDirectory";
+
+        // NOTE: if you change these file names, they also need to be changed in AnalysisPrograms.Processing.ProcessingUtils
         // input files
         private const string SettingsFileName = "processing_input_settings.txt";
         private const string AudioFileName = "processing_input_audio.wav";
@@ -40,6 +53,8 @@ namespace QutSensors.Processor
         private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
         private const string ProgramOutputResultsFileName = "output_results.xml";
         private const string ProgramOutputErrorFileName = "output_error.txt";
+
+        private const string Wav = "wav";
 
         #region Singleton Pattern
 
@@ -74,7 +89,7 @@ namespace QutSensors.Processor
             get
             {
                 // set the run directory
-                var runsFolder = System.Configuration.ConfigurationManager.AppSettings["RunDirectory"];
+                var runsFolder = System.Configuration.ConfigurationManager.AppSettings[RunDirectory];
 
                 if (string.IsNullOrEmpty(runsFolder) || !Directory.Exists(runsFolder))
                     throw new DirectoryNotFoundException("Analysis run directory does not exist: " + runsFolder);
@@ -94,7 +109,7 @@ namespace QutSensors.Processor
             get
             {
                 // set the programs directory
-                var programsFolder = System.Configuration.ConfigurationManager.AppSettings["ProgramDirectory"];
+                var programsFolder = System.Configuration.ConfigurationManager.AppSettings[ProgramDirectory];
 
                 if (string.IsNullOrEmpty(programsFolder) || !Directory.Exists(programsFolder))
                 {
@@ -112,7 +127,7 @@ namespace QutSensors.Processor
         {
             get
             {
-                return System.Configuration.ConfigurationManager.AppSettings["ProgramName"] ?? "AnalysisPrograms.exe";
+                return System.Configuration.ConfigurationManager.AppSettings[ProgramNameAppSettingsString] ?? AnalysisProgramsExe;
             }
         }
 
@@ -123,7 +138,7 @@ namespace QutSensors.Processor
         {
             get
             {
-                return System.Configuration.ConfigurationManager.AppSettings["JobRunUserName"];
+                return System.Configuration.ConfigurationManager.AppSettings[JobRunUserName];
             }
         }
 
@@ -134,7 +149,7 @@ namespace QutSensors.Processor
         {
             get
             {
-                return System.Configuration.ConfigurationManager.AppSettings["JobRunPassword"];
+                return System.Configuration.ConfigurationManager.AppSettings[JobRunPassword];
             }
         }
 
@@ -145,7 +160,7 @@ namespace QutSensors.Processor
         {
             get
             {
-                return Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings["DeleteFinishedRuns"]);
+                return Convert.ToBoolean(System.Configuration.ConfigurationManager.AppSettings[DeleteFinishedRunsAppSettingsString]);
             }
         }
 
@@ -205,12 +220,7 @@ namespace QutSensors.Processor
                 var audioFile = newRunDir.FullName + "\\" + AudioFileName;
                 var audioFileUrl = workItem.AudioFileUri;
 
-                // audio file must be wav file
-                if (!workItem.AudioFileUri.AbsoluteUri.EndsWith("wav") && workItem.AudioFileUri.AbsoluteUri.Contains('.'))
-                {
-                    audioFileUrl = new Uri(workItem.AudioFileUri.AbsoluteUri.Substring(0, workItem.AudioFileUri.AbsoluteUri.LastIndexOf('.')) + ".wav");
-                }
-
+                // assume audio file is .wav.
                 // download and save audio file
                 var client = new System.Net.WebClient();
                 client.DownloadFile(audioFileUrl, audioFile);
@@ -230,6 +240,18 @@ namespace QutSensors.Processor
             return null;
         }
 
+        /// <summary>
+        /// Create argument string.
+        /// </summary>
+        /// <param name="item">
+        /// Analysis Work Item.
+        /// </param>
+        /// <param name="runDirectory">
+        /// The run directory.
+        /// </param>
+        /// <returns>
+        /// Program argument string.
+        /// </returns>
         public string CreateArgumentString(AnalysisWorkItem item, DirectoryInfo runDirectory)
         {
             if (item == null || runDirectory == null) return string.Empty;
@@ -269,6 +291,15 @@ namespace QutSensors.Processor
             return sb;
         }
 
+        /// <summary>
+        /// Return a completed run.
+        /// </summary>
+        /// <param name="runDir">
+        /// The run dir.
+        /// </param>
+        /// <param name="workerName">
+        /// The worker name.
+        /// </param>
         public void ReturnFinishedRun(DirectoryInfo runDir, string workerName)
         {
             if (CurrentlyRetrievingFinishedRuns)
@@ -355,6 +386,12 @@ namespace QutSensors.Processor
             }
         }
 
+        /// <summary>
+        /// Get all completed analysis run items.
+        /// </summary>
+        /// <returns>
+        /// List of Directories containing completed run items.
+        /// </returns>
         public IEnumerable<DirectoryInfo> GetFinishedRuns()
         {
             if (CurrentlyRetrievingFinishedRuns)
@@ -367,7 +404,7 @@ namespace QutSensors.Processor
 
             var finishedDirs = this.DirRunBase.GetDirectories()
                 .Where(dir => dir.GetFiles("*.txt")
-                    .Any(file => file.Name == ProgramOutputFinishedFileName || file.Name == StderrFileName)).ToList();
+                    .Any(file => file.Name == ProgramOutputFinishedFileName)).ToList();
 
             CurrentlyRetrievingFinishedRuns = false;
 
