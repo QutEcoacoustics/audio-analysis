@@ -253,17 +253,13 @@ namespace AudioAnalysisTools
 
                 //top axis
                 int secs = (int)Math.Round(x / timeScale);
-                //long nano = secs * 10000000;
-                //DateTime dt = new DateTime();
-                //dt.AddSeconds(secs);
-                //TimeSpan span = dt.Subtract(start);
+                TimeSpan span = new TimeSpan(0, 0, secs);
 
                 //bottom axis tick marks
                 for (int h = 0; h < timeScaleHt; h++) bmp.SetPixel(x, topOffset - h, c);
                 bmp.SetPixel(x, topOffset, black);                    // top line of scale
                 bmp.SetPixel(x, topOffset - timeScaleHt + 1, black);  // bottom line of scale
-                //if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
-                if (hScale[x] == 0) g.DrawString(secs.ToString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
+                if (hScale[x] == 0) g.DrawString(span.ToReadableString(), new Font("Tahoma", 8), Brushes.Black, new PointF(x, topOffset - 21));
             } //end of adding time grid
             return bmp;
         }
