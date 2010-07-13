@@ -42,7 +42,7 @@
             this.cmdStart.TabIndex = 0;
             this.cmdStart.Text = "&Start";
             this.cmdStart.UseVisualStyleBackColor = true;
-            this.cmdStart.Click += new System.EventHandler(this.cmdStart_Click);
+            this.cmdStart.Click += new System.EventHandler(this.CmdStartClick);
             // 
             // txtLog
             // 

@@ -1,4 +1,13 @@
-﻿namespace ProcessorUI
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MainForm.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the MainForm type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace ProcessorUI
 {
     using System;
     using System.Collections.Generic;
@@ -11,28 +20,39 @@
     using QutSensors.Processor;
     using QutSensors.Shared;
 
+    /// <summary>
+    /// Processor UI Form.
+    /// </summary>
     public partial class MainForm : Form
     {
+        private const string ActionIntervalMilliseconds = "ActionIntervalMilliseconds";
+
         // finished jobs hang arround for 5 days (TTLCompletedJobs setting).
-        private string _workerName;
+        private readonly string workerName;
 
-        private System.Timers.Timer _timer;
-        private double _timerIntervalMilliseconds;
+        private readonly System.Timers.Timer timer;
+        private readonly double timerIntervalMilliseconds;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MainForm"/> class.
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
 
-            _workerName = Environment.MachineName;
-            lblInfo.Text = "Name: " + _workerName;
+            this.workerName = Environment.MachineName;
+            lblInfo.Text = "Name: " + this.workerName;
 
-            _timerIntervalMilliseconds = Convert.ToDouble(System.Configuration.ConfigurationManager.AppSettings["ActionIntervalMilliseconds"]);
+            this.timerIntervalMilliseconds = Convert.ToDouble(System.Configuration.ConfigurationManager.AppSettings[ActionIntervalMilliseconds]);
 
-            _timer = new System.Timers.Timer();
-            _timer.AutoReset = true;
-            _timer.Elapsed += new System.Timers.ElapsedEventHandler(_timer_Elapsed);
-            _timer.Interval = _timerIntervalMilliseconds;
-            _timer.SynchronizingObject = this;
+            this.timer = new System.Timers.Timer
+                {
+                    AutoReset = true
+                };
+
+            this.timer.Elapsed += this.TimerElapsed;
+            this.timer.Interval = this.timerIntervalMilliseconds;
+            this.timer.SynchronizingObject = this;
 
             /* // enumerate cluster settings
             foreach (NameValue item in _cluster.Parameters)
@@ -42,14 +62,23 @@
             */
         }
 
-        protected void cmdStart_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Start the processor.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// Event Arguments.
+        /// </param>
+        protected void CmdStartClick(object sender, EventArgs e)
         {
-            if (_timer.Enabled)
+            if (this.timer.Enabled)
             {
                 // timer is running
                 Log(this, "Stopping...");
                 cmdStart.Text = "&Start";
-                _timer.Stop();
+                this.timer.Stop();
             }
             else
             {
@@ -61,10 +90,19 @@
                 var doWork = new WaitCallback(TickAction);
                 ThreadPool.QueueUserWorkItem(doWork);
 
-                _timer.Start();
+                this.timer.Start();
             }
         }
 
+        /// <summary>
+        /// Log an event.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="log">
+        /// Message to log.
+        /// </param>
         protected void Log(object sender, string log)
         {
             if (InvokeRequired)
@@ -87,11 +125,20 @@
             }
         }
 
-        protected void _timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
+        /// <summary>
+        /// Timer elapsed event.
+        /// </summary>
+        /// <param name="sender">
+        /// The sender.
+        /// </param>
+        /// <param name="e">
+        /// Elapsed event arguments.
+        /// </param>
+        protected void TimerElapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if (InvokeRequired)
             {
-                BeginInvoke((EventHandler)delegate { _timer_Elapsed(sender, e); });
+                BeginInvoke((EventHandler)delegate { this.TimerElapsed(sender, e); });
             }
             else
             {
@@ -115,7 +162,7 @@
                                cluster.ClusterCounter.NumberOfUnreachableProcessors;
 
                 // get analysisItems from web service
-                var workItems = GetWorkItems(cluster, maxItems);
+                var workItems = GetWorkItems(maxItems);
 
                 if (workItems != null && workItems.Count() > 0)
                 {
@@ -136,7 +183,7 @@
                                 newJob.AddTask(task);
                             }
 
-                            this.Log(this, preparedTasks.Count() + " tasks added to job.");
+                            this.Log(this, string.Format("{0} tasks added to job.", preparedTasks.Count()));
 
                             if (newJob.TaskCount > 0)
                             {
@@ -148,7 +195,7 @@
                                 // set the job running
                                 int newJobId = Manager.Instance.PC_RunJob(cluster, newJob);
 
-                                this.Log(this, "Queued new job " + newJob.Name + " with id " + newJobId + " containing " + preparedTasks.Count() + " tasks.");
+                                this.Log(this, string.Format("Queued new job {0} with id {1} containing {2} tasks.", newJob.Name, newJobId, preparedTasks.Count()));
                             }
                             else
                             {
@@ -176,10 +223,10 @@
             {
                 foreach (var finishedRunDir in finishedRuns)
                 {
-                    Manager.Instance.PC_CompletedRun(finishedRunDir, _workerName);
+                    Manager.Instance.PC_CompletedRun(finishedRunDir, this.workerName);
                 }
 
-                Log(this, "Submitted " + finishedRuns.Count() + " completed runs.");
+                Log(this, string.Format("Submitted {0} completed runs.", finishedRuns.Count()));
             }
             else
             {
@@ -187,11 +234,11 @@
             }
         }
 
-        private IEnumerable<AnalysisWorkItem> GetWorkItems(ICluster cluster, int maxItems)
+        private IEnumerable<AnalysisWorkItem> GetWorkItems(int maxItems)
         {
             Log(this, "Get new work items...");
 
-            var workItems = Manager.Instance.GetWorkItems(_workerName, maxItems);
+            var workItems = Manager.Instance.GetWorkItems(this.workerName, maxItems);
 
             if (workItems == null || workItems.Count() == 0)
             {
@@ -199,7 +246,7 @@
                 return null;
             }
 
-            Log(this, "Retrieved " + workItems.Count() + " new work items from web service. " + maxItems + " processors available.");
+            Log(this, string.Format("Retrieved {0} new work items from web service. {1} processors available.", workItems.Count(), maxItems));
             return workItems;
         }
 
@@ -241,10 +288,10 @@
                 }
             }
 
-            var msg = "Prepared " + preparedTasks.Count + " out of " + workItems.Count() + " tasks.";
+            var msg = string.Format("Prepared {0} out of {1} tasks.", preparedTasks.Count, workItems.Count());
             if (problemCount > 0)
             {
-                msg += " " + problemCount + " tasks were not prepared due to errors.";
+                msg += string.Format(" {0} tasks were not prepared due to errors.", problemCount);
             }
 
             Log(this, msg);
