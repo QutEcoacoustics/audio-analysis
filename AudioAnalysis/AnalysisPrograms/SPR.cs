@@ -30,6 +30,8 @@ namespace AnalysisPrograms
         public static string key_WHIP_MIN_HZ     = "WHIP_MIN_HZ";
         public static string key_WHIP_MAX_HZ     = "WHIP_MAX_HZ";
         public static string key_WHIP_DURATION   = "WHIP_DURATION";
+        public static string key_MIN_DURATION    = "MIN_DURATION";
+        public static string key_MAX_DURATION    = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
@@ -52,6 +54,7 @@ namespace AnalysisPrograms
 
             if (args.Length != 3)
             {
+                Console.WriteLine("INCORRECT NUMBER OF ARGUMENTS, i.e. " + args.Length);
                 Console.WriteLine("The arguments for SPR are: wavFile intensityThreshold");
                 Console.WriteLine();
                 Console.WriteLine("Recording File: path to recording file.");
@@ -84,10 +87,12 @@ namespace AnalysisPrograms
             int whistle_MaxHz = Int32.Parse(dict[key_WHISTLE_MAX_HZ]);
             double optimumWhistleDuration = Double.Parse(dict[key_WHISTLE_DURATION]);   //optimum duration of whistle in seconds 
             int whip_MinHz      = (dict.ContainsKey(key_WHIP_MIN_HZ)) ? Int32.Parse(dict[key_WHIP_MIN_HZ]) : 0;
-            //if() Int32.Parse(dict[key_WHIP_MIN_HZ]);
             int whip_MaxHz      = (dict.ContainsKey(key_WHIP_MAX_HZ))   ? Int32.Parse(dict[key_WHIP_MAX_HZ])    : 0;
             double whipDuration = (dict.ContainsKey(key_WHIP_DURATION)) ? Double.Parse(dict[key_WHIP_DURATION]) : 0.0; //duration of whip in seconds 
-
+            //CURLEW PARAMETERS
+            double minDuration = (dict.ContainsKey(key_MIN_DURATION)) ? Double.Parse(dict[key_MIN_DURATION]) : 0.0; //min duration of call in seconds 
+            double maxDuration = (dict.ContainsKey(key_MAX_DURATION)) ? Double.Parse(dict[key_MAX_DURATION]) : 0.0; //duration of call in seconds 
+            
             double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
             int DRAW_SONOGRAMS = Convert.ToInt16(dict[key_DRAW_SONOGRAMS]);
 
@@ -129,6 +134,7 @@ namespace AnalysisPrograms
                 sensitivity = 0.8;        //lower value = more sensitive
                 var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold+1, sensitivity);
                 Log.WriteLine("SPR finished");
+                Log.WriteLine("Extract Whipbird calls - start");
 
                 int minBound_Whistle = (int)(whistle_MinHz / sonogram.FBinWidth);
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
@@ -140,12 +146,11 @@ namespace AnalysisPrograms
                 scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = audioFileName;
-                double maxDuration = 2 * (optimumWhistleDuration + whipDuration);
-                predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whip_MinHz, whip_MaxHz, 
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whip_MinHz, whip_MaxHz, 
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, whipDuration*0.1, maxDuration, fileName);
+                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
                 sonogram.Data = result1.Item1;
+                Log.WriteLine("Extract Whipbird calls - finished");
             }
             else if (callName.Equals("CURLEW"))
             {
@@ -154,27 +159,25 @@ namespace AnalysisPrograms
                 //SPR
                 Log.WriteLine("SPR start: intensity threshold = " + intensityThreshold);
                 int slope = 20; //degrees of the circle. i.e. 90 = vertical line.
-                //slope = 210;
-                double sensitivity = 0.7; //lower value = more sensitive
+                double sensitivity = 0.8; //lower value = more sensitive
                 var mHori = MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
                 slope = 160;
-                //slope = 340;
-                sensitivity = 0.7;        //lower value = more sensitive
+                sensitivity = 0.8;        //lower value = more sensitive
                 var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 3, intensityThreshold + 1, sensitivity);
                 Log.WriteLine("SPR finished");
 
                 int minBound_Whistle = (int)(whistle_MinHz / sonogram.FBinWidth);
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
-                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); //86 = frames/sec.
-                var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames + 10, smallLengthThreshold);
+                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); 
+                var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames, smallLengthThreshold);
                 scores = result3.Item2;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = audioFileName;
-                double maxDuration = 3 * optimumWhistleDuration;
-                predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, 0.5, maxDuration, fileName);
+                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                sonogram.Data = result1.Item1;
+                Log.WriteLine("Extract Curlew calls - finished");
             }
             else if (callName.Equals("CURRAWONG"))
             {
@@ -200,13 +203,19 @@ namespace AnalysisPrograms
                 hits = DataTools.AddMatrices(mHori, mVert);
 
                 string fileName = audioFileName;
-                double maxDuration = 3 * optimumWhistleDuration;
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                               eventThreshold, 0.5, maxDuration, fileName);
             }
 
-            Log.WriteIfVerbose("Number of Events: " + predictedEvents.Count);
+            //write event count to results file. 
+            double sigDuration = sonogram.Duration.TotalSeconds;
+            //string fname = Path.GetFileName(recordingPath);
+            int count = predictedEvents.Count;
+            Log.WriteIfVerbose("Number of Events: " + count);
+            string str = String.Format("{0}\t{1}\t{2}", callName, sigDuration, count);
+            FileTools.WriteTextFile(opPath, AcousticEvent.WriteEvents(predictedEvents, str).ToString());
+
 
             // SAVE IMAGE
             string imageName = outputDir + audioFileName;
@@ -345,7 +354,7 @@ namespace AnalysisPrograms
                 }
                 double score = total / whipNormalise;
                 if (score > 1.0) score = 1.0;
-                //extent the whip score
+                //extend the whip score
                 for (int i = 0; i < whipDuration; i++)
                 {
                     if (whipScores[r+i] < score) whipScores[r + i] = score;
@@ -374,9 +383,9 @@ namespace AnalysisPrograms
             int rows = rising.GetLength(0);
             int cols = rising.GetLength(1);
 
-            double cosRisingAngle  = Math.Cos(Math.PI * 200 / 180);
+            double cosRisingAngle  = Math.Cos(Math.PI * 200 / 180); //rising 20 degrees
             double sinRisingAngle  = Math.Sin(Math.PI * 200 / 180);
-            double cosFallingAngle = Math.Cos(Math.PI * 340 / 180);
+            double cosFallingAngle = Math.Cos(Math.PI * 340 / 180); //falling 20 degrees
             double sinFallingAngle = Math.Sin(Math.PI * 340 / 180);
 
             int whistleBand = maxBound_Whistle - minBound_Whistle;
@@ -397,8 +406,14 @@ namespace AnalysisPrograms
                         whistle[j] += rising[r+px, minBound_Whistle + j + py];
                     }
                 }
-                risingScores[r] = whistle[DataTools.GetMaxIndex(whistle)];
-                //if (risingScores[r] > 0.0) Console.WriteLine("{0}  {1}", r, risingScores[r]);
+                double score = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration;
+                if (score > 1.0) score = 1.0;
+                //extend the rising score
+                for (int i = 0; i < whistleDuration; i++)
+                {
+                    if (risingScores[r + i] < score) risingScores[r + i] = score;
+                }
+
 
                 //falling whistle detector
                 whistle = new double[whistleBand];
@@ -412,21 +427,14 @@ namespace AnalysisPrograms
                         whistle[j] += falling[r + px, minBound_Whistle + j + py];
                     }
                 }
-                fallingScores[r] = whistle[DataTools.GetMaxIndex(whistle)];
-                //if (fallingScores[r] > 0.0) Console.WriteLine("{0}  {1}", r, fallingScores[r]);
-
+                score = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration;
+                if (score > 1.0) score = 1.0;
+                //extend the falling score
+                for (int i = 0; i < whistleDuration; i++)
+                {
+                    if (fallingScores[r - i] < score) fallingScores[r - i] = score;
+                }
             } //for all rows
-
-            //normalise whistle scores
-            for (int i = 0; i < risingScores.Length; i++)
-            {
-                risingScores[i] = risingScores[i] / (double)whistleDuration;
-                if (risingScores[i] > 1.0) risingScores[i] = 1.0;
-                fallingScores[i] = fallingScores[i] / (double)whistleDuration;
-                if (fallingScores[i] > 1.0) fallingScores[i] = 1.0;
-                //if (risingScores[i]  > 0.0) Console.WriteLine("{0} \t{1:f2} \t{2:f2}", i, risingScores[i], fallingScores[i]);
-
-            }
 
             //combine scores and extract events
             var predictedEvents = new List<AcousticEvent>();
@@ -434,6 +442,7 @@ namespace AnalysisPrograms
             for (int i = 0; i < risingScores.Length; i++)
                 if ((risingScores[i] > 0.2) && (fallingScores[i] > 0.2)) scores[i] = (risingScores[i] + fallingScores[i])/2;
             var tuple = Tuple.Create(predictedEvents, scores);
+
             return tuple;
         }//end detect Curlew
 
