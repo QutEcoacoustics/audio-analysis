@@ -772,6 +772,63 @@ namespace AudioAnalysisTools
         }//end method ConvertScores2Events()
 
 
+        /// <summary>
+        /// Converts an array of score values to a list of AcousticEvents.
+        /// </summary>
+        /// <param name="scores">the array of scores</param>
+        /// <param name="minHz">lower freq bound of the acoustic event</param>
+        /// <param name="maxHz">upper freq bound of the acoustic event</param>
+        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
+        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
+        /// <param name="threshold">score must exceed this threshold to count as an event</param>
+        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
+        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
+        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
+        /// <param name="callID">  name of the event to be added to AcousticEvent class</param>
+        /// <returns>a list of acoustic events</returns>
+        public static List<AcousticEvent> ConvertScoreArray2Events(double[] scores, int minHz, int maxHz,
+                                                               double framesPerSec, double freqBinWidth,
+                                                               double scoreThreshold, double minDuration, double maxDuration, 
+                                                               string fileName, string callID)
+        {
+            int count = scores.Length;
+            var events = new List<AcousticEvent>();
+            bool isHit = false;
+            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
+            double startTime = 0.0;
+            int startFrame = 0;
+
+            for (int i = 0; i < count; i++)//pass over all frames
+            {
+                if ((isHit == false) && (scores[i] > scoreThreshold))//start of an event
+                {
+                    isHit = true;
+                    startTime = i * frameOffset;
+                    startFrame = i;
+                }
+                else  //check for the end of an event
+                    if ((isHit == true) && (scores[i] <= scoreThreshold))//this is end of an event, so initialise it
+                    {
+                        isHit = false;
+                        double endTime = i * frameOffset;
+                        double duration = endTime - startTime;
+                        //if (duration < minDuration) continue; //skip events with duration shorter than threshold
+                        if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
+                        AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
+                        ev.Name = callID; //default name
+                        ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
+                        ev.SourceFile = fileName;
+
+                        //obtain average intensity score.
+                        double av = 0.0;
+                        for (int n = startFrame; n <= i; n++) av += scores[n];
+                        ev.Score = av / (double)(i - startFrame + 1);
+                        events.Add(ev);
+                    }
+            } //end of pass over all frames
+            return events;
+        }//end method ConvertScoreArray2Events()
+
 
 
         /// <summary>

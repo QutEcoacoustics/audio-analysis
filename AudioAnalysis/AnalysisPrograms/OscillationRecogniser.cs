@@ -123,8 +123,6 @@ namespace AnalysisPrograms
             string fname = Path.GetFileName(recordingPath);
             int count = predictedEvents.Count;
             //string str = String.Format("#RecordingName\tDuration(sec)\t#Ev\tCompT(ms)\t%hiFrames\n{0}\t{1}\t{2}\t{3}\t{4}\n", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
-            //StringBuilder sb = new StringBuilder(str);
-            //StringBuilder sb = new StringBuilder();
             string str = String.Format("{0}\t{1}\t{2}\t{3}\t{4}", fname, sigDuration, count, analysisDuration.TotalMilliseconds, pcHIF);
             StringBuilder sb = AcousticEvent.WriteEvents(predictedEvents, str);
             FileTools.WriteTextFile(opPath, sb.ToString());
