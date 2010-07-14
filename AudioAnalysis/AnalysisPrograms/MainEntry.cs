@@ -19,7 +19,7 @@ namespace AnalysisPrograms
                 string[] r = args.Skip(1).ToArray();
                 switch (args[0])
                 {
-                    //READY TO BE USED - REQUIRE PARAMS FILE ONLY
+                    // READY TO BE USED - REQUIRE PARAMS FILE ONLY
                     case "segment":  // segmentation of a recording
                         Segment.Dev(r);
                         break;
@@ -42,7 +42,7 @@ namespace AnalysisPrograms
                         SPR.Dev(r);
                         break;
 
-                    //READY TO BE USED - REQUIRE PARAMS FILE ONLY
+                    // READY TO BE USED - REQUIRE PARAMS FILE ONLY
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
                         MFCC_OD.Dev(r);
                         break;
@@ -50,7 +50,7 @@ namespace AnalysisPrograms
                         HTKRecogniser.Dev(r);
                         break;
 
-                    //UNDER DEVELOPMENT
+                    // UNDER DEVELOPMENT
                     case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(r);
                         break;
@@ -64,12 +64,12 @@ namespace AnalysisPrograms
                         FindEventsLikeThis.Dev(r);
                         break;
 
-                    //FOR MICHAEL'S USE ONLY
+                    // FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(r);
                         break;
 
-                    //FOR MARK'S USE ONLY
+                    // FOR MARK'S USE ONLY
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;
