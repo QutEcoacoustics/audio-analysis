@@ -129,7 +129,7 @@ namespace AudioAnalysisTools
                 int width = e.oblong.r2 - x + 1;
                 int height = e.oblong.c2 - e.oblong.c1 + 1;
                 g.DrawRectangle(p1, x, y, width, height);
-                int scoreHt = (int)Math.Round(height * e.NormalisedScore);
+                int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
                 g.DrawLine(p2, x, y1, x, y2);

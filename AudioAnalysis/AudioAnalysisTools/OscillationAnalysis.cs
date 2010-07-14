@@ -245,7 +245,8 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
-        /// NOTE: The scoreThreshold is adaptive. Starts at min threshold and adapts after that.
+        /// NOTE: Method assumes passed score array was normalised.
+        /// See the CousticEvent class for a generic version of this method.
         /// </summary>
         /// <param name="scores">the array of OD scores</param>
         /// <param name="oscFreq"></param>
@@ -260,7 +261,8 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth,
-                                                               double scoreThreshold, double minDuration, double maxDuration, string fileName)
+                                                               double scoreThreshold, double minDuration, double maxDuration, 
+                                                               string fileName)
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
@@ -277,23 +279,24 @@ namespace AudioAnalysisTools
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
-                else  //check for the end of an event
-                    if ((isHit == true) && (scores[i] < scoreThreshold))//this is end of an event, so initialise it
+                else  // check for the end of an event
+                    if ((isHit == true) && (scores[i] <= scoreThreshold))//this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
-                        //if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
 
-                        //obtain average score.
+                        // obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
-                        ev.Score = av / (double)(i - startFrame + 1);
+                        av /= (double)(i - startFrame + 1);
+                        ev.SetScores(av, 0.0, 1.0);  // assumes passed score array was normalised.
+
                         //calculate average oscillation freq and assign to ev.Score2 
                         ev.Score2Name = "OscRate"; //score2 name
                         av = 0.0;
@@ -301,9 +304,9 @@ namespace AudioAnalysisTools
                         ev.Score2 = av / (double)(i - startFrame + 1);
                         events.Add(ev);
                     }
-            } //end of pass over all frames
+            } // end of pass over all frames
             return events;
-        }//end method ConvertODScores2Events()
+        } // end method ConvertODScores2Events()
 
     }//end class
 }
