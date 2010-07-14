@@ -1,15 +1,24 @@
-﻿namespace AnalysisPrograms
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="SPT.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the SPT type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
+
+namespace AnalysisPrograms
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.IO;
-    using System.Linq;
-    using System.Text;
+
+    using AudioAnalysisTools;
 
     using Microsoft.FSharp.Math;
-    using AudioAnalysisTools;
+
     using QutSensors.AudioAnalysis.AED;
+
     using TowseyLib;
 
     public class SPT

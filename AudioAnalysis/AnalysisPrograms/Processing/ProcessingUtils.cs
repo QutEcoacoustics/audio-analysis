@@ -239,22 +239,19 @@ namespace AnalysisPrograms.Processing
             switch (analysisType)
             {
                 // utilities
-                case "aed": // acoustic event detection
-                    results = ProcessingTypes.RunAed(settingsFile, audioFile);
+                case "segment": // segmentation
+                    results = ProcessingTypes.RunSegment(settingsFile, audioFile);
                     break;
                 case "snr": // signal to noise ratio
                     results = ProcessingTypes.RunSnr(settingsFile, audioFile);
                     break;
-                case "segmentation": // segmentation
-                    results = ProcessingTypes.RunSegmentation(settingsFile, audioFile);
+                case "aed": // acoustic event detection
+                    results = ProcessingTypes.RunAed(settingsFile, audioFile);
                     break;
 
                 // recognisers
                 case "od": // Oscillation Recogniser
                     results = ProcessingTypes.RunOd(settingsFile, audioFile);
-                    break;
-                case "hd": // Harmonic Recogniser
-                    results = ProcessingTypes.RunHd(settingsFile, audioFile);
                     break;
                 case "epr": // event pattern recognition - groundparrot (in progress)
                     results = ProcessingTypes.RunEpr(settingsFile, audioFile);
@@ -262,8 +259,25 @@ namespace AnalysisPrograms.Processing
                 case "spt": // spectral peak tracking (in progress)
                     results = ProcessingTypes.RunSpt(settingsFile, audioFile);
                     break;
+                case "spr":  // syntactic pattern recognition
+                    results = ProcessingTypes.RunSpr(settingsFile, audioFile);
+                    break;
+                case "hd": // Harmonic Recogniser
+                    results = ProcessingTypes.RunHd(settingsFile, audioFile);
+                    break;
 
                 // require extra resources
+                case "mfcc-od": // MFCCs and OD for calls haveing oscillating character
+                    if (resourceFile != null && resourceFile.Exists)
+                    {
+                        results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
+                    }
+
+                    break;
                 case "htk": // run HTK template over a recording
                     if (resourceFile != null && resourceFile.Exists)
                     {
@@ -275,20 +289,8 @@ namespace AnalysisPrograms.Processing
                     }
 
                     break;
-
-                case "mfcc_od": // MFCCs and OD for calls haveing oscillating character
-                    if (resourceFile != null && resourceFile.Exists)
-                    {
-                        results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
-                    }
-
-                    break;
                 default:
-                    Console.Error.WriteLine("Unrecognised analysis type.");
+                    Console.Error.WriteLine("Unrecognised analysis type: " + analysisType);
                     break;
             }
 
