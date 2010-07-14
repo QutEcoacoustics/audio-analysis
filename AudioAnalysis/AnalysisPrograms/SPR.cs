@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using QutSensors.AudioAnalysis.AED;
 using AudioAnalysisTools;
 using TowseyLib;
 using AudioTools;
@@ -43,6 +44,7 @@ namespace AnalysisPrograms
             //spr C:\SensorNetworks\WavFiles\BridgeCreek\WhipbirdCalls\file0151mono.wav_segment_19.wav C:\SensorNetworks\Output\SPR_WHIPBIRD\SPR_WHIPBIRD_Params.txt events.txt 
             //CURLEW
             //spr C:\SensorNetworks\WavFiles\Curlew\Curlew2\HoneymoonBay_StBees_20080914-003000.wav  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
+            //spr C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-210000.mp3  C:\SensorNetworks\Output\SPR_CURLEW\SPR_CURLEW_Params.txt events.txt 
             //CURRAWONG
             //spr C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.wav  C:\SensorNetworks\Output\SPR_CURRAWONG\SPR_CURRAWONG_Params.txt events.txt  
             Console.WriteLine("DATE AND TIME:" + DateTime.Now);
@@ -155,7 +157,11 @@ namespace AnalysisPrograms
             else if (callName.Equals("CURLEW"))
             {
                 //SPT
-                var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
+                double dynamicRange = 0.0;
+                var result1 = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dynamicRange);
+                //var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
+                //var result1 = doNoiseRemoval(sonogram, intensityThreshold, smallLengthThreshold);
+
                 //SPR
                 Log.WriteLine("SPR start: intensity threshold = " + intensityThreshold);
                 int slope = 20; //degrees of the circle. i.e. 90 = vertical line.
@@ -170,7 +176,12 @@ namespace AnalysisPrograms
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
                 int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); 
                 var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames, smallLengthThreshold);
-                scores = result3.Item2;
+                double minPeriod = 1.2;
+                double maxPeriod = 1.8;
+                int minPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * minPeriod);
+                int maxPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * maxPeriod);
+                scores = DetectOscillations(result3.Item1, minPeriod_frames, maxPeriod_frames);
+
                 hits = DataTools.AddMatrices(mHori, mVert);
 
                 predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz,
@@ -199,7 +210,7 @@ namespace AnalysisPrograms
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
                 int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); //86 = frames/sec.
                 var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames + 10, smallLengthThreshold);
-                scores = result3.Item2;
+                scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
                 string fileName = audioFileName;
@@ -313,6 +324,21 @@ namespace AnalysisPrograms
         }// MarkLine()
 
 
+        //public static Tuple<double[,]> doNoiseRemoval(BaseSonogram sonogram, double intensityThreshold, int smallLengthThreshold)
+        //{
+        //    Log.WriteLine("Wiener filter start");
+        //    var w = Matlab.wiener2(7, m);
+        //    Log.WriteLine("Wiener filter end");
+
+        //    Log.WriteLine("Remove subband mode intensities start");
+        //    var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+        //    Log.WriteLine("Remove subband mode intensities end");
+
+        //    return Tuple.Create(w);
+        //}
+
+
+
         public static Tuple<double[]> DetectWhipBird(double[,] mHori, double[,] mVert, 
                                                  int minBound_Whistle, int maxBound_Whistle, int optimumWhistleDuration, 
                                                  int minBound_Whip,    int maxBound_Whip,    int whipDuration, int lineLength)
@@ -377,7 +403,7 @@ namespace AnalysisPrograms
 
 
 
-        public static Tuple<List<AcousticEvent>, double[]> DetectCurlew(double[,] rising, double[,] falling,
+        public static Tuple<double[]> DetectCurlew(double[,] rising, double[,] falling,
                                          int minBound_Whistle, int maxBound_Whistle, int whistleDuration, int lineLength)
         {
             int rows = rising.GetLength(0);
@@ -408,12 +434,7 @@ namespace AnalysisPrograms
                 }
                 double score = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration;
                 if (score > 1.0) score = 1.0;
-                //extend the rising score
-                for (int i = 0; i < whistleDuration; i++)
-                {
-                    if (risingScores[r + i] < score) risingScores[r + i] = score;
-                }
-
+                risingScores[r] = score;
 
                 //falling whistle detector
                 whistle = new double[whistleBand];
@@ -429,22 +450,47 @@ namespace AnalysisPrograms
                 }
                 score = whistle[DataTools.GetMaxIndex(whistle)] / (double)whistleDuration;
                 if (score > 1.0) score = 1.0;
-                //extend the falling score
-                for (int i = 0; i < whistleDuration; i++)
-                {
-                    if (fallingScores[r - i] < score) fallingScores[r - i] = score;
-                }
+                fallingScores[r] = score;
             } //for all rows
 
-            //combine scores and extract events
-            var predictedEvents = new List<AcousticEvent>();
+            //combine scores
             var scores = new double[rows];
             for (int i = 0; i < risingScores.Length; i++)
-                if ((risingScores[i] > 0.2) && (fallingScores[i] > 0.2)) scores[i] = (risingScores[i] + fallingScores[i])/2;
-            var tuple = Tuple.Create(predictedEvents, scores);
+                //if ((risingScores[i] > 0.2) && (fallingScores[i] > 0.2)) scores[i] = (risingScores[i] + fallingScores[i])/2;
+                scores[i] = (risingScores[i]*0.9) + (fallingScores[i]*0.1);  // weighted average
 
+            var tuple = Tuple.Create(scores);
             return tuple;
         }//end detect Curlew
+
+
+        public static double[] DetectOscillations(double[] scores1, int minPeriod, int maxPeriod)
+        {
+
+            var scores = DataTools.filterMovingAverage(scores1, 21);
+            int L = scores.Length;
+            double[] oscillationScores = new double[L];
+            int midPeriod = minPeriod + ((maxPeriod - minPeriod) / 2);
+            int buffer = (int)(maxPeriod * 2.5);//avoid end of recording/array
+
+            for (int r = 0; r < L - buffer; r++)
+            {
+                double maxScore = 0.0;
+                for (int period = minPeriod; period < maxPeriod; period++)
+                {
+                    double score    = scores1[r] + scores1[r + period] + scores1[r + (period * 2)];
+                    double offScore = scores1[r + (int)(period * 0.5)] + scores1[r + (int)(period*1.5)] + scores1[r + (int)(period*2.5)];
+                    score -= offScore;
+                    if (score > maxScore)
+                    {
+                        maxScore = score;
+                        oscillationScores[r + midPeriod] = maxScore / 3;
+                    }
+                }
+            }
+            return oscillationScores;
+        }
+
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,

@@ -34,9 +34,9 @@ namespace AudioAnalysisTools
         public string SourceFile { get; set; }
         public double Score { get; set; }
         public string ScoreComment { get; set; }
+        public double ScoreNormalised { get; private set; } //score normalised in range [0,1].
         public string Score2Name { get; set; }
         public double Score2 { get; set; } //second score if required e.g. for Birgits recognisers
-        public double NormalisedScore { get; private set; } //score normalised in range [0,1].
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1Var;  //,
         //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
@@ -160,9 +160,9 @@ namespace AudioAnalysisTools
         public void SetScores(double score, double min, double max)
         {
             this.Score = score;
-            this.NormalisedScore = (score - min) / (max - min);
-            if (this.NormalisedScore > 1.0) this.NormalisedScore = 1.0;
-            if (this.NormalisedScore < 0.0) this.NormalisedScore = 0.0;
+            this.ScoreNormalised = (score - min) / (max - min);
+            if (this.ScoreNormalised > 1.0) this.ScoreNormalised = 1.0;
+            if (this.ScoreNormalised < 0.0) this.ScoreNormalised = 0.0;
         }
 
         public string WriteProperties()
@@ -773,7 +773,9 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Converts an array of score values to a list of AcousticEvents.
+        /// A general method to convert an array of score values to a list of AcousticEvents.
+        /// This method assumes that the scores are already normaliesd.
+        /// Some analysis techniques (e.g. OD) have there own methods for extrating events from score arrays.
         /// </summary>
         /// <param name="scores">the array of scores</param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
@@ -794,35 +796,37 @@ namespace AudioAnalysisTools
             int count = scores.Length;
             var events = new List<AcousticEvent>();
             bool isHit = false;
-            double frameOffset = 1 / framesPerSec; //frame offset in fractions of second
+            double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
             double startTime = 0.0;
             int startFrame = 0;
 
-            for (int i = 0; i < count; i++)//pass over all frames
+            for (int i = 0; i < count; i++) // pass over all frames
             {
-                if ((isHit == false) && (scores[i] > scoreThreshold))//start of an event
+                if ((isHit == false) && (scores[i] >= scoreThreshold))//start of an event
                 {
                     isHit = true;
                     startTime = i * frameOffset;
                     startFrame = i;
                 }
-                else  //check for the end of an event
-                    if ((isHit == true) && (scores[i] <= scoreThreshold))//this is end of an event, so initialise it
+                else  // check for the end of an event
+                    if ((isHit == true) && (scores[i] <= scoreThreshold)) // this is end of an event, so initialise it
                     {
                         isHit = false;
                         double endTime = i * frameOffset;
                         double duration = endTime - startTime;
-                        //if (duration < minDuration) continue; //skip events with duration shorter than threshold
+                        // if (duration < minDuration) continue; //skip events with duration shorter than threshold
                         if ((duration < minDuration) || (duration > maxDuration)) continue; //skip events with duration shorter than threshold
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
-                        ev.Name = callID; //default name
+                        ev.Name = callID; // default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
 
-                        //obtain average intensity score.
+                        // obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
+                        ev.ScoreNormalised = ev.Score; // assumes passed score array was normalised
+
                         events.Add(ev);
                     }
             } //end of pass over all frames
@@ -877,7 +881,7 @@ namespace AudioAnalysisTools
                 //avDuration += events[i].Duration;
                 //avFrames   += frameLength;
 
-                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].NormalisedScore;
+                for (int s = startFrame; s <= endFrame; s++) scores[s] = events[i].ScoreNormalised;
             }
             return scores;
         } //end method
