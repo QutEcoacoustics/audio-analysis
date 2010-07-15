@@ -13,30 +13,42 @@ namespace AudioAnalysisTools
     {
 
         //DIMENSIONS OF THE EVENT
-        public double StartTime { get; set; }       // (s),
-        public double Duration;                     // in seconds
-        public double EndTime { get; private set; } // (s),
-        public int MinFreq;  // Hertz
-        public int MaxFreq;  // Hertz
+        /// <summary>in seconds</summary>
+        public double StartTime { get; set; }      
+        /// <summary>in seconds</summary>
+        public double Duration;
+        /// <summary>in seconds</summary>
+        public double EndTime { get; private set; } 
+        /// <summary>units = Hertz</summary>
+        public int MinFreq;
+        /// <summary>units = Hertz</summary>
+        public int MaxFreq;
         public int FreqRange { get { return (MaxFreq - MinFreq + 1); } }
         public bool IsMelscale { get; set; }
         public Oblong oblong { get; private set; }
 
-        public int FreqBinCount { get; private set; }     //required for conversions to & from MEL scale
+        /// <summary>required for conversions to & from MEL scale</summary>
+        public int FreqBinCount { get; private set; } 
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
-        public double FrameDuration { get; private set; }    //frame duration in seconds
-        public double FrameOffset { get; private set; }    //time between frame starts in seconds
-        public double FramesPerSecond { get; private set; }  //inverse of the frame offset
+        /// <summary>Frame duration in seconds</summary>
+        public double FrameDuration { get; private set; }
+        /// <summary>Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
+        public double FrameOffset { get; private set; }
+        /// <summary>Number of frame starts per second. Inverse of the frame offset</summary>
+        public double FramesPerSecond { get; private set; }
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
         public string Name { get; set; }
         public string SourceFile { get; set; }
+        /// <summary></summary>
         public double Score { get; set; }
         public string ScoreComment { get; set; }
-        public double ScoreNormalised { get; private set; } //score normalised in range [0,1].
+        /// <summary>score normalised in range [0,1].</summary>
+        public double ScoreNormalised { get; private set; }
         public string Score2Name { get; set; }
-        public double Score2 { get; set; } //second score if required e.g. for Birgits recognisers
+        /// <summary>second score if required</summary>
+        public double Score2 { get; set; } // e.g. for Birgits recognisers
         //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
         //double I1Var;  //,
         //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
@@ -44,9 +56,12 @@ namespace AudioAnalysisTools
         double I3Mean;   //mean intensity of pixels in the event AFTER noise reduciton 
         double I3Var;    //variance of intensity of pixels in the event.
 
-        public int Intensity { get; set; } //subjective assesment of event intenisty
-        public int Quality { get; set; }   //subjective assessment of event quality
-        public bool Tag { get; set; } //use this if want to filter or tag some members of a list for some purpose
+        /// <summary>Use this if want to filter or tag some members of a list for some purpose.</summary>
+        public bool Tag { get; set; }
+        /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event intensity</summary>
+        public int Intensity { get; set; } 
+        /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event quality</summary>
+        public int Quality { get; set; }  
 
         /// <summary>
         /// <para>Populate this with any information that should be stored for verification or

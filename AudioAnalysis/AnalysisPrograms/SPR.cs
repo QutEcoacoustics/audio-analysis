@@ -180,7 +180,7 @@ namespace AnalysisPrograms
                 double maxPeriod = 1.8;
                 int minPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * minPeriod);
                 int maxPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * maxPeriod);
-                scores = DetectOscillations(result3.Item1, minPeriod_frames, maxPeriod_frames);
+                scores = DetectRepetitions(result3.Item1, minPeriod_frames, maxPeriod_frames);
 
                 hits = DataTools.AddMatrices(mHori, mVert);
 
@@ -464,7 +464,7 @@ namespace AnalysisPrograms
         }//end detect Curlew
 
 
-        public static double[] DetectOscillations(double[] scores1, int minPeriod, int maxPeriod)
+        public static double[] DetectRepetitions(double[] scores1, int minPeriod, int maxPeriod)
         {
 
             var scores = DataTools.filterMovingAverage(scores1, 21);

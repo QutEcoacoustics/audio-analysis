@@ -16,7 +16,7 @@ namespace AnalysisPrograms
 
 
         //eventX "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.mp3" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt  FELT_Currawong1
-
+        //eventX "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt  FELT_Curlew1
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
@@ -51,6 +51,7 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
+            string symbolPath = outputDir + targetName + "_symbol.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
@@ -89,6 +90,8 @@ namespace AnalysisPrograms
 
             //iv: SAVE extracted event as matrix of dB intensity values
             FileTools.WriteMatrix2File(matrix, matrixPath);
+            WriteMatrixAsSymbols(matrix, symbolPath);
+
             //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
 
 
@@ -159,6 +162,22 @@ namespace AnalysisPrograms
 
             return System.Tuple.Create(sonogram, ae, matrix);
         }//end Execute_Extraction()
+
+
+
+        public static void WriteMatrixAsSymbols(double[,] matrix, string matrixPath)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            char[,] symbolic = new char[rows, cols];
+
+            for (int i = 0; i < rows; i++)
+                for (int j = 0; j < cols; j++)
+                    if (matrix[i, j] > 3.0) symbolic[i, j] = '+';
+                    else matrix[i, j] = '0';
+
+            FileTools.WriteMatrix2File(symbolic, matrixPath);
+        }
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, AcousticEvent ae)
