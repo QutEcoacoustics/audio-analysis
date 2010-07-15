@@ -84,8 +84,11 @@ namespace AudioAnalysisTools
             var eventScores = scores;
             for (int i = 1; i < scores.Length - targetLength; i++)
             {
-                if ((scores[i] > matchThreshold)&&(scores[i] > scores[i-1]))
-                    for (int j = 0; j < targetLength; j++) eventScores[i + j] = scores[i];
+                if (scores[i] > matchThreshold)
+                {
+                    for (int j = 0; j < targetLength; j++) if (scores[i] > scores[i - 1])
+                        eventScores[i + j] = scores[i];
+                }
             }
 
 
@@ -106,9 +109,9 @@ namespace AudioAnalysisTools
             int targetLength = target.GetLength(0);
 
             //adjust target's dynamic range to that set by user 
-            target = SNR.SetDynamicRange(target, 3.0, dynamicRange); //set event's dynamic range
+            //target = SNR.SetDynamicRange(target, 0.0, dynamicRange); //set event's dynamic range
             double[] v1 = DataTools.Matrix2Array(target);
-            v1 = DataTools.normalise2UnitLength(v1);
+            //v1 = DataTools.normalise2UnitLength(v1);
             //string imagePath2 = @"C:\SensorNetworks\Output\FELT_Currawong\target.png";
             //var image = BaseSonogram.Data2ImageData(target);
             //ImageTools.DrawMatrix(image, 1, 1, imagePath2);
@@ -122,24 +125,26 @@ namespace AudioAnalysisTools
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
                 if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
+                int offset = targetLength / 2;
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin, r + targetLength - 1, maxBin);
-                    matrix = SNR.SetDynamicRange(matrix, 3.0, dynamicRange); //set event's dynamic range
+                    //matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
 
-                    //string imagePath2 = @"C:\SensorNetworks\Output\FELT_Gecko\compare.png";
+                    //string imagePath2 = @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png";
                     //var image = BaseSonogram.Data2ImageData(matrix);
                     //ImageTools.DrawMatrix(image, 1, 1, imagePath2);
 
                     double[] v2 = DataTools.Matrix2Array(matrix);
-                    v2 = DataTools.normalise2UnitLength(v2);
+                    //v2 = DataTools.normalise2UnitLength(v2);
                     double crossCor = DataTools.DotProduct(v1, v2);
-                    scores[r] = crossCor;
-                    //Log.WriteLine("row={0}\t{1:f10}", r, crossCor);
-                } //end of rows in segment
-                for (int r = stopRow; r < endRow; r++) scores[r] = scores[stopRow-1]; //fill in end of segment
-            } //foreach (AcousticEvent av in segments)
+                    //scores[r + offset] = crossCor / v1.Length; // use this score if not going to extend
+                    scores[r] = crossCor / v1.Length;            // use this score if going to extend
+                    //Log.WriteLine("row={0}\t{1:f10}", r, scores[r]); 
+                } // end of rows in segment
+                //for (int r = stopRow; r < endRow; r++) scores[r] = scores[stopRow-1]; //fill in end of segment
+            } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
             return tuple;

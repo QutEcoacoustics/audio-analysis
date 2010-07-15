@@ -90,6 +90,7 @@ namespace AnalysisPrograms
 
             //iv: SAVE extracted event as matrix of dB intensity values
             FileTools.WriteMatrix2File(matrix, matrixPath);
+            //Save extracted event as a matrix of char symbols '+' and '-'
             WriteMatrixAsSymbols(matrix, symbolPath);
 
             //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
@@ -113,7 +114,8 @@ namespace AnalysisPrograms
             //felt  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\FELT_CaneToad\FELT_CaneToad_Params.txt events.txt
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
-            string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
+            //string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
+            string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
             string paramsPath    = iniPath;
             string[] arguments = new string[3];
             arguments[0] = testRecording;
@@ -137,6 +139,7 @@ namespace AnalysisPrograms
             sonoConfig.SourceFName = recording.FileName;
             //sonoConfig.WindowSize = windowSize;
             sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.NoiseReductionType = nrt;
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
@@ -146,20 +149,20 @@ namespace AnalysisPrograms
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
             
-            // extract boundaries of the acoustic event
-            AcousticEvent ae = new AcousticEvent(eventStart, eventEnd-eventStart, minHz, maxHz);
-            ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
-
             //subtract modal noise
-            double[] modalNoise = SNR.CalculateModalNoise(sonogram.Data); //calculate modal noise profile
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 7);    //smooth the noise profile
-            //sonogram.Data = SNR.SubtractModalNoise(sonogram.Data, modalNoise);
-            sonogram.Data = SNR.RemoveModalNoise(sonogram.Data, modalNoise);
+            //double[] modalNoise = SNR.CalculateModalNoise(sonogram.Data); //calculate modal noise profile
+            //modalNoise = DataTools.filterMovingAverage(modalNoise, 7);    //smooth the noise profile
+            ////sonogram.Data = SNR.SubtractModalNoise(sonogram.Data, modalNoise);
+            //sonogram.Data = SNR.RemoveModalNoise(sonogram.Data, modalNoise);
             
             //extract data values of the required event
             double[,] matrix = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
                                                          minHz, maxHz, false, binCount, sonogram.FBinWidth);
 
+            // create acoustic event with defined boundaries
+            AcousticEvent ae = new AcousticEvent(eventStart, eventEnd - eventStart, minHz, maxHz);
+            ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
+            
             return System.Tuple.Create(sonogram, ae, matrix);
         }//end Execute_Extraction()
 
@@ -173,8 +176,8 @@ namespace AnalysisPrograms
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
-                    if (matrix[i, j] > 3.0) symbolic[i, j] = '+';
-                    else matrix[i, j] = '0';
+                    if (matrix[i, j] > 4.0) symbolic[i, j] = '+';
+                    else                    symbolic[i, j] = '-';
 
             FileTools.WriteMatrix2File(symbolic, matrixPath);
         }
