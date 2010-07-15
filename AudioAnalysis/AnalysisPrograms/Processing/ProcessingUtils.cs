@@ -240,7 +240,7 @@ namespace AnalysisPrograms.Processing
             {
                 // utilities
                 case "segment": // segmentation
-                    results = ProcessingTypes.RunSegment(settingsFile, audioFile);
+                    //results = ProcessingTypes.RunSegment(settingsFile, audioFile);
                     break;
                 case "snr": // signal to noise ratio
                     results = ProcessingTypes.RunSnr(settingsFile, audioFile);
@@ -260,7 +260,7 @@ namespace AnalysisPrograms.Processing
                     results = ProcessingTypes.RunSpt(settingsFile, audioFile);
                     break;
                 case "spr":  // syntactic pattern recognition
-                    results = ProcessingTypes.RunSpr(settingsFile, audioFile);
+                    //results = ProcessingTypes.RunSpr(settingsFile, audioFile);
                     break;
                 case "hd": // Harmonic Recogniser
                     results = ProcessingTypes.RunHd(settingsFile, audioFile);

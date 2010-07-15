@@ -18,11 +18,11 @@ namespace HMMBuilder
             //string callIdentifier = "CURLEW2";                                              //arg[0]
             string callIdentifier = "CURRAWONG2";                                           //arg[0]
             //string callIdentifier = "KOALAMALE_EXHALE2";                                      //arg[0]
-            string resourcesDir   = "C:\\SensorNetworks\\Templates\\";                        //arg[1]
-            string htkExes        = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";  //arg[2]
+            string resourcesDir = "C:\\SensorNetworks\\Templates\\";                        //arg[1]
+            string htkExes = "C:\\SensorNetworks\\Software\\Extra Assemblies\\HTK\\";  //arg[2]
 
             //GET PARAMETERS AND SET UP DIRECTORY STRUCTURE
-            HTKConfig htkConfig = new HTKConfig(resourcesDir, callIdentifier);            
+            HTKConfig htkConfig = new HTKConfig(resourcesDir, callIdentifier);
             BKGTrainer bkgModel = new BKGTrainer(htkConfig);
 
             //HTK DIR
@@ -33,14 +33,14 @@ namespace HMMBuilder
             Console.WriteLine("DATA DIR=" + htkConfig.DataDir);
 
             string vocalization = "";
-            string tmpVal       = "";
-            string aOptionsStr  = htkConfig.aOptionsStr;
-            string pOptionsStr  = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
+            string tmpVal = "";
+            string aOptionsStr = htkConfig.aOptionsStr;
+            string pOptionsStr = ""; //-t 150.0"; //pruning option for HErest.exe BUT does not appear to make any difference
 
             bool htkTimestamps = false;
 
             bool good = true;
-            int numIters    = htkConfig.numIterations;       //number of training iterations
+            int numIters = htkConfig.numIterations;       //number of training iterations
             int numBkgIters = htkConfig.numBkgIterations;    //number of background training iterations
             #endregion
 
@@ -55,8 +55,8 @@ namespace HMMBuilder
                     {
                         //1.create directories and write the MFCC, HMM files
                         htkConfig.ComputeFVSize();         //Compute Feature Vectors size given htkConfig.TARGETKIND
-                        if(! Directory.Exists(htkConfig.ConfigDir))   Directory.CreateDirectory(htkConfig.ConfigDir);
-                        if(! Directory.Exists(htkConfig.ProtoConfDir))Directory.CreateDirectory(htkConfig.ProtoConfDir);
+                        if (!Directory.Exists(htkConfig.ConfigDir)) Directory.CreateDirectory(htkConfig.ConfigDir);
+                        if (!Directory.Exists(htkConfig.ProtoConfDir)) Directory.CreateDirectory(htkConfig.ProtoConfDir);
                         htkConfig.WriteMfccConfigFile(htkConfig.MfccConfigFN);  //Write the mfcc file
                         htkConfig.WriteHmmConfigFile(htkConfig.ConfigFN);       //Write the dcf file
                         htkConfig.WritePrototypeFiles(htkConfig.ProtoConfDir);  //prototype files
@@ -95,7 +95,7 @@ namespace HMMBuilder
                             //    htkConfig.CallName = word;
                             //    //htkConfig.WriteSegmentationIniFile(segmentationIniFile);
                             //    htkConfig.CallName = tmpString;
-                           
+
                             //} // foreach
                         } // end if (multisyllabic)
                     } //end writing config files
@@ -104,7 +104,7 @@ namespace HMMBuilder
                         Console.WriteLine("ERROR! FAILED TO WRITE FIVE CONFIGURATION FILES");
                         good = false;
                         break;
-                    }        
+                    }
                     #endregion
 
 
@@ -146,7 +146,7 @@ namespace HMMBuilder
                             }
                         }
                         else //feature vectors have already been extracted
-                        {                            
+                        {
                             try
                             {
                                 HTKHelper.HCopy(aOptionsStr, htkConfig, false);
@@ -155,7 +155,7 @@ namespace HMMBuilder
                             {
                                 Console.WriteLine("ERROR!! FAILED TO COMPLETE METHOD HTKHelper.HCopy(aOptionsStr, htkConfig, false)");
                                 good = false;
-                                break; 
+                                break;
                             }
                         }
                     } //end HCOPY
@@ -166,9 +166,9 @@ namespace HMMBuilder
                     Console.WriteLine("\n3: ABOUT TO SEGMENT WAV TRAINING FILES");
                     try
                     {
-                        if (! htkConfig.multisyllabic)
+                        if (!htkConfig.multisyllabic)
                         {
-                           //copy segmentation ini file to the data directory.
+                            //copy segmentation ini file to the data directory.
                             System.IO.File.Copy(htkConfig.ConfigPath, htkConfig.trnDirPath + "\\" + HTKConfig.segmentationIniFN, true);
                             int verbosity = 1;
                             AudioSegmentation.Execute(htkConfig.trnDirPath, htkConfig.trnDirPath, verbosity);
@@ -219,12 +219,12 @@ namespace HMMBuilder
                         HMMSettings.ReadPCF(htkConfig.ProtoConfDir);
                         HMMSettings.WriteHMMprototypeFile(htkConfig.prototypeHMM);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE TRAINING TOOLS Region");
                         Console.WriteLine(ex.ToString());
                         good = false;
-                        break; 
+                        break;
                     }
 
 
@@ -241,7 +241,7 @@ namespace HMMBuilder
                         break;
                     }
 
-                    Console.WriteLine("\nTRAINING: HMM Model re-estimation");                   
+                    Console.WriteLine("\nTRAINING: HMM Model re-estimation");
 
                     try
                     {
@@ -253,7 +253,7 @@ namespace HMMBuilder
                                     //1-estimate SIL model
                                     HTKHelper.HRest(aOptionsStr, htkConfig, "SIL");
 
-                                    string tmpSrcLine = "";                                    
+                                    string tmpSrcLine = "";
                                     //2-copy the SIL info into the BKG model folder for LLR normalization
 #if !TEMP_TEST
                                     if (htkConfig.LLRNormalization)
@@ -262,7 +262,7 @@ namespace HMMBuilder
                                         string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
                                         string destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.hmmdefFN);
                                         StreamReader sourceReader = new StreamReader(sourceF);
-                                        StreamWriter destWriter = new StreamWriter(destF);                                        
+                                        StreamWriter destWriter = new StreamWriter(destF);
                                         while ((tmpSrcLine = sourceReader.ReadLine()) != null)
                                         {
                                             if (tmpSrcLine.StartsWith("~h"))
@@ -318,7 +318,7 @@ namespace HMMBuilder
                                     {
                                         if (tmpSrcLine.StartsWith("~h"))
                                             validLines = true;
-                                        
+
                                         if (validLines)
                                             bodyToAdd += tmpSrcLine + "\n";
                                     }
@@ -348,8 +348,8 @@ namespace HMMBuilder
                                 HTKHelper.HERest(numIters, aOptionsStr, pOptionsStr, htkConfig);
 
                                 //copy the SIL info into the BKG model folder for LLR normalization
-                                if (!htkConfig.LLRusesBKG && htkConfig.LLRNormalization && htkConfig.doSegmentation) 
-                                { 
+                                if (!htkConfig.LLRusesBKG && htkConfig.LLRNormalization && htkConfig.doSegmentation)
+                                {
                                     //1-extract SIL model and copy it into the BKG folder
                                     string sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.hmmdefFN);
                                     string destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.hmmdefFN);
@@ -382,7 +382,7 @@ namespace HMMBuilder
                                     //2-copy macros file to the BKG folder
                                     sourceF = Path.Combine(htkConfig.tgtDir2, htkConfig.macrosFN);
                                     destF = Path.Combine(htkConfig.tgtDir2Bkg, htkConfig.macrosFN);
-                                    File.Copy(sourceF, destF, true);                                    
+                                    File.Copy(sourceF, destF, true);
                                 }
                             }
                     }
@@ -391,7 +391,7 @@ namespace HMMBuilder
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE PARAMETERS ESTIMATION");
                         Console.WriteLine(ex);
                         good = false;
-                        break; 
+                        break;
                     }
                     #endregion
 
@@ -401,12 +401,12 @@ namespace HMMBuilder
                     {
                         if (tmpVal.Equals("Y"))
                         {
-                            Console.WriteLine("\n\nEstimating the BACKGROUND model ...");                           
+                            Console.WriteLine("\n\nEstimating the BACKGROUND model ...");
 
                             if (HMMSettings.ConfigParam.TryGetValue("HERESTBKG_ITER", out tmpVal))
                             {
                                 numBkgIters = int.Parse(tmpVal);
-                                if(numBkgIters<=0)
+                                if (numBkgIters <= 0)
                                     numBkgIters = 3;
                             }
                             else
@@ -460,14 +460,14 @@ namespace HMMBuilder
                         {
                             //TO DO: Ask the user for the word network file
                         }
-                        
+
                         //Use the BACKGROUND model rather than the SIL model. 
-                        if (! htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRusesBKG && !htkTimestamps))
+                        if (!htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRusesBKG && !htkTimestamps))
                         {
                             //The 'tmp' dir contains a copy of the estimated BKG model
                             string dstHmm = htkConfig.tgtDir2 + "\\" + htkConfig.hmmdefFN;
                             string srcHmm = htkConfig.tgtDir2Bkg + "\\" + htkConfig.hmmdefFN;
-                            
+
                             StreamReader srcFileReader = File.OpenText(srcHmm);
                             string tmpSrcLine = ""; string bodyToAdd = "";
                             bool validLines = false;
@@ -496,14 +496,14 @@ namespace HMMBuilder
                         Console.WriteLine(ex.Message);
                         Console.WriteLine("ERROR!! FAILED TO COMPLETE HTKHelper.HVite()");
                         good = false;
-                        break; 
+                        break;
                     }
                     #endregion
 
                     #region EIGHT: Score BACKGROUND model
                     Console.WriteLine("\n8: Score Background Noise Model");
                     //Modify the output from HVite so as to include the scores from background model
-                    if (! htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRNormalization))
+                    if (!htkConfig.doSegmentation || (htkConfig.doSegmentation && htkConfig.LLRNormalization))
                     {
                         //Generate the word network for the backgroung word
                         HTKHelper.HBuild(htkConfig.monophonesBkg, htkConfig.wordNetBkg, htkConfig.HBuildExecutable);
@@ -531,7 +531,7 @@ namespace HMMBuilder
                         sourceFN = htkConfig.monophonesBkg;
                         destFN = newBKGDir + "\\labelList.txt";
                         File.Copy(sourceFN, destFN, true);
-                     }
+                    }
                     #endregion
 
                     #region NINE: Accuracy Measurements: Accuracy = (TruePositives + TrueNegative)/TotalSamples
@@ -539,7 +539,7 @@ namespace HMMBuilder
 
                     //calculate frame rate = 1sec / frame duration
                     double frameRate = 10000000 / double.Parse(htkConfig.TARGETRATE);
-                    Console.WriteLine("\nFrame rate = "+ frameRate+"\n");
+                    Console.WriteLine("\nFrame rate = " + frameRate + "\n");
 
                     //calculate the TRUE mean and sd of the training call durations
                     string masterLabelFile = htkConfig.ConfigDir + "\\phones.mlf";
@@ -642,18 +642,18 @@ namespace HMMBuilder
                     }
                     else //multisyllabic case
                     {
-                        
+
                         foreach (string syllName in htkConfig.multiSyllableList)
                         {
-                            
+
                             //TO DO: manage acc meas for multisyllabic calls
                             Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, syllName, out durationMean, out trnSD);
-                            Console.WriteLine("Training song durations for '" + syllName + "' = " 
-                                                    + durationMean.ToString("f4") + "+/-" 
-                                                    + trnSD.ToString("f4") 
-                                                    + " seconds or " 
+                            Console.WriteLine("Training song durations for '" + syllName + "' = "
+                                                    + durationMean.ToString("f4") + "+/-"
+                                                    + trnSD.ToString("f4")
+                                                    + " seconds or "
                                                     + (durationMean * frameRate).ToString("f1") + " frames\n");
-                            
+
                             //calculate the mean and sd of the testing call durations
                             string tmpMlf = masterLabelFile;
                             masterLabelFile = htkConfig.WorkingDir + "\\results\\recountTrue.mlf";
@@ -661,11 +661,11 @@ namespace HMMBuilder
                             double sd2;
                             regex = @"^\d+\s+\d+\s+\w+";
                             Helper.AverageCallDuration(htkConfig, masterLabelFile, regex, syllName, out mean2, out sd2);
-                            
-                            Console.WriteLine("Testing song durations for '" + syllName + "' = " 
-                                                    + mean2.ToString("f4") + "+/-" 
-                                                    + sd2.ToString("f4") 
-                                                    + " seconds or " 
+
+                            Console.WriteLine("Testing song durations for '" + syllName + "' = "
+                                                    + mean2.ToString("f4") + "+/-"
+                                                    + sd2.ToString("f4")
+                                                    + " seconds or "
                                                     + (mean2 * frameRate).ToString("f1") + " frames\n");
 
                             masterLabelFile = tmpMlf;
@@ -689,7 +689,7 @@ namespace HMMBuilder
                                     Console.WriteLine("No Score Threshold defined for '{0}'", syllName);
                                     throw new Exception();
                                 }
-                                    
+
                                 int step = 2; //to step the threshold
                                 double maxScore = -Double.MaxValue;
                                 int maxTpCount = 0;
@@ -700,7 +700,7 @@ namespace HMMBuilder
                                     falseSCount = 0;
                                     float t = threshold - (i * step);
 
-                                    
+
                                     Helper.ComputeAccuracy(htkConfig.resultTrue, htkConfig.resultFalse, durationMean, trnSD, frameRate,
                                                       syllName, t, out tpCount, out fpCount, out trueSCount, out falseSCount,
                                                       out tppercent, out tnpercent, out accuracy, out avTPScore, out avFPScore);
@@ -794,7 +794,7 @@ namespace HMMBuilder
                     string OutZipFile = htkConfig.ConfigDir + ".zip";
                     ZipUnzip.ZipDirectoryRecursive(Dir2Compress, OutZipFile, true);
                     Console.WriteLine("Zipped config placed in:- " + OutZipFile);
-                    
+
                     #endregion
 
                     break;
@@ -804,6 +804,7 @@ namespace HMMBuilder
 
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
+            Console.WriteLine("good: " + good);
             //return good ? 0 : -1;
 
         }// end Main()
