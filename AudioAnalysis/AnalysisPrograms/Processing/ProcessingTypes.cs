@@ -20,13 +20,21 @@ namespace AnalysisPrograms.Processing
     /// </summary>
     public static class ProcessingTypes
     {
+        private static Dictionary<string, string> DefaultNormalisedScore
+        {
+            get
+            {
+                return new Dictionary<string, string> { { "Description", "Normalised score" } };
+            }
+        }
+
         /// <summary>
         /// Segmentation Utility.
         /// </summary>
         /// <param name="settingsFile">Settings file.</param>
         /// <param name="audioFile">Audio file.</param>
         /// <returns>Processing results.</returns>
-        internal static IEnumerable<ProcessorResultTag> RunSegmentation(FileInfo settingsFile, FileInfo audioFile)
+        internal static IEnumerable<ProcessorResultTag> RunSegment(FileInfo settingsFile, FileInfo audioFile)
         {
             var config = new Configuration(settingsFile.FullName);
             var dict = config.GetTable();
@@ -55,55 +63,7 @@ namespace AnalysisPrograms.Processing
                 events.Select(
                     ae =>
                     ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name, ae.ScoreNormalised,
-                            new Dictionary<string, string>
-                                {
-                                    { "Description", "Normalised score" }
-                                })));
-        }
-
-        /// <summary>
-        /// Acoustic event detection utility.
-        /// </summary>
-        /// <param name="settingsFile">
-        /// The settings file.
-        /// </param>
-        /// <param name="audioFile">
-        /// The audio file.
-        /// </param>
-        /// <returns>
-        /// Processing results.
-        /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunAed(FileInfo settingsFile, FileInfo audioFile)
-        {
-            var config = new Configuration(settingsFile.FullName);
-            var dict = config.GetTable();
-
-            var intensityThreshold = Default.intensityThreshold;
-            var smallAreaThreshold = Default.smallAreaThreshold;
-
-            if (dict.ContainsKey(AED.key_INTENSITY_THRESHOLD) && dict.ContainsKey(AED.key_SMALLAREA_THRESHOLD))
-            {
-                intensityThreshold = Convert.ToDouble(dict[AED.key_INTENSITY_THRESHOLD]);
-                smallAreaThreshold = Convert.ToInt32(dict[AED.key_SMALLAREA_THRESHOLD]);
-            }
-
-            // execute
-            var result = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold);
-            var events = result.Item2;
-
-            // AcousticEvent results
-            return
-                events.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name, null,
-                            new Dictionary<string, string>
-                                {
-                                    { "Description", "Normalised score is not applicable to AED." }
-                                })));
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
         }
 
         /// <summary>
@@ -161,6 +121,43 @@ namespace AnalysisPrograms.Processing
         }
 
         /// <summary>
+        /// Acoustic event detection utility.
+        /// </summary>
+        /// <param name="settingsFile">
+        /// The settings file.
+        /// </param>
+        /// <param name="audioFile">
+        /// The audio file.
+        /// </param>
+        /// <returns>
+        /// Processing results.
+        /// </returns>
+        internal static IEnumerable<ProcessorResultTag> RunAed(FileInfo settingsFile, FileInfo audioFile)
+        {
+            var config = new Configuration(settingsFile.FullName);
+            var dict = config.GetTable();
+
+            var intensityThreshold = Default.intensityThreshold;
+            var smallAreaThreshold = Default.smallAreaThreshold;
+
+            if (dict.ContainsKey(AED.key_INTENSITY_THRESHOLD) && dict.ContainsKey(AED.key_SMALLAREA_THRESHOLD))
+            {
+                intensityThreshold = Convert.ToDouble(dict[AED.key_INTENSITY_THRESHOLD]);
+                smallAreaThreshold = Convert.ToInt32(dict[AED.key_SMALLAREA_THRESHOLD]);
+            }
+
+            // execute
+            var result = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold);
+            var events = result.Item2;
+
+            // AcousticEvent results
+            return
+                events.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(ae, new ResultProperty(ae.Name, null, DefaultNormalisedScore)));
+        }
+
+        /// <summary>
         /// Oscillation Recogniser.
         /// </summary>
         /// <param name="settingsFile">
@@ -212,12 +209,72 @@ namespace AnalysisPrograms.Processing
                 events.Select(
                     ae =>
                     ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name, ae.ScoreNormalised,
-                            new Dictionary<string, string>
-                                {
-                                    { "Description", "Normalised score" }
-                                })));
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        }
+
+        /// <summary>
+        /// event pattern recogniser.
+        /// </summary>
+        /// <param name="settingsFile">
+        /// The settings File.
+        /// </param>
+        /// <param name="audioFile">
+        /// The audio file.
+        /// </param>
+        /// <returns>
+        /// Processing results.
+        /// </returns>
+        internal static IEnumerable<ProcessorResultTag> RunEpr(FileInfo settingsFile, FileInfo audioFile)
+        {
+            // no settings, yet
+
+            // execute
+            var result = GroundParrotRecogniser.Detect(audioFile.FullName);
+            var events = result.Item2;
+
+            // AcousticEvent results
+            return
+                events.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+        }
+
+        /// <summary>
+        /// Spectral Peak Tracking Recogniser.
+        /// </summary>
+        /// <param name="settingsFile">
+        /// The settings file.
+        /// </param>
+        /// <param name="audioFile">
+        /// The audio file.
+        /// </param>
+        /// <returns>Processing results.
+        /// </returns>
+        /// <exception cref="NotImplementedException">Not completed.
+        /// </exception>
+        internal static IEnumerable<ProcessorResultTag> RunSpt(FileInfo settingsFile, FileInfo audioFile)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Syntactic pattern recognition.
+        /// </summary>
+        /// <param name="settingsFile">
+        /// The settings file.
+        /// </param>
+        /// <param name="audioFile">
+        /// The audio file.
+        /// </param>
+        /// <returns>Processing results.
+        /// </returns>
+        /// <exception cref="NotImplementedException">
+        /// Not completed.
+        /// </exception>
+        internal static IEnumerable<ProcessorResultTag> RunSpr(FileInfo settingsFile, FileInfo audioFile)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -265,62 +322,19 @@ namespace AnalysisPrograms.Processing
                 predictedEvents.Select(
                     ae =>
                     ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(
-                        ae.Name,
-                        ae.ScoreNormalised,
-                        new Dictionary<string, string> { { "Description", "Normalised score" } })));
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
 
             return prts;
         }
 
         /// <summary>
-        /// event pattern recogniser.
+        /// MFCC OD Regoniser.
         /// </summary>
-        /// <param name="settingsFile">
-        /// The settings File.
-        /// </param>
-        /// <param name="audioFile">
-        /// The audio file.
-        /// </param>
-        /// <returns>
-        /// Processing results.
-        /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunEpr(FileInfo settingsFile, FileInfo audioFile)
-        {
-            // no settings, yet
-
-            // execute
-            var result = GroundParrotRecogniser.Detect(audioFile.FullName);
-            var events = result.Item2;
-
-            // AcousticEvent results
-            return
-                events.Select(
-                    ae =>
-                    ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name, ae.ScoreNormalised,
-                            new Dictionary<string, string>
-                            {
-                                { "Description", "Normalised score" }
-                            })));
-        }
-
-        /// <summary>
-        /// Spectral Peak Tracking Recogniser.
-        /// </summary>
-        /// <param name="settingsFile">
-        /// The settings file.
-        /// </param>
-        /// <param name="audioFile">
-        /// The audio file.
-        /// </param>
-        /// <returns>Processing results.
-        /// </returns>
-        /// <exception cref="NotImplementedException">Not completed.
-        /// </exception>
-        internal static IEnumerable<ProcessorResultTag> RunSpt(FileInfo settingsFile, FileInfo audioFile)
+        /// <param name="resourceFile">Compressed resource file.</param>
+        /// <param name="runDir">Working directory.</param>
+        /// <param name="audioFile">Audio file to analyse.</param>
+        /// <returns>Processing results.</returns>
+        internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo resourceFile, DirectoryInfo runDir, FileInfo audioFile)
         {
             throw new NotImplementedException();
         }
@@ -351,26 +365,9 @@ namespace AnalysisPrograms.Processing
                 events.Select(
                     ae =>
                     ProcessingUtils.GetProcessorResultTag(
-                        ae,
-                        new ResultProperty(ae.Name,ae.ScoreNormalised,
-                            new Dictionary<string, string>
-                                {
-                                    { "Description", "Normalised score" }
-                                })));
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
 
             return prts;
-        }
-
-        /// <summary>
-        /// MFCC OD Regoniser.
-        /// </summary>
-        /// <param name="resourceFile">Compressed resource file.</param>
-        /// <param name="runDir">Working directory.</param>
-        /// <param name="audioFile">Audio file to analyse.</param>
-        /// <returns>Processing results.</returns>
-        internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo resourceFile, DirectoryInfo runDir, FileInfo audioFile)
-        {
-            throw new NotImplementedException();
         }
     }
 }
