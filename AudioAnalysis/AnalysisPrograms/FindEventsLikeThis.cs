@@ -26,7 +26,8 @@ namespace AnalysisPrograms
         //felt "C:\SensorNetworks\WavFiles\Koala_Male\SmallTestSet\HoneymoonBay_StBees_20080905-001000.wav" C:\SensorNetworks\Output\FELT_KoalaMaleForeplay_LargeTestSet\KoalaMaleForeplay_Params.txt events.txt
         //BRIDGE CREEK
         //felt "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_Params.txt events.txt
-
+        //CURLEW
+        //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
 
 
 
@@ -62,7 +63,10 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
+            string symbolPath = outputDir + targetName + "_symbol.txt";
             string targetPath = outputDir + targetName + "_target.png";
+
+            //symbolPath = outputDir + "experimental.txt";
             
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -89,7 +93,8 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
 
             //iii: GET THE TARGET
-            double[,] targetMatrix = FileTools.ReadDoubles2Matrix(matrixPath);
+            //double[,] targetMatrix = FileTools.ReadDoubles2Matrix(matrixPath);
+            double[,] targetMatrix = ReadChars2Matrix(symbolPath);
 
 
             //iv: Find matching events
@@ -130,7 +135,21 @@ namespace AnalysisPrograms
 
 
 
-
+        public static double[,] ReadChars2Matrix(string symbolPath)
+        {
+            List<string> lines = FileTools.ReadTextFile(symbolPath);
+            int rows = lines.Count;
+            int cols = lines[0].Length;
+            var m = new double[rows,cols];
+            for (int r = 0; r < rows; r++)
+            {
+                string line = lines[r];
+                for (int c = 0; c < cols; c++)
+                    if(line[c] == '+') m[r,c] = 1.0;
+                    else m[r,c] = -1.0;
+            }
+            return m;
+        }
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path,
