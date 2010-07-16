@@ -261,7 +261,7 @@ namespace QutSensors.Processor
                 " " + item.AnalysisGenericType + // type of analysis to run
                 " \"" + runDirectory.FullName + "\""; // run directory
 
-            if (!string.IsNullOrEmpty(item.AnalysisAdditionalData.Trim()))
+            if (!string.IsNullOrEmpty(item.AnalysisAdditionalData) && !string.IsNullOrEmpty(item.AnalysisAdditionalData.Trim()))
             {
                 argString += " \"" + Shared.Utilities.ExecutingDirectory + "\\Resources\\" + item.AnalysisAdditionalData + "\""; // resource file name
             }
