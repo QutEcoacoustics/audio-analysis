@@ -22,11 +22,11 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="frameOverlap"></param>
         /// <param name="smoothWindow">only used for segmentation.</param>
-        /// <param name="thresholdSD">threshold expressed as standard deviations of the background noise</param>
+        /// <param name="thresholdDB">threshold expressed as average dB per pixel in the call pattern</param>
         /// <param name="minDuration"></param>
         /// <returns></returns>
         public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> ExecuteFELT(double[,] target, double dynamicRange, AudioRecording recording,
-                   bool doSegmentation, int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdSD, double minDuration)
+                   bool doSegmentation, int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdDB, double minDuration)
         {
             //i: CHECK RECORDING
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
@@ -57,49 +57,163 @@ namespace AudioAnalysisTools
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
-            //iii: SUBTRACT MODAL NOISE
-            //double[] modalNoise = SNR.CalculateModalNoise(sonogram.Data); //calculate modal noise profile
-            //modalNoise = DataTools.filterMovingAverage(modalNoise, 7);    //smooth the noise profile
-            //sonogram.Data = SNR.RemoveModalNoise(sonogram.Data, modalNoise); //sets neg values to zero
-
             //iv: DO SEGMENTATION
             double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdSD, minDuration, maxDuration);
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdDB, minDuration, maxDuration);
             var segmentEvents = tuple.Item1;
             var intensity = tuple.Item5;
-            
+
             //iv SCORE SONOGRAM FOR EVENTS LIKE TARGET
-            var tuple2 = FindMatchingEvents.Execute_StewartGage(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
+            var tuple2 = FindMatchingEvents.Execute_SymbolicMatch(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
+            //var tuple2 = FindMatchingEvents.Execute_StewartGage(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_SobelEdges(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
             var scores = tuple2.Item1;
 
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}", scores.Min(), scores.Max());
             double Q, SD;
             scores = SNR.NoiseSubtractMode(scores, out Q, out SD);
             Log.WriteLine("Match Scores: baseline score and SD: Q={0:f4}, SD={1:f4}", Q, SD);
-            double matchThreshold = thresholdSD * SD;
+            double matchThreshold = thresholdDB;
 
             //v: EXTRACT EVENTS
-            int targetLength = target.GetLength(0);
             var eventScores = scores;
-            for (int i = 1; i < scores.Length - targetLength; i++)
-            {
-                if (scores[i] > matchThreshold)
-                {
-                    for (int j = 0; j < targetLength; j++) if (scores[i] > scores[i - 1])
-                        eventScores[i + j] = scores[i];
-                }
-            }
+            //first extend the scores where above the threshold
+            //int targetLength = target.GetLength(0);
+            //for (int i = 1; i < scores.Length - targetLength; i++)
+            //{
+            //    if (scores[i] > matchThreshold)
+            //    {
+            //        for (int j = 0; j < targetLength; j++) if (scores[i] > scores[i - 1])
+            //            eventScores[i + j] = scores[i];
+            //    }
+            //}
+            //now extract events
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(eventScores, minHz, maxHz, sonogram.FramesPerSecond,
+                                                   sonogram.FBinWidth, matchThreshold, minDuration, maxDuration, recording.FileName, sonoConfig.CallName);
 
-
-            List<AcousticEvent> matchEvents = AcousticEvent.ConvertIntensityArray2Events(eventScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                   sonogram.FBinWidth, matchThreshold, minDuration, maxDuration, recording.FileName);
             return System.Tuple.Create(sonogram, matchEvents, scores, matchThreshold);
         }//end ExecuteFELT
 
 
 
-        public static System.Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectralSonogram sonogram, 
+        /// <summary>
+        /// Use this method to find match in sonogram to a symbolic definition of a shape.
+        /// That is, target should be matrix of binary or trinary values.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="dynamicRange"></param>
+        /// <param name="sonogram"></param>
+        /// <param name="segments"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="minDuration"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[]> Execute_SymbolicMatch(double[,] target, double dynamicRange, SpectralSonogram sonogram, 
+                                    List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
+        {
+            Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
+            if (segments == null) return null;
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            int targetLength = target.GetLength(0);
+            //var image = BaseSonogram.Data2ImageData(target);
+            //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
+
+            //target = NormaliseSymbolicMatrix(target); //tried but does not help
+            double[] scores = new double[sonogram.FrameCount];
+            int offset = targetLength / 2;
+            //count positives
+            int positiveCount = CountPositives(target);
+            Log.WriteLine("# Positive Count = " + positiveCount);
+
+            foreach (AcousticEvent av in segments)
+            {
+                Log.WriteLine("SEARCHING SEGMENT.");
+                int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
+                int endRow   = (int)Math.Round(av.EndTime   * sonogram.FramesPerSecond);
+                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
+                int stopRow = endRow - targetLength;
+                if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
+                int cellCount = target.GetLength(0) * target.GetLength(1); //area of
+
+
+                for (int r = startRow; r < stopRow; r++)
+                {
+                    double max = -double.MaxValue;
+                    for (int bin = -10; bin < +10; bin++)
+                    {
+                        double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin+bin, r + targetLength - 1, maxBin+bin);
+                        //var image = BaseSonogram.Data2ImageData(matrix);
+                        //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
+
+                        double crossCor = DataTools.DotProduct(target, matrix);
+                        if (crossCor > max) max = crossCor;
+                    }
+                    scores[r + offset] = max / (double)positiveCount;
+                } // end of rows in segment
+            } // foreach (AcousticEvent av in segments)
+
+            var tuple = System.Tuple.Create(scores);
+            return tuple;
+        }//Execute
+
+
+        public static int CountPositives(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            int count = 0;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                    if (m[r, c] == 1.0) count++;
+            }
+            return count;
+        }
+
+
+        public static double[,] NormaliseSymbolicMatrix(double[,] target)
+        {
+            int rows = target.GetLength(0);
+            int cols = target.GetLength(1);
+            //var m = new double[rows, cols];
+            int posCount = 0;
+            int negCount = 0; 
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                    if (target[r, c] > 0) posCount++;
+                    else 
+                    if (target[r, c] < 0) negCount++;
+            }
+            double ratio = posCount / (double)negCount;
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    if (target[r, c] < 0) target[r, c] = ratio;
+                }
+            }
+            return target;
+        }
+
+
+        /// <summary>
+        /// Use this method when want to match defined shape in target using cross-correlation.
+        /// This was the method used by Stewart Gage.
+        /// First set target and source to same dynamic range.
+        /// Then normalise target and source to unit-length.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="dynamicRange"></param>
+        /// <param name="sonogram"></param>
+        /// <param name="segments"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="minDuration"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[]> Execute_StewartGage(double[,] target, double dynamicRange, SpectralSonogram sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
@@ -109,46 +223,41 @@ namespace AudioAnalysisTools
             int targetLength = target.GetLength(0);
 
             //adjust target's dynamic range to that set by user 
-            //target = SNR.SetDynamicRange(target, 0.0, dynamicRange); //set event's dynamic range
+            target = SNR.SetDynamicRange(target, 0.0, dynamicRange); //set event's dynamic range
             double[] v1 = DataTools.Matrix2Array(target);
-            //v1 = DataTools.normalise2UnitLength(v1);
-            //string imagePath2 = @"C:\SensorNetworks\Output\FELT_Currawong\target.png";
+            v1 = DataTools.normalise2UnitLength(v1);
             //var image = BaseSonogram.Data2ImageData(target);
-            //ImageTools.DrawMatrix(image, 1, 1, imagePath2);
+            //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
 
             double[] scores = new double[sonogram.FrameCount];
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Round(av.EndTime   * sonogram.FramesPerSecond);
+                int endRow = (int)Math.Round(av.EndTime * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
-                if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
+                if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
                 int offset = targetLength / 2;
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin, r + targetLength - 1, maxBin);
-                    //matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
-
-                    //string imagePath2 = @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png";
+                    matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
                     //var image = BaseSonogram.Data2ImageData(matrix);
-                    //ImageTools.DrawMatrix(image, 1, 1, imagePath2);
+                    //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
                     double[] v2 = DataTools.Matrix2Array(matrix);
-                    //v2 = DataTools.normalise2UnitLength(v2);
-                    double crossCor = DataTools.DotProduct(v1, v2);
-                    //scores[r + offset] = crossCor / v1.Length; // use this score if not going to extend
-                    scores[r] = crossCor / v1.Length;            // use this score if going to extend
-                    //Log.WriteLine("row={0}\t{1:f10}", r, scores[r]); 
+                    v2 = DataTools.normalise2UnitLength(v2);
+                    scores[r] = DataTools.DotProduct(v1, v2);  //the Cross Correlation
                 } // end of rows in segment
-                //for (int r = stopRow; r < endRow; r++) scores[r] = scores[stopRow-1]; //fill in end of segment
             } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
             return tuple;
         }//Execute
+
+
 
         public static System.Tuple<double[]> Execute_SobelEdges(double[,] target, double dynamicRange, SpectralSonogram sonogram,
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)

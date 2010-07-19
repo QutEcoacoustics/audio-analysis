@@ -91,7 +91,10 @@ namespace AnalysisPrograms
             //iv: SAVE extracted event as matrix of dB intensity values
             FileTools.WriteMatrix2File(matrix, matrixPath);
             //Save extracted event as a matrix of char symbols '+' and '-'
-            WriteMatrixAsSymbols(matrix, symbolPath);
+            WriteTargetMatrixAsBinarySymbols(matrix, symbolPath);
+            var haloMMatrix = HaloTarget(matrix);
+            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, symbolPath + ".halo.txt");
+
 
             //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
 
@@ -167,8 +170,69 @@ namespace AnalysisPrograms
         }//end Execute_Extraction()
 
 
+        /// <summary>
+        /// This metnod converts a matrix of binary values (+1, -1) to trinary matrix of (-1,0,+1) values.
+        /// Purpose is to encircle the required shape with a halo of -1 values and set values outside the halo to zero.
+        /// This helps to define an arbitrary shape despite enclosing it in a rectangular matrix.
+        /// The algorithm starts from the four corners of matrix and works towards the centre.
+        /// This approach yields less than perfect result and target matrix should be manually edited.
+        /// </summary>
+        /// <param name="target"></param>
+        /// <returns></returns>
+        public static double[,] HaloTarget(double[,] target)
+        {
+            int rows = target.GetLength(0);
+            int cols = target.GetLength(1);
+            int halfRows = rows / 2;
+            int halfCols = cols / 2;
+            var opm = new double[rows, cols];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++) opm[r, c] = target[r, c];
+            //work from the four corners - start top left
+            for (int r = 1; r < halfRows + 1; r++)
+                for (int c = 1; c < halfCols + 1; c++)
+                {
+                    int sum = (int)(target[r - 1, c - 1] + target[r, c - 1] + target[r + 1, c - 1] + target[r, c - 1] + target[r, c] + target[r, c + 1] + target[r + 1, c - 1] + target[r + 1, c] + target[r + 1, c + 1]);
 
-        public static void WriteMatrixAsSymbols(double[,] matrix, string matrixPath)
+                    if (sum == -9) { opm[r - 1, c - 1] = 0; }
+                }
+            //bottom left
+            for (int r = halfRows - 1; r < rows - 1; r++)
+                for (int c = 1; c < halfCols + 1; c++)
+                {
+                    int sum = (int)(target[r - 1, c - 1] + target[r, c - 1] + target[r + 1, c - 1] + target[r, c - 1] + target[r, c] + target[r, c + 1] + target[r + 1, c - 1] + target[r + 1, c] + target[r + 1, c + 1]);
+
+                    if (sum == -9) { opm[r + 1, c - 1] = 0; }
+                }
+            //top right
+            for (int r = 1; r < halfRows + 1; r++)
+                for (int c = halfCols - 1; c < cols - 1; c++)
+                {
+                    int sum = (int)(target[r - 1, c - 1] + target[r, c - 1] + target[r + 1, c - 1] + target[r, c - 1] + target[r, c] + target[r, c + 1] + target[r + 1, c - 1] + target[r + 1, c] + target[r + 1, c + 1]);
+
+                    if (sum == -9) { opm[r - 1, c + 1] = 0; }
+                }
+            //bottom right
+            for (int r = halfRows - 1; r < rows - 1; r++)
+                for (int c = halfCols - 1; c < cols - 1; c++)
+                {
+                    int sum = (int)(target[r - 1, c - 1] + target[r, c - 1] + target[r + 1, c - 1] + target[r - 1, c] + target[r, c] + target[r + 1, c] + target[r + 1, c + 1] + target[r, c + 1] + target[r + 1, c + 1]);
+
+                    if (sum == -9) { opm[r + 1, c + 1] = 0; }
+                }
+
+            //increase weight of negatives because there are now fewer of them.
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++) if (opm[r, c] == -1) opm[r, c] = -2;
+
+            return opm;
+        }
+
+
+
+
+
+        public static void WriteTargetMatrixAsBinarySymbols(double[,] matrix, string matrixPath)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -181,6 +245,42 @@ namespace AnalysisPrograms
 
             FileTools.WriteMatrix2File(symbolic, matrixPath);
         }
+
+
+
+
+        /// <summary>
+        /// Writes to file the trinary matrix derived from the the previous method.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="path"></param>
+        public static void WriteTargetMatrixAsTrinarySymbols(double[,] m, string path)
+        {
+            int rows = m.GetLength(0);//height
+            int cols = m.GetLength(1);//width
+            //char[,] charM = new char[rows, cols]; 
+
+            var lines = new List<string>();
+
+            for (int i = 0; i < rows; i++)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < cols; j++)
+                {
+                    if (m[i, j] == 1.0) sb.Append("+");
+                    else
+                        if (m[i, j] <= -1.0) sb.Append("-");//allow for weighted negatives
+                        else
+                            if (m[i, j] == 0.0) sb.Append("0");
+                            else sb.Append("#");
+                }
+                lines.Add(sb.ToString());
+            }//end of all rows
+            FileTools.WriteTextFile(path, lines);
+
+        }
+
+
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, AcousticEvent ae)

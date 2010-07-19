@@ -63,7 +63,7 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
-            string symbolPath = outputDir + targetName + "_symbol.txt";
+            string symbolPath = outputDir + targetName + "_symbolHalo.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
             //symbolPath = outputDir + "experimental.txt";
@@ -95,7 +95,6 @@ namespace AnalysisPrograms
             //iii: GET THE TARGET
             //double[,] targetMatrix = FileTools.ReadDoubles2Matrix(matrixPath);
             double[,] targetMatrix = ReadChars2Matrix(symbolPath);
-
 
             //iv: Find matching events
             //#############################################################################################################################################
@@ -134,7 +133,11 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-
+        /// <summary>
+        /// reads matrix of chars into a trinary symbolisation of a call.
+        /// </summary>
+        /// <param name="symbolPath"></param>
+        /// <returns></returns>
         public static double[,] ReadChars2Matrix(string symbolPath)
         {
             List<string> lines = FileTools.ReadTextFile(symbolPath);
@@ -146,10 +149,12 @@ namespace AnalysisPrograms
                 string line = lines[r];
                 for (int c = 0; c < cols; c++)
                     if(line[c] == '+') m[r,c] = 1.0;
-                    else m[r,c] = -1.0;
+                    else if (line[c] == '-') m[r, c] = -1.0;
+                    else m[r,c] = 0.0;
             }
             return m;
         }
+
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path,
@@ -157,7 +162,6 @@ namespace AnalysisPrograms
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            //double maxScore = 50.0; //assumed max posisble oscillations per second
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
