@@ -41,7 +41,19 @@ namespace ProcessorUI
             InitializeComponent();
 
             this.workerName = Environment.MachineName;
-            lblInfo.Text = "Name: " + this.workerName;
+            lblWorkerName.Text = this.workerName;
+
+            try
+            {
+                using (var ws = new ProcessorServiceWrapper())
+                {
+                    lbWebserviceUrl.Text = ws.Proxy.Endpoint.Address.Uri.AbsoluteUri.Substring(0, 40) + "...";
+                }
+            }
+            catch
+            {
+                lbWebserviceUrl.Text = "unknown";
+            }
 
             this.timerIntervalMilliseconds = Convert.ToDouble(System.Configuration.ConfigurationManager.AppSettings[ActionIntervalMilliseconds]);
 
