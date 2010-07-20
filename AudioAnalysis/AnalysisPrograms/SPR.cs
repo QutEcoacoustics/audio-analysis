@@ -172,21 +172,25 @@ namespace AnalysisPrograms
                 var mVert = MarkLine(result1.Item1, slope, smallLengthThreshold - 3, intensityThreshold + 1, sensitivity);
                 Log.WriteLine("SPR finished");
 
+                //detect curlew calls
                 int minBound_Whistle = (int)(whistle_MinHz / sonogram.FBinWidth);
                 int maxBound_Whistle = (int)(whistle_MaxHz / sonogram.FBinWidth);
                 int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration); 
                 var result3 = DetectCurlew(mHori, mVert, minBound_Whistle, maxBound_Whistle, whistleFrames, smallLengthThreshold);
+
+                //process curlew scores - look for curlew characteristic periodicity
                 double minPeriod = 1.2;
                 double maxPeriod = 1.8;
                 int minPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * minPeriod);
                 int maxPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * maxPeriod);
-                scores = DetectRepetitions(result3.Item1, minPeriod_frames, maxPeriod_frames);
+                scores = DataTools.filterMovingAverage(result3.Item1, 21);
+                scores = DataTools.PeriodicityDetection(scores, minPeriod_frames, maxPeriod_frames);
 
-                hits = DataTools.AddMatrices(mHori, mVert);
-
+                //extract events
                 predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                               eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                hits = DataTools.AddMatrices(mHori, mVert);
                 sonogram.Data = result1.Item1;
                 Log.WriteLine("Extract Curlew calls - finished");
             }
@@ -462,35 +466,6 @@ namespace AnalysisPrograms
             var tuple = Tuple.Create(scores);
             return tuple;
         }//end detect Curlew
-
-
-        public static double[] DetectRepetitions(double[] scores1, int minPeriod, int maxPeriod)
-        {
-
-            var scores = DataTools.filterMovingAverage(scores1, 21);
-            int L = scores.Length;
-            double[] oscillationScores = new double[L];
-            int midPeriod = minPeriod + ((maxPeriod - minPeriod) / 2);
-            int buffer = (int)(maxPeriod * 2.5);//avoid end of recording/array
-
-            for (int r = 0; r < L - buffer; r++)
-            {
-                double maxScore = 0.0;
-                for (int period = minPeriod; period < maxPeriod; period++)
-                {
-                    double score    = scores1[r] + scores1[r + period] + scores1[r + (period * 2)];
-                    double offScore = scores1[r + (int)(period * 0.5)] + scores1[r + (int)(period*1.5)] + scores1[r + (int)(period*2.5)];
-                    score -= offScore;
-                    if (score > maxScore)
-                    {
-                        maxScore = score;
-                        oscillationScores[r + midPeriod] = maxScore / 3;
-                    }
-                }
-            }
-            return oscillationScores;
-        }
-
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,

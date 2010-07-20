@@ -1957,6 +1957,34 @@ namespace TowseyLib
   }
 
 
+
+
+  public static double[] PeriodicityDetection(double[] values, int minPeriod, int maxPeriod)
+  {
+
+      int L = values.Length;
+      double[] oscillationScores = new double[L];
+      int midPeriod = minPeriod + ((maxPeriod - minPeriod) / 2);
+      int buffer = (int)(maxPeriod * 2.5);//avoid end of recording/array
+
+      for (int r = 0; r < L - buffer; r++)
+      {
+          double maxScore = -double.MaxValue;
+          for (int period = minPeriod; period < maxPeriod; period++)
+          {
+              double periodScore    = values[r] + values[r + period]  + values[r + (period * 2)];
+              double offPeriodScore = values[r + (int)(period * 0.5)] + values[r + (int)(period * 1.5)] + values[r + (int)(period * 2.5)];
+              periodScore -= offPeriodScore;
+              if (periodScore > maxScore) maxScore = periodScore;
+          }
+          oscillationScores[r + midPeriod] = maxScore / 3;
+      }
+      return oscillationScores;
+  }
+
+
+
+
   //=============================================================================
 
 

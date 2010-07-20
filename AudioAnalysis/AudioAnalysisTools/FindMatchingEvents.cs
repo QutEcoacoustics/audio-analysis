@@ -59,7 +59,8 @@ namespace AudioAnalysisTools
 
             //iv: DO SEGMENTATION
             double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
-            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, thresholdDB, minDuration, maxDuration);
+            double segmentationThreshold = thresholdDB;
+            var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple.Item1;
             var intensity = tuple.Item5;
 
@@ -70,14 +71,17 @@ namespace AudioAnalysisTools
             //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
             var scores = tuple2.Item1;
 
+            //process the score array. Set (values < 0.0) = 0.0;
             Console.WriteLine("Scores: min={0:f4}, max={1:f4}", scores.Min(), scores.Max());
-            double Q, SD;
-            scores = SNR.NoiseSubtractMode(scores, out Q, out SD);
-            Log.WriteLine("Match Scores: baseline score and SD: Q={0:f4}, SD={1:f4}", Q, SD);
+            for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
+
+            //double Q, SD;
+            //scores = SNR.NoiseSubtractMode(scores, out Q, out SD);
+            //Log.WriteLine("Match Scores: baseline score and SD: Q={0:f4}, SD={1:f4}", Q, SD);
             double matchThreshold = thresholdDB;
 
             //v: EXTRACT EVENTS
-            var eventScores = scores;
+            //var eventScores = scores;
             //first extend the scores where above the threshold
             //int targetLength = target.GetLength(0);
             //for (int i = 1; i < scores.Length - targetLength; i++)
@@ -88,11 +92,27 @@ namespace AudioAnalysisTools
             //            eventScores[i + j] = scores[i];
             //    }
             //}
+
+            //################### FOLLOWING CODE USED ONLY FOR CURLEW DATASET FOR PAPER RESULTS ############################
+            //look for the characteristic periodicity of curlew calls
+            //double minPeriod = 1.2;
+            //double maxPeriod = 2.0;
+            //int minPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * minPeriod);
+            //int maxPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * maxPeriod);
+            scores = DataTools.filterMovingAverage(scores, 5);
+            //var eventScores = DataTools.PeriodicityDetection(scores, minPeriod_frames, maxPeriod_frames);
+            //matchThreshold -= 1.0;
+            //minDuration /= 2;
+            //Console.WriteLine("Periodic Scores: min={0:f4}, max={1:f4}, threshold={2}", eventScores.Min(), eventScores.Max(), matchThreshold);
+            //################################################################################################################ 
+            var eventScores = scores;
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2}", eventScores.Min(), eventScores.Max(), thresholdDB);
+
             //now extract events
             List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(eventScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                   sonogram.FBinWidth, matchThreshold, minDuration, maxDuration, recording.FileName, sonoConfig.CallName);
+                                                   sonogram.FBinWidth, thresholdDB, minDuration, maxDuration, recording.FileName, sonoConfig.CallName);
 
-            return System.Tuple.Create(sonogram, matchEvents, scores, matchThreshold);
+            return System.Tuple.Create(sonogram, matchEvents, eventScores, thresholdDB);
         }//end ExecuteFELT
 
 

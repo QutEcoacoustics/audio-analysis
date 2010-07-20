@@ -28,10 +28,11 @@ namespace AnalysisPrograms
         //felt "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_Params.txt events.txt
         //CURLEW
         //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
-
+        // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_CALL_NAME       = "CALL_NAME";
         public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
@@ -63,7 +64,7 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
-            string symbolPath = outputDir + targetName + "_symbolHalo.txt";
+            string symbolPath = outputDir + targetName + "_symbol.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
             //symbolPath = outputDir + "experimental.txt";
@@ -79,6 +80,7 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
+            string callName     = dict[key_CALL_NAME];
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
             bool doSegmentation = Boolean.Parse(dict[key_DO_SEGMENTATION]);
             double dynamicRange = Double.Parse(dict[key_DYNAMIC_RANGE]);      //dynamic range for target events
@@ -94,7 +96,7 @@ namespace AnalysisPrograms
 
             //iii: GET THE TARGET
             //double[,] targetMatrix = FileTools.ReadDoubles2Matrix(matrixPath);
-            double[,] targetMatrix = ReadChars2Matrix(symbolPath);
+            double[,] targetMatrix = ReadChars2TrinaryMatrix(symbolPath);
 
             //iv: Find matching events
             //#############################################################################################################################################
@@ -138,7 +140,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="symbolPath"></param>
         /// <returns></returns>
-        public static double[,] ReadChars2Matrix(string symbolPath)
+        public static double[,] ReadChars2TrinaryMatrix(string symbolPath)
         {
             List<string> lines = FileTools.ReadTextFile(symbolPath);
             int rows = lines.Count;
@@ -150,7 +152,13 @@ namespace AnalysisPrograms
                 for (int c = 0; c < cols; c++)
                     if(line[c] == '+') m[r,c] = 1.0;
                     else if (line[c] == '-') m[r, c] = -1.0;
-                    else m[r,c] = 0.0;
+                    else if (line[c] == '0') m[r, c] = 0.0;
+                    else
+                    {
+                        m[r, c] = 0.0;
+                        Log.WriteLine("### WARNING WARNING WARNING! Non-standard CHAR in file: {0}", Path.GetFileName(symbolPath));
+                        Log.WriteLine("###     Non-standard CHAR = {0} at position {1},{2}", line[c], r, c);
+                    }
             }
             return m;
         }
