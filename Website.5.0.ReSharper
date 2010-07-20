@@ -2,6 +2,7 @@
   <Daemon.SolutionSettings>
     <SkipFilesAndFolders>
       <Item>BDAEA7B5-28BE-45D5-952E-76820E474649/d:Linq/f:DB.designer.cs</Item>
+      <Item>DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7</Item>
     </SkipFilesAndFolders>
   </Daemon.SolutionSettings>
 </Configuration>
