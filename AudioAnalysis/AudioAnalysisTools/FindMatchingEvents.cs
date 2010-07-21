@@ -48,7 +48,6 @@ namespace AudioAnalysisTools
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
-            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
             Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
@@ -65,63 +64,31 @@ namespace AudioAnalysisTools
             var intensity = tuple.Item5;
 
             //iv SCORE SONOGRAM FOR EVENTS LIKE TARGET
-            var tuple2 = FindMatchingEvents.Execute_SymbolicMatch(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
+            var tuple2 = FindMatchingEvents.Execute_SymbolicMatch(target, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_StewartGage(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_SobelEdges(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
-            var scores = tuple2.Item1;
 
-            //process the score array. Set (values < 0.0) = 0.0;
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}", scores.Min(), scores.Max());
+            //v: PROCESS SCORE ARRAY
+            var scores = DataTools.filterMovingAverage(tuple2.Item1, 5);
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), thresholdDB);
+            //Set (scores < 0.0) = 0.0;
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
 
-            //double Q, SD;
-            //scores = SNR.NoiseSubtractMode(scores, out Q, out SD);
-            //Log.WriteLine("Match Scores: baseline score and SD: Q={0:f4}, SD={1:f4}", Q, SD);
-            double matchThreshold = thresholdDB;
+            //vi: EXTRACT EVENTS
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond,
+                                                 sonogram.FBinWidth, thresholdDB, minDuration, maxDuration, recording.FileName, sonoConfig.CallName);
 
-            //v: EXTRACT EVENTS
-            //var eventScores = scores;
-            //first extend the scores where above the threshold
-            //int targetLength = target.GetLength(0);
-            //for (int i = 1; i < scores.Length - targetLength; i++)
-            //{
-            //    if (scores[i] > matchThreshold)
-            //    {
-            //        for (int j = 0; j < targetLength; j++) if (scores[i] > scores[i - 1])
-            //            eventScores[i + j] = scores[i];
-            //    }
-            //}
-
-            //################### FOLLOWING CODE USED ONLY FOR CURLEW DATASET FOR PAPER RESULTS ############################
-            //look for the characteristic periodicity of curlew calls
-            //double minPeriod = 1.2;
-            //double maxPeriod = 2.0;
-            //int minPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * minPeriod);
-            //int maxPeriod_frames = (int)Math.Round(sonogram.FramesPerSecond * maxPeriod);
-            scores = DataTools.filterMovingAverage(scores, 5);
-            //var eventScores = DataTools.PeriodicityDetection(scores, minPeriod_frames, maxPeriod_frames);
-            //matchThreshold -= 1.0;
-            //minDuration /= 2;
-            //Console.WriteLine("Periodic Scores: min={0:f4}, max={1:f4}, threshold={2}", eventScores.Min(), eventScores.Max(), matchThreshold);
-            //################################################################################################################ 
-            var eventScores = scores;
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2}", eventScores.Min(), eventScores.Max(), thresholdDB);
-
-            //now extract events
-            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(eventScores, minHz, maxHz, sonogram.FramesPerSecond,
-                                                   sonogram.FBinWidth, thresholdDB, minDuration, maxDuration, recording.FileName, sonoConfig.CallName);
-
-            return System.Tuple.Create(sonogram, matchEvents, eventScores, thresholdDB);
+            return System.Tuple.Create(sonogram, matchEvents, scores, thresholdDB);
         }//end ExecuteFELT
 
 
 
         /// <summary>
-        /// Use this method to find match in sonogram to a symbolic definition of a shape.
-        /// That is, target should be matrix of binary or trinary values.
+        /// Use this method to find match in sonogram to a symbolic definition of a bird call.
+        /// That is, the template should be matrix of binary or trinary values.
         /// </summary>
-        /// <param name="target"></param>
+        /// <param name="template"></param>
         /// <param name="dynamicRange"></param>
         /// <param name="sonogram"></param>
         /// <param name="segments"></param>
@@ -129,22 +96,26 @@ namespace AudioAnalysisTools
         /// <param name="maxHz"></param>
         /// <param name="minDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<double[]> Execute_SymbolicMatch(double[,] target, double dynamicRange, SpectralSonogram sonogram, 
+        public static System.Tuple<double[]> Execute_SymbolicMatch(double[,] template, SpectralSonogram sonogram, 
                                     List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
             if (segments == null) return null;
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
-            int targetLength = target.GetLength(0);
+            int targetLength = template.GetLength(0);
             //var image = BaseSonogram.Data2ImageData(target);
             //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
+            
+            // ######### Following line normalises template scores for comparison between templates.
+            // ######### Ensures OP=0 for featureless sonogram #########
+            // ######### template score = average of positive-template dB - average neg-template decibels. 
+            template = NormaliseSymbolicMatrix(template); 
 
-            //target = NormaliseSymbolicMatrix(target); //tried but does not help
             double[] scores = new double[sonogram.FrameCount];
             int offset = targetLength / 2;
             //count positives
-            int positiveCount = CountPositives(target);
+            int positiveCount = CountPositives(template);
             Log.WriteLine("# Positive Count = " + positiveCount);
 
             foreach (AcousticEvent av in segments)
@@ -155,7 +126,7 @@ namespace AudioAnalysisTools
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
                 if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
-                int cellCount = target.GetLength(0) * target.GetLength(1); //area of
+                int cellCount = template.GetLength(0) * template.GetLength(1); //area of
 
 
                 for (int r = startRow; r < stopRow; r++)
@@ -167,7 +138,7 @@ namespace AudioAnalysisTools
                         //var image = BaseSonogram.Data2ImageData(matrix);
                         //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
-                        double crossCor = DataTools.DotProduct(target, matrix);
+                        double crossCor = DataTools.DotProduct(template, matrix);
                         if (crossCor > max) max = crossCor;
                     }
                     scores[r + offset] = max / (double)positiveCount;
@@ -212,7 +183,7 @@ namespace AudioAnalysisTools
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    if (target[r, c] < 0) target[r, c] = ratio;
+                    if (target[r, c] < 0) target[r, c] = -ratio;
                 }
             }
             return target;
