@@ -64,7 +64,7 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
-            string symbolPath = outputDir + targetName + "_symbol.txt";
+            string symbolPath = outputDir + targetName + "_symbolHalo.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
             //symbolPath = outputDir + "experimental.txt";
