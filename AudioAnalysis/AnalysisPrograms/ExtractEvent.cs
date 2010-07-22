@@ -73,6 +73,8 @@ namespace AnalysisPrograms
             double eventEnd        = Double.Parse(dict[key_EVENT_END]);           // 
             int minHz              = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz              = Int32.Parse(dict[key_MAX_HZ]);
+            double templateThreshold = 4.0; // dB threshold
+
             //double smoothWindow    = Double.Parse(dict[key_SMOOTH_WINDOW]);       //duration of DCT in seconds 
             //double minDuration     = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
             //double eventThreshold  = Double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
@@ -90,14 +92,11 @@ namespace AnalysisPrograms
 
             //iv: SAVE extracted event as matrix of dB intensity values
             FileTools.WriteMatrix2File(matrix, matrixPath);
-            //Save extracted event as a matrix of char symbols '+' and '-'
-            WriteTargetMatrixAsBinarySymbols(matrix, symbolPath);
-            var haloMMatrix = HaloTarget(matrix);
-            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, symbolPath + ".halo.txt");
-
-
+            // Save extracted event as a matrix of char symbols '+' and '-'
+            WriteTargetMatrixAsBinarySymbols(matrix, templateThreshold, symbolPath);
+            var haloMMatrix = HaloTarget(matrix);                                     // ######################## CHECK THIS - NEEDS DEBUGGING
+            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, symbolPath + ".halo.txt"); // ######################## CHECK THIS - NEEDS DEBUGGING
             //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
-
 
             //v: SAVE images of extracted event in the original sonogram 
             if (DRAW_SONOGRAMS > 0)
@@ -232,7 +231,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void WriteTargetMatrixAsBinarySymbols(double[,] matrix, string matrixPath)
+        public static void WriteTargetMatrixAsBinarySymbols(double[,] matrix, double threshold, string matrixPath)
         {
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -240,8 +239,8 @@ namespace AnalysisPrograms
 
             for (int i = 0; i < rows; i++)
                 for (int j = 0; j < cols; j++)
-                    if (matrix[i, j] > 4.0) symbolic[i, j] = '+';
-                    else                    symbolic[i, j] = '-';
+                    if (matrix[i, j] > threshold) symbolic[i, j] = '+';
+                    else                          symbolic[i, j] = '-';
 
             FileTools.WriteMatrix2File(symbolic, matrixPath);
         }

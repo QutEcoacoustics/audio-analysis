@@ -132,7 +132,7 @@ namespace AudioAnalysisTools
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double max = -double.MaxValue;
-                    for (int bin = -10; bin < +10; bin++)
+                    for (int bin = -10; bin < +10; bin++) //################################ TO DO - SPECIFY THE FREQ BAND
                     {
                         double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin+bin, r + targetLength - 1, maxBin+bin);
                         //var image = BaseSonogram.Data2ImageData(matrix);
