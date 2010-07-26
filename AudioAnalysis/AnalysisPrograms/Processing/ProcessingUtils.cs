@@ -54,7 +54,7 @@ namespace AnalysisPrograms.Processing
                 MaxFrequency = ae.MaxFreq,
 
                 // TODO: store more info about AcousticEvents?
-                ExtraDetail = ae.ResultPropertyList != null ? ae.ResultPropertyList.ToList() : null
+                ExtraDetail = ae.ResultPropertyList != null ? ae.ResultPropertyList.ToList() : null,
             };
 
             return prt;
