@@ -40,8 +40,10 @@ namespace QutSensors.Processor
 
         private const string RunDirectory = "RunDirectory";
 
-        // NOTE: if you change these file names, they also need to be changed in AnalysisPrograms.Processing.ProcessingUtils
-        // input files
+        /*
+         * NOTE:   if you change these file names, they also need to be changed 
+         * NOTE:   in AnalysisPrograms.Processing.ProcessingUtils input files
+        */
         private const string SettingsFileName = "processing_input_settings.txt";
         private const string AudioFileName = "processing_input_audio.wav";
 
@@ -53,8 +55,6 @@ namespace QutSensors.Processor
         private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
         private const string ProgramOutputResultsFileName = "output_results.xml";
         private const string ProgramOutputErrorFileName = "output_error.txt";
-
-        private const string Wav = "wav";
 
         #region Singleton Pattern
 
@@ -547,7 +547,7 @@ namespace QutSensors.Processor
             var newRunDir = PrepareNewRun(item);
             if (newRunDir == null || !newRunDir.Exists)
             {
-                this.Log("Problem creating '" + newRunDir + "' or downloading audio.");
+                this.Log("Problem preparing or downloading audio for JobItemId " + item.JobItemId);
                 return null;
             }
 
