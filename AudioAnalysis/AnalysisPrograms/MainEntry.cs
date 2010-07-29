@@ -42,7 +42,7 @@ namespace AnalysisPrograms
                         SPR.Dev(r);
                         break;
 
-                    // READY TO BE USED - REQUIRE PARAMS FILE ONLY
+                    // READY TO BE USED - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
                         MFCC_OD.Dev(r);
                         break;
