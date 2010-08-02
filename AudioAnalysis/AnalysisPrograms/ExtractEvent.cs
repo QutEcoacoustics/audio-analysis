@@ -18,16 +18,19 @@ namespace AnalysisPrograms
         //eventX "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.mp3" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt  FELT_Currawong1
         //eventX "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt  FELT_Curlew1
 
+        //ZIP THE OUTPUT FILES
+        bool zipOutput = false;
+        
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
+        //public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
         public static string key_EVENT_START = "EVENT_START";
         public static string key_EVENT_END   = "EVENT_END";
         public static string key_MIN_HZ = "MIN_HZ";
         public static string key_MAX_HZ = "MAX_HZ";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
-        public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
-        public static string key_MIN_DURATION = "MIN_DURATION";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
+        //public static string key_SMOOTH_WINDOW = "SMOOTH_WINDOW";
+        //public static string key_MIN_DURATION = "MIN_DURATION";
+        //public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
         public static string eventsFile = "events.txt";
@@ -48,11 +51,12 @@ namespace AnalysisPrograms
             string iniPath       = args[1];
             string targetName    = args[2]; //prefix of name of created files 
 
-            string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
-            string opPath     = outputDir + targetName + "_info.txt";
-            string matrixPath = outputDir + targetName + "_target.txt";
-            string symbolPath = outputDir + targetName + "_symbol.txt";
-            string targetPath = outputDir + targetName + "_target.png";
+            string outputDir   = Path.GetDirectoryName(iniPath) + "\\";
+            string opPath      = outputDir + targetName + "_info.txt";
+            string matrixPath  = outputDir + targetName + "_target.txt";
+            string binaryPath  = outputDir + targetName + "_binary.txt";
+            string trinaryPath = outputDir + targetName + "_trinary.txt";
+            string targetPath  = outputDir + targetName + "_target.png";
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -66,19 +70,19 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[SNR.key_Snr.key_NOISE_REDUCTION_TYPE]);
-            double dynamicRange    = Double.Parse(dict[SNR.key_Snr.key_DYNAMIC_RANGE]);
-            double eventStart      = Double.Parse(dict[key_EVENT_START]);
-            double eventEnd        = Double.Parse(dict[key_EVENT_END]);           // 
-            int minHz              = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz              = Int32.Parse(dict[key_MAX_HZ]);
+            double frameOverlap      = Double.Parse(dict[key_FRAME_OVERLAP]);
+            NoiseReductionType nrt   = SNR.Key2NoiseReductionType(dict[SNR.key_Snr.key_NOISE_REDUCTION_TYPE]);
+            double dynamicRange      = Double.Parse(dict[SNR.key_Snr.key_DYNAMIC_RANGE]);
+            double eventStart        = Double.Parse(dict[key_EVENT_START]);
+            double eventEnd          = Double.Parse(dict[key_EVENT_END]);            
+            int minHz                = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz                = Int32.Parse(dict[key_MAX_HZ]);
             double templateThreshold = 4.0; // dB threshold
 
             //double smoothWindow    = Double.Parse(dict[key_SMOOTH_WINDOW]);       //duration of DCT in seconds 
             //double minDuration     = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
             //double eventThreshold  = Double.Parse(dict[key_EVENT_THRESHOLD]);     //min score for an acceptable event
-            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
+            int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);             //options to draw sonogram
 
             //iii: Extract the event
             //#############################################################################################################################################
@@ -93,9 +97,9 @@ namespace AnalysisPrograms
             //iv: SAVE extracted event as matrix of dB intensity values
             FileTools.WriteMatrix2File(matrix, matrixPath);
             // Save extracted event as a matrix of char symbols '+' and '-'
-            WriteTargetMatrixAsBinarySymbols(matrix, templateThreshold, symbolPath);
+            WriteTargetMatrixAsBinarySymbols(matrix, templateThreshold, binaryPath);
             var haloMMatrix = HaloTarget(matrix);                                     // ######################## CHECK THIS - NEEDS DEBUGGING
-            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, symbolPath + ".halo.txt"); // ######################## CHECK THIS - NEEDS DEBUGGING
+            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, trinaryPath);              
             //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
 
             //v: SAVE images of extracted event in the original sonogram 
@@ -117,12 +121,13 @@ namespace AnalysisPrograms
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
-            string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
+            //string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
+            string testRecording = recordingPath;
             string paramsPath    = iniPath;
-            string[] arguments = new string[3];
-            arguments[0] = testRecording;
-            arguments[1] = paramsPath;
-            arguments[2] = targetName;
+            string[] arguments   = new string[3];
+            arguments[0]         = testRecording;
+            arguments[1]         = paramsPath;
+            arguments[2]         = targetName;
             FindEventsLikeThis.Dev(arguments);
 
             Log.WriteLine("# Finished recording");

@@ -987,7 +987,6 @@ namespace TowseyLib
 
 			int rows = m.GetLength(0);
 			int cols = m.GetLength(1);
-			double[,] ret = new double[rows,cols];
 
             for (int i = 0; i < rows; i++)
             {
@@ -999,6 +998,9 @@ namespace TowseyLib
                 }
             }
 			double range = max - min;
+
+            double[,] ret = new double[rows, cols];
+            if (range == 0.0) return ret;
 
             for (int i = 0; i < rows; i++)
             {
