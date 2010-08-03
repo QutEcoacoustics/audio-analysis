@@ -64,10 +64,10 @@ namespace AnalysisPrograms
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
             string matrixPath = outputDir + targetName + "_target.txt";
-            string symbolPath = outputDir + targetName + "_binary.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
-            //symbolPath = outputDir + "experimental.txt";
+            string symbolPath  = outputDir + targetName + "_binary.txt";
+            string trinaryPath = outputDir + targetName + "_trinary.txt";
             
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 

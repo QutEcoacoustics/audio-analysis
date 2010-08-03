@@ -24,20 +24,22 @@ namespace AudioAnalysisTools
         /// <param name="scores">return an array of scores over the entire recording</param>
         /// <param name="events">return a list of acoustic events</param>
         /// <param name="hits"></param>
-        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz, int minPeriod, int maxPeriod, 
-                                   double minAmplitude, double scoreThreshold, double expectedDuration,
-                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz, 
+                                 int minPeriod, int maxPeriod, double minAmplitude, double scoreThreshold, double expectedDuration)
         {
             //DETECT OSCILLATIONS
             bool normaliseDCT = true;
-            hits = DetectHarmonics(sonogram, minHz, maxHz, normaliseDCT, minPeriod, maxPeriod, minAmplitude);
+            var results = DetectHarmonics(sonogram, minHz, maxHz, normaliseDCT, minPeriod, maxPeriod, minAmplitude);
+            double[] scores = results.Item1;
+            var hits = results.Item2;
             hits = RemoveIsolatedHits(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            scores = GetHarmonicScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            //scores = GetHarmonicScores(hits, minHz, maxHz, sonogram.FBinWidth);
             double[] oscFreq = GetHDFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            events = ConvertHDScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
+            List<AcousticEvent> events = ConvertHDScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             expectedDuration, sonogram.Configuration.SourceFName);
+            return Tuple.Create(scores, hits, events);
         }//end method
 
 
@@ -60,7 +62,7 @@ namespace AudioAnalysisTools
         /// <returns></returns>
 
 
-        public static Double[,] DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
+        public static System.Tuple<double[], double[,]> DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
                                                    int minPeriod, int maxPeriod, double dctThreshold)
         {
             //find freq bins
@@ -69,11 +71,93 @@ namespace AudioAnalysisTools
 
             int hzWidth   = maxHz  - minHz;
 
-            Double[,] hits = DetectHarmonics(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
-            return hits;
+            var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
+            return results;
         }
 
-        public static Double[,] DetectHarmonics(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
+        public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
+                                                                         int minPeriod, int maxPeriod, double dctThreshold)
+        {
+
+            int binBand = maxBin - minBin + 1; //DCT spans N freq bins
+
+            int minIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
+            int maxIndex = (int)(hzWidth / (double)minPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
+            //double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
+            if (maxIndex > binBand) maxIndex = binBand; //safety check in case of future changes to code.
+
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            Double[,] hits = new Double[rows, cols];
+            double[] periodScore = new double[rows];
+            double peakThreshold = 3.0;
+
+
+            for (int r = 0; r < rows - 5; r++)
+            {
+                var array = new double[cols];
+                //accumulate J rows of values
+                for (int c = 0; c < cols; c++)
+                    for (int j = 0; j < 5; j++) array[c] += matrix[r + j, c];
+                for (int c = 0; c < cols; c++) array[c] /= 5.0; //average
+                //array = DataTools.SubtractMean(array);
+
+                //if (r > 70)
+                //{
+                //    DataTools.writeBarGraph(array);
+                //}
+                var peaks = DataTools.GetPeaks(array);
+                int peakCount = 0;
+                double peakScore = 0.0;
+                for (int c = minIndex; c <= maxIndex; c++)
+                    if ((peaks[c]) && (array[c] >= peakThreshold))
+                    {
+                        peakCount++;
+                        peakScore += array[c];
+                    }
+
+                //double maxscore = -Double.MaxValue;
+
+                //traverse columns - skip DC column
+                //for (int c = 0; c < binBand; c++)
+                //{
+                //    int baseline = minBin + c;
+                //    int period = minIndex + ((maxIndex - minIndex) / 2);
+                //    double sum = matrix[r, baseline - period] + matrix[r, baseline] + matrix[r, baseline + period];
+                //    if (sum > maxscore)
+                //    {
+                //        maxscore = sum;
+                //    }
+
+                    //for (int i = 0; i < binBand; i++) periodScore[i] = Math.Abs(periodScore[i]); //convert to absolute values
+                    //for (int i = 0; i < 5; i++) periodScore[i] = 0.0;                            //remove low freq values from consideration
+                    //if (normaliseDCT) periodScore = DataTools.normalise2UnitLength(periodScore);
+                    //int indexOfMaxValue = DataTools.GetMaxIndex(periodScore);
+                    ////DataTools.writeBarGraph(periodScore);
+
+                    //double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
+
+                    ////mark DCT location with harmonic freq, only if harmonic freq is in correct range and amplitude
+                    //if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (periodScore[indexOfMaxValue] > dctThreshold))
+                    //{
+                    //    for (int i = 0; i < binBand; i++) hits[r, c + i] = period;
+                    //    for (int i = 0; i < binBand; i++) hits[r + 1, c + i] = period; //alternate row
+                    //    //Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, periodScore[indexOfMaxValue]);
+                    //}
+     
+                //} //columns
+
+                //periodScore[r] = peakCount;
+                periodScore[r] = peakScore / binBand;
+                //r++; //do alternate row
+            }//rows
+
+            periodScore = DataTools.normalise(periodScore);
+            return Tuple.Create(periodScore, hits);
+        }
+
+
+        public static Double[,] DetectHarmonicsUsingDCT(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
                                                                          int minPeriod, int maxPeriod, double dctThreshold)
         {
 
