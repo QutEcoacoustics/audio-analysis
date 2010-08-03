@@ -135,6 +135,7 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
@@ -149,11 +150,11 @@ namespace AnalysisPrograms
 
             //iii: DETECT HARMONICS
             //bool normaliseDCT = true;
-            List<AcousticEvent> predictedEvents;  //predefinition of results event list
-            double[] scores;                      //predefinition of score array
-            Double[,] hits;                       //predefinition of hits matrix - to superimpose on sonogram image
-            HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, expectedDuration, out scores, out predictedEvents, out hits);
+            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
+                                         minAmplitude, eventThreshold, expectedDuration);
+            double[] scores = results.Item1;     //an array of periodicity scores
+            Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
+            List<AcousticEvent> predictedEvents = results.Item3;
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 

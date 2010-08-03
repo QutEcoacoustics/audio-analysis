@@ -266,7 +266,7 @@ namespace AnalysisPrograms
             int minBin = (int)(minHz / freqBinWidth);
             int maxBin = (int)(maxHz / freqBinWidth);
             int hzWidth = maxHz - minHz;
-            Double[,] hits = HarmonicAnalysis.DetectHarmonics(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
+            Double[,] hits = HarmonicAnalysis.DetectHarmonicsUsingDCT(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
             hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
