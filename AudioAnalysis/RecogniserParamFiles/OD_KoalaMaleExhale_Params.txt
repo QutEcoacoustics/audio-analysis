@@ -4,6 +4,8 @@ DRAW_SONOGRAMS=1
 # Above parameters NOT user modifiable
 # Below parameters ARE user modifiable.
 ################################################################################
+#Name of the required call. DO NOT change call names.
+CALL_NAME=KOALA_MALE
 # min and max of the freq band to search
 MIN_HZ=100          
 MAX_HZ=1100
