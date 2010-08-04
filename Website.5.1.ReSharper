@@ -81,6 +81,7 @@
         <PredefinedRule Inspect="True" Prefix="" Suffix="" Style="aaBb" ElementKind="PrivateStaticFields" />
         <PredefinedRule Inspect="True" Prefix="" Suffix="" Style="AaBb" ElementKind="PrivateConstants" />
         <PredefinedRule Inspect="True" Prefix="" Suffix="" Style="AaBb" ElementKind="PrivateStaticReadonly" />
+        <Abbreviation Text="ID" />
       </Naming2>
       <CustomMemberReorderingPatterns><![CDATA[<?xml version="1.0" encoding="utf-8"?>
 <Patterns xmlns="urn:shemas-jetbrains-com:member-reordering-patterns">
