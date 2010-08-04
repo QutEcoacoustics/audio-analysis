@@ -97,12 +97,14 @@ namespace AnalysisPrograms
 
             if (DRAW_SONOGRAMS==2)
             {
+                scores = DataTools.normalise(scores);
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
             }
             else
             if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
             {
+                scores = DataTools.normalise(scores);
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
             }

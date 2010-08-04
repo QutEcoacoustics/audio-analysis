@@ -1959,8 +1959,18 @@ namespace TowseyLib
   }
 
 
+//=========================================================================================================================
+//   THE FOLLOWING GROUP OF METHODS DETECT PERIODICITY IN ARRAYS
 
-
+        /// <summary>
+        /// Returns for each position in an array a periodicity score.
+        /// That score is the maximum obtained for a range of periods over three cycles.
+        /// This allowes the periodicity to change over the array and still return the maximum periodicity score.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="minPeriod"></param>
+        /// <param name="maxPeriod"></param>
+        /// <returns></returns>
   public static double[] PeriodicityDetection(double[] values, int minPeriod, int maxPeriod)
   {
 
@@ -1985,7 +1995,76 @@ namespace TowseyLib
   }
 
 
+        /// <summary>
+        /// searches an array of values for periodicity.
+        /// Calls the method PeriodicityDetection() to obtain a score for each period between the passed min and max bounds
+        /// returns the maximum periodic score and the period at which it was obtained 
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="minPeriod"></param>
+        /// <param name="maxPeriod"></param>
+        /// <returns></returns>
+   
+  public static System.Tuple<double, int, int> Periodicity(double[] values, int minPeriod, int maxPeriod)
+  {
 
+      double maxScore = -double.MaxValue;
+      int bestPeriod = 0;
+      int bestPhase = 0;
+      for (int period = minPeriod; period <= maxPeriod; period++)
+      {
+          for (int phase = 0; phase < period; phase++)
+          {
+
+              double periodScore = PeriodicityAndPhaseDetection(values, period, phase);
+              if (periodScore > maxScore)
+              {
+                  maxScore = periodScore;
+                  bestPeriod = period;
+                  bestPhase  = phase;
+              }
+          }//phase
+      }//period
+      
+      return System.Tuple.Create(maxScore, bestPeriod, bestPhase);
+  }
+
+
+        /// <summary>
+        /// returns the amplitude of an oscillation in an array having the given period.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="period"></param>
+        /// <param name="phase"></param>
+  /// <returns></returns>
+  public static double PeriodicityAndPhaseDetection(double[] values, int period, int phase)
+  {
+      int L = values.Length;
+      double onPeriodScore = 0.0;
+      int count = 0;
+      int index = phase;
+      while (index < L)
+      {
+          onPeriodScore += values[index];
+          count++;
+          index += period;
+      }
+      onPeriodScore /= count; //take the average
+
+      int midPeriod = period / 2;
+      count = 0;
+      index = phase + midPeriod;
+      double offPeriodScore = 0.0;
+      while (index < L)
+      {
+          offPeriodScore += values[index];
+          count++;
+          index += period;
+      }
+      offPeriodScore /= count; //take the average
+
+      return onPeriodScore - offPeriodScore; //amplitude of oscillation i.e. difference between min and max values 
+  }
 
   //=============================================================================
 
