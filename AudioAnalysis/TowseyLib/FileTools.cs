@@ -9,7 +9,7 @@ namespace TowseyLib
 {
     public static class FileTools
     {
-        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\"; 
+        private static string testDir = @"D:\SensorNetworks\Software\TowseyLib\TestResources\";
 
         static void Main()
         {
@@ -21,7 +21,7 @@ namespace TowseyLib
                 string fName = testDir + "testTextFile.txt";
                 var array = ReadTextFile(fName);
                 foreach (string line in array)
-					Console.WriteLine(line);
+                    Console.WriteLine(line);
             }//end test ReadTextFile(string fName)
 
             bool doit2 = false;
@@ -68,12 +68,12 @@ namespace TowseyLib
             }//end test Method(string fName)
 
             Log.WriteLine("\nFINISHED"); //end
-			Log.WriteLine("CLOSE CONSOLE"); //end
+            Log.WriteLine("CLOSE CONSOLE"); //end
         } //end MAIN
 
         public static bool BackupFile(string path)
         {
-			Log.WriteLine("COPYING FILE:- " + path);
+            Log.WriteLine("COPYING FILE:- " + path);
             try
             {
                 string[] split = SplitFileName(path);
@@ -108,8 +108,8 @@ namespace TowseyLib
             string ext = f.Extension;
             string[] split = new string[3];
             int nameLength = stem.Length - ext.Length;
-            split[0] = dir+@"\";
-            split[1] = stem.Substring(0,nameLength);
+            split[0] = dir + @"\";
+            split[1] = stem.Substring(0, nameLength);
             split[2] = ext;
             //Console.WriteLine("SPLIT FILE NAME = " + dir + "   " + split[1] + "    " + ext);
             return split;
@@ -123,7 +123,7 @@ namespace TowseyLib
             return newName;
         }
 
-		public static List<string> ReadTextFile(string fName)
+        public static List<string> ReadTextFile(string fName)
         {
             var lines = new List<string>();
             using (TextReader reader = new StreamReader(fName))
@@ -226,14 +226,14 @@ namespace TowseyLib
 
         public static void Append2TextFile(string fPath, string line, bool saveExistingFile)
         {
-			var list = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
+            var list = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             list.Add(line);
             WriteTextFile(fPath, list, saveExistingFile);
         }// end Append2TextFile()
 
         public static void Append2TextFile(string fPath, List<string> list)
         {
-			var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
+            var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             oldList.AddRange(list);
             WriteTextFile(fPath, list);
         }// end Append2TextFile()
@@ -270,8 +270,8 @@ namespace TowseyLib
             int rowCount = lines.Count;
             int colCount = words.Length;
 
-            double[,] matrix = new double[rowCount,colCount];
-            for(int i=0; i< rowCount; i++)
+            double[,] matrix = new double[rowCount, colCount];
+            for (int i = 0; i < rowCount; i++)
             {
                 line = (string)lines[i];
                 words = line.Split(',');
@@ -328,8 +328,8 @@ namespace TowseyLib
 
         } //end of WriteMatrix2File\
 
-        
-        
+
+
         public static void WriteMatrix2File_Formatted(double[,] matrix, string fName, string formatString)
         {
             int rowCount = matrix.GetLength(0);//height
@@ -355,7 +355,7 @@ namespace TowseyLib
         {
             int length = array.Length;
 
-			var lines = new List<string>();
+            var lines = new List<string>();
             for (int i = 0; i < length; i++)
             {
                 string line = array[i].ToString(formatString);
@@ -369,7 +369,7 @@ namespace TowseyLib
         {
             int length = array.Length;
 
-			var lines = new List<string>();
+            var lines = new List<string>();
             for (int i = 0; i < length; i++)
             {
                 string line = array[i].ToString(formatString);
@@ -385,29 +385,44 @@ namespace TowseyLib
             string value;
             dict.TryGetValue(key, out value);
             return value;
-        }           
-            
+        }
+
         public static Dictionary<string, string> ReadPropertiesFile(string fName)
         {
-			var table = new Dictionary<string, string>();
+            var table = new Dictionary<string, string>();
             using (TextReader reader = new StreamReader(fName))
             {
                 string line;
                 while ((line = reader.ReadLine()) != null)
                 {
-                    //read one line at a time and process
+                    // read one line at a time and process
                     string trimmed = line.Trim();
-                    if (trimmed == null) continue;
-                    if (trimmed.StartsWith("#")) continue;
+                    if (trimmed == null)
+                    {
+                        continue;
+                    }
+
+                    if (trimmed.StartsWith("#"))
+                    {
+                        continue;
+                    }
+
                     string[] words = trimmed.Split('=');
-                    if (words.Length == 1) continue;
-                    string key = words[0].Trim(); //trim because may have spaces around the = sign i.e. ' = '
+                    if (words.Length == 1)
+                    {
+                        continue;
+                    }
+
+                    string key = words[0].Trim(); // trim because may have spaces around the = sign i.e. ' = '
                     string value = words[1].Trim();
-                    if(! table.ContainsKey(key)) table.Add(key, value); //this may not be a good idea!
-                }//end while
-            }//end using
+                    if (!table.ContainsKey(key))
+                    {
+                        table.Add(key, value); // this may not be a good idea!
+                    }
+                } // end while
+            } // end using
             return table;
-        }// end ReadPropertiesFile()
+        } // end ReadPropertiesFile()
 
 
         public static string PathCombine(params string[] paths)

@@ -25,7 +25,7 @@ namespace QutSensors.CacheProcessor
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Service"/> class.
-        /// Cache Processor
+        /// Cache Processor.
         /// </summary>
         public Service()
         {

@@ -5,7 +5,7 @@ DRAW_SONOGRAMS=1
 # Below parameters ARE user modifiable.
 ################################################################################
 #Name of the required call. DO NOT change call names.
-CALL_NAME=GECKO
+#CALL_NAME=GECKO
 #Do segmentation prior to OD search.
 DO_SEGMENTATION=false
 # min and max of the freq band to search
@@ -19,7 +19,8 @@ DCT_DURATION=1.0
 MIN_OSCIL_FREQ=3        
 MAX_OSCIL_FREQ=7
 # minimum acceptable value of a DCT coefficient
-MIN_AMPLITUDE=0.5
+#MIN_AMPLITUDE=0.5
+DCT_THRESHOLD=0.5
 # Minimum duration for the length of a true event.
 MIN_DURATION=2.0
 # Maximum duration for the length of a true event.

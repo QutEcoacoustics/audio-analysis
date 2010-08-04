@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="827444b3-9890-4230-b124-c6a41ccabdf3" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+  <ClientOptions>
+    <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
+    <EnableDataBinding>true</EnableDataBinding>
+    <ExcludedTypes />
+    <ImportXmlTypes>false</ImportXmlTypes>
+    <GenerateInternalTypes>false</GenerateInternalTypes>
+    <GenerateMessageContracts>false</GenerateMessageContracts>
+    <NamespaceMappings />
+    <CollectionMappings />
+    <GenerateSerializableTypes>true</GenerateSerializableTypes>
+    <Serializer>Auto</Serializer>
+    <ReferenceAllAssemblies>true</ReferenceAllAssemblies>
+    <ReferencedAssemblies />
+    <ReferencedDataContractTypes />
+    <ServiceContractMappings />
+  </ClientOptions>
+  <MetadataSources>
+    <MetadataSource Address="http://localhost:2669/services/processorservice.svc" Protocol="http" SourceId="1" />
+  </MetadataSources>
+  <Metadata>
+    <MetadataFile FileName="ProcessorService.wsdl" MetadataType="Wsdl" ID="d035d69d-fd7e-4786-8659-0672ae4d9c13" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?wsdl" />
+    <MetadataFile FileName="ProcessorService.disco" MetadataType="Disco" ID="c8eebbb1-a5e3-4b5c-abe5-34c892922c21" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?disco" />
+    <MetadataFile FileName="ProcessorService.xsd" MetadataType="Schema" ID="4101b9f9-0229-405d-a0ac-d958835ff27b" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?xsd=xsd0" />
+    <MetadataFile FileName="ProcessorService1.wsdl" MetadataType="Wsdl" ID="de68b12d-7577-4065-90bc-8be1e359c5fe" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?wsdl=wsdl0" />
+    <MetadataFile FileName="ProcessorService1.xsd" MetadataType="Schema" ID="9676ab60-c408-47ee-98a0-48e0a07e730b" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?xsd=xsd1" />
+    <MetadataFile FileName="ProcessorService2.xsd" MetadataType="Schema" ID="0fc3ae77-da3e-420c-b993-c986bb04143f" SourceId="1" SourceUrl="http://localhost:2669/services/ProcessorService.svc?xsd=xsd2" />
+  </Metadata>
+  <Extensions>
+    <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
+    <ExtensionFile FileName="configuration.svcinfo" Name="configuration.svcinfo" />
+  </Extensions>
+</ReferenceGroup>
