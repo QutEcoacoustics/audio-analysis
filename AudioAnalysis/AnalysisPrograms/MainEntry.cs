@@ -1,13 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AnalysisPrograms.Processing;
+﻿// --------------------------------------------------------------------------------------------------------------------
+// <copyright file="MainEntry.cs" company="MQUTeR">
+//   -
+// </copyright>
+// <summary>
+//   Defines the MainEntry type.
+// </summary>
+// --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
 {
+    using System;
+    using System.Linq;
+
+    using AnalysisPrograms.Processing;
+
+    /// <summary>
+    /// Main Entry for Analysis Programs.
+    /// </summary>
     public class MainEntry
     {
+        /// <summary>
+        /// Program entry.
+        /// </summary>
+        /// <param name="args">
+        /// Analysis Program arguments.
+        /// </param>
         public static void Main(string[] args)
         {
             if (args.Length == 0)
@@ -64,12 +81,12 @@ namespace AnalysisPrograms
                         FindEventsLikeThis.Dev(r);
                         break;
 
-                    // FOR MICHAEL'S USE ONLY
+                    // Analysis development - FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(r);
                         break;
 
-                    // FOR MARK'S USE ONLY
+                    // Analysis runs - FOR MARK'S USE ONLY
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(r);
                         break;

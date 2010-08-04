@@ -17,27 +17,38 @@ namespace QutSensors.CacheProcessor
 
     using AudioTools;
     using AudioTools.DirectShow;
+
     using Autofac;
 
+    using QutSensors.Business;
     using QutSensors.Data;
     using QutSensors.Data.Cache;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
-    using QutSensors.Business;
 
     /// <summary>
     /// Cache Processor.
     /// </summary>
     public class CacheJobProcessor
     {
+        /// <summary>
+        /// Default buffer size in bytes.
+        /// </summary>
         private const int BufferSize = 1024 * 1024 * 10;
+
+        /// <summary>
+        /// Time to wait between checks for jobs in milliseconds.
+        /// </summary>
         private const int InterJobWaitPeriod = 5000;
 
         private readonly ManualResetEvent stopRequestedEvent = new ManualResetEvent(false);
         private readonly ILogProvider log;
         private readonly ICacheManager cacheManager;
 
+        /// <summary>
+        /// Worker thread for generating cache data.
+        /// </summary>
         private Thread workerThread;
 
         /// <summary>
@@ -153,7 +164,7 @@ namespace QutSensors.CacheProcessor
                             data = SegmentAudio(request);
                             break;
                         case CacheJobType.SpectrogramGeneration:
-                            throw new NotImplementedException("Unable to generate spectrogram from job processor");
+                            throw new NotImplementedException("Unable to generate spectrogram from job processor.");
                     }
 
                     stopWatch.Stop();

@@ -39,6 +39,10 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
 
+        public static string key_FRAME_SIZE = "FRAME_SIZE";
+        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
+        public static string key_DYNAMIC_RANGE = "DYNAMIC_RANGE";
+
         public static string eventsFile = "events.txt"; 
 
 
@@ -60,7 +64,7 @@ namespace AnalysisPrograms
             string workingDirectory = args[2];
             string recordingFN      = Path.GetFileName(recordingPath);
             string outputDir        = workingDirectory;
-            string opFName          = "events.txt"; ;
+            string opFName          = eventsFile; 
             string opPath           = outputDir + opFName;
             string templateFN       = Path.GetFileNameWithoutExtension(templatePath);
             
@@ -90,10 +94,10 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            int windowSize = Int32.Parse(dict["FRAME_SIZE"]);
+            int windowSize = Int32.Parse(dict[key_FRAME_SIZE]);
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict["NOISE_REDUCTION_TYPE"]);
-            double dynamicRange = Double.Parse(dict["DYNAMIC_RANGE"]);
+            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[key_NOISE_REDUCTION_TYPE]);
+            double dynamicRange = Double.Parse(dict[key_DYNAMIC_RANGE]);
             int minHz           = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz           = Int32.Parse(dict[key_MAX_HZ]);
             int ccCount         = Int32.Parse(dict[key_CC_COUNT]);           //Number of mfcc coefficients

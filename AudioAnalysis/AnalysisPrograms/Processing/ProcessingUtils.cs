@@ -70,6 +70,12 @@ namespace AnalysisPrograms.Processing
         {
             try
             {
+                if (args.Length < 2 || args.Length > 3)
+                {
+                    Console.WriteLine("Require <analysistype> <rundirectory> [<resourcefile>]");
+                    return;
+                }
+
                 var analysisType = args[0].Trim().ToLower();
                 var rundir = args[1];
                 var resourceFileFullPath = args.Count() > 2 ? args[2] : string.Empty;
@@ -223,17 +229,17 @@ namespace AnalysisPrograms.Processing
 
             // make sure path is valid
             FileInfo resourceFile = null;
-            resourceFileFullPath = resourceFileFullPath.Trim();
-
-            if (!string.IsNullOrEmpty(resourceFileFullPath) &&
-                !resourceFileFullPath.Any(s =>
-                    Path.GetInvalidFileNameChars().Contains(s) ||
-                    Path.GetInvalidPathChars().Contains(s)))
+            if (!string.IsNullOrEmpty(resourceFileFullPath) && !string.IsNullOrEmpty(resourceFileFullPath.Trim()))
             {
-                resourceFile = new FileInfo(resourceFileFullPath);
-            }
+                try
+                {
+                    resourceFile = new FileInfo(resourceFileFullPath);
+                }
+                catch
+                {
 
-            Console.WriteLine("Analysis Type: " + analysisType);
+                }
+            }
 
             // select analysis from name
             switch (analysisType)
@@ -268,24 +274,26 @@ namespace AnalysisPrograms.Processing
 
                 // require extra resources
                 case "mfcc-od": // MFCCs and OD for calls haveing oscillating character
-                    if (resourceFile != null && resourceFile.Exists)
+                    if (resourceFile != null && File.Exists(resourceFile.FullName))
                     {
-                        results = ProcessingTypes.RunMfccOd(resourceFile, runDir, audioFile);
+                        results = ProcessingTypes.RunMfccOd(settingsFile, audioFile, resourceFile, runDir);
                     }
                     else
                     {
-                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
+                        var path = resourceFile != null ? resourceFile.FullName : "No path given";
+                        throw new InvalidOperationException("Invalid resource file path: " + path);
                     }
 
                     break;
                 case "htk": // run HTK template over a recording
-                    if (resourceFile != null && resourceFile.Exists)
+                    if (resourceFile != null && File.Exists(resourceFile.FullName))
                     {
-                        results = ProcessingTypes.RunHtk(resourceFile, runDir, audioFile);
+                        results = ProcessingTypes.RunHtk(settingsFile, audioFile, resourceFile, runDir);
                     }
                     else
                     {
-                        throw new InvalidOperationException("Invalid resource file path: " + resourceFile);
+                        var path = resourceFile != null ? resourceFile.FullName : "No path given";
+                        throw new InvalidOperationException("Invalid resource file path: " + path);
                     }
 
                     break;

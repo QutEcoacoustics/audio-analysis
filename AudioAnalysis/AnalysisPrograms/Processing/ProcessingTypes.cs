@@ -10,6 +10,11 @@ namespace AnalysisPrograms.Processing
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+    using System.Text;
+    using System.Threading;
+
+    using AudioAnalysisTools.HTKTools;
+
     using QutSensors.AudioAnalysis.AED;
     using QutSensors.Shared;
 
@@ -28,6 +33,52 @@ namespace AnalysisPrograms.Processing
             }
         }
 
+        private static Dictionary<string, string> RemoveEmpty(Dictionary<string, string> table)
+        {
+            return table
+                .Where(kvp => !string.IsNullOrEmpty(kvp.Key) && !string.IsNullOrEmpty(kvp.Value))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        /// <summary>
+        /// The check params.
+        /// </summary>
+        /// <param name="expected">
+        /// The expected.
+        /// </param>
+        /// <param name="given">
+        /// The given.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// <c>InvalidOperationException</c>.
+        /// </exception>
+        private static void CheckParams(IEnumerable<string> expected, IEnumerable<string> given)
+        {
+            if (!expected.SequenceEqual(given))
+            {
+                var expectedNotGiven = expected.Where(e => !given.Contains(e));
+
+                var givenNotExpected = given.Where(e => !expected.Contains(e));
+
+                var msg = new StringBuilder(
+                    "Parameters passed did not match required parameters." + Environment.NewLine);
+
+                if (givenNotExpected.Count() > 0)
+                {
+                    var extraGiven = string.Join(",", givenNotExpected.ToArray());
+                    msg.Append("Given but not expected: " + extraGiven + "." + Environment.NewLine);
+                }
+
+                if (expectedNotGiven.Count() > 0)
+                {
+                    var extraExp = string.Join(",", expectedNotGiven.ToArray());
+                    msg.Append("Expected but not given: " + extraExp + "." + Environment.NewLine);
+
+                    throw new InvalidOperationException(msg.ToString());
+                }
+            }
+        }
+
         /// <summary>
         /// Segmentation Utility.
         /// </summary>
@@ -36,25 +87,39 @@ namespace AnalysisPrograms.Processing
         /// <returns>Processing results.</returns>
         internal static IEnumerable<ProcessorResultTag> RunSegment(FileInfo settingsFile, FileInfo audioFile)
         {
+            var expected = new List<string>
+                {
+                    Segment.key_DRAW_SONOGRAMS,
+                    Segment.key_FRAME_OVERLAP,
+                    Segment.key_MAX_DURATION,
+                    Segment.key_MAX_HZ,
+                    Segment.key_MIN_DURATION,
+                    Segment.key_MIN_HZ,
+                    Segment.key_SMOOTH_WINDOW,
+                    Segment.key_THRESHOLD
+                };
+
             var config = new Configuration(settingsFile.FullName);
-            var dict = config.GetTable();
+            var dict = RemoveEmpty(config.GetTable());
+
+            CheckParams(expected, dict.Select(d => d.Key));
 
             var minHz = Int32.Parse(dict[Segment.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[Segment.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[Segment.key_FRAME_OVERLAP]);
             var smoothWindow = Double.Parse(dict[Segment.key_SMOOTH_WINDOW]);
-            var thresholdSd = Double.Parse(dict[Segment.key_THRESHOLD]);      
-            var minDuration = Double.Parse(dict[Segment.key_MIN_DURATION]);   
-            var maxDuration = Double.Parse(dict[Segment.key_MAX_DURATION]);   
+            var thresholdSd = Double.Parse(dict[Segment.key_THRESHOLD]);
+            var minDuration = Double.Parse(dict[Segment.key_MIN_DURATION]);
+            var maxDuration = Double.Parse(dict[Segment.key_MAX_DURATION]);
 
             var results = Segment.Execute_Segmentation(
-                audioFile.FullName, 
-                minHz, 
-                maxHz, 
+                audioFile.FullName,
+                minHz,
+                maxHz,
                 frameOverlap,
                 smoothWindow,
                 thresholdSd,
-                minDuration, 
+                minDuration,
                 maxDuration);
             var events = results.Item2;
 
@@ -81,8 +146,30 @@ namespace AnalysisPrograms.Processing
         /// <exception cref="NotImplementedException">Not sure what to return as results.</exception>
         internal static IEnumerable<ProcessorResultTag> RunSnr(FileInfo settingsFile, FileInfo audioFile)
         {
+            var expected = new List<string>
+                {
+                    SnrAnalysis.key_AED_INTENSITY_THRESHOLD,
+                    SnrAnalysis.key_AED_SMALL_AREA_THRESHOLD,
+                    SnrAnalysis.key_DRAW_SONOGRAMS,
+                    SnrAnalysis.key_FRAME_OVERLAP,
+                    SnrAnalysis.key_FRAME_SIZE,
+                    SnrAnalysis.key_K1_K2_LATENCY,
+                    SnrAnalysis.key_MAX_HZ,
+                    SnrAnalysis.key_MIN_HZ,
+                    SnrAnalysis.key_MIN_VOCAL_DURATION,
+                    SnrAnalysis.key_N_POINT_SMOOTH_FFT,
+                    SnrAnalysis.key_NOISE_REDUCTION_TYPE,
+                    SnrAnalysis.key_SEGMENTATION_THRESHOLD_K1,
+                    SnrAnalysis.key_SEGMENTATION_THRESHOLD_K2,
+                    // SnrAnalysis.key_SILENCE_RECORDING_PATH, // not used
+                    SnrAnalysis.key_VOCAL_GAP,
+                    SnrAnalysis.key_WINDOW_FUNCTION
+                };
+
             var config = new Configuration(settingsFile.FullName);
-            var dict = config.GetTable();
+            var dict = RemoveEmpty(config.GetTable());
+
+            CheckParams(expected, dict.Select(d => d.Key));
 
             var frameSize = Int32.Parse(dict[SnrAnalysis.key_FRAME_SIZE]);
             var frameOverlap = Double.Parse(dict[SnrAnalysis.key_FRAME_OVERLAP]);
@@ -115,9 +202,30 @@ namespace AnalysisPrograms.Processing
             var snrFullbandEvent = results.Item2;
             var snrSubbandEvent = results.Item3;
 
-            // TODO: Results are not regions, but information about the recording. This information should just be stored and displayed.
-            throw new NotImplementedException();
-            ////return null;
+            /*
+             * Results are not regions, but information about the recording. This information should just be stored and displayed.
+             * uses Name, Score and ScoreComment
+             */
+
+            var fullbandEvent = new ResultProperty
+                {
+                    Key = snrFullbandEvent.Name,
+                    Value = snrFullbandEvent.Score
+                };
+            fullbandEvent.AddInfo("Score Comment", snrFullbandEvent.ScoreComment);
+
+            var subbandEvent = new ResultProperty
+            {
+                Key = snrSubbandEvent.Name,
+                Value = snrSubbandEvent.Score
+            };
+            subbandEvent.AddInfo("Score Comment", snrSubbandEvent.ScoreComment);
+
+            var snrResult = new ProcessorResultTag();
+            snrResult.ExtraDetail.Add(fullbandEvent);
+            snrResult.ExtraDetail.Add(subbandEvent);
+
+            return new List<ProcessorResultTag> { snrResult };
         }
 
         /// <summary>
@@ -134,8 +242,16 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunAed(FileInfo settingsFile, FileInfo audioFile)
         {
+            var expected = new List<string>
+                {
+                    AED.key_INTENSITY_THRESHOLD,
+                    AED.key_SMALLAREA_THRESHOLD
+                };
+
             var config = new Configuration(settingsFile.FullName);
-            var dict = config.GetTable();
+            var dict = RemoveEmpty(config.GetTable());
+
+            CheckParams(expected, dict.Select(d => d.Key));
 
             var intensityThreshold = Default.intensityThreshold;
             var smallAreaThreshold = Default.smallAreaThreshold;
@@ -171,15 +287,34 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunOd(FileInfo settingsFile, FileInfo audioFile)
         {
+
+            var expected = new List<string>
+                {
+                    OscillationRecogniser.key_DCT_DURATION,
+                    OscillationRecogniser.key_DCT_THRESHOLD,
+                    OscillationRecogniser.key_DO_SEGMENTATION,
+                    OscillationRecogniser.key_DRAW_SONOGRAMS,
+                    OscillationRecogniser.key_EVENT_THRESHOLD,
+                    OscillationRecogniser.key_FRAME_OVERLAP,
+                    OscillationRecogniser.key_MAX_DURATION,
+                    OscillationRecogniser.key_MAX_HZ,
+                    OscillationRecogniser.key_MAX_OSCIL_FREQ,
+                    OscillationRecogniser.key_MIN_DURATION,
+                    OscillationRecogniser.key_MIN_HZ,
+                    OscillationRecogniser.key_MIN_OSCIL_FREQ,
+                };
+
             // settings
             var config = new Configuration(settingsFile.FullName);
-            var dict = config.GetTable();
+            var dict = RemoveEmpty(config.GetTable());
+
+            CheckParams(expected, dict.Select(d => d.Key));
 
             bool doSegmentation = Boolean.Parse(dict[OscillationRecogniser.key_DO_SEGMENTATION]);
             var minHz = Int32.Parse(dict[OscillationRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[OscillationRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[OscillationRecogniser.key_FRAME_OVERLAP]);
-            var dctDuration  = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);
+            var dctDuration = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);
             var dctThreshold = Double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);
             var minOscilFreq = Int32.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);
             var maxOscilFreq = Int32.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);
@@ -274,6 +409,31 @@ namespace AnalysisPrograms.Processing
         /// </exception>
         internal static IEnumerable<ProcessorResultTag> RunSpr(FileInfo settingsFile, FileInfo audioFile)
         {
+            var expected = new List<string>
+                {
+                    SPR.key_CALL_NAME,
+                    SPR.key_DO_SEGMENTATION,
+                    SPR.key_DRAW_SONOGRAMS,
+                    SPR.key_EVENT_THRESHOLD,
+                    SPR.key_FRAME_OVERLAP,
+                    SPR.key_MAX_DURATION,
+                    SPR.key_MIN_DURATION,
+                    SPR.key_SPT_INTENSITY_THRESHOLD,
+                    SPR.key_SPT_SMALL_LENGTH_THRESHOLD,
+                    SPR.key_WHIP_DURATION,
+                    SPR.key_WHIP_MAX_HZ,
+                    SPR.key_WHIP_MIN_HZ,
+                    SPR.key_WHISTLE_DURATION,
+                    SPR.key_WHISTLE_MAX_HZ,
+                    SPR.key_WHISTLE_MIN_HZ
+                };
+
+            // settings
+            var config = new Configuration(settingsFile.FullName);
+            var dict = RemoveEmpty(config.GetTable());
+
+            //CheckParams(expected, dict.Select(d => d.Key));
+
             throw new NotImplementedException();
         }
 
@@ -330,35 +490,205 @@ namespace AnalysisPrograms.Processing
         /// <summary>
         /// MFCC OD Regoniser.
         /// </summary>
-        /// <param name="resourceFile">Compressed resource file.</param>
-        /// <param name="runDir">Working directory.</param>
-        /// <param name="audioFile">Audio file to analyse.</param>
-        /// <returns>Processing results.</returns>
-        internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo resourceFile, DirectoryInfo runDir, FileInfo audioFile)
+        /// <param name="settingsFile">
+        /// The settings File.
+        /// </param>
+        /// <param name="audioFile">
+        /// Audio file to analyse.
+        /// </param>
+        /// <param name="resourceFile">
+        /// Compressed resource file.
+        /// </param>
+        /// <param name="runDir">
+        /// Working directory.
+        /// </param>
+        /// <returns>
+        /// Processing results.
+        /// </returns>
+        internal static IEnumerable<ProcessorResultTag> RunMfccOd(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
         {
-            throw new NotImplementedException();
+            var expected = new List<string>
+                {
+                    MFCC_OD.key_CC_COUNT,
+                    MFCC_OD.key_DCT_DURATION,
+                    MFCC_OD.key_DELTA_T,
+                    MFCC_OD.key_DO_MELSCALE,
+                    MFCC_OD.key_DRAW_SONOGRAMS,
+                    MFCC_OD.key_DYNAMIC_RANGE,
+                    MFCC_OD.key_EVENT_THRESHOLD,
+                    MFCC_OD.key_FRAME_OVERLAP,
+                    MFCC_OD.key_FRAME_SIZE,
+                    MFCC_OD.key_INCLUDE_DELTA,
+                    MFCC_OD.key_INCLUDE_DOUBLE_DELTA,
+                    MFCC_OD.key_MAX_DURATION,
+                    MFCC_OD.key_MAX_HZ,
+                    MFCC_OD.key_MAX_OSCIL_FREQ,
+                    MFCC_OD.key_MIN_AMPLITUDE,
+                    MFCC_OD.key_MIN_DURATION,
+                    MFCC_OD.key_MIN_HZ,
+                    MFCC_OD.key_MIN_OSCIL_FREQ,
+                    MFCC_OD.key_NOISE_REDUCTION_TYPE
+                };
+
+            // upzip resources file into new folder in working dir.
+            const string ZipFolderName = "UnzipedResources";
+            var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
+            if (!Directory.Exists(unzipDir))
+            {
+                Directory.CreateDirectory(unzipDir);
+            }
+
+            ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
+
+            // list of doubles
+            var doublesFile = Path.Combine(unzipDir, "FV1_KEKKEK1.txt");
+            double[] fv = FileTools.ReadDoubles2Vector(doublesFile);
+
+            // ini file
+            var iniFile = Path.Combine(unzipDir, "Template_KEKKEK1.txt");
+
+            // append to settings file
+            File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
+
+            // settings
+            var config = new Configuration(settingsFile.FullName);
+            var dict = RemoveEmpty(config.GetTable());
+
+            CheckParams(expected, dict.Select(d => d.Key));
+
+            int windowSize = Int32.Parse(dict[MFCC_OD.key_FRAME_SIZE]);
+            double frameOverlap = Double.Parse(dict[MFCC_OD.key_FRAME_OVERLAP]);
+            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[MFCC_OD.key_NOISE_REDUCTION_TYPE]);
+            double dynamicRange = Double.Parse(dict[MFCC_OD.key_DYNAMIC_RANGE]);
+            int minHz = Int32.Parse(dict[MFCC_OD.key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[MFCC_OD.key_MAX_HZ]);
+            int ccCount = Int32.Parse(dict[MFCC_OD.key_CC_COUNT]);
+            bool doMelScale = Boolean.Parse(dict[MFCC_OD.key_DO_MELSCALE]);
+            bool includeDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DELTA]);
+            bool includeDoubleDelta = Boolean.Parse(dict[MFCC_OD.key_INCLUDE_DOUBLE_DELTA]);
+            int deltaT = Int32.Parse(dict[MFCC_OD.key_DELTA_T]);
+            double dctDuration = Double.Parse(dict[MFCC_OD.key_DCT_DURATION]);
+            int minOscilFreq = Int32.Parse(dict[MFCC_OD.key_MIN_OSCIL_FREQ]);
+            int maxOscilFreq = Int32.Parse(dict[MFCC_OD.key_MAX_OSCIL_FREQ]);
+            double minAmplitude = Double.Parse(dict[MFCC_OD.key_MIN_AMPLITUDE]);
+            double eventThreshold = Double.Parse(dict[MFCC_OD.key_EVENT_THRESHOLD]);
+            double minDuration = Double.Parse(dict[MFCC_OD.key_MIN_DURATION]);
+            double maxDuration = Double.Parse(dict[MFCC_OD.key_MAX_DURATION]);
+            int DRAW_SONOGRAMS = Int32.Parse(dict[MFCC_OD.key_DRAW_SONOGRAMS]);
+
+            var results = MFCC_OD.Execute_CallDetect(
+                audioFile.FullName,
+                minHz,
+                maxHz,
+                windowSize,
+                frameOverlap,
+                nrt,
+                dynamicRange,
+                doMelScale,
+                ccCount,
+                includeDelta,
+                includeDoubleDelta,
+                deltaT,
+                fv,
+                dctDuration,
+                minOscilFreq,
+                maxOscilFreq,
+                minAmplitude,
+                eventThreshold,
+                minDuration,
+                maxDuration);
+
+            var events = results.Item4;
+
+            // AcousticEvent results
+            return
+                events.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
         }
 
         /// <summary>
         /// HTK template Recogniser.
         /// </summary>
-        /// <param name="resourceFile">
-        /// A zip file containing the resources required to run HTK.
-        /// </param>
-        /// <param name="workingDirectory">
-        /// Working Directory.
+        /// <param name="settingsFile">
+        /// The settings File.
         /// </param>
         /// <param name="audioFile">
         /// Audio file to analyse.
         /// </param>
+        /// <param name="resourceFile">
+        /// A zip file containing the resources required to run HTK.
+        /// </param>
+        /// <param name="runDir">
+        /// The run Dir.
+        /// </param>
         /// <returns>
         /// Processing results.
         /// </returns>
-        internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo resourceFile, DirectoryInfo workingDirectory, FileInfo audioFile)
+        internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
         {
-            var results = HTKRecogniser.Execute(audioFile.FullName, resourceFile.FullName, workingDirectory.FullName);
+            var expected = new List<string>
+                {
+                    MFCC_OD.key_CC_COUNT,
+                    MFCC_OD.key_DCT_DURATION,
+                    MFCC_OD.key_DELTA_T,
+                    MFCC_OD.key_DO_MELSCALE,
+                    MFCC_OD.key_DRAW_SONOGRAMS,
+                    MFCC_OD.key_DYNAMIC_RANGE,
+                    MFCC_OD.key_EVENT_THRESHOLD,
+                    MFCC_OD.key_FRAME_OVERLAP,
+                    MFCC_OD.key_FRAME_SIZE,
+                    MFCC_OD.key_INCLUDE_DELTA,
+                    MFCC_OD.key_INCLUDE_DOUBLE_DELTA,
+                    MFCC_OD.key_MAX_DURATION,
+                    MFCC_OD.key_MAX_HZ,
+                    MFCC_OD.key_MAX_OSCIL_FREQ,
+                    MFCC_OD.key_MIN_AMPLITUDE,
+                    MFCC_OD.key_MIN_DURATION,
+                    MFCC_OD.key_MIN_HZ,
+                    MFCC_OD.key_MIN_OSCIL_FREQ,
+                    MFCC_OD.key_NOISE_REDUCTION_TYPE
+                };
+            
+            // upzip resources file into new folder in working dir.
+            const string ZipFolderName = "UnzipedResources";
+            var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
+            if (!Directory.Exists(unzipDir))
+            {
+                Directory.CreateDirectory(unzipDir);
+            }
 
-            var events = results.Item2;
+            ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
+
+            // ini file
+            var iniFile = Path.Combine(unzipDir, "segmentation.ini");
+
+            // append to settings file
+            File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
+
+            // htk config
+            var htkConfig = new HTKConfig(settingsFile.FullName);
+
+            // delete and recreate data dir if it exists
+            if (Directory.Exists(htkConfig.DataDir))
+            {
+                Directory.Delete(htkConfig.DataDir, true);
+            }
+
+            Directory.CreateDirectory(htkConfig.DataDir);
+
+            string processedAudioFile = Path.GetFileName(audioFile.FullName);
+            var destinationAudioFile = Path.Combine(htkConfig.DataDir, Path.GetFileNameWithoutExtension(audioFile.FullName) + ".wav");
+            File.Copy(audioFile.FullName, destinationAudioFile, true);
+
+            // D: SCAN RECORDING WITH RECOGNISER AND RETURN A RESULTS FILE
+            Log.WriteLine("Executing HTK_Recogniser - scanning recording: " + processedAudioFile);
+            string resultsPath = HTKScanRecording.Execute(processedAudioFile, runDir.FullName, htkConfig);
+
+            // E: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
+            Log.WriteLine("Parse the HMM results file and return Acoustic Events");
+            var events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, unzipDir);
 
             // AcousticEvent results
             var prts =
