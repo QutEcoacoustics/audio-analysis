@@ -1,0 +1,29 @@
+# save a sonogram for each recording that contained a hit 
+DRAW_SONOGRAMS=2
+################################################################################
+# Above parameters NOT user modifiable
+# Below parameters ARE user modifiable.
+################################################################################
+#Uncomment the required bird call. DO NOT change call names.
+CALL_NAME=WHIPBIRD
+#Do segmentation prior to OD search.
+DO_SEGMENTATION=false
+# default=0.50; Use 0.75 for koalas 
+FRAME_OVERLAP=0.00
+#intensity threshold for SPT - decibels
+SPT_INTENSITY_THRESHOLD=3.0
+SPT_SMALL_LENGTH_THRESHOLD=40
+# min and max of the freq band to search for whistle
+WHISTLE_MIN_HZ=1000          
+WHISTLE_MAX_HZ=4000
+#optimum whistle duration in seconds
+WHISTLE_DURATION=1.4
+# min and max of the whip freq band
+WHIP_MIN_HZ=800          
+WHIP_MAX_HZ=8200
+WHIP_DURATION=0.14
+# Minimum and maximum duration for the length of a true event.
+MAX_DURATION=20.0
+MIN_DURATION=0.0
+# Event threshold - use this to determine FP / FN trade-off for events.
+EVENT_THRESHOLD=0.7

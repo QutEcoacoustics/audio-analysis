@@ -27,8 +27,10 @@
   </TestList>
   <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d">
     <TestLinks>
-      <TestLink id="164e991f-a359-659c-62f9-6d713b2b4ef8" name="DoesProcessReadyAndSpectrogramGenerationAudioReadings" storage="qutsensors.test\bin\debug\qutsensors.test.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
-      <TestLink id="833159f6-c637-3a31-d2ac-75f741263bfc" name="FilterHeardFilterUnheard" storage="qutsensors.test\bin\debug\qutsensors.test.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="d1487d45-f7a9-e003-3d7c-f1becefdf3d5" name="AnalysisOdLewinsRail" storage="qutsensors.test\bin\debug\qutsensors.test.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="164e991f-a359-659c-62f9-6d713b2b4ef8" name="DoesProcessReadyAndSpectrogramGenerationAudioReadings" storage="qutsensors.test\bin\debug\qutsensors.test.dll" enabled="false" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="833159f6-c637-3a31-d2ac-75f741263bfc" name="FilterHeardFilterUnheard" storage="qutsensors.test\bin\debug\qutsensors.test.dll" enabled="false" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
+      <TestLink id="af1caa17-39ef-18e4-80d7-61412b415611" name="AnalysisHtkCurlew1" storage="qutsensors.test\bin\debug\qutsensors.test.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />
     </TestLinks>
   </TestList>
 </TestLists>

@@ -11,6 +11,7 @@ namespace AnalysisPrograms.Processing
     using System.IO;
     using System.Linq;
     using System.Text;
+    using System.Xml.Serialization;
 
     using AudioAnalysisTools;
 
@@ -237,7 +238,7 @@ namespace AnalysisPrograms.Processing
                 }
                 catch
                 {
-
+                    // don't let resource file spoil our fun...
                 }
             }
 
@@ -254,6 +255,9 @@ namespace AnalysisPrograms.Processing
                 case "aed": // acoustic event detection
                     results = ProcessingTypes.RunAed(settingsFile, audioFile);
                     break;
+                case "spt": // spectral peak tracking (in progress)
+                    results = ProcessingTypes.RunSpt(settingsFile, audioFile);
+                    break;
 
                 // recognisers
                 case "od": // Oscillation Recogniser
@@ -261,9 +265,6 @@ namespace AnalysisPrograms.Processing
                     break;
                 case "epr": // event pattern recognition - groundparrot (in progress)
                     results = ProcessingTypes.RunEpr(settingsFile, audioFile);
-                    break;
-                case "spt": // spectral peak tracking (in progress)
-                    results = ProcessingTypes.RunSpt(settingsFile, audioFile);
                     break;
                 case "spr":  // syntactic pattern recognition
                     results = ProcessingTypes.RunSpr(settingsFile, audioFile);
@@ -303,6 +304,61 @@ namespace AnalysisPrograms.Processing
             }
 
             return results;
+        }
+
+        /// <summary>
+        /// Remove empty entries.
+        /// </summary>
+        /// <param name="table">
+        /// The table.
+        /// </param>
+        /// <returns>
+        /// Dictionary without empty entries.
+        /// </returns>
+        internal static Dictionary<string, string> RemoveEmpty(Dictionary<string, string> table)
+        {
+            return table
+                .Where(kvp => !string.IsNullOrEmpty(kvp.Key) && !string.IsNullOrEmpty(kvp.Value))
+                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+        }
+
+        /// <summary>
+        /// The check params.
+        /// </summary>
+        /// <param name="expected">
+        /// The expected.
+        /// </param>
+        /// <param name="given">
+        /// The given.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// <c>InvalidOperationException</c>.
+        /// </exception>
+        internal static void CheckParams(IEnumerable<string> expected, IEnumerable<string> given)
+        {
+            if (!expected.SequenceEqual(given))
+            {
+                var expectedNotGiven = expected.Where(e => !given.Contains(e));
+
+                var givenNotExpected = given.Where(e => !expected.Contains(e));
+
+                var msg = new StringBuilder(
+                    "Parameters passed did not match required parameters." + Environment.NewLine);
+
+                if (givenNotExpected.Count() > 0)
+                {
+                    var extraGiven = string.Join(",", givenNotExpected.ToArray());
+                    msg.Append("Given but not expected: " + extraGiven + "." + Environment.NewLine);
+                }
+
+                if (expectedNotGiven.Count() > 0)
+                {
+                    var extraExp = string.Join(",", expectedNotGiven.ToArray());
+                    msg.Append("Expected but not given: " + extraExp + "." + Environment.NewLine);
+
+                    throw new InvalidOperationException(msg.ToString());
+                }
+            }
         }
     }
 }

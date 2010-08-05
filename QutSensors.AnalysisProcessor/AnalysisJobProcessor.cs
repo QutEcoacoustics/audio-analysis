@@ -542,7 +542,14 @@ namespace QutSensors.AnalysisProcessor
                 {
                     if (runDir.Exists)
                     {
-                        runDir.Delete(true);
+                        try
+                        {
+                            runDir.Delete(true);
+                        }
+                        catch (Exception ex)
+                        {
+                            this.log.WriteEntry(LogType.Error, "Analysis Job Runner could not delete folder: '" + runDir.FullName + "' due to error: " + Environment.NewLine + ex);
+                        }
                     }
                 }
             }

@@ -106,7 +106,7 @@ namespace AnalysisPrograms
             BaseSonogram sonogram = null;
             using (var recording = new AudioRecording(destinationAudioFile))
             {
-                if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); //down sample if necessary
+                if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz(); // down sample if necessary
 
                 var sonoConfig = new SonogramConfig
                 {
