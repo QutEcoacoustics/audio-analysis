@@ -12,7 +12,9 @@ namespace AnalysisPrograms.Processing
     using System.Linq;
     using System.Text;
     using System.Threading;
+    using System.Xml.Serialization;
 
+    using AudioAnalysisTools;
     using AudioAnalysisTools.HTKTools;
 
     using QutSensors.AudioAnalysis.AED;
@@ -33,50 +35,29 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private static Dictionary<string, string> RemoveEmpty(Dictionary<string, string> table)
+        private const bool SaveAcousticEvents = false;
+        private static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
-            return table
-                .Where(kvp => !string.IsNullOrEmpty(kvp.Key) && !string.IsNullOrEmpty(kvp.Value))
-                .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        }
-
-        /// <summary>
-        /// The check params.
-        /// </summary>
-        /// <param name="expected">
-        /// The expected.
-        /// </param>
-        /// <param name="given">
-        /// The given.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// <c>InvalidOperationException</c>.
-        /// </exception>
-        private static void CheckParams(IEnumerable<string> expected, IEnumerable<string> given)
-        {
-            if (!expected.SequenceEqual(given))
+            if (!SaveAcousticEvents)
             {
-                var expectedNotGiven = expected.Where(e => !given.Contains(e));
-
-                var givenNotExpected = given.Where(e => !expected.Contains(e));
-
-                var msg = new StringBuilder(
-                    "Parameters passed did not match required parameters." + Environment.NewLine);
-
-                if (givenNotExpected.Count() > 0)
-                {
-                    var extraGiven = string.Join(",", givenNotExpected.ToArray());
-                    msg.Append("Given but not expected: " + extraGiven + "." + Environment.NewLine);
-                }
-
-                if (expectedNotGiven.Count() > 0)
-                {
-                    var extraExp = string.Join(",", expectedNotGiven.ToArray());
-                    msg.Append("Expected but not given: " + extraExp + "." + Environment.NewLine);
-
-                    throw new InvalidOperationException(msg.ToString());
-                }
+                return;
             }
+
+            if (events != null && events.Count > 0)
+            {
+                var recording = new AudioRecording(audioFilePath);
+                if (recording.SampleRate != 22050)
+                {
+                    recording.ConvertSampleRate22kHz();
+                }
+
+                var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
+
+                var sonogram = new SpectralSonogram(config, recording.GetWavReader());
+
+                AED.GenerateImage(audioFilePath, workingDir, sonogram, events);
+            }
+
         }
 
         /// <summary>
@@ -89,7 +70,7 @@ namespace AnalysisPrograms.Processing
         {
             var expected = new List<string>
                 {
-                    Segment.key_DRAW_SONOGRAMS,
+                    ////Segment.key_DRAW_SONOGRAMS, // not used
                     Segment.key_FRAME_OVERLAP,
                     Segment.key_MAX_DURATION,
                     Segment.key_MAX_HZ,
@@ -100,9 +81,9 @@ namespace AnalysisPrograms.Processing
                 };
 
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
             var minHz = Int32.Parse(dict[Segment.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[Segment.key_MAX_HZ]);
@@ -122,6 +103,8 @@ namespace AnalysisPrograms.Processing
                 minDuration,
                 maxDuration);
             var events = results.Item2;
+
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -148,28 +131,28 @@ namespace AnalysisPrograms.Processing
         {
             var expected = new List<string>
                 {
-                    SnrAnalysis.key_AED_INTENSITY_THRESHOLD,
-                    SnrAnalysis.key_AED_SMALL_AREA_THRESHOLD,
-                    SnrAnalysis.key_DRAW_SONOGRAMS,
+                    ////SnrAnalysis.key_AED_INTENSITY_THRESHOLD, // not used
+                    ////SnrAnalysis.key_AED_SMALL_AREA_THRESHOLD, // not used
+                    ////SnrAnalysis.key_DRAW_SONOGRAMS, // not used
                     SnrAnalysis.key_FRAME_OVERLAP,
                     SnrAnalysis.key_FRAME_SIZE,
                     SnrAnalysis.key_K1_K2_LATENCY,
                     SnrAnalysis.key_MAX_HZ,
                     SnrAnalysis.key_MIN_HZ,
-                    SnrAnalysis.key_MIN_VOCAL_DURATION,
+                    ////SnrAnalysis.key_MIN_VOCAL_DURATION, // not used
                     SnrAnalysis.key_N_POINT_SMOOTH_FFT,
                     SnrAnalysis.key_NOISE_REDUCTION_TYPE,
                     SnrAnalysis.key_SEGMENTATION_THRESHOLD_K1,
                     SnrAnalysis.key_SEGMENTATION_THRESHOLD_K2,
-                    // SnrAnalysis.key_SILENCE_RECORDING_PATH, // not used
+                    ////SnrAnalysis.key_SILENCE_RECORDING_PATH, // not used
                     SnrAnalysis.key_VOCAL_GAP,
                     SnrAnalysis.key_WINDOW_FUNCTION
                 };
 
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
             var frameSize = Int32.Parse(dict[SnrAnalysis.key_FRAME_SIZE]);
             var frameOverlap = Double.Parse(dict[SnrAnalysis.key_FRAME_OVERLAP]);
@@ -224,6 +207,7 @@ namespace AnalysisPrograms.Processing
             var snrResult = new ProcessorResultTag();
             snrResult.ExtraDetail.Add(fullbandEvent);
             snrResult.ExtraDetail.Add(subbandEvent);
+            //todo: fill in start/end/freq for whole recording
 
             return new List<ProcessorResultTag> { snrResult };
         }
@@ -249,9 +233,9 @@ namespace AnalysisPrograms.Processing
                 };
 
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
             var intensityThreshold = Default.intensityThreshold;
             var smallAreaThreshold = Default.smallAreaThreshold;
@@ -265,6 +249,8 @@ namespace AnalysisPrograms.Processing
             // execute
             var result = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold);
             var events = result.Item2;
+
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -287,13 +273,12 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunOd(FileInfo settingsFile, FileInfo audioFile)
         {
-
             var expected = new List<string>
                 {
                     OscillationRecogniser.key_DCT_DURATION,
                     OscillationRecogniser.key_DCT_THRESHOLD,
                     OscillationRecogniser.key_DO_SEGMENTATION,
-                    OscillationRecogniser.key_DRAW_SONOGRAMS,
+                    ////OscillationRecogniser.key_DRAW_SONOGRAMS, // not used
                     OscillationRecogniser.key_EVENT_THRESHOLD,
                     OscillationRecogniser.key_FRAME_OVERLAP,
                     OscillationRecogniser.key_MAX_DURATION,
@@ -306,9 +291,9 @@ namespace AnalysisPrograms.Processing
 
             // settings
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
             bool doSegmentation = Boolean.Parse(dict[OscillationRecogniser.key_DO_SEGMENTATION]);
             var minHz = Int32.Parse(dict[OscillationRecogniser.key_MIN_HZ]);
@@ -337,7 +322,10 @@ namespace AnalysisPrograms.Processing
                     eventThreshold,
                     minDuration,
                     maxDuration);
+
             var events = results.Item4;
+
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -363,9 +351,11 @@ namespace AnalysisPrograms.Processing
         {
             // no settings, yet
 
-            // execute
+            // execute - only for ground parrot for now.
             var result = GroundParrotRecogniser.Detect(audioFile.FullName);
             var events = result.Item2;
+
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -412,8 +402,8 @@ namespace AnalysisPrograms.Processing
             var expected = new List<string>
                 {
                     SPR.key_CALL_NAME,
-                    SPR.key_DO_SEGMENTATION,
-                    SPR.key_DRAW_SONOGRAMS,
+                    ////SPR.key_DO_SEGMENTATION, // not used
+                    ////SPR.key_DRAW_SONOGRAMS, // not used
                     SPR.key_EVENT_THRESHOLD,
                     SPR.key_FRAME_OVERLAP,
                     SPR.key_MAX_DURATION,
@@ -430,11 +420,109 @@ namespace AnalysisPrograms.Processing
 
             // settings
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            //CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
-            throw new NotImplementedException();
+            string callName = dict[SPR.key_CALL_NAME];
+            double frameOverlap = Convert.ToDouble(dict[SPR.key_FRAME_OVERLAP]);
+
+            // SPT PARAMETERS
+            double intensityThreshold = Convert.ToDouble(dict[SPR.key_SPT_INTENSITY_THRESHOLD]);
+            int smallLengthThreshold = Convert.ToInt32(dict[SPR.key_SPT_SMALL_LENGTH_THRESHOLD]);
+
+            // WHIPBIRD PARAMETERS
+            int whistleMinHz = Int32.Parse(dict[SPR.key_WHISTLE_MIN_HZ]);
+            int whistleMaxHz = Int32.Parse(dict[SPR.key_WHISTLE_MAX_HZ]);
+            double optimumWhistleDuration = Double.Parse(dict[SPR.key_WHISTLE_DURATION]);
+            int whipMinHz = Int32.Parse(dict[SPR.key_WHIP_MIN_HZ]);
+            int whipMaxHz = Int32.Parse(dict[SPR.key_WHIP_MAX_HZ]);
+            double whipDuration = Double.Parse(dict[SPR.key_WHIP_DURATION]);
+
+            // CURLEW PARAMETERS
+            double minDuration = Double.Parse(dict[SPR.key_MIN_DURATION]);
+            double maxDuration = Double.Parse(dict[SPR.key_MAX_DURATION]);
+
+            double eventThreshold = Double.Parse(dict[SPR.key_EVENT_THRESHOLD]);
+
+            // B: CHECK to see if conversion from .MP3 to .WAV is necessary
+            var destinationAudioFile = audioFile.FullName;
+
+            // LOAD RECORDING AND MAKE SONOGRAM
+            BaseSonogram sonogram;
+            using (var recording = new AudioRecording(destinationAudioFile))
+            {
+                if (recording.SampleRate != 22050)
+                {
+                    // down sample if necessary
+                    recording.ConvertSampleRate22kHz();
+                }
+
+                var sonoConfig = new SonogramConfig
+                {
+                    NoiseReductionType = NoiseReductionType.NONE,
+                    ////NoiseReductionType = NoiseReductionType.STANDARD,
+                    WindowOverlap = frameOverlap
+                };
+                sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            }
+
+            List<AcousticEvent> predictedEvents = null;
+
+            var audioFileName = Path.GetFileNameWithoutExtension(destinationAudioFile);
+
+            // execute  - only for whip bird for now.
+            if (callName.Equals("WHIPBIRD"))
+            {
+                // SPT
+                var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
+
+                // SPR
+                Log.WriteLine("SPR start: intensity threshold = " + intensityThreshold);
+                int slope = 0;
+                double sensitivity = 0.7;
+                var mHori = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold, intensityThreshold, sensitivity);
+                slope = 87;
+                sensitivity = 0.8;
+                var mVert = SPR.MarkLine(result1.Item1, slope, smallLengthThreshold - 4, intensityThreshold + 1, sensitivity);
+                Log.WriteLine("SPR finished");
+                Log.WriteLine("Extract Whipbird calls - start");
+
+                int minBoundWhistle = (int)(whistleMinHz / sonogram.FBinWidth);
+                int maxBoundWhistle = (int)(whistleMaxHz / sonogram.FBinWidth);
+                int whistleFrames = (int)(sonogram.FramesPerSecond * optimumWhistleDuration);
+                int minBoundWhip = (int)(whipMinHz / sonogram.FBinWidth);
+                int maxBoundWhip = (int)(whipMaxHz / sonogram.FBinWidth);
+                int whipFrames = (int)(sonogram.FramesPerSecond * whipDuration);
+                var result3 = SPR.DetectWhipBird(
+                    mHori,
+                    mVert,
+                    minBoundWhistle,
+                    maxBoundWhistle,
+                    whistleFrames,
+                    minBoundWhip,
+                    maxBoundWhip,
+                    whipFrames,
+                    smallLengthThreshold);
+                double[] scores = result3.Item1;
+
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whipMinHz, whipMaxHz,
+                                                              sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                sonogram.Data = result1.Item1;
+                Log.WriteLine("Extract Whipbird calls - finished");
+            }
+
+            SaveAe(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
+
+            // AcousticEvent results
+            var prts =
+                predictedEvents.Select(
+                    ae =>
+                    ProcessingUtils.GetProcessorResultTag(
+                        ae, new ResultProperty(ae.Name, ae.ScoreNormalised, DefaultNormalisedScore)));
+
+            return prts;
         }
 
         /// <summary>
@@ -476,6 +564,8 @@ namespace AnalysisPrograms.Processing
                     expectedDuration);
 
             var predictedEvents = results.Item4;
+
+            SaveAe(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             var prts =
@@ -540,6 +630,8 @@ namespace AnalysisPrograms.Processing
 
             ZipUnzip.UnZip(unzipDir, resourceFile.FullName, true);
 
+            // only used for lewin's rail for now.
+
             // list of doubles
             var doublesFile = Path.Combine(unzipDir, "FV1_KEKKEK1.txt");
             double[] fv = FileTools.ReadDoubles2Vector(doublesFile);
@@ -552,9 +644,9 @@ namespace AnalysisPrograms.Processing
 
             // settings
             var config = new Configuration(settingsFile.FullName);
-            var dict = RemoveEmpty(config.GetTable());
+            var dict = ProcessingUtils.RemoveEmpty(config.GetTable());
 
-            CheckParams(expected, dict.Select(d => d.Key));
+            ProcessingUtils.CheckParams(expected, dict.Select(d => d.Key));
 
             int windowSize = Int32.Parse(dict[MFCC_OD.key_FRAME_SIZE]);
             double frameOverlap = Double.Parse(dict[MFCC_OD.key_FRAME_OVERLAP]);
@@ -600,6 +692,8 @@ namespace AnalysisPrograms.Processing
 
             var events = results.Item4;
 
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+
             // AcousticEvent results
             return
                 events.Select(
@@ -628,29 +722,6 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunHtk(FileInfo settingsFile, FileInfo audioFile, FileInfo resourceFile, DirectoryInfo runDir)
         {
-            var expected = new List<string>
-                {
-                    MFCC_OD.key_CC_COUNT,
-                    MFCC_OD.key_DCT_DURATION,
-                    MFCC_OD.key_DELTA_T,
-                    MFCC_OD.key_DO_MELSCALE,
-                    MFCC_OD.key_DRAW_SONOGRAMS,
-                    MFCC_OD.key_DYNAMIC_RANGE,
-                    MFCC_OD.key_EVENT_THRESHOLD,
-                    MFCC_OD.key_FRAME_OVERLAP,
-                    MFCC_OD.key_FRAME_SIZE,
-                    MFCC_OD.key_INCLUDE_DELTA,
-                    MFCC_OD.key_INCLUDE_DOUBLE_DELTA,
-                    MFCC_OD.key_MAX_DURATION,
-                    MFCC_OD.key_MAX_HZ,
-                    MFCC_OD.key_MAX_OSCIL_FREQ,
-                    MFCC_OD.key_MIN_AMPLITUDE,
-                    MFCC_OD.key_MIN_DURATION,
-                    MFCC_OD.key_MIN_HZ,
-                    MFCC_OD.key_MIN_OSCIL_FREQ,
-                    MFCC_OD.key_NOISE_REDUCTION_TYPE
-                };
-            
             // upzip resources file into new folder in working dir.
             const string ZipFolderName = "UnzipedResources";
             var unzipDir = Path.Combine(runDir.FullName, ZipFolderName);
@@ -668,7 +739,15 @@ namespace AnalysisPrograms.Processing
             File.AppendAllText(settingsFile.FullName, File.ReadAllText(iniFile));
 
             // htk config
-            var htkConfig = new HTKConfig(settingsFile.FullName);
+            // need to change some of the properties for cluster.
+            var htkConfig = new HTKConfig(settingsFile.FullName)
+                {
+                    ConfigDir = unzipDir,
+                    WorkingDir = runDir.FullName,
+                    HTKDir = Path.Combine(unzipDir, "HTK"),
+                    DataDir = Path.Combine(runDir.FullName, "data"),
+                    ResultsDir = Path.Combine(runDir.FullName, "results")
+                };
 
             // delete and recreate data dir if it exists
             if (Directory.Exists(htkConfig.DataDir))
@@ -689,6 +768,8 @@ namespace AnalysisPrograms.Processing
             // E: PARSE THE RESULTS FILE TO RETURN ACOUSTIC EVENTS
             Log.WriteLine("Parse the HMM results file and return Acoustic Events");
             var events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, unzipDir);
+
+            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             var prts =

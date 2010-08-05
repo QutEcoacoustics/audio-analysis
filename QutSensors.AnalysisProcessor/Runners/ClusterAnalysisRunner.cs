@@ -106,7 +106,12 @@ namespace QutSensors.AnalysisProcessor.Runners
 
             using (ICluster cluster = new Cluster())
             {
-                var tasks = new List<ITask>();
+                // create and set cluster job details.
+                var job = cluster.CreateJob();
+                job.IsExclusive = false;
+                job.MinimumNumberOfProcessors = 1;
+                job.Name = "Processor " + DateTime.Now;
+                job.Project = "QUT Sensors";
 
                 foreach (var item in workItems)
                 {
@@ -127,7 +132,7 @@ namespace QutSensors.AnalysisProcessor.Runners
                         task.Stderr = item.StandardErrorFile.FullName;
                         task.Stdout = item.StandardOutputFile.FullName;
 
-                        tasks.Add(task);
+                        job.AddTask(task);
                     }
                     catch
                     {
@@ -136,28 +141,23 @@ namespace QutSensors.AnalysisProcessor.Runners
                     }
                 }
 
-                if (tasks.Count == 0)
+                if (job.TaskCount == 0)
                 {
                     return 0;
                 }
 
-                // create and set cluster job details.
-                var job = cluster.CreateJob();
-                job.IsExclusive = false;
-                job.MinimumNumberOfProcessors = 1;
-                job.Name = "Processor " + DateTime.Now;
-                job.Project = "QUT Sensors";
+                job.MaximumNumberOfProcessors = job.TaskCount;
 
-                // add job to cluster
+                // add job to cluster - job does not start, just so cluster knows it is there.
                 var jobId = cluster.AddJob(job);
 
                 // job is owned by specified user
                 cluster.SetJobCredentials(jobId, userName, password);
 
-                // submit job as specified user
+                // submit job as specified user - starts the tasks in the job when processors are available.
                 cluster.SubmitJob(jobId, userName, password, false, 0);
 
-                return tasks.Count;
+                return job.TaskCount;
             }
         }
 

@@ -79,7 +79,7 @@ namespace QutSensors.AnalysisProcessor
                 processor = new AnalysisJobProcessor(
                     exeBaseDir,
                     runsDir,
-                    new MultiLogProvider(new EventLogProvider(EventLog), new ConsoleLogProvider()),
+                    new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider()),
                     new ClusterAnalysisRunner(username, password),
                     workerName);
             }

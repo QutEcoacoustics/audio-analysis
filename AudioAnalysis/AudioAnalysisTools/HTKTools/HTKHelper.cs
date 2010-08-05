@@ -10,6 +10,8 @@ using TowseyLib;
 
 namespace AudioAnalysisTools.HTKTools
 {
+    using System.Text;
+
     /// <summary>
     /// Summary description for Class1
     /// </summary>
@@ -531,17 +533,19 @@ namespace AudioAnalysisTools.HTKTools
             DirectoryInfo dirInfo = new DirectoryInfo(dirPath);
             FileInfo[] FileList = dirInfo.GetFiles("*" + sourceExt, SearchOption.TopDirectoryOnly);
 
-            StreamWriter objWriter = File.CreateText(scriptFN_code);//list of .wav > .mfc files
+            StreamWriter objWriter = File.CreateText(scriptFN_code); // list of .wav > .mfc files
             StreamWriter objWriter2 = File.CreateText(scriptFN);
 
-            foreach (FileInfo FI in FileList)
+            foreach (FileInfo fi in FileList)
             {
-                string currLine = dirPath + "\\" + FI.Name + " " + dirPath + "\\";
-                string fileName = Path.GetFileNameWithoutExtension(FI.FullName);
-                currLine += fileName + outExt;
-                objWriter.WriteLine(currLine);
-                currLine = dirPath + "\\" + fileName + outExt;
-                objWriter2.WriteLine(currLine);
+                var audioFile = Path.Combine(dirPath, fi.Name);
+                var outFile = Path.Combine(dirPath, Path.GetFileNameWithoutExtension(fi.FullName) + outExt);
+
+                // write audio file path and outFile path to objWriter
+                objWriter.WriteLine("\"" + audioFile + "\" \"" + outFile + "\"");
+
+                // write outFile path to objWriter2
+                objWriter2.WriteLine("\"" + outFile + "\"");
             }
 
             objWriter.Flush();
@@ -555,11 +559,11 @@ namespace AudioAnalysisTools.HTKTools
         public static void ExtractFeatures(string options, string mfccConfigFN, string scriptF, string HCopyExecutable)
         {
             Console.WriteLine("\nExtracting feature vectors from the training.wav files into .mfc files");
-            if (File.Exists(mfccConfigFN)) 
+            if (File.Exists(mfccConfigFN))
                 Console.WriteLine("  Found Script file=" + scriptF);
             else Console.WriteLine("  WARNING Could NOT FIND Script file=" + scriptF);
 
-            string commandLineArguments = options + " -C " + mfccConfigFN + " -S " + scriptF;
+            string commandLineArguments = options + " -C " + "\"" + mfccConfigFN + "\"" + " -S " + "\"" + scriptF + "\"";
             Console.WriteLine("  Command Line Arguments=" + commandLineArguments);
             RunHTKExecutable(commandLineArguments, HCopyExecutable);
 
@@ -584,15 +588,23 @@ namespace AudioAnalysisTools.HTKTools
             string error = null;
             // try
             //{
-            var proc = new ProcessRunner
-            {
-                ProgramToRun = new FileInfo(executable),
-                Arguments = commandLineArguments,
-            };
+            var proc = new ProcessRunner { ProgramToRun = new FileInfo(executable), Arguments = commandLineArguments, };
 
             proc.Start();
             output = proc.OutputData;
             error = proc.ErrorData;
+
+            if (!string.IsNullOrEmpty(output))
+            {
+                Console.WriteLine("Output from " + Path.GetFileName(executable) + ": ");
+                Console.WriteLine(output);
+            }
+
+            if (!string.IsNullOrEmpty(error))
+            {
+                Console.WriteLine("Errors from " + Path.GetFileName(executable) + ": ");
+                Console.WriteLine(error);
+            }
 
             if (!string.IsNullOrEmpty(error) && error.Contains("ERROR"))
             {
@@ -1392,9 +1404,19 @@ namespace AudioAnalysisTools.HTKTools
             //  -S ./configs/testfalse.scp -i ./results/recountFalse.mlf -w ./configs/phone.net 
             //  ./configs/dict ./configs/monophones_test
 
-            string commandLine = " -C " + confTrain + " -H " + tgtDir2 + "\\macros" +
-                   " -H " + tgtDir2 + "\\hmmdefs" + " -S " + testF + " -i " + resultPath +
-                   " -w " + wordNet + " " + dict + " " + monophones_test;
+
+            var sb = new StringBuilder();
+            sb.Append(" -C \"" + confTrain + "\"");
+            sb.Append(" -H \"" + Path.Combine(tgtDir2, "macros") + "\"");
+            sb.Append(" -H \"" + Path.Combine(tgtDir2, "hmmdefs") + "\"");
+            sb.Append(" -S \"" + testF + "\"");
+            sb.Append(" -i \"" + resultPath + "\"");
+            sb.Append(" -w \"" + wordNet + "\" \"" + dict + "\" \"" + monophones_test + "\"");
+
+            string commandLine = sb.ToString();
+
+            Console.WriteLine("HVite command line");
+            Console.WriteLine(commandLine);
 
             RunHTKExecutable(commandLine, HViteExecutable);
         } //end HVite
