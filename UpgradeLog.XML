@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="Website">
+</Property><Property Name="Solution File" Value="C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\SensorsTrunk\Website.sln">
+</Property><Property Name="Date" Value="Monday, 9 August 2010">
+</Property><Property Name="Time" Value="9:10 AM">
+</Property></Properties><Event ErrorLevel="0" Project="QutSensors.Data" Source="QutSensors.Data\QutSensors.Data.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.Data" Source="QutSensors.Data\QutSensors.Data.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="AudioTools" Source="AudioTools\AudioTools.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="AudioTools" Source="AudioTools\AudioTools.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="NeuralNets" Source="AudioAnalysis\NeuralNets\NeuralNets.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="NeuralNets" Source="AudioAnalysis\NeuralNets\NeuralNets.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="TowseyLib" Source="AudioAnalysis\TowseyLib\TowseyLib.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="TowseyLib" Source="AudioAnalysis\TowseyLib\TowseyLib.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="MarkovModels" Source="AudioAnalysis\MarkovModels\MarkovModels.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="MarkovModels" Source="AudioAnalysis\MarkovModels\MarkovModels.csproj" Description="Converted">
+</Event><Event ErrorLevel="3" Project="AED" Source="AudioAnalysis\AED\AED\AED.fsproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="FileUpload" Source="FileUpload\FileUpload.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="FileUpload" Source="FileUpload\FileUpload.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="AnalysisPrograms" Source="AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="AnalysisPrograms" Source="AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="AudioAnalysisTools" Source="AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="AudioAnalysisTools" Source="AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="HMMBuilder" Source="HMMBuilder\HMMBuilder.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="HMMBuilder" Source="HMMBuilder\HMMBuilder.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.Test" Source="QutSensors.Test\QutSensors.Test.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.Test" Source="QutSensors.Test\QutSensors.Test.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.Shared" Source="QutSensors.Shared\QutSensors.Shared.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.Shared" Source="QutSensors.Shared\QutSensors.Shared.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.Business" Source="QutSensors.Business\QutSensors.Business.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.Business" Source="QutSensors.Business\QutSensors.Business.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.CacheProcessor" Source="QutSensors.CacheProcessor\QutSensors.CacheProcessor.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.CacheProcessor" Source="QutSensors.CacheProcessor\QutSensors.CacheProcessor.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.Hybrid.Silverlight.LinkedFiles" Source="QutSensors.Hybrid.Silverlight.LinkedFiles\QutSensors.Hybrid.Silverlight.LinkedFiles.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.Hybrid.Silverlight.LinkedFiles" Source="QutSensors.Hybrid.Silverlight.LinkedFiles\QutSensors.Hybrid.Silverlight.LinkedFiles.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="SharedCode" Source="SilverlightControls\Version3\SharedCode\SharedCode.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="SharedCode" Source="SilverlightControls\Version3\SharedCode\SharedCode.csproj" Description="Converted">
+</Event><Event ErrorLevel="3" Project="AEDTest" Source="AudioAnalysis\AED\Test\AEDTest.fsproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="QutSensors.AnalysisProcessor" Source="QutSensors.AnalysisProcessor\QutSensors.AnalysisProcessor.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="QutSensors.AnalysisProcessor" Source="QutSensors.AnalysisProcessor\QutSensors.AnalysisProcessor.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Website.sln" Description="Solution converted successfully">
+</Event><Event ErrorLevel="3" Project="" Source="Website.sln" Description="Converted">
+</Event><Event ErrorLevel="0" Project="SharedCode" Source="SilverlightControls\Version3\SharedCode\SharedCode.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="3" Project="" Source="LocalTestRun.testrunconfig" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="LocalTestRun.testrunconfig" Description="The file was converted to the current format.">
+</Event><Event ErrorLevel="3" Project="" Source="Website.vsmdi" Description="Converted">
+</Event><Event ErrorLevel="0" Project="" Source="Website.vsmdi" Description="The file was converted to the current format.">
+</Event><Event ErrorLevel="0" Project="QutSensors.Test" Source="QutSensors.Test\QutSensors.Test.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="QutSensors.Hybrid.Silverlight.LinkedFiles" Source="QutSensors.Hybrid.Silverlight.LinkedFiles\QutSensors.Hybrid.Silverlight.LinkedFiles.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="AudioTools" Source="AudioTools\AudioTools.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="NeuralNets" Source="AudioAnalysis\NeuralNets\NeuralNets.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="TowseyLib" Source="AudioAnalysis\TowseyLib\TowseyLib.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="MarkovModels" Source="AudioAnalysis\MarkovModels\MarkovModels.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="AnalysisPrograms" Source="AudioAnalysis\AnalysisPrograms\AnalysisPrograms.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="AudioAnalysisTools" Source="AudioAnalysis\AudioAnalysisTools\AudioAnalysisTools.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="HMMBuilder" Source="HMMBuilder\HMMBuilder.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="QutSensors.Data" Source="QutSensors.Data\QutSensors.Data.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="FileUpload" Source="FileUpload\FileUpload.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="FileUpload" Source="FileUpload\FileUpload.csproj" Description="Created rule set file &quot;C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\SensorsTrunk\FileUpload\Migrated rules for FileUpload.ruleset&quot; for the &quot;FileUpload Build (Any CPU)&quot; configuration.">
+</Event><Event ErrorLevel="0" Project="QutSensors.Shared" Source="QutSensors.Shared\QutSensors.Shared.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="QutSensors.Business" Source="QutSensors.Business\QutSensors.Business.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="QutSensors.CacheProcessor" Source="QutSensors.CacheProcessor\QutSensors.CacheProcessor.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event><Event ErrorLevel="0" Project="QutSensors.AnalysisProcessor" Source="QutSensors.AnalysisProcessor\QutSensors.AnalysisProcessor.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>
