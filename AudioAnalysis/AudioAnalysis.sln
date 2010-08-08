@@ -1,14 +1,14 @@
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowseyLib", "TowseyLib\TowseyLib.csproj", "{7E0D2209-A416-4784-B350-83778D20A64B}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "NeuralNets\NeuralNets.csproj", "{3453DB43-46DA-45E6-AD22-48BC081BC738}"
-EndProject
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A050BD53-DEE0-40F3-BEAB-1F7474533C40}"
 	ProjectSection(SolutionItems) = preProject
 		AudioAnalysis.vsmdi = AudioAnalysis.vsmdi
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TowseyLib", "TowseyLib\TowseyLib.csproj", "{7E0D2209-A416-4784-B350-83778D20A64B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NeuralNets", "NeuralNets\NeuralNets.csproj", "{3453DB43-46DA-45E6-AD22-48BC081BC738}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MarkovModels", "MarkovModels\MarkovModels.csproj", "{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}"
 	ProjectSection(ProjectDependencies) = postProject

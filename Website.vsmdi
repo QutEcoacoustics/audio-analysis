@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestLists xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestLists xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <TestList name="SL" id="2f95c7a0-6298-4471-8d43-6a4d032c9b1d" parentListId="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
     <TestLinks>
       <TestLink id="0304a659-2080-40d7-b7b5-ea5e65370d83" name="CurrentPropertyInvalidates1" storage="qutsensors.test\bin\debug\qutsensors.test.dll" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel,   PublicKeyToken=b03f5f7f11d50a3a" />

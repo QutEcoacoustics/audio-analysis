@@ -1,5 +1,5 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<TestRunConfiguration name="QutSensorsTestRun" id="2e02dbfe-5022-48f7-8778-2d9b0ce554a6" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2006">
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRunConfiguration name="QutSensorsTestRun" id="2e02dbfe-5022-48f7-8778-2d9b0ce554a6" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <Description>QutSensors test run.</Description>
   <Deployment>
     <DeploymentItem filename="QutSensors.Test\TestData\" outputDirectory="TestData" />
