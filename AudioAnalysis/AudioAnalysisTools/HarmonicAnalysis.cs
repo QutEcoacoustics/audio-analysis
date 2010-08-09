@@ -11,32 +11,34 @@ namespace AudioAnalysisTools
     {
 
         /// <summary>
-        /// 
+        /// Returns a tuple consisting of: 
+        /// 1) an array of scores over the entire recording
+        /// 2) a list of acoustic events
+        /// 3) a matrix of hits corresonding to the spectrogram. 
         /// </summary>
         /// <param name="sonogram">sonogram derived from the recording</param>
         /// <param name="minHz">min bound freq band to search</param>
         /// <param name="maxHz">max bound freq band to search</param>
-        /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
-        /// <param name="maxOscilFreq">ignore oscillation frequencies greater than this </param>
-        /// <param name="minAmplitude">ignore DCT amplitude values less than this minimum </param>
-        /// <param name="scoreThreshold">used for FP/FN</param>
+        /// <param name="minHarmonicPeriod">ignore harmonics or formants separated by less than this frequency gap</param>
+        /// <param name="maxHarmonicPeriod">ignore harmonics or formants separated by more than this frequency gap</param>
+        /// <param name="amplitudeThreshold">ignore harmonics with amplitude less than this minimum dB</param>
+        /// <param name="scoreThreshold">event score threshold used for FP/FN</param>
         /// <param name="expectedDuration">look for events of this duration</param>
-        /// <param name="scores">return an array of scores over the entire recording</param>
-        /// <param name="events">return a list of acoustic events</param>
-        /// <param name="hits"></param>
-        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz, 
-                                 int minPeriod, int maxPeriod, double minAmplitude, double scoreThreshold, double expectedDuration)
+        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz,
+                                 int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold, double scoreThreshold, double expectedDuration)
         {
-            //DETECT OSCILLATIONS
-            bool normaliseDCT = true;
-            var results = DetectHarmonics(sonogram, minHz, maxHz, normaliseDCT, minPeriod, maxPeriod, minAmplitude);
+            // DETECT OSCILLATIONS
+            //find freq bins
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+
+            int hzWidth = maxHz - minHz;
+            var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
+
             double[] scores = DataTools.filterMovingAverage(results.Item1, 7); //smooth the scores
-
             var hits = results.Item2;
-            hits = RemoveIsolatedHits(hits);
 
-            //EXTRACT SCORES AND ACOUSTIC EVENTS
-            //scores = GetHarmonicScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            // EXTRACT SCORES AND ACOUSTIC EVENTS
             double[] oscFreq = GetHDFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             List<AcousticEvent> events = ConvertHDScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
                                             expectedDuration, sonogram.Configuration.SourceFName);
@@ -63,35 +65,34 @@ namespace AudioAnalysisTools
         /// <returns></returns>
 
 
-        public static System.Tuple<double[], double[,]> DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
-                                                   int minPeriod, int maxPeriod, double dctThreshold)
+        //public static System.Tuple<double[], double[,]> DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
+        //                                           int minPeriod, int maxPeriod, double amplitudeThreshold)
+        //{
+        //    //find freq bins
+        //    int minBin = (int)(minHz / sonogram.FBinWidth);
+        //    int maxBin = (int)(maxHz / sonogram.FBinWidth);
+
+        //    int hzWidth = maxHz - minHz;
+
+        //    var results = DetectHarmonicsUsingDCT(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, amplitudeThreshold);
+        //    return results;
+        //}
+
+
+        public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth,
+                                                                         int minPeriod, int maxPeriod, double amplitudeThreshold)
         {
-            //find freq bins
-            int minBin = (int)(minHz / sonogram.FBinWidth);
-            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            int binBand = maxBin - minBin + 1; // DCT spans N freq bins
 
-            int hzWidth   = maxHz  - minHz;
-
-            var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
-            return results;
-        }
-
-        public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
-                                                                         int minPeriod, int maxPeriod, double dctThreshold)
-        {
-
-            int binBand = maxBin - minBin + 1; //DCT spans N freq bins
-
-            int minDeltaIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
-            int maxDeltaIndex = (int)(hzWidth / (double)minPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
-            //double period = hzWidth / (double)indexOfMaxValue * 2; //Times 2 because index = Pi and not 2Pi
+            int minDeltaIndex = (int)(hzWidth / (double)maxPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
+            int maxDeltaIndex = (int)(hzWidth / (double)minPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
+            // double period = hzWidth / (double)indexOfMaxValue * 2;   // Times 2 because index = Pi and not 2Pi
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
             Double[,] hits = new Double[rows, cols];
             double[] periodScore = new double[rows];
             double[] periodicity = new double[rows];
-            double amplitudeThreshold = 6.0;
 
 
             for (int r = 0; r < rows - 5; r++)
@@ -103,18 +104,20 @@ namespace AudioAnalysisTools
                 for (int c = 0; c < binBand; c++) array[c] /= 5.0; //average
                 //array = DataTools.SubtractMean(array);
 
-                //if (r ==84)
-                //{
+                // if (r ==84)
+                // {
                 //    DataTools.writeBarGraph(array);
-                //}
+                // }
                 var results = DataTools.Periodicity(array, minDeltaIndex, maxDeltaIndex);
                 if (results.Item1 > amplitudeThreshold)
                 {
-                    periodScore[r] = results.Item1;
-                    periodicity[r] = results.Item2;
+                    periodScore[r] = results.Item1; // maximum amplitude obtained over all periods and phases
+                    periodicity[r] = results.Item2; // the period for which the maximum amplitude was obtained.
+                    // phase[r] = results.Item3; // the phase for the period for which max amplitude was obtained.
+                    for (int c = minBin; c < maxBin; c++) hits[r, c] = results.Item2;
                 }
-                //if ((r > 50) && (r < 200)) Log.WriteLine("{0}  score={1:f2}  period={2}, phase={3}", r, periodScore[r], periodicity[r], results.Item3);
-            }//rows
+                // if ((r > 50) && (r < 200)) Log.WriteLine("{0}  score={1:f2}  period={2}, phase={3}", r, periodScore[r], periodicity[r], results.Item3);
+            }// rows
 
             return Tuple.Create(periodScore, hits);
         }

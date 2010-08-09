@@ -19,9 +19,9 @@ namespace AnalysisPrograms
     {
         //Following lines are used for the debug command line.
         //for CURLEW
-        //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_DetectionParams.txt events.txt
+        //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_Params.txt events.txt
         //for FEMALE KOALA
-        //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\FemaleKoala_DetectionParams.txt events.txt
+        //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\HD_FemaleKoala_Params.txt events.txt
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_MIN_HZ          = "MIN_HZ";
@@ -167,7 +167,7 @@ namespace AnalysisPrograms
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            double maxScore = 2000.0;
+            double maxScore = 20.0;
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
@@ -179,6 +179,7 @@ namespace AnalysisPrograms
                 image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddEvents(predictedEvents);
                 image.Save(path);
+                // ImageTools.DrawMatrix(hits, @"C:\SensorNetworks\Output\HD_FemaleKoala\hitsImage.png");
             }
         }
 

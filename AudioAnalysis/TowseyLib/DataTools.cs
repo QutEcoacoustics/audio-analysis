@@ -1996,9 +1996,11 @@ namespace TowseyLib
 
 
         /// <summary>
-        /// searches an array of values for periodicity.
-        /// Calls the method PeriodicityDetection() to obtain a score for each period between the passed min and max bounds
-        /// returns the maximum periodic score and the period at which it was obtained 
+        /// Searches an array of values for periodicity.
+        /// Calls the method PeriodicityDetection() to obtain a score for every combination of period and phase between the passed min and max bounds.
+        /// The score is an estimate of the maximum amplitude for all combinations of period and phase. 
+        /// More accurately, the score is the difference between the average of the periodic indices and the average of the mid-period indices.
+        /// Returns the maximum periodic score and the period at which it was obtained 
         /// </summary>
         /// <param name="values"></param>
         /// <param name="minPeriod"></param>
