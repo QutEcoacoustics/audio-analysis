@@ -19,9 +19,9 @@ MAX_HZ=7000
 # ignore harmonic periods below min & above max threshold freq in Hertz
 MIN_HARMONIC_PERIOD=500        
 MAX_HARMONIC_PERIOD=1300
-# minimum acceptable value of a DCT coefficient
-MIN_AMPLITUDE=0.4
-# Expected duration of an event in seconds.
-DURATION=0.6
+# Expected minimum and maximum duration of an event in seconds.
+MIN_AMPLITUDE=6.0
+MIN_DURATION=0.4
 # Event threshold - use this to determin FP / FN trade-off for events.
-EVENT_THRESHOLD=1.0
+MAX_DURATION=1.6
+EVENT_THRESHOLD=0.50
