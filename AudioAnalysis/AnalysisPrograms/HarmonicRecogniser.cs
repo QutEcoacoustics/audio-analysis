@@ -22,8 +22,14 @@ namespace AnalysisPrograms
         //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_Params.txt events.txt
         //for FEMALE KOALA
         //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\HD_FemaleKoala_Params.txt events.txt
+        // for HUMAN SPPECH
+        //hd C:\SensorNetworks\WavFiles\Human\BirgitTheTerminator.wav C:\SensorNetworks\Output\HD_HUMAN\HD_HUMAN_Params.txt events.txt
+        //CROWS
+        //hd "C:\SensorNetworks\WavFiles\Crows\HoneymoonBay-StBees_20090415-123000.mp3"  C:\SensorNetworks\Output\HD_CROWS\HD_CROWS_Params.txt  events.txt
+
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
+        public static string key_CALL_NAME       = "CALL_NAME";
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
@@ -31,7 +37,8 @@ namespace AnalysisPrograms
         public static string key_MIN_HARMONIC_PERIOD = "MIN_HARMONIC_PERIOD";
         public static string key_MAX_HARMONIC_PERIOD = "MAX_HARMONIC_PERIOD";
         public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
-        public static string key_DURATION        = "DURATION";
+        public static string key_MIN_DURATION    = "MIN_DURATION";
+        public static string key_MAX_DURATION    = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
@@ -53,11 +60,13 @@ namespace AnalysisPrograms
             string iniPath   = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\";
             string opFName   = args[2];
-            string opPath    = outputDir + opFName; 
+            string opPath    = outputDir + opFName;
+            string audioFileName = Path.GetFileName(recordingPath);
+
                        
             Log.WriteIfVerbose("# Output folder =" + outputDir);
             Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
-            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
+            FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
@@ -68,21 +77,23 @@ namespace AnalysisPrograms
                 int minHz = Int32.Parse(dict[key_MIN_HZ]);
                 int maxHz = Int32.Parse(dict[key_MAX_HZ]);
                 double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-                int minPeriod = Int32.Parse(dict[key_MIN_HARMONIC_PERIOD]);         //ignore harmonics whose period is below this threshold 
-                int maxPeriod = Int32.Parse(dict[key_MAX_HARMONIC_PERIOD]);         //ignore harmonics whose period is above this threshold
-                double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);    //minimum acceptable value of a DCT coefficient
-                double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);
-                double expectedDuration = Double.Parse(dict[key_DURATION]);         //expected duration of event in seconds 
+                int minPeriod = Int32.Parse(dict[key_MIN_HARMONIC_PERIOD]);         // ignore harmonics whose period is below this threshold 
+                int maxPeriod = Int32.Parse(dict[key_MAX_HARMONIC_PERIOD]);         // ignore harmonics whose period is above this threshold
+                double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);        // minimum acceptable value of a DCT coefficient
+                double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);    
+                double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
+                double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
+                string callName    = dict[key_CALL_NAME];
                 int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
-            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
+            Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Bounds of harmonic period: " + minPeriod + " - " + maxPeriod + " Hz");
-            Log.WriteIfVerbose("minAmplitude = " + minAmplitude);
-            Log.WriteIfVerbose("Expected Duration: " + expectedDuration + " seconds");   
+            Log.WriteIfVerbose("minAmplitude = " + minAmplitude +" dB (peak to trough)");
+            Log.WriteIfVerbose("Duration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);   
                     
 //#############################################################################################################################################
             var results = Execute_HDDetect(recordingPath, minHz, maxHz, frameOverlap, minPeriod, maxPeriod, minAmplitude,
-                                                eventThreshold, expectedDuration);
+                                                eventThreshold, minDuration, maxDuration, audioFileName, callName);
             Log.WriteLine("# Finished detecting spectral harmonic events.");
 //#############################################################################################################################################
 
@@ -113,7 +124,8 @@ namespace AnalysisPrograms
             }
             catch (KeyNotFoundException ex)
             {
-                Log.WriteLine("KEY NOT FOUND "+ ex.ToString());
+                Log.WriteLine("KEY NOT FOUND IN PARAMS FILE: "+ ex.ToString());
+                Console.ReadLine();
             }
 
 
@@ -124,8 +136,8 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath,
-            int minHz, int maxHz, double frameOverlap, int minOscilFreq, int maxOscilFreq, double minAmplitude,
-            double eventThreshold, double expectedDuration)
+            int minHz, int maxHz, double frameOverlap, int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold,
+            double eventThreshold, double minDuration, double maxDuration, string audioFileName, string callName)
         {
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(wavPath);
@@ -152,8 +164,8 @@ namespace AnalysisPrograms
 
             //iii: DETECT HARMONICS
             //bool normaliseDCT = true;
-            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minOscilFreq, maxOscilFreq,
-                                         minAmplitude, eventThreshold, expectedDuration);
+            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minHarmonicPeriod, maxHarmonicPeriod,
+                                         amplitudeThreshold, eventThreshold, minDuration, maxDuration, audioFileName, callName);
             double[] scores = results.Item1;     //an array of periodicity scores
             Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
             List<AcousticEvent> predictedEvents = results.Item3;
