@@ -542,14 +542,18 @@ namespace AnalysisPrograms.Processing
             var config = new Configuration(settingsFile.FullName);
             var dict = config.GetTable();
 
+            string callName = dict[HarmonicRecogniser.key_CALL_NAME];
             var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
             var minPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HARMONIC_PERIOD]);
             var maxPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HARMONIC_PERIOD]);
-            var minAmplitude = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
+            var amplitudeThreshold = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
             var eventThreshold = Double.Parse(dict[HarmonicRecogniser.key_EVENT_THRESHOLD]);
-            var expectedDuration = Double.Parse(dict[HarmonicRecogniser.key_DURATION]);
+            var minDuration = Double.Parse(dict[HarmonicRecogniser.key_MIN_DURATION]);
+            var maxDuration = Double.Parse(dict[HarmonicRecogniser.key_MAX_DURATION]);
+
+            string audioFileName = audioFile.Name;
 
             var results =
                 HarmonicRecogniser.Execute_HDDetect(
@@ -559,9 +563,12 @@ namespace AnalysisPrograms.Processing
                     frameOverlap,
                     minPeriod,
                     maxPeriod,
-                    minAmplitude,
+                    amplitudeThreshold,
                     eventThreshold,
-                    expectedDuration);
+                    minDuration,
+                    maxDuration,
+                    audioFileName,
+                    callName);
 
             var predictedEvents = results.Item4;
 

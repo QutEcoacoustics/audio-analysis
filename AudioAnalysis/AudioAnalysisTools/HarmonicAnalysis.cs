@@ -25,7 +25,8 @@ namespace AudioAnalysisTools
         /// <param name="scoreThreshold">event score threshold used for FP/FN</param>
         /// <param name="expectedDuration">look for events of this duration</param>
         public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz,
-                                 int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold, double scoreThreshold, double expectedDuration)
+                                 int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold, double scoreThreshold, double minDuration, double maxDuration,
+                                 string audioFileName, string callName)
         {
             // DETECT OSCILLATIONS
             //find freq bins
@@ -40,9 +41,10 @@ namespace AudioAnalysisTools
 
             // EXTRACT SCORES AND ACOUSTIC EVENTS
             double[] oscFreq = GetHDFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            List<AcousticEvent> events = ConvertHDScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
-                                            expectedDuration, sonogram.Configuration.SourceFName);
-            return Tuple.Create(scores, hits, events);
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                                                         amplitudeThreshold, minDuration, maxDuration, audioFileName, callName);
+
+            return Tuple.Create(scores, hits, predictedEvents);
         }//end method
 
 
