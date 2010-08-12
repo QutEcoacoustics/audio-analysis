@@ -29,7 +29,8 @@ namespace AnalysisPrograms
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_CALL_NAME       = "CALL_NAME";
+        public static string key_CALL_NAME       = "CALL_NAME"; 
+        public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
@@ -74,6 +75,8 @@ namespace AnalysisPrograms
             Dictionary<string, string>.KeyCollection keys = dict.Keys;
             try
             {
+                string callName = dict[key_CALL_NAME];
+                NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[key_NOISE_REDUCTION_TYPE]);
                 int minHz = Int32.Parse(dict[key_MIN_HZ]);
                 int maxHz = Int32.Parse(dict[key_MAX_HZ]);
                 double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
@@ -83,7 +86,6 @@ namespace AnalysisPrograms
                 double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);    
                 double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
                 double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
-                string callName    = dict[key_CALL_NAME];
                 int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
@@ -92,7 +94,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Duration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);   
                     
 //#############################################################################################################################################
-            var results = Execute_HDDetect(recordingPath, minHz, maxHz, frameOverlap, minPeriod, maxPeriod, minAmplitude,
+            var results = Execute_HDDetect(recordingPath, nrt, minHz, maxHz, frameOverlap, minPeriod, maxPeriod, minAmplitude,
                                                 eventThreshold, minDuration, maxDuration, audioFileName, callName);
             Log.WriteLine("# Finished detecting spectral harmonic events.");
 //#############################################################################################################################################
@@ -108,16 +110,20 @@ namespace AnalysisPrograms
 
             if (DRAW_SONOGRAMS==2)
             {
-                scores = DataTools.normalise(scores);
+                //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), minAmplitude);
+                double normMax = minAmplitude * 4; //so normalised eventThreshold = 0.25
+                for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
+                //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), 0.25);
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, 0.25);
             }
             else
             if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
             {
-                scores = DataTools.normalise(scores);
+                double normMax = minAmplitude * 4; //so normalised eventThreshold = 0.25
+                for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, 0.25);
             }
 
 
@@ -135,12 +141,12 @@ namespace AnalysisPrograms
 
 
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath,
+        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath, NoiseReductionType nrt,
             int minHz, int maxHz, double frameOverlap, int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold,
             double eventThreshold, double minDuration, double maxDuration, string audioFileName, string callName)
         {
             //i: GET RECORDING
-            AudioRecording recording = new AudioRecording(wavPath);
+                AudioRecording recording = new AudioRecording(wavPath);
             if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
             int sr = recording.SampleRate;
 
@@ -149,7 +155,7 @@ namespace AnalysisPrograms
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            sonoConfig.NoiseReductionType = nrt;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
             Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);

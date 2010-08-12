@@ -117,7 +117,7 @@ namespace AudioAnalysisTools
         void DrawEvents(Graphics g)
         {
             Pen p1 = new Pen(Color.Red);
-            Pen p2 = new Pen(Color.Yellow);
+            Pen p2 = new Pen(Color.Black);
             foreach (AcousticEvent e in this.EventList)
             {
                 //double start = e.StartTime;
@@ -129,13 +129,14 @@ namespace AudioAnalysisTools
                 int width = e.oblong.r2 - x + 1;
                 int height = e.oblong.c2 - e.oblong.c1 + 1;
                 g.DrawRectangle(p1, x, y, width, height);
+                //draw the score bar to indicate relative score
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
                 g.DrawLine(p2, x, y1, x, y2);
                 g.DrawLine(p2, x + 1, y1, x + 1, y2);
-                g.DrawLine(p2, x + 2, y1, x + 2, y2);
-                g.DrawLine(p2, x + 3, y1, x + 3, y2);
+                //g.DrawLine(p2, x + 2, y1, x + 2, y2);
+                //g.DrawLine(p2, x + 3, y1, x + 3, y2);
             }
         }
 

@@ -543,6 +543,7 @@ namespace AnalysisPrograms.Processing
             var dict = config.GetTable();
 
             string callName = dict[HarmonicRecogniser.key_CALL_NAME];
+            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[HarmonicRecogniser.key_NOISE_REDUCTION_TYPE]);
             var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
@@ -558,6 +559,7 @@ namespace AnalysisPrograms.Processing
             var results =
                 HarmonicRecogniser.Execute_HDDetect(
                     audioFile.FullName,
+                    nrt,
                     minHz,
                     maxHz,
                     frameOverlap,

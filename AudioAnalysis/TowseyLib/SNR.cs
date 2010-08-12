@@ -7,7 +7,7 @@ using System.Text;
 namespace TowseyLib
 {
 
-    public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, PEAK_TRACKING }
+    public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, PEAK_TRACKING, HARMONIC_DETECTION }
 
 
     public class SNR
@@ -468,6 +468,23 @@ namespace TowseyLib
         }
 
         /// <summary>
+        /// This method is specifically to preprocess the spectrogram prior to identification of harmonic stacks.
+        /// (1) The spectrogram is smoothed in temporal direction only.
+        /// (2) After smoothing the modal noise is calculated as per standard approach.
+        /// (3) The modal noise is subtracted but WITHOUT thresholding. i.e. keep negative values.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] NoiseReduce_HarmonicDetection(double[,] matrix)
+        {
+            double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
+            double[]  modalNoise   = SNR.CalculateModalNoise(smoothMatrix);        //calculate modal noise profile
+            modalNoise             = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
+            return SubtractModalNoise(smoothMatrix, modalNoise);                   //subtract modal noise but do NOT threshold
+            //return RemoveModalNoise(smoothMatrix, modalNoise);                     //subtract modal noise AND threshold at ZERO
+        }
+        
+        /// <summary>
         /// IMPORTANT: Mel scale conversion should be done before noise reduction
         /// </summary>
         /// <param name="matrix"></param>
@@ -734,6 +751,21 @@ namespace TowseyLib
             return outM;
         }// end RemoveBackgroundNoise()
 
+
+        public static double[,] SmoothInTemporalDirectionOnly(double[,] matrix, int window)
+        {
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+
+            var smoothMatrix = new double[rows,cols];
+            for (int c = 0; c < cols; c++)
+            {
+                var array = DataTools.GetColumn(matrix, c);
+                array = DataTools.filterMovingAverage(array, window);
+                DataTools.SetColumn(smoothMatrix, c, array);
+            }
+            return smoothMatrix; 
+        }
 
         public static byte[,] IdentifySpectralRidges(double[,] matrix)
         {
@@ -1143,6 +1175,12 @@ namespace TowseyLib
                 Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + dynamicRange);
                 m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
             }
+            else
+            if (nrt == NoiseReductionType.HARMONIC_DETECTION)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: HARMONIC_DETECTION");
+                m = SNR.NoiseReduce_HarmonicDetection(m);
+            }
             var tuple = System.Tuple.Create(m, modalNoise);
             return tuple;
         }
@@ -1158,11 +1196,13 @@ namespace TowseyLib
         {
             if (key.Equals("NONE")) return NoiseReductionType.NONE;
             else
-                if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
-                else
-                    if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
-                    else
-                    if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
+            if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
+            else
+            if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
+            else
+            if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
+            else
+            if (key.Equals("HARMONIC_DETECTION")) return NoiseReductionType.HARMONIC_DETECTION;
             return NoiseReductionType.NONE;
         }
 
