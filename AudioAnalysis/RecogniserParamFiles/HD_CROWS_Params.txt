@@ -5,7 +5,7 @@ DRAW_SONOGRAMS=2
 # Below parameters ARE user modifiable.
 ################################################################################
 #Uncomment the required call name. DO NOT change call names.
-CALL_NAME=KOALA_FEMALE
+CALL_NAME=CROWS
 # default=0.50; Use 0.75 for koalas 
 FRAME_OVERLAP=0.25
 #**************** NOISE REDUCTION
@@ -16,14 +16,15 @@ NOISE_REDUCTION_TYPE=HARMONIC_DETECTION
 DYNAMIC_RANGE=15.0
 #**************** HARMONIC PARAMETERS
 # min and max of the freq band to search
-MIN_HZ=500          
-MAX_HZ=7000
+MIN_HZ=1200          
+MAX_HZ=2800
 # ignore harmonic periods < min & > max. Period=freq gap in Hertz
-MIN_HARMONIC_PERIOD=500        
-MAX_HARMONIC_PERIOD=1300
+MIN_HARMONIC_PERIOD=150        
+MAX_HARMONIC_PERIOD=400
 # Expected minimum and maximum duration of an event in seconds.
-MIN_DURATION=0.4
-MAX_DURATION=1.6
+MIN_DURATION=0.2
+MAX_DURATION=1.25
 # Event threshold - use this to adjust FP / FN trade-off for events.
 # Is actually the dB amplitude of the harmonic fluctuations
-MIN_AMPLITUDE=6.0
+MIN_AMPLITUDE=10.0
+
