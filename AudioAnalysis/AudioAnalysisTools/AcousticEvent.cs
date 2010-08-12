@@ -789,8 +789,10 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// A general method to convert an array of score values to a list of AcousticEvents.
-        /// This method assumes that the scores are already normaliesd.
-        /// Some analysis techniques (e.g. OD) have there own methods for extrating events from score arrays.
+        /// The method uses the passed scoreThreshold in order to calculate a normalised score.
+        /// Max possible score := threshold * 5
+        /// normalised score := score / maxPossibleScore.
+        /// Some analysis techniques (e.g. OD) have there own methods for extracting events from score arrays.
         /// </summary>
         /// <param name="scores">the array of scores</param>
         /// <param name="minHz">lower freq bound of the acoustic event</param>
@@ -810,6 +812,7 @@ namespace AudioAnalysisTools
         {
             int count = scores.Length;
             var events = new List<AcousticEvent>();
+            double maxPossibleScore = 5 * scoreThreshold; // used to calcualte a normalised score bewteen 0 - 1.0 
             bool isHit = false;
             double frameOffset = 1 / framesPerSec; // frame offset in fractions of second
             double startTime = 0.0;
@@ -836,11 +839,11 @@ namespace AudioAnalysisTools
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
 
-                        // obtain average score.
+                        // obtain an average score for the duration of the event.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
-                        ev.ScoreNormalised = ev.Score; // assumes passed score array was normalised
+                        ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
 
                         events.Add(ev);
                     }

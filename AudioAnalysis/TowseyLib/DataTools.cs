@@ -877,6 +877,13 @@ namespace TowseyLib
       return column;
   }
 
+  public static void SetColumn(double[,] m, int colID, double[] array)
+  {
+      int rows = m.GetLength(0);
+      for (int r = 0; r < rows; r++) m[r, colID] = array[r];
+  }
+
+
   public static int SumColumn(int[,] m, int colID)
   {
       int rows = m.GetLength(0);
@@ -2043,27 +2050,39 @@ namespace TowseyLib
   {
       int L = values.Length;
       double onPeriodScore = 0.0;
-      int count = 0;
+      var onPeriodArray = new double[100]; //assume never > 100 narmonics 
+      int onCount = 0;
       int index = phase;
       while (index < L)
       {
           onPeriodScore += values[index];
-          count++;
+          onPeriodArray[onCount] = values[index];
+          onCount++;
           index += period;
       }
-      onPeriodScore /= count; //take the average
+      onPeriodScore /= onCount; //take the average
 
       int midPeriod = period / 2;
-      count = 0;
+      var offPeriodArray = new double[100]; //assume never > 100 narmonics
+      int offCount = 0;
       index = phase + midPeriod;
       double offPeriodScore = 0.0;
       while (index < L)
       {
           offPeriodScore += values[index];
-          count++;
+          offPeriodArray[offCount] = values[index];
+          offCount++;
           index += period;
       }
-      offPeriodScore /= count; //take the average
+      offPeriodScore /= offCount; //take the average
+
+      // Perform another check for true periodicity. Avoid case of one single large value
+      // Require all onPeriod values > all offPeriod values.
+      for (int i = 0; i < onCount; i++)
+      {
+          for (int j = 0; j < offCount; j++) 
+              if (onPeriodArray[i] <= (offPeriodArray[j] + 1.0)) return 0.0; //require margin of 1.0 dB
+      }
 
       return onPeriodScore - offPeriodScore; //amplitude of oscillation i.e. difference between min and max values 
   }

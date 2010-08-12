@@ -36,7 +36,7 @@ namespace AudioAnalysisTools
             int hzWidth = maxHz - minHz;
             var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
 
-            double[] scores = DataTools.filterMovingAverage(results.Item1, 7); //smooth the scores
+            double[] scores = DataTools.filterMovingAverage(results.Item1, 3); //smooth the scores
             var hits = results.Item2;
 
             // EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -100,23 +100,22 @@ namespace AudioAnalysisTools
             for (int r = 0; r < rows - 5; r++)
             {
                 var array = new double[binBand];
-                //accumulate J rows of values
-                for (int c = 0; c < binBand; c++)
-                    for (int j = 0; j < 5; j++) array[c] += matrix[r + j, c + minBin];
-                for (int c = 0; c < binBand; c++) array[c] /= 5.0; //average
-                //array = DataTools.SubtractMean(array);
+                //SMOOTH the matrix in time direction - accumulate J rows of values
+                //for (int c = 0; c < binBand; c++)
+                //    for (int j = 0; j < 5; j++) array[c] += matrix[r + j, c + minBin];
+                //for (int c = 0; c < binBand; c++) array[c] /= 5.0; //average
 
-                // if (r ==84)
-                // {
-                //    DataTools.writeBarGraph(array);
-                // }
+                //the following line assumes that matrix has already been smoothed in time direction
+                for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin];
                 var results = DataTools.Periodicity(array, minDeltaIndex, maxDeltaIndex);
-                if (results.Item1 > amplitudeThreshold)
+
+                if (results.Item1 > amplitudeThreshold) //Item1 = amplitude of the periodicity
                 {
                     periodScore[r] = results.Item1; // maximum amplitude obtained over all periods and phases
                     periodicity[r] = results.Item2; // the period for which the maximum amplitude was obtained.
-                    // phase[r] = results.Item3; // the phase for the period for which max amplitude was obtained.
+                    // phase[r] = results.Item3;    // the phase of period for which max amplitude was obtained.
                     for (int c = minBin; c < maxBin; c++) hits[r, c] = results.Item2;
+                   // periodScore[r] += (maxDeltaIndex / periodicity[r]); // bias score in favour of low period i.e. more harmonics
                 }
                 // if ((r > 50) && (r < 200)) Log.WriteLine("{0}  score={1:f2}  period={2}, phase={3}", r, periodScore[r], periodicity[r], results.Item3);
             }// rows
