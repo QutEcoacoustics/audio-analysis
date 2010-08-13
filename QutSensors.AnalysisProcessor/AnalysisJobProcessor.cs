@@ -239,6 +239,11 @@ namespace QutSensors.AnalysisProcessor
         {
             using (var ws = new ProcessorServiceWrapper())
             {
+                if (results == null)
+                {
+                    results = new List<ProcessorResultTag>();
+                }
+
                 ws.Proxy.ReturnWorkItemComplete(workerName, jobItemId, itemRunDetails, results.ToArray());
             }
         }
@@ -322,6 +327,8 @@ namespace QutSensors.AnalysisProcessor
         {
             try
             {
+                this.log.WriteEntry(LogType.Information, string.Format("******* Analysis Job Processor starting cycle.********"));
+
                 // 1.
                 // check for completed runs:
                 // submitFinishedRuns if true
@@ -330,9 +337,7 @@ namespace QutSensors.AnalysisProcessor
                 // finished runs are runs that ran successfully or had an error
                 // complete runs ran successfully, does not matter if they had results or not.
                 // failed runs had an error or did not run successfully.
-                var finishedItemsBefore = ProcessFinishedItems();
-
-                this.log.WriteEntry(LogType.Information, string.Format("Analysis Job Processor successfully returned {0} completed work items before getting new work items.", finishedItemsBefore));
+                ProcessFinishedItems();
 
                 // 2.
                 // get the maximum number of analysiswork items to get.
@@ -390,7 +395,6 @@ namespace QutSensors.AnalysisProcessor
                         // execute processing version, not dev version
                         // type of analysis to run
                         // run directory
-
                         var safeDir = preparedItem.WorkingDirectory.FullName.TrimEnd('\\');
                         var argString = " processing " + " " + workItem.AnalysisGenericType +
                             " \"" + safeDir + "\"";
@@ -427,8 +431,7 @@ namespace QutSensors.AnalysisProcessor
 
                 // 8.
                 // check for completed runs again.
-                var finishedItemsAfter = ProcessFinishedItems();
-                this.log.WriteEntry(LogType.Information, string.Format("Analysis Job Processor successfully returned {0} completed work items after getting new work items.", finishedItemsAfter));
+                ProcessFinishedItems();
 
                 return numItemsRun > 0;
             }
@@ -480,16 +483,16 @@ namespace QutSensors.AnalysisProcessor
         /// <summary>
         /// Retrieve and process finished runs.
         /// </summary>
-        /// <returns>
-        /// Number of finished Items sucessfully processed.
-        /// </returns>
-        private int ProcessFinishedItems()
+        private void ProcessFinishedItems()
         {
             var finishedDirs =
                 this.RunsDirectory.GetDirectories().Where(
                     dir => dir.GetFiles("*.txt").Any(file => file.Name == ProgramOutputFinishedFileName)).ToList();
 
-            var successfullyReturned = 0;
+            var returnedWithoutResults = 0;
+            var returnedWithResults = 0;
+            var returnedWithError = 0;
+            var notReturned = 0;
 
             foreach (var runDir in finishedDirs)
             {
@@ -522,15 +525,21 @@ namespace QutSensors.AnalysisProcessor
                             {
                                 // ignore results file, send back as error
                                 ReturnIncomplete(workerName, jobItemId, itemRunDetails.ToString(), true);
+                                returnedWithError++;
                             }
                             else
                             {
                                 // return completed, even if there are 0 results.
-                                List<ProcessorResultTag> results = null;
+                                var results = new List<ProcessorResultTag>();
                                 var resultsFile = Path.Combine(runDir.FullName, ProgramOutputResultsFileName);
                                 if (File.Exists(resultsFile))
                                 {
                                     results = ProcessorResultTag.Read(resultsFile);
+                                    returnedWithResults++;
+                                }
+                                else
+                                {
+                                    returnedWithoutResults++;
                                 }
 
                                 ReturnComplete(workerName, jobItemId, itemRunDetails.ToString(), results);
@@ -538,20 +547,17 @@ namespace QutSensors.AnalysisProcessor
                         }
                         catch (Exception ex)
                         {
-                            var msg = new StringBuilder();
-                            msg.AppendLine();
-                            msg.AppendLine();
-                            msg.AppendLine("**Error Sending Run: ");
-                            msg.AppendLine(ex.ToString());
+                            notReturned++;
 
-                            File.AppendAllText(
-                                Path.Combine(runDir.FullName, ProgramOutputErrorFileName), msg.ToString());
+                            this.log.WriteEntry(
+                                    LogType.Error,
+                                    "Analysis Job Processor could not return completed work item with id " + jobItemId + " due to error: " + Environment.NewLine + ex);
                         }
                     }
 
                     if (this.analysisRunner.DeleteFinishedRuns)
                     {
-                        if (runDir.Exists)
+                        if (Directory.Exists(runDir.FullName))
                         {
                             try
                             {
@@ -561,24 +567,28 @@ namespace QutSensors.AnalysisProcessor
                             {
                                 this.log.WriteEntry(
                                     LogType.Error,
-                                    "Analysis Job Processor could not delete folder '" + runDir.FullName +
-                                    "' containing completed work item due to error: " + Environment.NewLine + ex);
+                                    "Analysis Job Processor could not delete folder '" + runDir.FullName + "' containing completed work item due to error: " + Environment.NewLine + ex);
                             }
                         }
                     }
-
-                    successfullyReturned++;
                 }
                 catch (Exception ex)
                 {
                     this.log.WriteEntry(
                         LogType.Error,
-                        "Analysis Job Processor encountered an error processing a completed work item: '" + Environment.NewLine +
-                        ex);
+                        "Analysis Job Processor encountered an error processing a completed work item: '" + Environment.NewLine + ex);
                 }
             }
 
-            return successfullyReturned;
+            var message =
+                string.Format(
+                    "Analysis Job Processor returned {0} completed with results, {1} completed without results, {2} with errors. {3} not returned.",
+                    returnedWithResults,
+                    returnedWithoutResults,
+                    returnedWithError,
+                    notReturned);
+
+            this.log.WriteEntry(LogType.Information, message);
         }
     }
 }
