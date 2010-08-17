@@ -19,7 +19,7 @@ namespace AnalysisPrograms
     {
         //Following lines are used for the debug command line.
         //for CURLEW
-        //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\Curlew_Params.txt events.txt
+        //hd C:\SensorNetworks\WavFiles\StBees\Top_Knoll_St_Bees_Curlew1_20080922-023000.wav C:\SensorNetworks\Output\HD_Curlew\HD_Curlew_Params.txt  events.txt
         //for FEMALE KOALA
         //hd C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081027-023000.wav C:\SensorNetworks\Output\HD_FemaleKoala\HD_FemaleKoala_Params.txt events.txt
         // for HUMAN SPPECH
@@ -137,7 +137,7 @@ namespace AnalysisPrograms
 
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-            //Console.ReadLine();
+            Console.ReadLine();
         } //Dev()
 
 
