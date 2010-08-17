@@ -1969,6 +1969,46 @@ namespace TowseyLib
 //=========================================================================================================================
 //   THE FOLLOWING GROUP OF METHODS DETECT PERIODICITY IN ARRAYS
 
+  /// <summary>
+  /// Counts the number of spectral tracks or harmonics in the passed ferquency band.
+  /// Also calculates the average amplitude of the peaks to each succeeding trough.
+  /// </summary>
+  /// <param name="values"></param>
+  /// <param name="expectedPeriod"></param>
+  /// <returns></returns>
+  public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedPeriod)
+  {
+      int L = values.Length;
+      int midPeriod = expectedPeriod / 2;
+      double[] smooth = DataTools.filterMovingAverage(values, midPeriod);
+      bool[] peaks    = DataTools.GetPeaks(smooth);
+
+      var peakLocations = new int[L];
+      int peakCount = -1;
+      for (int i = 0; i < L; i++)
+      {
+          if (peaks[i])
+          {
+              peakCount++;
+              peakLocations[peakCount] = i;
+          }
+      }
+
+      //now get amplitude
+      double amplitude = 0.0;
+      for (int i = 0; i < peakCount; i++)
+      {
+          int troughIndex = peakLocations[i] + midPeriod;
+          if (troughIndex >= L) troughIndex = peakLocations[i] - midPeriod;
+          double delta = values[peakLocations[i]] - values[troughIndex];
+          if (delta > 2.0) amplitude += delta; //dB threshold - required a minimum perceptible difference
+      }
+      double avAmplitude = amplitude / (double)peakCount;
+      return Tuple.Create(avAmplitude, peakCount);
+  }
+
+
+
         /// <summary>
         /// Returns for each position in an array a periodicity score.
         /// That score is the maximum obtained for a range of periods over three cycles.
@@ -2018,75 +2058,129 @@ namespace TowseyLib
   {
 
       double maxScore = -double.MaxValue;
+      double returnScore = 0.0;
       int bestPeriod = 0;
       int bestPhase = 0;
       for (int period = minPeriod; period <= maxPeriod; period++)
       {
           for (int phase = 0; phase < period; phase++)
           {
+              var result =  PeriodicityAndPhaseDetection(values, period, phase);
+              double onPeriodScore  = result.Item1;
+              //double offPeriodScore = result.Item2;
+              //int onCount  = result.Item3;
+              //int offCount = result.Item4;
+              //double periodScore = onPeriodScore - offPeriodScore;
+              double periodScore = onPeriodScore;
 
-              double periodScore = PeriodicityAndPhaseDetection(values, period, phase);
               if (periodScore > maxScore)
               {
                   maxScore = periodScore;
                   bestPeriod = period;
                   bestPhase  = phase;
+                  //returnScore = (onPeriodScore / onCount) - (offPeriodScore / offCount);
+                  //returnScore = periodScore;
+                  returnScore = maxScore;
               }
           }//phase
       }//period
-      
-      return System.Tuple.Create(maxScore, bestPeriod, bestPhase);
+
+      return System.Tuple.Create(returnScore, bestPeriod, bestPhase);
   }
 
 
-        /// <summary>
-        /// returns the amplitude of an oscillation in an array having the given period.
-        /// </summary>
-        /// <param name="values"></param>
-        /// <param name="period"></param>
-        /// <param name="phase"></param>
+
+  /// <summary>
+  /// returns the amplitude of an oscillation in an array having the given period.
+  /// </summary>
+  /// <param name="values"></param>
+  /// <param name="period"></param>
+  /// <param name="phase"></param>
   /// <returns></returns>
-  public static double PeriodicityAndPhaseDetection(double[] values, int period, int phase)
+  public static System.Tuple<double, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
   {
       int L = values.Length;
-      double onPeriodScore = 0.0;
-      var onPeriodArray = new double[100]; //assume never > 100 narmonics 
-      int onCount = 0;
-      int index = phase;
-      while (index < L)
-      {
-          onPeriodScore += values[index];
-          onPeriodArray[onCount] = values[index];
-          onCount++;
-          index += period;
-      }
-      onPeriodScore /= onCount; //take the average
-
       int midPeriod = period / 2;
-      var offPeriodArray = new double[100]; //assume never > 100 narmonics
-      int offCount = 0;
-      index = phase + midPeriod;
-      double offPeriodScore = 0.0;
-      while (index < L)
+      double amplitude = 0.0;
+      double[] smooth = DataTools.filterMovingAverage(values, midPeriod);
+      bool[] peaks = DataTools.GetPeaks(smooth);
+      int peakCount = DataTools.CountTrues(peaks);
+      int count = 0;
+      int index = phase;
+      while (index < (L - midPeriod))
       {
-          offPeriodScore += values[index];
-          offPeriodArray[offCount] = values[index];
-          offCount++;
+          amplitude += (values[index + midPeriod] - values[index]);
+          count++;
           index += period;
       }
-      offPeriodScore /= offCount; //take the average
-
-      // Perform another check for true periodicity. Avoid case of one single large value
-      // Require all onPeriod values > all offPeriod values.
-      for (int i = 0; i < onCount; i++)
-      {
-          for (int j = 0; j < offCount; j++) 
-              if (onPeriodArray[i] <= (offPeriodArray[j] + 1.0)) return 0.0; //require margin of 1.0 dB
-      }
-
-      return onPeriodScore - offPeriodScore; //amplitude of oscillation i.e. difference between min and max values 
+      amplitude /= (double)peakCount;
+      return System.Tuple.Create(amplitude, peakCount); //amplitude of oscillation i.e. difference between min and max values 
   }
 
+  //      /// <summary>
+  //      /// returns the amplitude of an oscillation in an array having the given period.
+  //      /// </summary>
+  //      /// <param name="values"></param>
+  //      /// <param name="period"></param>
+  //      /// <param name="phase"></param>
+  ///// <returns></returns>
+  //public static System.Tuple<double, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
+  //{
+  //    int L = values.Length;
+  //    int midPeriod = period / 2;
+  //    double amplitude = 0.0; 
+  //    int count = 0;
+  //    int index = phase;
+  //    while (index < (L - midPeriod))
+  //    {
+  //        amplitude += (values[index + midPeriod] - values[index]);
+  //        count++;
+  //        index += period;
+  //    }
+  //    amplitude /= count;
+  //    return System.Tuple.Create(amplitude, count); //amplitude of oscillation i.e. difference between min and max values 
+  //}
+
+  //public static System.Tuple<double, double, int, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
+  //{
+  //    int L = values.Length;
+  //    double onPeriodScore = 0.0;
+  //    var onPeriodArray = new double[100]; //assume never > 100 narmonics 
+  //    int onCount = 0;
+  //    int index = phase;
+  //    while (index < L)
+  //    {
+  //        onPeriodScore += values[index];
+  //        onPeriodArray[onCount] = values[index];
+  //        onCount++;
+  //        index += period;
+  //    }
+  //    //onPeriodScore /= onCount; //take the average
+
+  //    int midPeriod = period / 2;
+  //    var offPeriodArray = new double[100]; //assume never > 100 narmonics
+  //    int offCount = 0;
+  //    index = phase + midPeriod;
+  //    double offPeriodScore = 0.0;
+  //    while (index < L)
+  //    {
+  //        offPeriodScore += values[index];
+  //        offPeriodArray[offCount] = values[index];
+  //        offCount++;
+  //        index += period;
+  //    }
+  //    //offPeriodScore /= offCount; //take the average
+
+  //    // Perform another check for true periodicity. Avoid case of one single large value
+  //    // Require all onPeriod values > all offPeriod values.
+  //    //for (int i = 0; i < onCount; i++)
+  //    //{
+  //    //    for (int j = 0; j < offCount; j++) 
+  //    //        if (onPeriodArray[i] <= (offPeriodArray[j] + 1.0)) return 0.0; //require margin of 1.0 dB
+  //    //}
+
+  //    return System.Tuple.Create(onPeriodScore, offPeriodScore, onCount, offCount); //amplitude of oscillation i.e. difference between min and max values 
+  //}
   //=============================================================================
 
 

@@ -469,7 +469,7 @@ namespace TowseyLib
 
         /// <summary>
         /// This method is specifically to preprocess the spectrogram prior to identification of harmonic stacks.
-        /// (1) The spectrogram is smoothed in temporal direction only.
+        /// (1) The spectrogram is smoothed in temporal direction only. THIS IS OPTIONAL - WORKS WITHOUT DOING
         /// (2) After smoothing the modal noise is calculated as per standard approach.
         /// (3) The modal noise is subtracted but WITHOUT thresholding. i.e. keep negative values.
         /// </summary>
@@ -477,7 +477,8 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] NoiseReduce_HarmonicDetection(double[,] matrix)
         {
-            double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
+            //double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
+            double[,] smoothMatrix = matrix;
             double[]  modalNoise   = SNR.CalculateModalNoise(smoothMatrix);        //calculate modal noise profile
             modalNoise             = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
             return SubtractModalNoise(smoothMatrix, modalNoise);                   //subtract modal noise but do NOT threshold
