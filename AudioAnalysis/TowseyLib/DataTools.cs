@@ -1976,12 +1976,13 @@ namespace TowseyLib
   /// <param name="values"></param>
   /// <param name="expectedPeriod"></param>
   /// <returns></returns>
-  public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedPeriod)
+  public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedPeriod, int row)
   {
       int L = values.Length;
       int midPeriod = expectedPeriod / 2;
       double[] smooth = DataTools.filterMovingAverage(values, midPeriod);
       bool[] peaks    = DataTools.GetPeaks(smooth);
+      // remove peaks at beginning and end
 
       var peakLocations = new int[L];
       int peakCount = -1;
@@ -2004,6 +2005,10 @@ namespace TowseyLib
           if (delta > 2.0) amplitude += delta; //dB threshold - required a minimum perceptible difference
       }
       double avAmplitude = amplitude / (double)peakCount;
+      if (row > 2470)
+      {
+          Console.Write(" ");
+      }
       return Tuple.Create(avAmplitude, peakCount);
   }
 

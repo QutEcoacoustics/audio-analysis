@@ -63,7 +63,7 @@ namespace AudioAnalysisTools
             {
                 var array = new double[binBand];
                 for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin]; // assume that matrix has already been smoothed in time direction
-                var results = DataTools.CountHarmonicTracks(array, expectedPeriod);
+                var results = DataTools.CountHarmonicTracks(array, expectedPeriod, r);
                 harmonicCount[r] = results.Item2; // number of harmonic tracks.
                 double weight = 1.0;
                 double delta = Math.Abs(results.Item2 - expectedHarmonicCount);  //Item2 = number of spectral tracks
@@ -75,7 +75,8 @@ namespace AudioAnalysisTools
                     harmonicScore[r] = score; // amplitude score
                     for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c += 3; }
                 }
-                // if ((r > 3000) && (r < 3500)) Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
+                if ((r > 2450) && (r < 2550))
+                     Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
             }// rows
 
             return Tuple.Create(harmonicScore, hits);
