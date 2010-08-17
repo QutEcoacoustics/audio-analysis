@@ -19,14 +19,12 @@ namespace AudioAnalysisTools
         /// <param name="sonogram">sonogram derived from the recording</param>
         /// <param name="minHz">min bound freq band to search</param>
         /// <param name="maxHz">max bound freq band to search</param>
-        /// <param name="minHarmonicPeriod">ignore harmonics or formants separated by less than this frequency gap</param>
-        /// <param name="maxHarmonicPeriod">ignore harmonics or formants separated by more than this frequency gap</param>
-        /// <param name="amplitudeThreshold">ignore harmonics with amplitude less than this minimum dB</param>
-        /// <param name="scoreThreshold">event score threshold used for FP/FN</param>
-        /// <param name="expectedDuration">look for events of this duration</param>
-        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz,
-                                 int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold, double scoreThreshold, double minDuration, double maxDuration,
-                                 string audioFileName, string callName)
+        /// <param name="harmonicCount">expected number of harmonics in the frequency band</param>
+        /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB</param>
+        /// <param name="minDuration">look for events of this duration</param>
+        /// <param name="maxDuration">look for events of this duration</param>
+        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz, int harmonicCount, 
+                                                        double amplitudeThreshold, double minDuration, double maxDuration, string audioFileName, string callName)
         {
             // DETECT OSCILLATIONS
             //find freq bins
@@ -34,9 +32,10 @@ namespace AudioAnalysisTools
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
 
             int hzWidth = maxHz - minHz;
-            var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
+            //var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
+            var results = CountHarmonicTracks(sonogram.Data, minBin, maxBin, hzWidth, harmonicCount, amplitudeThreshold);
 
-            double[] scores = DataTools.filterMovingAverage(results.Item1, 3); //smooth the scores
+            double[] scores = DataTools.filterMovingAverage(results.Item1, 5); //smooth the scores
             var hits = results.Item2;
 
             // EXTRACT SCORES AND ACOUSTIC EVENTS
@@ -48,47 +47,50 @@ namespace AudioAnalysisTools
         }//end method
 
 
-        /// <summary>
-        /// Detects harmonics in a given frame.
-        /// there are several important parameters for tuning.
-        /// a) DCTLength: Good values are 0.25 to 0.50 sec. Do not want too long because DCT requires stationarity.
-        ///     Do not want too short because too small a range of oscillations
-        /// b) DCTindex: Sets lower bound for oscillations of interest. Index refers to array of coeff returned by DCT.
-        ///     Array has same length as the length of the DCT. Low freq oscillations occur more often by chance. Want to exclude them.
-        /// c) MinAmplitude: minimum acceptable value of a DCT coefficient if hit is to be accepted.
-        ///     The algorithm is sensitive to this value. A lower value results in more oscillation hits being returned.
-        /// </summary>
-        /// <param name="matrix"></param>
-        /// <param name="minBin">min freq bin of search band</param>
-        /// <param name="maxBin">max freq bin of search band</param>
-        /// <param name="dctLength">number of values</param>
-        /// <param name="DCTindex">Sets lower bound for oscillations of interest.</param>
-        /// <param name="minAmplitude">threshold - do not accept a DCT value if its amplitude is less than this threshold</param>
-        /// <returns></returns>
+        public static System.Tuple<double[], double[,]> CountHarmonicTracks(Double[,] matrix, int minBin, int maxBin, int hzWidth,
+                                                                            int expectedHarmonicCount, double amplitudeThreshold)
+        {
+            int binBand = maxBin - minBin + 1; // DCT spans N freq bins
+            int expectedPeriod = binBand / expectedHarmonicCount;
 
+            int rows = matrix.GetLength(0);
+            int cols = matrix.GetLength(1);
+            Double[,] hits = new Double[rows, cols];
+            double[] harmonicScore = new double[rows];
+            int[]    harmonicCount = new int[rows];
 
-        //public static System.Tuple<double[], double[,]> DetectHarmonics(SpectralSonogram sonogram, int minHz, int maxHz, bool normaliseDCT,
-        //                                           int minPeriod, int maxPeriod, double amplitudeThreshold)
-        //{
-        //    //find freq bins
-        //    int minBin = (int)(minHz / sonogram.FBinWidth);
-        //    int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            for (int r = 0; r < rows; r++)
+            {
+                var array = new double[binBand];
+                for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin]; // assume that matrix has already been smoothed in time direction
+                var results = DataTools.CountHarmonicTracks(array, expectedPeriod);
+                harmonicCount[r] = results.Item2; // number of harmonic tracks.
+                double weight = 1.0;
+                double delta = Math.Abs(results.Item2 - expectedHarmonicCount);  //Item2 = number of spectral tracks
+                // weight the score according to difference between expected and observed track count
+                if (delta > 2) weight = 1 / delta;  
+                double score = weight * results.Item1; 
+                if (score > amplitudeThreshold)           //Item1 = amplitude of the periodicity
+                {
+                    harmonicScore[r] = score; // amplitude score
+                    for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c += 3; }
+                }
+                // if ((r > 3000) && (r < 3500)) Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
+            }// rows
 
-        //    int hzWidth = maxHz - minHz;
-
-        //    var results = DetectHarmonicsUsingDCT(sonogram.Data, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, amplitudeThreshold);
-        //    return results;
-        //}
+            return Tuple.Create(harmonicScore, hits);
+        }
 
 
         public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth,
-                                                                         int minPeriod, int maxPeriod, double amplitudeThreshold)
+            int minPeriod, int maxPeriod,  int minHarmonicPeriod, double amplitudeThreshold)
         {
             int binBand = maxBin - minBin + 1; // DCT spans N freq bins
 
             int minDeltaIndex = (int)(hzWidth / (double)maxPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
             int maxDeltaIndex = (int)(hzWidth / (double)minPeriod * 2); // Times 0.5 because index = Pi and not 2Pi
             // double period = hzWidth / (double)indexOfMaxValue * 2;   // Times 2 because index = Pi and not 2Pi
+            Console.WriteLine("minPeriod={0}    maxPeriod={1}", minDeltaIndex, maxDeltaIndex);
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -108,20 +110,20 @@ namespace AudioAnalysisTools
                 //the following line assumes that matrix has already been smoothed in time direction
                 for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin];
                 var results = DataTools.Periodicity(array, minDeltaIndex, maxDeltaIndex);
+                amplitudeThreshold = 5.0;
 
                 if (results.Item1 > amplitudeThreshold) //Item1 = amplitude of the periodicity
                 {
                     periodScore[r] = results.Item1; // maximum amplitude obtained over all periods and phases
                     periodicity[r] = results.Item2; // the period for which the maximum amplitude was obtained.
                     // phase[r] = results.Item3;    // the phase of period for which max amplitude was obtained.
-                    for (int c = minBin; c < maxBin; c++) hits[r, c] = results.Item2;
-                   // periodScore[r] += (maxDeltaIndex / periodicity[r]); // bias score in favour of low period i.e. more harmonics
+                    for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c++; }
                 }
-                // if ((r > 50) && (r < 200)) Log.WriteLine("{0}  score={1:f2}  period={2}, phase={3}", r, periodScore[r], periodicity[r], results.Item3);
             }// rows
 
             return Tuple.Create(periodScore, hits);
         }
+
 
 
         public static Double[,] DetectHarmonicsUsingDCT(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
@@ -167,7 +169,6 @@ namespace AudioAnalysisTools
                 {
                     for (int i = 0; i < dctLength; i++) hits[r, minBin + i] = period;
                     for (int i = 0; i < dctLength; i++) hits[r + 1, minBin + i] = period; //alternate row
-                    //Console.WriteLine("r={0},  period={1:f0},  amplitude={2:f2}", r, period, dct[indexOfMaxValue]);
                 }
                 //c += 5; //skip columns
                 //}

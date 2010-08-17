@@ -34,7 +34,8 @@ namespace AnalysisPrograms
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        public static string key_DCT_DURATION    = "DCT_DURATION";
+        //public static string key_DCT_DURATION    = "DCT_DURATION";
+        public static string key_EXPECTED_HARMONIC_COUNT = "EXPECTED_HARMONIC_COUNT";
         public static string key_MIN_HARMONIC_PERIOD = "MIN_HARMONIC_PERIOD";
         public static string key_MAX_HARMONIC_PERIOD = "MAX_HARMONIC_PERIOD";
         public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
@@ -80,22 +81,22 @@ namespace AnalysisPrograms
                 int minHz = Int32.Parse(dict[key_MIN_HZ]);
                 int maxHz = Int32.Parse(dict[key_MAX_HZ]);
                 double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-                int minPeriod = Int32.Parse(dict[key_MIN_HARMONIC_PERIOD]);         // ignore harmonics whose period is below this threshold 
-                int maxPeriod = Int32.Parse(dict[key_MAX_HARMONIC_PERIOD]);         // ignore harmonics whose period is above this threshold
-                double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);        // minimum acceptable value of a DCT coefficient
-                double eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);    
+                double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);        // minimum acceptable value of harmonic ocsillation in dB
+                //double eventThreshold = 0.5; // Double.Parse(dict[key_EVENT_THRESHOLD]);  
+                int harmonicCount = Int32.Parse(dict[key_EXPECTED_HARMONIC_COUNT]);
                 double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
                 double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
                 int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
-            Log.WriteIfVerbose("Bounds of harmonic period: " + minPeriod + " - " + maxPeriod + " Hz");
+            Log.WriteIfVerbose("Expected harmonic count within bandwidth: {0}", harmonicCount);
+            //Log.WriteIfVerbose("Bounds of harmonic period: " + minPeriod + " - " + maxPeriod + " Hz");
             Log.WriteIfVerbose("minAmplitude = " + minAmplitude +" dB (peak to trough)");
             Log.WriteIfVerbose("Duration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);   
                     
 //#############################################################################################################################################
-            var results = Execute_HDDetect(recordingPath, nrt, minHz, maxHz, frameOverlap, minPeriod, maxPeriod, minAmplitude,
-                                                eventThreshold, minDuration, maxDuration, audioFileName, callName);
+            var results = Execute_HDDetect(recordingPath, nrt, minHz, maxHz, frameOverlap, /*minPeriod, maxPeriod,*/  harmonicCount, minAmplitude,
+                                           minDuration, maxDuration, audioFileName, callName);
             Log.WriteLine("# Finished detecting spectral harmonic events.");
 //#############################################################################################################################################
 
@@ -142,8 +143,8 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_HDDetect(string wavPath, NoiseReductionType nrt,
-            int minHz, int maxHz, double frameOverlap, int minHarmonicPeriod, int maxHarmonicPeriod, double amplitudeThreshold,
-            double eventThreshold, double minDuration, double maxDuration, string audioFileName, string callName)
+            int minHz, int maxHz, double frameOverlap, int harmonicCount, double amplitudeThreshold,
+            double minDuration, double maxDuration, string audioFileName, string callName)
         {
             //i: GET RECORDING
                 AudioRecording recording = new AudioRecording(wavPath);
@@ -165,13 +166,13 @@ namespace AnalysisPrograms
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
-            Log.WriteIfVerbose("EventThreshold=" + eventThreshold);
+            Log.WriteIfVerbose("Amplitude Threshold=" + amplitudeThreshold);
             Log.WriteLine("Start harmonic event detection");
 
             //iii: DETECT HARMONICS
             //bool normaliseDCT = true;
-            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, minHarmonicPeriod, maxHarmonicPeriod,
-                                         amplitudeThreshold, eventThreshold, minDuration, maxDuration, audioFileName, callName);
+            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, //minHarmonicPeriod, maxHarmonicPeriod,
+                                                   harmonicCount, amplitudeThreshold, minDuration, maxDuration, audioFileName, callName);
             double[] scores = results.Item1;     //an array of periodicity scores
             Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
             List<AcousticEvent> predictedEvents = results.Item3;

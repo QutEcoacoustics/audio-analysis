@@ -547,10 +547,11 @@ namespace AnalysisPrograms.Processing
             var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
-            var minPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HARMONIC_PERIOD]);
-            var maxPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HARMONIC_PERIOD]);
+            //var minPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HARMONIC_PERIOD]);
+            //var maxPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HARMONIC_PERIOD]);
+            int harmonicCount = Int32.Parse(dict[HarmonicRecogniser.key_EXPECTED_HARMONIC_COUNT]);
             var amplitudeThreshold = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
-            var eventThreshold = Double.Parse(dict[HarmonicRecogniser.key_EVENT_THRESHOLD]);
+            //var eventThreshold = Double.Parse(dict[HarmonicRecogniser.key_EVENT_THRESHOLD]);
             var minDuration = Double.Parse(dict[HarmonicRecogniser.key_MIN_DURATION]);
             var maxDuration = Double.Parse(dict[HarmonicRecogniser.key_MAX_DURATION]);
 
@@ -563,10 +564,11 @@ namespace AnalysisPrograms.Processing
                     minHz,
                     maxHz,
                     frameOverlap,
-                    minPeriod,
-                    maxPeriod,
+                   // minPeriod,
+                   // maxPeriod,
+                    harmonicCount,
                     amplitudeThreshold,
-                    eventThreshold,
+                    //eventThreshold,
                     minDuration,
                     maxDuration,
                     audioFileName,
