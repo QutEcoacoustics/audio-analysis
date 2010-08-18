@@ -12,18 +12,15 @@ FRAME_OVERLAP=0.25
 #NOISE_REDUCTION_TYPE=NONE
 #NOISE_REDUCTION_TYPE=STANDARD
 NOISE_REDUCTION_TYPE=HARMONIC_DETECTION
-#NOISE_REDUCTION_TYPE=FIXED_DYNAMIC_RANGE
-DYNAMIC_RANGE=15.0
 #**************** HARMONIC PARAMETERS
 # min and max of the freq band to search
 MIN_HZ=500          
-MAX_HZ=7000
-# ignore harmonic periods < min & > max. Period=freq gap in Hertz
-MIN_HARMONIC_PERIOD=500        
-MAX_HARMONIC_PERIOD=1300
+MAX_HZ=8000
+# number of expected spectral tracks, harmonics or formants in the above frequency band.
+EXPECTED_HARMONIC_COUNT=9
 # Expected minimum and maximum duration of an event in seconds.
 MIN_DURATION=0.4
 MAX_DURATION=1.6
 # Event threshold - use this to adjust FP / FN trade-off for events.
 # Is actually the dB amplitude of the harmonic fluctuations
-MIN_AMPLITUDE=6.0
+MIN_AMPLITUDE=5.0
