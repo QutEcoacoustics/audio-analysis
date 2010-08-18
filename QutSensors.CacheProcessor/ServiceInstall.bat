@@ -1,7 +1,6 @@
 @ECHO OFF
 echo Installing QutSensors.CacheProcessor...
-C:\Windows\Microsoft.NET\Framework\v2.0.50727\installutil.exe QutSensors.CacheProcessor.exe
-net start QutSensorsCacheJobProcessor
+sc create QutCacheProcessor binpath= "D:\SensorsCacheProcessor\QutSensors.CacheProcessor.exe" start= auto obj= ".\sensorcacheprocessor" password= qscp84^#ihascb DisplayName= QutCacheProcessor
+sc start QutCacheProcessor
 echo Done
 pause
-rem use 'nt authority\localservice' with no password to install
