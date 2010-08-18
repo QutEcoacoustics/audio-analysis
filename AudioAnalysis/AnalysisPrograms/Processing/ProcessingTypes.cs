@@ -542,16 +542,13 @@ namespace AnalysisPrograms.Processing
             var config = new Configuration(settingsFile.FullName);
             var dict = config.GetTable();
 
-            string callName = dict[HarmonicRecogniser.key_CALL_NAME];
-            NoiseReductionType nrt = SNR.Key2NoiseReductionType(dict[HarmonicRecogniser.key_NOISE_REDUCTION_TYPE]);
+            var callName = dict[HarmonicRecogniser.key_CALL_NAME];
+            var nrt = SNR.Key2NoiseReductionType(dict[HarmonicRecogniser.key_NOISE_REDUCTION_TYPE]);
             var minHz = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HZ]);
             var frameOverlap = Double.Parse(dict[HarmonicRecogniser.key_FRAME_OVERLAP]);
-            //var minPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MIN_HARMONIC_PERIOD]);
-            //var maxPeriod = Int32.Parse(dict[HarmonicRecogniser.key_MAX_HARMONIC_PERIOD]);
-            int harmonicCount = Int32.Parse(dict[HarmonicRecogniser.key_EXPECTED_HARMONIC_COUNT]);
             var amplitudeThreshold = Double.Parse(dict[HarmonicRecogniser.key_MIN_AMPLITUDE]);
-            //var eventThreshold = Double.Parse(dict[HarmonicRecogniser.key_EVENT_THRESHOLD]);
+            var harmonicCount = Int32.Parse(dict[HarmonicRecogniser.key_EXPECTED_HARMONIC_COUNT]);
             var minDuration = Double.Parse(dict[HarmonicRecogniser.key_MIN_DURATION]);
             var maxDuration = Double.Parse(dict[HarmonicRecogniser.key_MAX_DURATION]);
 
@@ -564,11 +561,8 @@ namespace AnalysisPrograms.Processing
                     minHz,
                     maxHz,
                     frameOverlap,
-                   // minPeriod,
-                   // maxPeriod,
                     harmonicCount,
                     amplitudeThreshold,
-                    //eventThreshold,
                     minDuration,
                     maxDuration,
                     audioFileName,
