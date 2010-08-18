@@ -51,7 +51,7 @@ namespace AudioAnalysisTools
                                                                             int expectedHarmonicCount, double amplitudeThreshold)
         {
             int binBand = maxBin - minBin + 1; // DCT spans N freq bins
-            int expectedPeriod = binBand / expectedHarmonicCount;
+           // int expectedPeriod = binBand / expectedHarmonicCount;
 
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
@@ -63,20 +63,20 @@ namespace AudioAnalysisTools
             {
                 var array = new double[binBand];
                 for (int c = 0; c < binBand; c++) array[c] = matrix[r, c + minBin]; // assume that matrix has already been smoothed in time direction
-                var results = DataTools.CountHarmonicTracks(array, expectedPeriod, r);
+                var results = DataTools.CountHarmonicTracks(array, expectedHarmonicCount, r);
                 harmonicCount[r] = results.Item2; // number of harmonic tracks.
                 double weight = 1.0;
                 double delta = Math.Abs(results.Item2 - expectedHarmonicCount);  //Item2 = number of spectral tracks
                 // weight the score according to difference between expected and observed track count
-                if (delta > 2) weight = 1 / delta;  
+                if (delta > 3) weight = 3 / delta;  
                 double score = weight * results.Item1; 
-                if (score > amplitudeThreshold)           //Item1 = amplitude of the periodicity
+                if (score > amplitudeThreshold) // threshold the score
                 {
                     harmonicScore[r] = score; // amplitude score
                     for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c += 3; }
                 }
-                if ((r > 2450) && (r < 2550))
-                     Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
+                //if ((r > 2450) && (r < 2550))
+                //     Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
             }// rows
 
             return Tuple.Create(harmonicScore, hits);

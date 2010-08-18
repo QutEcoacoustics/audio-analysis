@@ -25,7 +25,7 @@ namespace AnalysisPrograms
         // for HUMAN SPPECH
         //hd C:\SensorNetworks\WavFiles\Human\BirgitTheTerminator.wav C:\SensorNetworks\Output\HD_HUMAN\HD_HUMAN_Params.txt events.txt
         //CROWS
-        //hd "C:\SensorNetworks\WavFiles\Crows\HoneymoonBay-StBees_20090415-123000.mp3"  C:\SensorNetworks\Output\HD_CROWS\HD_CROWS_Params.txt  events.txt
+        //hd "C:\SensorNetworks\WavFiles\Crows\TorresianCrow_BARehab96_20091027-110000.wav"  C:\SensorNetworks\Output\HD_CROWS\HD_CROWS_Params.txt  events.txt
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 

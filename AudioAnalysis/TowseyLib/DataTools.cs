@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace TowseyLib
 {
@@ -1976,13 +1977,17 @@ namespace TowseyLib
   /// <param name="values"></param>
   /// <param name="expectedPeriod"></param>
   /// <returns></returns>
-  public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedPeriod, int row)
+  public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedHarmonicCount, int row)
   {
       int L = values.Length;
+      int expectedPeriod = L / expectedHarmonicCount;
       int midPeriod = expectedPeriod / 2;
-      double[] smooth = DataTools.filterMovingAverage(values, midPeriod);
+      int smoothingWindow = midPeriod;
+      // set upper limit to smoothing because large windows can displace a peak.
+      // upper limit of 10 is good for spectra with 256 freq bins.
+      if (smoothingWindow > 10) smoothingWindow = 10; 
+      double[] smooth = DataTools.filterMovingAverage(values, smoothingWindow);
       bool[] peaks    = DataTools.GetPeaks(smooth);
-      // remove peaks at beginning and end
 
       var peakLocations = new int[L];
       int peakCount = -1;
@@ -1995,7 +2000,33 @@ namespace TowseyLib
           }
       }
 
-      //now get amplitude
+      // if have too many peaks (local maxima) remove the lowest of them 
+      if (peakCount > (expectedHarmonicCount+1))
+      {
+          var peakValues = new double[peakCount];
+          for (int i = 0; i < peakCount; i++) peakValues[i] = values[peakLocations[i]];
+          IEnumerable<double> ordered = peakValues.OrderByDescending(d => d);
+          double avValue = ordered.Take(expectedHarmonicCount).Average();
+          double min = ordered.Last();
+          double threshold = min + ((avValue - min) / 2);
+          // apply threhsold to remove low peaks
+          for (int i = 0; i < L; i++)
+          {
+              if ((peaks[i]) && (values[i] < threshold)) peaks[i] = false;
+          }
+          // recalculate the number of peaks
+          peakCount = -1;
+          for (int i = 0; i < L; i++)
+          {
+              if (peaks[i])
+              {
+                  peakCount++;
+                  peakLocations[peakCount] = i;
+              }
+          }
+      }
+      
+      // now get amplitude
       double amplitude = 0.0;
       for (int i = 0; i < peakCount; i++)
       {
@@ -2005,10 +2036,10 @@ namespace TowseyLib
           if (delta > 2.0) amplitude += delta; //dB threshold - required a minimum perceptible difference
       }
       double avAmplitude = amplitude / (double)peakCount;
-      if (row > 2470)
-      {
-          Console.Write(" ");
-      }
+      //if (row > 565)
+      //{
+      //    Console.Write(" ");
+      //}
       return Tuple.Create(avAmplitude, peakCount);
   }
 
