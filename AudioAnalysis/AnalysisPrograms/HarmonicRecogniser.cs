@@ -34,14 +34,13 @@ namespace AnalysisPrograms
         public static string key_MIN_HZ          = "MIN_HZ";
         public static string key_MAX_HZ          = "MAX_HZ";
         public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        //public static string key_DCT_DURATION    = "DCT_DURATION";
         public static string key_EXPECTED_HARMONIC_COUNT = "EXPECTED_HARMONIC_COUNT";
-        public static string key_MIN_HARMONIC_PERIOD = "MIN_HARMONIC_PERIOD";
-        public static string key_MAX_HARMONIC_PERIOD = "MAX_HARMONIC_PERIOD";
+       // public static string key_MIN_HARMONIC_PERIOD = "MIN_HARMONIC_PERIOD";
+       // public static string key_MAX_HARMONIC_PERIOD = "MAX_HARMONIC_PERIOD";
         public static string key_MIN_AMPLITUDE   = "MIN_AMPLITUDE";
         public static string key_MIN_DURATION    = "MIN_DURATION";
         public static string key_MAX_DURATION    = "MAX_DURATION";
-        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
+       // public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
 
         public static string eventsFile  = "events.txt"; 
@@ -82,16 +81,14 @@ namespace AnalysisPrograms
                 int maxHz = Int32.Parse(dict[key_MAX_HZ]);
                 double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
                 double minAmplitude = Double.Parse(dict[key_MIN_AMPLITUDE]);        // minimum acceptable value of harmonic ocsillation in dB
-                //double eventThreshold = 0.5; // Double.Parse(dict[key_EVENT_THRESHOLD]);  
-                int harmonicCount = Int32.Parse(dict[key_EXPECTED_HARMONIC_COUNT]);
+                int harmonicCount = Int32.Parse(dict[key_EXPECTED_HARMONIC_COUNT]); // expected number of harmonics to find in spectrum
                 double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
                 double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
-                int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
+                int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);         //options to draw sonogram
 
             Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Expected harmonic count within bandwidth: {0}", harmonicCount);
-            //Log.WriteIfVerbose("Bounds of harmonic period: " + minPeriod + " - " + maxPeriod + " Hz");
-            Log.WriteIfVerbose("minAmplitude = " + minAmplitude +" dB (peak to trough)");
+            Log.WriteIfVerbose("Threshold Min Amplitude = " + minAmplitude +" dB (peak to trough)");
             Log.WriteIfVerbose("Duration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);   
                     
 //#############################################################################################################################################
@@ -111,7 +108,6 @@ namespace AnalysisPrograms
 
             if (DRAW_SONOGRAMS==2)
             {
-                //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), minAmplitude);
                 double normMax = minAmplitude * 4; //so normalised eventThreshold = 0.25
                 for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
                 //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), 0.25);

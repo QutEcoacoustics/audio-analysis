@@ -26,29 +26,24 @@ namespace AudioAnalysisTools
         public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz, int harmonicCount, 
                                                         double amplitudeThreshold, double minDuration, double maxDuration, string audioFileName, string callName)
         {
-            // DETECT OSCILLATIONS
-            //find freq bins
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
-
             int hzWidth = maxHz - minHz;
+
+            // IDENTIFY HARMONIC TRACKS AND CALCULATE SCORES
             //var results = DetectHarmonicsUsingFormantGap(sonogram.Data, minBin, maxBin, hzWidth, minHarmonicPeriod, maxHarmonicPeriod, amplitudeThreshold);
             var results = CountHarmonicTracks(sonogram.Data, minBin, maxBin, hzWidth, harmonicCount, amplitudeThreshold);
-
             double[] scores = DataTools.filterMovingAverage(results.Item1, 5); //smooth the scores
-            var hits = results.Item2;
 
-            // EXTRACT SCORES AND ACOUSTIC EVENTS
-            double[] oscFreq = GetHDFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
+            // ACOUSTIC EVENTS
             List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
                                                                                          amplitudeThreshold, minDuration, maxDuration, audioFileName, callName);
-
+            var hits = results.Item2;
             return Tuple.Create(scores, hits, predictedEvents);
         }//end method
 
 
-        public static System.Tuple<double[], double[,]> CountHarmonicTracks(Double[,] matrix, int minBin, int maxBin, int hzWidth,
-                                                                            int expectedHarmonicCount, double amplitudeThreshold)
+        public static System.Tuple<double[], double[,]> CountHarmonicTracks(Double[,] matrix, int minBin, int maxBin, int hzWidth, int expectedHarmonicCount, double amplitudeThreshold)
         {
             int binBand = maxBin - minBin + 1; // DCT spans N freq bins
            // int expectedPeriod = binBand / expectedHarmonicCount;
@@ -73,7 +68,7 @@ namespace AudioAnalysisTools
                 if (score > amplitudeThreshold) // threshold the score
                 {
                     harmonicScore[r] = score; // amplitude score
-                    for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c += 3; }
+                    for (int c = minBin; c < maxBin; c++) { hits[r, c] = results.Item2; c += 3; } // only used for display purposes.
                 }
                 //if ((r > 2450) && (r < 2550))
                 //     Console.WriteLine("{0}  score={1:f2}  count={2}", r, harmonicScore[r], harmonicCount[r]);
@@ -83,6 +78,20 @@ namespace AudioAnalysisTools
         }
 
 
+        /// <summary>
+        /// This method did not work much better than the DCT method - see below.
+        /// Looks for a series of harmonic tracks at fixed freq intervals.
+        /// Problem is that the harmonic tracks are not necessarily at fixed intervals
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="minBin"></param>
+        /// <param name="maxBin"></param>
+        /// <param name="hzWidth"></param>
+        /// <param name="minPeriod"></param>
+        /// <param name="maxPeriod"></param>
+        /// <param name="minHarmonicPeriod"></param>
+        /// <param name="amplitudeThreshold"></param>
+        /// <returns></returns>
         public static System.Tuple<double[], double[,]> DetectHarmonicsUsingFormantGap(Double[,] matrix, int minBin, int maxBin, int hzWidth,
             int minPeriod, int maxPeriod,  int minHarmonicPeriod, double amplitudeThreshold)
         {
@@ -126,11 +135,23 @@ namespace AudioAnalysisTools
         }
 
 
-
-        public static Double[,] DetectHarmonicsUsingDCT(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT,
-                                                                         int minPeriod, int maxPeriod, double dctThreshold)
+        /// <summary>
+        /// THIS METHOD NO LONGER IN USE.
+        /// NOT USEFUL FOR ANIMAL CALLS.
+        /// Tried this but it is suitable only when there is guarantee of numerous spectral tracks as in the vowels of human speech.
+        /// It yields SPURIOUS RESULTS where there is only one whistle track.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="minBin"></param>
+        /// <param name="maxBin"></param>
+        /// <param name="hzWidth"></param>
+        /// <param name="normaliseDCT"></param>
+        /// <param name="minPeriod"></param>
+        /// <param name="maxPeriod"></param>
+        /// <param name="dctThreshold"></param>
+        /// <returns></returns>
+        public static Double[,] DetectHarmonicsUsingDCT(Double[,] matrix, int minBin, int maxBin, int hzWidth, bool normaliseDCT, int minPeriod, int maxPeriod, double dctThreshold)
         {
-
             int dctLength = maxBin - minBin + 1; //DCT spans N freq bins
 
             int minIndex = (int)(hzWidth / (double)maxPeriod * 2); //Times 0.5 because index = Pi and not 2Pi
@@ -179,150 +200,6 @@ namespace AudioAnalysisTools
         }
 
 
-        /// <summary>
-        /// Removes single lines of hits from Harmonics matrix.
-        /// </summary>
-        /// <param name="matrix">the Harmonics matrix</param>
-        /// <returns></returns>
-        public static Double[,] RemoveIsolatedHits(Double[,] matrix)
-        {
-            int rows = matrix.GetLength(0);
-            int cols = matrix.GetLength(1);
-            Double[,] cleanMatrix = matrix;
-
-            for (int r = 3; r < rows - 3; r++)//traverse rows
-            {
-                for (int c = 2; c < cols; c++)//skip DC column
-                {
-                    if (cleanMatrix[r, c] == 0.0) continue;
-                    if ((matrix[r-2, c] == 0.0) && (matrix[r + 2, c] == 0))  //+2 because alternate columns
-                        cleanMatrix[r, c] = 0.0;
-                }
-            }
-            return cleanMatrix;
-        } //end method RemoveIsolatedHits()
-
-
-        /// <summary>
-        /// Converts the hits derived from the harmonic detector into a score for each frame.
-        /// </summary>
-        /// <param name="hits">sonogram as matrix showing location of harmonic hits</param>
-        /// <param name="minHz">lower freq bound of the acoustic event</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <returns></returns>
-        public static double[] GetHarmonicScores(double[,] hits, int minHz, int maxHz, double freqBinWidth)
-        {
-            int rows = hits.GetLength(0);
-            int cols = hits.GetLength(1);
-            int minBin = (int)(minHz / freqBinWidth);
-            int maxBin = (int)(maxHz / freqBinWidth);
-            int targetBin = minBin + ((maxBin - minBin) / 2);
-            var scores = new double[rows];
-            for (int r = 0; r < rows; r++) //score if hit in middle bin
-            {
-                if (hits[r, targetBin] > 0) scores[r] = 1.0;
-            }
-            return scores;
-        }//end method GetHarmonicScores()
-
-        /// <summary>
-        /// TODO: This method not yet refactored for harmonic period.
-        /// </summary>
-        /// <param name="hits"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="freqBinWidth"></param>
-        /// <returns></returns>
-        public static double[] GetHDFrequency(double[,] hits, int minHz, int maxHz, double freqBinWidth)
-        {
-            int rows = hits.GetLength(0);
-            int cols = hits.GetLength(1);
-            int minBin = (int)(minHz / freqBinWidth);
-            int maxBin = (int)(maxHz / freqBinWidth);
-            int binCount = maxBin - minBin + 1;
-
-            var oscFreq = new double[rows]; //to store the oscillation frequency
-            for (int r = 0; r < rows; r++)
-            {
-                double freq = 0;
-                int count = 0;
-                for (int c = minBin; c <= maxBin; c++)//traverse columns in required band
-                {
-                    if (hits[r, c] > 0)
-                    {
-                        freq += hits[r, c];
-                        count ++;
-                    }
-                }
-                if (count == 0) oscFreq[r] = 0;
-                else            oscFreq[r] = freq / (double)count; //return the average frequency
-                //if (oscFreq[r] > 1.0) oscFreq[r] = 1.0;
-            }
-            return oscFreq;
-        }//end method GetODFrequency()
-
-        /// <summary>
-        /// Converts the Oscillation Detector score array to a list of AcousticEvents. 
-        /// NOTE: The scoreThreshold is adaptive. Starts at min threshold and adapts after that.
-        /// </summary>
-        /// <param name="scores">the array of OD scores</param>
-        /// <param name="oscFreq"></param>
-        /// <param name="minHz">lower freq bound of the acoustic event</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event</param>
-        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="eventThreshold">OD score must exceed this threshold to count as an event</param>
-        /// <param name="duration">expected duration of event</param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
-        /// <returns></returns>
-        public static List<AcousticEvent> ConvertHDScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
-                                                                 double framesPerSec, double freqBinWidth,
-                                                                 double eventThreshold, double expectedDuration, string fileName)
-        {
-            int count = scores.Length;
-            //int minBin = (int)(minHz / freqBinWidth);
-            //int maxBin = (int)(maxHz / freqBinWidth);
-            //int binCount = maxBin - minBin + 1;
-            var events = new List<AcousticEvent>();
-            
-            double frameOffset = 1 / framesPerSec;
-            int frameDuration = (int)(expectedDuration * framesPerSec);
-
-            for (int i = 0; i < count - frameDuration; i++)//pass over all frames
-            {
-                if (scores[i] <= 0.0) continue;
-
-                int hitCount = 0;
-                double total = 0.0;
-                double avPeriod = 0.0;
-                for (int j = 0; j < frameDuration; j++)//check ahead over frame duration
-                {
-                    if (scores[i + j] > 0.0)
-                    {
-                        hitCount++; //get density of hits
-                        total += oscFreq[i + j]; //calucalte period of harmonics
-                    }
-                }
-                double density = hitCount * 2 / (double)frameDuration;
-                if (density < eventThreshold) continue;
-                avPeriod = total / (double)hitCount;
-
-                //have found an event
-                double startTime = i * frameOffset;
-                AcousticEvent ev = new AcousticEvent(startTime, expectedDuration, minHz, maxHz);
-                ev.Name = "HarmonicEvent"; //default name
-                ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                ev.SourceFile = fileName;
-                ev.Score = density;  //score 1
-                //calculate average harmonic period and assign to ev.Score2 
-                ev.Score2Name = "Period"; //score2 name
-                ev.Score2 = avPeriod;
-                events.Add(ev);
-                i += frameDuration;
-            } //end of pass over all frames
-            return events;
-        }//end method ConvertHDScores2Events()
 
     }//end class HarmonicAnalysis
 }
