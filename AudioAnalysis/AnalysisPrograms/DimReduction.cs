@@ -267,10 +267,10 @@ namespace AnalysisPrograms
             int maxBin = (int)(maxHz / freqBinWidth);
             int hzWidth = maxHz - minHz;
             Double[,] hits = HarmonicAnalysis.DetectHarmonicsUsingDCT(matrix, minBin, maxBin, hzWidth, normaliseDCT, minPeriod, maxPeriod, dctThreshold);
-            hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
+            //hits = HarmonicAnalysis.RemoveIsolatedHits(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            double[] scores = HarmonicAnalysis.GetHarmonicScores(hits, minHz, maxHz, freqBinWidth);
+           // double[] scores = HarmonicAnalysis.GetHarmonicScores(hits, minHz, maxHz, freqBinWidth);
             //double[] oscFreq = HarmonicAnalysis.GetHDFrequency(hits, minHz, maxHz, freqBinWidth);
 
             //TRANSFER HITS TO REDUCED MATRIX

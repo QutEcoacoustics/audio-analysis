@@ -1969,13 +1969,15 @@ namespace TowseyLib
 
 //=========================================================================================================================
 //   THE FOLLOWING GROUP OF METHODS DETECT PERIODICITY IN ARRAYS
+  // Only CountHarmonicTracks() was found to be useful in the end.
 
   /// <summary>
   /// Counts the number of spectral tracks or harmonics in the passed ferquency band.
   /// Also calculates the average amplitude of the peaks to each succeeding trough.
   /// </summary>
-  /// <param name="values"></param>
-  /// <param name="expectedPeriod"></param>
+  /// <param name="values">Spectral values in the frequency band.</param>
+  /// <param name="expectedPeriod">Use supplied parameter. Expected number of harmonic tracks in the frequency band.</param>
+  /// <param name="row">This argument is NOT used. Is included only for debugging purposes.</param>
   /// <returns></returns>
   public static Tuple<double, int> CountHarmonicTracks(double[] values, int expectedHarmonicCount, int row)
   {
@@ -1989,6 +1991,7 @@ namespace TowseyLib
       double[] smooth = DataTools.filterMovingAverage(values, smoothingWindow);
       bool[] peaks    = DataTools.GetPeaks(smooth);
 
+      // Count the peaks and store their locations.
       var peakLocations = new int[L];
       int peakCount = -1;
       for (int i = 0; i < L; i++)
@@ -2000,7 +2003,7 @@ namespace TowseyLib
           }
       }
 
-      // if have too many peaks (local maxima) remove the lowest of them 
+      // If have too many peaks (local maxima), remove the lowest of them 
       if (peakCount > (expectedHarmonicCount+1))
       {
           var peakValues = new double[peakCount];
@@ -2009,11 +2012,12 @@ namespace TowseyLib
           double avValue = ordered.Take(expectedHarmonicCount).Average();
           double min = ordered.Last();
           double threshold = min + ((avValue - min) / 2);
-          // apply threhsold to remove low peaks
+          // apply threshold to remove low peaks
           for (int i = 0; i < L; i++)
           {
               if ((peaks[i]) && (values[i] < threshold)) peaks[i] = false;
           }
+
           // recalculate the number of peaks
           peakCount = -1;
           for (int i = 0; i < L; i++)
@@ -2026,14 +2030,14 @@ namespace TowseyLib
           }
       }
       
-      // now get amplitude
+      // Now get amplitude (peak-trough) for remaining peaks.
       double amplitude = 0.0;
       for (int i = 0; i < peakCount; i++)
       {
           int troughIndex = peakLocations[i] + midPeriod;
           if (troughIndex >= L) troughIndex = peakLocations[i] - midPeriod;
           double delta = values[peakLocations[i]] - values[troughIndex];
-          if (delta > 2.0) amplitude += delta; //dB threshold - required a minimum perceptible difference
+          if (delta > 2.0) amplitude += delta; // dB threshold - required a minimum perceptible difference
       }
       double avAmplitude = amplitude / (double)peakCount;
       //if (row > 565)
@@ -2150,74 +2154,10 @@ namespace TowseyLib
           index += period;
       }
       amplitude /= (double)peakCount;
-      return System.Tuple.Create(amplitude, peakCount); //amplitude of oscillation i.e. difference between min and max values 
+      return System.Tuple.Create(amplitude, peakCount); // amplitude of oscillation i.e. difference between min and max values 
   }
 
-  //      /// <summary>
-  //      /// returns the amplitude of an oscillation in an array having the given period.
-  //      /// </summary>
-  //      /// <param name="values"></param>
-  //      /// <param name="period"></param>
-  //      /// <param name="phase"></param>
-  ///// <returns></returns>
-  //public static System.Tuple<double, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
-  //{
-  //    int L = values.Length;
-  //    int midPeriod = period / 2;
-  //    double amplitude = 0.0; 
-  //    int count = 0;
-  //    int index = phase;
-  //    while (index < (L - midPeriod))
-  //    {
-  //        amplitude += (values[index + midPeriod] - values[index]);
-  //        count++;
-  //        index += period;
-  //    }
-  //    amplitude /= count;
-  //    return System.Tuple.Create(amplitude, count); //amplitude of oscillation i.e. difference between min and max values 
-  //}
-
-  //public static System.Tuple<double, double, int, int> PeriodicityAndPhaseDetection(double[] values, int period, int phase)
-  //{
-  //    int L = values.Length;
-  //    double onPeriodScore = 0.0;
-  //    var onPeriodArray = new double[100]; //assume never > 100 narmonics 
-  //    int onCount = 0;
-  //    int index = phase;
-  //    while (index < L)
-  //    {
-  //        onPeriodScore += values[index];
-  //        onPeriodArray[onCount] = values[index];
-  //        onCount++;
-  //        index += period;
-  //    }
-  //    //onPeriodScore /= onCount; //take the average
-
-  //    int midPeriod = period / 2;
-  //    var offPeriodArray = new double[100]; //assume never > 100 narmonics
-  //    int offCount = 0;
-  //    index = phase + midPeriod;
-  //    double offPeriodScore = 0.0;
-  //    while (index < L)
-  //    {
-  //        offPeriodScore += values[index];
-  //        offPeriodArray[offCount] = values[index];
-  //        offCount++;
-  //        index += period;
-  //    }
-  //    //offPeriodScore /= offCount; //take the average
-
-  //    // Perform another check for true periodicity. Avoid case of one single large value
-  //    // Require all onPeriod values > all offPeriod values.
-  //    //for (int i = 0; i < onCount; i++)
-  //    //{
-  //    //    for (int j = 0; j < offCount; j++) 
-  //    //        if (onPeriodArray[i] <= (offPeriodArray[j] + 1.0)) return 0.0; //require margin of 1.0 dB
-  //    //}
-
-  //    return System.Tuple.Create(onPeriodScore, offPeriodScore, onCount, offCount); //amplitude of oscillation i.e. difference between min and max values 
-  //}
-  //=============================================================================
+  //============================================================================================================================
 
 
   public static int String2Int(string str)
