@@ -11,11 +11,11 @@ namespace AnalysisPrograms
 {
     class ExtractEvent
     {
-
+        //GECKO
         //eventX "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
-
-
+        //CURRAWONG
         //eventX "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.mp3" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt  FELT_Currawong1
+        //CURLEW
         //eventX "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt  FELT_Curlew1
 
         //ZIP THE OUTPUT FILES
@@ -72,7 +72,8 @@ namespace AnalysisPrograms
 
             double frameOverlap      = Double.Parse(dict[key_FRAME_OVERLAP]);
             NoiseReductionType nrt   = SNR.Key2NoiseReductionType(dict[SNR.key_Snr.key_NOISE_REDUCTION_TYPE]);
-            double dynamicRange      = Double.Parse(dict[SNR.key_Snr.key_DYNAMIC_RANGE]);
+            //double dynamicRange      = Double.Parse(dict[SNR.key_Snr.key_DYNAMIC_RANGE]);
+            //double dynamicRange      = 0.0;
             double eventStart        = Double.Parse(dict[key_EVENT_START]);
             double eventEnd          = Double.Parse(dict[key_EVENT_END]);            
             int minHz                = Int32.Parse(dict[key_MIN_HZ]);
@@ -87,7 +88,7 @@ namespace AnalysisPrograms
             //iii: Extract the event
             //#############################################################################################################################################
             Log.WriteLine("# Start extracting target event.");
-            var results = Execute_Extraction(recording, eventStart, eventEnd, minHz, maxHz, frameOverlap, nrt, dynamicRange);
+            var results = Execute_Extraction(recording, eventStart, eventEnd, minHz, maxHz, frameOverlap, nrt);
             var sonogram = results.Item1;
             var extractedEvent = results.Item2;
             var matrix = results.Item3;          //event's matrix of data values
@@ -98,9 +99,8 @@ namespace AnalysisPrograms
             FileTools.WriteMatrix2File(matrix, matrixPath);
             // Save extracted event as a matrix of char symbols '+' and '-'
             WriteTargetMatrixAsBinarySymbols(matrix, templateThreshold, binaryPath);
-            var haloMMatrix = HaloTarget(matrix);                                     // ######################## CHECK THIS - NEEDS DEBUGGING
-            WriteTargetMatrixAsTrinarySymbols(haloMMatrix, trinaryPath);              
-            //matrix = FileTools.ReadDoubles2Matrix(matrixPath);
+            //var haloMMatrix = HaloTarget(matrix);              // ######################## CHECK THIS - NEEDS DEBUGGING
+            //WriteTargetMatrixAsTrinarySymbols(haloMMatrix, trinaryPath);              
 
             //v: SAVE images of extracted event in the original sonogram 
             if (DRAW_SONOGRAMS > 0)
@@ -110,7 +110,7 @@ namespace AnalysisPrograms
 
                 //SAVE extracted event as noise reduced image 
                 //alter matrix dynamic range so user can determine correct dynamic range from image 
-                matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
+                //matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
                 var targetImage = BaseSonogram.Data2ImageData(matrix);
                 ImageTools.DrawMatrix(targetImage, 1, 1, targetPath);
             }
@@ -139,7 +139,7 @@ namespace AnalysisPrograms
 
 
         public static System.Tuple<BaseSonogram, AcousticEvent, double[,]> Execute_Extraction(AudioRecording recording,
-            double eventStart, double eventEnd, int minHz, int maxHz, double frameOverlap, NoiseReductionType nrt, double dynamicRange)
+            double eventStart, double eventEnd, int minHz, int maxHz, double frameOverlap, NoiseReductionType nrt)
         {
             //ii: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config

@@ -29,6 +29,9 @@ namespace AnalysisPrograms
         //CURLEW
         //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
         // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
+        //CURRAWONG
+        //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
+        // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -66,8 +69,8 @@ namespace AnalysisPrograms
             string matrixPath = outputDir + targetName + "_target.txt";
             string targetPath = outputDir + targetName + "_target.png";
 
-            string symbolPath  = outputDir + targetName + "_binary.txt";
-            string trinaryPath = outputDir + targetName + "_trinary.txt";
+            string symbolPath  = outputDir + targetName + "_curatedBinary.txt";
+            string trinaryPath = outputDir + targetName + "_curatedTrinary.txt";
             
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -83,7 +86,7 @@ namespace AnalysisPrograms
             string callName     = dict[key_CALL_NAME];
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
             bool doSegmentation = Boolean.Parse(dict[key_DO_SEGMENTATION]);
-            double dynamicRange = Double.Parse(dict[key_DYNAMIC_RANGE]);      //dynamic range for target events
+            //double dynamicRange = Double.Parse(dict[key_DYNAMIC_RANGE]);      //dynamic range for target events
             double smoothWindow = Double.Parse(dict[key_SMOOTH_WINDOW]);      //before segmentation 
             int minHz = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[key_MAX_HZ]);
@@ -100,7 +103,7 @@ namespace AnalysisPrograms
 
             //iv: Find matching events
             //#############################################################################################################################################
-            var results = FindMatchingEvents.ExecuteFELT(targetMatrix, dynamicRange, recording, doSegmentation, minHz, maxHz, frameOverlap, smoothWindow, eventThreshold, minDuration);
+            var results = FindMatchingEvents.ExecuteFELT(targetMatrix, recording, doSegmentation, minHz, maxHz, frameOverlap, smoothWindow, eventThreshold, minDuration);
             var sonogram       = results.Item1;
             var matchingEvents = results.Item2;
             var scores         = results.Item3;
@@ -108,6 +111,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Finished detecting events like the target.");
             int count = matchingEvents.Count;
             Log.WriteLine("# Matching Event Count = " + matchingEvents.Count());
+            Log.WriteLine("           @ threshold = {0:f3}", matchThreshold);
             //#############################################################################################################################################
 
             //v: write events count to results info file. 
