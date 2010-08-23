@@ -25,7 +25,7 @@ namespace AudioAnalysisTools
         /// <param name="thresholdDB">threshold expressed as average dB per pixel in the call pattern</param>
         /// <param name="minDuration"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> ExecuteFELT(double[,] target, double dynamicRange, AudioRecording recording,
+        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> ExecuteFELT(double[,] target, AudioRecording recording,
                    bool doSegmentation, int minHz, int maxHz, double frameOverlap, double smoothWindow, double thresholdDB, double minDuration)
         {
             //i: CHECK RECORDING
@@ -39,7 +39,7 @@ namespace AudioAnalysisTools
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.DoMelScale = false;
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            sonoConfig.DynamicRange = dynamicRange;
+            //sonoConfig.DynamicRange = dynamicRange;
             sonoConfig.mfccConfig.CcCount = 12;                 //Number of mfcc coefficients
             //sonoConfig.mfccConfig.DoMelScale = false;
             //sonoConfig.mfccConfig.IncludeDelta = true;
