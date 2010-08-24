@@ -104,19 +104,20 @@ namespace AudioAnalysisTools
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
             int targetLength = template.GetLength(0);
+            int cellCount    = template.GetLength(0) * template.GetLength(1);
             //var image = BaseSonogram.Data2ImageData(target);
             //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_Currawong\target.png");
             
             // ######### Following line normalises template scores for comparison between templates.
             // ######### Ensures OP=0 for featureless sonogram #########
             // ######### template score = average of positive-template dB - average neg-template decibels. 
-            template = NormaliseSymbolicMatrix(template); 
+            template      = NormaliseSymbolicMatrix(template); 
 
             double[] scores = new double[sonogram.FrameCount];
             int offset = targetLength / 2;
             //count positives
             int positiveCount = CountPositives(template);
-            Log.WriteLine("# Positive Count = " + positiveCount);
+            Log.WriteLine("TEMPLATE: Number of + cells/total cells = {0}/{1}", positiveCount, cellCount);
 
             foreach (AcousticEvent av in segments)
             {
@@ -126,7 +127,7 @@ namespace AudioAnalysisTools
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
                 if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
-                int cellCount = template.GetLength(0) * template.GetLength(1); //area of
+                //int cellCount = template.GetLength(0) * template.GetLength(1); //area of
 
 
                 for (int r = startRow; r < stopRow; r++)
