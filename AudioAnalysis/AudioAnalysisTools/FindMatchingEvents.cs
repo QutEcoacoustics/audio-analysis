@@ -70,7 +70,7 @@ namespace AudioAnalysisTools
             //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
 
             //v: PROCESS SCORE ARRAY
-            var scores = DataTools.filterMovingAverage(tuple2.Item1, 5);
+            var scores = DataTools.filterMovingAverage(tuple2.Item1, 3);
             Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), thresholdDB);
             //Set (scores < 0.0) = 0.0;
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
@@ -114,7 +114,7 @@ namespace AudioAnalysisTools
             template      = NormaliseSymbolicMatrix(template); 
 
             double[] scores = new double[sonogram.FrameCount];
-            int offset = targetLength / 2;
+            //int offset = targetLength / 2;
             //count positives
             int positiveCount = CountPositives(template);
             Log.WriteLine("TEMPLATE: Number of + cells/total cells = {0}/{1}", positiveCount, cellCount);
@@ -142,7 +142,7 @@ namespace AudioAnalysisTools
                         double crossCor = DataTools.DotProduct(template, matrix);
                         if (crossCor > max) max = crossCor;
                     }
-                    scores[r + offset] = max / (double)positiveCount;
+                    scores[r] = max / (double)positiveCount;
                 } // end of rows in segment
             } // foreach (AcousticEvent av in segments)
 

@@ -168,8 +168,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void DrawSonogram(BaseSonogram sonogram, string path,
-                                        List<AcousticEvent> predictedEvents, double eventThreshold, double[] scores)
+        public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double threshold, double[] scores)
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -181,10 +180,15 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 if (scores != null)
                 {
-                    double min, max;
-                    DataTools.MinMax(scores, out min, out max);
-                    double threshold_norm = eventThreshold / max; //min = 0.0;
-                    image.AddTrack(Image_Track.GetScoreTrack(DataTools.normalise(scores), 0.0, 1.0, threshold_norm));
+                    double normMax = threshold * 4; //so normalised eventThreshold = 0.25
+                    for (int i = 0; i < scores.Length; i++)
+                    {
+                        scores[i] /= normMax;
+                        if (scores[i] > 1.0) scores[i] = 1.0;
+                        if (scores[i] < 0.0) scores[i] = 0.0;
+                    }
+
+                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
                 }
                 image.AddEvents(predictedEvents);
                 image.Save(path);
