@@ -30,8 +30,7 @@ namespace AnalysisPrograms
         //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
         // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
         //CURRAWONG
-        //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
-        // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
+        //felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt FELT_Currawong2_curatedBinary.txt
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -60,17 +59,17 @@ namespace AnalysisPrograms
             Segment.CheckArguments(args);
 
 
-            string recordingPath = args[0];
-            string iniPath       = args[1];
-            string targetName    = args[2];    //prefix of name of created files 
+            string recordingPath = args[0];    //the recording
+            string iniPath       = args[1];    //parameters / ini file
+            string targetFName   = args[2];    //name of target file 
 
+            string targetName = Path.GetFileNameWithoutExtension(targetFName);
             string outputDir  = Path.GetDirectoryName(iniPath) + "\\";
             string opPath     = outputDir + targetName + "_info.txt";
-            string matrixPath = outputDir + targetName + "_target.txt";
-            string targetPath = outputDir + targetName + "_target.png";
-
-            string symbolPath  = outputDir + targetName + "_curatedBinary.txt";
-            string trinaryPath = outputDir + targetName + "_curatedTrinary.txt";
+            string matrixPath = outputDir + targetName + "_matrix.txt";
+            string imagePath  = outputDir + targetName + "_target.png";
+            string binaryTemplatePath  = outputDir + targetFName;
+           // string trinaryTemplatePath = outputDir + targetName + "_curatedTrinary.txt";
             
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -98,8 +97,8 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
 
             //iii: GET THE TARGET
-            //double[,] targetMatrix = FileTools.ReadDoubles2Matrix(matrixPath);
-            double[,] targetMatrix = ReadChars2TrinaryMatrix(symbolPath);
+            double[,] targetMatrix = ReadChars2TrinaryMatrix(binaryTemplatePath);
+            //double[,] targetMatrix = ReadChars2TrinaryMatrix(trinaryTemplatePath);
 
             //iv: Find matching events
             //#############################################################################################################################################
@@ -123,10 +122,10 @@ namespace AnalysisPrograms
 
 
             //draw images of sonograms
-            string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_matchEvents.png";
+            string opImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_matchingEvents.png";
             if (DRAW_SONOGRAMS == 2)
             {
-                DrawSonogram(sonogram, imagePath, matchingEvents, matchThreshold, scores);
+                DrawSonogram(sonogram, opImagePath, matchingEvents, matchThreshold, scores);
             }
             else
             if ((DRAW_SONOGRAMS == 1) && (matchingEvents.Count > 0))
