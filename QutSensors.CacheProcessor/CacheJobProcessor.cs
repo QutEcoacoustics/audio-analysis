@@ -147,6 +147,7 @@ namespace QutSensors.CacheProcessor
         /// <returns>
         /// True if job was processed successfully, otherwise false.
         /// </returns>
+        /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
         private bool ProcessJob()
         {
             var request = cacheManager.GetUnprocessedRequest();
@@ -161,10 +162,13 @@ namespace QutSensors.CacheProcessor
                     switch (request.Type)
                     {
                         case CacheJobType.AudioSegmentation:
-                            data = SegmentAudio(request);
+                            data = this.SegmentAudio(request);
                             break;
                         case CacheJobType.SpectrogramGeneration:
-                            throw new NotImplementedException("Unable to generate spectrogram from job processor.");
+                            data = this.GenerateSpectrogram(request);
+                            break;
+                        default:
+                            throw new InvalidOperationException("Unrecognised CacheRequest type: " + request.Type);
                     }
 
                     stopWatch.Stop();
@@ -239,6 +243,56 @@ namespace QutSensors.CacheProcessor
 
                     return targetStream.GetBuffer();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Generate spectrogram based on CacheRequest.
+        /// </summary>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// Unable to find referenced AudioReading
+        /// </exception>
+        /// <returns>
+        /// The generated spectrogram.
+        /// </returns>
+        private byte[] GenerateSpectrogram(CacheRequest request)
+        {
+            using (var db = new QutSensorsDb())
+            {
+                var reading = db.AudioReadings.FirstOrDefault(r => r.AudioReadingID == request.AudioReadingID);
+                if (reading == null)
+                {
+                    throw new InvalidOperationException("Unable to find referenced AudioReading");
+                }
+
+                var spec = new Spectrogram(
+               reading,
+               QutDependencyContainer.Instance.Container.Resolve<IAudioReadingManager>(),
+               QutDependencyContainer.Instance.Container.Resolve<ISpectrogramGenerator>());
+
+                var bytes = spec.Generate(
+                    false,
+                    null,
+                    request.Start,
+                    reading.Length == request.End ? null : request.End,
+                    null,
+                    false,
+                    false);
+
+                if (log != null)
+                {
+                    log.WriteEntry(
+                        LogType.Information,
+                        "Generated spectrogram {0} ({1}-{2})",
+                        request.AudioReadingID,
+                        request.Start,
+                        request.End);
+                }
+
+                return bytes;
             }
         }
     }
