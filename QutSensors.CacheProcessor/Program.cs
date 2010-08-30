@@ -64,8 +64,7 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<AudioTools.DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
             builder.RegisterType<CacheManager>().As<ICacheManager>();
             builder.RegisterType<CacheJobProcessor>();
-            builder.RegisterType<SpectrogramGenerator>().As<ISpectrogramGenerator>();
-            builder.RegisterType<AudioReadingSegments>();
+            builder.RegisterType<AudioTransformer>().As<IAudioTransformer>();
             QutDependencyContainer.Instance.Container = builder.Build();
         }
     }

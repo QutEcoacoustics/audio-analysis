@@ -11,17 +11,12 @@ namespace QutSensors.CacheProcessor
 {
     using System;
     using System.Diagnostics;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Threading;
 
-    using AudioTools;
-    using AudioTools.DirectShow;
-
-    using Autofac;
-
     using QutSensors.Business;
-    using QutSensors.Data;
     using QutSensors.Data.Cache;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
@@ -32,11 +27,6 @@ namespace QutSensors.CacheProcessor
     /// </summary>
     public class CacheJobProcessor
     {
-        /// <summary>
-        /// Default buffer size in bytes.
-        /// </summary>
-        private const int BufferSize = 1024 * 1024 * 10;
-
         /// <summary>
         /// Time to wait between checks for jobs in milliseconds.
         /// </summary>
@@ -158,7 +148,7 @@ namespace QutSensors.CacheProcessor
                     var stopWatch = new Stopwatch();
                     stopWatch.Start();
 
-                    byte[] data = null;
+                    byte[] data;
                     switch (request.Type)
                     {
                         case CacheJobType.AudioSegmentation:
@@ -216,33 +206,31 @@ namespace QutSensors.CacheProcessor
                     throw new InvalidOperationException("Unable to find referenced AudioReading");
                 }
 
-                var segment = new AudioReadingSegments(
-                    reading,
-                    QutDependencyContainer.Instance.Container.Resolve<IAudioReadingManager>(),
-                    QutDependencyContainer.Instance.Container.Resolve<ICacheManager>());
+                var transformer = new AudioTransformer(reading);
 
-                using (var targetStream = new MemoryStream())
+                byte[] bytes;
+                using (var ms = new MemoryStream())
                 {
-                    segment.GetAudio(
+                    transformer.Segment(
                         request.Start,
                         reading.Length == request.End ? null : request.End,
                         request.MimeType,
-                        targetStream,
-                        BufferSize,
-                        false);
+                        ms);
 
-                    if (log != null)
-                    {
-                        log.WriteEntry(
-                            LogType.Information,
-                            "Segmented audio {0} ({1}-{2})",
-                            request.AudioReadingID,
-                            request.Start,
-                            request.End);
-                    }
-
-                    return targetStream.GetBuffer();
+                    bytes = ms.GetBuffer();
                 }
+
+                if (log != null)
+                {
+                    log.WriteEntry(
+                        LogType.Information,
+                        "Segmented audio {0} ({1}-{2})",
+                        request.AudioReadingID,
+                        request.Start,
+                        request.End);
+                }
+
+                return bytes;
             }
         }
 
@@ -268,19 +256,18 @@ namespace QutSensors.CacheProcessor
                     throw new InvalidOperationException("Unable to find referenced AudioReading");
                 }
 
-                var spec = new Spectrogram(
-               reading,
-               QutDependencyContainer.Instance.Container.Resolve<IAudioReadingManager>(),
-               QutDependencyContainer.Instance.Container.Resolve<ISpectrogramGenerator>());
+                var transformer = new AudioTransformer(reading);
 
-                var bytes = spec.Generate(
-                    false,
-                    null,
-                    request.Start,
-                    reading.Length == request.End ? null : request.End,
-                    null,
-                    false,
-                    false);
+                byte[] bytes;
+                using (var ms = new MemoryStream())
+                {
+                    var image = transformer.GenerateSpectrogram(
+                        request.Start, 
+                        reading.Length == request.End ? null : request.End);
+
+                    image.Save(ms, ImageFormat.Jpeg);
+                    bytes = ms.GetBuffer();
+                }
 
                 if (log != null)
                 {
