@@ -61,7 +61,7 @@ namespace AudioAnalysisTools
             double segmentationThreshold = thresholdDB;
             var tuple = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple.Item1;
-            var intensity = tuple.Item5;
+            var intensity     = tuple.Item5;
 
             //iv SCORE SONOGRAM FOR EVENTS LIKE TARGET
             var tuple2 = FindMatchingEvents.Execute_SymbolicMatch(target, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
