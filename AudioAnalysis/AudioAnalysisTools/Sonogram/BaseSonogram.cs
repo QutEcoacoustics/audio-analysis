@@ -75,8 +75,8 @@ namespace AudioAnalysisTools
         public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
             : this(config)
 		{
-            bool ExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
-            if (config.DoFullBandwidth) ExtractSubband = false;   //if sono only intended for image
+            bool DoExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
+            if (config.DoFullBandwidth) DoExtractSubband = false;   //if sono only intended for image
 
             //set config params to the current recording
             this.SampleRate = wav.SampleRate;
@@ -97,22 +97,24 @@ namespace AudioAnalysisTools
             FrameCount = frameIDs.GetLength(0);
 
 			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            this.SnrFullband = new SNR(signal, frameIDs);
-            this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
-            this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
+            if (config.DoSnr)
+            {
+                this.SnrFullband = new SNR(signal, frameIDs);
+                this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
+                this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
+                
+                //AUDIO SEGMENTATION
+                SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
 
-            //AUDIO SEGMENTATION
-            SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
-
-            var fractionOfHighEnergyFrames = SnrFullband.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
-			if (fractionOfHighEnergyFrames > 0.8)
-			{
-                Log.WriteIfVerbose("\nWARNING ##########################################");
-                Log.WriteIfVerbose("\t################### BaseSonogram(BaseSonogramConfig config, WavReader wav, bool doExtractSubband)");
-                Log.WriteIfVerbose("\t################### This is a high energy recording. The fraction of high energy frames = "
-																+ fractionOfHighEnergyFrames.ToString("F2") + " > 80%");
-                Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
-			}
+                var fractionOfHighEnergyFrames = SnrFullband.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
+                if (fractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
+                {
+                    Log.WriteIfVerbose("\nWARNING ##############");
+                    Log.WriteIfVerbose("\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
+                                              fractionOfHighEnergyFrames * 100, SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
+                    Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
+                }
+            }
 
 			//generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
@@ -122,7 +124,7 @@ namespace AudioAnalysisTools
             this.Configuration.WindowPower = power;
 
 			//EXTRACT REQUIRED FREQUENCY BAND
-            if (ExtractSubband)
+            if (DoExtractSubband)
 			{
                 amplitudeM = BaseSonogram.ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz, 
                              this.Configuration.DoMelScale, this.Configuration.FreqBinCount, this.FBinWidth);

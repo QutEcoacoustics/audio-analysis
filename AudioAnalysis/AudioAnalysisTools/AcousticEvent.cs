@@ -372,11 +372,11 @@ namespace AudioAnalysisTools
         /// Segments or not depending value of boolean doSegmentation
         /// </summary>
         /// <param name="sonogram"></param>
-        /// <param name="doSegmentation"></param>
-        /// <param name="minHz"></param>
-        /// <param name="maxHz"></param>
-        /// <param name="smoothWindow"></param>
-        /// <param name="thresholdSD"></param>
+        /// <param name="doSegmentation">segment? yes/no</param>
+        /// <param name="minHz">lower limit of bandwidth</param>
+        /// <param name="maxHz">upper limit of bandwidth</param>
+        /// <param name="smoothWindow">window for smoothing the acoustic intensity array</param>
+        /// <param name="thresholdSD">segmentation threshold - standard deviations above 0 dB</param>
         /// <param name="minDuration">minimum duration of an event</param>
         /// <param name="maxDuration">maximum duration of an event</param>
         /// <returns></returns>
@@ -404,9 +404,9 @@ namespace AudioAnalysisTools
         {
             int nyquist = sonogram.SampleRate / 2;
             var tuple = SNR.SubbandIntensity_NoiseReduced(sonogram.Data, minHz, maxHz, nyquist, smoothWindow, sonogram.FramesPerSecond);
-            double[] intensity = tuple.Item1;
-            double Q = tuple.Item2;
-            double oneSD = tuple.Item3;
+            double[] intensity = tuple.Item1; //noise reduced intensity array
+            double Q = tuple.Item2;      //baseline dB in the original scale
+            double oneSD = tuple.Item3;  //1 SD in dB around the baseline 
             double dBThreshold = thresholdSD * oneSD;
             var segmentEvents = AcousticEvent.ConvertIntensityArray2Events(intensity, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,           
                                                            dBThreshold, minDuration, maxDuration, sonogram.Configuration.SourceFName);

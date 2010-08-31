@@ -12,6 +12,11 @@ namespace TowseyLib
 
     public class SNR
     {
+        //CONSTANT
+        // FIND MAX VALUE IN BOTTOM 80% OF RANGE.
+        // this Constant sets an upper limit on the value returned as the modal noise.
+        public static double FRACTIONAL_BOUND_FOR_MODE = 0.8;
+
 
         public struct key_Snr
         {
@@ -22,7 +27,7 @@ namespace TowseyLib
 
 
         //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinLogEnergyReference = -7.0;    // typical noise value for BAC2 recordings = -4.5
+        public const double MinLogEnergyReference = -7.0;    // = -70dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
         //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
@@ -162,10 +167,13 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// removes modal value and sets modal value to zero.
+        /// Calculates and subtracts the modal value from an array of double.
+        /// Used for calculating and removing the background noise and setting baseline = zero.
+        /// Values below zero set equal to zero.
         /// </summary>
         /// <param name="array"></param>
-        /// <param name="Q"></param>
+        /// <param name="Q">The modal value</param>
+        /// <param name="oneSD">Standard deviation of the baseline noise</param>
         /// <returns></returns>
         public static double[] NoiseSubtractMode(double[] array, out double Q, out double oneSD)
         {
@@ -200,8 +208,8 @@ namespace TowseyLib
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
-            // FIND MAX VALUE IN BOTTOM 80% OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
-            int upperBound = (int)(binCount * 0.8);
+            // FIND MAX VALUE IN BOTTOM FRACTION OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
+            int upperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE);
             for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min + ((peakID + 1) * binWidth); //modal noise level
@@ -598,6 +606,11 @@ namespace TowseyLib
 
         /// <summary>
         /// Calculates the modal noise value for each freq bin.
+        /// Does so using a series of overlapped matrices.
+        /// TODO!!!! COULD SIMPLY THIS METHOD. JUST CALCULATE MODE FOR EACH FREQ BIN WITHOUT OVERLAP ....
+        /// .... AND THEN APPLY MORE SEVERE SMOOTHING TO THE MODAL NOISE PROFILE IN PREVIOUS METHOD.
+        /// 
+        /// COMPARE THIS METHOD WITH SNR.SubtractModalNoise();
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
@@ -606,29 +619,30 @@ namespace TowseyLib
             //set parameters for noise histograms based on overlapping bands.
             //*******************************************************************************************************************
             int bandWidth = 3;  // should be an odd number
-            int binCount = 64;  //number of pixel intensity bins
-            int binLimit = (int)(binCount * 0.666); //sets upper limit to modal noise bin. Higher values = more severe noise removal.
+            int binCount = 64;  // number of pixel intensity bins
+            double upperLimitForMode = 0.666; // sets upper limit to modal noise bin. Higher values = more severe noise removal.
+            int binLimit = (int)(binCount * upperLimitForMode);
             //*******************************************************************************************************************
 
 
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DataTools.MinMax(matrix, out minIntensity, out maxIntensity);
-            double binWidth = (maxIntensity - minIntensity) / binCount;  //width of an intensity bin
-            //Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
+            double binWidth = (maxIntensity - minIntensity) / binCount;  // width of an intensity bin
+            // Console.WriteLine("minIntensity=" + minIntensity + "  maxIntensity=" + maxIntensity + "  binWidth=" + binWidth);
 
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
             if (bandWidth > colCount) bandWidth = colCount - 1;
             int halfWidth = bandWidth / 2;
 
-            //init matrix from which histogram derived
+            // init matrix from which histogram derived
             double[,] submatrix = DataTools.Submatrix(matrix, 0, 0, rowCount - 1, bandWidth);
             double[] modalNoise = new double[colCount];
 
-            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            for (int col = 0; col < colCount; col++) // for all cols i.e. freq bins
             {
-                //construct new submatrix to calculate modal noise
+                // construct new submatrix to calculate modal noise
                 int start = col - halfWidth;   //extend range of submatrix below col for smoother changes
                 if (start < 0) start = 0;
                 int stop = col + halfWidth;

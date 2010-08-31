@@ -16,35 +16,34 @@ namespace AudioAnalysisTools
 
         #region Properties
         public string SourceFName { get; set; }
-        public string CallName { get; set; }//label to use for segmentation of call and silence.
-
-        public FftConfiguration fftConfig { get; set; }
-        public MfccConfiguration mfccConfig { get; set; }
+        public string CallName { get; set; }   // label to use for segmentation of call and silence.
         public TimeSpan Duration { get; set; }
+
         public int WindowSize { get; set; }
         public double WindowOverlap { get; set; } // Percent overlap of frames
         public double WindowPower   { get; set; } // Power of the Hamming Window
 
         public double epsilon { get; set; }         //small value to prevent log of zero value
-        public int FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
+        public int  FreqBinCount { get { return WindowSize / 2; } } // other half is phase info
         public bool DoPreemphasis { get; set; }
-        public bool DoMelScale { get; set; }
-        public NoiseReductionType NoiseReductionType { get; set; }
-        public string SilenceRecordingPath { get; set; }
-        public double[] SilenceModel { get; set; }
-        public double   DynamicRange { get; set; }
-
         public int? MinFreqBand { get; set; }
         public int? MaxFreqBand { get; set; }
         public int? MidFreqBand { get; set; }
         public bool DoFullBandwidth { get; set; }
+
+        public bool DoSnr { get; set; }
+        public NoiseReductionType NoiseReductionType { get; set; }
+        public double DynamicRange { get; set; }
+
+        public FftConfiguration fftConfig { get; set; }
+        public MfccConfiguration mfccConfig { get; set; }
+        public bool DoMelScale { get; set; }
         public int DeltaT { get; set; }
 
-
         private bool saveSonogramImage = false;
-        public bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
+        public  bool SaveSonogramImage { get { return saveSonogramImage; } set { saveSonogramImage = value; } }
         private string imageDir = null;
-        public string ImageDir { get { return imageDir; } set { imageDir = value; } }
+        public  string ImageDir { get { return imageDir; } set { imageDir = value; } }
 
         #endregion
 
@@ -113,30 +112,45 @@ namespace AudioAnalysisTools
             Initialize(config);
 		}
 
+        /// <summary>
+        /// DoSnr = true;
+        /// DoFullBandwidth = false;
+        /// </summary>
+        /// <param name="config"></param>
         private void Initialize(Configuration config)
         {
             CallName    = config.GetString(ConfigKeys.Recording.Key_RecordingCallName);
             SourceFName = config.GetString(ConfigKeys.Recording.Key_RecordingFileName);
-            fftConfig = new FftConfiguration(config);
-            WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
-            WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
-
-            DynamicRange = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
-            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
-            string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
-            NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
-            //SilenceRecordingPath = config.GetString(SNR.key_Snr.Key_SilenceRecording);
-            MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
-            MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
-            int? delta = MaxFreqBand - MinFreqBand;
-            MidFreqBand = MinFreqBand + (delta / 2);
-            DoFullBandwidth = false;
-
-            EndpointDetectionConfiguration.SetConfig(config);
-            mfccConfig = new MfccConfiguration(config);
-            DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
             var duration = config.GetDoubleNullable("WAV_DURATION");
             if (duration != null) Duration = TimeSpan.FromSeconds(duration.Value);
+
+            //FRAMING PARAMETERS
+            WindowSize = config.GetInt(ConfigKeys.Windowing.Key_WindowSize);
+            WindowOverlap = config.GetDouble(ConfigKeys.Windowing.Key_WindowOverlap);
+            fftConfig = new FftConfiguration(config);
+
+            //NOISE REDUCTION PARAMETERS  
+            DoSnr = true; // set false if only want to 
+            string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
+            NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
+            DynamicRange       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
+
+            //FREQ BAND PARAMETERS
+            DoFullBandwidth = false; // set true if only want to 
+            MinFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MinFreq);
+            MaxFreqBand = config.GetIntNullable(ConfigKeys.Mfcc.Key_MaxFreq);
+            MidFreqBand = MinFreqBand + ((MaxFreqBand - MinFreqBand) / 2);
+
+            //SEGMENTATION PARAMETERS
+            EndpointDetectionConfiguration.SetConfig(config);
+
+            //MFCC PARAMETERS
+            DoMelScale = config.GetBoolean(ConfigKeys.Mfcc.Key_DoMelScale);
+            mfccConfig = new MfccConfiguration(config);
+            DeltaT = config.GetInt(ConfigKeys.Mfcc.Key_DeltaT); // Frames between acoustic vectors
+
+            // for generating only spectrogram.
+
         }
 
 
