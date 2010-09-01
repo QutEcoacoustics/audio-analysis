@@ -5,8 +5,8 @@ function template_matching_using_distance(name, int_thresh, small_events_thresh,
 
 
 %paths
-addpath('../../Common')
-
+addpath('G:\Birgit\Subversion\AudioAnalysis\Matlab\Common')
+addpath('G:\Birgit\Acoustic Data\Ground parrots - acoustic events2')
 
 % get acoustic events
 [this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
@@ -74,6 +74,7 @@ for ng = 1:num_g
         tmp2 = textscan(tmp1, dstring, 1);
         AE_inds = cell2mat(tmp2);
     end
+    
     num_a = length(AE_inds);
     thisAE = allAE(AE_inds,:);
     
@@ -120,55 +121,58 @@ for ng = 1:num_g
     fcAE2_mat = repmat(fcAE2_pixels,1,num_t)';
     
     euc_dist = sqrt( (tcAE1_mat-tcAE2_mat).^2 + (fcAE1_mat-fcAE2_mat).^2 );
-    [tmp, loc_dist] = min(euc_dist,[],2); % location of nearest neighbouring test events
+    [tmp, loc_dist] = min(euc_dist,[],1); % location of nearest neighbouring test events
+    num_ld = length(loc_dist);
     
-    
-    % find precentage overlap between (rectangular) AEs and their closest template AE
-    total_overlap = 0;
-    for ll = 1:num_t
-        
-        % find overlapping points
-        start_t1 = tsAE1_pixels(ll);
-        start_t2 = tsAE2_pixels(loc_dist(ll));
-        end_t1 = tsAE1_pixels(ll) + (tcAE1_pixels(ll)-tsAE1_pixels(ll))*2;
-        end_t2 = tsAE2_pixels(loc_dist(ll)) + (tcAE2_pixels(loc_dist(ll))-tsAE2_pixels(loc_dist(ll)))*2;
-        start_f1 = fsAE1_pixels(ll);
-        start_f2 = fsAE2_pixels(loc_dist(ll));
-        end_f1 = fsAE1_pixels(ll) + (fcAE1_pixels(ll)-fsAE1_pixels(ll))*2;
-        end_f2 = fsAE2_pixels(loc_dist(ll)) + (fcAE2_pixels(loc_dist(ll))-fsAE2_pixels(loc_dist(ll)))*2;
-        
-        % find overlap
-        start_to = max(start_t1,start_t2);
-        end_to = min(end_t1,end_t2);
-        start_fo = max(start_f1,start_f2);
-        end_fo = min(end_f1,end_f2);
-        
-        % conditions for NO overlap - initialise at zero
-        cond_time = 0;
-        cond_freq = 0;
-        
-        cond_time( end_to<start_to )  = 1;
-        cond_freq( end_fo<start_fo ) = 1;
-        
-        if ( (cond_time==1) | (cond_freq==1) )
-            overlap = 0;
-        else
-            area_1 = (end_t1-start_t1)*(end_f1-start_f1);
-            area_2 = (end_t2-start_t2)*(end_f2-start_f2);
-            area_o = (end_to-start_to)*(end_fo-start_fo);
-            overlap = 0.5 * ( (area_o/area_1) + (area_o/area_2) );
+    if num_ld> 0 
+        % find percentage overlap between (rectangular) AEs and their closest template AE
+        total_overlap = 0;
+        for ll = 1:num_ld
+
+            % find overlapping points
+            start_t1 = tsAE1_pixels(loc_dist(ll));
+            start_t2 = tsAE2_pixels(ll);
+            end_t1 = tsAE1_pixels(loc_dist(ll)) + (tcAE1_pixels(loc_dist(ll))-tsAE1_pixels(loc_dist(ll)))*2;
+            end_t2 = tsAE2_pixels(ll) + (tcAE2_pixels(ll)-tsAE2_pixels(ll))*2;
+            start_f1 = fsAE1_pixels(loc_dist(ll));
+            start_f2 = fsAE2_pixels(ll);
+            end_f1 = fsAE1_pixels(loc_dist(ll)) + (fcAE1_pixels(loc_dist(ll))-fsAE1_pixels(loc_dist(ll)))*2;
+            end_f2 = fsAE2_pixels(ll) + (fcAE2_pixels(ll)-fsAE2_pixels(ll))*2;
+
+            % find overlap
+            start_to = max(start_t1,start_t2);
+            end_to = min(end_t1,end_t2);
+            start_fo = max(start_f1,start_f2);
+            end_fo = min(end_f1,end_f2);
+
+            % conditions for NO overlap - initialise at zero
+            cond_time = 0;
+            cond_freq = 0;
+
+            cond_time( end_to<start_to )  = 1;
+            cond_freq( end_fo<start_fo ) = 1;
+
+            if ( (cond_time==1) | (cond_freq==1) )
+                overlap = 0;
+            else
+                area_1 = (end_t1-start_t1)*(end_f1-start_f1);
+                area_2 = (end_t2-start_t2)*(end_f2-start_f2);
+                area_o = (end_to-start_to)*(end_fo-start_fo);
+                overlap = 0.5 * ( (area_o/area_1) + (area_o/area_2) );
+            end
+            total_overlap = total_overlap + overlap;
+
+    %         pause
+
         end
-        total_overlap = total_overlap + overlap;
-        
-%         pause
-        
+        keep_overlap(ng) = total_overlap;
+
+        disp(total_overlap);
     end
-    keep_overlap(ng) = total_overlap;
-    
-    disp(total_overlap)
 %     pause
 end
-
+keep_overlap(isnan(keep_overlap)) = 0;
 % store total_overlap
-xlswrite(xlsfile, keep_overlap, strcat('G',num2str(2),':G',num2str(num_g+1)))
-    
+if length(keep_overlap)>0
+    xlswrite(xlsfile, keep_overlap, strcat('G',num2str(2),':G',num2str(num_g+1)))
+end

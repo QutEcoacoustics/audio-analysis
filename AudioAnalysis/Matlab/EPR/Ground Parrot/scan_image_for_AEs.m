@@ -12,8 +12,8 @@ function scan_image_for_AEs(name, F, int_thresh, small_events_thresh, xlsfile, t
 fmax = max(F);
 
 %paths
-addpath('../../Common')
-
+addpath('G:\Birgit\Subversion\AudioAnalysis\Matlab\Common')
+addpath('G:\Birgit\Acoustic Data\Ground parrots - acoustic events2')
 
 % get acoustic events
 [this_results] = xlsread(strcat(name,'_Intensity_Thresh_',num2str(int_thresh),'dB_Small_area_thresh_max_',num2str(small_events_thresh),'.xls'));
@@ -63,9 +63,11 @@ end
 
 % store results in excel file
 xlswrite(xlsfile,{'Start Time (s)','Duration (s)','Lowest Freq','Heighest Freq','# of AEs','Acoustic Events','%Overlap'}, 'A1:G1');
-xlswrite(xlsfile, cat(1,scan_results.AE), strcat('A',num2str(2),':D',num2str(lenAE+1)))
-xlswrite(xlsfile, cat(1,scan_results.numBoundary), strcat('E',num2str(2),':E',num2str(lenAE+1)))
-tmp = strvcat(scan_results.indBoundary);
+if size(scan_results)>0
+    xlswrite(xlsfile, cat(1,scan_results.AE), strcat('A',num2str(2),':D',num2str(lenAE+1)))
+    xlswrite(xlsfile, cat(1,scan_results.numBoundary), strcat('E',num2str(2),':E',num2str(lenAE+1)))
+    tmp = strvcat(scan_results.indBoundary);
+end
 for na = 1:lenAE
     xlswrite(xlsfile, {tmp(na,:)}, strcat('F',num2str(na+1),':F',num2str(na+1)))
 end

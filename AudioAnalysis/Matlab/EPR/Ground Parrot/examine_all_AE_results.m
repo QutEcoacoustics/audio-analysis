@@ -59,11 +59,19 @@ for ng=1:num_g
     else
         isAE = [isAE; thisAE(indL,:)];
     end
+    
+    
 end
 
-showImage(c,I3,T,F,1,allAE)
-showImage(c,I3,T,F,2,isAE)
-showImage(c,I3,T,F,3,notAE)
+if ~isempty(isAE)
+    % showImage(c,I3,T,F,1,allAE)
+    showImage(c,I3,T,F,2,isAE)
+    title(name)
+    name_png = strcat(name,'.png');
+    figure(2), print('-dpng', name_png)
+    % showImage(c,I3,T,F,3,notAE)
+    pause(0.1)
+end
     
     
     
