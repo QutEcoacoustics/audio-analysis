@@ -16,8 +16,9 @@ namespace QutSensors.CacheProcessor
     using System.Linq;
     using System.Threading;
 
-    using QutSensors.Business;
-    using QutSensors.Data.Cache;
+    using QutSensors.Business.Audio;
+    using QutSensors.Business.Cache;
+    using QutSensors.Data;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;

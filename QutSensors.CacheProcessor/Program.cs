@@ -14,10 +14,10 @@ namespace QutSensors.CacheProcessor
 
     using Autofac;
 
-    using QutSensors.Business;
+    using QutSensors.Business.Audio;
+    using QutSensors.Business.Cache;
+    using QutSensors.Business.Providers;
     using QutSensors.Data;
-    using QutSensors.Data.Cache;
-    using QutSensors.Data.Providers;
 
     /// <summary>
     /// Cache Job Processor Program.
@@ -61,7 +61,7 @@ namespace QutSensors.CacheProcessor
                     .WithParameter(new NamedParameter("spectrogramCachePolicy", new SpectrogramCachePolicy()))
                     .As<IAudioReadingManager>();
             builder.RegisterType<FileSystemDataStagingProvider>().As<IDataStagingProvider>();
-            builder.RegisterType<AudioTools.DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
+            builder.RegisterType<DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
             builder.RegisterType<CacheManager>().As<ICacheManager>();
             builder.RegisterType<CacheJobProcessor>();
             builder.RegisterType<AudioTransformer>().As<IAudioTransformer>();
