@@ -9,11 +9,12 @@
 
 namespace QutSensors.CacheProcessor
 {
+    using System.IO;
     using System.ServiceProcess;
 
     using Autofac;
 
-    using QutSensors.Data;
+    using QutSensors.Business;
     using QutSensors.Shared.LogProviders;
 
     /// <summary>
@@ -64,8 +65,10 @@ namespace QutSensors.CacheProcessor
         {
             if (processor == null)
             {
+                var logDir = System.Configuration.ConfigurationManager.AppSettings["LogDir"];
+
                 processor =
-                    CreateProcessor(new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider()));
+                    CreateProcessor(new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider(logDir)));
             }
 
             processor.Start();

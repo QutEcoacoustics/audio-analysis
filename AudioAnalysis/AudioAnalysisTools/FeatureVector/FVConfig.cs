@@ -11,6 +11,8 @@ using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {
+    using QutSensors.Shared;
+
     public enum FV_Source { SELECTED_FRAMES, FIXED_INTERVALS }
 
 	[Serializable]

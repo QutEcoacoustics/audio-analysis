@@ -12,7 +12,9 @@ using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {
-	[Serializable]
+    using QutSensors.Shared;
+
+    [Serializable]
     public class Acoustic_Model
     {
         public const int NoiseSampleCount = 5000; // Number of samples to use when a generating noise vector/model

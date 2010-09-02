@@ -48,7 +48,7 @@ namespace QutSensors.AnalysisProcessor
                 processor = new AnalysisJobProcessor(
                     exeBaseDir,
                     runsDir,
-                    new MultiLogProvider(new TextFileLogProvider(), new ConsoleLogProvider()),
+                    new MultiLogProvider(new TextFileLogProvider(Path.GetTempPath()), new ConsoleLogProvider()),
                     new LocalAnalysisRunner(),
                     "DEBUG_WORKER");
             }
@@ -76,10 +76,12 @@ namespace QutSensors.AnalysisProcessor
                 var username = System.Configuration.ConfigurationManager.AppSettings["JobRunUserName"];
                 var password = System.Configuration.ConfigurationManager.AppSettings["JobRunPassword"];
 
+                var logDir = System.Configuration.ConfigurationManager.AppSettings["LogDir"];
+
                 processor = new AnalysisJobProcessor(
                     exeBaseDir,
                     runsDir,
-                    new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider()),
+                    new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider(logDir)),
                     new ClusterAnalysisRunner(username, password),
                     workerName);
             }
