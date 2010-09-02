@@ -14,10 +14,11 @@ namespace QutSensors.CacheProcessor
 
     using Autofac;
 
+    using QutSensors.Business;
+    using QutSensors.Business.Analysis;
     using QutSensors.Business.Audio;
     using QutSensors.Business.Cache;
     using QutSensors.Business.Providers;
-    using QutSensors.Data;
 
     /// <summary>
     /// Cache Job Processor Program.
