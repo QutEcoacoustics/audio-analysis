@@ -111,6 +111,7 @@
   <ItemGroup>
     <Compile Include="CacheJobProcessor.cs">
     </Compile>
+    <Compile Include="LocalCacheJobProcessor.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
