@@ -41,7 +41,7 @@ namespace QutSensors.CacheProcessor
             if (processor == null)
             {
                 processor =
-                    CreateProcessor(new MultiLogProvider(new EventLogProvider(EventLog), new ConsoleLogProvider()));
+                    CreateProcessor(new ConsoleLogProvider());
             }
 
             processor.Start();

@@ -130,5 +130,10 @@ namespace AnalysisPrograms.Processing
         {
             Write(data + ", ", false, false);
         }
+
+        public static void Segment(string audioFilePath)
+        {
+
+        }
     }
 }

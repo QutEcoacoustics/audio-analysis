@@ -19,6 +19,7 @@ namespace QutSensors.CacheProcessor
     using QutSensors.Business.Audio;
     using QutSensors.Business.Cache;
     using QutSensors.Business.Providers;
+    using QutSensors.Shared.LogProviders;
 
     /// <summary>
     /// Cache Job Processor Program.
@@ -42,6 +43,23 @@ namespace QutSensors.CacheProcessor
                 Console.WriteLine("Press ENTER to stop processor.");
                 Console.ReadLine();
                 service.DebugStop();
+            }
+            else if (args.Length > 0 && args[0].ToLower() == "debuglocal")
+            {
+                // TODO: set 'ConversionFolder' appsettings value to valid directory.
+                var file =
+                    @"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\ProcessingTest\DM420003.MP3";
+
+                var maxSegmentDurationMs = 1000 * 60 * 20; // 20 min
+
+                var duration = new TimeSpan(23, 54, 59);
+
+                var local = new LocalCacheJobProcessor(
+                    file, maxSegmentDurationMs,
+                    new TextFileLogProvider(@"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\ProcessingTest\"), 
+                    Convert.ToInt64(duration.TotalMilliseconds));
+
+                local.Start();
             }
             else
             {
