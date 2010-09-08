@@ -5,12 +5,14 @@ using System.Text;
 
 namespace QutSensors.CacheProcessor
 {
+    using System.Configuration;
     using System.Diagnostics;
     using System.IO;
 
     using AudioTools;
 
     using QutSensors.Business.Audio;
+    using QutSensors.Data;
     using QutSensors.Shared.LogProviders;
 
     public class LocalCacheJobProcessor
@@ -31,6 +33,9 @@ namespace QutSensors.CacheProcessor
             this.fileDuration = fileDuration;
         }
 
+        /// <summary>
+        /// Start processing.
+        /// </summary>
         public void Start()
         {
             var stopWatchAll = new Stopwatch();
@@ -47,26 +52,34 @@ namespace QutSensors.CacheProcessor
 
                 var stopWatch = new Stopwatch();
 
-                using (var ms = new MemoryStream())
+                // if mp3 -> mp3 segments
+                stopWatch.Start();
+                var bytes = CacheUtilities.SegmentMp3(
+                    this.fileToProcess.FullName,
+                    new CacheRequest { Start = start, End = end, MimeType = MimeTypes.MimeTypeMp3 });
+
+                stopWatch.Stop();
+
+                if (bytes == null || bytes.Length < 1)
                 {
-                    stopWatch.Start();
-                    transformer.Segment(
-                        start,
-                        end,
-                        MimeTypes.MimeTypeMp3,
-                        ms);
+                    stopWatch.Reset();
 
-                    stopWatch.Stop();
+                    using (var ms = new MemoryStream())
+                    {
+                        stopWatch.Start();
+                        transformer.Segment(start, end, MimeTypes.MimeTypeMp3, ms);
+                        stopWatch.Stop();
 
-                    var bytes = ms.GetBuffer();
+                        bytes = ms.GetBuffer();
+                    }
+                }
 
-                    var file = "segment-" + Path.GetFileNameWithoutExtension(this.fileToProcess.FullName)
+                var file = "segment-" + Path.GetFileNameWithoutExtension(this.fileToProcess.FullName)
                         + "-" + positionMs + "-" + end;
 
-                    var path = Path.GetDirectoryName(this.fileToProcess.FullName);
+                var path = Path.GetDirectoryName(this.fileToProcess.FullName);
 
-                    File.WriteAllBytes(Path.Combine(path, file + "." + MimeTypes.ExtMp3), bytes);
-                }
+                File.WriteAllBytes(Path.Combine(path, file + "." + MimeTypes.ExtMp3), bytes);
 
                 if (this.logger != null)
                 {

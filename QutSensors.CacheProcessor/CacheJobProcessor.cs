@@ -11,20 +11,21 @@ namespace QutSensors.CacheProcessor
 {
     using System;
     using System.Diagnostics;
-    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
     using System.Threading;
 
     using AudioTools;
+    using Autofac;
 
+    using QutSensors.Business;
     using QutSensors.Business.Audio;
     using QutSensors.Business.Cache;
+    using QutSensors.Business.Providers;
     using QutSensors.Data;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
-    using System.Configuration;
 
     /// <summary>
     /// Cache Processor.
@@ -312,23 +313,22 @@ namespace QutSensors.CacheProcessor
         /// </returns>
         private byte[] SegmentAudio(string audioFile, long? audioFileDurationMs, CacheRequest request)
         {
-            var transformer = new AudioTransformer(audioFile);
+            byte[] bytes = CacheUtilities.SegmentMp3(audioFile, request);
 
-            byte[] bytes;
-            using (var ms = new MemoryStream())
+            if (bytes == null || bytes.Length < 1)
             {
-                transformer.Segment(
+                // file could not be segmented by mp3Splt, use DirectShow.
+                var transformer = new AudioTransformer(audioFile);
+
+                bytes = transformer.Segment(
                     request.Start,
                     audioFileDurationMs == request.End ? null : request.End,
-                    request.MimeType,
-                    ms);
-
-                bytes = ms.GetBuffer();
+                    request.MimeType);
             }
 
-            if (log != null)
+            if (this.log != null)
             {
-                log.WriteEntry(
+                this.log.WriteEntry(
                     LogType.Information,
                     "Segmented audio {0} ({1}-{2})",
                     request.AudioReadingID,
@@ -359,18 +359,18 @@ namespace QutSensors.CacheProcessor
         /// </returns>
         private byte[] GenerateSpectrogram(string audioFile, long? audioFileDurationMs, CacheRequest request)
         {
+            var metaData = QutDependencyContainer.Instance.Container.Resolve<IAudioMetadataProvider>();
             var transformer = new AudioTransformer(audioFile);
 
-            byte[] bytes;
-            using (var ms = new MemoryStream())
-            {
-                var image = transformer.GenerateSpectrogram(
-                    request.Start,
-                    audioFileDurationMs == request.End ? null : request.End);
+            var controller = new AudioController(transformer, metaData, this.cacheManager);
 
-                image.Save(ms, ImageFormat.Jpeg);
-                bytes = ms.GetBuffer();
-            }
+            var bytes = controller.Spectrogram(
+                request.Start,
+                audioFileDurationMs == request.End ? null : request.End,
+                null,
+                null,
+                false,
+                true);
 
             if (log != null)
             {
