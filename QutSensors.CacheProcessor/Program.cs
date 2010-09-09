@@ -13,6 +13,8 @@ namespace QutSensors.CacheProcessor
     using System.IO;
     using System.ServiceProcess;
 
+    using AudioTools;
+
     using Autofac;
 
     using QutSensors.Business;
@@ -34,6 +36,9 @@ namespace QutSensors.CacheProcessor
         /// </param>
         public static void Main(string[] args)
         {
+            //TestSplit();
+            //return;
+            
             SetupIocContainer();
 
             var argument = string.Empty;
@@ -144,6 +149,17 @@ namespace QutSensors.CacheProcessor
                 Convert.ToInt64(duration.TotalMilliseconds));
 
             local.Start();
+        }
+
+        private static void TestSplit()
+        {
+            var file = @"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\ProcessingTest\test.before.wav";
+
+            var t = new AudioTransformer(file);
+
+            var bytes = t.Segment(30250, 50000, MimeTypes.MimeTypeMp3);
+
+            File.WriteAllBytes(@"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\ProcessingTest\test.before1.wav", bytes);
         }
     }
 }

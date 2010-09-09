@@ -21,26 +21,26 @@ namespace AudioAnalysisTools
         #region Properties
         public SonogramConfig Configuration { get; set; }
 
-		public double MaxAmplitude { get; set; }
-		public int SampleRate { get; protected set; }
+        public double MaxAmplitude { get; set; }
+        public int SampleRate { get; protected set; }
         public TimeSpan Duration { get; protected set; }
 
         //following values are dependent on sampling rate.
         public int NyquistFrequency { get { return SampleRate / 2; } }
         public double FrameDuration { get { return Configuration.WindowSize / (double)SampleRate; } }     // Duration of full frame or window in seconds
-		public double FrameOffset   { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
-        public double FBinWidth     { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
-		public double FramesPerSecond { get { return 1 / FrameOffset; } }
-        public int FrameCount       { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
+        public double FrameOffset { get { return FrameDuration * (1 - Configuration.WindowOverlap); } } // Duration of non-overlapped part of window/frame in seconds
+        public double FBinWidth { get { return (SampleRate / 2) / (double)Configuration.FreqBinCount; } }// FreqBinCount=WindowSize/2
+        public double FramesPerSecond { get { return 1 / FrameOffset; } }
+        public int FrameCount { get; protected set; } //Temporarily set to (int)(Duration.TotalSeconds/FrameOffset) then reset later
 
         //energy and dB per frame
         public SNR SnrFullband { get; set; }
-        public double[] DecibelsPerFrame { get { return SnrFullband.Decibels; } protected set {} }//decibels per signal frame
+        public double[] DecibelsPerFrame { get { return SnrFullband.Decibels; } protected set { } }//decibels per signal frame
 
         //energy and dB per frame sub-band
         protected int subBand_MinHz; //min freq (Hz) of the required subband
         protected int subBand_MaxHz; //max freq (Hz) of the required subband
-        public SNR    SnrSubband { get; private set; }
+        public SNR SnrSubband { get; private set; }
         public double[] DecibelsInSubband { get; protected set; }  // Normalised decibels in extracted freq band
 
         public double[] DecibelsNormalised { get; protected set; }
@@ -48,10 +48,10 @@ namespace AudioAnalysisTools
 
         public int[] SigState { get; protected set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
 
-		public double[,] Data { get; set; } //the spectrogram data matrix, AFTER conversion to dB and noise removal 
-		#endregion
+        public double[,] Data { get; set; } //the spectrogram data matrix, AFTER conversion to dB and noise removal 
+        #endregion
 
-        
+
         /// <summary>
         /// use this constructor when want to extract time segment of existing sonogram
         /// </summary>
@@ -74,14 +74,14 @@ namespace AudioAnalysisTools
         /// <param name="doExtractSubband"></param>
         public BaseSonogram(SonogramConfig config, WavReader wav, bool dummy)
             : this(config)
-		{
+        {
             bool DoExtractSubband = this.subBand_MinHz > 0 || this.subBand_MaxHz < NyquistFrequency;
             if (config.DoFullBandwidth) DoExtractSubband = false;   //if sono only intended for image
 
             //set config params to the current recording
             this.SampleRate = wav.SampleRate;
             this.Configuration.Duration = wav.Time;
-            this.Configuration.fftConfig.SampleRate  = wav.SampleRate; //also set the Nyquist
+            this.Configuration.fftConfig.SampleRate = wav.SampleRate; //also set the Nyquist
             this.Duration = wav.Time;
             this.MaxAmplitude = wav.CalculateMaximumAmplitude();
             double[] signal = wav.Samples;
@@ -89,20 +89,20 @@ namespace AudioAnalysisTools
             //calculate a signal dependent minimum amplitude value to prevent possible subsequent log of zero value.
             this.Configuration.epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
-			// SIGNAL PRE-EMPHASIS helps with speech signals
+            // SIGNAL PRE-EMPHASIS helps with speech signals
             if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
 
-			// FRAME WINDOWING
+            // FRAME WINDOWING
             int[,] frameIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
             FrameCount = frameIDs.GetLength(0);
 
-			// ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
+            // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
             if (config.DoSnr)
             {
                 this.SnrFullband = new SNR(signal, frameIDs);
                 this.Max_dBReference = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
                 this.DecibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
-                
+
                 //AUDIO SEGMENTATION
                 SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
 
@@ -116,19 +116,19 @@ namespace AudioAnalysisTools
                 }
             }
 
-			//generate the spectra of FFT AMPLITUDES
+            //generate the spectra of FFT AMPLITUDES
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(this.Configuration.fftConfig.WindowFunction);
             double power;
             var amplitudeM = BaseSonogram.MakeAmplitudeSonogram(signal, frameIDs, w, out power);
             this.Configuration.WindowPower = power;
 
-			//EXTRACT REQUIRED FREQUENCY BAND
+            //EXTRACT REQUIRED FREQUENCY BAND
             if (DoExtractSubband)
-			{
-                amplitudeM = BaseSonogram.ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz, 
+            {
+                amplitudeM = BaseSonogram.ExtractFreqSubband(amplitudeM, this.subBand_MinHz, this.subBand_MaxHz,
                              this.Configuration.DoMelScale, this.Configuration.FreqBinCount, this.FBinWidth);
-				Log.WriteIfVerbose("\tDim of required sub-band =" + amplitudeM.GetLength(1));
+                Log.WriteIfVerbose("\tDim of required sub-band =" + amplitudeM.GetLength(1));
                 CalculateSubbandSNR(amplitudeM);
             }
 
@@ -142,7 +142,8 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="config">All parameters required to make spectrogram</param>
         /// <param name="wav">the recording whose spectrogram is to be made</param>
-        public BaseSonogram(SonogramConfig config, WavReader wav) : this(config, wav , false)
+        public BaseSonogram(SonogramConfig config, WavReader wav)
+            : this(config, wav, false)
         {
             Make(this.Data);
         } //end CONSTRUCTOR BaseSonogram(SonogramConfig config, WavReader wav)
@@ -162,13 +163,13 @@ namespace AudioAnalysisTools
             var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
             power = fft.WindowPower; //store for later use when calculating dB
             double[,] amplitudeSonogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
-            double[] window = new double[N]; 
-            double[] f1; 
+            double[] window = new double[N];
+            double[] f1;
 
             for (int i = 0; i < frameCount; i++) //foreach frame or time step
             {
                 //set up the window
-                for (int j = 0; j < N; j++) window[j] = signal[frames[i,0] + j];
+                for (int j = 0; j < N; j++) window[j] = signal[frames[i, 0] + j];
 
                 f1 = fft.InvokeDotNetFFT(window); //returns fft amplitude spectrum
                 //double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
@@ -188,8 +189,8 @@ namespace AudioAnalysisTools
         {
             //double[,] frames = DSP.Frames(wav.Samples, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
             int[,] framesIDs = DSP.FrameStartEnds(wav.Samples.Length, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
-			//calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
-			//double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
+            //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
+            //double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
             //var amplitudeM = MakeAmplitudeSonogram(frames, TowseyLib.FFT.GetWindowFunction(this.Configuration.FftConfig.WindowFunction));
             double power;
@@ -213,7 +214,7 @@ namespace AudioAnalysisTools
             this.SnrSubband = new SNR(subband); //subband is the amplitude values
             //RECALCULATE DecibelsNormalised and dB REFERENCE LEVEL - need for MFCCs
             this.DecibelsInSubband = SnrSubband.Decibels;
-            this.Max_dBReference   = SnrSubband.MaxReference_dBWrtNoise;
+            this.Max_dBReference = SnrSubband.MaxReference_dBWrtNoise;
             this.DecibelsNormalised = SnrSubband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
             //RECALCULATE ENDPOINTS OF VOCALISATIONS
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
@@ -227,23 +228,23 @@ namespace AudioAnalysisTools
             var m = new double[rows, cols];
             for (int r = 0; r < rows; r++) //init matrix to min
             {
-                for (int c = 0; c < cols; c++) m[r, c] = (double)binary[r, c]; 
+                for (int c = 0; c < cols; c++) m[r, c] = (double)binary[r, c];
             }
 
             this.Data = m;
         }
 
-		public Image GetImage()
-		{
-			return GetImage(1, false, false);
-		}
+        public Image GetImage()
+        {
+            return GetImage(1, false, false);
+        }
 
         public Image GetImage(bool doHighlightSubband, bool add1kHzLines)
-		{
-           // Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
-           // Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
+        {
+            // Log.WriteIfVerbose("BaseSonogram.GetImage(bool doHighlightSubband, bool add1kHzLines)");
+            // Log.WriteIfVerbose("    doHighlightSubband=" + doHighlightSubband + "   add1kHzLines=" + add1kHzLines);
             return GetImage(1, doHighlightSubband, add1kHzLines);
-		}
+        }
 
         /// <summary>
         /// converts the dB data in sonogram.Data to grey scale image of spectrogram.
@@ -252,13 +253,13 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static double[,] Data2ImageData(double[,] M)
         {
-            int width   = M.GetLength(0);   // Number of spectra in sonogram
+            int width = M.GetLength(0);   // Number of spectra in sonogram
             int fftBins = M.GetLength(1);
             double min; double max;
             DataTools.MinMax(M, out min, out max);
             double range = max - min; //for normalisation
 
-            
+
             double[,] Mt = new double[fftBins, width];
             for (int f = 0; f < fftBins; f++)
                 for (int t = 0; t < width; t++)
@@ -266,23 +267,23 @@ namespace AudioAnalysisTools
                     // normalise and bound the value - use 0-255 image intensity range
                     double value = (M[t, f] - min) / (double)range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                    if (c < 0)          c = 0;
-                    else if (c >= 256)  c = 255;
+                    if (c < 0) c = 0;
+                    else if (c >= 256) c = 255;
                     Mt[fftBins - 1 - f, t] = c;
                 }
             return Mt;
         }
 
-		protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
-		{
+        protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
+        {
             int width = this.Data.GetLength(0); // Number of spectra in sonogram
             int fftBins = this.Data.GetLength(1);
             int imageHeight = fftBins * binHeight; // image ht = sonogram ht. Later include grid and score scales
-            
+
             //set up min, max, range for normalising of dB values
-			double min; double max;
+            double min; double max;
             DataTools.MinMax(this.Data, out min, out max);
-			double range = max - min;
+            double range = max - min;
 
             //int? minHighlightFreq = this.subBand_MinHz;
             //int? maxHighlightFreq = this.subBand_MaxHz;
@@ -301,35 +302,35 @@ namespace AudioAnalysisTools
                 minHighlightBin = (int)Math.Round((double)minBandMel * pixelPerMel);
                 maxHighlightBin = (int)Math.Round((double)maxBandMel * pixelPerMel);
             }
-			Color[] grayScale = ImageTools.GrayScale();
+            Color[] grayScale = ImageTools.GrayScale();
 
-			Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
-			int yOffset = imageHeight;
+            Bitmap bmp = new Bitmap(width, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = imageHeight;
             for (int y = 0; y < fftBins; y++) //over all freq bins
-			{
-				for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
-				{
-					for (int x = 0; x < width; x++) //for pixels in the line
-					{
-						// normalise and bound the value - use min bound, max and 255 image intensity range
+            {
+                for (int r = 0; r < binHeight; r++) //repeat this bin if ceptral image
+                {
+                    for (int x = 0; x < width; x++) //for pixels in the line
+                    {
+                        // normalise and bound the value - use min bound, max and 255 image intensity range
                         double value = (this.Data[x, y] - min) / (double)range;
-						int c = 255 - (int)Math.Floor(255.0 * value); //original version
-						if (c < 0)
-							c = 0;
-						else if (c >= 256)
-							c = 255;
+                        int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                        if (c < 0)
+                            c = 0;
+                        else if (c >= 256)
+                            c = 255;
 
-						int g = c + 40; // green tinge used in the template scan band 
-						if (g >= 256) g = 255;
+                        int g = c + 40; // green tinge used in the template scan band 
+                        if (g >= 256) g = 255;
                         Color col = (doHighlightSubband && IsInBand(y, minHighlightBin, maxHighlightBin)) ? Color.FromArgb(c, g, c) : grayScale[c];
                         bmp.SetPixel(x, yOffset - 1, col);
-					}//for all pixels in line
-					yOffset--;
-				} //end repeats over one track
-			}//end over all freq bins
+                    }//for all pixels in line
+                    yOffset--;
+                } //end repeats over one track
+            }//end over all freq bins
 
             if (add1kHzLines) Draw1kHzLines(bmp);
-			return bmp;
+            return bmp;
         }
 
 
@@ -348,7 +349,7 @@ namespace AudioAnalysisTools
                 if (this.SigState[0] > 0)
                 {
                     prevState = 1;
-                    sb.Append(name+"\t0\t0.0000");
+                    sb.Append(name + "\t0\t0.0000");
                 }
 
             double time = 0.0;
@@ -362,13 +363,13 @@ namespace AudioAnalysisTools
                     sb.Append(name + "\t" + i + "\t" + time.ToString("F4"));
                 }
                 else //come to silence
-                if ((this.SigState[i] == 0) && (prevState > 0))
-                {
-                    prevState = 0;
-                    time = i * this.FrameOffset;
-                    sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
-                    sb.Append("SILENCE\t" + i + "\t" + time.ToString("F4"));
-                }
+                    if ((this.SigState[i] == 0) && (prevState > 0))
+                    {
+                        prevState = 0;
+                        time = i * this.FrameOffset;
+                        sb.AppendLine("\t" + (i - 1) + "\t" + time.ToString("F4"));
+                        sb.Append("SILENCE\t" + i + "\t" + time.ToString("F4"));
+                    }
             }
 
             time = length * this.FrameOffset;
@@ -406,12 +407,12 @@ namespace AudioAnalysisTools
 
         public Image GetImage_ReducedSonogram(int factor, bool drawGridLines)
         {
-          //  double[] logEnergy = this.LogEnPerFrame;
+            //  double[] logEnergy = this.LogEnPerFrame;
             var data = Data; //sonogram intensity values
-            int frameCount  = data.GetLength(0); // Number of spectra in sonogram
+            int frameCount = data.GetLength(0); // Number of spectra in sonogram
             int imageHeight = data.GetLength(1); // image ht = sonogram ht. Later include grid and score scales
-            int imageWidth  = frameCount / factor;
-            int subSample   = frameCount / imageWidth;
+            int imageWidth = frameCount / factor;
+            int subSample = frameCount / imageWidth;
 
             //set up min, max, range for normalising of dB values
             double min; double max;
@@ -445,9 +446,9 @@ namespace AudioAnalysisTools
                     double value = (data[maxID, y] - min) / (double)range;
                     int c = 255 - (int)Math.Floor(255.0 * value); //original version
                     if (c < 0) c = 0;
-                       else if (c >= 256) c = 255;
-                     Color col = grayScale[c];
-                     bmp.SetPixel(w, imageHeight-y-1, col);
+                    else if (c >= 256) c = 255;
+                    Color col = grayScale[c];
+                    bmp.SetPixel(w, imageHeight - y - 1, col);
                 }//end over all freq bins
 
                 //set up grid color
@@ -469,12 +470,12 @@ namespace AudioAnalysisTools
         }
 
 
-		bool IsInBand(int y, int? minFreq, int? maxFreq)
-		{
-			if (minFreq == null && maxFreq == null)
-				return false;
-			return (minFreq == null || y > minFreq) && (maxFreq == null || y < maxFreq);
-		}
+        bool IsInBand(int y, int? minFreq, int? maxFreq)
+        {
+            if (minFreq == null && maxFreq == null)
+                return false;
+            return (minFreq == null || y > minFreq) && (maxFreq == null || y < maxFreq);
+        }
 
 
         private void Draw1kHzLines(Bitmap bmp)
@@ -494,8 +495,8 @@ namespace AudioAnalysisTools
                 int y = sHeight - p;
                 for (int x = 1; x < width; x++)
                 {
-                    bmp.SetPixel(x-1, y, Color.White);
-                    bmp.SetPixel(x,   y, Color.Black);
+                    bmp.SetPixel(x - 1, y, Color.White);
+                    bmp.SetPixel(x, y, Color.Black);
                     x++;
                 }
             }
@@ -560,13 +561,13 @@ namespace AudioAnalysisTools
         public void Dispose()
         {
             this.Configuration = null;
-            this.SnrFullband     = null;
-            this.SnrSubband    = null;
+            this.SnrFullband = null;
+            this.SnrSubband = null;
             this.DecibelsPerFrame = null;
-            this.DecibelsInSubband  = null;
+            this.DecibelsInSubband = null;
             this.DecibelsNormalised = null;
-            this.Data          = null;
-            this.SigState      = null;
+            this.Data = null;
+            this.SigState = null;
         }
 
 
@@ -578,12 +579,12 @@ namespace AudioAnalysisTools
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
-        public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset, 
+        public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset,
                                              int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
         {
             int r1;
             int r2;
-            AcousticEvent.Time2RowIDs(start, end-start, frameOffset, out r1, out r2);
+            AcousticEvent.Time2RowIDs(start, end - start, frameOffset, out r1, out r2);
             int c1;
             int c2;
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
@@ -669,8 +670,8 @@ namespace AudioAnalysisTools
     public class AmplitudeSonogram : BaseSonogram
     {
         public AmplitudeSonogram(SonogramConfig config, WavReader wav)
-			: base(config, wav, false)
-		{ }
+            : base(config, wav, false)
+        { }
 
         /// <summary>
         /// This method does nothing because do not want to change the amplitude sonogram in any way.
@@ -688,8 +689,8 @@ namespace AudioAnalysisTools
 
     //##################################################################################################################################
 
-	public class SpectralSonogram : BaseSonogram
-	{
+    public class SpectralSonogram : BaseSonogram
+    {
         //There are three CONSTRUCTORS
         //Use the third constructor when you want to init a new Spectrogram by extracting portion of an existing sonogram.
         /// <summary>
@@ -698,11 +699,11 @@ namespace AudioAnalysisTools
         /// <param name="configFile"></param>
         /// <param name="wav"></param>
         public SpectralSonogram(string configFile, WavReader wav)
-			: this (SonogramConfig.Load(configFile), wav)
-		{ }
-		public SpectralSonogram(SonogramConfig config, WavReader wav)
-			: base(config, wav)
-		{ }
+            : this(SonogramConfig.Load(configFile), wav)
+        { }
+        public SpectralSonogram(SonogramConfig config, WavReader wav)
+            : base(config, wav)
+        { }
 
         public SpectralSonogram(AmplitudeSonogram sg)
             : base(sg.Configuration)
@@ -720,8 +721,8 @@ namespace AudioAnalysisTools
             this.Data = sg.Data;
             this.Make(this.Data); //converts amplitude matrix to dB spectrogram
         }
-        
-        
+
+
         /// <summary>
         /// use this constructor to cut out a portion of a spectrum from start to end time.
         /// </summary>
@@ -732,8 +733,8 @@ namespace AudioAnalysisTools
             : base(sg.Configuration)
         {
             int startFrame = (int)Math.Round(startTime * sg.FramesPerSecond);
-            int endFrame   = (int)Math.Round(endTime   * sg.FramesPerSecond);
-            int frameCount = endFrame-startFrame + 1;
+            int endFrame = (int)Math.Round(endTime * sg.FramesPerSecond);
+            int frameCount = endFrame - startFrame + 1;
 
             //sg.MaxAmplitude { get; private set; }
             this.SampleRate = sg.SampleRate;
@@ -747,52 +748,56 @@ namespace AudioAnalysisTools
             ////energy and dB per frame
             //public SNR SnrFrames { get; private set; }
             this.DecibelsPerFrame = new double[frameCount];  // Normalised decibels per signal frame
-            for(int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame+i]; 
+            for (int i = 0; i < frameCount; i++) this.DecibelsPerFrame[i] = sg.DecibelsPerFrame[startFrame + i];
 
             ////energy and dB per frame sub-band
             //this.ExtractSubband = this.ExtractSubband;
-            this.subBand_MinHz  = sg.subBand_MinHz; //min freq (Hz) of the required subband
-            this.subBand_MaxHz  = sg.subBand_MaxHz; //max freq (Hz) of the required subband
+            this.subBand_MinHz = sg.subBand_MinHz; //min freq (Hz) of the required subband
+            this.subBand_MaxHz = sg.subBand_MaxHz; //max freq (Hz) of the required subband
             //sg.SnrSubband { get; private set; }
             this.DecibelsInSubband = new double[frameCount];  // Normalised decibels in extracted freq band
-            for(int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame+i]; 
+            for (int i = 0; i < frameCount; i++) this.DecibelsInSubband[i] = sg.DecibelsInSubband[startFrame + i];
 
             //public double[] DecibelsNormalised { get; private set; } 
             this.Max_dBReference = sg.Max_dBReference; // Used to normalise the dB values for MFCCs
             this.DecibelsNormalised = new double[frameCount];
-            for(int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame+i];
+            for (int i = 0; i < frameCount; i++) this.DecibelsNormalised[i] = sg.DecibelsNormalised[startFrame + i];
 
             this.SigState = new int[frameCount];    //Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
-            for(int i = 0; i < frameCount; i++) this.SigState[i] = sg.SigState[startFrame+i]; 
+            for (int i = 0; i < frameCount; i++) this.SigState[i] = sg.SigState[startFrame + i];
 
             //the spectrogram data matrix
             int featureCount = sg.Data.GetLength(1);
             this.Data = new double[frameCount, featureCount];
-            for(int i = 0; i < frameCount; i++) //each row of matrix is a frame
+            for (int i = 0; i < frameCount; i++) //each row of matrix is a frame
                 for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
                     this.Data[i, j] = sg.Data[startFrame + i, j];
         }//end CONSTRUCTOR
 
 
 
-		public override void Make(double[,] amplitudeM)
-		{
+        public override void Make(double[,] amplitudeM)
+        {
             double[,] m = amplitudeM;
 
-            //(i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
+            // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
             if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
             {
                 m = Speech.MelFilterBank(m, Configuration.FreqBinCount, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
             }
 
-            //(ii) CONVERT AMPLITUDES TO DECIBELS
+            // (ii) CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
 
-            //(iii) NOISE REDUCTION
+            // (iii) NOISE REDUCTION
             var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.DynamicRange);
-            this.Data = tuple.Item1;   //store data matrix
-            this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
-		}
+            this.Data = tuple.Item1;   // store data matrix
+
+            if (this.SnrFullband != null)
+            {
+                this.SnrFullband.ModalNoiseProfile = tuple.Item2; // store the full bandwidth modal noise profile
+            }
+        }
 
 
         /// <summary>
@@ -803,11 +808,11 @@ namespace AudioAnalysisTools
         public void NormaliseDynamicRange(double dynamicRange)
         {
             int frameCount = this.Data.GetLength(0);
-            int featureCount=this.Data.GetLength(1);
+            int featureCount = this.Data.GetLength(1);
             double minIntensity; // min value in matrix
             double maxIntensity; // max value in matrix
             DataTools.MinMax(this.Data, out minIntensity, out maxIntensity);
-            double[,] newMatrix = new double[frameCount,featureCount];
+            double[,] newMatrix = new double[frameCount, featureCount];
 
             for (int i = 0; i < frameCount; i++) //each row of matrix is a frame
                 for (int j = 0; j < featureCount; j++) //each col of matrix is a feature
@@ -852,7 +857,7 @@ namespace AudioAnalysisTools
             double[] modalNoise = null;
             return System.Tuple.Create(m, modalNoise);
         }
-   } //end of class SpectralSonogram : BaseSonogram
+    } //end of class SpectralSonogram : BaseSonogram
 
 
     //##################################################################################################################################
@@ -867,7 +872,8 @@ namespace AudioAnalysisTools
             : base(config, wav)
         { }
 
-        public CepstralSonogram(AmplitudeSonogram sg) : base(sg.Configuration)
+        public CepstralSonogram(AmplitudeSonogram sg)
+            : base(sg.Configuration)
         {
             this.Configuration = sg.Configuration;
             this.DecibelsPerFrame = sg.DecibelsPerFrame;
@@ -883,7 +889,8 @@ namespace AudioAnalysisTools
             this.Make(this.Data); //converts amplitude matrix to cepstral sonogram
         }
 
-        public CepstralSonogram(AmplitudeSonogram sg, int minHz, int maxHz): this(sg)
+        public CepstralSonogram(AmplitudeSonogram sg, int minHz, int maxHz)
+            : this(sg)
         {
             this.DecibelsPerFrame = sg.DecibelsPerFrame;
             this.DecibelsNormalised = sg.DecibelsNormalised;
@@ -930,21 +937,21 @@ namespace AudioAnalysisTools
             double epsilon = config.epsilon;
             bool includeDelta = config.mfccConfig.IncludeDelta;
             bool includeDoubleDelta = config.mfccConfig.IncludeDoubleDelta;
-           
+
             //Log.WriteIfVerbose(" MakeCepstrogram(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ")");
 
             //(i) APPLY FILTER BANK
-            int bandCount   = config.mfccConfig.FilterbankCount;
+            int bandCount = config.mfccConfig.FilterbankCount;
             bool doMelScale = config.mfccConfig.DoMelScale;
             int ccCount = config.mfccConfig.CcCount;
             int FFTbins = config.FreqBinCount;  //number of Hz bands = 2^N +1. Subtract DC bin
-            int minHz   = config.MinFreqBand ?? 0;
-            int maxHz   = config.MaxFreqBand ?? nyquist;
+            int minHz = config.MinFreqBand ?? 0;
+            int maxHz = config.MaxFreqBand ?? nyquist;
 
             Log.WriteIfVerbose("ApplyFilterBank(): Dim prior to filter bank  =" + matrix.GetLength(1));
             //error check that filterBankCount < FFTbins
             if (bandCount > FFTbins)
-                throw new Exception("## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. ("+bandCount + " > " + FFTbins + ")\n\n");
+                throw new Exception("## FATAL ERROR in BaseSonogram.MakeCepstrogram():- Can't calculate cepstral coeff. FilterbankCount > FFTbins. (" + bandCount + " > " + FFTbins + ")\n\n");
 
             //this is the filter count for full bandwidth 0-Nyquist. This number is trimmed proportionately to fit the required bandwidth. 
             if (doMelScale) m = Speech.MelFilterBank(m, bandCount, nyquist, minHz, maxHz); // using the Greg integral
@@ -956,7 +963,7 @@ namespace AudioAnalysisTools
 
             //(iii) NOISE REDUCTION
             var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.DynamicRange);
-            m = tuple1.Item1;         
+            m = tuple1.Item1;
 
             //(iv) calculate cepstral coefficients 
             m = Speech.Cepstra(m, ccCount);
@@ -975,54 +982,54 @@ namespace AudioAnalysisTools
 
 
 
-	public class TriAvSonogram : CepstralSonogram
-	{
-		public TriAvSonogram(string configFile, WavReader wav)
+    public class TriAvSonogram : CepstralSonogram
+    {
+        public TriAvSonogram(string configFile, WavReader wav)
             : base(SonogramConfig.Load(configFile), wav)
-		{ }
+        { }
 
         public TriAvSonogram(SonogramConfig config, WavReader wav)
-			: base(config, wav)
-		{ }
+            : base(config, wav)
+        { }
 
-		public override void Make(double[,] amplitudeM)
-		{
+        public override void Make(double[,] amplitudeM)
+        {
             Data = MakeAcousticVectors(this.Configuration, amplitudeM, this.DecibelsNormalised, this.SampleRate);
         }
 
-		static double[,] MakeAcousticVectors(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
-		{
-            int ccCount       = config.mfccConfig.CcCount;
-            bool includeDelta = config.mfccConfig.IncludeDelta; 
+        static double[,] MakeAcousticVectors(SonogramConfig config, double[,] matrix, double[] decibels, int sampleRate)
+        {
+            int ccCount = config.mfccConfig.CcCount;
+            bool includeDelta = config.mfccConfig.IncludeDelta;
             bool includeDoubleDelta = config.mfccConfig.IncludeDoubleDelta;
             int deltaT = config.DeltaT;
 
-			Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
+            Log.WriteIfVerbose(" MakeAcousticVectors(matrix, decibels, includeDelta=" + includeDelta + ", includeDoubleDelta=" + includeDoubleDelta + ", deltaT=" + deltaT + ")");
             var tuple = CepstralSonogram.MakeCepstrogram(config, matrix, decibels, sampleRate);
             double[,] m = tuple.Item1;
             //this.SnrFullband.ModalNoiseProfile = tuple.Item2; //store the full bandwidth modal noise profile
 
 
-			//initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
-			int frameCount = m.GetLength(0);
-			int cepstralL = m.GetLength(1);  // length of cepstral vector 
-			int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
+            //initialise feature vector for template - will contain three acoustic vectors - for T-dT, T and T+dT
+            int frameCount = m.GetLength(0);
+            int cepstralL = m.GetLength(1);  // length of cepstral vector 
+            int featurevL = 3 * cepstralL;   // to accomodate cepstra for T-2, T and T+2
 
-			double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
-			for (int i = deltaT; i < frameCount - deltaT; i++)
-			{
-				double[] rowTm2 = DataTools.GetRow(m, i - deltaT);
-				double[] rowT   = DataTools.GetRow(m, i);
-				double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
+            double[,] acousticM = new double[frameCount, featurevL]; //init the matrix of acoustic vectors
+            for (int i = deltaT; i < frameCount - deltaT; i++)
+            {
+                double[] rowTm2 = DataTools.GetRow(m, i - deltaT);
+                double[] rowT = DataTools.GetRow(m, i);
+                double[] rowTp2 = DataTools.GetRow(m, i + deltaT);
 
-				for (int j = 0; j < cepstralL; j++) acousticM[i, j] = rowTm2[j];
-				for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + j] = rowT[j];
-				for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + cepstralL + j] = rowTp2[j];
-			}
+                for (int j = 0; j < cepstralL; j++) acousticM[i, j] = rowTm2[j];
+                for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + j] = rowT[j];
+                for (int j = 0; j < cepstralL; j++) acousticM[i, cepstralL + cepstralL + j] = rowTp2[j];
+            }
 
-			return acousticM;
-		}
-	} //end class AcousticVectorsSonogram : CepstralSonogram
+            return acousticM;
+        }
+    } //end class AcousticVectorsSonogram : CepstralSonogram
 
 
 
@@ -1030,23 +1037,23 @@ namespace AudioAnalysisTools
 
 
 
-	public class SobelEdgeSonogram : BaseSonogram
-	{
-		public SobelEdgeSonogram(string configFile, WavReader wav)
-			: base(SonogramConfig.Load(configFile), wav)
-		{ }
+    public class SobelEdgeSonogram : BaseSonogram
+    {
+        public SobelEdgeSonogram(string configFile, WavReader wav)
+            : base(SonogramConfig.Load(configFile), wav)
+        { }
 
-		public SobelEdgeSonogram(SonogramConfig config, WavReader wav)
-			: base(config, wav)
-		{ }
+        public SobelEdgeSonogram(SonogramConfig config, WavReader wav)
+            : base(config, wav)
+        { }
 
-		public override void Make(double[,] amplitudeM)
-		{
-			Data = SobelEdgegram(amplitudeM);
-		}
+        public override void Make(double[,] amplitudeM)
+        {
+            Data = SobelEdgegram(amplitudeM);
+        }
 
-		double[,] SobelEdgegram(double[,] matrix)
-		{
+        double[,] SobelEdgegram(double[,] matrix)
+        {
             double[,] m = Speech.DecibelSpectra(matrix, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon); //from spectrogram
             //double[,] m = Speech.DecibelSpectra(matrix);
 
@@ -1058,14 +1065,14 @@ namespace AudioAnalysisTools
                 m = SNR.NoiseReduce_Standard(m, modalNoise);
             }
             else
-            if (Configuration.NoiseReductionType == NoiseReductionType.FIXED_DYNAMIC_RANGE)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
-                m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
-            }
+                if (Configuration.NoiseReductionType == NoiseReductionType.FIXED_DYNAMIC_RANGE)
+                {
+                    Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
+                    m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
+                }
 
             return ImageTools.SobelEdgeDetection(m);
-		}
+        }
     }// end SobelEdgeSonogram : BaseSonogram
 
 
