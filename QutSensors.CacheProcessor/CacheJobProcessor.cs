@@ -62,6 +62,11 @@ namespace QutSensors.CacheProcessor
         }
 
         /// <summary>
+        /// Gets or sets Cache Job Type to restrict this processor to.
+        /// </summary>
+        public CacheJobType? RestrictToType { get; set; }
+
+        /// <summary>
         /// Gets a value indicating whether IsRunning.
         /// </summary>
         public bool IsRunning
@@ -81,6 +86,15 @@ namespace QutSensors.CacheProcessor
             if (workerThread != null)
             {
                 throw new InvalidOperationException("Worker thread already started.");
+            }
+
+            if (this.log != null)
+            {
+                var restriction = this.RestrictToType.HasValue
+                                      ? "only " + this.RestrictToType.Value
+                                      : "any cache item type";
+
+                log.WriteEntry(LogType.Information, "This processor will process {0}.", restriction);
             }
 
             workerThread = new Thread(ThreadMain);
@@ -159,8 +173,12 @@ namespace QutSensors.CacheProcessor
                     if (!ProcessJob())
                     {
                         // No job or error so wait for new job to process.
+                        // WaitOne will return straight away if signaled (when .Stop() is called)
+                        // otherwise it will wait InterJobWaitPeriod milliseconds.
                         stopRequestedEvent.WaitOne(InterJobWaitPeriod);
                     }
+
+                    // WaitOne returns true when stopRequestedEvent has been signaled, otherwise false.
                 }
                 while (!stopRequestedEvent.WaitOne(InterJobWaitPeriod));
 
@@ -196,7 +214,10 @@ namespace QutSensors.CacheProcessor
         /// <exception cref="DirectoryNotFoundException"><c>DirectoryNotFoundException</c>.</exception>
         private bool ProcessJob()
         {
-            var jobId = cacheManager.GetUnprocessedJob();
+            var jobId = this.RestrictToType.HasValue
+                            ? cacheManager.GetUnprocessedJob(this.RestrictToType.Value)
+                            : cacheManager.GetUnprocessedJob();
+
             if (jobId.HasValue)
             {
                 try
@@ -212,6 +233,12 @@ namespace QutSensors.CacheProcessor
                     {
                         while (ProcessJobItem(tempFile.FileName, reading.Length, jobId.Value))
                         {
+                            if (stopRequestedEvent.WaitOne(0))
+                            {
+                                // if stopRequestedEvent has been set (when .Stop() is called)
+                                // break out of while loop.
+                                break;
+                            }
                         }
                     }
 
@@ -249,7 +276,10 @@ namespace QutSensors.CacheProcessor
         /// </returns>
         private bool ProcessJobItem(string audioFile, long? audioFileDurationMs, int jobId)
         {
-            var request = cacheManager.GetUnprocessedRequest(jobId);
+            var request = this.RestrictToType.HasValue
+                              ? cacheManager.GetUnprocessedRequest(jobId, this.RestrictToType.Value)
+                              : cacheManager.GetUnprocessedRequest(jobId);
+
             if (request != null)
             {
                 try
