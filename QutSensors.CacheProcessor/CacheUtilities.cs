@@ -32,7 +32,7 @@ namespace QutSensors.CacheProcessor
         /// The request.
         /// </param>
         /// <returns>
-        /// Byte array of audio segment.
+        /// Byte array of audio segment. Byte array will be null or 0 length if segmentation failed.
         /// </returns>
         public static byte[] SegmentMp3(string audioFile, CacheRequest request)
         {

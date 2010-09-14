@@ -229,6 +229,7 @@ namespace QutSensors.CacheProcessor
                         throw new InvalidOperationException("Could not get audio reading for job.");
                     }
 
+                    // Spectrogram generation will use the tempFile if there is no audio cache, but will use the cache instead if audio cache exists.
                     using (var tempFile = SaveAudioReading(reading))
                     {
                         while (ProcessJobItem(tempFile.FileName, reading.Length, jobId.Value))
@@ -272,7 +273,7 @@ namespace QutSensors.CacheProcessor
         /// <c>InvalidOperationException</c>.
         /// </exception>
         /// <returns>
-        /// true if the item was processed successfully, otherwise false.
+        /// True if the item was processed successfully, otherwise false.
         /// </returns>
         private bool ProcessJobItem(string audioFile, long? audioFileDurationMs, int jobId)
         {
@@ -302,12 +303,11 @@ namespace QutSensors.CacheProcessor
 
                     stopWatch.Stop();
 
-                    if (data != null)
+                    if (data != null && data.Length > 0)
                     {
                         cacheManager.Insert(request, data, stopWatch.Elapsed);
+                        return true;
                     }
-
-                    return true;
                 }
                 catch (Exception e)
                 {
@@ -348,6 +348,7 @@ namespace QutSensors.CacheProcessor
             if (bytes == null || bytes.Length < 1)
             {
                 // file could not be segmented by mp3Splt, use DirectShow.
+                // does not use cache - assumes no cache available.
                 var transformer = new AudioTransformer(audioFile);
 
                 bytes = transformer.Segment(
@@ -389,6 +390,64 @@ namespace QutSensors.CacheProcessor
         /// </returns>
         private byte[] GenerateSpectrogram(string audioFile, long? audioFileDurationMs, CacheRequest request)
         {
+            byte[] bytes = null;
+
+            // check for cached audio
+            var forChecking = new CacheRequest
+                {
+                    AudioReadingID = request.AudioReadingID,
+                    End = request.End,
+                    Start = request.Start,
+                    Type = CacheJobType.AudioSegmentation
+                };
+
+            CacheRequest requestCheck = this.cacheManager.GetEntryIgnoreMimeType(forChecking, false);
+
+            if (requestCheck != null && requestCheck.AudioReadingID == request.AudioReadingID)
+            {
+                // cache is available, use it.
+                bytes = this.GenerateSpectrogramCache(request);
+            }
+
+            if (bytes == null || bytes.Length < 1)
+            {
+                // no cache, use file.
+                bytes = this.GenerateSpectrogramFile(audioFile, audioFileDurationMs, request);
+            }
+
+            if (log != null)
+            {
+                log.WriteEntry(
+                    LogType.Information,
+                    "Generated spectrogram {0} ({1}-{2})",
+                    request.AudioReadingID,
+                    request.Start,
+                    request.End);
+            }
+
+            return bytes;
+        }
+
+        /// <summary>
+        /// Generate spectrogram based on CacheRequest using given <paramref name="audioFile"/>.
+        /// </summary>
+        /// <param name="audioFile">
+        /// The audio File.
+        /// </param>
+        /// <param name="audioFileDurationMs">
+        /// The audio File Duration Ms.
+        /// </param>
+        /// <param name="request">
+        /// The request.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// Unable to find referenced AudioReading
+        /// </exception>
+        /// <returns>
+        /// The generated spectrogram.
+        /// </returns>
+        private byte[] GenerateSpectrogramFile(string audioFile, long? audioFileDurationMs, CacheRequest request)
+        {
             var metaData = QutDependencyContainer.Instance.Container.Resolve<IAudioMetadataProvider>();
             var transformer = new AudioTransformer(audioFile);
 
@@ -402,15 +461,36 @@ namespace QutSensors.CacheProcessor
                 false,
                 true);
 
-            if (log != null)
+            return bytes;
+        }
+
+        /// <summary>
+        /// Generate spectrogram using cached audio.
+        /// </summary>
+        /// <param name="request">Cache request. Must have valid AudioReadingId.</param>
+        /// <returns>Array of bytes representing image, or null or 0 length if unsuccessful.</returns>
+        private byte[] GenerateSpectrogramCache(CacheRequest request)
+        {
+            var audioReadingManager = QutDependencyContainer.Instance.Container.Resolve<IAudioReadingManager>();
+            AudioReading reading;
+
+            using (var db = new QutSensorsDb())
             {
-                log.WriteEntry(
-                    LogType.Information,
-                    "Generated spectrogram {0} ({1}-{2})",
-                    request.AudioReadingID,
-                    request.Start,
-                    request.End);
+                // don't want or need DataContext - AudioController will make new DataContext if required.
+                reading = db.AudioReadings.Where(ar => ar.AudioReadingID == request.AudioReadingID).FirstOrDefault();
             }
+
+            if (reading == null) return null;
+
+            var controller = new AudioController(reading, audioReadingManager, this.cacheManager);
+
+            byte[] bytes = controller.Spectrogram(
+                  request.Start,
+                  reading.Length == request.End ? null : request.End,
+                  null,
+                  null,
+                  false,
+                  true);
 
             return bytes;
         }
