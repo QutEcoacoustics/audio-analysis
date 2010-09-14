@@ -112,7 +112,6 @@
     <Compile Include="CacheJobProcessor.cs">
     </Compile>
     <Compile Include="CacheUtilities.cs" />
-    <Compile Include="LocalCacheJobProcessor.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
