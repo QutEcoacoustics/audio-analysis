@@ -33,65 +33,65 @@ namespace AnalysisPrograms
             }
             else
             {
-                string[] r = args.Skip(1).ToArray();
+                string[] restOfArgs = args.Skip(1).ToArray();
                 switch (args[0])
                 {
                     // READY TO BE USED - REQUIRE PARAMS FILE ONLY
                     case "segment":  // segmentation of a recording
-                        Segment.Dev(r);
+                        Segment.Dev(restOfArgs);
                         break;
                     case "snr":      // signal to noise ratio
-                        SnrAnalysis.Dev(r);
+                        SnrAnalysis.Dev(restOfArgs);
                         break;
                     case "aed":      // acoustic event detection
-                        AED.Dev(r);
+                        AED.Dev(restOfArgs);
                         break;
                     case "od":   // Oscillation Recogniser
-                        OscillationRecogniser.Dev(r);
+                        OscillationRecogniser.Dev(restOfArgs);
                         break;
                     case "epr":  // event pattern recognition - used for ground-parrots
-                        GroundParrotRecogniser.Dev(r);
+                        GroundParrotRecogniser.Dev(restOfArgs);
                         break;
                     case "spt":  // spectral peak tracking
-                        SPT.Dev(r);
+                        SPT.Dev(restOfArgs);
                         break;
                     case "spr":  // syntactic pattern recognition
-                        SPR.Dev(r);
+                        SPR.Dev(restOfArgs);
                         break;
 
                     // READY TO BE USED - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
-                        MFCC_OD.Dev(r);
+                        MFCC_OD.Dev(restOfArgs);
                         break;
                     case "htk":  // run an HTK template over a recording
-                        HTKRecogniser.Dev(r);
+                        HTKRecogniser.Dev(restOfArgs);
                         break;
 
                     // UNDER DEVELOPMENT
                     case "hd":   // Harmonic Recogniser
-                        HarmonicRecogniser.Dev(r);
+                        HarmonicRecogniser.Dev(restOfArgs);
                         break;
                     case "eventX":   // extract an acoustic event
-                        ExtractEvent.Dev(r);
+                        ExtractEvent.Dev(restOfArgs);
                         break;
                     case "dimred":  // dimensionality reduction
-                        DimReduction.Dev(r);
+                        DimReduction.Dev(restOfArgs);
                         break;
                     case "felt":     // find other acoustic events like this
-                        FindEventsLikeThis.Dev(r);
+                        FindEventsLikeThis.Dev(restOfArgs);
                         break;
 
                     // Analysis development - FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
-                        Create_MFCC_OD_Template.Dev(r);
+                        Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;
 
                     // Analysis runs - FOR MARK'S USE ONLY
                     case "processing": // for running on the processing cluster
-                        ProcessingUtils.Run(r);
+                        ProcessingUtils.Run(restOfArgs);
                         break;
                     case "localrun": // audio conversion tests
-                        AudioConversion.Convert(r);
+                        AudioConversion.Convert(restOfArgs);
                         break;
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);

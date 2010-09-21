@@ -50,18 +50,21 @@ namespace AnalysisPrograms
         {
             var aed = AED.Detect(wavFilePath, 3.0, 100);
 
-            var events = new List<Util.Rectangle<double>>();
+            var events = new List<Util.Rectangle<double,double>>();
             foreach (AcousticEvent ae in aed.Item2)
+            {
                 events.Add(Util.fcornersToRect(ae.StartTime, ae.EndTime, ae.MaxFreq, ae.MinFreq));
+            }
 
             Log.WriteLine("EPR start");
-            IEnumerable<Tuple<Util.Rectangle<double>, double>> eprRects = EventPatternRecog.detectGroundParrots(events);
+            
+            IEnumerable<Tuple<Util.Rectangle<double, double>, double>> eprRects = EventPatternRecog.DetectGroundParrots(events);
             Log.WriteLine("EPR finished");
 
             var config = aed.Item1.Configuration;
             var framesPerSec = 1 / config.GetFrameOffset(); // Surely this should go somewhere else
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount; // TODO this is common with AED
-
+            
             var eprEvents = new List<AcousticEvent>();
             foreach (var rectScore in eprRects)
             {

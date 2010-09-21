@@ -21,7 +21,7 @@ let replicateGenM n g = List.replicate n g |> sequenceGen
 
 type ArbitraryModifiers = 
     static member Rectangle () =
-         { new Arbitrary<Rectangle<int>>() with
+         { new Arbitrary<Rectangle<int, int>>() with
             override x.Arbitrary = liftGen4 (fun l t w h -> lengthsToRect l t w h) nonNeg nonNeg pos pos }
     static member AcousticEvent () =
         { new Arbitrary<AcousticEvent>()with
