@@ -12,7 +12,7 @@ let rec spider (m:matrix) xs (v:(int * int) Set) =
                                     (Set.add p v, [(i-1,j-1);(i-1,j);(i-1,j+1);(i,j-1);(i,j+1);(i+1,j-1);(i+1,j);(i+1,j+1)] @ ps) 
                spider m ps' v'
     
-type AcousticEvent = {Bounds:int Rectangle; Elements:(int * int) Set}
+type AcousticEvent = {Bounds: Rectangle<int, int>; Elements:(int * int) Set}
 let bounds aes = Seq.map (fun ae -> ae.Bounds) aes
     
 let getAcousticEvents m =

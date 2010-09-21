@@ -1,5 +1,7 @@
 ﻿module QutSensors.AudioAnalysis.AED.Util
 
+open Microsoft.FSharp.Math.SI
+
 // If the first Option is not empty return it, else return the second. Copy of Scala Option.orElse.
 let orElse o (p:'a option Lazy) = if Option.isSome o then o else p.Force()
 
@@ -16,11 +18,15 @@ let floatEquals (f1:float) f2 d = abs(f1 - f2) <= d
 
 let roundUpTo v x = if x < v then v else x
 let roundDownTo v x = if x > v then v else x
+let inline round (x: ^a) = round x
+let inline sqr x = x*x    
+
+
 
 let (><) x (l,u) = x > l && x < u // in open interval
 let (>==<) x (l,u) = x >= l && x <= u // in closed interval
 
-let boundedInterval (p:float) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
+let boundedInterval (p:float<_>) ld up lb ub = (p-ld |> roundUpTo lb, p+up |> roundDownTo ub)
 
 let maxmap f = Seq.max << Seq.map f
 let minmap f = Seq.min << Seq.map f
@@ -64,11 +70,46 @@ let matrixMapi2Unzip f (m:matrix) =
       done
     done
     (r,s) 
+
+/// A unit of measure for a Pixel
+[<Measure>] type px
+let px = 1.0<px>
+
     
-type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
+//type 'a Rectangle = {Left:'a; Top:'a; Right:'a; Bottom:'a; Width:'a; Height:'a;}
+type Rectangle<'a, 'b> = {Left:'a; Top:'b; Right:'a; Bottom:'b; Width:'a; Height:'b;}
+//type RectangleF<[<Measure>]'b, [<Measure>]'c> = {Left:float<'b>; Top:float<'c>; Right:float<'b>; Bottom:float<'c>; Width:float<'b>; Height:float<'c>;}
+//type Rectangle<[<Measure>]'b, [<Measure>]'c> = {Left:int<'b>; Top:int<'c>; Right:int<'b>; Bottom:int<'c>; Width:int<'b>; Height:int<'c>;}
+
+//let r = {Left=3.0<m>; Top=6.0<s>; Right=5.0<m>; Bottom=2.0<s>; Width=3.0<m>; Height=9.0<s>;}
+let r = {Left=3.0; Top=6.0; Right=5.0; Bottom=2.0; Width=3.0; Height=9.0;}
+
+let inline addDimensions (r:Rectangle<'a,'b>) (convertA:'c) (convertB:'d) : Rectangle<'c,'d> = 
+    {
+        Left= r.Left * convertA;
+        Top= r.Top * convertB;
+        Right= r.Right * convertA;
+        Bottom= r.Bottom * convertB;
+        Width= r.Width * convertA;
+        Height= r.Height * convertB;
+    }
+
+let inline removeDimensions (r:Rectangle<'a,'b>) (convertA:'a) (convertB:'b) : Rectangle<'c,'d> = 
+    {
+        Left= r.Left / convertA;
+        Top= r.Top / convertB;
+        Right= r.Right / convertA;
+        Bottom= r.Bottom / convertB;
+        Width= r.Width / convertA;
+        Height= r.Height / convertB;
+    }
+    
+type EventRect = Rectangle<float<s>, float<Hz>>
+type pxf = float<px>
+
 let inline cornersToRect l r t b = {Left=l; Top=t; Right=r; Bottom=b; Width=r-l; Height=t-b;}
 let inline lengthsToRect l t w h = {Left=l; Top=t; Right=l+w-1; Bottom=t+h-1; Width=w; Height=h;}
-let fcornersToRect (l:float) r t b = cornersToRect l r t b // for C#
+let fcornersToRect (l:float) r (t:float) b = cornersToRect l r t b // for C#
 let left r = r.Left
 let right r = r.Right
 let top r = r.Top

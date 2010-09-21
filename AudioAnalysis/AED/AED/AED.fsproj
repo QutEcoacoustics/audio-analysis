@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>3</WarningLevel>
+    <DocumentationFile>bin\Debug\AED.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +42,17 @@
     <Optimize>true</Optimize>
     <OutputPath>bin\SilverlightOnly\</OutputPath>
   </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll')" />
+  <ItemGroup>
+    <Compile Include="Util.fs" />
+    <Compile Include="Matlab.fs" />
+    <Compile Include="GetAcousticEvents.fs" />
+    <Compile Include="Default.fs" />
+    <Compile Include="AcousticEventDetection.fs" />
+    <Compile Include="EventPatternRecog.fs" />
+    <Compile Include="SpectralPeakTrack.fs" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.Core">
       <HintPath>..\..\..\Extra Assemblies\FSharp\FSharp.Core.dll</HintPath>
@@ -59,25 +71,12 @@
       <Name>System.Drawing</Name>
       <AssemblyName>System.Drawing.dll</AssemblyName>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Util.fs" />
-    <Compile Include="Matlab.fs" />
-    <Compile Include="GetAcousticEvents.fs" />
-    <Compile Include="Default.fs" />
-    <Compile Include="AcousticEventDetection.fs" />
-    <Compile Include="EventPatternRecog.fs" />
-    <Compile Include="SpectralPeakTrack.fs" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\TowseyLib\TowseyLib.csproj">
       <Name>TowseyLib</Name>
       <Project>{7e0d2209-a416-4784-b350-83778d20a64b}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
-  <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll')" />
-  <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition="Exists('$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

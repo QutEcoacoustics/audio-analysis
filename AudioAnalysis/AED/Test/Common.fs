@@ -1,5 +1,7 @@
 ﻿module Common
 
+open System.IO
+
 open QutSensors.AudioAnalysis.AED.Util
 open Xunit
                        
@@ -11,8 +13,11 @@ let GParrots_JB2_20090607_173000_wav_minute_3 =
                           
 let testAll f = Seq.iter f [BAC2_20071015_045040; GParrots_JB2_20090607_173000_wav_minute_3]
                 
-// Expects the current directory to be trunk\AudioAnalysis\AED\Test
-let loadTestFile2 d f = csvToMatrix (@"matlab\" + d + @"\" + f) 
+/// Sets the current directory to be trunk\AudioAnalysis\AED\Test
+let matlabPath = @"..\..\AudioAnalysis\AED\Test\matlab\"
+
+let loadTestFile2 d f = 
+    csvToMatrix (matlabPath + d + Path.DirectorySeparatorChar.ToString() + f) 
 
 let loadTestFile f md = loadTestFile2 md.Dir f 
 
@@ -44,14 +49,25 @@ let seqEqual eq toS xs' ys' =
     let xs, ys = Seq.sort xs', Seq.sort ys'
     let l = if Seq.length xs = Seq.length ys then None else sprintf "Lengths differ %i vs %i" (Seq.length xs) (Seq.length ys)|> Some
     let bs = Seq.map2 eq xs ys
-    let c = if Seq.forall id bs then [None]
-            else let i = Seq.findIndex not bs
-                 let i' = i + 1
-                 [ sprintf "First difference at position %i" i |> Some;
-                   sprintf "Expected[%i]:\t%s\r\nFound[%i]:\t%s" i (Seq.nth i xs |> toS) i (Seq.nth i ys |> toS) |> Some;
-                   (if i' < Seq.length ys then sprintf "Found[%i]:\t%s" i' (Seq.nth i' ys |> toS) |> Some else None) ]
+    let c = 
+        if Seq.forall id bs 
+        then 
+            [None]
+        else 
+            let is =  Seq.choose  (fun i -> if not (Seq.nth i bs) then Some(i) else None) {0..(Seq.length(bs)-1)}
+            let f (i:int) = 
+                let i' = i + 1
+                sprintf "%i th difference at position %i :\r\n" i i +
+                    sprintf "\t Expected[%i]:\t%s\tFound[%i]:\t%s" i (Seq.nth i xs |> toS) i (Seq.nth i ys |> toS) +
+                    (if i' < Seq.length ys then sprintf "\tFound[%i]:\t%s" i' (Seq.nth i' ys |> toS) else "" )
+            [(Seq.map f is) |> String.concat "\r\n" |> Some ]       
     catOptions (l::c)
 
 let assertSeqEqual eq toS xs ys =
     let m = seqEqual eq toS xs ys
-    if Seq.isEmpty m then Assert.True(true) else Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n")
+    if Seq.isEmpty m then 
+        Assert.True(true) 
+    else
+        Assert.True(false, "\r\n\r\n" + (String.concat "\r\n\r\n" m) + "\r\n" )
+
+

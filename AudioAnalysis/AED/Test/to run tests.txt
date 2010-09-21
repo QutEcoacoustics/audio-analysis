@@ -3,4 +3,7 @@
 
 cd "<path to svn trunk>\AudioAnalysis\AED\Test"
 
-"C:\Program Files\xunit\xunit.console.exe" "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\Test.dll" /nunit "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\test.xml"
+"<path to svn trunk>\ExtraAssemblies\xunit\xunit.console.x86.exe" "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\Test.dll" /nunit "<path to svn trunk>\AudioAnalysis\AED\Test\bin\Debug\test.xml"
+
+
+"C:\Work\Sensors8\Extra Assemblies\xunit\xunit.console.x86.exe" "C:\Work\Sensors8\AudioAnalysis\AED\Test\bin\Debug\Test.dll" /nunit "C:\Work\Sensors8\AudioAnalysis\AED\Test\bin\Debug\test.xml"
