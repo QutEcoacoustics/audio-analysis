@@ -10,10 +10,7 @@
 namespace QutSensors.CacheProcessor
 {
     using System;
-    using System.IO;
     using System.ServiceProcess;
-
-    using AudioTools;
 
     using Autofac;
 
@@ -21,7 +18,6 @@ namespace QutSensors.CacheProcessor
     using QutSensors.Business.Audio;
     using QutSensors.Business.Cache;
     using QutSensors.Business.Providers;
-    using QutSensors.Shared.LogProviders;
 
     /// <summary>
     /// Cache Job Processor Program.
@@ -76,6 +72,8 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<CacheManager>().As<ICacheManager>();
             builder.RegisterType<CacheJobProcessor>();
             builder.RegisterType<AudioTransformer>().As<IAudioTransformer>();
+            builder.RegisterType<AudioToolDirectShow>().As<IAudioTool>();
+            builder.RegisterType<CacheTransformer>();
             QutDependencyContainer.Instance.Container = builder.Build();
         }
     }
