@@ -1,18 +1,22 @@
-# save a sonogram for each recording that contained a hit 
-DRAW_SONOGRAMS=2
 ################################################################################
-# Above parameters NOT user modifiable
+CALL_NAME=WHIPBIRD
+#Do segmentation prior to search.
+DO_SEGMENTATION=false
+FRAME_SIZE=512
+FRAME_OVERLAP=0.00
+WINDOW_FUNCTION=HAMMING
+N_POINT_SMOOTH_FFT=3
+################################################################################
+# DO NOT ALTER the above parameters.
 # Below parameters ARE user modifiable.
 ################################################################################
-#Uncomment the required bird call. DO NOT change call names.
-CALL_NAME=WHIPBIRD
-#Do segmentation prior to OD search.
-DO_SEGMENTATION=false
-# default=0.50; Use 0.75 for koalas 
-FRAME_OVERLAP=0.00
-#intensity threshold for SPT - decibels
+#Thresholds for Spectral Peak Tracks
+# Intensity threshold in decibels above background
 SPT_INTENSITY_THRESHOLD=3.0
+# Remove tracks shorter than N pixels
 SPT_SMALL_LENGTH_THRESHOLD=40
+################################################################################
+# Parameters for Syntactic Pattern Recognition
 # min and max of the freq band to search for whistle
 WHISTLE_MIN_HZ=1000          
 WHISTLE_MAX_HZ=4000
@@ -22,8 +26,13 @@ WHISTLE_DURATION=1.4
 WHIP_MIN_HZ=800          
 WHIP_MAX_HZ=8200
 WHIP_DURATION=0.14
-# Minimum and maximum duration for the length of a true event.
+# Minimum and maximum duration for the length of a true event. THESE VALUES DISABLE THE PARAMETERS
 MAX_DURATION=20.0
 MIN_DURATION=0.0
-# Event threshold - use this to determine FP / FN trade-off for events.
+################################################################################
+# Event threshold in normalised range [0, 1]
+# Use this to determine FP / FN trade-off for events.
 EVENT_THRESHOLD=0.7
+################################################################################
+# save a sonogram for each recording that contained a hit 
+DRAW_SONOGRAMS=2

@@ -65,7 +65,8 @@ namespace AnalysisPrograms
             double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
             string windowFunction = dict[key_WINDOW_FUNCTION];
             int N_PointSmoothFFT= Int32.Parse(dict[key_N_POINT_SMOOTH_FFT]);
-            string noiseReduceType = dict[key_NOISE_REDUCTION_TYPE];
+            string noiseReduceType = "";
+           // string noiseReduceType = dict[key_NOISE_REDUCTION_TYPE];
             string silencePath = null;
             if (dict.ContainsKey(key_SILENCE_RECORDING_PATH))  silencePath  = dict[key_SILENCE_RECORDING_PATH];
             int minHz           = Int32.Parse(dict[key_MIN_HZ]);
@@ -115,10 +116,10 @@ namespace AnalysisPrograms
 
             Log.WriteLine("\nENERGY PARAMETERS");
             Log.WriteLine("Signal Max Amplitude     = " + sonogram.MaxAmplitude.ToString("F3") + "  (See Note 1)");
-            Log.WriteLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
-            Log.WriteLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
-            Log.WriteLine("Minimum dB / frame       =" + sonogram.SnrFullband.Min_dB.ToString("F2") + "  (See Note 4)");
-            Log.WriteLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2"));
+            //Log.WriteLine("Minimum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Min().ToString("F2") + "  (See Note 2, 3)");
+            //Log.WriteLine("Maximum Log Energy       =" + sonogram.SnrFullband.LogEnergy.Max().ToString("F2"));
+            Log.WriteLine("Maximum dB / frame       =" + sonogram.SnrFullband.Max_dB.ToString("F2") + "  (See Notes 2, 3)");
+            Log.WriteLine("Minimum dB / frame       =" + sonogram.SnrFullband.Min_dB.ToString("F2") + "  (See Notes 4)");
 
             Log.WriteLine("\ndB NOISE SUBTRACTION");
             Log.WriteLine("Noise (estimate of mode) =" + sonogram.SnrFullband.NoiseSubtracted.ToString("F3") + " dB   (See Note 5)");
@@ -132,17 +133,15 @@ namespace AnalysisPrograms
 
             
             Console.WriteLine("\n\n\tNote 1:      Signal samples take values between -1.0 and +1.0");
-            Console.WriteLine("\n\tNote 2:      Signal energy is calculated frame by frame. The log energy of a frame");
-            Console.WriteLine("\t             equals the log(10) of the average of the amplitude squared of all 512 values in a frame.");
-            Console.WriteLine("\n\tNote 3:      We normalise the frame log energies with respect to absolute max and min values. We use:");
-            Console.WriteLine("\t             Minimum reference log energy = -7.0, which allowes for very quiet background noise.");
-            Console.WriteLine("\t             A typical background noise log energy value for Brisbane Airport (BAC2) recordings is -4.5");
-            Console.WriteLine("\t             Maximum reference log energy = 0.0, equivalent to average frame amplitude = 1.0");
-            Console.WriteLine("\t             Therefore positive values of log energy cannot occur");
-            Console.WriteLine("\t             In practice, the largest av. frame amplitude we have encountered = 0.55 for a cicada recording.");
-            Console.WriteLine("\n\tNote 4:      Log energy values are converted to decibels by multiplying by 10.");
+            Console.WriteLine("\n\tNote 2:      The acoustic power per frame is calculated in decibels: dB = 10 * log(Frame energy)");
+            Console.WriteLine("\t             where frame energy = average of the amplitude squared of all 512 values in a frame.");
+            Console.WriteLine("\n\tNote 3:      At this stage all dB values are <= 0.0. A dB value = 0.0 could only occur if the average frame amplitude = 1.0");
+            Console.WriteLine("\t             In practice, the largest av. frame amplitude we have encountered = 0.55 for a recording of a nearby cicada.");
+            Console.WriteLine("\n\tNote 4:        A minimum value for dB is truncated at -70 dB, which allowes for very quiet background noise.");
+            Console.WriteLine("\t             A typical background noise dB value for Brisbane Airport (BAC2) recordings is -45 dB.");
+            Console.WriteLine("\t             Log energy values are converted to decibels by multiplying by 10.");
             Console.WriteLine("\n\tNote 5:      The modal background noise per frame is calculated using an algorithm of Lamel et al, 1981, called 'Adaptive Level Equalisatsion'.");
-            Console.WriteLine("\t             This sets the modal background noise level to 0 dB.");
+            Console.WriteLine("\t             Subtracting this value from each frame dB value sets the modal background noise level to 0 dB. Values < 0.0 are clipped to 0.0 dB.");
             Console.WriteLine("\n\tNote 6:      The modal noise level is now 0 dB but the noise ranges " + sonogram.SnrFullband.NoiseRange.ToString("F2")+" dB either side of zero.");
             Console.WriteLine("\n\tNote 7:      Here are some dB comparisons. NOTE! They are with reference to the auditory threshold at 1 kHz.");
             Console.WriteLine("\t             Our estimates of SNR are with respect to background environmental noise which is typically much higher than hearing threshold!");
@@ -151,7 +150,7 @@ namespace AnalysisPrograms
             Console.WriteLine("\t             Normal talking at 1 m:            40 - 60 dB");
             Console.WriteLine("\t             Major road at 10 m:               80 - 90 dB");
             Console.WriteLine("\t             Jet at 100 m:                    110 -140 dB");
-            Console.WriteLine("\n\tNote 8:      dB above the modal noise, which has been set to zero dB. Used as thresholds to segment acoustic events. ");
+            Console.WriteLine("\n\tNote 8:      dB above the background (modal) noise, which has been set to zero dB. These thresholds are used to segment acoustic events.");
             Console.WriteLine("\n");
 
 
