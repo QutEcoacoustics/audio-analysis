@@ -11,10 +11,11 @@ using AudioAnalysisTools;
 namespace AnalysisPrograms
 {
     //COMMAND LINES FOR SnrAnalysis.exe
-    // snr C:\SensorNetworks\WavFiles\Curlew\Top_Knoll_-_St_Bees_20081005-223000.wav C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_DetectionParams.txt snrResults.txt
-    // snr C:\SensorNetworks\WavFiles\Curlew\Top_Knoll_-_St_Bees_20081005-223000.wav C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_DetectionParams.txt snrResults.txt
+    // snr C:\SensorNetworks\WavFiles\Curlew\Curlew1\TopKnollStBees_20081005-223000_1.wav  C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_Params.txt  snrResults.txt
+    // snr C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
+    // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
 
-	class SnrAnalysis
+    class SnrAnalysis
 	{
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_FRAME_SIZE="FRAME_SIZE";
@@ -157,6 +158,7 @@ namespace AnalysisPrograms
 
             if (DRAW_SONOGRAMS > 0)
             {
+                Log.WriteLine("# Start to draw image of sonogram.");
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, predictedEvents, intensityThreshold);
             }
@@ -252,8 +254,7 @@ namespace AnalysisPrograms
 
 
         static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double eventThreshold)
-        {
-            Log.WriteLine("# Start to draw image of sonogram.");
+        {            
             bool doHighlightSubband = false; 
             bool add1kHzLines = true;
 
