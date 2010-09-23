@@ -1,28 +1,36 @@
-# save a sonogram for each recording that contained a hit 
-DRAW_SONOGRAMS=1
+#Name of the required call. DO NOT change call name.
+CALL_NAME=GECKO
+#Do segmentation prior to OD search.
+DO_SEGMENTATION=false
 ################################################################################
 # Above parameters NOT user modifiable
 # Below parameters ARE user modifiable.
 ################################################################################
-#Name of the required call. DO NOT change call names.
-CALL_NAME=GECKO
-#Do segmentation prior to OD search.
-DO_SEGMENTATION=false
+# default=0.50; Use 0.00 for geckos and 0.75 for koalas 
+FRAME_OVERLAP=0.0
+################################################################################
 # min and max of the freq band to search
 MIN_HZ=1500          
 MAX_HZ=3000
-# default=0.50; Use 0.00 for geckos and 0.75 for koalas 
-FRAME_OVERLAP=0.0
+################################################################################
 # duration of DCT in seconds 
 DCT_DURATION=1.0
-# ignore oscillation rates below the min & above the max threshold OSCILLATIONS PER SECOND
-MIN_OSCIL_FREQ=3        
-MAX_OSCIL_FREQ=7
 # minimum acceptable value of a DCT coefficient
 DCT_THRESHOLD=0.5
-# Minimum duration for the length of a true event.
-MIN_DURATION=2.0
-# Maximum duration for the length of a true event.
+################################################################################
+# ignore oscillation rates below min & above max threshold
+# units = OSCILLATIONS PER SECOND
+MIN_OSCIL_FREQ=3        
+MAX_OSCIL_FREQ=7
+################################################################################
+# Minimum and Maximum duration (in seconds) for the length of a true event.
+MIN_DURATION=1.0
 MAX_DURATION=6.0
-# Event threshold - use this to determin FP / FN trade-off for events.
-EVENT_THRESHOLD=0.15
+################################################################################
+# Event threshold in normalised range [0, 1]
+# Use this to determine the FP / FN trade-off for events.
+EVENT_THRESHOLD=0.2
+################################################################################
+# Save a sonogram image for each recording 0=no,  1=if hit, 2=yes always
+DRAW_SONOGRAMS=0
+################################################################################
