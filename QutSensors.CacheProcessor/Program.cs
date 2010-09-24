@@ -74,6 +74,7 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<AudioTransformer>().As<IAudioTransformer>();
             builder.RegisterType<AudioToolDirectShow>().As<IAudioTool>();
             builder.RegisterType<CacheTransformer>();
+            builder.RegisterType<TowseySignalToImage>().As<ISignalToImage>();
             QutDependencyContainer.Instance.Container = builder.Build();
         }
     }
