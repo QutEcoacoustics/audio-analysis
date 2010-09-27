@@ -10,7 +10,10 @@
 namespace QutSensors.CacheProcessor
 {
     using System;
+    using System.Configuration;
     using System.ServiceProcess;
+    using System.IO;
+    using System.Linq;
 
     using Autofac;
 
@@ -31,6 +34,12 @@ namespace QutSensors.CacheProcessor
         /// Program Arguments.
         /// </param>
         public static void Main(string[] args)
+        {
+            RunService(args);
+            ////Export();
+        }
+
+        private static void RunService(string[] args)
         {
             SetupIocContainer();
 
@@ -76,6 +85,17 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<CacheTransformer>();
             builder.RegisterType<TowseySignalToImage>().As<ISignalToImage>();
             QutDependencyContainer.Instance.Container = builder.Build();
+        }
+
+        private static void Export()
+        {
+            const string ConversionfolderKey = "ConversionFolder";
+
+            var conversionPath = ConfigurationManager.AppSettings.AllKeys.Contains(ConversionfolderKey)
+                                     ? ConfigurationManager.AppSettings[ConversionfolderKey]
+                                     : string.Empty;
+
+            CacheUtilities.Export(36, conversionPath);
         }
     }
 }

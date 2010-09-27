@@ -141,7 +141,7 @@ namespace AnalysisPrograms.Processing
                     SnrAnalysis.key_MIN_HZ,
                     ////SnrAnalysis.key_MIN_VOCAL_DURATION, // not used
                     SnrAnalysis.key_N_POINT_SMOOTH_FFT,
-                    SnrAnalysis.key_NOISE_REDUCTION_TYPE,
+                    //SnrAnalysis.key_NOISE_REDUCTION_TYPE,
                     SnrAnalysis.key_SEGMENTATION_THRESHOLD_K1,
                     SnrAnalysis.key_SEGMENTATION_THRESHOLD_K2,
                     ////SnrAnalysis.key_SILENCE_RECORDING_PATH, // not used
@@ -158,7 +158,9 @@ namespace AnalysisPrograms.Processing
             var frameOverlap = Double.Parse(dict[SnrAnalysis.key_FRAME_OVERLAP]);
             var windowFunction = dict[SnrAnalysis.key_WINDOW_FUNCTION];
             var nPointSmoothFft = Int32.Parse(dict[SnrAnalysis.key_N_POINT_SMOOTH_FFT]);
-            var noiseReduceType = dict[SnrAnalysis.key_NOISE_REDUCTION_TYPE];
+
+            //var noiseReduceType = dict[SnrAnalysis.key_NOISE_REDUCTION_TYPE];
+            string noiseReduceType = string.Empty;
 
             var minHz = Int32.Parse(dict[SnrAnalysis.key_MIN_HZ]);
             var maxHz = Int32.Parse(dict[SnrAnalysis.key_MAX_HZ]);

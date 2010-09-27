@@ -16,6 +16,7 @@ namespace QutSensors.CacheProcessor
     using AudioTools;
 
     using QutSensors.Data;
+    using QutSensors.Data.Linq;
 
     /// <summary>
     /// Cache utilities.
@@ -79,6 +80,43 @@ namespace QutSensors.CacheProcessor
             }
 
             return new byte[0];
+        }
+
+        /// <summary>
+        /// Export data for one job.
+        /// </summary>
+        /// <param name="jobId">
+        /// The job id.
+        /// </param>
+        /// <param name="directory">
+        /// The directory.
+        /// </param>
+        public static void Export(int jobId, string directory)
+        {
+            using (var db = new QutSensorsDb())
+            {
+                var job = db.Cache_Jobs.Where(j => j.JobID == jobId).FirstOrDefault();
+
+                if (job == null) return;
+
+                var jobItems = db.Cache_JobItems.Where(ji => ji.JobID == jobId);
+
+                foreach (var jobItem in jobItems)
+                {
+                    string name = jobItem.JobID + "_" + jobItem.JobItemID + "_" + jobItem.Start + "-" + jobItem.End +
+                                  "." + MimeTypes.GetExtension(jobItem.MimeType);
+                    string fileName = Path.Combine(directory, name);
+
+                    Cache_JobItem item = jobItem;
+                    var data = db.Cache_Datas.Where(d => d.JobItemID == item.JobItemID).FirstOrDefault();
+                    if (data == null)
+                    {
+                        continue;
+                    }
+
+                    File.WriteAllBytes(fileName, data.Data.ToArray());
+                }
+            }
         }
     }
 }

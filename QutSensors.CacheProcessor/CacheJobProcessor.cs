@@ -364,13 +364,18 @@ namespace QutSensors.CacheProcessor
 
             if (bytes == null || bytes.Length < 1)
             {
+                const int BufferKb = 100 * 1024;
 
                 // file could not be segmented by mp3Splt, use DirectShow.
                 // does not use cache - assumes no cache available.
                 using (var fs = new FileStream(audioFile, FileMode.Open, FileAccess.Read, FileShare.Read))
                 {
                     var ext = Path.GetExtension(audioFile);
-                    const int BufferKb = 100 * 1024;
+                    if (!string.IsNullOrEmpty(ext))
+                    {
+                        ext = ext.Trim('.');
+                    }
+
                     bytes = this.audioTool.Segment(
                         fs,
                         request.Start,
@@ -414,7 +419,6 @@ namespace QutSensors.CacheProcessor
         /// </returns>
         private byte[] GenerateSpectrogram(string audioFile, long? audioFileDurationMs, CacheRequest request)
         {
-
             // not using cache, use file.
             var bytes = this.GenerateSpectrogramFile(audioFile, audioFileDurationMs, request);
 
@@ -469,6 +473,10 @@ namespace QutSensors.CacheProcessor
             using (var fs = new FileStream(audioFile, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 var ext = Path.GetExtension(audioFile);
+                if (!string.IsNullOrEmpty(ext))
+                {
+                    ext = ext.Trim('.');
+                }
 
                 return this.audioTransformer.GenerateSpectrogram(fs, MimeTypes.GetMimeTypeFromExtension(ext), spReq).ToByteArray(ImageFormat.Jpeg);
             }

@@ -171,6 +171,7 @@
     <Compile Include="Statistics.cs" />
     <Compile Include="TextUtilities.cs" />
     <Compile Include="FunctionalTests.cs" />
+    <Compile Include="WavInfo.cs" />
     <Compile Include="WavWriter.cs" />
     <Compile Include="ZipUnzip.cs" />
   </ItemGroup>
