@@ -14,7 +14,7 @@ namespace AnalysisPrograms
         //GECKO
         //createtemplate_felt "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
         //CURRAWONG
-        //createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.mp3" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong_Params.txt  FELT_Currawong2
+        //createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong_Params.txt  FELT_Currawong2
         //CURLEW
         //createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW2_Params.txt  FELT_Curlew2
 
@@ -81,7 +81,7 @@ namespace AnalysisPrograms
             double eventEnd          = Double.Parse(dict[key_EVENT_END]);            
             int minHz                = Int32.Parse(dict[key_MIN_HZ]);
             int maxHz                = Int32.Parse(dict[key_MAX_HZ]);
-            double templateThreshold = 6.0; //threshold to set MIN DECIBEL BOUND
+            double templateThreshold = 9.0; //threshold to set MIN DECIBEL BOUND
 
             //double smoothWindow    = Double.Parse(dict[key_SMOOTH_WINDOW]);       //duration of DCT in seconds 
             //double minDuration     = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
@@ -307,7 +307,7 @@ namespace AnalysisPrograms
 
         public static char[,] Target2SymbolicTracks(double[,] matrix, double threshold)
         {
-            var m = ImageTools.WienerFilter(matrix, 5);
+            var m = ImageTools.WienerFilter(matrix, 7);
             m = Target2SpectralTracks(m, threshold);
             int rows = matrix.GetLength(0);
             int cols = matrix.GetLength(1);
