@@ -222,16 +222,20 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// converts frequency bounds of an event to left and right columns of object in sonogram matrix
+        /// NOTE: binCount is required only if freq is in Mel scale
         /// </summary>
-        /// <param name="minF"></param>
-        /// <param name="maxF"></param>
-        /// <param name="leftCol"></param>
-        /// <param name="rightCol"></param>
-        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int binCount, double binWidth,
+        /// <param name="doMelscale"></param>
+        /// <param name="minFreq">lower freq bound</param>
+        /// <param name="maxFreq">upper freq bound</param>
+        /// <param name="Nyquist">Nyquist freq in Herz</param>
+        /// <param name="binWidth">frequency scale</param>
+        /// <param name="leftCol">return bin index for lower freq bound</param>
+        /// <param name="rightCol">return bin index for upper freq bound</param>
+        public static void Freq2BinIDs(bool doMelscale, int minFreq, int maxFreq, int Nyquist, double binWidth,
                                                                                               out int leftCol, out int rightCol)
         {
             if (doMelscale)
-                Freq2MelsBinIDs(minFreq, maxFreq, binWidth, binCount, out leftCol, out rightCol);
+                Freq2MelsBinIDs(minFreq, maxFreq, binWidth, Nyquist, out leftCol, out rightCol);
             else
                 Freq2HerzBinIDs(minFreq, maxFreq, binWidth, out leftCol, out rightCol);
         }
@@ -240,9 +244,9 @@ namespace AudioAnalysisTools
             leftCol = (int)Math.Round(minFreq / binWidth);
             rightCol = (int)Math.Round(maxFreq / binWidth);
         }
-        public static void Freq2MelsBinIDs(int minFreq, int maxFreq, double binWidth, int binCount, out int leftCol, out int rightCol)
+        public static void Freq2MelsBinIDs(int minFreq, int maxFreq, double binWidth, int nyquistFrequency, out int leftCol, out int rightCol)
         {
-            double nyquistFrequency = binCount * binWidth;
+            int binCount = (int)(nyquistFrequency / binWidth) + 1;
             double maxMel = Speech.Mel(nyquistFrequency);
             int melRange = (int)(maxMel - 0 + 1);
             double binsPerMel = binCount / (double)melRange;

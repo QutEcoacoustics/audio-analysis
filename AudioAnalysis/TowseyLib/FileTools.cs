@@ -286,6 +286,15 @@ namespace TowseyLib
             return matrix;
         }
 
+        public static void WriteArray2File(double[] array, string fName)
+        {
+            var lines = new List<string>();
+
+            for (int i = 0; i < array.Length; i++) lines.Add(array[i].ToString());
+            WriteTextFile(fName, lines); //write to file
+
+        } //end of WriteArray2File
+
         public static void WriteMatrix2File(double[,] matrix, string fName)
         {
             int rowCount = matrix.GetLength(0);//height

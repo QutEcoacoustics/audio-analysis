@@ -47,6 +47,69 @@ namespace TowseyLib
         public double[] ModalNoiseProfile { get; set; }
 
 
+
+
+        /// <summary>
+        /// Removes noise from a spectrogram. Choice of methods.
+        /// Make sure that do MelScale reduction BEFORE applying noise filter.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="nrt"></param>
+        /// <param name="dynamicRange"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double dynamicRange)
+        {
+            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and return for later use
+
+            if (nrt == NoiseReductionType.STANDARD)
+            {
+                m = SNR.NoiseReduce_Standard(m, modalNoise);
+            }
+            else
+            if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + dynamicRange);
+                m = SNR.NoiseReduce_FixedRange(m, dynamicRange);
+            }
+            else
+            if (nrt == NoiseReductionType.PEAK_TRACKING)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + dynamicRange);
+                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
+            }
+            else
+            if (nrt == NoiseReductionType.HARMONIC_DETECTION)
+            {
+                Log.WriteIfVerbose("\tNoise reduction: HARMONIC_DETECTION");
+                m = SNR.NoiseReduce_HarmonicDetection(m);
+            }
+            var tuple = System.Tuple.Create(m, modalNoise);
+            return tuple;
+        }
+
+
+
+        /// <summary>
+        /// Converts a string interpreted as a key to a NoiseReduction Type.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static NoiseReductionType Key2NoiseReductionType(string key)
+        {
+            if (key.Equals("NONE")) return NoiseReductionType.NONE;
+            else
+                if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
+                else
+                    if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
+                    else
+                        if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
+                        else
+                            if (key.Equals("HARMONIC_DETECTION")) return NoiseReductionType.HARMONIC_DETECTION;
+            return NoiseReductionType.NONE;
+        }
+
+
+
         /// <summary>
         /// CONSTRUCTOR
         /// </summary>
@@ -226,7 +289,7 @@ namespace TowseyLib
             }
             
             if (peakID > 0) oneSD = Math.Sqrt(ssd / total);
-            else oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+            else            oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
             
 
             // subtract modal noise and return array.
@@ -470,8 +533,9 @@ namespace TowseyLib
         {
             double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             double[,] mnr = matrix;
-            mnr = SNR.RemoveModalNoise(mnr, modalNoise);
+            mnr = SNR.TruncateModalNoise(mnr, modalNoise);
             mnr = SNR.RemoveBackgroundNoise(mnr, backgroundThreshold);
+            //mnr = SNR.TruncateModalNoise(mnr, modalNoise, backgroundThreshold);
             return mnr;
         }
 
@@ -556,11 +620,33 @@ namespace TowseyLib
         // ################################# NOISE REDUCTION METHODS #################################################################
 
         /// <summary>
-        /// Removes the supplied modal noise value for each freq bin and sets negative values to zero.
+        /// Subtracts the supplied modal noise value for each freq bin AND sets values less than backgroundThreshold to ZERO.
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] RemoveModalNoise(double[,] matrix, double[] modalNoise)
+        public static double[,] TruncateModalNoise(double[,] matrix, double[] modalNoise, double backgroundThreshold)
+        {
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            double[,] outM = new double[rowCount, colCount];          //to contain noise reduced matrix
+
+            for (int col = 0; col < colCount; col++)//for all cols i.e. freq bins
+            {
+                for (int y = 0; y < rowCount; y++)  //for all rows
+                {
+                    outM[y, col] = matrix[y, col] - modalNoise[col];
+                    if (outM[y, col] < backgroundThreshold) outM[y, col] = 0.0;
+                }//end for all rows
+            }//end for all cols
+            return outM;
+        }// end of TruncateModalNoise()
+
+        /// <summary>
+        /// Subtracts the supplied modal noise value for each freq bin AND sets negative values to ZERO.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[,] TruncateModalNoise(double[,] matrix, double[] modalNoise)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -575,7 +661,7 @@ namespace TowseyLib
                 }//end for all rows
             }//end for all cols
             return outM;
-        }// end of RemoveModalNoise()
+        }// end of TruncateModalNoise()
 
         /// <summary>
         /// Subtracts the supplied modal noise value for each freq bin BUT DOES NOT set negative values to zero.
@@ -711,7 +797,13 @@ namespace TowseyLib
         }//end NormaliseIntensity(double[,] m, double minDB, double maxDB)
 
 
-
+        /// <summary>
+        /// This method sets a sonogram pixel value = minimum value in sonogram if average pixel value in its neighbourhood is less than min+threshold.
+        /// Typically would expect min value in sonogram = zero.
+        /// </summary>
+        /// <param name="matrix">the sonogram</param>
+        /// <param name="threshold">user defined threshold in dB i.e. typically 3-4 dB</param>
+        /// <returns></returns>
         public static double[,] RemoveBackgroundNoise(double[,] matrix, double threshold)
         {
             int M = 3; // each row is a frame or time instance
@@ -735,7 +827,7 @@ namespace TowseyLib
                 {
                     //if (matrix[r, c] <= 70.0) continue;
                     double X = 0.0;
-                    double Xe2 = 0.0;
+                    //double Xe2 = 0.0;
                     int count = 0;
                     for (int i = r - rNH; i <= (r + rNH); i++)
                     {
@@ -745,9 +837,9 @@ namespace TowseyLib
                         {
                             if (j < 0) continue;
                             if (j >= cols) continue;
+                            count++;           //to accomodate edge effects
                             X += matrix[i, j];
-                            Xe2 += (matrix[i, j] * matrix[i, j]);
-                            count++;
+                            //Xe2 += (matrix[i, j] * matrix[i, j]);                 
                             //Console.WriteLine(i+"  "+j+"   count="+count);
                             //Console.ReadLine();
                         }
@@ -758,7 +850,7 @@ namespace TowseyLib
                     //if ((c<(cols/5))&&(mean < (threshold+1.0))) outM[r, c] = min;
                     //else
                     if (mean < threshold) outM[r, c] = min;
-                    else outM[r, c] = matrix[r, c];
+                    else                  outM[r, c] = matrix[r, c];
                     //Console.WriteLine((outM[r, c]).ToString("F1") + "   " + (matrix[r, c]).ToString("F1") + "  mean=" + mean + "  variance=" + variance);
                     //Console.ReadLine();
                 }
@@ -1161,65 +1253,6 @@ namespace TowseyLib
         }
 
 
-
-        /// <summary>
-        /// Removes noise from a spectrogram. Choice of methods.
-        /// Make sure that do MelScale reduction BEFORE applying noise filter.
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="nrt"></param>
-        /// <param name="dynamicRange"></param>
-        /// <returns></returns>
-        public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double dynamicRange)
-        {
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and return for later use
-
-            if (nrt == NoiseReductionType.STANDARD)
-            {
-                m = SNR.NoiseReduce_Standard(m, modalNoise);
-            }
-            else
-            if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + dynamicRange);
-                m = SNR.NoiseReduce_FixedRange(m, dynamicRange);
-            }
-            else
-            if (nrt == NoiseReductionType.PEAK_TRACKING)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + dynamicRange);
-                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
-            }
-            else
-            if (nrt == NoiseReductionType.HARMONIC_DETECTION)
-            {
-                Log.WriteIfVerbose("\tNoise reduction: HARMONIC_DETECTION");
-                m = SNR.NoiseReduce_HarmonicDetection(m);
-            }
-            var tuple = System.Tuple.Create(m, modalNoise);
-            return tuple;
-        }
-
-
-
-        /// <summary>
-        /// Converts a string interpreted as a key to a NoiseReduction Type.
-        /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
-        public static NoiseReductionType Key2NoiseReductionType(string key)
-        {
-            if (key.Equals("NONE")) return NoiseReductionType.NONE;
-            else
-            if (key.Equals("STANDARD")) return NoiseReductionType.STANDARD;
-            else
-            if (key.Equals("FIXED_DYNAMIC_RANGE")) return NoiseReductionType.FIXED_DYNAMIC_RANGE;
-            else
-            if (key.Equals("PEAK_TRACKING")) return NoiseReductionType.PEAK_TRACKING;
-            else
-            if (key.Equals("HARMONIC_DETECTION")) return NoiseReductionType.HARMONIC_DETECTION;
-            return NoiseReductionType.NONE;
-        }
 
     }// end class
 }

@@ -1609,5 +1609,50 @@ namespace TowseyLib
             bmp.Save(pathName);
         }
 
-    }//end class
+
+
+
+        public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold)
+        {
+            double endThreshold    = centreThreshold / 2;
+
+            if (m[row, col] < centreThreshold) return null; //to not proceed if current pixel is low intensity
+
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+
+            int maxAngle = -1;
+            double intensitySum = 0.0;
+
+           // double sumThreshold = lineLength * sensitivity;
+
+            for (int d = 0; d < 17; d++) //loop over 180 degrees in jumps of 10 degrees.
+            {
+                int degrees = d * 10;
+                double cosAngle = Math.Cos(Math.PI * degrees / 180);
+                double sinAngle = Math.Sin(Math.PI * degrees / 180);
+
+                //check if extreme end of line goes outside bound
+                if (((row + (int)(cosAngle * lineLength)) >= rows) || ((row + (int)(cosAngle * lineLength)) < 0)) continue;
+                if (((col + (int)(sinAngle * lineLength)) >= cols) || ((col + (int)(sinAngle * lineLength)) < 0)) continue;
+
+                //check if extreme end of line is low intensity pixel
+                if (m[row + (int)(cosAngle * lineLength), col + (int)(sinAngle * lineLength)] < endThreshold) continue;
+
+                double sum = 0.0;
+                for (int j = 0; j < lineLength; j++)
+                    sum += m[row + (int)(cosAngle * j), col + (int)(sinAngle * j)];
+
+                if (sum > intensitySum)
+                {
+                    maxAngle = degrees;
+                    intensitySum = sum;
+                }
+
+            } //for loop
+            return System.Tuple.Create(maxAngle, intensitySum);
+        }// DetectLine()
+
+
+    } //end class
 }

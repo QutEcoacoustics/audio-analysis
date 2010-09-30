@@ -579,24 +579,39 @@ namespace AudioAnalysisTools
             AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, 0, c1, m.GetLength(0) - 1, c2);
         }
+
+        /// <summary>
+        /// Extracts an acoustic event from a sonogram given the location of a user defined rectangular marquee.
+        /// NOTE: Nyquist value is used ONLY if using mel scale.
+        /// </summary>
+        /// <param name="m">the sonogram data as matrix of reals</param>
+        /// <param name="start">start time in seconds</param>
+        /// <param name="end">end time in seconds</param>
+        /// <param name="frameOffset">the time scale: i.e. the duration in seconds of each frame</param>
+        /// <param name="minHz">lower freq bound of the event</param>
+        /// <param name="maxHz">upper freq bound of the event</param>
+        /// <param name="doMelscale">informs whether the sonogram data is linear or mel scale</param>
+        /// <param name="Nyquist">full freq range 0-Nyquist</param>
+        /// <param name="binWidth">the frequency scale i.e. herz per bin width - assumes linear scale</param>
+        /// <returns></returns>
         public static double[,] ExtractEvent(double[,] m, double start, double end, double frameOffset,
-                                             int minHz, int maxHz, bool doMelscale, int binCount, double binWidth)
+                                             int minHz, int maxHz, bool doMelscale, int Nyquist, double binWidth)
         {
             int r1;
             int r2;
             AcousticEvent.Time2RowIDs(start, end - start, frameOffset, out r1, out r2);
             int c1;
             int c2;
-            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelscale, minHz, maxHz, Nyquist, binWidth, out c1, out c2);
             return DataTools.Submatrix(m, r1, c1, r2, c2);
         }
 
 
-        public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int binCount, double binWidth)
+        public static double[] ExtractModalNoiseSubband(double[] modalNoise, int minHz, int maxHz, bool doMelScale, int Nyquist, double binWidth)
         {
             //extract subband modal noise profile
             int c1, c2;
-            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, binCount, binWidth, out c1, out c2);
+            AcousticEvent.Freq2BinIDs(doMelScale, minHz, maxHz, Nyquist, binWidth, out c1, out c2);
             int subbandCount = c2 - c1 + 1;
             var subband = new double[subbandCount];
             for (int i = 0; i < subbandCount; i++) subband[i] = modalNoise[c1 + i];
@@ -647,7 +662,7 @@ namespace AudioAnalysisTools
             double[] modalNoise = sonogram.SnrFullband.ModalNoiseProfile;
             //extract subband modal noise profile
             double[] noise_subband = BaseSonogram.ExtractModalNoiseSubband(modalNoise, minHz, maxHz, doMelScale,
-                                                                           sonogram.Configuration.FreqBinCount, sonogram.FBinWidth);
+                                                                           sonogram.NyquistFrequency, sonogram.FBinWidth);
             //CALCULATE CEPSTROGRAM
             Log.WriteLine("# Extracting Cepstrogram");
             CepstralSonogram cepstrogram = new CepstralSonogram(basegram, minHz, maxHz);  //cepstrogram has dim[N,13]
