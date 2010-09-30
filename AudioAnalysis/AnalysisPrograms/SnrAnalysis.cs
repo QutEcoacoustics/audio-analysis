@@ -11,8 +11,7 @@ using AudioAnalysisTools;
 namespace AnalysisPrograms
 {
     //COMMAND LINES FOR SnrAnalysis.exe
-    // snr C:\SensorNetworks\WavFiles\Curlew\Curlew1\TopKnollStBees_20081005-223000_1.wav  C:\SensorNetworks\Software\AudioAnalysis\RecogniserParamFiles\SNR_Event_Params.txt  snrResults.txt
-    // snr C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
+    // snr  C:\SensorNetworks\WavFiles\Koala_Male\Jackaroo_20080715-103940.wav                  C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
     // snr "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav" C:\SensorNetworks\Output\SNR\SNR_Event_Params.txt  snrResults.txt
 
     class SnrAnalysis

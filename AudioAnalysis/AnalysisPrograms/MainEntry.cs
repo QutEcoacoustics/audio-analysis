@@ -58,6 +58,9 @@ namespace AnalysisPrograms
                     case "spr":  // syntactic pattern recognition
                         SPR.Dev(restOfArgs);
                         break;
+                    case "hd":   // Harmonic Recogniser
+                        HarmonicRecogniser.Dev(restOfArgs);
+                        break;
 
                     // READY TO BE USED - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
@@ -68,12 +71,6 @@ namespace AnalysisPrograms
                         break;
 
                     // UNDER DEVELOPMENT
-                    case "hd":   // Harmonic Recogniser
-                        HarmonicRecogniser.Dev(restOfArgs);
-                        break;
-                    case "eventX":   // extract an acoustic event
-                        ExtractEvent.Dev(restOfArgs);
-                        break;
                     case "dimred":  // dimensionality reduction
                         DimReduction.Dev(restOfArgs);
                         break;
@@ -81,10 +78,15 @@ namespace AnalysisPrograms
                         FindEventsLikeThis.Dev(restOfArgs);
                         break;
 
+
                     // Analysis development - FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;
+                    case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
+                        CreateFeltTemplate.Dev(restOfArgs);
+                        break;
+
 
                     // Analysis runs - FOR MARK'S USE ONLY
                     case "processing": // for running on the processing cluster
