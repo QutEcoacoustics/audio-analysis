@@ -121,6 +121,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="EditFeltTemplate.cs" />
     <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="DimReduction.cs" />
     <Compile Include="CreateFeltTemplate.cs" />

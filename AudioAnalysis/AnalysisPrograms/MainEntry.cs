@@ -82,9 +82,12 @@ namespace AnalysisPrograms
                     // Analysis development - FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(restOfArgs);
-                        break;
+                        break;    
                     case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
                         CreateFeltTemplate.Dev(restOfArgs);
+                        break;
+                    case "edittemplate_felt":     // edits the FELT template created above
+                        EditFeltTemplate.Dev(restOfArgs);
                         break;
 
 
