@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Drawing.Imaging;
 
 
+
 namespace TowseyLib
 {
     public enum Kernal
@@ -149,6 +150,43 @@ namespace TowseyLib
                                             {  1.0,  1.0,  1.0 },
                                             { -0.5, -0.5, -0.5 }};
 
+
+
+        public static Bitmap ReadImage2Bitmap(string fileName)
+        {
+
+            //Image myImg = Image.FromFile(fileName);
+            return (Bitmap)Bitmap.FromFile(fileName);
+        }
+
+
+        public static void WriteBitmap2File(Bitmap binaryBmp, string opPath)
+        {
+            binaryBmp.Save(opPath);
+        }
+
+        /// <summary>
+        /// reads the intensity of a grey scale image into a matrix of double.
+        /// Assumes gray scale is 0-255 and that color.R = color.G = color.B.
+        /// </summary>
+        /// <param name="bitmap"></param>
+        /// <returns></returns>
+        public static double[,] GreyScaleImage2Matrix(Bitmap bitmap)
+        {
+            int height = bitmap.Height; //height
+            int width  = bitmap.Width;   //width
+
+            var matrix = new double[height, width];
+            for (int r = 0; r < height; r++)
+                for (int c = 0; c < width; c++)
+                {
+                    Color color = bitmap.GetPixel(c, r);
+                    //double value = (255 - color.R) / (double)255;
+                    //if (value > 0.0) Console.WriteLine(value);
+                    matrix[r, c] = (255 - color.R) / (double)255;
+                }
+            return matrix;
+        }
 
 
 

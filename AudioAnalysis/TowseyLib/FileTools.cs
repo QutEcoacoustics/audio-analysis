@@ -316,6 +316,28 @@ namespace TowseyLib
 
         } //end of WriteMatrix2File\
 
+        public static void WriteMatrix2File(int[,] matrix, string fName)
+        {
+            int rowCount = matrix.GetLength(0);//height
+            int colCount = matrix.GetLength(1);//width
+
+            var lines = new List<string>();
+
+            for (int i = 0; i < rowCount; i++)
+            {
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < colCount; j++)
+                {
+                    sb.Append(matrix[i, j]);
+                    if (j < colCount - 1) sb.Append(",");
+                }
+                lines.Add(sb.ToString());
+            }//end of all rows
+            WriteTextFile(fName, lines); //write matrix to file
+
+        } //end of WriteMatrix2File\
+
+
 
         public static void WriteMatrix2File(char[,] matrix, string fName)
         {
