@@ -1650,7 +1650,7 @@ namespace TowseyLib
 
 
 
-        public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold)
+        public static System.Tuple<int, double> DetectLine(double[,] m, int row, int col, int lineLength, double centreThreshold, int resolutionAngle)
         {
             double endThreshold    = centreThreshold / 2;
 
@@ -1663,19 +1663,32 @@ namespace TowseyLib
             double intensitySum = 0.0;
 
            // double sumThreshold = lineLength * sensitivity;
+            int degrees = 0;
 
-            for (int d = 0; d < 17; d++) //loop over 180 degrees in jumps of 10 degrees.
+            while (degrees < 180)  //loop over 180 degrees in jumps of 10 degrees.
             {
-                int degrees = d * 10;
                 double cosAngle = Math.Cos(Math.PI * degrees / 180);
                 double sinAngle = Math.Sin(Math.PI * degrees / 180);
 
                 //check if extreme end of line goes outside bound
-                if (((row + (int)(cosAngle * lineLength)) >= rows) || ((row + (int)(cosAngle * lineLength)) < 0)) continue;
-                if (((col + (int)(sinAngle * lineLength)) >= cols) || ((col + (int)(sinAngle * lineLength)) < 0)) continue;
+                if (((row + (int)(cosAngle * lineLength)) >= rows) || ((row + (int)(cosAngle * lineLength)) < 0))
+                {
+                    degrees += resolutionAngle;
+                    continue;
+                }
+
+                if (((col + (int)(sinAngle * lineLength)) >= cols) || ((col + (int)(sinAngle * lineLength)) < 0))
+                {
+                    degrees += resolutionAngle;
+                    continue;
+                }
 
                 //check if extreme end of line is low intensity pixel
-                if (m[row + (int)(cosAngle * lineLength), col + (int)(sinAngle * lineLength)] < endThreshold) continue;
+                if (m[row + (int)(cosAngle * lineLength), col + (int)(sinAngle * lineLength)] < endThreshold)
+                {
+                    degrees += resolutionAngle;
+                    continue;
+                }
 
                 double sum = 0.0;
                 for (int j = 0; j < lineLength; j++)
@@ -1687,7 +1700,8 @@ namespace TowseyLib
                     intensitySum = sum;
                 }
 
-            } //for loop
+                degrees += resolutionAngle;
+            } //while loop
             return System.Tuple.Create(maxAngle, intensitySum);
         }// DetectLine()
 

@@ -75,7 +75,7 @@ namespace AnalysisPrograms
                         DimReduction.Dev(restOfArgs);
                         break;
                     case "felt":     // find other acoustic events like this
-                        FindEventsLikeThis.Dev(restOfArgs);
+                        FeltTemplates_Use.Dev(restOfArgs);
                         break;
 
 
@@ -84,10 +84,10 @@ namespace AnalysisPrograms
                         Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;    
                     case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
-                        CreateFeltTemplate.Dev(restOfArgs);
+                        FeltTemplate_Create.Dev(restOfArgs);
                         break;
                     case "edittemplate_felt":     // edits the FELT template created above
-                        EditFeltTemplate.Dev(restOfArgs);
+                        FeltTemplate_Edit.Dev(restOfArgs);
                         break;
 
 
