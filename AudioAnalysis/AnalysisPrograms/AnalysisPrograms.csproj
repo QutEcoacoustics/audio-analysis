@@ -121,11 +121,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
-    <Compile Include="EditFeltTemplate.cs" />
+    <Compile Include="FeltTemplate_Edit.cs" />
     <Compile Include="Create_MFCC_OD_Template.cs" />
     <Compile Include="DimReduction.cs" />
-    <Compile Include="CreateFeltTemplate.cs" />
-    <Compile Include="FindEventsLikeThis.cs" />
+    <Compile Include="FeltTemplate_Create.cs" />
+    <Compile Include="FeltTemplates_Use.cs" />
     <Compile Include="HarmonicRecogniser.cs" />
     <Compile Include="Main_SPRScanDir.cs" />
     <Compile Include="MFCC_OD.cs" />
