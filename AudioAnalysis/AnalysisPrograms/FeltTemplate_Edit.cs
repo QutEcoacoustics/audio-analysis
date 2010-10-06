@@ -201,6 +201,24 @@ namespace AnalysisPrograms
                 }
             return matrix;
         }
+
+        public static double[,] ReadImage2BinaryMatrixDouble(string fileName)
+        {
+            Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
+            int height = bitmap.Height;  //height
+            int width = bitmap.Width;    //width
+
+            var matrix = new double[height, width];
+
+            for (int r = 0; r < height; r++)
+                for (int c = 0; c < width; c++)
+                {
+                    Color color = bitmap.GetPixel(c, r);
+                    if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1;
+                }
+            return matrix;
+        }
+
         public static int[,] ReadImage2TrinaryMatrix(string fileName)
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);

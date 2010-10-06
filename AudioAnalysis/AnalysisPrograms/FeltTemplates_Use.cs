@@ -162,7 +162,7 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
 
             //iii: GET THE TARGET
-            int[,] templateMatrix = FeltTemplate_Edit.ReadImage2BinaryMatrix(templatePath);
+            double[,] templateMatrix = FeltTemplate_Edit.ReadImage2BinaryMatrixDouble(templatePath);
             //double[,] templateMatrix = ReadChars2TrinaryMatrix(trinaryTemplatePath);
 
 
