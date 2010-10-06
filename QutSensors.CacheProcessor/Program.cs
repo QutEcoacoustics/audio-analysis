@@ -84,6 +84,11 @@ namespace QutSensors.CacheProcessor
             builder.RegisterType<AudioToolDirectShow>().As<IAudioTool>();
             builder.RegisterType<CacheTransformer>();
             builder.RegisterType<TowseySignalToImage>().As<ISignalToImage>();
+
+            // this can be changed to MigrateAudioDataStorage or FileSystemAudioDataStorage as needed for extracting
+            // audio from db.
+            builder.RegisterType<SqlFileStreamAudioDataStorage>().As<IAudioDataStorage>();
+
             QutDependencyContainer.Instance.Container = builder.Build();
         }
 
