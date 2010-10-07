@@ -11,9 +11,9 @@ namespace QutSensors.CacheProcessor
 {
     using System;
     using System.Configuration;
-    using System.ServiceProcess;
     using System.IO;
     using System.Linq;
+    using System.ServiceProcess;
 
     using Autofac;
 
@@ -21,6 +21,7 @@ namespace QutSensors.CacheProcessor
     using QutSensors.Business.Audio;
     using QutSensors.Business.Cache;
     using QutSensors.Business.Providers;
+    using QutSensors.Business.Storage;
 
     /// <summary>
     /// Cache Job Processor Program.
