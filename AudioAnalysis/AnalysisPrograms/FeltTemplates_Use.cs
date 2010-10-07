@@ -68,38 +68,46 @@ namespace AnalysisPrograms
 
             //ii: Get zip paths
             List<string> zipList = FileTools.ReadTextFile(iniPath);
-            System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> results = null;
+            System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> results = null; //set up the results Tuple
             foreach (string zipPath in zipList)
             {
                 //i get params file
                 FileTools.UnZip(outputDir, zipPath, true);
                 string zipName    = Path.GetFileNameWithoutExtension(zipPath);
                 string[] parts    = zipName.Split('_');
-                string paramsPath = Path.Combine(outputDir, parts[0] + "_ParamsFile.txt");
+                string paramsPath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_Params.txt");
                 
                 //ii: READ PARAMETER VALUES FROM INI FILE
                 var config = new Configuration(paramsPath);
                 Dictionary<string, string> dict = config.GetTable();
                 //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-                if(zipName.EndsWith("binaryTemplate"))
+                if (zipName.EndsWith("binaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, parts[0] + "_binary.bmp");
-                    results = ScanWithBinaryTemplate(recording, dict, templatePath);
+                    string templatePath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_binary.bmp");
+                    double[,] templateMatrix = FindMatchingEvents.ReadImage2BinaryMatrixDouble(templatePath);
+                    results = FELTWithBinaryTemplate(recording, dict, templateMatrix);
                 }
                 else
-                if(zipName.EndsWith("trinaryTemplate"))
+                if (zipName.EndsWith("trinaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, parts[0] + "_trinary.bmp");
-                    results = ScanWithBinaryTemplate(recording, dict, templatePath);
+                    string templatePath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_trinary.bmp");
+                    double[,] templateMatrix = FindMatchingEvents.ReadImage2TrinaryMatrix(templatePath);
+                    results = FELTWithBinaryTemplate(recording, dict, templateMatrix);
                 }
                 else
-                if(zipName.EndsWith("syntacticTemplate"))
+                if (zipName.EndsWith("syntacticTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, parts[0] + "_spr.txt");
-                    results = ScanWithBinaryTemplate(recording, dict, templatePath);
+                    //string templatePath = Path.Combine(outputDir, parts[0]  + "_" + parts[1] + "_spr.txt");
+                    //results = ScanWithBinaryTemplate(recording, dict, templatePath);
+                    Log.WriteLine("TO DO! YET TO IMPLEMENT syntacticTemplate for:" + zipName);
+                    continue;
                 }
-
+                else
+                {
+                    Log.WriteLine("ERROR! UNKNOWN TEMPLATE: Zip file has unrecognised suffix:" + zipName);        
+                    continue;
+                }
 
                 var sonogram          = results.Item1;
                 var matchingEvents    = results.Item2;
@@ -132,11 +140,12 @@ namespace AnalysisPrograms
                     DrawSonogram(sonogram, opImagePath, matchingEvents, matchThreshold, scores);
                 }
 
-            } //foreach (string zipPath in zipList)
+            } // foreach (string zipPath in zipList)
 
-            Log.WriteLine("# Finished passing templates over recording:- " + Path.GetFileName(recordingPath));
+            Log.WriteLine("# Finished passing all templates over recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
+
 
 
         /// <summary>
@@ -146,34 +155,72 @@ namespace AnalysisPrograms
         /// <param name="dict"></param>
         /// <param name="templatePath"></param>
         /// <returns></returns>
-        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> ScanWithBinaryTemplate(AudioRecording recording, Dictionary<string, string> dict, string templatePath)
+        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> FELTWithBinaryTemplate(AudioRecording recording, Dictionary<string, string> dict, double[,] templateMatrix)
         {
-        
+            //i: get parameters from dicitonary
             //string callName = dict[FeltTemplate_Create.key_CALL_NAME];
-            double frameOverlap   = Double.Parse(dict[FeltTemplate_Create.key_FRAME_OVERLAP]);
-            bool doSegmentation   = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
-            double smoothWindow   = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation 
-            int minHz             = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
-            int maxHz             = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
-            double minDuration    = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
+            double frameOverlap = Double.Parse(dict[FeltTemplate_Create.key_FRAME_OVERLAP]);
+            bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
+            double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation 
+            int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
+            double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
             double eventThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
 
-            //iii: GET THE TARGET
-            double[,] templateMatrix = FeltTemplate_Edit.ReadImage2BinaryMatrixDouble(templatePath);
-            //double[,] templateMatrix = ReadChars2TrinaryMatrix(trinaryTemplatePath);
+            //ii: CHECK RECORDING
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            int sr = recording.SampleRate;
 
+            //iii: MAKE SONOGRAM
+            Log.WriteLine("Start sonogram.");
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.DoMelScale = false;
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+            SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            recording.Dispose();
 
-            //iv: Find matching events
+            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
+            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
+                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap * 100);
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+
+            //iii: DO SEGMENTATION
+            double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, eventThreshold, minDuration, maxDuration);
+            var segmentEvents = tuple1.Item1;
+
+            //iv: Score sonogram for events matching template
             //#############################################################################################################################################
-            var results = FindMatchingEvents.ExecuteFELT(templateMatrix, recording, doSegmentation, minHz, maxHz, frameOverlap, smoothWindow, eventThreshold, minDuration);
+            var tuple2 = FindMatchingEvents.Execute_Bi_or_TrinaryMatch(templateMatrix, sonogram, segmentEvents, minHz, maxHz, minDuration);
+            //var tuple2 = FindMatchingEvents.Execute_StewartGage(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
+            //var tuple2 = FindMatchingEvents.Execute_SobelEdges(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
+            //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
+            var scores = tuple2.Item1;
             //#############################################################################################################################################
-            return results;
-        } // ScanWithBinaryTemplate()
+
+            //v: PROCESS SCORE ARRAY
+            scores = DataTools.filterMovingAverage(scores, 3);
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), eventThreshold);
+            //Set (scores < 0.0) = 0.0;
+            for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
+
+            //vi: EXTRACT EVENTS
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold,
+                                                                            minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
+
+            return System.Tuple.Create(sonogram, matchEvents, scores, eventThreshold);
+        } // FELTWithBinaryTemplate()
 
 
+ 
         public static void DrawSonogram(BaseSonogram sonogram, string path, List<AcousticEvent> predictedEvents, double threshold, double[] scores)
         {
             Log.WriteLine("# Start to draw image of sonogram.");
