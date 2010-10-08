@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>LinqKit</name>
+    </assembly>
+    <members>
+        <member name="T:LinqKit.ExpandableQuery`1">
+            <summary>
+            An IQueryable wrapper that allows us to visit the query's expression tree just before LINQ to SQL gets to it.
+            This is based on the excellent work of Tomas Petricek: http://tomasp.net/blog/linq-expand.aspx
+            </summary>
+        </member>
+        <member name="T:LinqKit.Linq">
+            <summary>
+            Another good idea by Tomas Petricek.
+            See http://tomasp.net/blog/dynamic-linq-queries.aspx for information on how it's used.
+            </summary>
+        </member>
+        <member name="T:LinqKit.Extensions">
+            <summary>Refer to http://www.albahari.com/nutshell/linqkit.html and
+            http://tomasp.net/blog/linq-expand.aspx for more information.</summary>
+        </member>
+        <member name="T:LinqKit.ExpressionExpander">
+            <summary>
+            Custom expresssion visitor for ExpandableQuery. This expands calls to Expression.Compile() and
+            collapses captured lambda references in subqueries which LINQ to SQL can't otherwise handle.
+            </summary>
+        </member>
+        <member name="T:LinqKit.ExpressionVisitor">
+            <summary>
+            This comes from Matt Warren's sample:
+            http://blogs.msdn.com/mattwar/archive/2007/07/31/linq-building-an-iqueryable-provider-part-ii.aspx
+            </summary>
+        </member>
+        <member name="M:LinqKit.ExpressionExpander.VisitInvocation(System.Linq.Expressions.InvocationExpression)">
+            <summary>
+            Flatten calls to Invoke so that Entity Framework can understand it. Calls to Invoke are generated
+            by PredicateBuilder.
+            </summary>
+        </member>
+        <member name="T:LinqKit.PredicateBuilder">
+            <summary>
+            See http://www.albahari.com/expressions for information and examples.
+            </summary>
+        </member>
+    </members>
+</doc>
