@@ -193,17 +193,29 @@ namespace AudioAnalysisTools
                     double max = -double.MaxValue;
                     for (int bin = -10; bin < +10; bin++) //################################ TO DO - SPECIFY THE FREQ BAND
                     {
-                        double[,] matrix = DataTools.Submatrix(sonogram.Data, r, minBin + bin, r + templateHeight - 1, maxBin + bin);
+                        int c = minBin + bin; 
+                        //int r2 = r + templateHeight - 1;
+                        //int c2 = maxBin + bin;
+
+                        double crossCor = 0.0;
+                        for (int i = 0; i < templateHeight; i++)
+                        {
+                            for (int j = 0; j < templateWidth; j++)
+                            {
+                                crossCor += sonogram.Data[r + i, c + j] * template[i, j];
+                            }
+                        }
                         //var image = BaseSonogram.Data2ImageData(matrix);
                         //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
-                        double crossCor = DataTools.DotProduct(template, matrix);
                         if (crossCor > max) max = crossCor;
-                    }
+                    } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
                     scores[r] = max / (double)positiveCount;
                     if(r % 100 == 0) Console.WriteLine("{0} - {1:f3}", r, scores[r]);
+                    if (scores[r] < 3.0) r += 3; //skip where score is low
+
                 } // end of rows in segment
             } // foreach (AcousticEvent av in segments)
 

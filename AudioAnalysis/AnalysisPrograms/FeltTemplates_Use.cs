@@ -129,7 +129,7 @@ namespace AnalysisPrograms
 
                 //draw images of sonograms
                 int DRAW_SONOGRAMS = Int32.Parse(dict[FeltTemplate_Create.key_DRAW_SONOGRAMS]);          //options to draw sonogram
-                string opImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_matchingEvents.png";
+                string opImagePath = outputDir + "\\" + Path.GetFileNameWithoutExtension(recordingPath) + "_matchingEvents.png";
                 if (DRAW_SONOGRAMS == 2)
                 {
                     DrawSonogram(sonogram, opImagePath, matchingEvents, matchThreshold, scores);
@@ -165,7 +165,7 @@ namespace AnalysisPrograms
             int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
             double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
-            double eventThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
+            double templateThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
@@ -194,7 +194,7 @@ namespace AnalysisPrograms
 
             //iii: DO SEGMENTATION
             double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, eventThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, templateThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template
@@ -207,12 +207,13 @@ namespace AnalysisPrograms
             //#############################################################################################################################################
 
             //v: PROCESS SCORE ARRAY
-            scores = DataTools.filterMovingAverage(scores, 3);
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), eventThreshold);
+            //scores = DataTools.filterMovingAverage(scores, 3);
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), templateThreshold);
             //Set (scores < 0.0) = 0.0;
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
 
             //vi: EXTRACT EVENTS
+            double eventThreshold = 5.0; // dB threshold
             List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold,
                                                                             minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
 
