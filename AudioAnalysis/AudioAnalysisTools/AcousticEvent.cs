@@ -18,43 +18,48 @@ namespace AudioAnalysisTools
         /// <summary>in seconds</summary>
         public double Duration;
         /// <summary>in seconds</summary>
-        public double EndTime { get; private set; } 
+        public double EndTime { get; set; } 
         /// <summary>units = Hertz</summary>
         public int MinFreq;
         /// <summary>units = Hertz</summary>
         public int MaxFreq;
         public int FreqRange { get { return (MaxFreq - MinFreq + 1); } }
         public bool IsMelscale { get; set; }
-        public Oblong oblong { get; private set; }
+        public Oblong oblong { get; set; }
 
-        /// <summary>required for conversions to & from MEL scale</summary>
+        /// <summary> required for conversions to & from MEL scale</summary>
         public int FreqBinCount { get; private set; } 
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
-        /// <summary>Frame duration in seconds</summary>
+        /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
-        /// <summary>Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
+        /// <summary> Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
         public double FrameOffset { get; private set; }
-        /// <summary>Number of frame starts per second. Inverse of the frame offset</summary>
+        /// <summary> Number of frame starts per second. Inverse of the frame offset</summary>
         public double FramesPerSecond { get; private set; }
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
         public string Name { get; set; }
         public string SourceFile { get; set; }
-        /// <summary></summary>
+        /// <summary> Average score through the event.</summary>
         public double Score { get; set; }
         public string ScoreComment { get; set; }
-        /// <summary>score normalised in range [0,1].</summary>
-        public double ScoreNormalised { get; private set; }
+        /// <summary> Score normalised in range [0,1]. NOTE: Max is set = to five times user supplied threshold</summary>
+        public double ScoreNormalised { get; set; }
+        /// <summary> Max Possible Score: set = to 5x user supplied threshold. An arbitrary value used for score normalisation.</summary>
+        public double Score_MaxPossible { get; private set; }
+        public double Score_MaxInEvent { get; private set; }
+        public double Score_TimeOfMaxInEvent { get; private set; }
+
         public string Score2Name { get; set; }
-        /// <summary>second score if required</summary>
+        /// <summary> second score if required</summary>
         public double Score2 { get; set; } // e.g. for Birgits recognisers
-        //double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
-        //double I1Var;  //,
-        //double I2MeandB; //mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
-        //double I2Var;  //,
-        double I3Mean;   //mean intensity of pixels in the event AFTER noise reduciton 
-        double I3Var;    //variance of intensity of pixels in the event.
+        // double I1MeandB; //mean intensity of pixels in the event prior to noise subtraction 
+        // double I1Var;    //,
+        // double I2MeandB; // mean intensity of pixels in the event after Wiener filter, prior to noise subtraction 
+        // double I2Var;    //,
+        double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
+        double I3Var;       // variance of intensity of pixels in the event.
 
         /// <summary>Use this if want to filter or tag some members of a list for some purpose.</summary>
         public bool Tag { get; set; }
@@ -129,7 +134,7 @@ namespace AudioAnalysisTools
             this.FreqBinCount = binCount; //required for conversions to & from MEL scale
             this.FreqBinWidth = binWidth; //required for freq-binID conversions
 
-            if (this.oblong == null) this.oblong = ConvertEvent2Oblong();
+            if (this.oblong == null) this.oblong = AcousticEvent.ConvertEvent2Oblong(this);
 
         }
 
@@ -142,7 +147,7 @@ namespace AudioAnalysisTools
             //this.FreqBinCount = binCount;           //required for conversions to & from MEL scale
             this.FreqBinWidth = freqBinWidth;         //required for freq-binID conversions
 
-            if (this.oblong == null) this.oblong = ConvertEvent2Oblong();
+            if (this.oblong == null) this.oblong = AcousticEvent.ConvertEvent2Oblong(this);
         }
 
 
@@ -151,20 +156,21 @@ namespace AudioAnalysisTools
         /// This method called only by previous method:- SetTimeAndFreqScales(int samplingRate, int windowSize, int windowOffset)
         /// </summary>
         /// <returns></returns>
-        public Oblong ConvertEvent2Oblong()
+        public static Oblong ConvertEvent2Oblong(AcousticEvent ae)
         {
             //translate time/freq dimensions to coordinates in a matrix.
             //columns of matrix are the freq bins. Origin is top left - as per matrix in the sonogram class.
             //Translate time dimension = frames = matrix rows.
             int topRow; int bottomRow;
-            Time2RowIDs(this.StartTime, this.Duration, this.FrameOffset, out topRow, out bottomRow);
+            Time2RowIDs(ae.StartTime, ae.Duration, ae.FrameOffset, out topRow, out bottomRow);
 
             //Translate freq dimension = freq bins = matrix columns.
             int leftCol; int rightCol;
-            Freq2BinIDs(this.IsMelscale, this.MinFreq, this.MaxFreq, this.FreqBinCount, this.FreqBinWidth, out leftCol, out rightCol);
+            Freq2BinIDs(ae.IsMelscale, ae.MinFreq, ae.MaxFreq, ae.FreqBinCount, ae.FreqBinWidth, out leftCol, out rightCol);
 
             return new Oblong(topRow, leftCol, bottomRow, rightCol);
         }
+
 
         /// <summary>
         /// Sets the passed score and also a value normalised between a min and a max.
@@ -848,6 +854,19 @@ namespace AudioAnalysisTools
                         for (int n = startFrame; n <= i; n++) av += scores[n];
                         ev.Score = av / (double)(i - startFrame + 1);
                         ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
+                        ev.Score_MaxPossible = maxPossibleScore;
+
+                        //find max score and its time
+                        double max = -double.MaxValue;
+                        for (int n = startFrame; n <= i; n++)
+                        {
+                            if (scores[n] > max)
+                            {
+                                max = scores[n];
+                                ev.Score_MaxInEvent = scores[n];
+                                ev.Score_TimeOfMaxInEvent = n * frameOffset;
+                            }
+                        }
 
                         events.Add(ev);
                     }
