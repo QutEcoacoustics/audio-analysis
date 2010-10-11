@@ -154,7 +154,7 @@ namespace AudioAnalysisTools
         /// <param name="minDuration"></param>
         /// <returns></returns>
         public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectralSonogram sonogram, 
-                                    List<AcousticEvent> segments, int minHz, int maxHz, double minDuration)
+                                    List<AcousticEvent> segments, int minHz, int maxHz, double minDuratio)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
             if (segments == null) return null;
@@ -168,7 +168,7 @@ namespace AudioAnalysisTools
 
             // ######### Following line normalises template scores for comparison between templates.
             // ######### Ensures OP=0 for featureless sonogram #########
-            // ######### template score = average of positive-template dB - average neg-template decibels. 
+            // ######### template score = (average dB of on-template-cells - average dB of off-template-cells). 
             var tuple1 = NormaliseBiTrinaryMatrix(template);
             template = tuple1.Item1;
             int positiveCount = tuple1.Item2;
@@ -191,12 +191,11 @@ namespace AudioAnalysisTools
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double max = -double.MaxValue;
-                    for (int bin = -10; bin < +10; bin++) //################################ TO DO - SPECIFY THE FREQ BAND
+                    int binBuffer = 10;
+                    for (int bin = -binBuffer; bin < +binBuffer; bin++) 
                     {
                         int c = minBin + bin; 
-                        //int r2 = r + templateHeight - 1;
-                        //int c2 = maxBin + bin;
-
+                        if(c < 0) c = 0;
                         double crossCor = 0.0;
                         for (int i = 0; i < templateHeight; i++)
                         {
@@ -213,10 +212,13 @@ namespace AudioAnalysisTools
 
                     //following line yields score = av of PosCells - av of NegCells.
                     scores[r] = max / (double)positiveCount;
-                    if(r % 100 == 0) Console.WriteLine("{0} - {1:f3}", r, scores[r]);
-                    if (scores[r] < 3.0) r += 3; //skip where score is low
+
+                    //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
+                    if (r % 100 == 0) { Console.Write("."); }
+                    if (scores[r] < 3.0) r += 4; //skip where score is low
 
                 } // end of rows in segment
+                Console.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT."); 
             } // foreach (AcousticEvent av in segments)
 
             var tuple = System.Tuple.Create(scores);
