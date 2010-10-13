@@ -13,12 +13,15 @@
     </BootstrapperUrlHistory>
     <FallbackCulture>en-US</FallbackCulture>
     <VerifyUploadedFiles>false</VerifyUploadedFiles>
-    <ProjectView>ShowAllFiles</ProjectView>
+    <ProjectView>ProjectFiles</ProjectView>
     <ErrorReportUrlHistory />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <StartArguments>
     </StartArguments>
+    <StartWorkingDirectory>C:\SensorNetworks\Software\HMMBuilder</StartWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'AudioAnalysis|AnyCPU'">
     <StartWorkingDirectory>C:\SensorNetworks\Software\HMMBuilder</StartWorkingDirectory>
   </PropertyGroup>
 </Project>
