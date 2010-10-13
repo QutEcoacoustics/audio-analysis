@@ -35,7 +35,7 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private const bool SaveAcousticEvents = false;
+        private const bool SaveAcousticEvents = true;
         private static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
             if (!SaveAcousticEvents)

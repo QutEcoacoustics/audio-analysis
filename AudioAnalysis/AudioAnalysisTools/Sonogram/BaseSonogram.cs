@@ -11,6 +11,7 @@ using System.Drawing.Imaging;
 
 namespace AudioAnalysisTools
 {
+    using QutSensors.Shared;
 
     public enum SonogramType { amplitude, spectral, cepstral, acousticVectors, sobelEdge }
 
@@ -803,7 +804,7 @@ namespace AudioAnalysisTools
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
-
+        
             // (iii) NOISE REDUCTION
             var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.DynamicRange);
             this.Data = tuple.Item1;   // store data matrix

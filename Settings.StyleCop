@@ -11,7 +11,6 @@
       <AnalyzerSettings>
         <StringProperty Name="CompanyName">MQUTeR</StringProperty>
         <StringProperty Name="Copyright">-</StringProperty>
-        <BooleanProperty Name="IgnorePrivates">True</BooleanProperty>
       </AnalyzerSettings>
     </Analyzer>
     <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.ReadabilityRules">
