@@ -189,7 +189,7 @@ namespace AudioAnalysisTools
             var m = DataTools.MatrixTranspose(charogram);
             FileTools.WriteMatrix2File(m, "C:\\SensorNetworks\\Output\\FELT_MultiOutput\\char.txt");
 
-            double[] scores = new double[sonogram.FrameCount];
+             double[] scores = new double[sonogram.FrameCount];
 
 
             foreach (AcousticEvent av in segments)
