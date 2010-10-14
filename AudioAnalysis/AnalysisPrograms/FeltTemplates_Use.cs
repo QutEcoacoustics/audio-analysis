@@ -71,9 +71,10 @@ namespace AnalysisPrograms
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(recordingPath);
 
-            //ii: Get zip paths
+            //ii: Get zip paths and the results Tuple
             List<string> zipList = FileTools.ReadTextFile(iniPath);
             System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> results = null; //set up the results Tuple
+
             foreach (string zipPath in zipList)
             {
                 if(zipPath.StartsWith("#")) continue; // commented line
@@ -83,6 +84,9 @@ namespace AnalysisPrograms
                 string zipName    = Path.GetFileNameWithoutExtension(zipPath);
                 string[] parts    = zipName.Split('_');
                 string paramsPath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_Params.txt");
+
+                string id = parts[0] + "_" + parts[1];
+                Log.WriteIfVerbose("################################################### "+id+" ########################################################");
                 
                 //ii: READ PARAMETER VALUES FROM INI FILE
                 var config = new Configuration(paramsPath);
@@ -93,42 +97,47 @@ namespace AnalysisPrograms
 
                 if (zipName.EndsWith("binaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_binary.bmp");
+                    string templatePath = Path.Combine(outputDir, id + "_binary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2BinaryMatrixDouble(templatePath);
                     results = FELTWithBinaryTemplate(recording, dict, templateMatrix);
                 }
                 else
                 if (zipName.EndsWith("trinaryTemplate"))
                 {
-                    string templatePath = Path.Combine(outputDir, parts[0] + "_" + parts[1] + "_trinary.bmp");
+                    string templatePath = Path.Combine(outputDir, id + "_trinary.bmp");
                     double[,] templateMatrix = FindMatchingEvents.ReadImage2TrinaryMatrix(templatePath);
                     results = FELTWithBinaryTemplate(recording, dict, templateMatrix);
                 }
                 else
                 if (zipName.EndsWith("syntacticTemplate"))
                 {
-                    //string templatePath = Path.Combine(outputDir, parts[0]  + "_" + parts[1] + "_spr.txt");
-                    //results = ScanWithBinaryTemplate(recording, dict, templatePath);
-                    Log.WriteLine("TO DO! YET TO IMPLEMENT syntacticTemplate for:" + zipName);
-                    continue;
+                    string templatePath = Path.Combine(outputDir, id + "_spr.txt");
+                    char[,] templateMatrix = FindMatchingEvents.ReadTextFile2CharMatrix(templatePath);
+                    results = FELTWithSprTemplate(recording, dict, templateMatrix);
+                    //Log.WriteLine("TO DO! YET TO IMPLEMENT syntacticTemplate for:" + zipName);
+                    //continue;
                 }
                 else
                 {
                     Log.WriteLine("ERROR! UNKNOWN TEMPLATE: Zip file has unrecognised suffix:" + zipName);        
                     continue;
                 }
-                
+
+                Log.WriteLine("# Finished detecting events like target: " + id);
+                int count = results.Item2.Count; // 
+                Log.WriteLine("# Matching Event Count = " + count);
+                Log.WriteLine("           @ threshold = {0:f3}", results.Item4);
+
+                //get results
                 sonogram              = results.Item1;
                 var matchingEvents    = results.Item2;
-                allEvents.AddRange(matchingEvents);
                 var scores            = results.Item3;
-                scoresList.Add(scores);
                 double matchThreshold = results.Item4;
+
+                // accumulate results
+                allEvents.AddRange(matchingEvents);
+                scoresList.Add(scores);
                 thresholdList.Add(matchThreshold);
-                Log.WriteLine("# Finished detecting events like target: " + parts[0] + "_" + parts[1]);
-                int count = matchingEvents.Count; // 
-                Log.WriteLine("# Matching Event Count = " + matchingEvents.Count());
-                Log.WriteLine("           @ threshold = {0:f3}", matchThreshold);
 
                 //v: write events count to results info file. 
                 double sigDuration = sonogram.Duration.TotalSeconds;
@@ -149,10 +158,10 @@ namespace AnalysisPrograms
                 DrawSonogram(sonogram, opImagePath, allEvents, thresholdList, scoresList);
             }
             else
-                if ((DRAW_SONOGRAMS == 1) && (allEvents.Count > 0))
-                {
-                    DrawSonogram(sonogram, opImagePath, allEvents, thresholdList, scoresList);
-                }
+            if ((DRAW_SONOGRAMS == 1) && (allEvents.Count > 0))
+            {
+                DrawSonogram(sonogram, opImagePath, allEvents, thresholdList, scoresList);
+            }
 
 
 
@@ -172,7 +181,7 @@ namespace AnalysisPrograms
         public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> FELTWithBinaryTemplate(AudioRecording recording, Dictionary<string, string> dict, double[,] templateMatrix)
         {
             //i: get parameters from dicitonary
-            //string callName = dict[FeltTemplate_Create.key_CALL_NAME];
+            string callName = dict[FeltTemplate_Create.key_CALL_NAME];
             double frameOverlap = Double.Parse(dict[FeltTemplate_Create.key_FRAME_OVERLAP]);
             bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
             double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation 
@@ -180,6 +189,8 @@ namespace AnalysisPrograms
             int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
             double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
             double templateThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
+            double dBThreshold = 2.0; // dB threshold
+
 
             Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
@@ -216,7 +227,7 @@ namespace AnalysisPrograms
 
             //iv: Score sonogram for events matching template
             //#############################################################################################################################################
-            var tuple2 = FindMatchingEvents.Execute_Bi_or_TrinaryMatch(templateMatrix, sonogram, segmentEvents, minHz, maxHz, minDuration);
+            var tuple2 = FindMatchingEvents.Execute_Bi_or_TrinaryMatch(templateMatrix, sonogram, segmentEvents, minHz, maxHz, dBThreshold);
             //var tuple2 = FindMatchingEvents.Execute_StewartGage(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_SobelEdges(target, dynamicRange, (SpectralSonogram)sonogram, segmentEvents, minHz, maxHz, minDuration);
             //var tuple2 = FindMatchingEvents.Execute_MFCC_XCOR(target, dynamicRange, sonogram, segmentEvents, minHz, maxHz, minDuration);
@@ -225,30 +236,122 @@ namespace AnalysisPrograms
 
             //v: PROCESS SCORE ARRAY
             //scores = DataTools.filterMovingAverage(scores, 3);
-            double eventThreshold = 4.0; // dB threshold
-            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), eventThreshold);
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
             //Set (scores < 0.0) = 0.0;
             for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
 
             //vi: EXTRACT EVENTS
-            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold,
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
                                                                             minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
             
+            // Edit the events because they will not necessarily correspond to the display image
             // correct the start time, duration and end of events to match the max score and length of the template.
             // Also correct the scores because we want the max match for a template
+            // Also correct the time scale
             foreach (AcousticEvent ae in matchEvents)
             {
+                ae.Name = callName;
                 //ae.StartTime       = ae.Score_TimeOfMaxInEvent;
-                ae.Duration        = templateDuration;
-                ae.EndTime         = ae.StartTime + templateDuration;
+                ae.Duration = templateDuration;
+                ae.EndTime = ae.StartTime + templateDuration;
                 if (ae.EndTime > sonogram.Duration.TotalSeconds) ae.EndTime = sonogram.Duration.TotalSeconds; //check for overflow.
-                ae.oblong          = AcousticEvent.ConvertEvent2Oblong(ae);
-                ae.Score           = ae.Score_MaxInEvent;
+                ae.oblong = AcousticEvent.ConvertEvent2Oblong(ae);
+                ae.Score = ae.Score_MaxInEvent;
                 ae.ScoreNormalised = ae.Score / ae.Score_MaxPossible;  // normalised to the user supplied threshold
             }
 
-            return System.Tuple.Create(sonogram, matchEvents, scores, eventThreshold);
+            return System.Tuple.Create(sonogram, matchEvents, scores, dBThreshold);
         } // FELTWithBinaryTemplate()
+
+
+        /// <summary>
+        /// Scans a recording given a dicitonary of parameters and a binary template
+        /// </summary>
+        /// <param name="recording"></param>
+        /// <param name="dict"></param>
+        /// <param name="templatePath"></param>
+        /// <returns></returns>
+        public static System.Tuple<SpectralSonogram, List<AcousticEvent>, double[], double> FELTWithSprTemplate(AudioRecording recording, Dictionary<string, string> dict, char[,] templateMatrix)
+        {
+            //i: get parameters from dicitonary
+            string callName = dict[FeltTemplate_Create.key_CALL_NAME];
+            double frameOverlap = Double.Parse(dict[FeltTemplate_Create.key_FRAME_OVERLAP]);
+            bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
+            double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);          //before segmentation 
+            int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
+            double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
+            double templateThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
+            double dBThreshold = 2.0; // dB threshold
+
+
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz.)", minHz, maxHz);
+            Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
+
+            //ii: CHECK RECORDING
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            int sr = recording.SampleRate;
+
+            //iii: MAKE SONOGRAM
+            Log.WriteLine("Start sonogram.");
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.SourceFName = recording.FileName;
+            sonoConfig.WindowOverlap = frameOverlap;
+            sonoConfig.DoMelScale = false;
+            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
+            AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
+            SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            //recording.Dispose(); //DO NOT DISPOSE BECAUSE REQUIRE AGAIN
+
+            Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, sr);
+            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+                                       sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
+                                      (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap * 100);
+            int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
+            Log.WriteIfVerbose("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
+
+            double templateDuration = templateMatrix.GetLength(1) / sonogram.FramesPerSecond;
+            Log.WriteIfVerbose("Template duration = {0:f3} seconds or {1} frames.", templateDuration, templateMatrix.GetLength(1));
+
+            //iii: DO SEGMENTATION
+            double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, templateThreshold, minDuration, maxDuration);
+            var segmentEvents = tuple1.Item1;
+
+            //iv: Score sonogram for events matching template
+            //#############################################################################################################################################
+            var tuple2 = FindMatchingEvents.Execute_Spr_Match(templateMatrix, sonogram, segmentEvents, minHz, maxHz, dBThreshold);
+            var scores = tuple2.Item1;
+            //#############################################################################################################################################
+
+            //v: PROCESS SCORE ARRAY
+            //scores = DataTools.filterMovingAverage(scores, 3);
+            Console.WriteLine("Scores: min={0:f4}, max={1:f4}, threshold={2:f2}dB", scores.Min(), scores.Max(), dBThreshold);
+            //Set (scores < 0.0) = 0.0;
+            for (int i = 0; i < scores.Length; i++) if (scores[i] < 0.0) scores[i] = 0.0;
+
+            //vi: EXTRACT EVENTS
+            List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
+                                                                            minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
+            
+            // Edit the events because they will not necessarily correspond to the display image
+            // correct the start time, duration and end of events to match the max score and length of the template.
+            // Also correct the scores because we want the max match for a template
+            // Also correct the time scale
+            foreach (AcousticEvent ae in matchEvents)
+            {
+                ae.Name = callName;
+                //ae.StartTime       = ae.Score_TimeOfMaxInEvent;
+                ae.Duration = templateDuration;
+                ae.EndTime = ae.StartTime + templateDuration;
+                if (ae.EndTime > sonogram.Duration.TotalSeconds) ae.EndTime = sonogram.Duration.TotalSeconds; //check for overflow.
+                ae.oblong = AcousticEvent.ConvertEvent2Oblong(ae);
+                ae.Score = ae.Score_MaxInEvent;
+                ae.ScoreNormalised = ae.Score / ae.Score_MaxPossible;  // normalised to the user supplied threshold
+            }
+
+            return System.Tuple.Create(sonogram, matchEvents, scores, dBThreshold);
+        } // FELTWithSprTemplate()
 
 
 
@@ -260,6 +363,15 @@ namespace AnalysisPrograms
             Log.WriteLine("# Convert score arrays to correct length for display.");
             scoresList = ConvertScoreArrayLengths(scoresList, sonogram.FrameCount);
 
+            // Edit the events because they will not necessarily correspond to the timescale of the display image
+            Log.WriteLine("# Convert time scale of events.");
+            foreach (AcousticEvent ae in predictedEvents)
+            {
+                ae.FrameOffset = sonogram.FrameOffset;
+                ae.FramesPerSecond = sonogram.FramesPerSecond;
+                ae.oblong = AcousticEvent.ConvertEvent2Oblong(ae);
+            }
+
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
@@ -269,19 +381,18 @@ namespace AnalysisPrograms
                 // Add in score tracks
                 for (int s = 0; s < scoresList.Count; s++)
                 {
+                    if (scoresList[s] == null) continue;
                     double[] scores = scoresList[s];
-                    if (scores != null)
+                    
+                    double normMax = thresholdList[s] * 4; //so normalised eventThreshold = 0.25
+                    for (int i = 0; i < scores.Length; i++)
                     {
-                        double normMax = thresholdList[s] * 4; //so normalised eventThreshold = 0.25
-                        for (int i = 0; i < scores.Length; i++)
-                        {
-                            scores[i] /= normMax;
-                            if (scores[i] > 1.0) scores[i] = 1.0;
-                            if (scores[i] < 0.0) scores[i] = 0.0;
-                        }
-
-                        image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
+                        scores[i] /= normMax;
+                        if (scores[i] > 1.0) scores[i] = 1.0;
+                        if (scores[i] < 0.0) scores[i] = 0.0;
                     }
+
+                    image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
                 } //end adding in score tracks
 
                 image.AddEvents(predictedEvents);
@@ -295,27 +406,32 @@ namespace AnalysisPrograms
             for (int s = 0; s < scoresList.Count; s++)
             {
                 double[] scores    = scoresList[s];
+                double[] newScores = new double[frameCount];
                 if ((scores == null) || (scores.Length == frameCount))
                 {
-                    newList.Add(scores);
-                    continue;
+                    newScores = scores;
                 } else
                 if(scores.Length == frameCount * 2)
                 {
-                    double[] newScores = new double[frameCount];
                     for (int i = 0; i < frameCount; i++) newScores[i] = scores[i*2]; // take every second sample
-                    newList.Add(newScores);
-                    continue;
                 } else
                 if (frameCount == scores.Length * 2)
                 {
-                    double[] newScores = new double[frameCount];
                     for (int i = 0; i < frameCount; i++) newScores[i] = scores[i / 2]; // take every sample twice
-                    newList.Add(newScores);
-                    continue;
                 }
-                else Console.WriteLine("WARNING: WARNING: Score array not of correct length for display.");
-                
+                else
+                {
+                    Console.WriteLine("WARNING: Score array has been recalculated from {0} items to {1} items for display.", scores.Length, frameCount);
+                    double ratio = scores.Length / frameCount;
+                    for (int i = 0; i < frameCount; i++)
+                    {
+                        int index = (int)Math.Round(i * ratio);
+                        newScores[i] = scores[index]; 
+                    }
+                }
+
+                newList.Add(newScores);
+                continue;
             }
             return newList;
         } // ConvertScoreArrayLengths()

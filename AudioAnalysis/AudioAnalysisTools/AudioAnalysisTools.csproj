@@ -148,6 +148,7 @@
     <Compile Include="Sonogram\BaseSonogramConfig.cs" />
     <Compile Include="Sonogram\Image_MultiTrack.cs" />
     <Compile Include="Sonogram\Image_Track.cs" />
+    <Compile Include="SprTools.cs" />
     <Compile Include="Template\BaseTemplate.cs" />
     <Compile Include="Template\Template_CC.cs" />
     <Compile Include="Template\Template_CCAuto.cs" />

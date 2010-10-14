@@ -51,92 +51,19 @@ namespace AudioAnalysisTools
         }
 
 
-        /// <summary>
-        /// This method converts a matrix of doubles to binary values (+, -) and then to trinary matrix of (-,0,+) values.
-        /// Purpose is to encircle the required shape with a halo of -1 values and set values outside the halo to zero.
-        /// This helps to define an arbitrary shape despite enclosing it in a rectangular matrix.
-        /// The algorithm starts from the four corners of matrix and works towards the centre.
-        /// This approach yields less than perfect result and the final symbolic matrix should be edited manually.
-        /// </summary>
-        /// <param name="target"></param>
-        /// <returns></returns>
-        //public static char[,] Target2TrinarySymbols(double[,] target, double threshold)
-        //{
-        //    int rows = target.GetLength(0);
-        //    int cols = target.GetLength(1);
-
-        //    //A: convert target to binary using threshold
-        //    int[,] binary = new int[rows, cols];
-        //    for (int i = 0; i < rows; i++)
-        //        for (int j = 0; j < cols; j++)
-        //            if (target[i, j] > threshold) binary[i, j] = 1;
-        //            else binary[i, j] = -1;
-
-        //    //B: convert numeric binary to symbolic binary
-        //    char[,] symbolic = new char[rows, cols];
-
-        //    for (int i = 0; i < rows; i++)
-        //        for (int j = 0; j < cols; j++)
-        //            if (target[i, j] > threshold) symbolic[i, j] = '+';
-        //            else symbolic[i, j] = '-';
-
-        //    int halfRows = rows / 2;
-        //    int halfCols = cols / 2;
-
-        //    //C: convert symbolic binary to symbolic trinary. Add in '0' for 'do not care'.
-        //    //work from the four corners - start top left
-        //    for (int r = 1; r < halfRows + 1; r++)
-        //        for (int c = 1; c < halfCols + 1; c++)
-        //        {
-        //            int sum = (int)(binary[r - 1, c - 1] + binary[r, c - 1] + binary[r + 1, c - 1] + binary[r, c - 1] + binary[r, c] + binary[r, c + 1] + binary[r + 1, c - 1] + binary[r + 1, c] + binary[r + 1, c + 1] + binary[r + 2, c + 2]);
-
-        //            if (sum == -10) { symbolic[r - 1, c - 1] = '0'; }
-        //        }
-        //    //bottom left
-        //    for (int r = halfRows - 1; r < rows - 1; r++)
-        //        for (int c = 1; c < halfCols + 1; c++)
-        //        {
-        //            int sum = (int)(binary[r - 1, c - 1] + binary[r, c - 1] + binary[r + 1, c - 1] + binary[r, c - 1] + binary[r, c] + binary[r, c + 1] + binary[r + 1, c - 1] + binary[r + 1, c] + binary[r + 1, c + 1] + binary[r - 2, c + 2]);
-
-        //            if (sum == -10) { symbolic[r + 1, c - 1] = '0'; }
-        //        }
-        //    //top right
-        //    for (int r = 1; r < halfRows + 1; r++)
-        //        for (int c = halfCols - 1; c < cols - 1; c++)
-        //        {
-        //            int sum = (int)(binary[r - 1, c - 1] + binary[r, c - 1] + binary[r + 1, c - 1] + binary[r, c - 1] + binary[r, c] + binary[r, c + 1] + binary[r + 1, c - 1] + binary[r + 1, c] + binary[r + 1, c + 1] + binary[r + 2, c - 2]);
-
-        //            if (sum == -10) { symbolic[r - 1, c + 1] = '0'; }
-        //        }
-        //    //bottom right
-        //    for (int r = halfRows - 1; r < rows - 1; r++)
-        //        for (int c = halfCols - 1; c < cols - 1; c++)
-        //        {
-        //            int sum = (int)(binary[r - 1, c - 1] + binary[r, c - 1] + binary[r + 1, c - 1] + binary[r - 1, c] + binary[r, c] + binary[r + 1, c] + binary[r + 1, c + 1] + binary[r, c + 1] + binary[r + 1, c + 1] + binary[r - 2, c - 2]);
-
-        //            if (sum == -10) { symbolic[r + 1, c + 1] = '0'; }
-        //        }
-        //    return symbolic;
-        //}
-
-
-
-
-
-        //public static char[,] Target2BinarySymbols(double[,] matrix, double threshold)
-        //{
-        //    int rows = matrix.GetLength(0);
-        //    int cols = matrix.GetLength(1);
-        //    char[,] symbolic = new char[rows, cols];
-
-        //    for (int i = 0; i < rows; i++)
-        //        for (int j = 0; j < cols; j++)
-        //            if (matrix[i, j] > threshold) symbolic[i, j] = '+';
-        //            else symbolic[i, j] = '-';
-
-        //    return symbolic;
-        //}
-
+        public static char[,] ReadTextFile2CharMatrix(string fileName)
+        {
+            List<string> lines = FileTools.ReadTextFile(fileName);
+            int rows = lines.Count;
+            int cols = lines[0].Length;
+            var matrix = new char[rows, cols];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                {
+                    matrix[r, c] = (lines[r].ToCharArray())[c];
+                }
+            return matrix;
+        }
 
 
 
@@ -151,10 +78,10 @@ namespace AudioAnalysisTools
         /// <param name="segments"></param>
         /// <param name="minHz"></param>
         /// <param name="maxHz"></param>
-        /// <param name="minDuration"></param>
+        /// <param name="dBThreshold"></param>
         /// <returns></returns>
         public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectralSonogram sonogram, 
-                                    List<AcousticEvent> segments, int minHz, int maxHz, double minDuratio)
+                                    List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
             if (segments == null) return null;
@@ -214,8 +141,9 @@ namespace AudioAnalysisTools
                     scores[r] = max / (double)positiveCount;
 
                     //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    if (r % 100 == 0) { Console.Write("."); }
-                    if (scores[r] < 3.0) r += 4; //skip where score is low
+                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
+                    //if (r % 100 == 0) { Console.Write("."); }
+                    if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment
                 Console.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT."); 
@@ -224,6 +152,94 @@ namespace AudioAnalysisTools
             var tuple = System.Tuple.Create(scores);
             return tuple;
         }//Execute
+
+
+        /// <summary>
+        /// Use this method to find match in sonogram to a symbolic definition of a bird call.
+        /// That is, the template should be matrix of binary or trinary values.
+        /// </summary>
+        /// <param name="template"></param>
+        /// <param name="dynamicRange"></param>
+        /// <param name="sonogram"></param>
+        /// <param name="segments"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="dBThreshold"></param>
+        /// <returns></returns>
+        public static System.Tuple<double[]> Execute_Spr_Match(char[,] template, SpectralSonogram sonogram,
+                                    List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
+        {
+            int lineLength = 10;
+            dBThreshold = 9;
+
+            Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET (SPR).");
+            if (segments == null) return null;
+            int minBin = (int)(minHz / sonogram.FBinWidth);
+            int maxBin = (int)(maxHz / sonogram.FBinWidth);
+            int templateHeight = template.GetLength(0);
+            int templateWidth = template.GetLength(1);
+            int cellCount = templateHeight * templateWidth;
+
+
+            int positiveCount = SprTools.CountTemplateChars(template);
+            Log.WriteLine("TEMPLATE: Number of POS cells/total cells = {0}/{1}", positiveCount, cellCount);
+            // Log.WriteLine("TEMPLATE: Number of NEG cells/total cells = {0}/{1}", negativeCount, cellCount);
+            char[,] charogram = SprTools.Target2SymbolicTracks(sonogram.Data, dBThreshold, lineLength);
+
+            var m = DataTools.MatrixTranspose(charogram);
+            FileTools.WriteMatrix2File(m, "C:\\SensorNetworks\\Output\\FELT_MultiOutput\\char.txt");
+
+            double[] scores = new double[sonogram.FrameCount];
+
+
+            foreach (AcousticEvent av in segments)
+            {
+                Log.WriteLine("SEARCHING SEGMENT.");
+                int startRow = (int)Math.Floor(av.StartTime * sonogram.FramesPerSecond);
+                int endRow = (int)Math.Floor(av.EndTime * sonogram.FramesPerSecond);
+                if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
+                int stopRow = endRow - templateHeight;
+                if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
+
+                for (int r = startRow; r < stopRow; r++)
+                {
+                    double max = -double.MaxValue;
+                    int binBuffer = 10;
+                    for (int bin = -binBuffer; bin < +binBuffer; bin++)
+                    {
+                        int c = minBin + bin;
+                        if (c < 0) c = 0;
+                        double crossCor = 0.0;
+                        for (int i = 0; i < templateHeight; i++)
+                        {
+                            for (int j = 0; j < templateWidth; j++)
+                            {
+                                crossCor += sonogram.Data[r + i, c + j] * template[i, j];
+                            }
+                        }
+                        //var image = BaseSonogram.Data2ImageData(matrix);
+                        //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
+
+                        if (crossCor > max) max = crossCor;
+                    } // end freq bins
+
+                    //following line yields score = av of PosCells - av of NegCells.
+                    scores[r] = max / (double)positiveCount;
+
+                    //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
+                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
+                    //if (r % 100 == 0) { Console.Write("."); }
+                    if (scores[r] < dBThreshold) r += 3; //skip where score is low
+
+                } // end of rows in segment
+                Console.WriteLine("\nFINISHED SEARCHING SEGMENT FOR ACOUSTIC EVENT.");
+            } // foreach (AcousticEvent av in segments)
+
+            var tuple = System.Tuple.Create(scores);
+            return tuple;
+        } //Execute_Spr_Match
+
+
 
 
         public static int CountPositives(double[,] m)
