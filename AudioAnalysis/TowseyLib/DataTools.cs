@@ -1019,18 +1019,24 @@ namespace TowseyLib
 			return (ret);
 		}
 
-        //public static double[,] MatrixTranspose(double[,] m)
-        //{
-        //    int rows = m.GetLength(0);
-        //    int cols = m.GetLength(1);
-        //    double[,] ret = new double[cols, rows];
-        //    for (int i = 0; i < rows; i++)
-        //    {
-        //        for (int j = 0; j < cols; j++)
-        //            ret[j, i] = m[i, j];
-        //    }
-        //    return (ret);
-        //}
+        /// <summary>
+        /// transforms a matrix of char.
+        /// Used for Syntatctic pttern recognition
+        /// </summary>
+        /// <param name="M">the matrix to transform</param>
+        /// <returns></returns>
+
+        public static char[,] MatrixTranspose(char[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new char[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[r, c];
+            return ret;
+        }
+
         /// <summary>
         /// performs a matrix transform
         /// </summary>
