@@ -137,6 +137,7 @@ namespace AudioAnalysisTools
                 g.DrawLine(p2, x + 1, y1, x + 1, y2);
                 //g.DrawLine(p2, x + 2, y1, x + 2, y2);
                 //g.DrawLine(p2, x + 3, y1, x + 3, y2);
+                g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
             }
         }
 

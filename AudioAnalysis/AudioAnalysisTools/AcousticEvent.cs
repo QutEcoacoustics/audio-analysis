@@ -33,9 +33,9 @@ namespace AudioAnalysisTools
         /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }
         /// <summary> Time between frame starts in seconds. Inverse of FramesPerSecond</summary>
-        public double FrameOffset { get; private set; }
+        public double FrameOffset { get; set; }
         /// <summary> Number of frame starts per second. Inverse of the frame offset</summary>
-        public double FramesPerSecond { get; private set; }
+        public double FramesPerSecond { get; set; }
 
 
         //PROPERTIES OF THE EVENTS i.e. Name, SCORE ETC
