@@ -11,17 +11,10 @@ namespace QutSensors.CacheProcessor
 {
     using System;
     using System.Configuration;
-    using System.IO;
     using System.Linq;
     using System.ServiceProcess;
 
-    using Autofac;
-
     using QutSensors.Business;
-    using QutSensors.Business.Audio;
-    using QutSensors.Business.Cache;
-    using QutSensors.Business.Providers;
-    using QutSensors.Business.Storage;
 
     /// <summary>
     /// Cache Job Processor Program.
@@ -71,26 +64,13 @@ namespace QutSensors.CacheProcessor
         /// </summary>
         private static void SetupIocContainer()
         {
-            var builder = new ContainerBuilder();
+            string ffmpegExe = ConfigurationManager.AppSettings["AudioUtilityFfmpegExeFullPath"];
+            string wvunpackExe = ConfigurationManager.AppSettings["AudioUtilityWvunpackExeFullPath"];
+            string mp3SpltExe = ConfigurationManager.AppSettings["AudioUtilityMp3SpltExeFullPath"];
 
-            builder.RegisterType<AudioReadingManager>()
-                    .WithParameter(new NamedParameter("audioSegmentationPolicy", new SegmentCachePolicy()))
-                    .WithParameter(new NamedParameter("spectrogramCachePolicy", new SpectrogramCachePolicy()))
-                    .As<IAudioReadingManager>();
-            builder.RegisterType<FileSystemDataStagingProvider>().As<IDataStagingProvider>();
-            builder.RegisterType<DShowAudioMetadataProvider>().As<IAudioMetadataProvider>();
-            builder.RegisterType<CacheManager>().As<ICacheManager>();
-            builder.RegisterType<CacheJobProcessor>();
-            builder.RegisterType<AudioTransformer>().As<IAudioTransformer>();
-            builder.RegisterType<AudioToolDirectShow>().As<IAudioTool>();
-            builder.RegisterType<CacheTransformer>();
-            builder.RegisterType<TowseySignalToImage>().As<ISignalToImage>();
+            string audioDataStorageDir = ConfigurationManager.AppSettings["AudioDataStorageDir"];
 
-            // this can be changed to MigrateAudioDataStorage or FileSystemAudioDataStorage as needed for extracting
-            // audio from db.
-            builder.RegisterType<SqlFileStreamAudioDataStorage>().As<IAudioDataStorage>();
-
-            QutDependencyContainer.Instance.Container = builder.Build();
+            QutDependencyContainer.Instance.BuildIoCContainer(ffmpegExe, wvunpackExe, mp3SpltExe, audioDataStorageDir);
         }
 
         private static void Export()

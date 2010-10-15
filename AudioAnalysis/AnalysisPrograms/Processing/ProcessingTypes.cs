@@ -43,6 +43,8 @@ namespace AnalysisPrograms.Processing
                 return;
             }
 
+            SaveAeCsv(events, workingDir, audioFilePath);
+
             if (events != null && events.Count > 0)
             {
                 var recording = new AudioRecording(audioFilePath);
@@ -58,6 +60,28 @@ namespace AnalysisPrograms.Processing
                 AED.GenerateImage(audioFilePath, workingDir, sonogram, events);
             }
 
+        }
+
+        private static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
+        {
+            if (!SaveAcousticEvents)
+            {
+                return;
+            }
+            
+            var aes = events.Select(e => new { e.StartTime, e.EndTime, e.MinFreq, e.MaxFreq });
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Start time, duration, min freq, max freq");
+
+            foreach (var item in aes)
+            {
+                sb.AppendLine(
+                    String.Format("{0},{1},{2},{3}", item.StartTime, item.EndTime - item.StartTime, item.MinFreq, item.MaxFreq));
+            }
+
+            File.WriteAllText(
+                Path.Combine(workingDir, Path.GetFileNameWithoutExtension(audioFilePath) + ".csv"), sb.ToString());
         }
 
         /// <summary>
