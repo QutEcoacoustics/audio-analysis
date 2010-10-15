@@ -9,7 +9,6 @@
 
 namespace QutSensors.CacheProcessor
 {
-    using System.IO;
     using System.ServiceProcess;
 
     using Autofac;
@@ -70,22 +69,6 @@ namespace QutSensors.CacheProcessor
 
                 processor =
                     CreateProcessor(new MultiLogProvider(new EventLogProvider(EventLog), new TextFileLogProvider(logDir)));
-            }
-
-            if (args != null && args.Length > 0)
-            {
-                switch (args[0].ToLowerInvariant())
-                {
-                    case "audio":
-                        processor.RestrictToType = CacheJobType.AudioSegmentation;
-                        break;
-                    case "spectrogram":
-                        processor.RestrictToType = CacheJobType.SpectrogramGeneration;
-                        break;
-                    default:
-                        processor.RestrictToType = null;
-                        break;
-                }
             }
 
             processor.Start();

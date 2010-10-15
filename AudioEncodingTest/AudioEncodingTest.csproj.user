@@ -5,4 +5,7 @@
     <StartWorkingDirectory>
     </StartWorkingDirectory>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartArguments>c:\data "cane toad.wav"</StartArguments>
+  </PropertyGroup>
 </Project>

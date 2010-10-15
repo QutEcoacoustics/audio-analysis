@@ -214,10 +214,10 @@ namespace QutSensors.CacheProcessor
             var beginEnd = string.Format(
                 " {0}.{1}.{2:00} {3}.{4}.{5:00} ",
                 Math.Floor(startTs.TotalMinutes),
-                startTs.ToString("ss"),
+                startTs.TsToString("ss"),
                 startTs.Milliseconds / 10,
                 Math.Floor(endTs.TotalMinutes),
-                endTs.ToString("ss"),
+                endTs.TsToString("ss"),
                 endTs.Milliseconds / 10);
 
             var fileName = Path.GetFileNameWithoutExtension(tempFilePath);
@@ -344,10 +344,10 @@ namespace QutSensors.CacheProcessor
             var audioFileName = FileNameTemplate
                 .Replace("@f", name)
                 .Replace("@m", Math.Floor(startTs.TotalMinutes).ToString(TwoDigits))
-                .Replace("@s", startTs.ToString(SecondTwoDigits))
+                .Replace("@s", startTs.TsToString(SecondTwoDigits))
                 .Replace("@h", (startTs.Milliseconds / 10).ToString(TwoDigits))
                 .Replace("@M", Math.Floor(endTs.TotalMinutes).ToString(TwoDigits))
-                .Replace("@S", endTs.ToString(SecondTwoDigits))
+                .Replace("@S", endTs.TsToString(SecondTwoDigits))
                 .Replace("@H", (endTs.Milliseconds / 10).ToString(TwoDigits))
                 ;
 
