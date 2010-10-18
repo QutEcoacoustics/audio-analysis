@@ -252,7 +252,7 @@ namespace AudioAnalysisTools
         /// </summary>
         /// <param name="M"></param>
         /// <returns></returns>
-        public static double[,] Data2ImageData(double[,] M)
+        public static System.Tuple<double[,], double, double> Data2ImageData(double[,] M)
         {
             int width = M.GetLength(0);   // Number of spectra in sonogram
             int fftBins = M.GetLength(1);
@@ -272,7 +272,7 @@ namespace AudioAnalysisTools
                     else if (c >= 256) c = 255;
                     Mt[fftBins - 1 - f, t] = c;
                 }
-            return Mt;
+            return System.Tuple.Create(Mt, min, max);
         }
 
         protected virtual Image GetImage(int binHeight, bool doHighlightSubband, bool add1kHzLines)
