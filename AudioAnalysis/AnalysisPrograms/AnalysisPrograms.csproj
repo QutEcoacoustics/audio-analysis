@@ -219,6 +219,6 @@
     <PreBuildEvent>IF EXIST "$(SolutionDir)WebFrontend\Processor\" (copy "$(SolutionDir)AudioAnalysis\RecogniserParamFiles\*.*"  "$(SolutionDir)WebFrontend\Processor\ParameterFiles\")</PreBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(SolutionDir)AudioTools\Executables" "$(TargetDir)Executables\" /S /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)..\..\AudioTools\Executables" "$(TargetDir)Executables\" /S /Y</PostBuildEvent>
   </PropertyGroup>
 </Project>
