@@ -36,7 +36,7 @@ namespace AnalysisPrograms
         //createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong_Params.txt  FELT_Currawong2
         //CURLEW
         //createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW2\FELT_CURLEW_Params.txt  FELT_Curlew2
-
+        //createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-213000.wav"        C:\SensorNetworks\Output\FELT_CURLEW3\FELT_CURLEW_Params.txt  FELT_Curlew3
         
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME          = "CALL_NAME";
@@ -45,14 +45,16 @@ namespace AnalysisPrograms
         public static string key_EVENT_END          = "EVENT_END";
         public static string key_MIN_HZ             = "MIN_HZ";
         public static string key_MAX_HZ             = "MAX_HZ";
+        public static string key_TEMPLATE_MIN_INTENSITY = "TEMPLATE_MIN_INTENSITY";
+        public static string key_TEMPLATE_MAX_INTENSITY = "TEMPLATE_MAX_INTENSITY";
         public static string key_FRAME_OVERLAP      = "FRAME_OVERLAP";
         public static string key_SMOOTH_WINDOW      = "SMOOTH_WINDOW";
+        public static string key_SOURCE_RECORDING   = "SOURCE_RECORDING";
         public static string key_MIN_DURATION       = "MIN_DURATION";
         public static string key_DECIBEL_THRESHOLD  = "DECIBEL_THRESHOLD";        // Used when extracting analog template from spectrogram.
         public static string key_TEMPLATE_THRESHOLD = "TEMPLATE_THRESHOLD";       // Value in 0-1. Used when preparing binary, trinary and syntactic templates.
         public static string key_DONT_CARE_NH       = "DONT_CARE_BOUNDARY";       // Used when preparing trinary template.
         public static string key_LINE_LENGTH        = "SPR_LINE_LENGTH";          // Used when preparing syntactic PR template.
-
         public static string key_DRAW_SONOGRAMS     = "DRAW_SONOGRAMS";
 
 
@@ -69,15 +71,15 @@ namespace AnalysisPrograms
             Segment.CheckArguments(args);
 
             string recordingPath = args[0];
-            string iniPath       = args[1];
-            string targetName    = args[2]; //prefix of name of created files 
+            string iniPath       = args[1]; // path of the ini or params file
+            string targetName    = args[2]; // prefix of name of created files 
 
-            string outputDir   = Path.GetDirectoryName(iniPath) + "\\";
-           // string opPath      = outputDir + targetName + "_info.txt";
-            string targetPath         = outputDir + targetName + "_target.txt";
-            string targetNoNoisePath  = outputDir + targetName + "_targetNoNoise.txt";
-            string noisePath          = outputDir + targetName + "_noise.txt";
-            string targetImagePath    = outputDir + targetName + "_target.png";
+            string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
+            string targetPath        = outputDir + targetName + "_target.txt";
+            string targetNoNoisePath = outputDir + targetName + "_targetNoNoise.txt";
+            string noisePath         = outputDir + targetName + "_noise.txt";
+            string targetImagePath   = outputDir + targetName + "_target.png";
+            string paramsPath        = outputDir + targetName + "_params.txt";
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
@@ -99,40 +101,45 @@ namespace AnalysisPrograms
             double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
             int DRAW_SONOGRAMS       = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
-            //iii: Extract the event as TEMPLATE
-            //#############################################################################################################################################
+            // iii: Extract the event as TEMPLATE
+            // #############################################################################################################################################
             Log.WriteLine("# Start extracting target event.");
             var results = Execute_Extraction(recording, eventStart, eventEnd, minHz, maxHz, frameOverlap, dBThreshold);
-            var sonogram = results.Item1;
-            var extractedEvent = results.Item2;
-            var target = results.Item3;            //event's matrix of target values before noise removal
-            var noiseSubband = results.Item4;      //event's array  of noise  values
-            var targetMinusNoise = results.Item5;  //event's matrix of target values after noise removal
+            var sonogram           = results.Item1;
+            var extractedEvent     = results.Item2;
+            var template           = results.Item3;  // event's matrix of target values before noise removal
+            var noiseSubband       = results.Item4;  // event's array  of noise  values
+            var templateMinusNoise = results.Item5;  // event's matrix of target values after noise removal
             Log.WriteLine("# Finished extracting target event.");
-            //#############################################################################################################################################
+            // #############################################################################################################################################
 
-            //iv: SAVE extracted event as matrix of dB intensity values
-            FileTools.WriteMatrix2File(target, targetPath);
-            FileTools.WriteMatrix2File(targetMinusNoise, targetNoNoisePath);
+            // iv: SAVE extracted event as matrix of dB intensity values
+            FileTools.WriteMatrix2File(template, targetPath);                  // write template values to file PRIOR to noise removal.
+            FileTools.WriteMatrix2File(templateMinusNoise, targetNoNoisePath); // write template values to file AFTER to noise removal.
             FileTools.WriteArray2File(noiseSubband, noisePath);
 
-            //v: SAVE images of extracted event in the original sonogram 
-            if (DRAW_SONOGRAMS > 0)
-            {
-                string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                DrawSonogram(sonogram, sonogramImagePath, extractedEvent);
+            // v: SAVE image of extracted event in the original sonogram 
+            string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
+            DrawSonogram(sonogram, sonogramImagePath, extractedEvent);
 
-                //SAVE extracted event as noise reduced image 
-                //alter matrix dynamic range so user can determine correct dynamic range from image 
-                //matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange); //set event's dynamic range
-                var targetImage = BaseSonogram.Data2ImageData(targetMinusNoise);
-                ImageTools.DrawMatrix(targetImage, 1, 1, targetImagePath);
-            }
+            // vi: SAVE extracted event as noise reduced image 
+            // alter matrix dynamic range so user can determine correct dynamic range from image 
+            // matrix = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);       // set event's dynamic range
+            var results1    = BaseSonogram.Data2ImageData(templateMinusNoise);
+            var targetImage = results1.Item1;
+            var min = results1.Item2;
+            var max = results1.Item3;
+            ImageTools.DrawMatrix(targetImage, 1, 1, targetImagePath);
 
+            // vii: SAVE parameters file
+            dict.Add(key_SOURCE_RECORDING, sonogram.Configuration.SourceFName);
+            dict.Add(key_TEMPLATE_MIN_INTENSITY, min.ToString());
+            dict.Add(key_TEMPLATE_MAX_INTENSITY, max.ToString());
+            WriteParamsFile(paramsPath, dict);
 
             Log.WriteLine("# Finished everything!");
             Console.ReadLine();
-        } //Dev()
+        } // Dev()
 
 
 
@@ -186,7 +193,6 @@ namespace AnalysisPrograms
         {
             Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            //double maxScore = 50.0; //assumed max posisble oscillations per second
 
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
@@ -200,6 +206,41 @@ namespace AnalysisPrograms
                 image.Save(path);
             }
         } //end DrawSonogram
+
+        public static void WriteParamsFile(string paramsPath, Dictionary<string, string> dict)
+        {
+            var list = new List<string>();
+
+            list.Add("# FELT TEMPLATE");
+            list.Add("\nDATE="+DateTime.Now+"\n");
+            list.Add("CALL_NAME="+ dict[key_CALL_NAME]);
+
+            list.Add("FRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
+            list.Add("#Do segmentation prior to search.");
+            list.Add("DO_SEGMENTATION=false");
+            // list.Add("# Window (duration in seconds) for smoothing acoustic intensity before segmentation.");
+            // list.Add("SMOOTH_WINDOW=0.333");
+
+            list.Add("EVENT_SOURCE" + dict[key_SOURCE_RECORDING]);
+            list.Add("#EVENT BOUNDS");
+            list.Add("# Start and end of an event. (Seconds into recording.) Min and max freq. Min and max intensity");
+            list.Add("#Time:      " + dict[key_EVENT_START] + " to End = " + dict[key_EVENT_END] + "seconds.");
+            list.Add("#Frequency: " + dict[key_MIN_HZ]+" to "+ dict[key_MAX_HZ] + " Herz.");
+            list.Add("#Intensity: " + dict[key_TEMPLATE_MIN_INTENSITY] + " to " + dict[key_TEMPLATE_MAX_INTENSITY] + " dB.");
+            list.Add("TEMPLATE_MAX_INTENISTY="+dict[key_TEMPLATE_MAX_INTENSITY]);
+
+            list.Add("#DECIBEL THRESHOLD FOR EXTRACTING template FROM SPECTROGRAM - dB above background noise");
+            list.Add("DECIBEL_THRESHOLD="+ dict[key_DECIBEL_THRESHOLD]); //threshold to set MIN DECIBEL BOUND
+            list.Add("#DON'T CARE BOUNDARY FOR PREPARING TRINARY template");
+            list.Add("DONT_CARE_BOUNDARY"+ dict[key_DONT_CARE_NH]);
+            list.Add("#LINE LENGTH FOR PREPARING SYNTACTIC template");
+            list.Add("SPR_LINE_LENGTH=" + dict[key_LINE_LENGTH]);
+
+            list.Add("# save a sonogram for each recording that contained a hit ");
+            list.Add("DRAW_SONOGRAMS=2");
+
+            FileTools.WriteTextFile(paramsPath, list);
+        }
 
 
     }//class

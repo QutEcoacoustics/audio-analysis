@@ -145,8 +145,8 @@ namespace AnalysisPrograms
                 //SAVE extracted event as noise reduced image 
                 //alter matrix dynamic range so user can determine correct dynamic range from image 
                 //reducedSono = SNR.SetDynamicRange(reducedSono, 0.0, dynamicRange); //set event's dynamic range
-                var targetImage = BaseSonogram.Data2ImageData(reducedSono);
-                ImageTools.DrawMatrix(targetImage, 1, 1, reducedPath);
+                var results1 = BaseSonogram.Data2ImageData(reducedSono);
+                ImageTools.DrawMatrix(results1.Item1, 1, 1, reducedPath);
 
                 DrawSonogram(sonogram, orHits, orHitsPath);
 

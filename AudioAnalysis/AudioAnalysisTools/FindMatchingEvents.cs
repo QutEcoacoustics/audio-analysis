@@ -424,7 +424,8 @@ namespace AudioAnalysisTools
             v1 = DataTools.normalise2UnitLength(v1);
 
             string imagePath2 =  @"C:\SensorNetworks\Output\FELT_Currawong\target.png";
-            var image = BaseSonogram.Data2ImageData(target);
+            var result1 = BaseSonogram.Data2ImageData(target);
+            var image   = result1.Item1;
             ImageTools.DrawMatrix(image, 1, 1, imagePath2);
 
 
