@@ -15,8 +15,9 @@ namespace AudioAnalysisTools
 
 
         #region Properties
-        public string SourceFName { get; set; }
-        public string CallName { get; set; }   // label to use for segmentation of call and silence.
+        public string SourceFName { get; set; }     // name of source file for recordingt
+        public string SourceDirectory { get; set; } // location of source file - used only for debugging.
+        public string CallName { get; set; }        // label to use for segmentation of call and silence.
         public TimeSpan Duration { get; set; }
 
         public int WindowSize { get; set; }

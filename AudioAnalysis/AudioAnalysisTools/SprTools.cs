@@ -48,6 +48,8 @@ namespace AudioAnalysisTools
                 for (int c = 0; c < cols; c++) symbolic[r, c] = '-';
             }
 
+            double[,] intensityScores = new double[rows, cols];
+
             double sumThreshold = lineLength * threshold; //require average of threshold dB per pixel.
             //char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' }; //10 degree jumps
             //90 degree angle = symbol 'i'
@@ -65,8 +67,10 @@ namespace AudioAnalysisTools
                     {
                         int degrees = result.Item1;
                         double intensity = result.Item2;
-                        if (intensity > sumThreshold)
+                        
+                        if ((intensity > sumThreshold) && (intensity > intensityScores[r, c]))
                         {
+                            //if (intensity > intensityScores[r, c]) intensityScores[r, c] = intensity; // store the intensity
                             double cosAngle = Math.Cos(Math.PI * degrees / 180);
                             double sinAngle = Math.Sin(Math.PI * degrees / 180);
                             //symbolic[r, c] = code[degrees / resolutionAngle];
@@ -74,7 +78,7 @@ namespace AudioAnalysisTools
                             {
                                 int row = r + (int)(cosAngle * j);
                                 int col = c + (int)(sinAngle * j);
-                                //if (symbolic[row, col] == ' ') 
+                                if (intensity > intensityScores[row, col]) 
                                 symbolic[row, col] = code[degrees / resolutionAngle];
                             } // line length
 
@@ -83,8 +87,33 @@ namespace AudioAnalysisTools
                 } // columns
             } // rows
 
+            CleanSymbolicTracks(symbolic);
             return symbolic;
         } // Target2SymbolicTracks()
+
+
+        /// <summary>
+        /// Cleans up a symbolic matrix
+        /// </summary>
+        /// <param name="inputM"></param>
+        public static void CleanSymbolicTracks(char[,] inputM)
+        {
+            int rows = inputM.GetLength(0);
+            int cols = inputM.GetLength(1);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 1; c < cols-2; c++)
+                { 
+                    if (inputM[r,c] == '-') continue;
+
+                    if ((inputM[r, c-1] == '-') && (inputM[r, c+2] == '-'))
+                    {
+                        inputM[r, c]   = '-';
+                        inputM[r, c+1] = '-';
+                    }
+                } // cols
+            } // rows
+        }
 
         /// <summary>
         /// counts the symbols in an SPR template. Exclude the '-' char which is just background instaed of space.

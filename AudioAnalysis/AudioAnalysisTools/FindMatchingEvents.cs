@@ -118,30 +118,40 @@ namespace AudioAnalysisTools
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double max = -double.MaxValue;
+                    int maxOnCount= 0;
                     int binBuffer = 10;
                     for (int bin = -binBuffer; bin < +binBuffer; bin++) 
                     {
                         int c = minBin + bin; 
                         if(c < 0) c = 0;
                         double crossCor = 0.0;
+                        int onCount = 0;
+
                         for (int i = 0; i < templateHeight; i++)
                         {
                             for (int j = 0; j < templateWidth; j++)
                             {
                                 crossCor += sonogram.Data[r + i, c + j] * template[i, j];
+                                if ((template[i, j] > 0) && (sonogram.Data[r + i, c + j] > 0.0)) onCount++;
                             }
                         }
                         //var image = BaseSonogram.Data2ImageData(matrix);
                         //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
-                        if (crossCor > max) max = crossCor;
+                        if (crossCor > max)
+                        {
+                            max = crossCor;
+                            maxOnCount = onCount;
+                        }
                     } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
                     scores[r] = max / (double)positiveCount;
 
+                    // display percent onCount
+                    int pcOnCount = maxOnCount * 100 / positiveCount;
                     //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
+                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
                     //if (r % 100 == 0) { Console.Write("."); }
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
