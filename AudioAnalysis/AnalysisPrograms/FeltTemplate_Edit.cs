@@ -16,9 +16,9 @@ namespace AnalysisPrograms
     class FeltTemplate_Edit
     {
         //CURRAWONG
-        //edittemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong_Params.txt  FELT_Currawong2
+        //edittemplate_felt C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong2_Params.txt
         //CURLEW
-        //edittemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW2\FELT_CURLEW_Params.txt  FELT_Curlew2
+        //edittemplate_felt C:\SensorNetworks\Output\FELT_CURLEW2\FELT_Curlew2_Params.txt
 
 
         public static void Dev(string[] args)
@@ -34,11 +34,14 @@ namespace AnalysisPrograms
             //SET VERBOSITY
             Log.Verbosity = 1;
 
-            Segment.CheckArguments(args);
+            //Segment.CheckArguments(args); //one argument only
 
-            string recordingPath   = args[0];
-            string iniPath         = args[1];
-            string targetName      = args[2];   //prefix of name of created files 
+           // string recordingPath   = args[0];
+            string iniPath         = args[0];
+            //string targetName     = args[2];   //prefix of name of created files 
+
+            string[] nameComponents= (Path.GetFileNameWithoutExtension(iniPath)).Split('_');
+            string targetName      =  nameComponents[0] +"_"+ nameComponents[1];
 
             //i: Set up the file names
             string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
@@ -54,15 +57,16 @@ namespace AnalysisPrograms
             //ii: READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
-            double templateThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);
-            int neighbourhood        = Int32.Parse(dict[FeltTemplate_Create.key_DONT_CARE_NH]);   //the do not care neighbourhood
-            int lineLength           = Int32.Parse(dict[FeltTemplate_Create.key_LINE_LENGTH]);
-
+            double dB_Threshold         = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
+            double maxTemplateIntensity = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_MAX_INTENSITY]);
+            int neighbourhood           = Int32.Parse(dict[FeltTemplate_Create.key_DONT_CARE_NH]);   //the do not care neighbourhood
+            int lineLength              = Int32.Parse(dict[FeltTemplate_Create.key_LINE_LENGTH]);
+            double templateThreshold    = dB_Threshold / maxTemplateIntensity;
+            int bitmapThreshold         = (int)(255 - (templateThreshold * 255));
 
             Log.WriteLine("#################################### WRITE THE BINARY TEMPLATE ##################################");
-            int intThreshold = (int)(255 - (templateThreshold * 255));
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(targetImagePath);
-            var binaryBmp = Image2BinaryBitmap(bitmap, intThreshold);
+            var binaryBmp = Image2BinaryBitmap(bitmap, bitmapThreshold);
             binaryBmp.Save(binaryOpPath);
 
             Log.WriteLine("#################################### WRITE THE TRINARY TEMPLATE ##################################");
@@ -116,10 +120,10 @@ namespace AnalysisPrograms
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
-            string[] arguments = new string[3];
-            arguments[0] = recordingPath;
-            arguments[1] = iniPath;
-            arguments[2] = targetName;
+            //string[] arguments = new string[3];
+            //arguments[0] = recordingPath;
+            //arguments[1] = iniPath;
+            //arguments[2] = targetName;
             //     FindEventsLikeThis.Dev(arguments);
 
 

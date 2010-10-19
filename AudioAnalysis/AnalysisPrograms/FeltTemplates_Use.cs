@@ -40,10 +40,11 @@ namespace AnalysisPrograms
         //felt "C:\SensorNetworks\WavFiles\Length1_2_4_8_16mins\BridgeCreek_1min.wav" C:\SensorNetworks\Output\TestWavDuration\DurationTest_Params.txt events.txt
         //CURLEW
         //felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav" C:\SensorNetworks\Output\FELT_CURLEW\FELT_CURLEW_Params.txt FELT_Curlew1_Curated2_symbol.txt
-        // @"C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-000000.mp3"
         //CURRAWONG
         //felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav" C:\SensorNetworks\Output\FELT_Currawong\FELT_Currawong_Params.txt FELT_Currawong2_curatedBinary.txt
 
+        //MULTIPLE PASSES USING ZIPPED TEMPLATES
+        // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput
 
         public static void Dev(string[] args)
         {
@@ -146,7 +147,6 @@ namespace AnalysisPrograms
                 StringBuilder sb = AcousticEvent.WriteEvents(matchingEvents, str);
                 FileTools.WriteTextFile("opPath", sb.ToString());
 
-
             } // foreach (string zipPath in zipList)
 
 
@@ -188,7 +188,7 @@ namespace AnalysisPrograms
             int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
             double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
-            double templateThreshold = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]);     //min score for an acceptable event
+            double segmentationThreshold = 2.0;  // Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_THRESHOLD]); //min score for an acceptable event
             double dBThreshold = 2.0; // dB threshold
 
 
@@ -222,7 +222,7 @@ namespace AnalysisPrograms
 
             //iii: DO SEGMENTATION
             double maxDuration = Double.MaxValue;  //Do not constrain maximum length of events.
-            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, templateThreshold, minDuration, maxDuration);
+            var tuple1 = AcousticEvent.GetSegmentationEvents((SpectralSonogram)sonogram, doSegmentation, minHz, maxHz, smoothWindow, segmentationThreshold, minDuration, maxDuration);
             var segmentEvents = tuple1.Item1;
 
             //iv: Score sonogram for events matching template

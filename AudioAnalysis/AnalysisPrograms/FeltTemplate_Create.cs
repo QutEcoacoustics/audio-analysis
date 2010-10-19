@@ -30,15 +30,18 @@ namespace AnalysisPrograms
     /// </summary>
     class FeltTemplate_Create
     {
-        //GECKO
-        //createtemplate_felt "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
-        //CURRAWONG
-        //createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong_Params.txt  FELT_Currawong2
-        //CURLEW
-        //createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW2\FELT_CURLEW_Params.txt  FELT_Curlew2
-        //createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-213000.wav"        C:\SensorNetworks\Output\FELT_CURLEW3\FELT_CURLEW_Params.txt  FELT_Curlew3
+        // GECKO
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3"  C:\SensorNetworks\Output\FELT_Gecko\FELT_Gecko_Params.txt  FELT_Gecko1
+        // CURRAWONG2
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_CURRAWONG_Params.txt  FELT_Currawong2
+        // CURRAWONG3
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG3\FELT_CURRAWONG_Params.txt  FELT_Currawong3
+        // CURLEW2
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW2\FELT_CURLEW_Params.txt  FELT_Curlew2
+        // CURLEW3
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-213000.wav"        C:\SensorNetworks\Output\FELT_CURLEW3\FELT_CURLEW_Params.txt  FELT_Curlew3
         
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        // Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
         public static string key_EVENT_START        = "EVENT_START";
@@ -50,6 +53,7 @@ namespace AnalysisPrograms
         public static string key_FRAME_OVERLAP      = "FRAME_OVERLAP";
         public static string key_SMOOTH_WINDOW      = "SMOOTH_WINDOW";
         public static string key_SOURCE_RECORDING   = "SOURCE_RECORDING";
+        public static string key_SOURCE_DIRECTORY   = "SOURCE_DIRECTORY";
         public static string key_MIN_DURATION       = "MIN_DURATION";
         public static string key_DECIBEL_THRESHOLD  = "DECIBEL_THRESHOLD";        // Used when extracting analog template from spectrogram.
         public static string key_TEMPLATE_THRESHOLD = "TEMPLATE_THRESHOLD";       // Value in 0-1. Used when preparing binary, trinary and syntactic templates.
@@ -74,6 +78,8 @@ namespace AnalysisPrograms
             string iniPath       = args[1]; // path of the ini or params file
             string targetName    = args[2]; // prefix of name of created files 
 
+            string recordingFileName = Path.GetFileName(recordingPath);
+            string recordingDirectory= Path.GetDirectoryName(recordingPath);
             string outputDir         = Path.GetDirectoryName(iniPath) + "\\";
             string targetPath        = outputDir + targetName + "_target.txt";
             string targetNoNoisePath = outputDir + targetName + "_targetNoNoise.txt";
@@ -132,7 +138,8 @@ namespace AnalysisPrograms
             ImageTools.DrawMatrix(targetImage, 1, 1, targetImagePath);
 
             // vii: SAVE parameters file
-            dict.Add(key_SOURCE_RECORDING, sonogram.Configuration.SourceFName);
+            dict.Add(key_SOURCE_DIRECTORY, recordingDirectory);
+            dict.Add(key_SOURCE_RECORDING, recordingFileName);
             dict.Add(key_TEMPLATE_MIN_INTENSITY, min.ToString());
             dict.Add(key_TEMPLATE_MAX_INTENSITY, max.ToString());
             WriteParamsFile(paramsPath, dict);
@@ -157,7 +164,7 @@ namespace AnalysisPrograms
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
             recording.Dispose();
-            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
+            Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f2}%, Offset={3:f1}ms, Frames/s={4:f1}",
                                        sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
                                       (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
@@ -212,31 +219,39 @@ namespace AnalysisPrograms
             var list = new List<string>();
 
             list.Add("# FELT TEMPLATE");
-            list.Add("\nDATE="+DateTime.Now+"\n");
-            list.Add("CALL_NAME="+ dict[key_CALL_NAME]);
+            list.Add("DATE="+DateTime.Now);
+            list.Add("\nCALL_NAME="+ dict[key_CALL_NAME]);
 
-            list.Add("FRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
+            list.Add("\nFRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
+
+            list.Add("\n################## SEGMENTATION PARAMS");
             list.Add("#Do segmentation prior to search.");
             list.Add("DO_SEGMENTATION=false");
-            // list.Add("# Window (duration in seconds) for smoothing acoustic intensity before segmentation.");
-            // list.Add("SMOOTH_WINDOW=0.333");
+            list.Add("# Window (duration in seconds) for smoothing acoustic intensity before segmentation.");
+            list.Add("SMOOTH_WINDOW=" + dict[key_SMOOTH_WINDOW]);
+            list.Add("# Minimum duration for the length of a segment (seconds).");
+            list.Add("MIN_DURATION=" + dict[key_MIN_DURATION]);
 
-            list.Add("EVENT_SOURCE" + dict[key_SOURCE_RECORDING]);
-            list.Add("#EVENT BOUNDS");
-            list.Add("# Start and end of an event. (Seconds into recording.) Min and max freq. Min and max intensity");
-            list.Add("#Time:      " + dict[key_EVENT_START] + " to End = " + dict[key_EVENT_END] + "seconds.");
-            list.Add("#Frequency: " + dict[key_MIN_HZ]+" to "+ dict[key_MAX_HZ] + " Herz.");
-            list.Add("#Intensity: " + dict[key_TEMPLATE_MIN_INTENSITY] + " to " + dict[key_TEMPLATE_MAX_INTENSITY] + " dB.");
-            list.Add("TEMPLATE_MAX_INTENISTY="+dict[key_TEMPLATE_MAX_INTENSITY]);
+            list.Add("\n################## RECORDING - SOURCE FILE");
+            list.Add("SOURCE_RECORDING=" + dict[key_SOURCE_RECORDING]);
+            list.Add("SOURCE_DIRECTORY=" + dict[key_SOURCE_DIRECTORY]);
 
-            list.Add("#DECIBEL THRESHOLD FOR EXTRACTING template FROM SPECTROGRAM - dB above background noise");
+            list.Add("\n#EVENT BOUNDS");
+            list.Add("# Start and end of an event (seconds into recording).  Min and max freq (Herz).  Min and max intensity (dB).");
+            list.Add("#Time:      " + dict[key_EVENT_START] + " to " + dict[key_EVENT_END] + " seconds.");
+            list.Add("MIN_HZ=" + dict[key_MIN_HZ]);
+            list.Add("MAX_HZ=" + dict[key_MAX_HZ]);
+            list.Add(String.Format("#Intensity: {0:f2} to {1:f2} dB.", Double.Parse(dict[key_TEMPLATE_MIN_INTENSITY]), Double.Parse(dict[key_TEMPLATE_MAX_INTENSITY])));
+            list.Add(String.Format("TEMPLATE_MAX_INTENSITY={0}\n", dict[key_TEMPLATE_MAX_INTENSITY]));
+
+            list.Add("\n#DECIBEL THRESHOLD FOR EXTRACTING template FROM SPECTROGRAM - dB above background noise");
             list.Add("DECIBEL_THRESHOLD="+ dict[key_DECIBEL_THRESHOLD]); //threshold to set MIN DECIBEL BOUND
             list.Add("#DON'T CARE BOUNDARY FOR PREPARING TRINARY template");
-            list.Add("DONT_CARE_BOUNDARY"+ dict[key_DONT_CARE_NH]);
+            list.Add("DONT_CARE_BOUNDARY="+ dict[key_DONT_CARE_NH]);
             list.Add("#LINE LENGTH FOR PREPARING SYNTACTIC template");
             list.Add("SPR_LINE_LENGTH=" + dict[key_LINE_LENGTH]);
 
-            list.Add("# save a sonogram for each recording that contained a hit ");
+            list.Add("\n# save a sonogram for each recording that contained a hit ");
             list.Add("DRAW_SONOGRAMS=2");
 
             FileTools.WriteTextFile(paramsPath, list);
