@@ -73,7 +73,7 @@ namespace AnalysisPrograms.Processing
             {
                 if (args.Length < 2 || args.Length > 3)
                 {
-                    Console.WriteLine("Require <analysistype> <rundirectory> [<resourcefile>]");
+                    Console.WriteLine("Requires <analysistype> <rundirectory> [<resourcefile>]");
                     return;
                 }
 
@@ -360,6 +360,5 @@ namespace AnalysisPrograms.Processing
                 }
             }
         }
-
     }
 }
