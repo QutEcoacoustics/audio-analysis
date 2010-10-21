@@ -531,7 +531,7 @@ namespace TowseyLib
         double min;
         double max;
         DataTools.MinMax(scores, out min, out max);
-        double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
+        //double[,] histo = NormalDist.get16binDistribution(scores, av, sd);
         Console.WriteLine(" ===== SCORE STATISTICS =====");
         Console.WriteLine("Average ="+av+"+/-"+sd);
         Console.WriteLine("Min score ="+min+"  Max="+max);
