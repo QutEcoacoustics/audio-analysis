@@ -80,8 +80,10 @@ namespace AnalysisPrograms.Processing
                     String.Format("{0},{1},{2},{3}", item.StartTime, item.EndTime - item.StartTime, item.MinFreq, item.MaxFreq));
             }
 
-            File.WriteAllText(
-                Path.Combine(workingDir, Path.GetFileNameWithoutExtension(audioFilePath) + ".csv"), sb.ToString());
+            string fileName = Path.GetFileNameWithoutExtension(audioFilePath) +
+                              Guid.NewGuid().ToString().Substring(0, 5) + ".csv";
+
+            File.WriteAllText(Path.Combine(workingDir, fileName), sb.ToString());
         }
 
         /// <summary>
