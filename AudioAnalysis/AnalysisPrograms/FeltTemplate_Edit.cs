@@ -21,6 +21,11 @@ namespace AnalysisPrograms
         //edittemplate_felt C:\SensorNetworks\Output\FELT_CURLEW2\FELT_Curlew2_Params.txt
 
 
+        /// <summary>
+        /// Wraps up the resources into a template.ZIP file
+        /// and then runs a test on the source recording.
+        /// </summary>
+        /// <param name="args"></param>
         public static void Dev(string[] args)
         {
             string title = "# EDIT TEMPLATE.";
@@ -57,6 +62,8 @@ namespace AnalysisPrograms
             //ii: READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
+            string sourceFile           = dict[FeltTemplate_Create.key_SOURCE_RECORDING]; 
+            string sourceDir            = dict[FeltTemplate_Create.key_SOURCE_DIRECTORY];
             double dB_Threshold         = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);
             double maxTemplateIntensity = Double.Parse(dict[FeltTemplate_Create.key_TEMPLATE_MAX_INTENSITY]);
             int neighbourhood           = Int32.Parse(dict[FeltTemplate_Create.key_DONT_CARE_NH]);   //the do not care neighbourhood
@@ -89,8 +96,8 @@ namespace AnalysisPrograms
                 filenames[3] = targetPath;
                 filenames[4] = targetNoNoisePath;
                 filenames[5] = noisePath;
-                string outZipFile = outputDir + targetName + "_binaryTemplate.zip";
-                FileTools.ZipFiles(filenames, outZipFile);
+                string biOutZipFile = outputDir + targetName + "_binaryTemplate.zip";
+                FileTools.ZipFiles(filenames, biOutZipFile);
 
                 filenames = new string[6];
                 filenames[0] = iniPath;
@@ -99,8 +106,8 @@ namespace AnalysisPrograms
                 filenames[3] = targetPath;
                 filenames[4] = targetNoNoisePath;
                 filenames[5] = noisePath;
-                outZipFile = outputDir + targetName + "_trinaryTemplate.zip";
-                FileTools.ZipFiles(filenames, outZipFile);
+                string triOutZipFile = outputDir + targetName + "_trinaryTemplate.zip";
+                FileTools.ZipFiles(filenames, triOutZipFile);
 
                 filenames = new string[6];
                 filenames[0] = iniPath;
@@ -109,22 +116,31 @@ namespace AnalysisPrograms
                 filenames[3] = targetPath;
                 filenames[4] = targetNoNoisePath;
                 filenames[5] = noisePath;
-                outZipFile = outputDir + targetName + "_syntacticTemplate.zip";
-                FileTools.ZipFiles(filenames, outZipFile);
+                string sprOutZipFile = outputDir + targetName + "_syntacticTemplate.zip";
+                FileTools.ZipFiles(filenames, sprOutZipFile);
             }
             
-            Log.WriteLine("#################################### TEST THE EXTRACTED EVENT ##################################");
+            Log.WriteLine("\n\n#################################### TEST THE EXTRACTED EVENT ON SOURCE FILE ##################################");
             //vi: TEST THE EVENT ON ANOTHER FILE
             //felt  "C:\SensorNetworks\WavFiles\Canetoad\DM420010_128m_00s__130m_00s - Toads.mp3" C:\SensorNetworks\Output\FELT_CaneToad\FELT_CaneToad_Params.txt events.txt
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_104.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Gecko\Suburban_March2010\geckos_suburban_18.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
-            //string[] arguments = new string[3];
-            //arguments[0] = recordingPath;
-            //arguments[1] = iniPath;
-            //arguments[2] = targetName;
-            //     FindEventsLikeThis.Dev(arguments);
+
+            string opDir = "C:\\SensorNetworks\\Output\\FELT_MultiOutput\\";
+            string templateListPath = opDir + "templateTestList.txt";
+            var list = new List<string>();
+            list.Add(outputDir + targetName + "_binaryTemplate.zip");
+            list.Add(outputDir + targetName + "_trinaryTemplate.zip");
+            //list.Add(outputDir + targetName + "_syntacticTemplate.zip");
+            FileTools.WriteTextFile(templateListPath, list);      //write the template.ZIP file
+
+            string[] arguments = new string[3];
+            arguments[0] = sourceDir + "\\" + sourceFile;
+            arguments[1] = templateListPath;
+            arguments[2] = opDir;
+            FeltTemplates_Use.Dev(arguments);
 
 
 

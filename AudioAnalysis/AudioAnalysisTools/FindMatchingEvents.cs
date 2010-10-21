@@ -17,16 +17,16 @@ namespace AudioAnalysisTools
         public static double[,] ReadImage2BinaryMatrixDouble(string fileName)
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
-            int height = bitmap.Height;   //height
-            int width = bitmap.Width;    //width
+            int height = bitmap.Height;  //height
+            int width  = bitmap.Width;    //width
+            var matrix = new double[height, width];
 
-            var matrix = new double[width, height];
             for (int r = 0; r < height; r++)
                 for (int c = 0; c < width; c++)
                 {
                     Color color = bitmap.GetPixel(c, r);
-                    if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[c, r] = 1; // init an ON CELL = +1
-                    else matrix[c, r] = -1; // init OFF CELL = -1
+                    if ((color.R < 255) && (color.G < 255) && (color.B < 255)) matrix[r, c] = 1; // init an ON CELL = +1
+                    else matrix[r, c] = -1; // init OFF CELL = -1
                 }
             return matrix;
         }
@@ -35,8 +35,7 @@ namespace AudioAnalysisTools
         {
             Bitmap bitmap = ImageTools.ReadImage2Bitmap(fileName);
             int height = bitmap.Height;  //height
-            int width = bitmap.Width;    //width
-
+            int width  = bitmap.Width;    //width
             var matrix = new double[height, width];
 
             for (int r = 0; r < height; r++)
@@ -78,7 +77,7 @@ namespace AudioAnalysisTools
         /// <param name="segments"></param>
         /// <param name="minHz"></param>
         /// <param name="maxHz"></param>
-        /// <param name="dBThreshold"></param>
+        /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
         /// <returns></returns>
         public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectralSonogram sonogram, 
                                     List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
@@ -96,6 +95,7 @@ namespace AudioAnalysisTools
             // ######### Following line normalises template scores for comparison between templates.
             // ######### Ensures OP=0 for featureless sonogram #########
             // ######### template score = (average dB of on-template-cells - average dB of off-template-cells). 
+            WriteTemplate2Console(template);
             var tuple1 = NormaliseBiTrinaryMatrix(template);
             template = tuple1.Item1;
             int positiveCount = tuple1.Item2;
@@ -112,27 +112,28 @@ namespace AudioAnalysisTools
                 int startRow = (int)Math.Floor(av.StartTime * sonogram.FramesPerSecond);
                 int endRow   = (int)Math.Floor(av.EndTime   * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
-                int stopRow = endRow - templateHeight;
+                int stopRow = endRow - templateWidth -1;
                 if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
 
                 for (int r = startRow; r < stopRow; r++)
                 {
                     double max = -double.MaxValue;
-                    int maxOnCount= 0;
+                    //int maxOnCount= 0; //used to display % ON-count and maybe to modify the score.
                     int binBuffer = 10;
                     for (int bin = -binBuffer; bin < +binBuffer; bin++) 
                     {
                         int c = minBin + bin; 
                         if(c < 0) c = 0;
                         double crossCor = 0.0;
-                        int onCount = 0;
+                        //int onCount = 0;
 
-                        for (int i = 0; i < templateHeight; i++)
+                        for (int j = 0; j < templateWidth; j++)
                         {
-                            for (int j = 0; j < templateWidth; j++)
+                            int c0 = c + templateHeight - 1;
+                            for (int i = 0; i < templateHeight; i++)
                             {
-                                crossCor += sonogram.Data[r + i, c + j] * template[i, j];
-                                if ((template[i, j] > 0) && (sonogram.Data[r + i, c + j] > 0.0)) onCount++;
+                                crossCor += sonogram.Data[r + j, c0 - i] *   template[i, j];
+                                //if ((sonogram.Data[r + j, c0 - i] > 0.0) && (template[i, j] > 0)) onCount++;
                             }
                         }
                         //var image = BaseSonogram.Data2ImageData(matrix);
@@ -141,7 +142,7 @@ namespace AudioAnalysisTools
                         if (crossCor > max)
                         {
                             max = crossCor;
-                            maxOnCount = onCount;
+                            //maxOnCount = onCount;
                         }
                     } // end freq bins
 
@@ -149,10 +150,10 @@ namespace AudioAnalysisTools
                     scores[r] = max / (double)positiveCount;
 
                     // display percent onCount
-                    int pcOnCount = maxOnCount * 100 / positiveCount;
+                    //int pcOnCount = maxOnCount * 100 / positiveCount;
                     //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
-                    //if (r % 100 == 0) { Console.Write("."); }
+                    //if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}  %on={2}.", r, scores[r], pcOnCount); }
+                    if (r % 100 == 0) { Console.Write("."); }
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment
@@ -469,6 +470,26 @@ namespace AudioAnalysisTools
             var tuple = System.Tuple.Create(scores);
             return tuple;
         }//Execute
+
+        public static void WriteTemplate2Console(double[,] template)
+        {
+            Console.WriteLine("\n############## TEMPLATE #################");
+            int rows = template.GetLength(0);
+            int cols = template.GetLength(1);
+            for (int r = 0; r < rows; r++)
+            {
+                var sb = new StringBuilder();
+                for (int c = 0; c < cols; c++)
+                {
+                    if (template[r, c] > 0)  sb.Append('#');
+                    else if (template[r, c] == 0) sb.Append('.');
+                    else sb.Append('-');
+                }
+                Console.WriteLine(sb.ToString());
+            }
+
+        } // WriteTemplate2Console()
+
 
 
     } //end class FindEvents
