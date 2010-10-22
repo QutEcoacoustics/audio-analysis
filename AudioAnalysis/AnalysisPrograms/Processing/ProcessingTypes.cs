@@ -35,15 +35,9 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private const bool SaveAcousticEvents = true;
         private static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
-            if (!SaveAcousticEvents)
-            {
-                return;
-            }
-
-            SaveAeCsv(events, workingDir, audioFilePath);
+            ////SaveAeCsv(events, workingDir, audioFilePath);
 
             if (events != null && events.Count > 0)
             {
@@ -59,16 +53,10 @@ namespace AnalysisPrograms.Processing
 
                 AED.GenerateImage(audioFilePath, workingDir, sonogram, events);
             }
-
         }
 
         private static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
         {
-            if (!SaveAcousticEvents)
-            {
-                return;
-            }
-            
             var aes = events.Select(e => new { e.StartTime, e.EndTime, e.MinFreq, e.MaxFreq });
 
             var sb = new StringBuilder();
