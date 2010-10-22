@@ -15,7 +15,12 @@ namespace AnalysisPrograms.Processing
 
     using AudioAnalysisTools;
 
+    using NDesk.Options;
+
     using QutSensors.Shared;
+    using AudioTools.AudioUtlity;
+    using QutSensors.Shared.Tools;
+    using AudioTools;
 
     /// <summary>
     /// The processing utils.
@@ -25,8 +30,8 @@ namespace AnalysisPrograms.Processing
         // NOTE: if you change these file names, they also need to be changed in QutSensors.Processor.Manager
 
         // input files
-        private const string SettingsFileName = "processing_input_settings.txt";
-        private const string AudioFileName = "processing_input_audio.wav";
+        internal const string SettingsFileName = "processing_input_settings.txt";
+        internal const string AudioFileName = "processing_input_audio.wav";
 
         // analysis program file names
         private const string ProgramOutputFinishedFileName = "output_finishedmessage.txt";
@@ -161,49 +166,6 @@ namespace AnalysisPrograms.Processing
         }
 
         /// <summary>
-        /// Validate input parameters.
-        /// </summary>
-        /// <param name="args">Parameters given to program.</param>
-        /// <returns>True if validation succeeded, otherwise false.</returns>
-        private static bool Validate(string[] args)
-        {
-            Console.WriteLine("Given " + args.Length + " arguments: " + Environment.NewLine + string.Join(Environment.NewLine, args));
-
-            // validate
-            if (args.Length != 2 && args.Length != 3)
-            {
-                Console.Error.WriteLine("Incorrect number of arguments. Given " + args.Length + ", should be 2 or 3.");
-                return false;
-            }
-
-            if (!Directory.Exists(args[1]))
-            {
-                Console.Error.WriteLine("Run directory does not exist: " + args[1]);
-                return false;
-            }
-
-            if (!File.Exists(Path.Combine(args[1], SettingsFileName)))
-            {
-                Console.Error.WriteLine("Settings file does not exist: " + SettingsFileName);
-                return false;
-            }
-
-            if (!File.Exists(Path.Combine(args[1], AudioFileName)))
-            {
-                Console.Error.WriteLine("Audio file does not exist: " + AudioFileName);
-                return false;
-            }
-
-            if (args.Length == 3 && !File.Exists(args[2]))
-            {
-                Console.Error.WriteLine("Resource file was specified, but does not exist: " + args[2]);
-                return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
         /// Run analysis and get results.
         /// </summary>
         /// <param name="analysisType">
@@ -220,7 +182,7 @@ namespace AnalysisPrograms.Processing
         /// resourceFile.
         /// </exception>
         /// <exception cref="InvalidOperationException">Invaild resource file path.</exception>
-        private static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory, string resourceFileFullPath)
+        internal static IEnumerable<ProcessorResultTag> RunAnalysis(string analysisType, string runDirectory, string resourceFileFullPath)
         {
             IEnumerable<ProcessorResultTag> results = null;
 
@@ -359,6 +321,49 @@ namespace AnalysisPrograms.Processing
                     throw new InvalidOperationException(msg.ToString());
                 }
             }
+        }
+
+        /// <summary>
+        /// Validate input parameters.
+        /// </summary>
+        /// <param name="args">Parameters given to program.</param>
+        /// <returns>True if validation succeeded, otherwise false.</returns>
+        private static bool Validate(string[] args)
+        {
+            Console.WriteLine("Given " + args.Length + " arguments: " + Environment.NewLine + string.Join(Environment.NewLine, args));
+
+            // validate
+            if (args.Length != 2 && args.Length != 3)
+            {
+                Console.Error.WriteLine("Incorrect number of arguments. Given " + args.Length + ", should be 2 or 3.");
+                return false;
+            }
+
+            if (!Directory.Exists(args[1]))
+            {
+                Console.Error.WriteLine("Run directory does not exist: " + args[1]);
+                return false;
+            }
+
+            if (!File.Exists(Path.Combine(args[1], SettingsFileName)))
+            {
+                Console.Error.WriteLine("Settings file does not exist: " + SettingsFileName);
+                return false;
+            }
+
+            if (!File.Exists(Path.Combine(args[1], AudioFileName)))
+            {
+                Console.Error.WriteLine("Audio file does not exist: " + AudioFileName);
+                return false;
+            }
+
+            if (args.Length == 3 && !File.Exists(args[2]))
+            {
+                Console.Error.WriteLine("Resource file was specified, but does not exist: " + args[2]);
+                return false;
+            }
+
+            return true;
         }
     }
 }

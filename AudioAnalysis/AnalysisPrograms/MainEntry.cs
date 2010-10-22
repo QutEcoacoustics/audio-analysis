@@ -10,6 +10,8 @@
 namespace AnalysisPrograms
 {
     using System;
+    using System.Configuration;
+    using System.IO;
     using System.Linq;
 
     using AnalysisPrograms.Processing;
@@ -82,7 +84,7 @@ namespace AnalysisPrograms
                     // Analysis development - FOR MICHAEL'S USE ONLY
                     case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(restOfArgs);
-                        break;    
+                        break;
                     case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
                         FeltTemplate_Create.Dev(restOfArgs);
                         break;
@@ -97,6 +99,10 @@ namespace AnalysisPrograms
                         break;
                     case "localrun": // audio conversion tests
                         AudioConversion.Convert(restOfArgs);
+                        break;
+                    case "processing-csv":
+                        var localProcesser = new LocalProcessor();
+                        localProcesser.Run();
                         break;
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);

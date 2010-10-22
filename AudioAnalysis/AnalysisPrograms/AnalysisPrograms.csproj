@@ -152,6 +152,7 @@
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_HTKScanDir.cs" />
     <Compile Include="Processing\AudioConversion.cs" />
+    <Compile Include="Processing\LocalProcessor.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="Segment.cs" />
