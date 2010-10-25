@@ -12,10 +12,25 @@ namespace TowseyLib
 
     public class Oblong
     {
-        public int r1 { get; set; }  //location of top left corner in parent matrix
-        public int c1 { get; set; }  //location of top left corner in parent matrix
-        public int r2 { get; set; }  //location of bot right corner in parent matrix
-        public int c2 { get; set; }  //location of bot right corner in parent matrix
+        /// <summary>
+        /// location of Oblong's top row in parent matrix
+        /// </summary>
+        public int r1 { get; set; }  
+        /// <summary>
+        /// location of Oblong's left most column in parent matrix
+        /// </summary>
+        public int c1 { get; set; } 
+        /// <summary>
+        /// location of Oblong's bottom row in parent matrix
+        /// </summary>
+        public int r2 { get; set; } 
+        /// <summary>
+        /// location of Oblong's right most column in parent matrix
+        /// </summary>
+        public int c2 { get; set; } 
+        /// <summary>
+        /// location of Oblong's centre column in parent matrix
+        /// </summary>
         public int ColCentroid { get { return c1 + (c2-c1+1)/2; } } 
 
         //private int rowWidth;
@@ -126,6 +141,32 @@ namespace TowseyLib
             else return false;
         }
 
+        public static int RowOverlap(Oblong o1, Oblong o2)
+        {
+            if (o1.r2 < o2.r1) return 0;
+            if (o2.r2 < o1.r1) return 0;
+
+            //at this point the two events overlap
+            int overlap = 0;
+            if (o1.IncludesRow(o2.r1)) overlap = o1.r2 - o2.r1 + 1;
+            else
+            if (o2.IncludesRow(o1.r1)) overlap = o2.r2 - o1.r1 + 1;
+
+            return overlap;
+        }
+
+        public static int ColumnOverlap(Oblong o1, Oblong o2)
+        {
+            if (o1.c2 < o2.c1) return 0;
+            if (o2.c2 < o1.c1) return 0;
+
+            //at this point the two events overlap
+            int overlap = 0;
+            if (o1.IncludesColumn(o2.c1)) overlap = o1.c2 - o2.c1 + 1;
+            else
+            if (o2.IncludesColumn(o1.c1)) overlap = o2.c2 - o1.c1 + 1;
+            return overlap;
+        }
 
         public int OverlapArea(Oblong s2)
         {
