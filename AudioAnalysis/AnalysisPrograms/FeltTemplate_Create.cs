@@ -99,7 +99,7 @@ namespace AnalysisPrograms
             Dictionary<string, string> dict = config.GetTable();
             //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            double frameOverlap      = Double.Parse(dict[key_FRAME_OVERLAP]);
+            double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // Double.Parse(dict[key_FRAME_OVERLAP]);
             double eventStart        = Double.Parse(dict[key_EVENT_START]);
             double eventEnd          = Double.Parse(dict[key_EVENT_END]);            
             int minHz                = Int32.Parse(dict[key_MIN_HZ]);
@@ -222,7 +222,9 @@ namespace AnalysisPrograms
             list.Add("DATE="+DateTime.Now);
             list.Add("\nCALL_NAME="+ dict[key_CALL_NAME]);
 
-            list.Add("\nFRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
+            list.Add("\n#NOTE: FRAME_OVERLAP IS FIXED AT " + FeltTemplates_Use.FeltFrameOverlap + " FOR ALL FELT TEMPLATES.");
+            list.Add("#THIS IS TO SPEED THE COMPUTATION. OTHERWISE HAVE TO COMPTE NEW SPECTROGRAM FOR EVERY TEMPLATE.\n"); 
+            //list.Add("#FRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
 
             list.Add("\n################## SEGMENTATION PARAMS");
             list.Add("#Do segmentation prior to search.");

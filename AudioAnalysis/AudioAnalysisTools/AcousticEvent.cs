@@ -223,6 +223,36 @@ namespace AudioAnalysisTools
             return false;
         }
 
+        /// <summary>
+        /// Returns the fractional overlap of two events.
+        /// Translate time/freq dimensions to coordinates in a matrix.
+        /// Freq dimension = bins   = matrix columns. Origin is top left - as per matrix in the sonogram class.
+        /// Time dimension = frames = matrix rows.
+        /// </summary>
+        /// <param name="event1">an acoustic event</param>
+        /// <param name="event2">an acoustic event</param>
+        /// <returns></returns>
+        public static double EventFractionalOverlap(AcousticEvent event1, AcousticEvent event2)
+        {
+            //if (event1.EndTime < event2.StartTime) return 0.0;
+            //if (event2.EndTime < event1.StartTime) return 0.0;
+            //if (event1.MaxFreq < event2.MinFreq)   return 0.0;
+            //if (event2.MaxFreq < event1.MinFreq)   return 0.0;
+            //at this point the two events do overlap
+
+            int timeOverlap = Oblong.RowOverlap(event1.oblong, event2.oblong);
+            if (timeOverlap == 0) return 0.0;
+            int hzOverlap   = Oblong.ColumnOverlap(event1.oblong, event2.oblong);
+            if (hzOverlap   == 0) return 0.0;
+
+            int overlapArea = timeOverlap * hzOverlap;
+            double fractionalOverlap1 = overlapArea / (double)event1.oblong.Area();
+            double fractionalOverlap2 = overlapArea / (double)event2.oblong.Area();
+
+            if (fractionalOverlap1 > fractionalOverlap2) return fractionalOverlap1;
+            else                                         return fractionalOverlap2;
+        }
+
         //#################################################################################################################
         //METHODS TO CONVERT BETWEEN FREQ BIN AND HERZ OR MELS 
 

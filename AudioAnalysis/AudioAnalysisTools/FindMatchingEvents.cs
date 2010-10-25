@@ -80,7 +80,7 @@ namespace AudioAnalysisTools
         /// <param name="dBThreshold">Not used in calculation. Only used to speed up loop over the spectrogram.</param>
         /// <returns></returns>
         public static System.Tuple<double[]> Execute_Bi_or_TrinaryMatch(double[,] template, SpectralSonogram sonogram, 
-                                    List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
+                                                                         List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET.");
             if (segments == null) return null;
