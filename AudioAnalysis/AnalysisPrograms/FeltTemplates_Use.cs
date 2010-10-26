@@ -118,7 +118,7 @@ namespace AnalysisPrograms
                 Dictionary<string, string> dict = config.GetTable();
                 //Dictionary<string, string>.KeyCollection keys = dict.Keys;
                 //int DRAW_SONOGRAMS = Int32.Parse(dict[FeltTemplate_Create.key_DRAW_SONOGRAMS]);          //options to draw sonogram
-                dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD] = "6.0";
+                dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD] = "4.0";
                 dict[FeltTemplate_Create.key_MIN_DURATION]      = "0.02";
 
                 if (zipName.EndsWith("binaryTemplate"))
@@ -189,6 +189,7 @@ namespace AnalysisPrograms
             Log.WriteLine("\n##########################################################");
             Log.WriteLine("# Finished pruning events");
             Log.WriteLine("# Event Count = " + allEvents.Count);
+            WriteEventNames(allEvents);
 
 
             //WriteScoreAverages2Console(scoresList);
@@ -377,6 +378,22 @@ namespace AnalysisPrograms
             }
 
             return pruned;
+        }
+
+
+        public static void WriteEventNames(List<AcousticEvent> events)
+        {
+            var names = new Dictionary<string, int>();
+            foreach (AcousticEvent ae in events)
+            {
+                if (names.ContainsKey(ae.Name)) names[ae.Name]++;
+                else                            names.Add(ae.Name, 1);
+            }
+            Log.WriteLine("Event name        Count.");
+            foreach (string key in names.Keys)
+            {
+                Log.WriteLine("{0}     {1}.", key, names[key].ToString());
+            }
         }
 
 
