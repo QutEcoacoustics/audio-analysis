@@ -55,9 +55,9 @@ namespace AudioDataStorageMigrateConsole
             var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
             var audioutil = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
 
-            Worker = new MigrationWorker(sqlFs, fileSys, audioutil);
-
             LogProvider = new MultiLogProvider(new TextFileLogProvider(logFileDir), new ConsoleLogProvider());
+
+            Worker = new MigrationWorker(LogProvider, sqlFs, fileSys, audioutil);
         }
 
         /// <summary>
@@ -77,12 +77,10 @@ namespace AudioDataStorageMigrateConsole
 
                 try
                 {
-                    info = Worker.Migrate();
-                    LogProvider.WriteEntry(LogType.Information, "Migration Success: {0}.", info + Environment.NewLine + Environment.NewLine);
+                    info = Worker.MigrateSingleAudioReading();
                 }
-                catch (Exception ex)
+                catch
                 {
-                    LogProvider.WriteEntry(LogType.Error, "Migration Error: {0}.", ex + Environment.NewLine + Environment.NewLine);
                     successfulRun = false;
                 }
 
