@@ -70,7 +70,7 @@ namespace AudioDataStorageMigrateConsole
         public override string ToString()
         {
             return string.Format(
-                "{0}, {1}, {2}, {3}, {4}, {5}, {6}, {7}, {8}, {9}, {10}, {11}, {12}",
+                "{0}, Sql File Stream: {1}, {2}, {3}, {4}, {5}, Export Duration: {6}, File System: {7}, {8}, {9}, {10}, {11}, Total Duration: {12}",
                 this.AudioReadingId,
                 this.SqlFileStreamMimeType,
                 this.SqlFileStreamDataLength,
