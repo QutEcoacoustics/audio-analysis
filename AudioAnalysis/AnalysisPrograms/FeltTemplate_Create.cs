@@ -36,10 +36,14 @@ namespace AnalysisPrograms
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_CURRAWONG_Params.txt  FELT_Currawong2
         // CURRAWONG3
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-183000.wav" C:\SensorNetworks\Output\FELT_CURRAWONG3\FELT_CURRAWONG_Params.txt  FELT_Currawong3
+        // CURRAWONG4
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081102-193000.wav"              C:\SensorNetworks\Output\FELT_CURRAWONG4\FELT_CURRAWONG_Params.txt  FELT_Currawong4
         // CURLEW2
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"              C:\SensorNetworks\Output\FELT_CURLEW2\FELT_CURLEW_Params.txt  FELT_Curlew2
         // CURLEW3
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-213000.wav"        C:\SensorNetworks\Output\FELT_CURLEW3\FELT_CURLEW_Params.txt  FELT_Curlew3
+        // CURLEW4
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20081003-233000.wav"              C:\SensorNetworks\Output\FELT_CURLEW4\FELT_CURLEW_Params.txt  FELT_Curlew4
         
         // Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME          = "CALL_NAME";
