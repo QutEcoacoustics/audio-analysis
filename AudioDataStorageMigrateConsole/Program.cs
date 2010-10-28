@@ -11,6 +11,8 @@ namespace AudioDataStorageMigrateConsole
 {
     using System;
     using System.Configuration;
+    using System.Security.Cryptography;
+    using System.Text;
 
     using AudioTools.AudioUtlity;
 
@@ -18,16 +20,13 @@ namespace AudioDataStorageMigrateConsole
 
     using QutSensors.Business;
     using QutSensors.Business.Storage;
-    using QutSensors.Shared.LogProviders;
 
     /// <summary>
     /// Migrator program.
     /// </summary>
-    public class Program
+    public static class Program
     {
         private static readonly MigrationWorker Worker;
-
-        private static readonly ILogProvider LogProvider;
 
         /// <summary>
         /// Initializes static members of the <see cref="Program"/> class.
@@ -55,9 +54,7 @@ namespace AudioDataStorageMigrateConsole
             var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
             var audioutil = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
 
-            LogProvider = new MultiLogProvider(new TextFileLogProvider(logFileDir), new ConsoleLogProvider());
-
-            Worker = new MigrationWorker(LogProvider, sqlFs, fileSys, audioutil);
+            Worker = new MigrationWorker(logFileDir, sqlFs, fileSys, audioutil);
         }
 
         /// <summary>
@@ -68,25 +65,32 @@ namespace AudioDataStorageMigrateConsole
         /// </param>
         public static void Main(string[] args)
         {
-            bool successfulRun;
-            MigrationInfo info = null;
+            ////GenerateMachineKey();
+            Worker.RunMigration();
+        }
 
-            do
+        private static void GenerateMachineKey(params string[] argv)
+        {
+            int len = 128;
+            if (argv.Length > 0)
             {
-                successfulRun = true;
-
-                try
-                {
-                    info = Worker.MigrateSingleAudioReading();
-                }
-                catch
-                {
-                    successfulRun = false;
-                }
-
-                // only stop when info is null and there was no error.
+                len = int.Parse(argv[0]);
             }
-            while (!(info == null && successfulRun));
+
+            var buff = new byte[len / 2];
+            using (var rng = new RNGCryptoServiceProvider())
+            {
+                rng.GetBytes(buff);
+            }
+
+            var sb = new StringBuilder(len);
+            foreach (byte t in buff)
+            {
+                sb.Append(string.Format("{0:X2}", t));
+            }
+
+            Console.WriteLine(sb);
+            Console.ReadLine();
         }
     }
 }

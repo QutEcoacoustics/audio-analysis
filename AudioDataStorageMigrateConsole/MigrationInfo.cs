@@ -10,7 +10,10 @@
 namespace AudioDataStorageMigrateConsole
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
+
+    using QutSensors.Shared.LogProviders;
 
     /// <summary>
     /// The migration info.
@@ -59,6 +62,31 @@ namespace AudioDataStorageMigrateConsole
         /// </summary>
         public string SqlFileStreamMimeType { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether Copied From Sql FileStream To File System.
+        /// </summary>
+        public bool CopiedFromSqlFileStreamToFileSystem { get; set; }
+
+        /// <summary>
+        /// Gets or sets Message.
+        /// </summary>
+        public string Message { get; set; }
+
+        /// <summary>
+        /// Gets or sets LogType.
+        /// </summary>
+        public LogType LogType { get; set; }
+
+        /// <summary>
+        /// Gets or sets OverallRunningCount.
+        /// </summary>
+        public long OverallRunningCount { get; set; }
+
+        /// <summary>
+        /// Gets or sets OverallRunningDuration.
+        /// </summary>
+        public TimeSpan OverallRunningDuration { get; set; }
+
         #endregion
 
         /// <summary>
@@ -84,6 +112,35 @@ namespace AudioDataStorageMigrateConsole
                 this.FileSystemAudioDuration,
                 this.FileSystemAudioDuration.ToReadableString(),
                 this.TotalDuration);
+        }
+
+        /// <summary>
+        /// Get Migration info properties as string array.
+        /// </summary>
+        /// <returns>
+        /// String array of migraiton properties.
+        /// </returns>
+        public IEnumerable<object> ToStrings()
+        {
+            return new List<object>
+                {
+                     this.AudioReadingId,
+                    this.SqlFileStreamMimeType,
+                    this.SqlFileStreamDataLength,
+                    this.SqlFileStreamDataLength.ToByteDisplay(),
+                    this.SqlFileStreamAudioDuration,
+                    this.SqlFileStreamAudioDuration.ToReadableString(),
+                    this.ReadWriteDuration,
+                    this.FileSystemFile != null ? this.FileSystemFile.Extension : "unknown",
+                    this.FileSystemFile != null ? this.FileSystemFile.Length.ToString() : "unknown",
+                    this.FileSystemFile != null ? this.FileSystemFile.Length.ToByteDisplay() : "unknown",
+                    this.FileSystemAudioDuration,
+                    this.FileSystemAudioDuration.ToReadableString(),
+                    this.TotalDuration,
+                    this.OverallRunningCount,
+                    this.OverallRunningDuration,
+                    this.OverallRunningDuration.ToReadableString(),
+                };
         }
     }
 }
