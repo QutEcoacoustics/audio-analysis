@@ -65,8 +65,8 @@ namespace AudioDataStorageMigrateConsole
         /// </param>
         public static void Main(string[] args)
         {
-            ////GenerateMachineKey();
-            Worker.RunMigration();
+            GenerateMachineKey("64");
+            //Worker.RunMigration();
         }
 
         private static void GenerateMachineKey(params string[] argv)
@@ -89,6 +89,7 @@ namespace AudioDataStorageMigrateConsole
                 sb.Append(string.Format("{0:X2}", t));
             }
 
+            System.IO.File.WriteAllText(@"C:\key.txt", sb.ToString());
             Console.WriteLine(sb);
             Console.ReadLine();
         }
