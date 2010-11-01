@@ -55,7 +55,7 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
+        public static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
         {
             var aes = events.Select(e => new { e.StartTime, e.EndTime, e.MinFreq, e.MaxFreq });
 
@@ -242,6 +242,8 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunAed(FileInfo settingsFile, FileInfo audioFile)
         {
+            // TODO: mark delete when you check i did this right
+            /*
             var expected = new List<string>
                 {
                     AED.key_INTENSITY_THRESHOLD,
@@ -260,7 +262,12 @@ namespace AnalysisPrograms.Processing
             {
                 intensityThreshold = Convert.ToDouble(dict[AED.key_INTENSITY_THRESHOLD]);
                 smallAreaThreshold = Convert.ToInt32(dict[AED.key_SMALLAREA_THRESHOLD]);
-            }
+            }*/
+            double intensityThreshold;
+            double bandPassFilterMaximum;
+            double bandPassFilterMinimum;
+            int smallAreaThreshold;
+            AED.GetAedParametersFromConfigFileOrDefaults(settingsFile.ToString(), out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
 
             // execute
             var result = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold);
@@ -366,9 +373,16 @@ namespace AnalysisPrograms.Processing
         internal static IEnumerable<ProcessorResultTag> RunEpr(FileInfo settingsFile, FileInfo audioFile)
         {
             // no settings, yet
+            double intensityThreshold;
+            double bandPassFilterMaximum;
+            double bandPassFilterMinimum;
+            int smallAreaThreshold;
+            AED.GetAedParametersFromConfigFileOrDefaults(settingsFile.ToString(), out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
+
 
             // execute - only for ground parrot for now.
-            var result = GroundParrotRecogniser.Detect(audioFile.FullName);
+            var result = GroundParrotRecogniser.Detect(
+                audioFile.FullName, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold);
             var events = result.Item2;
 
             SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);

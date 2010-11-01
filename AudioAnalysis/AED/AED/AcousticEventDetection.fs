@@ -4,6 +4,9 @@ open GetAcousticEvents
 open Matlab
 open TowseyLib
 open Util
+open Option
+
+let frequencyToPixels rndFunc f  : int = int (rndFunc ((255.0 * f) / Default.freqMax))
 
 let removeSubbandModeIntensities (m:matrix) =
     let modes =
@@ -80,10 +83,14 @@ let detectEventsMatlab intensityThreshold smallAreaThreshold m =
         |> filterOutSmallEvents smallAreaThreshold
     
 // TODO it would be nicer if this returned an Option/Either rather than an exception
-let detectEvents intensityThreshold smallAreaThreshold a =
+let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*float) a =
+    if (fst bandPassFilter > snd bandPassFilter) then failwith "bandPassFilter args invalid"
     let m = Math.Matrix.ofArray2D a |> mTranspose
-    if m.NumRows = 257 then
-        let m' = m.Region (1, 0, 256, m.NumCols) // remove first row (DC values) like in matlab
-        detectEventsMatlab intensityThreshold smallAreaThreshold m'
-            |> Seq.map (fun r -> new Oblong(r.Left, r.Top+1, right r, bottom r + 1)) // transpose results back & compensate for removing first row
-        else failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
+    if m.NumRows = 257 
+        then
+            let (min, max) = fst bandPassFilter |> frequencyToPixels floor, snd bandPassFilter |> frequencyToPixels ceil 
+            let mPrime = m.Region (1 + min, 0, max - min + 1, m.NumCols) // remove first row (DC values) like in matlab and remove bandpass pixels (lenth i really needs that +1!)
+            detectEventsMatlab intensityThreshold smallAreaThreshold mPrime
+                |> Seq.map (fun r -> new Oblong(r.Left, r.Top + 1 + min, right r, bottom r + 1 + min)) // transpose results back & compensate for removing first row
+        else 
+            failwith (sprintf "Expecting matrix with 257 frequency cols, but got %d" m.NumRows)
