@@ -2,9 +2,6 @@
 // <copyright file="AED.cs" company="MQUTeR">
 //   -
 // </copyright>
-// <summary>
-//   Defines the AED type.
-// </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
 namespace AnalysisPrograms
@@ -13,63 +10,210 @@ namespace AnalysisPrograms
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
+
     using AudioAnalysisTools;
+
     using QutSensors.AudioAnalysis.AED;
+
     using TowseyLib;
 
-    /// <summary>Acoustic Event Detection.</summary>
+    /// <summary>
+    /// Acoustic Event Detection.
+    /// </summary>
     public class AED
     {
         // Keys to recognise identifiers in PARAMETERS - INI file. 
+        #region Constants and Fields
+
+        /// <summary>
+        /// The key_ smallare a_ threshold.
+        /// </summary>
+        public static string key_BANDPASS_MAXIMUM = "BANDPASS_MAXIMUM";
+
+        /// <summary>
+        /// The key_ intensit y_ threshold.
+        /// </summary>
+        public static string key_BANDPASS_MINIMUM = "BANDPASS_MINIMUM";
+
+        /// <summary>
+        /// The key_ intensit y_ threshold.
+        /// </summary>
         public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
+
+        /// <summary>
+        /// The key_ smallare a_ threshold.
+        /// </summary>
         public static string key_SMALLAREA_THRESHOLD = "SMALLAREA_THRESHOLD";
 
-        /// <summary>Detection method for development.
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Detect using audio file.
+        /// </summary>
+        /// <param name="wavFilePath">
+        /// path to audio file.
+        /// </param>
+        /// <param name="intensityThreshold">
+        /// Intensity threshold.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// Small area threshold.
+        /// </param>
+        /// <param name="bandPassMinimum">
+        /// The band Pass Minimum.
+        /// </param>
+        /// <param name="bandPassMaximum">
+        /// The band Pass Maximum.
+        /// </param>
+        /// <returns>
+        /// Sonogram and Acoustic events.
+        /// </returns>
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
+            string wavFilePath, 
+            double intensityThreshold, 
+            int smallAreaThreshold, 
+            double bandPassMinimum, 
+            double bandPassMaximum)
+        {
+            BaseSonogram sonogram = FileToSonogram(wavFilePath);
+            List<AcousticEvent> events = Detect(
+                sonogram, intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum);
+            return Tuple.Create(sonogram, events);
+        }
+
+        /// <summary>
+        /// Detect events using sonogram.
+        /// </summary>
+        /// <param name="sonogram">
+        /// Existing sonogram.
+        /// </param>
+        /// <param name="intensityThreshold">
+        /// Intensity threshold.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// Small area threshold.
+        /// </param>
+        /// <param name="bandPassMinimum">
+        /// The band Pass Minimum.
+        /// </param>
+        /// <param name="bandPassMaximum">
+        /// The band Pass Maximum.
+        /// </param>
+        /// <returns>
+        /// Acoustic events.
+        /// </returns>
+        public static List<AcousticEvent> Detect(
+            BaseSonogram sonogram, 
+            double intensityThreshold, 
+            int smallAreaThreshold, 
+            double bandPassMinimum, 
+            double bandPassMaximum)
+        {
+            Log.WriteLine("intensityThreshold = " + intensityThreshold);
+            Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
+
+            Log.WriteLine("AED start");
+            IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
+                intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum, sonogram.Data);
+            Log.WriteLine("AED finished");
+
+            SonogramConfig config = sonogram.Configuration;
+            double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
+
+            List<AcousticEvent> events =
+                oblongs.Select(o => new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth)).ToList();
+            Log.WriteIfVerbose("AED # events: " + events.Count);
+            return events;
+        }
+
+        /// <summary>
+        /// The detect.
+        /// </summary>
+        /// <param name="wavFilePath">
+        /// The wav file path.
+        /// </param>
+        /// <param name="intensityThreshold">
+        /// The intensity threshold.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// The small area threshold.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public static List<AcousticEvent> Detect(
+            BaseSonogram wavFilePath, double intensityThreshold, int smallAreaThreshold)
+        {
+            // TODO fix constants
+            return Detect(wavFilePath, intensityThreshold, smallAreaThreshold, 0, 11025);
+        }
+
+        /// <summary>
+        /// The detect.
+        /// </summary>
+        /// <param name="wavFilePath">
+        /// The wav file path.
+        /// </param>
+        /// <param name="intensityThreshold">
+        /// The intensity threshold.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// The small area threshold.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
+            string wavFilePath, double intensityThreshold, int smallAreaThreshold)
+        {
+            // TODO fix constants
+            return Detect(wavFilePath, intensityThreshold, smallAreaThreshold, 0, 11025);
+        }
+
+        /// <summary>
+        /// Detection method for development.
         /// </summary>
         /// <param name="args">
         /// Arguments given to program.
         /// </param>
         public static void Dev(string[] args)
         {
-            var date = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine("# Running acoustic event detection.");
             Log.WriteLine(date);
             Log.Verbosity = 1;
 
             CheckArguments(args);
 
-            var recordingPath = args[0];
-            var iniPath = args[1];
-            var outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            var opFName = args[2];
-            var opPath = outputDir + opFName;
+            string recordingPath = args[0];
+            string iniPath = args[1];
+            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            string opFName = args[2];
+            string opPath = outputDir + opFName;
 
             Log.WriteIfVerbose("# Output folder =" + outputDir);
             Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + Path.GetFileName(recordingPath));
 
             // READ PARAMETER VALUES FROM INI FILE
-            var config = new Configuration(iniPath);
-            var dict = config.GetTable();
+            double intensityThreshold;
+            double bandPassFilterMaximum;
+            double bandPassFilterMinimum;
+            int smallAreaThreshold;
+            GetAedParametersFromConfigFileOrDefaults(
+                iniPath, 
+                out intensityThreshold, 
+                out bandPassFilterMaximum, 
+                out bandPassFilterMinimum, 
+                out smallAreaThreshold);
 
-            var intensityThreshold = Default.intensityThreshold;
-            var smallAreaThreshold = Default.smallAreaThreshold;
-
-            if (dict.ContainsKey(key_INTENSITY_THRESHOLD) && dict.ContainsKey(key_SMALLAREA_THRESHOLD))
-            {
-                intensityThreshold = Convert.ToDouble(dict[key_INTENSITY_THRESHOLD]);
-                smallAreaThreshold = Convert.ToInt32(dict[key_SMALLAREA_THRESHOLD]);
-            }
-            else
-            {
-                Log.WriteIfVerbose("Using AED defaults");
-            }
-
-            var result = Detect(recordingPath, intensityThreshold, smallAreaThreshold);
-            var events = result.Item2;
+            // TODO: fix constants
+            Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(
+                recordingPath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
+            List<AcousticEvent> events = result.Item2;
 
             Console.WriteLine();
-            foreach (var ae in events)
+            foreach (AcousticEvent ae in events)
             {
                 Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             }
@@ -81,48 +225,14 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// Detect using audio file.
-        /// </summary>
-        /// <param name="wavFilePath">path to audio file.</param>
-        /// <param name="intensityThreshold">Intensity threshold.</param>
-        /// <param name="smallAreaThreshold">Small area threshold.</param>
-        /// <returns>Sonogram and Acoustic events.</returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath, double intensityThreshold, int smallAreaThreshold)
-        {
-            var sonogram = FileToSonogram(wavFilePath);
-            var events = Detect(sonogram, intensityThreshold, smallAreaThreshold);
-            return Tuple.Create(sonogram, events);
-        }
-
-        /// <summary>
-        /// Detect events using sonogram.
-        /// </summary>
-        /// <param name="sonogram">Existing sonogram.</param>
-        /// <param name="intensityThreshold">Intensity threshold.</param>
-        /// <param name="smallAreaThreshold">Small area threshold.</param>
-        /// <returns>Acoustic events.</returns>
-        public static List<AcousticEvent> Detect(BaseSonogram sonogram, double intensityThreshold, int smallAreaThreshold)
-        {
-            Log.WriteLine("intensityThreshold = " + intensityThreshold);
-            Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
-
-            Log.WriteLine("AED start");
-            var oblongs = AcousticEventDetection.detectEvents(intensityThreshold, smallAreaThreshold, sonogram.Data);
-            Log.WriteLine("AED finished");
-
-            var config = sonogram.Configuration;
-            var freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
-
-            var events = oblongs.Select(o => new AcousticEvent(o, config.GetFrameOffset(), freqBinWidth)).ToList();
-            Log.WriteIfVerbose("AED # events: " + events.Count);
-            return events;
-        }
-
-        /// <summary>
         /// Create a sonogram from a wav audio file.
         /// </summary>
-        /// <param name="wavFilePath">path to audio file.</param>
-        /// <returns>Sonogram from audio.</returns>
+        /// <param name="wavFilePath">
+        /// path to audio file.
+        /// </param>
+        /// <returns>
+        /// Sonogram from audio.
+        /// </returns>
         public static BaseSonogram FileToSonogram(string wavFilePath)
         {
             var recording = new AudioRecording(wavFilePath);
@@ -131,10 +241,7 @@ namespace AnalysisPrograms
                 recording.ConvertSampleRate22kHz();
             }
 
-            var config = new SonogramConfig
-                {
-                    NoiseReductionType = NoiseReductionType.NONE
-                };
+            var config = new SonogramConfig { NoiseReductionType = NoiseReductionType.NONE };
 
             return new SpectralSonogram(config, recording.GetWavReader());
         }
@@ -142,20 +249,95 @@ namespace AnalysisPrograms
         /// <summary>
         /// Create and save sonogram image.
         /// </summary>
-        /// <param name="wavFilePath">path to audio file.</param>
-        /// <param name="outputFolder">Working directory.</param>
-        /// <param name="sonogram">Existing sonogram.</param>
-        /// <param name="events">Acoustic events.</param>
-        public static void GenerateImage(string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
+        /// <param name="wavFilePath">
+        /// path to audio file.
+        /// </param>
+        /// <param name="outputFolder">
+        /// Working directory.
+        /// </param>
+        /// <param name="sonogram">
+        /// Existing sonogram.
+        /// </param>
+        /// <param name="events">
+        /// Acoustic events.
+        /// </param>
+        public static void GenerateImage(
+            string wavFilePath, string outputFolder, BaseSonogram sonogram, List<AcousticEvent> events)
         {
-            var imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
+            string imagePath = Path.Combine(outputFolder, Path.GetFileNameWithoutExtension(wavFilePath) + ".png");
             Log.WriteIfVerbose("imagePath = " + imagePath);
             var image = new Image_MultiTrack(sonogram.GetImage(false, true));
+
             ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
             ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             image.AddEvents(events);
             image.Save(imagePath);
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// The get aed parameters from config file or defaults.
+        /// </summary>
+        /// <param name="iniPath">
+        /// The ini path.
+        /// </param>
+        /// <param name="intensityThreshold">
+        /// The intensity threshold.
+        /// </param>
+        /// <param name="bandPassFilterMaximum">
+        /// The band pass filter maximum.
+        /// </param>
+        /// <param name="bandPassFilterMinimum">
+        /// The band pass filter minimum.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// The small area threshold.
+        /// </param>
+        internal static void GetAedParametersFromConfigFileOrDefaults(
+            string iniPath, 
+            out double intensityThreshold, 
+            out double bandPassFilterMaximum, 
+            out double bandPassFilterMinimum, 
+            out int smallAreaThreshold)
+        {
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            int propertyUsageCount = 0;
+
+            intensityThreshold = Default.intensityThreshold;
+            smallAreaThreshold = Default.smallAreaThreshold;
+            bandPassFilterMaximum = Default.bandPassMaxDefault;
+            bandPassFilterMinimum = Default.bandPassMinDefault;
+
+            if (dict.ContainsKey(key_INTENSITY_THRESHOLD))
+            {
+                intensityThreshold = Convert.ToDouble(dict[key_INTENSITY_THRESHOLD]);
+                propertyUsageCount++;
+            }
+
+            if (dict.ContainsKey(key_SMALLAREA_THRESHOLD))
+            {
+                smallAreaThreshold = Convert.ToInt32(dict[key_SMALLAREA_THRESHOLD]);
+                propertyUsageCount++;
+            }
+
+            if (dict.ContainsKey(key_BANDPASS_MAXIMUM))
+            {
+                bandPassFilterMaximum = Convert.ToDouble(dict[key_BANDPASS_MAXIMUM]);
+                propertyUsageCount++;
+            }
+
+            if (dict.ContainsKey(key_BANDPASS_MINIMUM))
+            {
+                bandPassFilterMinimum = Convert.ToDouble(dict[key_BANDPASS_MINIMUM]);
+                propertyUsageCount++;
+            }
+
+            Log.WriteIfVerbose("Using {0} file params and {1} AED defaults", propertyUsageCount, 4 - propertyUsageCount);
         }
 
         private static void CheckArguments(string[] args)
@@ -178,7 +360,9 @@ namespace AnalysisPrograms
         /// <summary>
         /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
         /// </summary>
-        /// <param name="args">Arguments given to program.</param>
+        /// <param name="args">
+        /// Arguments given to program.
+        /// </param>
         private static void CheckPaths(string[] args)
         {
             if (!File.Exists(args[0]))
@@ -206,13 +390,15 @@ namespace AnalysisPrograms
             Console.WriteLine("AnalysisPrograms.exe aed recordingPath iniPath outputFileName");
             Console.WriteLine("where:");
             Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
-            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
+            Console.WriteLine(
+                "iniPath:-          (string) The path of the ini file containing all required parameters.");
             Console.WriteLine("outputFileName:-   (string) The name of the output file.");
             Console.WriteLine("                            By default, the output dir is that containing the ini file.");
             Console.WriteLine();
             Console.WriteLine("\nPress <ENTER> key to exit.");
             Console.ReadLine();
             Environment.Exit(1);
+
             /*
             Console.WriteLine("The arguments for AED are: wavFile [intensityThreshold smallAreaThreshold]");
             Console.WriteLine();
@@ -224,5 +410,7 @@ namespace AnalysisPrograms
             Environment.Exit(1);
             */
         }
+
+        #endregion
     }
 }
