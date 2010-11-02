@@ -178,18 +178,18 @@ namespace AudioAnalysisTools
         /// <param name="dBThreshold"></param>
         /// <returns></returns>
         public static System.Tuple<double[]> Execute_Spr_Match(char[,] template, SpectralSonogram sonogram,
-                                    List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
+                                                               List<AcousticEvent> segments, int minHz, int maxHz, double dBThreshold)
         {
             int lineLength = 10;
-            dBThreshold = 9;
+            //dBThreshold = 9;
 
             Log.WriteLine("SEARCHING FOR EVENTS LIKE TARGET (SPR).");
             if (segments == null) return null;
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
-            int templateHeight = template.GetLength(0);
-            int templateWidth = template.GetLength(1);
-            int cellCount = templateHeight * templateWidth;
+            int templateFrames   = template.GetLength(0);  // time axis - SPR template is same orientation as the sonogram data matrix
+            int templateFreqBins = template.GetLength(1);  // freq axis
+            int cellCount = templateFrames * templateFreqBins;
 
 
             int positiveCount = SprTools.CountTemplateChars(template);
@@ -197,49 +197,55 @@ namespace AudioAnalysisTools
             // Log.WriteLine("TEMPLATE: Number of NEG cells/total cells = {0}/{1}", negativeCount, cellCount);
             char[,] charogram = SprTools.Target2SymbolicTracks(sonogram.Data, dBThreshold, lineLength);
 
-            var m = DataTools.MatrixTranspose(charogram);
-            FileTools.WriteMatrix2File(m, "C:\\SensorNetworks\\Output\\FELT_MultiOutput\\char.txt");
+            //var m = DataTools.MatrixTranspose(charogram);
+            FileTools.WriteMatrix2File(charogram, "C:\\SensorNetworks\\Output\\FELT_MultiOutput_5templates\\char_ogram.txt"); //view the char-ogram
 
-             double[] scores = new double[sonogram.FrameCount];
+            double[] scores = new double[sonogram.FrameCount];
 
 
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
                 int startRow = (int)Math.Floor(av.StartTime * sonogram.FramesPerSecond);
-                int endRow = (int)Math.Floor(av.EndTime * sonogram.FramesPerSecond);
+                int endRow   = (int)Math.Floor(av.EndTime * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
-                int stopRow = endRow - templateHeight;
+                int stopRow = endRow - templateFrames - 1;
                 if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
 
                 for (int r = startRow; r < stopRow; r++)
                 {
-                    double max = -double.MaxValue;
+                    double maxSimilarity = -double.MaxValue;
                     int binBuffer = 10;
                     for (int bin = -binBuffer; bin < +binBuffer; bin++)
                     {
                         int c = minBin + bin;
                         if (c < 0) c = 0;
-                        double crossCor = 0.0;
-                        for (int i = 0; i < templateHeight; i++)
+                        double similarity = 0.0;
+
+                        for (int j = 0; j < templateFreqBins; j++) //freq axis
                         {
-                            for (int j = 0; j < templateWidth; j++)
+                            //int c0 = c + templateFrames - 1;
+                            for (int i = 0; i < templateFrames; i++)
                             {
-                                crossCor += sonogram.Data[r + i, c + j] * template[i, j];
+                                if (template[i, j] == '-')          continue;
+                                if (charogram[r + i, c + j] == '-') continue;
+                                //char c1 = charogram[r + i, c + j];
+                                //char c2 = template[i, j];
+                                //int difference = (int)c1 - (int)c2;
+                                int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
+                                similarity += ((90 - diff) / (double)90 * sonogram.Data[r + i, c + j]);
                             }
                         }
-                        //var image = BaseSonogram.Data2ImageData(matrix);
-                        //ImageTools.DrawMatrix(image, 1, 1, @"C:\SensorNetworks\Output\FELT_CURLEW\compare.png");
 
-                        if (crossCor > max) max = crossCor;
+                        if (similarity > maxSimilarity) maxSimilarity = similarity;
                     } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
-                    scores[r] = max / (double)positiveCount;
+                    scores[r] = 2 * maxSimilarity / (double)positiveCount;
 
                     //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
-                    if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
-                    //if (r % 100 == 0) { Console.Write("."); }
+                    //if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
+                    if (r % 100 == 0) { Console.Write("."); }
                     if (scores[r] < dBThreshold) r += 3; //skip where score is low
 
                 } // end of rows in segment

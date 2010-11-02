@@ -237,7 +237,7 @@ namespace TowseyLib
         {
             var oldList = File.Exists(fPath) ? ReadTextFile(fPath) : new List<string>();
             oldList.AddRange(list);
-            WriteTextFile(fPath, list);
+            WriteTextFile(fPath, oldList);
         }// end Append2TextFile()
 
         /// <summary>

@@ -82,6 +82,7 @@ namespace AnalysisPrograms
 
             Log.WriteLine("#################################### WRITE THE SPR TEMPLATE ##################################");
             double[,] matrix = ImageTools.GreyScaleImage2Matrix(bitmap);
+            matrix = DataTools.MatrixRotate90Clockwise(matrix);
             char[,] spr = SprTools.Target2SymbolicTracks(matrix, templateThreshold, lineLength);
             FileTools.WriteMatrix2File(spr, sprOpPath);
 
@@ -128,18 +129,19 @@ namespace AnalysisPrograms
             //string testRecording = @"C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-170000.mp3";
             //string testRecording = @"C:\SensorNetworks\WavFiles\Curlew\Curlew2\Top_Knoll_-_St_Bees_20090517-210000.wav";
 
-            string opDir = "C:\\SensorNetworks\\Output\\FELT_MultiOutput\\";
-            string templateListPath = opDir + "templateTestList.txt";
+            string listOpDir = "C:\\SensorNetworks\\Output\\FELT_templateList\\";
+            string templateListPath = listOpDir + "templateTestList.txt";
             var list = new List<string>();
-            list.Add(outputDir + targetName + "_binaryTemplate.zip");
-            list.Add(outputDir + targetName + "_trinaryTemplate.zip");
-            //list.Add(outputDir + targetName + "_syntacticTemplate.zip");
-            FileTools.WriteTextFile(templateListPath, list);      //write the template.ZIP file
+            list.Add("#" + outputDir + targetName + "_binaryTemplate.zip");
+            list.Add("#" + outputDir + targetName + "_trinaryTemplate.zip");
+            list.Add("#" + outputDir + targetName + "_syntacticTemplate.zip");
+            FileTools.Append2TextFile(templateListPath, list);      //write the template.ZIP file
 
+            //TEST THE TEMPLATE ON SOURCE FILE
             string[] arguments = new string[3];
             arguments[0] = sourceDir + "\\" + sourceFile;
             arguments[1] = templateListPath;
-            arguments[2] = opDir;
+            arguments[2] = listOpDir;
             //FeltTemplates_Use.Dev(arguments);
 
 

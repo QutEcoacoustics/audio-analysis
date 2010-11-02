@@ -9,7 +9,27 @@ namespace AudioAnalysisTools
     public static class SprTools
     {
 
+        //char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' }; //10 degree jumps
+        //90 degree angle = symbol 'i'   i.e. the vertical
+        //int resolutionAngle = 10;
+        public static char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
+        //90 degree angle = symbol 'g' i.e. the vertical
+        public const int resolutionAngle = 15;
+        
 
+        /// <summary>
+        /// returns the angle difference between two angle symbols
+        /// </summary>
+        /// <param name="c1"></param>
+        /// <param name="c2"></param>
+        /// <returns></returns>
+        public static int SymbolDifference(char c1, char c2)
+        {
+            if (c1 == c2) return 0;
+            int angle = Math.Abs((int)c1 - (int)c2) * resolutionAngle;
+            if (angle > 90) angle = 180 - angle;
+            return angle;
+        }
 
         public static double[,] Target2SpectralTracks(double[,] matrix, double threshold)
         {
@@ -51,12 +71,6 @@ namespace AudioAnalysisTools
             double[,] intensityScores = new double[rows, cols];
 
             double sumThreshold = lineLength * threshold; //require average of threshold dB per pixel.
-            //char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q' }; //10 degree jumps
-            //90 degree angle = symbol 'i'
-            //int resolutionAngle = 10;
-            char[] code = { 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l' };   //15 degree jumps
-            //90 degree angle = symbol 'g'
-            int resolutionAngle = 15;
 
             for (int r = 0; r < rows; r++)
             {
@@ -93,23 +107,24 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Cleans up a symbolic matrix
+        /// Cleans up a symbolic matrix.
+        /// Removes a symbol if it is isolated.
         /// </summary>
         /// <param name="inputM"></param>
         public static void CleanSymbolicTracks(char[,] inputM)
         {
             int rows = inputM.GetLength(0);
             int cols = inputM.GetLength(1);
-            for (int r = 0; r < rows; r++)
+            for (int r = 1; r < rows-1; r++)
             {
-                for (int c = 1; c < cols-2; c++)
+                for (int c = 1; c < cols-1; c++)
                 { 
                     if (inputM[r,c] == '-') continue;
 
-                    if ((inputM[r, c-1] == '-') && (inputM[r, c+2] == '-'))
+                    if ((inputM[r, c - 1] == '-') && (inputM[r, c + 1] == '-') && (inputM[r-1, c] == '-') && (inputM[r+1, c] == '-'))
                     {
                         inputM[r, c]   = '-';
-                        inputM[r, c+1] = '-';
+                        //inputM[r, c+1] = '-';
                     }
                 } // cols
             } // rows

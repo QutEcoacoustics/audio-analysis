@@ -1020,6 +1020,45 @@ namespace TowseyLib
 		}
 
         /// <summary>
+        /// Rotates a matrix 90 degrees clockwise.
+        /// Used for Syntactic pattern recognition
+        /// Converts Image matrix to Spectrogram data orientation
+        /// </summary>
+        /// <param name="M">the matrix to rotate</param>
+        /// <returns></returns>
+
+        public static char[,] MatrixRotate90Clockwise(char[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new char[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows-r, c];
+            return ret;
+        }
+
+        /// <summary>
+        /// Rotates a matrix 90 degrees clockwise.
+        /// Used for Syntactic pattern recognition
+        /// Converts Image matrix to Spectrogram data orientation
+        /// </summary>
+        /// <param name="M">the matrix to rotate</param>
+        /// <returns></returns>
+
+        public static double[,] MatrixRotate90Clockwise(double[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new double[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[rows - r - 1, c];
+            return ret;
+        }
+
+
+        /// <summary>
         /// transforms a matrix of char.
         /// Used for Syntatctic pttern recognition
         /// </summary>
