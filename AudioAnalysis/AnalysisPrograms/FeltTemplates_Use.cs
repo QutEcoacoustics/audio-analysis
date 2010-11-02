@@ -52,6 +52,9 @@ namespace AnalysisPrograms
         // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-003000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput
         // felt "C:\SensorNetworks\WavFiles\Curlew\Curlew2\West_Knoll_-_St_Bees_20080929-210000.wav"               C:\SensorNetworks\Output\FELT_MultiOutput\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput
 
+        // felt "C:\SensorNetworks\WavFiles\Currawongs\Currawong_JasonTagged\West_Knoll_Bees_20091102-050000.wav"  C:\SensorNetworks\Output\FELT_MultiOutput_5templates\templateList.txt  C:\SensorNetworks\Output\FELT_MultiOutput_5templates
+
+
         public static void Dev(string[] args)
         {
             string title = "# FIND OTHER ACOUSTIC EVENTS LIKE THIS";
@@ -102,9 +105,10 @@ namespace AnalysisPrograms
 
             foreach (string zipPath in zipList)
             {
-                if(zipPath.StartsWith("#")) continue; // commented line
+                if (zipPath.StartsWith("#")) continue;  // commented line
+                if (zipPath.Length < 2)      continue;  // empty line
 
-                //i get params file
+                //i: get params file
                 FileTools.UnZip(outputDir, zipPath, true);
                 string zipName    = Path.GetFileNameWithoutExtension(zipPath);
                 string[] parts    = zipName.Split('_');
@@ -268,6 +272,7 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Scans a recording given a dicitonary of parameters and a binary template
+        /// Template has a different orientation ot others.
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="dict"></param>
@@ -277,19 +282,19 @@ namespace AnalysisPrograms
         {
             //i: get parameters from dicitonary
             string callName = dict[FeltTemplate_Create.key_CALL_NAME];
-            double frameOverlap = Double.Parse(dict[FeltTemplate_Create.key_FRAME_OVERLAP]);
             bool doSegmentation = Boolean.Parse(dict[FeltTemplate_Create.key_DO_SEGMENTATION]);
             double smoothWindow = Double.Parse(dict[FeltTemplate_Create.key_SMOOTH_WINDOW]);         //before segmentation 
             int minHz = Int32.Parse(dict[FeltTemplate_Create.key_MIN_HZ]);
             int maxHz = Int32.Parse(dict[FeltTemplate_Create.key_MAX_HZ]);
             double minDuration = Double.Parse(dict[FeltTemplate_Create.key_MIN_DURATION]);           //min duration of event in seconds 
             double dBThreshold = Double.Parse(dict[FeltTemplate_Create.key_DECIBEL_THRESHOLD]);      // = 9.0; // dB threshold
+            //dBThreshold = 6.0;
             int binCount = (int)(maxHz / sonogram.FBinWidth) - (int)(minHz / sonogram.FBinWidth) + 1;
             Log.WriteLine("Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHz, maxHz, binCount);
 
             //ii: TEMPLATE INFO
-            double templateDuration = templateMatrix.GetLength(1) / sonogram.FramesPerSecond;
-            Log.WriteIfVerbose("Template duration = {0:f3} seconds or {1} frames.", templateDuration, templateMatrix.GetLength(1));
+            double templateDuration = templateMatrix.GetLength(0) / sonogram.FramesPerSecond;
+            Log.WriteIfVerbose("Template duration = {0:f3} seconds or {1} frames.", templateDuration, templateMatrix.GetLength(0));
             Log.WriteIfVerbose("Min Duration: " + minDuration + " seconds");
 
             //iii: DO SEGMENTATION
