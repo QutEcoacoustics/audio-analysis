@@ -37,7 +37,7 @@ namespace AnalysisPrograms
             Tuple<BaseSonogram, List<AcousticEvent>> aed = AED.Detect(wavFilePath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
 
             // TODO: hacks remove
-            ProcessingTypes.SaveAeCsv(aed.Item2, @"C:\SensorNetworks\Output\", wavFilePath);
+            ////ProcessingTypes.SaveAeCsv(aed.Item2, @"C:\SensorNetworks\Output\", wavFilePath);
 
             var events = new List<Util.Rectangle<double, double>>();
             foreach (AcousticEvent ae in aed.Item2)
@@ -113,6 +113,7 @@ namespace AnalysisPrograms
 
                 AED.GenerateImage(wavFilePath, @"C:\SensorNetworks\Output\", result.Item1, eprEvents);
                 ProcessingTypes.SaveAeCsv(eprEvents, @"C:\SensorNetworks\Output\", wavFilePath);
+
                 Log.WriteLine("Finished");
             }
         }

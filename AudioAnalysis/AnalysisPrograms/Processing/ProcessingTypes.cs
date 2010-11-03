@@ -35,9 +35,9 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
+        public static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
-            ////SaveAeCsv(events, workingDir, audioFilePath);
+            SaveAeCsv(events, workingDir, audioFilePath);
 
             if (events != null && events.Count > 0)
             {
