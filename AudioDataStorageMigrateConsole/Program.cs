@@ -11,6 +11,9 @@ namespace AudioDataStorageMigrateConsole
 {
     using System;
     using System.Configuration;
+    using System.Diagnostics;
+    using System.Drawing.Imaging;
+    using System.IO;
     using System.Security.Cryptography;
     using System.Text;
 
@@ -19,7 +22,9 @@ namespace AudioDataStorageMigrateConsole
     using Autofac;
 
     using QutSensors.Business;
+    using QutSensors.Business.Audio;
     using QutSensors.Business.Storage;
+    using QutSensors.Shared.LogProviders;
 
     /// <summary>
     /// Migrator program.
@@ -65,8 +70,9 @@ namespace AudioDataStorageMigrateConsole
         /// </param>
         public static void Main(string[] args)
         {
-            GenerateMachineKey("64");
+            //GenerateMachineKey("64");
             //Worker.RunMigration();
+            //GetSpectrogram();
         }
 
         private static void GenerateMachineKey(params string[] argv)
@@ -89,8 +95,56 @@ namespace AudioDataStorageMigrateConsole
                 sb.Append(string.Format("{0:X2}", t));
             }
 
-            System.IO.File.WriteAllText(@"C:\key.txt", sb.ToString());
+            File.WriteAllText(@"C:\key.txt", sb.ToString());
             Console.WriteLine(sb);
+            Console.ReadLine();
+        }
+
+        private static void GetSpectrogram()
+        {
+            string dir =
+                @"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\SensorsTrunk\QutSensors.Test\TestData";
+
+            ISignalToImage web = new WebSignalToImage();
+
+            ISignalToImage towsey = new TowseySignalToImage();
+
+            ILogProvider log = new TextFileLogProvider(dir);
+
+            var watch = new Stopwatch();
+
+            foreach (FileInfo file in new DirectoryInfo(dir).GetFiles("*.wav"))
+            {
+                try
+                {
+                    byte[] bytes = File.ReadAllBytes(file.FullName);
+
+                    watch.Restart();
+
+                    using (var image = web.Spectrogram(bytes))
+                    {
+                        watch.Stop();
+                        log.WriteEntry(LogType.Information, "Web: {0} - {1}", Path.GetFileNameWithoutExtension(file.FullName), watch.Elapsed);
+
+                        image.Save(Path.Combine(dir, Path.GetFileNameWithoutExtension(file.FullName) + "-web.jpg"), ImageFormat.Jpeg);
+                    }
+
+                    watch.Restart();
+
+                    using (var image = towsey.Spectrogram(bytes))
+                    {
+                        watch.Stop();
+                        log.WriteEntry(LogType.Information, "Towsey: {0} - {1}", Path.GetFileNameWithoutExtension(file.FullName), watch.Elapsed);
+
+                        image.Save(Path.Combine(dir, Path.GetFileNameWithoutExtension(file.FullName) + "-towsey.jpg"), ImageFormat.Jpeg);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    log.WriteEntry(LogType.Error, "Error reading {0} - {1}", file.Name, ex.Message);
+                }
+            }
+
             Console.ReadLine();
         }
     }
