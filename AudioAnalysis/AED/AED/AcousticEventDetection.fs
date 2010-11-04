@@ -89,7 +89,7 @@ let detectEvents intensityThreshold smallAreaThreshold (bandPassFilter:float*flo
     if m.NumRows = 257 
         then
             let (min, max) = fst bandPassFilter |> frequencyToPixels floor, snd bandPassFilter |> frequencyToPixels ceil 
-            let mPrime = m.Region (1 + min, 0, max - min + 1, m.NumCols) // remove first row (DC values) like in matlab and remove bandpass pixels (lenth i really needs that +1!)
+            let mPrime = m.Region (1 + min, 0, max - min + 1, m.NumCols) // remove first row (DC values) like in matlab and remove bandpass pixels (lengthi really needs that +1!)
             detectEventsMatlab intensityThreshold smallAreaThreshold mPrime
                 |> Seq.map (fun r -> new Oblong(r.Left, r.Top + 1 + min, right r, bottom r + 1 + min)) // transpose results back & compensate for removing first row
         else 
