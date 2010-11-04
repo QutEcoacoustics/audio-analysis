@@ -193,6 +193,7 @@ namespace AudioAnalysisTools
 
 
             int positiveCount = SprTools.CountTemplateChars(template);
+            int negativeCount = cellCount - positiveCount;
             Log.WriteLine("TEMPLATE: Number of POS cells/total cells = {0}/{1}", positiveCount, cellCount);
             // Log.WriteLine("TEMPLATE: Number of NEG cells/total cells = {0}/{1}", negativeCount, cellCount);
             char[,] charogram = SprTools.Target2SymbolicTracks(sonogram.Data, dBThreshold, lineLength);
@@ -216,32 +217,38 @@ namespace AudioAnalysisTools
                 {
                     double maxSimilarity = -double.MaxValue;
                     int binBuffer = 10;
+                    // calculate similarity at one frame position
                     for (int bin = -binBuffer; bin < +binBuffer; bin++)
                     {
                         int c = minBin + bin;
                         if (c < 0) c = 0;
-                        double similarity = 0.0;
+                        double onSum = 0.0;
+                        double offSum = 0.0;
 
+                        // calculate onSum and offSum
                         for (int j = 0; j < templateFreqBins; j++) //freq axis
                         {
-                            //int c0 = c + templateFrames - 1;
                             for (int i = 0; i < templateFrames; i++)
                             {
-                                if (template[i, j] == '-')          continue;
                                 if (charogram[r + i, c + j] == '-') continue;
-                                //char c1 = charogram[r + i, c + j];
-                                //char c2 = template[i, j];
-                                //int difference = (int)c1 - (int)c2;
-                                int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
-                                similarity += ((90 - diff) / (double)90 * sonogram.Data[r + i, c + j]);
+                                else
+                                    if (template[i, j] == '-') offSum += sonogram.Data[r + i, c + j];
+                                    else
+                                    {
+                                        //char c1 = charogram[r + i, c + j];
+                                        //char c2 = template[i, j];
+                                        //int difference = (int)c1 - (int)c2;
+                                        int diff = SprTools.SymbolDifference(charogram[r + i, c + j], template[i, j]);
+                                        onSum += ((90 - diff) / (double)90 * sonogram.Data[r + i, c + j]);
+                                    }
                             }
-                        }
-
+                        } // calculate similarity
+                        double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount); 
                         if (similarity > maxSimilarity) maxSimilarity = similarity;
                     } // end freq bins
 
                     //following line yields score = av of PosCells - av of NegCells.
-                    scores[r] = 2 * maxSimilarity / (double)positiveCount;
+                    scores[r] = maxSimilarity;
 
                     //if (r % 100 == 0) { Console.WriteLine("{0} - {1:f3}", r, scores[r]); }
                     //if (scores[r] >= dBThreshold) { Console.WriteLine("r={0} score={1}.", r, scores[r]); }
