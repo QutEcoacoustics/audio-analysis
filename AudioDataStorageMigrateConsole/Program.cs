@@ -70,9 +70,9 @@ namespace AudioDataStorageMigrateConsole
         /// </param>
         public static void Main(string[] args)
         {
-            //GenerateMachineKey("64");
-            //Worker.RunMigration();
-            //GetSpectrogram();
+            ////GenerateMachineKey("64");
+            ////GetSpectrogram();
+            Worker.RunMigration();
         }
 
         private static void GenerateMachineKey(params string[] argv)

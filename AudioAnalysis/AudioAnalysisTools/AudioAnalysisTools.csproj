@@ -69,6 +69,7 @@
     <CodeContractsRuntimeCheckingLevel>Full</CodeContractsRuntimeCheckingLevel>
     <CodeContractsReferenceAssembly>DoNotBuild</CodeContractsReferenceAssembly>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -94,6 +95,9 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AForge.Imaging">
+      <HintPath>..\..\Extra Assemblies\Aforge.Net\AForge.Imaging.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -146,6 +150,7 @@
     <Compile Include="Result\Result_MMErgodic.cs" />
     <Compile Include="Sonogram\BaseSonogram.cs" />
     <Compile Include="Sonogram\BaseSonogramConfig.cs" />
+    <Compile Include="Sonogram\BaseSonogramDrawImage.cs" />
     <Compile Include="Sonogram\Image_MultiTrack.cs" />
     <Compile Include="Sonogram\Image_Track.cs" />
     <Compile Include="SprTools.cs" />

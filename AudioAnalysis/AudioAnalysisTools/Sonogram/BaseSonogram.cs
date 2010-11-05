@@ -1,22 +1,50 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using AudioTools;
-using TowseyLib;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
-    using QutSensors.Shared;
+    using System;
+    using System.Drawing;
+    using System.Drawing.Imaging;
+    using System.IO;
+    using System.Text;
 
-    public enum SonogramType { amplitude, spectral, cepstral, acousticVectors, sobelEdge }
+    using AudioTools;
 
+    using TowseyLib;
 
-    public abstract class BaseSonogram : IDisposable
+    /// <summary>
+    /// Sonogram type.
+    /// </summary>
+    public enum SonogramType
+    {
+        /// <summary>
+        /// Ampltude Sonogram.
+        /// </summary>
+        Amplitude, 
+
+        /// <summary>
+        /// Spectral Sonogram.
+        /// </summary>
+        Spectral, 
+
+        /// <summary>
+        /// Cepstral Sonogram.
+        /// </summary>
+        Cepstral, 
+
+        /// <summary>
+        /// Acoustic Vectors Sonogram.
+        /// </summary>
+        AcousticVectors, 
+
+        /// <summary>
+        /// Sobel Edge Sonogram.
+        /// </summary>
+        SobelEdge
+    }
+
+    /// <summary>
+    /// Base Sonogram.
+    /// </summary>
+    public abstract partial class BaseSonogram : IDisposable
     {
 
         #region Properties
@@ -334,7 +362,7 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
-
+        
 
         public StringBuilder GetSegmentationText()
         {
@@ -471,10 +499,13 @@ namespace AudioAnalysisTools
         }
 
 
-        bool IsInBand(int y, int? minFreq, int? maxFreq)
+        private static bool IsInBand(int y, int? minFreq, int? maxFreq)
         {
             if (minFreq == null && maxFreq == null)
+            {
                 return false;
+            }
+
             return (minFreq == null || y > minFreq) && (maxFreq == null || y < maxFreq);
         }
 

@@ -10,6 +10,7 @@
     using AudioTools;
     using AudioTools.AudioUtlity;
 
+    using QutSensors.Shared.LogProviders;
     using QutSensors.Shared.Tools;
 
     /// <summary>
@@ -26,6 +27,8 @@
         private readonly FileInfo resourceFile;
 
         private readonly ISegmenter segmenter;
+
+        private readonly ILogProvider logProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="LocalProcessor"/> class. 
@@ -65,7 +68,8 @@
 
             this.analysisType = ConfigurationManager.AppSettings["LocalAnalysisType"];
 
-
+            string dir = ConfigurationManager.AppSettings["LocalAnalyseDir"];
+            this.logProvider = new TextFileLogProvider(dir);
 
             this.segmenter = new Segmenter();
         }
@@ -142,43 +146,50 @@
             var results = ProcessingUtils.RunAnalysis(
                 analysisType, runDir.FullName, this.resourceFile == null ? null : this.resourceFile.FullName);
 
-            // save results as csv in same dir as original audio file
-            var sb = new StringBuilder();
-            sb.AppendLine("Start time, End time, Duration, Min freq, Max freq, Normalised Score, Extra Detail");
-
-            foreach (var item in results)
-            {
-                sb.AppendLine(
-                    string.Format(
-                    "{0}, {1}, {2}, {3}, {4}, {5}, {6}",
-                    item.StartTime,
-                    item.EndTime,
-                    item.EndTime - item.StartTime,
-                    item.MinFrequency,
-                    item.MaxFrequency,
-                    item.NormalisedScore == null ? "no score" : item.NormalisedScore.ToString(),
-                    item.ExtraDetail == null ? "no extra detail" : string.Join(" || ", item.ExtraDetail.Select(r => r.ToString()).ToArray())
-                    ));
-            }
-
             string resultsFileName = Path.GetFileName(file.Name) + DateTime.Now.ToString("_yyyyMMdd-HHmmss") + "_" +
-                                     segment.Minimum.ToReadableString().Replace(' ', '_') + "--" +
-                                     segment.Maximum.ToReadableString().Replace(' ', '_');
+                                         segment.Minimum.ToReadableString().Replace(' ', '_') + "--" +
+                                         segment.Maximum.ToReadableString().Replace(' ', '_');
 
-            File.WriteAllText(Path.Combine(fileDir, resultsFileName + ".csv"), sb.ToString());
+            // only save image and csv file if there are results.
+            if (results.Count() > 0)
+            {
+                // save results as csv in same dir as original audio file
+                var sb = new StringBuilder();
+                sb.AppendLine("Start time, End time, Duration, Min freq, Max freq, Normalised Score, Extra Detail");
 
+                foreach (var item in results)
+                {
+                    sb.AppendLine(
+                        string.Format(
+                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}",
+                            item.StartTime,
+                            item.EndTime,
+                            item.EndTime - item.StartTime,
+                            item.MinFrequency,
+                            item.MaxFrequency,
+                            item.NormalisedScore == null ? "no score" : item.NormalisedScore.ToString(),
+                            item.ExtraDetail == null
+                                ? "no extra detail"
+                                : string.Join(" || ", item.ExtraDetail.Select(r => r.ToString()).ToArray())));
+                }
 
-            string spectrogramImage = Path.Combine(
+                File.WriteAllText(Path.Combine(fileDir, resultsFileName + ".csv"), sb.ToString());
+
+                string spectrogramImage = Path.Combine(
                 runDir.FullName, Path.GetFileNameWithoutExtension(ProcessingUtils.AudioFileName) + ".png");
 
-            if (File.Exists(spectrogramImage))
-            {
-                // save results as image
-                // uncomment 'SaveAe' method in 'ProcessingTypes'
-                File.Copy(spectrogramImage, Path.Combine(fileDir, resultsFileName + ".png"));
+                if (File.Exists(spectrogramImage))
+                {
+                    // save results as image
+                    // uncomment 'SaveAe' method in 'ProcessingTypes'
+                    File.Copy(spectrogramImage, Path.Combine(fileDir, resultsFileName + ".png"));
+                }
             }
 
-            // delete run dir
+            // log run
+            this.logProvider.WriteEntry(LogType.Information, "Processed {0}. Num results: {1}.", resultsFileName, results.Count());
+
+            // delete run dir);
             if (Directory.Exists(runDir.FullName))
             {
                 try
@@ -206,9 +217,7 @@
             catch
             {
                 // if cannot get audio duration, return
-                Console.WriteLine();
-                Console.WriteLine("Could not get duration for file. Is it an audio file? " + file.FullName);
-                Console.WriteLine();
+                this.logProvider.WriteEntry(LogType.Error, "Could not get duration for file. Is it an audio file? " + file.FullName);
                 return;
             }
 

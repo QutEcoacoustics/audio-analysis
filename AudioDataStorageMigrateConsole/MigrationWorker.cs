@@ -72,16 +72,23 @@ namespace AudioDataStorageMigrateConsole
                     "SqlFileStreamDataLengthFormatted",
                     "SqlFileStreamAudioDuration",
                     "SqlFileStreamAudioDurationFormatted",
+                    "SqlFileStreamAudioDurationMs",
                     "ReadWriteDuration",
+                    "ReadWriteDurationFormatted",
+                    "ReadWriteDurationMs",
                     "FileSystemFileExtension",
                     "FileSystemFileLength",
                     "FileSystemFileLengthFormatted",
                     "FileSystemAudioDuration",
                     "FileSystemAudioDurationFormatted",
+                    "FileSystemAudioDurationMs",
                     "SingleAudioReadingProcessDuration",
+                    "SingleAudioReadingProcessDurationMs",
+                    "SingleAudioReadingProcessDurationFormatted",
                     "OverallRunningCount",
                     "OverallRunningDuration",
                     "OverallRunningDurationFormatted",
+                    "OverallRunningDurationMs",
                 };
 
             this.logProvider = new MultiLogProvider(new CsvTextFileLogProvider(logFileDir, csvHeaders), new ConsoleLogProvider());
@@ -206,7 +213,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                 difference = ts2 - ts1;
             }
 
-            return difference <= TimeSpan.FromMilliseconds(800);
+            return difference <= TimeSpan.FromMilliseconds(700);
         }
 
         /// <summary>
@@ -241,49 +248,26 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
         }
 
         /// <summary>
-        /// Record error and mark as failed.
-        /// </summary>
-        /// <param name="db">
-        /// Data Context.
-        /// </param>
-        /// <param name="reading">
-        /// The reading.
-        /// </param>
-        /// <param name="format">
-        /// The message.
-        /// </param>
-        /// <param name="formatArgs">
-        /// The format Args.
-        /// </param>
-        /// <exception cref="InvalidOperationException">
-        /// <c>InvalidOperationException</c>.
-        /// </exception>
-        private static void RecordErrorMarkAsFailed(QutSensorsDb db, AudioReading reading, string format, params object[] formatArgs)
-        {
-            reading.DataLocation = AudioReadingDataLocation.SqlFileStreamExportFailed;
-            db.SubmitChanges();
-
-            throw new InvalidOperationException("Migration Error: " + string.Format(format, formatArgs));
-        }
-
-        /// <summary>
         /// Migrate one audio reading.
         /// </summary>
         /// <returns>
         /// Migration info.
         /// </returns>
+        /// <exception cref="InvalidOperationException">Migration Error: Audio reading is not in a state that can be processed.</exception>
         private MigrationInfo MigrateSingleAudioReading()
         {
             var info = new MigrationInfo { LogType = LogType.Information, Message = "Migration Successful." };
 
-            try
-            {
-                var overallWatch = new Stopwatch();
-                overallWatch.Start();
+            var overallWatch = new Stopwatch();
+            overallWatch.Start();
 
-                using (var db = new QutSensorsDb())
+            using (var db = new QutSensorsDb())
+            {
+                AudioReading reading = null;
+
+                try
                 {
-                    AudioReading reading = GetAudioReadingToMigrate(db);
+                    reading = GetAudioReadingToMigrate(db);
 
                     if (reading == null)
                     {
@@ -321,7 +305,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                         MimeTypes.Canonicalise(info.SqlFileStreamMimeType) == MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension))
                     {
                         // no data in db, file does exist and has data, mime type/ext match, db duration and file duration within range
-                        // -> data location is incorrect, fix it.
+                        // -> data location field is incorrect, fix it.
                         reading.DataLocation = AudioReadingDataLocation.FileSystem;
                         db.SubmitChanges();
                     }
@@ -365,20 +349,23 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     }
                     else
                     {
-                        RecordErrorMarkAsFailed(
-                            db,
-                            reading,
-                            "Audio reading is not in a state that can be processed.");
+                        throw new InvalidOperationException("Migration Error: Audio reading is not in a state that can be processed.");
                     }
 
                     overallWatch.Stop();
                     info.TotalDuration = overallWatch.Elapsed;
                 }
-            }
-            catch (Exception ex)
-            {
-                info.Message = " --Exception Message-- " + ex.Message;
-                info.LogType = LogType.Error;
+                catch (Exception ex)
+                {
+                    info.Message = " --Exception Message-- " + ex.Message;
+                    info.LogType = LogType.Error;
+
+                    if (reading != null)
+                    {
+                        reading.DataLocation = AudioReadingDataLocation.SqlFileStreamExportFailed;
+                        db.SubmitChanges();
+                    }
+                }
             }
 
             return info;
@@ -412,6 +399,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             return dataToFileSuccess;
         }
 
+        /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
         private MigrationInfo ExportData(QutSensorsDb db, AudioReading reading, MigrationInfo info)
         {
             /*****************
@@ -429,7 +417,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             if (!dataToFileSuccess)
             {
                 // Writing from sql file stream to file system MUST be successful.
-                RecordErrorMarkAsFailed(db, reading, "Audio Reading was NOT written to file system audio data storage.");
+                throw new InvalidOperationException("Migration Error: Audio Reading was NOT written to file system audio data storage.");
             }
 
             /*****************
@@ -442,29 +430,28 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             if (file == null || !File.Exists(file.FullName) || file.Length < 1)
             {
                 // file must exist
-                RecordErrorMarkAsFailed(db, reading, "Audio Reading exported to file but file does not exist or contains no data.");
+                throw new InvalidOperationException("Migration Error: Audio Reading exported to file but file does not exist or contains no data.");
             }
 
             if (info.SqlFileStreamDataLength != info.FileSystemFile.Length)
             {
                 // data lengths must match
-                const string Msg = "Audio Reading writen to file but data lengths don't match. Sql FileStream: {0} file: {1}";
+                const string Msg = "Migration Error: Audio Reading written to file but data lengths don't match. Sql FileStream: {0} file: {1}";
 
-                RecordErrorMarkAsFailed(db, reading, Msg, info.SqlFileStreamDataLength, info.FileSystemFile.Length);
+                throw new InvalidOperationException(string.Format(Msg, info.SqlFileStreamDataLength, info.FileSystemFile.Length));
             }
 
             if (MimeTypes.Canonicalise(info.SqlFileStreamMimeType) != MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension))
             {
                 // mime types must match
-                const string Msg = "Audio Reading writen to file but mime type and extension do not match. Sql FileStream: {0} file: {1} ({2})";
+                const string Msg = "Migration Error: Audio Reading written to file but mime type and extension do not match. Sql FileStream: {0} file: {1} ({2})";
 
-                RecordErrorMarkAsFailed(
-                    db,
-                    reading,
-                    Msg,
-                    MimeTypes.Canonicalise(info.SqlFileStreamMimeType),
-                    MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension),
-                    info.FileSystemFile.Extension);
+                throw new InvalidOperationException(
+                    string.Format(
+                        Msg,
+                        MimeTypes.Canonicalise(info.SqlFileStreamMimeType),
+                        MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension),
+                        info.FileSystemFile.Extension));
             }
 
             info.FileSystemAudioDuration = this.audioUtility.Duration(file, reading.MimeType);
@@ -472,14 +459,13 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             if (!TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration))
             {
                 // sqlfilestream data must match file system data
-                const string Msg = "Audio Reading writen to file but durations do not match. Sql FileStream: {0}  file: {1}";
+                const string Msg = "Migration Error: Audio Reading written to file but durations do not match. Sql FileStream: {0}  file: {1}";
 
-                RecordErrorMarkAsFailed(
-                    db,
-                    reading,
-                    Msg,
-                    info.SqlFileStreamAudioDuration.ToReadableString(),
-                    info.FileSystemAudioDuration.ToReadableString());
+                throw new InvalidOperationException(
+                    string.Format(
+                        Msg,
+                        info.SqlFileStreamAudioDuration.ToReadableString(),
+                        info.FileSystemAudioDuration.ToReadableString()));
             }
 
             /*****************
