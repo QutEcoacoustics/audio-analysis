@@ -35,8 +35,23 @@ namespace AnalysisPrograms.Processing
             }
         }
 
+        /// <summary>
+        /// Save events to image.
+        /// </summary>
+        /// <param name="events">
+        /// The events.
+        /// </param>
+        /// <param name="workingDir">
+        /// The working dir.
+        /// </param>
+        /// <param name="audioFilePath">
+        /// The audio file path.
+        /// </param>
         public static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
+            // don't want to save image or csv when run on cluster.
+            return;
+
             SaveAeCsv(events, workingDir, audioFilePath);
 
             if (events != null && events.Count > 0)
@@ -53,8 +68,21 @@ namespace AnalysisPrograms.Processing
 
                 AED.GenerateImage(audioFilePath, workingDir, sonogram, events);
             }
+
         }
 
+        /// <summary>
+        /// Save events to csv file. Used in other areas.
+        /// </summary>
+        /// <param name="events">
+        /// The events.
+        /// </param>
+        /// <param name="workingDir">
+        /// The working dir.
+        /// </param>
+        /// <param name="audioFilePath">
+        /// The audio file path.
+        /// </param>
         public static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
         {
             var aes = events.Select(e => new { e.StartTime, e.EndTime, e.MinFreq, e.MaxFreq });

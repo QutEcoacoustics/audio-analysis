@@ -130,16 +130,23 @@ namespace AudioDataStorageMigrateConsole
                     this.SqlFileStreamDataLength.ToByteDisplay(),
                     this.SqlFileStreamAudioDuration,
                     this.SqlFileStreamAudioDuration.ToReadableString(),
+                    this.SqlFileStreamAudioDuration.TotalMilliseconds,
                     this.ReadWriteDuration,
+                    this.ReadWriteDuration.ToReadableString(),
+                    this.ReadWriteDuration.TotalMilliseconds,
                     this.FileSystemFile != null ? this.FileSystemFile.Extension : "unknown",
                     this.FileSystemFile != null ? this.FileSystemFile.Length.ToString() : "unknown",
                     this.FileSystemFile != null ? this.FileSystemFile.Length.ToByteDisplay() : "unknown",
                     this.FileSystemAudioDuration,
                     this.FileSystemAudioDuration.ToReadableString(),
+                    this.FileSystemAudioDuration.TotalMilliseconds,
                     this.TotalDuration,
+                    this.TotalDuration.ToReadableString(),
+                    this.TotalDuration.TotalMilliseconds,
                     this.OverallRunningCount,
                     this.OverallRunningDuration,
                     this.OverallRunningDuration.ToReadableString(),
+                    this.OverallRunningDuration.TotalMilliseconds,
                 };
         }
     }
