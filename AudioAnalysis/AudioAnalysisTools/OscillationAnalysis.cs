@@ -308,5 +308,47 @@ namespace AudioAnalysisTools
             return events;
         } // end method ConvertODScores2Events()
 
+
+        /// <summary>
+        /// returns the periodicity in the column sums of a matrix
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public static double[] PeriodicityAnalysis(double[,] m)
+        {
+            var colSums = DataTools.GetColumnsAverages(m);
+            DataTools.writeBarGraph(colSums);
+            var A = DataTools.AutoCorrelation(colSums, 0, colSums.Length * 3 / 4); // do 2/3rds of maximum possible lag
+            int dctLength = A.Length;
+
+            A = DataTools.SubtractMean(A);
+            DataTools.writeBarGraph(A);
+
+            double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            double[] dct = Speech.DCT(A, cosines);
+            
+            for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+            //DataTools.writeBarGraph(dct);
+            for (int i = 0; i < 3; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration
+            dct = DataTools.normalise2UnitLength(dct);
+            var peaks = DataTools.GetPeaks(dct);
+            // remove non-peak values and low values
+            for (int i = 0; i < dctLength; i++) if ((!peaks[i]) || (dct[i]< 0.2)) dct[i] = 0.0;
+            DataTools.writeBarGraph(dct);
+
+            //get periodicity of highest three values
+            int peakCount = 3;
+            var period = new double[peakCount];
+            for (int i = 0; i < peakCount; i++)
+            {
+                int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+                period[i] = dctLength / (double)indexOfMaxValue * 2;
+                dct[indexOfMaxValue] = 0.0;
+            }
+            return period;
+        }
+
+
     }//end class
 }
