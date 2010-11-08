@@ -435,6 +435,25 @@ namespace TowseyLib
 
 //=============================================================================
 
+    public static double[] AutoCorrelation(double[] X, int minLag, int maxLag)
+    {
+        if(maxLag > X.Length) maxLag = X.Length;
+        int lagCount = maxLag - minLag + 1;
+        var A = new double[lagCount];
+        for (int lag = minLag; lag <= maxLag; lag++)
+        {
+            double sum = 0.0;
+            for (int i = 0; i < X.Length-lag; i++)
+            {
+                sum += (X[i] * X[i+lag]);
+            }
+            A[lag - minLag] = sum / (X.Length - lag);
+        }
+        return A;
+    }
+
+//=============================================================================
+
   static public double[] counts2RF(int[] counts)
   { int L = counts.Length;
   	double[] rf = new double[L];
@@ -924,12 +943,29 @@ namespace TowseyLib
           }
           colSums[j] = sum;
       }
-      sum = 0.0;
-      for (int j = 0; j < cols; j++) sum += colSums[j];
+      //sum = 0.0;
+      //for (int j = 0; j < cols; j++) sum += colSums[j];
       //Console.WriteLine("sum="+sum.ToString("F5"));
       return colSums;
   }
 
+  public static double[] GetColumnsAverages(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      double sum = 0.0;
+      double[] colSums = new double[cols];
+      for (int j = 0; j < cols; j++)
+      {
+          sum = 0.0;
+          for (int i = 0; i < rows; i++)
+          {
+              sum += m[i, j];
+          }
+          colSums[j] = sum / rows;
+      }
+      return colSums;
+  }
 
 
 

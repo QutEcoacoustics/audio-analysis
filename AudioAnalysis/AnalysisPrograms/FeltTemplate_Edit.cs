@@ -15,11 +15,12 @@ namespace AnalysisPrograms
 {
     class FeltTemplate_Edit
     {
-        //CURRAWONG
-        //edittemplate_felt C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong2_Params.txt
-        //CURLEW
-        //edittemplate_felt C:\SensorNetworks\Output\FELT_CURLEW2\FELT_Curlew2_Params.txt
-
+        // CURRAWONG
+        // edittemplate_felt C:\SensorNetworks\Output\FELT_CURRAWONG2\FELT_Currawong2_Params.txt
+        // CURLEW
+        // edittemplate_felt C:\SensorNetworks\Output\FELT_CURLEW2\FELT_Curlew2_Params.txt
+        // KOALA
+        // edittemplate_felt C:\SensorNetworks\Output\FELT_KOALA_EXHALE1\FELT_KoalaExhale1_Params.txt
 
         /// <summary>
         /// Wraps up the resources into a template.ZIP file
@@ -85,6 +86,22 @@ namespace AnalysisPrograms
             matrix = DataTools.MatrixRotate90Clockwise(matrix);
             char[,] spr = SprTools.Target2SymbolicTracks(matrix, templateThreshold, lineLength);
             FileTools.WriteMatrix2File(spr, sprOpPath);
+
+            Log.WriteLine("#################################### WRITE THE OSCILATION TEMPLATE ##################################");
+            double[,] target = FileTools.ReadDoubles2Matrix(targetPath);
+            // oscillations in time
+            double[,] rotatedtarget = DataTools.MatrixRotate90Clockwise(target);
+            double[] periods = OscillationAnalysis.PeriodicityAnalysis(rotatedtarget);
+            Console.WriteLine("Frame periods  at {0:f1}  {1:f1}  {2:f1}", periods[0], periods[1], periods[2]);
+            //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+
+            // oscillations in freq i.e. harmonics
+            periods = OscillationAnalysis.PeriodicityAnalysis(target);
+            Console.WriteLine("Hz bin periods at {0:f1}  {1:f1}  {2:f1}", periods[0], periods[1], periods[2]);
+            //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+
+
+            //FileTools.WriteMatrix2File(spr, sprOpPath);
 
             // ZIP THE OUTPUT
             Log.WriteLine("#################################### ZIP THE TEMPLATES ##################################");
