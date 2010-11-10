@@ -30,7 +30,7 @@ namespace QutSensors.AnalysisProcessor.Runners
         {
             get
             {
-                return 1;
+                return 10;
             }
         }
 
@@ -129,6 +129,7 @@ namespace QutSensors.AnalysisProcessor.Runners
                 {
                     // log error?
                     // worker just won't run.
+                    throw;
                 }
             }
 
