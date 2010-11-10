@@ -156,19 +156,25 @@ namespace QutSensors.AnalysisProcessor
                     log.WriteEntry(LogType.Information, "Analysis Job Processor starting (synchronously).");
                 }
 
-                var result = ProcessJobItems();
-
-                if (log != null)
+                bool result;
+                do
                 {
-                    if (result)
+                    // loop 
+                    result = ProcessJobItems();
+
+                    if (log != null)
                     {
-                        log.WriteEntry(LogType.Information, "Analysis Job Processor done. Successfully processed work items.");
-                    }
-                    else
-                    {
-                        log.WriteEntry(LogType.Error, "Analysis Job Processor done. Did not process any work items.");
+                        if (result)
+                        {
+                            log.WriteEntry(LogType.Information, "Analysis Job Processor done. Successfully processed work items.");
+                        }
+                        else
+                        {
+                            log.WriteEntry(LogType.Error, "Analysis Job Processor done. Did not process any work items.");
+                        }
                     }
                 }
+                while (result);
             }
             catch (Exception ex)
             {
@@ -424,7 +430,7 @@ namespace QutSensors.AnalysisProcessor
 
                 // 7.
                 // start the analysis items running, based on AnalysisRunner implementation.
-                // cluster will return straight away, local will wait until the one item is completed.
+                // cluster will return straight away, local will wait until the items are completed.
                 var numItemsRun = this.analysisRunner.Run(preparedItems);
 
                 this.log.WriteEntry(LogType.Information, string.Format("Analysis Job Processor successfully started {0} of {1} work items.", numItemsRun, preparedItems.Count));

@@ -147,5 +147,12 @@ namespace AudioDataStorageMigrateConsole
 
             Console.ReadLine();
         }
+
+        /*
+        select COUNT(*), datalocation, cast(SUM(cast(length as bigint))/1000/60/60 as varchar(100))+' hrs', MimeType
+from audioreadings
+group by datalocation, mimetype
+order by DATALocation, MimeType
+    */
     }
 }
