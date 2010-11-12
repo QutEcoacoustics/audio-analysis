@@ -101,25 +101,43 @@ namespace AudioDataStorageMigrateConsole
         {
             long count = 0;
 
-            MigrationInfo info;
+            MigrationInfo info = null;
 
             var watch = new Stopwatch();
             watch.Start();
 
-            // only stop when info is null - nothing more to process.
-            do
+            try
             {
-                count += 1;
-                info = this.MigrateSingleAudioReading();
+                // only stop when info is null - nothing more to process.
+                do
+                {
+                    count += 1;
+                    info = this.MigrateSingleAudioReading();
 
+                    if (info != null)
+                    {
+                        info.OverallRunningCount = count;
+                        info.OverallRunningDuration = watch.Elapsed;
+                        this.logProvider.WriteEntry(info.LogType, info.Message, info.ToStrings().ToArray());
+                    }
+                }
+                while (info != null);
+            }
+            catch (Exception ex)
+            {
+                // log migration info first if able
                 if (info != null)
                 {
                     info.OverallRunningCount = count;
                     info.OverallRunningDuration = watch.Elapsed;
                     this.logProvider.WriteEntry(info.LogType, info.Message, info.ToStrings().ToArray());
                 }
+
+                // log eception that caused loop to exit.
+                string message = " --Exception Message Causing Migration Processor Exit-- " + ex.Message;
+
+                this.logProvider.WriteEntry(LogType.Error, message, string.Empty);
             }
-            while (info != null);
 
             watch.Stop();
         }
@@ -275,6 +293,8 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                         return null;
                     }
 
+                    Console.WriteLine("Starting migration for " + reading.AudioReadingID);
+
                     // gather all available information
                     info.AudioReadingId = reading.AudioReadingID;
                     info.SqlFileStreamMimeType = MimeTypes.Canonicalise(reading.MimeType);
@@ -399,7 +419,24 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             return dataToFileSuccess;
         }
 
-        /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
+        /// <summary>
+        /// TExport audio data from db to file system.
+        /// </summary>
+        /// <param name="db">
+        /// Data Context.
+        /// </param>
+        /// <param name="reading">
+        /// The reading.
+        /// </param>
+        /// <param name="info">
+        /// Migration info.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// <c>InvalidOperationException</c>.
+        /// </exception>
+        /// <returns>
+        /// Migration Info.
+        /// </returns>
         private MigrationInfo ExportData(QutSensorsDb db, AudioReading reading, MigrationInfo info)
         {
             /*****************

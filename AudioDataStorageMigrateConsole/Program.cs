@@ -149,10 +149,13 @@ namespace AudioDataStorageMigrateConsole
         }
 
         /*
-        select COUNT(*), datalocation, cast(SUM(cast(length as bigint))/1000/60/60 as varchar(100))+' hrs', MimeType
+select COUNT(*) as count, datalocation, cast(SUM(cast(length as bigint))/1000/60/60 as varchar(100))+' hrs' as totalduration, MimeType,
+cast(MIN([Length])/1000 as varchar(100))+'s' as minduration, cast(MAX([Length])/1000 as varchar(100))+'s' as maxduration,
+(case when [State] = 'uploading' then 'not ready' else 'ready' end) as [state],
+min([Time]), MAX([Time])
 from audioreadings
-group by datalocation, mimetype
-order by DATALocation, MimeType
+group by datalocation, (case when [State] = 'uploading' then 'not ready' else 'ready' end), MimeType, (case when [Length] is null OR [Length] < 1 then 1 else 0 end)
+order by DATALocation, MAX([Length]) desc, MimeType
     */
     }
 }
