@@ -16,6 +16,7 @@ namespace AnalysisPrograms
     using QutSensors.AudioAnalysis.AED;
 
     using TowseyLib;
+    using System.IO;
 
     /// <summary>
     /// The ground parrot recogniser.
@@ -37,7 +38,7 @@ namespace AnalysisPrograms
             Tuple<BaseSonogram, List<AcousticEvent>> aed = AED.Detect(wavFilePath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
 
             // TODO: hacks remove
-            ////ProcessingTypes.SaveAeCsv(aed.Item2, @"C:\SensorNetworks\Output\", wavFilePath);
+            ProcessingTypes.SaveAe(aed.Item2, Path.GetDirectoryName(wavFilePath), wavFilePath);
 
             var events = new List<Util.Rectangle<double, double>>();
             foreach (AcousticEvent ae in aed.Item2)
@@ -54,8 +55,8 @@ namespace AnalysisPrograms
             SonogramConfig config = aed.Item1.Configuration;
             double framesPerSec = 1 / config.GetFrameOffset(); // Surely this should go somewhere else
             double freqBinWidth = config.fftConfig.NyquistFreq / (double)config.FreqBinCount;
-                
-                // TODO this is common with AED
+
+            // TODO this is common with AED
             var eprEvents = new List<AcousticEvent>();
             foreach (var rectScore in eprRects)
             {
