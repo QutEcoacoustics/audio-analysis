@@ -66,7 +66,15 @@ namespace AnalysisPrograms.Processing
 
                 var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
-                AED.GenerateImage(audioFilePath, workingDir, sonogram, events);
+                string imagePath = Path.Combine(workingDir, Path.GetFileNameWithoutExtension(audioFilePath) + ".png");
+                Log.WriteIfVerbose("imagePath = " + imagePath);
+                using (var image = new Image_MultiTrack(sonogram.GetImage(false, true)))
+                {
+                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration,sonogram.FramesPerSecond));
+                    image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+                    image.AddEvents(events);
+                    image.Save(imagePath);
+                }
             }
 
         }
