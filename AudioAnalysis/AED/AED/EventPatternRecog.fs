@@ -171,6 +171,7 @@ module EprInternals =
     /// function: detect template minScore acousticEventsSequence
     /// Generic EPR detection function. Accepts a template for comparison, and a minimum score used as a threshold
     /// ---
+    /// add dimensions to input
     /// let total = get the number of rects in template
     /// next, scoreEvents is run. the results are a seq<float Rectangle * float> (rects with score)
     ///     a loop is run over the results
@@ -190,5 +191,7 @@ module EprInternals =
 
 //---------------------------------------------------------------------------//
 
+let unnormalise template (normalisedMinScore:float) =  float (List.length template) * normalisedMinScore
+
 /// function: detectGroundParrots acousticEventsSequence   
-let DetectGroundParrots aes = EprInternals.detect groundParrotTemplate 4.0 aes
+let DetectGroundParrots aes normalisedMinScore = EprInternals.detect groundParrotTemplate (unnormalise groundParrotTemplate normalisedMinScore) aes // 4.0
