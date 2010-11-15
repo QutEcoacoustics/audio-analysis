@@ -101,6 +101,7 @@ namespace AudioAnalysisTools
                 } // columns
             } // rows
 
+            //FileTools.WriteMatrix2File(symbolic, "C:\\SensorNetworks\\Output\\FELT_LewinsRail1\\charogram.txt"); //view the char-ogram
             CleanSymbolicTracks(symbolic);
             return symbolic;
         } // Target2SymbolicTracks()

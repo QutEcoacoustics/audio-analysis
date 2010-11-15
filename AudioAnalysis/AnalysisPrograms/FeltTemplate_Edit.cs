@@ -21,6 +21,8 @@ namespace AnalysisPrograms
         // edittemplate_felt C:\SensorNetworks\Output\FELT_CURLEW2\FELT_Curlew2_Params.txt
         // KOALA
         // edittemplate_felt C:\SensorNetworks\Output\FELT_KOALA_EXHALE1\FELT_KoalaExhale1_Params.txt
+        // LEWINS RAIL
+        // edittemplate_felt C:\SensorNetworks\Output\FELT_LewinsRail1\FELT_LewinsRail1_params.txt
 
         /// <summary>
         /// Wraps up the resources into a template.ZIP file
@@ -86,18 +88,23 @@ namespace AnalysisPrograms
             matrix = DataTools.MatrixRotate90Clockwise(matrix);
             char[,] spr = SprTools.Target2SymbolicTracks(matrix, templateThreshold, lineLength);
             FileTools.WriteMatrix2File(spr, sprOpPath);
+            var tuple1 = FindMatchingEvents.Execute_One_Spr_Match(spr, matrix, templateThreshold);
+            double sprScore = tuple1.Item1;
+            double dBScore = sprScore * maxTemplateIntensity;
 
             Log.WriteLine("#################################### WRITE THE OSCILATION TEMPLATE ##################################");
             double[,] target = FileTools.ReadDoubles2Matrix(targetPath);
             // oscillations in time
             double[,] rotatedtarget = DataTools.MatrixRotate90Clockwise(target);
-            double[] periods = OscillationAnalysis.PeriodicityAnalysis(rotatedtarget);
-            Console.WriteLine("Frame periods  at {0:f1}  {1:f1}  {2:f1}", periods[0], periods[1], periods[2]);
+            double[] periods = OscillationAnalysis.PeriodicityAnalysis(rotatedtarget); // frame periodicity
+            Console.WriteLine("Periodicity (sec) = {0:f3},  {1:f3},  {2:f3}",
+                              periods[0] * FeltTemplates_Use.FeltFrameOffset, periods[1] * FeltTemplates_Use.FeltFrameOffset, periods[2] * FeltTemplates_Use.FeltFrameOffset);
             //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
             // oscillations in freq i.e. harmonics
             periods = OscillationAnalysis.PeriodicityAnalysis(target);
-            Console.WriteLine("Hz bin periods at {0:f1}  {1:f1}  {2:f1}", periods[0], periods[1], periods[2]);
+            Console.WriteLine("Periodicity (Hz) = {0:f0},  {1:f0},  {2:f0}.",
+                              periods[0]*FeltTemplates_Use.FeltFreqBinWidth, periods[1]*FeltTemplates_Use.FeltFreqBinWidth, periods[2]*FeltTemplates_Use.FeltFreqBinWidth);
             //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
 
 

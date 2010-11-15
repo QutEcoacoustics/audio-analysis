@@ -21,9 +21,18 @@ namespace AnalysisPrograms
     /// </summary>
     class FeltTemplates_Use
     {
-        // IMPORTANT NOTE: FRAME_OVERLAP IS FIXED = 0.5 FOR ALL FELT TEMPLATES to speed COMPUTATION. OTHERWISE must COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.
-        public const double FeltFrameOverlap = 0.5; 
-
+        // IMPORTANT NOTE: FOLLOWING FRAMING PARAMETERS ARE FIXED AS CONSTANTS FOR FELT
+        //                 This is to speed COMPUTATION. OTHERWISE must COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.
+        //                 This is a compromise because detection of koalas using oscilations works better at overlap=0.75.
+        public const int    FeltSampleRate     = 22050;
+        public const int    FeltWindow         = 512;
+        public const double FeltFrameOverlap   = 0.5;
+        public const int    FeltNyquist        = 11025;
+        public const double FeltFrameDuration  = 0.02321995464852;
+        public const double FeltFrameOffset    = 0.01160997732426;
+        public const double FeltFramePerSecond = 86.1328125;
+        public const int    FeltFreqBinCount   = 256;
+        public const double FeltFreqBinWidth   = 43.06640625;
 
 
 
@@ -143,9 +152,7 @@ namespace AnalysisPrograms
                 {
                     string templatePath = Path.Combine(outputDir, id + "_spr.txt");
                     char[,] templateMatrix = FindMatchingEvents.ReadTextFile2CharMatrix(templatePath);
-                    results = FELTWithSprTemplate(sonogram, dict, templateMatrix);  // ############# UNFINISHED
-                    //Log.WriteLine("TO DO! YET TO IMPLEMENT syntacticTemplate for:" + zipName);
-                    //continue;
+                    results = FELTWithSprTemplate(sonogram, dict, templateMatrix);  
                 }
                 else
                 {
@@ -271,8 +278,8 @@ namespace AnalysisPrograms
 
 
         /// <summary>
-        /// Scans a recording given a dicitonary of parameters and a binary template
-        /// Template has a different orientation ot others.
+        /// Scans a recording given a dicitonary of parameters and a syntactic template
+        /// Template has a different orientation to others.
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="dict"></param>
