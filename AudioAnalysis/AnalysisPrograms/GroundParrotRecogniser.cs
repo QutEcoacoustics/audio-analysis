@@ -23,23 +23,72 @@ namespace AnalysisPrograms
     /// </summary>
     internal class GroundParrotRecogniser
     {
+        // Keys to recognise identifiers in PARAMETERS - INI file. 
+        #region Constants and Fields
+
+        /// <summary>
+        /// The Key Normalised Min Score.
+        /// </summary>
+        public static string KeyNormalisedMinScore = "NORMALISED_MIN_SCORE";
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
-        /// The detect.
+        /// Detect using EPR.
         /// </summary>
         /// <param name="wavFilePath">
         /// The wav file path.
         /// </param>
+        /// <param name="intensityThreshold">
+        /// The intensity Threshold.
+        /// </param>
+        /// <param name="bandPassFilterMaximum">
+        /// The band Pass Filter Maximum.
+        /// </param>
+        /// <param name="bandPassFilterMinimum">
+        /// The band Pass Filter Minimum.
+        /// </param>
+        /// <param name="smallAreaThreshold">
+        /// The small Area Threshold.
+        /// </param>
+        /// <param name="eprNormalisedMinScore">
+        /// The epr Normalised Min Score.
+        /// </param>
         /// <returns>
+        /// Tuple containing base Sonogram and list of acoustic events.
         /// </returns>
-        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(string wavFilePath, double intensityThreshold, double bandPassFilterMaximum, double bandPassFilterMinimum, int smallAreaThreshold)
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(
+            string wavFilePath,
+            double intensityThreshold,
+            double bandPassFilterMaximum,
+            double bandPassFilterMinimum,
+            int smallAreaThreshold,
+            double eprNormalisedMinScore)
         {
             Tuple<BaseSonogram, List<AcousticEvent>> aed = AED.Detect(wavFilePath, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
 
-            // TODO: hacks remove
-            ProcessingTypes.SaveAe(aed.Item2, Path.GetDirectoryName(wavFilePath), wavFilePath);
+            return Detect(aed, eprNormalisedMinScore, wavFilePath);
+        }
 
+        /// <summary>
+        /// Epr Detect.
+        /// </summary>
+        /// <param name="aed">
+        /// The AED results.
+        /// </param>
+        /// <param name="eprNormalisedMinScore">
+        /// The epr normalised min score.
+        /// </param>
+        /// <param name="wavFilePath">
+        /// The wav file path.
+        /// </param>
+        /// <returns>
+        /// Sonogram and events.
+        /// </returns>
+        public static Tuple<BaseSonogram, List<AcousticEvent>> Detect(Tuple<BaseSonogram, List<AcousticEvent>> aed, double eprNormalisedMinScore, string wavFilePath)
+        {
             var events = new List<Util.Rectangle<double, double>>();
             foreach (AcousticEvent ae in aed.Item2)
             {
@@ -49,7 +98,7 @@ namespace AnalysisPrograms
             Log.WriteLine("EPR start");
 
             IEnumerable<Tuple<Util.Rectangle<double, double>, double>> eprRects =
-                EventPatternRecog.DetectGroundParrots(events);
+                EventPatternRecog.DetectGroundParrots(events, eprNormalisedMinScore);
             Log.WriteLine("EPR finished");
 
             SonogramConfig config = aed.Item1.Configuration;
@@ -98,11 +147,10 @@ namespace AnalysisPrograms
                 int smallAreaThreshold;
                 AED.GetAedParametersFromConfigFileOrDefaults(iniPath, out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
 
-                Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(wavFilePath, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold);
+                Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(wavFilePath, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
                 List<AcousticEvent> eprEvents = result.Item2;
 
-                eprEvents.Sort(
-                    delegate(AcousticEvent ae1, AcousticEvent ae2) { return ae1.StartTime.CompareTo(ae2.StartTime); });
+                eprEvents.Sort((ae1, ae2) => ae1.StartTime.CompareTo(ae2.StartTime));
 
                 Console.WriteLine();
                 foreach (AcousticEvent ae in eprEvents)
@@ -119,6 +167,36 @@ namespace AnalysisPrograms
             }
         }
 
+
+        #endregion
+
+        #region helper methods
+
+        /// <summary>
+        /// Get epr parameters from init file.
+        /// </summary>
+        /// <param name="iniPath">
+        /// The ini path.
+        /// </param>
+        /// <param name="normalisedMinScore">
+        /// The normalised min score.
+        /// </param>
+        internal static void GetEprParametersFromConfigFileOrDefaults(string iniPath, out double normalisedMinScore)
+        {
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            int propertyUsageCount = 0;
+
+            normalisedMinScore = Default.eprNormalisedMinScore;
+
+            if (dict.ContainsKey(KeyNormalisedMinScore))
+            {
+                normalisedMinScore = Convert.ToDouble(dict[KeyNormalisedMinScore]);
+                propertyUsageCount++;
+            }
+
+            Log.WriteIfVerbose("Using {0} file params and {1} EPR defaults", propertyUsageCount, 1 - propertyUsageCount);
+        }
 
         #endregion
     }

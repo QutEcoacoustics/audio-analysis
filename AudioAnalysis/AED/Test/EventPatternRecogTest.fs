@@ -83,5 +83,5 @@ let testDetectGroundParrots () =
     let m = loadFloatEventsFile "EPRresults.csv" md 
     ////let r = Seq.map (fun (r:Rectangle<_,_>)-> (left(r)).ToString() + "," + (width(r)).ToString() + "," + (bottom(r)).ToString() + "," + (top(r)).ToString()) (unconvert (Seq.map fst (DetectGroundParrots ae)))
     ////Assert.True(false, (String.concat "\r\n" r))
-    assertSeqEqual (=) rectToString m (unconvert (Seq.map fst (DetectGroundParrots ae)))
+    assertSeqEqual (=) rectToString m (unconvert (Seq.map fst (DetectGroundParrots ae QutSensors.AudioAnalysis.AED.Default.eprNormalisedMinScore)))
     

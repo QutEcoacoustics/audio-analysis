@@ -47,12 +47,12 @@ namespace AnalysisPrograms.Processing
         /// <param name="audioFilePath">
         /// The audio file path.
         /// </param>
-        public static void SaveAe(List<AcousticEvent> events, string workingDir, string audioFilePath)
+        public static void SaveAeImage(List<AcousticEvent> events, string workingDir, string audioFilePath)
         {
             // don't want to save image or csv when run on cluster.
-            return;
+            ////return;
 
-            SaveAeCsv(events, workingDir, audioFilePath);
+            ////SaveAeCsv(events, workingDir, audioFilePath);
 
             if (events != null && events.Count > 0)
             {
@@ -66,17 +66,16 @@ namespace AnalysisPrograms.Processing
 
                 var sonogram = new SpectralSonogram(config, recording.GetWavReader());
 
-                string imagePath = Path.Combine(workingDir, Path.GetFileNameWithoutExtension(audioFilePath) + ".png");
-                Log.WriteIfVerbose("imagePath = " + imagePath);
+                string imagePath = Path.Combine(workingDir, Path.GetFileNameWithoutExtension(audioFilePath) + ".z" + Guid.NewGuid().ToString().Substring(0, 4) + ".png");
+
                 using (var image = new Image_MultiTrack(sonogram.GetImage(false, true)))
                 {
-                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration,sonogram.FramesPerSecond));
+                    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                     image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                     image.AddEvents(events);
                     image.Save(imagePath);
                 }
             }
-
         }
 
         /// <summary>
@@ -154,7 +153,7 @@ namespace AnalysisPrograms.Processing
                 maxDuration);
             var events = results.Item2;
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -309,7 +308,7 @@ namespace AnalysisPrograms.Processing
             var result = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold);
             var events = result.Item2;
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -384,7 +383,7 @@ namespace AnalysisPrograms.Processing
 
             var events = results.Item4;
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -408,20 +407,27 @@ namespace AnalysisPrograms.Processing
         /// </returns>
         internal static IEnumerable<ProcessorResultTag> RunEpr(FileInfo settingsFile, FileInfo audioFile)
         {
-            // no settings, yet
             double intensityThreshold;
             double bandPassFilterMaximum;
             double bandPassFilterMinimum;
             int smallAreaThreshold;
             AED.GetAedParametersFromConfigFileOrDefaults(settingsFile.ToString(), out intensityThreshold, out bandPassFilterMaximum, out bandPassFilterMinimum, out smallAreaThreshold);
 
+            // aed first
+            Tuple<BaseSonogram, List<AcousticEvent>> aed = AED.Detect(audioFile.FullName, intensityThreshold, smallAreaThreshold, bandPassFilterMinimum, bandPassFilterMaximum);
+
+            // save aed image
+            SaveAeImage(aed.Item2, settingsFile.DirectoryName, audioFile.FullName);
+
+            // epr settings
+            double normalisedMinScore; // 0-1
+            GroundParrotRecogniser.GetEprParametersFromConfigFileOrDefaults(settingsFile.ToString(), out normalisedMinScore);
 
             // execute - only for ground parrot for now.
-            var result = GroundParrotRecogniser.Detect(
-                audioFile.FullName, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold);
+            Tuple<BaseSonogram, List<AcousticEvent>> result = GroundParrotRecogniser.Detect(aed, normalisedMinScore, audioFile.FullName);
             var events = result.Item2;
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -579,7 +585,7 @@ namespace AnalysisPrograms.Processing
                 Log.WriteLine("Extract Whipbird calls - finished");
             }
 
-            SaveAe(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             var prts =
@@ -636,7 +642,7 @@ namespace AnalysisPrograms.Processing
 
             var predictedEvents = results.Item4;
 
-            SaveAe(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(predictedEvents, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             var prts =
@@ -763,7 +769,7 @@ namespace AnalysisPrograms.Processing
 
             var events = results.Item4;
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             return
@@ -840,7 +846,7 @@ namespace AnalysisPrograms.Processing
             Log.WriteLine("Parse the HMM results file and return Acoustic Events");
             var events = HTKScanRecording.GetAcousticEventsFromHTKResults(resultsPath, unzipDir);
 
-            SaveAe(events, settingsFile.DirectoryName, audioFile.FullName);
+            SaveAeImage(events, settingsFile.DirectoryName, audioFile.FullName);
 
             // AcousticEvent results
             var prts =

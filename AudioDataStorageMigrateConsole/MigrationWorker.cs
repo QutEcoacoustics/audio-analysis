@@ -149,6 +149,7 @@ namespace AudioDataStorageMigrateConsole
         /// <returns>Audio reading or null.</returns>
         private static AudioReading GetAudioReadingToMigrate(QutSensorsDb db)
         {
+            // when processing audio with issues, allow null length - calc once exported.
             // export audio files starting with largest first.
             // only consider audio readings in sql file stream
             // sqlfilestreamexportfailed will need to be dealt with manually.
