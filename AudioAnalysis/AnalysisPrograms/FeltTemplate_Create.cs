@@ -48,7 +48,9 @@ namespace AnalysisPrograms
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-010000.wav"        C:\SensorNetworks\Output\FELT_KOALA_INHALE1\FELT_KoalaInhale_PARAMS.txt  FELT_KoalaInhale1
         // KOALA EXHALE
         // createtemplate_felt "C:\SensorNetworks\WavFiles\Curlew\Curlew_JasonTagged\West_Knoll_Bees_20091102-010000.wav"        C:\SensorNetworks\Output\FELT_KOALA_EXHALE1\FELT_KoalaExhale_PARAMS.txt  FELT_KoalaExhale1
-        
+        // LEWINS RAIL
+        // createtemplate_felt "C:\SensorNetworks\WavFiles\LewinsRail\BAC2_20071008-085040.wav"                                  C:\SensorNetworks\Output\FELT_LewinsRail1\FELT_LewinsRail_PARAMS.txt  FELT_LewinsRail1
+
         // Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";

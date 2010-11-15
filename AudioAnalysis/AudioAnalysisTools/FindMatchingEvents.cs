@@ -264,6 +264,52 @@ namespace AudioAnalysisTools
         } //Execute_Spr_Match()
 
 
+        public static System.Tuple<double> Execute_One_Spr_Match(char[,] template, double[,] dataMatrix, double dBThreshold)
+        {
+            int lineLength = 10;
+
+            int templateFrames = template.GetLength(0);  // time axis - SPR template is same orientation as the sonogram data matrix
+            int templateFreqBins = template.GetLength(1);  // freq axis
+            int cellCount = templateFrames * templateFreqBins;
+
+
+            int positiveCount = SprTools.CountTemplateChars(template);
+            int negativeCount = cellCount - positiveCount;
+            Log.WriteLine("TEMPLATE: Number of POS cells/total = {0}/{1}", positiveCount, cellCount);
+            char[,] charogram = SprTools.Target2SymbolicTracks(dataMatrix, dBThreshold, lineLength);
+
+            FileTools.WriteMatrix2File(charogram, "C:\\SensorNetworks\\Output\\FELT_LewinsRail1\\charogram.txt"); //view the char-ogram
+
+            double onSum  = 0.0;
+            double offSum = 0.0;
+
+            // calculate onSum and offSum
+            for (int j = 0; j < templateFreqBins; j++) //freq axis
+            {
+                for (int i = 0; i < templateFrames; i++)
+                {
+                    if (charogram[i, j] == '-') continue;
+                    else
+                        if (template[i, j] == '-') offSum += dataMatrix[i, j];
+                        else
+                        {
+                            //char c1 = charogram[i, j];
+                            //char c2 = template[i, j];
+                            //int difference = (int)c1 - (int)c2;
+                            int diff = SprTools.SymbolDifference(charogram[i, j], template[i, j]);
+                            //Console.WriteLine("{0},{1}  diff={2}", i,j, diff);
+                            onSum += ((90 - diff) / (double)90 * dataMatrix[i, j]);
+                        }
+                }
+            } // calculate similarity
+            //following line yields score = av of PosCells - av of NegCells.
+            double similarity = (onSum / (double)positiveCount) - (offSum / (double)negativeCount);
+
+            var tuple = System.Tuple.Create(similarity);
+            return tuple;
+        } //Execute_One_Spr_Match()
+
+
 
 
         public static int CountPositives(double[,] m)
