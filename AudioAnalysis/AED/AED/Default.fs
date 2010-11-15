@@ -9,3 +9,5 @@ let freqMax = 11025.0
 let bandPassMaxDefault = freqMax
 
 let bandPassMinDefault = 0.0
+
+let eprNormalisedMinScore = 4.0/15.0
