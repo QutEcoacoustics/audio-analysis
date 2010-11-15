@@ -69,6 +69,7 @@
             this.analysisType = ConfigurationManager.AppSettings["LocalAnalysisType"];
 
             string dir = ConfigurationManager.AppSettings["LocalAnalyseDir"];
+            string file = ConfigurationManager.AppSettings["LocalAnalyseFile"];
             this.logProvider = new TextFileLogProvider(dir);
 
             this.segmenter = new Segmenter();
@@ -80,9 +81,17 @@
         public void Run()
         {
             string dir = ConfigurationManager.AppSettings["LocalAnalyseDir"];
+            string file = ConfigurationManager.AppSettings["LocalAnalyseFile"];
             bool recurse = bool.Parse(ConfigurationManager.AppSettings["LocalRecurse"]);
 
-            this.Run(new DirectoryInfo(dir), recurse);
+            if (!string.IsNullOrEmpty(file) && File.Exists(file))
+            {
+                this.Run(new FileInfo(file));
+            }
+            else
+            {
+                this.Run(new DirectoryInfo(dir), recurse);
+            }
         }
 
         /// <summary>
@@ -105,6 +114,20 @@
             foreach (var file in files)
             {
                 AnalyseAudioFile(new FileInfo(file));
+            }
+        }
+
+        /// <summary>
+        /// Run over one file.
+        /// </summary>
+        /// <param name="file">
+        /// The file to analyse.
+        /// </param>
+        public void Run(FileInfo file)
+        {
+            if (File.Exists(file.FullName))
+            {
+                AnalyseAudioFile(file);
             }
         }
 
@@ -151,40 +174,36 @@
                                          segment.Maximum.ToReadableString().Replace(' ', '_');
 
             // only save image and csv file if there are results.
-            if (results.Count() > 0)
+            //if (results.Count() > 0)
+            //{
+            // save results as csv in same dir as original audio file
+            var sb = new StringBuilder();
+            sb.AppendLine("Start time, End time, Duration, Min freq, Max freq, Normalised Score, Extra Detail");
+
+            foreach (var item in results)
             {
-                // save results as csv in same dir as original audio file
-                var sb = new StringBuilder();
-                sb.AppendLine("Start time, End time, Duration, Min freq, Max freq, Normalised Score, Extra Detail");
-
-                foreach (var item in results)
-                {
-                    sb.AppendLine(
-                        string.Format(
-                            "{0}, {1}, {2}, {3}, {4}, {5}, {6}",
-                            item.StartTime,
-                            item.EndTime,
-                            item.EndTime - item.StartTime,
-                            item.MinFrequency,
-                            item.MaxFrequency,
-                            item.NormalisedScore == null ? "no score" : item.NormalisedScore.ToString(),
-                            item.ExtraDetail == null
-                                ? "no extra detail"
-                                : string.Join(" || ", item.ExtraDetail.Select(r => r.ToString()).ToArray())));
-                }
-
-                File.WriteAllText(Path.Combine(fileDir, resultsFileName + ".csv"), sb.ToString());
-
-                string spectrogramImage = Path.Combine(
-                runDir.FullName, Path.GetFileNameWithoutExtension(ProcessingUtils.AudioFileName) + ".png");
-
-                if (File.Exists(spectrogramImage))
-                {
-                    // save results as image
-                    // uncomment 'SaveAe' method in 'ProcessingTypes'
-                    File.Copy(spectrogramImage, Path.Combine(fileDir, resultsFileName + ".png"));
-                }
+                sb.AppendLine(
+                    string.Format(
+                        "{0}, {1}, {2}, {3}, {4}, {5}, {6}",
+                        item.StartTime,
+                        item.EndTime,
+                        item.EndTime - item.StartTime,
+                        item.MinFrequency,
+                        item.MaxFrequency,
+                        item.NormalisedScore == null ? "no score" : item.NormalisedScore.ToString(),
+                        item.ExtraDetail == null
+                            ? "no extra detail"
+                            : string.Join(" || ", item.ExtraDetail.Select(r => r.ToString()).ToArray())));
             }
+
+            File.WriteAllText(Path.Combine(fileDir, resultsFileName + ".csv"), sb.ToString());
+
+            // copy all png files
+            foreach (var pngFile in runDir.GetFiles("*.png"))
+            {
+                File.Copy(pngFile.FullName, Path.Combine(fileDir, resultsFileName + ".z" + Guid.NewGuid().ToString().Substring(0, 4) + ".png"));
+            }
+            //}
 
             // log run
             this.logProvider.WriteEntry(LogType.Information, "Processed {0}. Num results: {1}.", resultsFileName, results.Count());
@@ -201,6 +220,8 @@
                 }
             }
         }
+
+        #region analyse methods
 
         private void AnalyseAudioFile(FileInfo file)
         {
@@ -230,11 +251,99 @@
                     TimeSpan.FromSeconds(30),
                     false);
 
-            // 3. analyse each segment
+            // 3. analyse each segment);
             foreach (var segment in segments)
             {
                 RunAudioFileSegment(file, fileMimeType, segment);
             }
         }
+
+        private void Analyse24HrAudioFile(FileInfo file)
+        {
+            string fileMimeType = MimeTypes.GetMimeTypeFromExtension(file.Extension);
+
+            // 1. get duration - this also ensures the file is an audio file.
+            TimeSpan duration;
+
+            try
+            {
+                // get the file duration
+                duration = audioUtility.Duration(file, fileMimeType);
+            }
+            catch
+            {
+                // if cannot get audio duration, return
+                this.logProvider.WriteEntry(LogType.Error, "Could not get duration for file. Is it an audio file? " + file.FullName);
+                return;
+            }
+
+            if (duration < TimeSpan.FromHours(4))
+            {
+                this.logProvider.WriteEntry(LogType.Error, "Duration was too short: " + duration.ToReadableString() + " File:" + file.FullName);
+                return;
+            }
+
+            // 2. split up long files
+            var segmentsEvening =
+                segmenter.CreateSegments(
+                    new Range<TimeSpan> { Minimum = TimeSpan.FromHours(4), Maximum = TimeSpan.FromHours(7) },
+                    duration,
+                    TimeSpan.FromMinutes(2),
+                    TimeSpan.FromSeconds(30),
+                    false);
+            var segmentsMorning =
+                segmenter.CreateSegments(
+                    new Range<TimeSpan> { Minimum = TimeSpan.FromHours(16), Maximum = TimeSpan.FromHours(19) },
+                    duration,
+                    TimeSpan.FromMinutes(2),
+                    TimeSpan.FromSeconds(30),
+                    false);
+            var segments = new List<Range<TimeSpan>>();
+            segments.AddRange(segmentsEvening);
+            segments.AddRange(segmentsMorning);
+
+            // 3. analyse each segment);
+            foreach (var segment in segments)
+            {
+                RunAudioFileSegment(file, fileMimeType, segment);
+            }
+        }
+
+        private void AnalyseSingleAudioFile(FileInfo file)
+        {
+            string fileMimeType = MimeTypes.GetMimeTypeFromExtension(file.Extension);
+
+            // 1. get duration - this also ensures the file is an audio file.
+            TimeSpan duration;
+
+            try
+            {
+                // get the file duration
+                duration = audioUtility.Duration(file, fileMimeType);
+            }
+            catch
+            {
+                // if cannot get audio duration, return
+                this.logProvider.WriteEntry(LogType.Error, "Could not get duration for file. Is it an audio file? " + file.FullName);
+                return;
+            }
+
+            // 2. split up long files
+            var segments =
+                segmenter.CreateSegments(
+                    new Range<TimeSpan> { Minimum = TimeSpan.FromMinutes(42), Maximum = TimeSpan.FromMinutes(46) },
+                    duration,
+                    TimeSpan.FromMinutes(2),
+                    TimeSpan.FromSeconds(30),
+                    false);
+
+            // 3. analyse each segment);
+            foreach (var segment in segments)
+            {
+                RunAudioFileSegment(file, fileMimeType, segment);
+            }
+        }
+
+        #endregion
     }
 }

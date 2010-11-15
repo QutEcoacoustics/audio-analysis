@@ -28,22 +28,22 @@ namespace AnalysisPrograms
         /// <summary>
         /// The key_ smallare a_ threshold.
         /// </summary>
-        public static string key_BANDPASS_MAXIMUM = "BANDPASS_MAXIMUM";
+        public static string KeyBandpassMaximum = "BANDPASS_MAXIMUM";
 
         /// <summary>
         /// The key_ intensit y_ threshold.
         /// </summary>
-        public static string key_BANDPASS_MINIMUM = "BANDPASS_MINIMUM";
+        public static string KeyBandpassMinimum = "BANDPASS_MINIMUM";
 
         /// <summary>
         /// The key_ intensit y_ threshold.
         /// </summary>
-        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
+        public static string KeyIntensityThreshold = "INTENSITY_THRESHOLD";
 
         /// <summary>
         /// The key_ smallare a_ threshold.
         /// </summary>
-        public static string key_SMALLAREA_THRESHOLD = "SMALLAREA_THRESHOLD";
+        public static string KeySmallareaThreshold = "SMALLAREA_THRESHOLD";
 
         #endregion
 
@@ -111,9 +111,6 @@ namespace AnalysisPrograms
             double bandPassMinimum, 
             double bandPassMaximum)
         {
-            Log.WriteLine("intensityThreshold = " + intensityThreshold);
-            Log.WriteLine("smallAreaThreshold = " + smallAreaThreshold);
-
             Log.WriteLine("AED start");
             IEnumerable<Oblong> oblongs = AcousticEventDetection.detectEvents(
                 intensityThreshold, smallAreaThreshold, bandPassMinimum, bandPassMaximum, sonogram.Data);
@@ -313,27 +310,27 @@ namespace AnalysisPrograms
             bandPassFilterMaximum = Default.bandPassMaxDefault;
             bandPassFilterMinimum = Default.bandPassMinDefault;
 
-            if (dict.ContainsKey(key_INTENSITY_THRESHOLD))
+            if (dict.ContainsKey(KeyIntensityThreshold))
             {
-                intensityThreshold = Convert.ToDouble(dict[key_INTENSITY_THRESHOLD]);
+                intensityThreshold = Convert.ToDouble(dict[KeyIntensityThreshold]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(key_SMALLAREA_THRESHOLD))
+            if (dict.ContainsKey(KeySmallareaThreshold))
             {
-                smallAreaThreshold = Convert.ToInt32(dict[key_SMALLAREA_THRESHOLD]);
+                smallAreaThreshold = Convert.ToInt32(dict[KeySmallareaThreshold]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(key_BANDPASS_MAXIMUM))
+            if (dict.ContainsKey(KeyBandpassMaximum))
             {
-                bandPassFilterMaximum = Convert.ToDouble(dict[key_BANDPASS_MAXIMUM]);
+                bandPassFilterMaximum = Convert.ToDouble(dict[KeyBandpassMaximum]);
                 propertyUsageCount++;
             }
 
-            if (dict.ContainsKey(key_BANDPASS_MINIMUM))
+            if (dict.ContainsKey(KeyBandpassMinimum))
             {
-                bandPassFilterMinimum = Convert.ToDouble(dict[key_BANDPASS_MINIMUM]);
+                bandPassFilterMinimum = Convert.ToDouble(dict[KeyBandpassMinimum]);
                 propertyUsageCount++;
             }
 
