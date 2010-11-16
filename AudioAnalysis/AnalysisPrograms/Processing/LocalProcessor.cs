@@ -113,7 +113,7 @@
 
             foreach (var file in files)
             {
-                AnalyseAudioFile(new FileInfo(file));
+                Analyse24HrAudioFile(new FileInfo(file));
             }
         }
 
@@ -284,6 +284,9 @@
             }
 
             // 2. split up long files
+            var segments = new List<Range<TimeSpan>>();
+
+            // 4pm-7pm
             var segmentsEvening =
                 segmenter.CreateSegments(
                     new Range<TimeSpan> { Minimum = TimeSpan.FromHours(4), Maximum = TimeSpan.FromHours(7) },
@@ -291,16 +294,18 @@
                     TimeSpan.FromMinutes(2),
                     TimeSpan.FromSeconds(30),
                     false);
-            var segmentsMorning =
-                segmenter.CreateSegments(
-                    new Range<TimeSpan> { Minimum = TimeSpan.FromHours(16), Maximum = TimeSpan.FromHours(19) },
-                    duration,
-                    TimeSpan.FromMinutes(2),
-                    TimeSpan.FromSeconds(30),
-                    false);
-            var segments = new List<Range<TimeSpan>>();
+
+            // 4am-7am
+            ////var segmentsMorning =
+            ////    segmenter.CreateSegments(
+            ////        new Range<TimeSpan> { Minimum = TimeSpan.FromHours(16), Maximum = TimeSpan.FromHours(19) },
+            ////        duration,
+            ////        TimeSpan.FromMinutes(2),
+            ////        TimeSpan.FromSeconds(30),
+            ////        false);
+            ////
             segments.AddRange(segmentsEvening);
-            segments.AddRange(segmentsMorning);
+            ////segments.AddRange(segmentsMorning);
 
             // 3. analyse each segment);
             foreach (var segment in segments)
