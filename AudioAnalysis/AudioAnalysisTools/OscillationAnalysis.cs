@@ -159,6 +159,55 @@ namespace AudioAnalysisTools
 
 
 
+        public static double[] DetectOscillations(double[] scoreArray, double dctDuration, double timeScale, double dctThreshold,
+                                                    bool normaliseDCT, int minOscilFreq, int maxOscilFreq)
+        {
+            int dctLength = (int)Math.Round(timeScale * dctDuration);
+            int minIndex = (int)(minOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            int maxIndex = (int)(maxOscilFreq * dctDuration * 2); //multiply by 2 because index = Pi and not 2Pi
+            if (maxIndex > dctLength) maxIndex = dctLength; //safety check in case of future changes to code.
+
+            int length = scoreArray.Length;
+            double[] hits = new Double[length];
+
+            double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
+            //following two lines write matrix of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Sonograms\cosines.txt";
+            //FileTools.WriteMatrix2File_Formatted(cosines, fPath, "F3");
+
+            //following two lines write bmp image of cos values for checking.
+            //string fPath = @"C:\SensorNetworks\Output\cosines.bmp";
+            //ImageTools.DrawMatrix(cosines, fPath);
+
+            for (int r = 0; r < length - dctLength; r++)
+            {
+                var array = new double[dctLength];
+                //transfer values
+                for (int i = 0; i < dctLength; i++) array[i] = scoreArray[r+i];
+
+                array = DataTools.SubtractMean(array);
+                //     DataTools.writeBarGraph(array);
+
+                double[] dct = Speech.DCT(array, cosines);
+                for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
+                for (int i = 0; i < 5; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration
+                if (normaliseDCT) dct = DataTools.normalise2UnitLength(dct);
+                int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
+                //      DataTools.writeBarGraph(dct);
+                //Console.WriteLine("oscilFreq = " + oscilFreq);
+
+                //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
+                if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
+                {
+                    for (int i = 0; i < dctLength; i++) if (hits[r + i] < dct[indexOfMaxValue]) hits[r + i] = dct[indexOfMaxValue];
+                }
+                r += 1; //skip rows
+            }
+            return hits;
+        }
+
+
         /// <summary>
         /// Removes single lines of hits from Oscillation matrix.
         /// </summary>
