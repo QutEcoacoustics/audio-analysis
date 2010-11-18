@@ -229,6 +229,37 @@ namespace TowseyLib
             return logEnergy;
         }
 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="dBMatrix"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="freqBinWidth">herz per freq bin</param>
+        /// <returns></returns>
+        public static double[] DecibelsInSubband(double[,] dBMatrix, int minHz, int maxHz, double freqBinWidth)
+        {
+            int frameCount = dBMatrix.GetLength(0);
+            int N = dBMatrix.GetLength(1);
+            int minBin = (int)(minHz / freqBinWidth);
+            int maxBin = (int)(maxHz / freqBinWidth);
+            double[] db = new double[frameCount];
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                double sum = 0.0;
+                for (int j = minBin; j <= maxBin; j++)  // foreach bin in the bandwidth in frame
+                {
+                    sum += dBMatrix[i, j];              // sum the dB values
+                }
+                db[i] = sum;
+            }
+            return db;
+        }
+
+
+
+
         /// <summary>
         /// Calculates and subtracts the modal value from an array of double.
         /// Used for calculating and removing the background noise and setting baseline = zero.

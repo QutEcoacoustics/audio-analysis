@@ -51,8 +51,11 @@ namespace AnalysisPrograms
                     case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(restOfArgs);
                         break;
-                    case "epr":  // event pattern recognition - used for ground-parrots
+                    case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
+                        break;
+                    case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
+                        EPR.Dev(restOfArgs);
                         break;
                     case "spt":  // spectral peak tracking
                         SPT.Dev(restOfArgs);
