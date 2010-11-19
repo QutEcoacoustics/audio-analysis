@@ -256,9 +256,10 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             }
 
             // parameters use braces eg. {0} {1}
-            int rowsAffected = db.ExecuteCommand(
-                "Update [AudioReadings] Set [Data] = 0x Where [AudioReadingID] =  {0}",
-                reading.AudioReadingID.ToString());
+            string sql1 = "Update [AudioReadings] Set [Data] = 0x Where [AudioReadingID] =  {0}";
+            string sql2 = "Update [AudioReadings] Set [Data] = NULL Where [AudioReadingID] =  {0}";
+
+            int rowsAffected = db.ExecuteCommand(sql1, reading.AudioReadingID.ToString());
 
             if (rowsAffected != 1)
             {
