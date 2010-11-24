@@ -80,12 +80,6 @@ namespace AnalysisPrograms
             string targetImagePath   = outputDir + targetName + "_target.png";
             string paramsPath        = outputDir + targetName + "_params.txt";
 
-            double dctDuration = 3.0; // seconds
-            double dctThreshold = 0.4;
-            int minOscilFreq = 4;
-            int maxOscilFreq = 5;
-            bool normaliseDCT = false;
-
             Log.WriteIfVerbose("# Output folder =" + outputDir);
 
             //i: GET RECORDING
@@ -96,11 +90,22 @@ namespace AnalysisPrograms
             //ii: READ PARAMETER VALUES FROM INI FILE
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
-            //Dictionary<string, string>.KeyCollection keys = dict.Keys;
 
-            double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // Double.Parse(dict[key_FRAME_OVERLAP]);
-            int minHz                = Int32.Parse(dict[key_MIN_HZ]);
-            int maxHz                = Int32.Parse(dict[key_MAX_HZ]);
+            // framing parameters
+            //double frameOverlap      = FeltTemplates_Use.FeltFrameOverlap;   // default = 0.5
+            double frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+            
+            //frequency band
+            int minHz = Int32.Parse(dict[key_MIN_HZ]);
+            int maxHz = Int32.Parse(dict[key_MAX_HZ]);
+
+            // oscillation OD parameters
+            double dctDuration = Double.Parse(dict[OscillationRecogniser.key_DCT_DURATION]);   // 2.0; // seconds
+            double dctThreshold = Double.Parse(dict[OscillationRecogniser.key_DCT_THRESHOLD]);  // 0.5;
+            int minOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MIN_OSCIL_FREQ]);  // 4;
+            int maxOscilFreq    = Int32.Parse(dict[OscillationRecogniser.key_MAX_OSCIL_FREQ]);  // 5;
+            bool normaliseDCT = false; 
+            
             //double dBThreshold       = Double.Parse(dict[key_DECIBEL_THRESHOLD]);   //threshold to set MIN DECIBEL BOUND
             int DRAW_SONOGRAMS       = Int32.Parse(dict[key_DRAW_SONOGRAMS]);       //options to draw sonogram
 
@@ -128,27 +133,36 @@ namespace AnalysisPrograms
             double SD = 0.0;
             dBArray = SNR.NoiseSubtractMode(dBArray, out Q, out SD);
             double maxDB = 6.0;
-            dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB); 
-            dBArray = DataTools.normalise(dBArray); //normalise 0 - 1
-            dBArray = DataTools.filterMovingAverage(dBArray, 7);
             double dBThreshold = (2 * SD) / maxDB;  //set dB threshold to 2xSD above background noise
-            Log.WriteLine("Q ={0}", Q);
-            Log.WriteLine("SD={0}", SD);
-            Log.WriteLine("Th={0}", dBThreshold); //normalised threshhold
+            dBArray = SNR.NormaliseDecibelArray_ZeroOne(dBArray, maxDB);
+            dBArray = DataTools.filterMovingAverage(dBArray, 7);
+            //Log.WriteLine("Q ={0}", Q);
+            //Log.WriteLine("SD={0}", SD);
+            //Log.WriteLine("Th={0}", dBThreshold); //normalised threshhold
 
             // #############################################################################################################################################
             // vi: look for oscillation at required OR for ground parrots.
             double[] odScores = OscillationAnalysis.DetectOscillations(dBArray, dctDuration, sonogram.FramesPerSecond, dctThreshold,
                                                     normaliseDCT, minOscilFreq, maxOscilFreq);
-            odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
-            double maxOD = 3.0;
+            //odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
+            double maxOD = 1.0;
             odScores = SNR.NormaliseDecibelArray_ZeroOne(odScores, maxOD);
-            odScores = DataTools.normalise(odScores); //normalise 0 - 1
-            double odThreshold = (5 * SD) / maxOD;  //set od threshold to 2xSD above background noise
-            Log.WriteLine("Q ={0}", Q);
-            Log.WriteLine("SD={0}", SD);
-            Log.WriteLine("Th={0}", odThreshold); //normalised threshhold
+            odScores = DataTools.filterMovingAverage(odScores, 5);
+            //odScores = DataTools.normalise(odScores); //normalise 0 - 1
+            //double odThreshold = (10 * SD) / maxOD;   //set od threshold to 2xSD above background noise
+            //double odThreshold = dctThreshold;
+            double odThreshold = 0.4;
+            Log.WriteLine("Max={0}", odScores.Max());
+            //Log.WriteLine("Q  ={0}", Q);
+            //Log.WriteLine("SD ={0}", SD);
+            Log.WriteLine("Th ={0}", dctThreshold); //normalised threshhold
 
+
+            // #############################################################################################################################################
+            // vii: LOOK FOR GROUND PARROTS USING TEMPLATE
+            var template = GroundParrotRecogniser.ReadGroundParrotTemplateAsList(sonogram.FrameOffset, (int)sonogram.FBinWidth);
+            double[] gpScores = DetectEPR(template, sonogram, odScores, odThreshold);
+            gpScores = DataTools.normalise(gpScores); //normalise 0 - 1
 
             // #############################################################################################################################################
 
@@ -159,7 +173,7 @@ namespace AnalysisPrograms
 
             // v: SAVE image of extracted event in the original sonogram 
             string sonogramImagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-            DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, odThreshold / maxOD);
+            DrawSonogram(sonogram, sonogramImagePath, dBArray, dBThreshold / maxDB, odScores, dctThreshold, gpScores, template);
 
 
             Log.WriteLine("# Finished everything!");
@@ -167,8 +181,77 @@ namespace AnalysisPrograms
         } // Dev()
 
 
+
+        public static double[] DetectEPR(List<AcousticEvent> template, BaseSonogram sonogram, double[] odScores, double odThreshold)
+        {
+            int length = sonogram.FrameCount;
+            double[] eprScores = new double[length];
+            Oblong ob1 = template[0].oblong; // the first chirp in template
+            Oblong obZ = template[template.Count-1].oblong; // the last  chirp in template
+            int templateLength = obZ.r2;
+
+            for (int frame = 0; frame < length - templateLength; frame++)
+            {
+                if (odScores[frame] < odThreshold) continue;
+
+                // get best freq band and max score for the first rectangle.
+                double maxScore = -Double.MaxValue;
+                int freqBinOffset = 0;
+                for (int bin = -5; bin < 15; bin++)
+                {
+                    Oblong ob = new Oblong(ob1.r1 + frame, ob1.c1 + bin, ob1.r2 + frame, ob1.c2 + bin);
+                    double score = GetLocationScore(sonogram, ob);
+                    if (score > maxScore)
+                    {
+                        maxScore = score;
+                        freqBinOffset = bin;
+                    }
+                }
+
+                //if location score exceeds threshold of 6 dB then get remaining scores.
+                if (maxScore < 6.0) continue;
+
+                foreach(AcousticEvent ae in template)
+                {
+                    Oblong ob = new Oblong(ae.oblong.r1 + frame, ae.oblong.c1 + freqBinOffset, ae.oblong.r2 + frame, ae.oblong.c2 + freqBinOffset);
+                    double score = GetLocationScore(sonogram, ob);
+                    eprScores[frame] += score;
+                }
+                eprScores[frame] /= template.Count;
+
+            }
+            return eprScores;
+        }
+
+        /// <summary>
+        /// reutrns the difference between the maximum dB value in a retangular location and the average of the boundary dB values.
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="ob"></param>
+        /// <returns></returns>
+        public static double GetLocationScore(BaseSonogram sonogram, Oblong ob)
+        {
+            double max = -Double.MaxValue;
+            for (int r = ob.r1; r < ob.r2; r++)
+                for (int c = ob.c1; c < ob.c2; c++)
+                {
+                    if (sonogram.Data[r, c] > max) max = sonogram.Data[r, c];
+                }
+
+            //calculate average boundary value
+            int boundaryLength = 2 * (ob.r2 - ob.r1 + 1 + ob.c2 - ob.c1 + 1);
+            double boundaryValue = 0.0;
+            for (int r = ob.r1; r < ob.r2; r++) boundaryValue += (sonogram.Data[r, ob.c1] + sonogram.Data[r, ob.c2]);
+            for (int c = ob.c1; c < ob.c2; c++) boundaryValue += (sonogram.Data[ob.r1, c] + sonogram.Data[ob.r2, c]);
+            boundaryValue /= boundaryLength;
+
+            double score = max - boundaryValue;
+            if (score < 0.0) score = 0.0;
+            return score;
+        }
+
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[] normalizedDBArray, double dBThreshold,
-                                                       double[] odScores, double odThreshold)
+                                                       double[] odScores, double odThreshold, double[] gpScores, List<AcousticEvent> list)
         {
             Log.WriteLine("# Save image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
@@ -180,10 +263,11 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetScoreTrack(normalizedDBArray, 0, 1.0, dBThreshold));
                 image.AddTrack(Image_Track.GetScoreTrack(odScores, 0, 1.0, odThreshold));
+                image.AddTrack(Image_Track.GetScoreTrack(gpScores, 0, 1.0, 0.3));
                 //image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 //var aes = new List<AcousticEvent>();
                 //aes.Add(ae);
-                //image.AddEvents(aes);
+                image.AddEvents(list);
                 image.Save(path);
             }
         } //end DrawSonogram
