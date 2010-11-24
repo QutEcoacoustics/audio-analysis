@@ -200,7 +200,8 @@ namespace AudioAnalysisTools
                 //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                 if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
                 {
-                    for (int i = 0; i < dctLength; i++) if (hits[r + i] < dct[indexOfMaxValue]) hits[r + i] = dct[indexOfMaxValue];
+                    hits[r] = dct[indexOfMaxValue];
+                    //for (int i = 0; i < dctLength; i++) if (hits[r + i] < dct[indexOfMaxValue]) hits[r + i] = dct[indexOfMaxValue];
                 }
                 r += 1; //skip rows
             }

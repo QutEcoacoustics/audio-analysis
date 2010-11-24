@@ -524,11 +524,11 @@ namespace TowseyLib
         }
 
         /// <summary>
-        /// normalise the power values using the passed reference decibel levels
+        /// normalise the power values using the passed reference decibel level.
         /// NOTE: This method assumes that the energy values are in decibels and that they have been scaled
         /// so that the modal noise value = 0 dB. Simply truncate all values below this to zero dB
         /// </summary>
-        /// <param name="energy"></param>
+        /// <param name="dB"></param>
         /// <param name="maxDecibels"></param>
         /// <returns></returns>
         public static double[] NormaliseDecibelArray_ZeroOne(double[] dB, double maxDecibels)
