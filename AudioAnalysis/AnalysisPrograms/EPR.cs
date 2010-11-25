@@ -68,7 +68,7 @@ namespace AnalysisPrograms
     /// Note: NOT all the above ideas have been implemented. Just a few.
     ///       The below does NOT implement AED and does not attempt noise removal to avoid the dB thresholding problem.
     ///       The below uses a different EPR metric
-    /// 1) Convert the signal to dB spectrogram
+    /// 1) Convert the signal to dB spectrogram   
     /// 2) Detect energy oscillations in the user defined frequency band.
     ///         i) Calulate the dB power in freq band of each frame.
     ///        ii) Use Discrete Cosine Transform to detect oscillations in band energy.
@@ -85,6 +85,47 @@ namespace AnalysisPrograms
     /// 3) Is not as accurate because the dB score has less discrimination than original EPR.
     /// BUT COULD COMBINE THE TWO APPROACHES.
     /// 
+    /// 
+    /// ###############################################################################################################
+    /// HOW TO CALL F# METHODS FROM C# CODE.
+    /// Use: Can call Brad's F# methods for AED and EPR, especially the spidering method.
+    /// 
+    /// var binaryMatrix = ConvertSpectrogram2Binary(spectrogram, threshold);
+    /// var matrix       = Microsoft.FSharp.Math.MatrixModule.ofArray2D(binaryMatrix);
+    /// var aeList       = QutSensors.AudioAnalysis.AED.GetAcousticEvents.getAcousticEvents(matrix);
+    /// 
+    /// more info here:
+    /// http://stackoverflow.com/questions/271966/about-using-f-to-create-a-matrix-assembly-usable-from-c
+    ///
+    /// More generally can use F# for matrix manipulations as follows:
+    /// 
+    /// using System; 
+    /// using System.Text; 
+    /// using Microsoft.FSharp.Math; 
+    ///  
+    /// namespace CSharp 
+    /// { 
+    ///   class Program 
+    ///   { 
+    ///     static void Main(string[] args) 
+    ///     { 
+    ///       // declare two matrices in C# type
+    ///       double[,] x = { { 1.0, 2.0 }, { 4.0, 5.0 } }; 
+    ///       double[,] y = { { 1.0, 2.0 }, { 7.0, 8.0 } }; 
+    ///       // convert the two matrices to F# type
+    ///       Matrix<double> m1 = MatrixModule.of_array2(x); 
+    ///       Matrix<double> m2 = MatrixModule.of_array2(y); 
+    ///       // perform the F# operation
+    ///       var mp = m1 * m2; 
+    ///       // convert the F# output back to C# type. 
+    ///       var output = mp.ToArray2(); 
+    ///       Console.WriteLine(output.ToString()); 
+    ///       Console.ReadKey(); 
+    ///     } 
+    /// } 
+    /// 
+    /// 
+    /// ###############################################################################################################
     /// </summary>
     class EPR
     {
