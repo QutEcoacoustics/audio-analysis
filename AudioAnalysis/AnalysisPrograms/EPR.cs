@@ -13,19 +13,78 @@ namespace AnalysisPrograms
     
     
     /// <summary>
-    /// This program extracts a template from a recording.
+    /// This program runs an alternative version of Event Pattern Recognition (EPR) 
+    /// It can be used to detect Ground Parrots.
+    /// It was developed by Michael Towsey in order to address difficulties in the original EPR algorithm - see more below.
     /// COMMAND LINE ARGUMENTS:
-    /// string recordingPath = args[0];   //the recording from which template is to be extracted
-    /// string iniPath       = args[1];   //the initialisation file containing parameters for the extraction
+    /// string recordingPath = args[0];   //the recording to be scanned
+    /// string iniPath       = args[1];   //the initialisation file containing parameters for AED and EPR
     /// string targetName    = args[2];   //prefix of name of the created output files 
     /// 
-    /// The program produces four (4) output files:
-    ///     string targetPath         = outputDir + targetName + "_target.txt";        //Intensity values (dB) of the marqueed portion of spectrum BEFORE noise reduction
-    ///     string targetNoNoisePath  = outputDir + targetName + "_targetNoNoise.txt"; //Intensity values (dB) of the marqueed portion of spectrum AFTER  noise reduction
-    ///     string noisePath          = outputDir + targetName + "_noise.txt";         //Intensity of noise (dB) in each frequency bin included in template
-    ///     string targetImagePath    = outputDir + targetName + "_target.png";        //Image of noise reduced spectrum
-    ///     
-    /// The user can then edit the image file to produce a number of templates.
+    /// The program currently produces only ONE output file: an image of the recording to be scanned with an energy track and two score tracks.
+    ///     1) Energy track  - Measure of the total energy in the user defined frequency band, one value per frame. 
+    ///     2) Score Track 1 - Oscillation score - Requires user defined parameters to detect the repeated chirp of a Ground Parrot.
+    ///                        Is a way to cut down the search space. Only deploy template at places where high Oscillation score. 
+    ///     3) Score Track 2 - Template score - dB centre-surround difference of each template rectangle.
+    ///                        Currently the dB Score is averaged over the 15 AEs in the groundparrot template.
+    ///                        
+    /// THE EXISTING ALGORITHM:
+    /// 1) Convert the signal to dB spectrogram
+    /// 2) AED: i) noise removal
+    ///        ii) convert to binary using dB threshold.
+    ///       iii) Use spidering algorithm to marquee acoustic events.
+    ///        iv) Split over-size events where possible
+    ///         v) Remove under-size events.
+    /// 3) EPR: i) Align first AE of template to first 'valid' AE in spectrogram. A valid AE is one whose lower left vertex lies in the
+    ///            user-defined freq band. Currently align lower left vertex for groundparrot recogniser.
+    ///        ii) For each AE in template find closest AE in spectrogram. (Least euclidian distance) 
+    ///       iii) For each AE in template, calculate percent overlap to closest AE in spectrogram.
+    ///        iv) Apply threshold to adjust the FP-FN trade-off.
+    ///         
+    /// PROBLEM WITH EXISTING ALGORITHM:
+    /// AED:
+    ///        i) Major problem is that the AEs found by AED depend greatly on the user-supplied dB threshold.
+    ///           If threshold too low, the components of the ground parrot call get incorporated into a single larger AE.
+    ///       ii) The spidering algorithm (copied by Brad from MatLab into F#) is computationally expensive.    
+    /// EPR:
+    ///        i) EPR is hard coded for groundparrots. In particular the configuration of AEs in the template is hard-coded.
+    ///       ii) EPR is hard coded to align the template using the lower-left vertex of the first AE.
+    ///           This is suitable for the rising cadence of a groundparrot call - but not if descending.
+    ///           
+    /// POSSIBLE SOLUTIONS TO EPR AND AED
+    /// AED:
+    ///        i) Need an approach whose result does not depend critically on the user-supplied dB threshold.
+    ///           SOLUTION: Try multiple thresholds starting high and dropping in 2dB steps - pick largest score.
+    ///       ii) Use oscillation detection (OD) to find locations where good change of ground parrot.
+    ///              This only works if the chirps are repeated at fixed interval.
+    /// EPR:
+    ///        i) Instead of aligning lower-left of AEs align the centroid.
+    ///       ii) Only consider AEs whose centroid lies in the frequency band.
+    ///      iii) Only consider AEs whose area is 'similar' to first AE of template. 
+    ///       iv) Only find overlaps for AEs 2-15 if first overlap exceeds the threshold.
+    ///       
+    /// 
+    /// THE NEW ALGORITHM BELOW:
+    /// Note: NOT all the above ideas have been implemented. Just a few.
+    ///       The below does NOT implement AED and does not attempt noise removal to avoid the dB thresholding problem.
+    ///       The below uses a different EPR metric
+    /// 1) Convert the signal to dB spectrogram
+    /// 2) Detect energy oscillations in the user defined frequency band.
+    ///         i) Calulate the dB power in freq band of each frame.
+    ///        ii) Use Discrete Cosine Transform to detect oscillations in band energy.
+    /// 3) DCT:
+    ///         i) Only apply template where the DCT score exceeds a threshold (normalised). Align start of template to high dB frame.
+    ///        ii) Calculate dB score for first AE in template. dB score = max_dB - surround_dB
+    ///                                    where max_dB = max dB value for all pixels in first template AE.
+    ///       iii) Do not proceed if dB score below threshold else calculate dB score for remaining template AEs.
+    ///        iv) Calculate average dB score over all 15 AEs in template.
+    /// 
+    /// COMMENT ON NEW ALGORITHM
+    /// 1) It is very fast.
+    /// 2) Works well where call shows up as energy oscillation.
+    /// 3) Is not as accurate because the dB score has less discrimination than original EPR.
+    /// BUT COULD COMBINE THE TWO APPROACHES.
+    /// 
     /// </summary>
     class EPR
     {
@@ -34,7 +93,7 @@ namespace AnalysisPrograms
         // epr2 "C:\SensorNetworks\WavFiles\GroundParrot\Aug2010_Site1\audio\DM420013_0342m_00s__0344m_00s.mp3" C:\SensorNetworks\Output\EPR_GroundParrot\EPR_GroundParrot_Params.txt gp1
 
 
-                // Keys to recognise identifiers in PARAMETERS - INI file. 
+        // Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_CALL_NAME          = "CALL_NAME";
         public static string key_DO_SEGMENTATION    = "DO_SEGMENTATION";
         public static string key_EVENT_START        = "EVENT_START";
