@@ -152,8 +152,9 @@ namespace AudioDataStorageMigrateConsole
             // get any audio reading that:
             // is not uploading and is not marked as export failed
             var availableAudioReading = from ar in db.AudioReadings
-                                        where ar.State != AudioReadingState.Uploading &&
-                                        ar.DataLocation != AudioReadingDataLocation.SqlFileStreamExportFailed
+                                        where (ar.State != AudioReadingState.Uploading &&
+                                        ar.DataLocation != AudioReadingDataLocation.SqlFileStreamExportFailed) &&
+                                        (!ar.Length.HasValue || !ar.DataSizeBytes.HasValue)
                                         orderby ar.Length descending, ar.Time descending
                                         select ar;
 
@@ -350,11 +351,12 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     {
                         // file exists, there is data in db, file and data size match, mime types match, durations match
                         // -> remove data from db.
-                        reading.DataLocation = AudioReadingDataLocation.FileSystem;
-                        db.SubmitChanges();
 
                         // remove data from sql file stream.
                         ClearSqlFileStreamData(db, reading);
+
+                        reading.DataLocation = AudioReadingDataLocation.FileSystem;
+                        db.SubmitChanges();
                     }
 
                     if (info.SqlFileStreamDataLength == 0 && info.FileSystemFile.Length > 0 &&
@@ -390,6 +392,15 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
                     // submit updates
                     db.SubmitChanges();
+
+                    // set Data column to null if all is ok
+                    if (info.FileSystemFile.Length > 0 &&
+                        fileExists && file != null && File.Exists(file.FullName) &&
+                        TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration) &&
+                        reading.DataSizeBytes.Value == exportedFile.Length)
+                    {
+                        ClearSqlFileStreamData(db, reading);
+                    }
 
                     overallWatch.Stop();
                     info.TotalDuration = overallWatch.Elapsed;
