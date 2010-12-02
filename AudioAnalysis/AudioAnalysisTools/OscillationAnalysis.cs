@@ -389,13 +389,17 @@ namespace AudioAnalysisTools
             //get periodicity of highest three values
             int peakCount = 3;
             var period = new double[peakCount];
+            var maxIndex = new double[peakCount];
             for (int i = 0; i < peakCount; i++)
             {
                 int indexOfMaxValue = DataTools.GetMaxIndex(dct);
+                maxIndex[i] = indexOfMaxValue;
                 //double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
-                period[i] = dctLength / (double)indexOfMaxValue * 2;
-                dct[indexOfMaxValue] = 0.0;
+                if ((double)indexOfMaxValue == 0) period[i] = 0.0;
+                else                              period[i] = dctLength / (double)indexOfMaxValue * 2;
+                dct[indexOfMaxValue] = 0.0; // remove value for next iteration
             }
+            Console.WriteLine("Max indices = {0:f0},  {1:f0},  {2:f0}.", maxIndex[0] ,maxIndex[1] ,maxIndex[2] );
             return period;
         }
 

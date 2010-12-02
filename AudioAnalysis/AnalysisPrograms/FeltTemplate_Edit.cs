@@ -85,7 +85,12 @@ namespace AnalysisPrograms
 
             Log.WriteLine("#################################### WRITE THE SPR TEMPLATE ##################################");
             double[,] matrix = ImageTools.GreyScaleImage2Matrix(bitmap);
-            matrix = DataTools.MatrixRotate90Clockwise(matrix);
+            matrix = DataTools.MatrixRotate90Clockwise(matrix); //rows=time  cols=freq.
+            //ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\FELT_LewinsRail1\SPR_output1.bmp");
+            //int smallLengthThreshold = 10;
+            //var tuple = SPT.doSPT(matrix, templateThreshold, smallLengthThreshold);
+            //matrix = tuple.Item1;
+            //ImageTools.DrawMatrix(matrix, @"C:\SensorNetworks\Output\FELT_LewinsRail1\SPR_output2.bmp");
             char[,] spr = SprTools.Target2SymbolicTracks(matrix, templateThreshold, lineLength);
             FileTools.WriteMatrix2File(spr, sprOpPath);
             var tuple1 = FindMatchingEvents.Execute_One_Spr_Match(spr, matrix, templateThreshold);
