@@ -71,9 +71,9 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Performs Spectral Peak Tracking on a recording
-        /// Returns a sonogram.
+        /// Returns a matrix derived from the sonogram
         /// </summary>
-        /// <param name="wavPath">the recording</param>
+        /// <param name="sonogram">the sonogram</param>
         /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
         /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
         /// <returns></returns>
@@ -98,5 +98,35 @@ namespace AnalysisPrograms
             var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
             return Tuple.Create(r);
         }
+
+
+        /// <summary>
+        /// Performs Spectral Peak Tracking on a recording
+        /// Returns a matrix derived from the passed sonogram.Data()
+        /// </summary>
+        /// <param name="sonogram">the sonogram</param>
+        /// <param name="intensityThreshold">Intensity threshold in decibels above backgorund</param>
+        /// <param name="smallLengthThreshold">remove event swhose length is less than this threshold</param>
+        /// <returns></returns>
+        public static Tuple<double[,]> doSPT(double[,] matrix, double intensityThreshold, int smallLengthThreshold)
+        {
+            // Sonograms in Matlab (which F# AED was modelled on) are orientated the opposite way
+            var m = MatrixModule.transpose(MatrixModule.ofArray2D(matrix));
+
+           // Log.WriteLine("Wiener filter start");
+           // var w = Matlab.wiener2(7, m);
+
+           // Log.WriteLine("Remove subband mode intensities start");
+           // var s = AcousticEventDetection.removeSubbandModeIntensities(w);
+
+            Log.WriteLine("SPT start");
+            int nh = 3;
+            var p = SpectralPeakTrack.spt(m, intensityThreshold, nh, smallLengthThreshold);
+
+            var r = MatrixModule.toArray2D(MatrixModule.transpose(p));
+            return Tuple.Create(r);
+        }
+
     }
+
 }

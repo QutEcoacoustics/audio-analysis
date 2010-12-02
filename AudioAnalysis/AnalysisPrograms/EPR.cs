@@ -63,27 +63,52 @@ namespace AnalysisPrograms
     ///      iii) Only consider AEs whose area is 'similar' to first AE of template. 
     ///       iv) Only find overlaps for AEs 2-15 if first overlap exceeds the threshold.
     ///       
-    /// 
-    /// THE NEW ALGORITHM BELOW:
+    ///  ###############################################################################################################
+    /// TWO NEW EPR ALGORITHMS BELOW:
+    /// IDEA 1:
     /// Note: NOT all the above ideas have been implemented. Just a few.
     ///       The below does NOT implement AED and does not attempt noise removal to avoid the dB thresholding problem.
     ///       The below uses a different EPR metric
     /// 1) Convert the signal to dB spectrogram   
     /// 2) Detect energy oscillations in the user defined frequency band.
     ///         i) Calulate the dB power in freq band of each frame.
-    ///        ii) Use Discrete Cosine Transform to detect oscillations in band energy.
     /// 3) DCT:
-    ///         i) Only apply template where the DCT score exceeds a threshold (normalised). Align start of template to high dB frame.
-    ///        ii) Calculate dB score for first AE in template. dB score = max_dB - surround_dB
+    ///         i) Use Discrete Cosine Transform to detect oscillations in band energy.
+    ///        ii) Only apply template where the DCT score exceeds a threshold (normalised). Align start of template to high dB frame.
+    /// 4) TEMPLATE SCORE       
+    ///         i) Calculate dB score for first AE in template. dB score = max_dB - surround_dB
     ///                                    where max_dB = max dB value for all pixels in first template AE.
-    ///       iii) Do not proceed if dB score below threshold else calculate dB score for remaining template AEs.
-    ///        iv) Calculate average dB score over all 15 AEs in template.
+    ///        ii) Do not proceed if dB score below threshold else calculate dB score for remaining template AEs.
+    ///       iii) Calculate average dB score over all 15 AEs in template.
     /// 
     /// COMMENT ON NEW ALGORITHM
     /// 1) It is very fast.
     /// 2) Works well where call shows up as energy oscillation.
     /// 3) Is not as accurate because the dB score has less discrimination than original EPR.
     /// BUT COULD COMBINE THE TWO APPROACHES.
+    /// 
+    /// ###############################################################################################################
+    /// IDEA 2: ANOTHER EPR ALGORITHM
+    /// 1) Convert the signal to dB spectrogram   
+    /// 2) Detect energy oscillations in the user defined frequency band.
+    ///         i) Calulate the dB power in freq band of each frame.
+    ///        
+    /// 3) DCT: OPTIONAL
+    /// ONLY PROCEED IF HAVE HIGH dB SCORE and HIGH DCT SCORE
+    /// 
+    /// 4) NOISE COMPENSAION
+    ///         Subtract modal noise but DO NOT truncate -dB values to zero.
+    ///
+    /// 5) AT POINTS THAT EXCEED dB and DCT thresholds
+    ///    i) loop through dB thresholds from 10dB down to 3dB in steps of 1-2dB.
+    ///   ii) determine valid AEs in freq band and within certain time range of current position.
+    ///       A valid AE has two attributes: a) entirely within freq band and time width; b) >= 70% overlap with first template AE
+    ///  iii) Accumulate a list of valid starting point AEs
+    ///  iv) Apply template to each valid start point.
+    ///         a) extract AEs at dB threshold apporpriate to the valid AE
+    ///         a) align centroid of valid AE with centroid of first template AE
+    ///         c) calculate the overlap score
+    ///       
     /// 
     /// 
     /// ###############################################################################################################

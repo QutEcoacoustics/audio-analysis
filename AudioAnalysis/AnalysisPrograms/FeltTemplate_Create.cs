@@ -233,7 +233,7 @@ namespace AnalysisPrograms
             list.Add("\nCALL_NAME="+ dict[key_CALL_NAME]);
 
             list.Add("\n#NOTE: FRAME_OVERLAP IS FIXED AT " + FeltTemplates_Use.FeltFrameOverlap + " FOR ALL FELT TEMPLATES.");
-            list.Add("#THIS IS TO SPEED THE COMPUTATION. OTHERWISE HAVE TO COMPTE NEW SPECTROGRAM FOR EVERY TEMPLATE.\n"); 
+            list.Add("#THIS IS TO SPEED THE COMPUTATION. OTHERWISE HAVE TO COMPUTE NEW SPECTROGRAM FOR EVERY TEMPLATE.\n"); 
             //list.Add("#FRAME_OVERLAP=" + Double.Parse(dict[key_FRAME_OVERLAP]));
 
             list.Add("\n################## SEGMENTATION PARAMS");
