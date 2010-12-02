@@ -17,6 +17,7 @@ namespace QutSensors.CacheProcessor
 
     using QutSensors.Data;
     using QutSensors.Data.Linq;
+    using QutSensors.Shared;
 
     /// <summary>
     /// Cache utilities.
