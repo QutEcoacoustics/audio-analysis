@@ -1,0 +1,118 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>QutSensors.UI</RootNamespace>
+    <AssemblyName>QutSensors.UI</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="YAF.Classes.Utils">
+      <HintPath>..\Extra Assemblies\YAF\YAF.Classes.Utils.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Display\Classes\AudioReadingInfo.cs" />
+    <Compile Include="Display\Classes\DataCacheItem.cs" />
+    <Compile Include="Display\Classes\DataSetAudioReadingDisplayItem.cs" />
+    <Compile Include="Display\Classes\DeploymentInfo.cs" />
+    <Compile Include="Display\Classes\DeploymentPinDetail.cs" />
+    <Compile Include="Display\Classes\DeviceInfo.cs" />
+    <Compile Include="Display\Classes\EntityInfo.cs" />
+    <Compile Include="Display\Classes\ErrorLogItem.cs" />
+    <Compile Include="Display\Classes\HardwareListItem.cs" />
+    <Compile Include="Display\Classes\JobAudioReading.cs" />
+    <Compile Include="Display\Classes\JobResult.cs" />
+    <Compile Include="Display\Classes\JobWorkItem.cs" />
+    <Compile Include="Display\Classes\ProjectDisplayItems.cs" />
+    <Compile Include="Display\Classes\SecurityInfo.cs" />
+    <Compile Include="Display\Classes\SiteDeployment.cs" />
+    <Compile Include="Display\Classes\SiteDetail.cs" />
+    <Compile Include="Display\Classes\SiteHardware.cs" />
+    <Compile Include="Display\Classes\SpectrogramCacheItem.cs" />
+    <Compile Include="Display\Classes\TagAggregateItem.cs" />
+    <Compile Include="Display\Classes\TagPlayItem.cs" />
+    <Compile Include="Display\Classes\UserDisplayItem.cs" />
+    <Compile Include="Display\Managers\EntityDisplayManager.cs" />
+    <Compile Include="Display\Managers\HardwareManager.cs" />
+    <Compile Include="Display\Managers\MiscDisplayManager.cs" />
+    <Compile Include="Display\Managers\ProcessorManager.cs" />
+    <Compile Include="Display\Managers\TagDisplayManager.cs" />
+    <Compile Include="Display\Managers\UserDisplayManager.cs" />
+    <Compile Include="Display\QutSensorsPageHelper.cs" />
+    <Compile Include="Display\UrlUtilities.cs" />
+    <Compile Include="Display\WebUtilities.cs" />
+    <Compile Include="ParsingUtilities.cs" />
+    <Compile Include="PlayerSettings.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Security\AspNetFormsAuthenticationHelper.cs" />
+    <Compile Include="Security\QutSensorsUserProfile.cs" />
+    <Compile Include="VirtualEarth\Bounds.cs" />
+    <Compile Include="VirtualEarth\ClusterBusinessLogic.cs" />
+    <Compile Include="VirtualEarth\ClusteredPin.cs" />
+    <Compile Include="VirtualEarth\ClusteredPinData.cs" />
+    <Compile Include="VirtualEarth\LatLong.cs" />
+    <Compile Include="VirtualEarth\PinXYComparer.cs" />
+    <Compile Include="VirtualEarth\Utilities.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\QutSensors.Business\QutSensors.Business.csproj">
+      <Project>{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}</Project>
+      <Name>QutSensors.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\QutSensors.Data\QutSensors.Data.csproj">
+      <Project>{BDAEA7B5-28BE-45D5-952E-76820E474649}</Project>
+      <Name>QutSensors.Data</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\QutSensors.Shared\QutSensors.Shared.csproj">
+      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
+      <Name>QutSensors.Shared</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

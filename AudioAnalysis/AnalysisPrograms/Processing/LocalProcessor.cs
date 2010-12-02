@@ -10,6 +10,7 @@
     using AudioTools;
     using AudioTools.AudioUtlity;
 
+    using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
     using QutSensors.Shared.Tools;
 
