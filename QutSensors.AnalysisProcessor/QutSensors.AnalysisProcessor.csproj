@@ -164,7 +164,17 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="Service References\ProcessorService\ProcessorService.wsdl" />
+    <None Include="Service References\ProcessorService\ProcessorService2.wsdl" />
+    <None Include="Service References\ProcessorService\ProcessorService21.wsdl" />
+    <None Include="Service References\ProcessorService\ProcessorService3.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ProcessorService\ProcessorService31.xsd">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Service References\ProcessorService\ProcessorService32.xsd">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="ServiceInstall.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
@@ -219,13 +229,6 @@
     <WCFMetadataStorage Include="Service References\ProcessorService\" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Service References\ProcessorService\ProcessorService.disco" />
-    <None Include="Service References\ProcessorService\ProcessorService.xsd" />
-    <None Include="Service References\ProcessorService\ProcessorService1.wsdl" />
-    <None Include="Service References\ProcessorService\ProcessorService1.xsd" />
-    <None Include="Service References\ProcessorService\ProcessorService2.xsd" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Service References\ProcessorService\configuration91.svcinfo" />
   </ItemGroup>
   <ItemGroup>
@@ -237,6 +240,9 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Service References\ProcessorService\ProcessorService1.disco" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

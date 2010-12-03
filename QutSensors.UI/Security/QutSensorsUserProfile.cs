@@ -111,8 +111,6 @@ namespace QutSensors.UI.Security
             return null;
         }
 
-        #endregion
-
         /// <summary>
         /// The get user profile.
         /// </summary>
@@ -129,5 +127,7 @@ namespace QutSensors.UI.Security
         {
             return Create(username, isAuthenticated) as QutSensorsUserProfile;
         }
+
+        #endregion
     }
 }

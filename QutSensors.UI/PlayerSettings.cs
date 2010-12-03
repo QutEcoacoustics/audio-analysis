@@ -8,6 +8,7 @@
 namespace QutSensors.UI
 {
     using System;
+    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.Drawing;
     using System.Runtime.Serialization;
@@ -163,5 +164,32 @@ namespace QutSensors.UI
         public double Volume { get; set; }
 
         #endregion
+
+        /// <summary>
+        /// Get desciption strings.
+        /// </summary>
+        /// <returns>
+        /// Enumerable of strings.
+        /// </returns>
+        public IEnumerable<string> ToDescription()
+        {
+            yield return "AutomaticallySkipToNextTrack: " + this.AutomaticallySkipToNextTrack;
+            yield return "ColorsLocked: " + this.ColorsLocked;
+            yield return "ColorsProcessorTag: " + this.ColorsProcessorTag;
+            yield return "ColorsSelected: " + this.ColorsSelected;
+            yield return "ColorsTag: " + this.ColorsTag;
+            yield return "ColorsTagWithProcessorResultId: " + this.ColorsTagWithProcessorResultId;
+            yield return "ColorsUnsavedTag: " + this.ColorsUnsavedTag;
+            yield return "DownloadsNumberForwardChunks: " + this.DownloadsNumberForwardChunks;
+            yield return "DownloadsNumberPreviousChunks: " + this.DownloadsNumberPreviousChunks;
+            yield return "DownloadsRetryCount: " + this.DownloadsRetryCount;
+            yield return "IsMute: " + this.IsMute;
+            yield return "ProfileSaveTimeMilliSeconds: " + this.ProfileSaveTimeMilliSeconds;
+            yield return "TurnOnLooping: " + this.TurnOnLooping;
+            yield return "UomFrequencyScale: " + this.UomFrequencyScale;
+            yield return "UomMelScale: " + this.UomMelScale;
+            yield return "UomTimeScale: " + this.UomTimeScale;
+            yield return "Volume: " + this.Volume;
+        }
     }
 }

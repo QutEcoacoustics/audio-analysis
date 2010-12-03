@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="Xu6FoRJvZHDIYUEH9dRVvUPmvOQ=">
+<SavedWcfConfigurationInformation xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" Version="9.1" CheckSum="quZarwUowzqh5JbqPKdPxhUz9fg=">
   <bindingConfigurations>
     <bindingConfiguration bindingType="basicHttpBinding" name="default">
       <properties>
@@ -112,10 +112,10 @@
     </bindingConfiguration>
   </bindingConfigurations>
   <endpoints>
-    <endpoint name="default" contract="ProcessorService.ProcessorService" bindingType="basicHttpBinding" address="http://localhost:2669/services/ProcessorService.svc" bindingConfiguration="default">
+    <endpoint name="default" contract="ProcessorService.ProcessorService" bindingType="basicHttpBinding" address="http://localhost:2669/Services/ProcessorService.svc" bindingConfiguration="default">
       <properties>
         <property path="/address" isComplexType="false" isExplicitlyDefined="true" clrType="System.Uri, System, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-          <serializedValue>http://localhost:2669/services/ProcessorService.svc</serializedValue>
+          <serializedValue>http://localhost:2669/Services/ProcessorService.svc</serializedValue>
         </property>
         <property path="/behaviorConfiguration" isComplexType="false" isExplicitlyDefined="false" clrType="System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
           <serializedValue />
