@@ -73,6 +73,9 @@ namespace AudioDataStorageMigrateConsole
             ////GenerateMachineKey("64");
             ////GetSpectrogram();
             Worker.RunMigration();
+            Console.WriteLine();
+            Console.WriteLine("done");
+            Console.ReadLine();
         }
 
         private static void GenerateMachineKey(params string[] argv)
