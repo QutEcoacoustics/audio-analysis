@@ -40,6 +40,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
@@ -70,12 +71,24 @@
     <Compile Include="Display\Classes\TagAggregateItem.cs" />
     <Compile Include="Display\Classes\TagPlayItem.cs" />
     <Compile Include="Display\Classes\UserDisplayItem.cs" />
+    <Compile Include="Display\GridViewWithPager.cs" />
+    <Compile Include="Display\InlineScript.cs" />
+    <Compile Include="Display\ListControlSort.cs" />
     <Compile Include="Display\Managers\EntityDisplayManager.cs" />
     <Compile Include="Display\Managers\HardwareManager.cs" />
     <Compile Include="Display\Managers\MiscDisplayManager.cs" />
     <Compile Include="Display\Managers\ProcessorManager.cs" />
     <Compile Include="Display\Managers\TagDisplayManager.cs" />
     <Compile Include="Display\Managers\UserDisplayManager.cs" />
+    <Compile Include="Display\QueryDataSource.cs" />
+    <Compile Include="Display\QueryStringSiteMapProvider.cs" />
+    <Compile Include="Display\QutFrontpageLinks.cs" />
+    <Compile Include="Display\QutLeftMenu.cs" />
+    <Compile Include="Display\QutNavigationBar.cs" />
+    <Compile Include="Display\QutNavigationBarItem.cs" />
+    <Compile Include="Display\QutSensorsPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Display\QutSensorsPageHelper.cs" />
     <Compile Include="Display\UrlUtilities.cs" />
     <Compile Include="Display\WebUtilities.cs" />

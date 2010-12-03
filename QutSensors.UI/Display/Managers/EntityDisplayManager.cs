@@ -626,7 +626,7 @@ namespace QutSensors.UI.Display.Managers
                                     string.Format(
                                         DeploymentLink,
                                         QutSensorsPageHelper.CreateQueryString(
-                                            QutSensorsPageHelper.ENTITY_DEPLOYMENT_ID, d.DepEntityId),
+                                            QutSensorsPageHelper.EntityDeploymentIdString, d.DepEntityId),
                                         d.Name)).ToArray()))
                         : string.Format(
                             DeploymentDisplay,
@@ -685,7 +685,7 @@ namespace QutSensors.UI.Display.Managers
                 ProjectName = project.Name,
                 ProjectQs =
                     QutSensorsPageHelper.CreateQueryString(
-                        QutSensorsPageHelper.ENTITY_PROJECT_ID, project.EntityID.ToString())
+                        QutSensorsPageHelper.EntityProjectIdString, project.EntityID.ToString())
             };
 
             return displayItem;
