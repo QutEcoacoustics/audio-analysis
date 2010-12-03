@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xs:schema xmlns:tns="sensor.mquter.qut.edu.au" elementFormDefault="qualified" targetNamespace="sensor.mquter.qut.edu.au" xmlns:xs="http://www.w3.org/2001/XMLSchema">
-  <xs:import schemaLocation="http://localhost:2669/services/ProcessorService.svc?xsd=xsd1" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" />
+  <xs:import schemaLocation="http://localhost:2669/Services/ProcessorService.svc?xsd=xsd1" namespace="http://schemas.datacontract.org/2004/07/QutSensors.Shared" />
   <xs:element name="GetWorkItem">
     <xs:complexType>
       <xs:sequence>
