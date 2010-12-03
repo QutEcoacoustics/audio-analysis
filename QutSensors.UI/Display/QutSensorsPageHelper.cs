@@ -4,14 +4,14 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Web;
-using System.Linq;
-
 namespace QutSensors.UI.Display
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+    using System.Web;
+
     /// <summary>
     /// Helps with getting querystrings from entity web pages.
     /// </summary>
@@ -20,47 +20,47 @@ namespace QutSensors.UI.Display
         /// <summary>
         /// The entity project id.
         /// </summary>
-        public const string ENTITY_PROJECT_ID = "ProjectId";
+        public const string EntityProjectIdString = "ProjectId";
 
         /// <summary>
         /// The entity site id.
         /// </summary>
-        public const string ENTITY_SITE_ID = "SiteId";
+        public const string EntitySiteIdString = "SiteId";
 
         /// <summary>
         /// The entity deployment id.
         /// </summary>
-        public const string ENTITY_DEPLOYMENT_ID = "EntityDeploymentId";
+        public const string EntityDeploymentIdString = "EntityDeploymentId";
 
         /// <summary>
         /// The entity filter id.
         /// </summary>
-        public const string ENTITY_FILTER_ID = "FilterId";
+        public const string EntityFilterIdString = "FilterId";
 
         /// <summary>
         /// The entity job id.
         /// </summary>
-        public const string ENTITY_JOB_ID = "JobId";
+        public const string EntityJobIdString = "JobId";
 
         /// <summary>
         /// The hardware id.
         /// </summary>
-        public const string HARDWARE_ID = "HardwareId";
+        public const string HardwareIdString = "HardwareId";
 
         /// <summary>
         /// The processor type id.
         /// </summary>
-        public const string PROCESSOR_TYPE_ID = "ProcessorTypeId";
+        public const string ProcessorTypeIdString = "ProcessorTypeId";
 
         /// <summary>
         /// The audio reading id.
         /// </summary>
-        public const string AUDIO_READING_ID = "AudioReadingId";
+        public const string AudioReadingIdString = "AudioReadingId";
 
         /// <summary>
         /// The user id.
         /// </summary>
-        public const string USER_ID = "UserId";
+        public const string UserIdString = "UserId";
 
         /// <summary>
         /// Gets EntityProjectId.
@@ -69,7 +69,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(ENTITY_PROJECT_ID);
+                return GetInt(EntityProjectIdString);
             }
         }
 
@@ -80,7 +80,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(ENTITY_SITE_ID);
+                return GetInt(EntitySiteIdString);
             }
         }
 
@@ -91,7 +91,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(ENTITY_DEPLOYMENT_ID);
+                return GetInt(EntityDeploymentIdString);
             }
         }
 
@@ -102,7 +102,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(ENTITY_FILTER_ID);
+                return GetInt(EntityFilterIdString);
             }
         }
 
@@ -113,7 +113,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(ENTITY_JOB_ID);
+                return GetInt(EntityJobIdString);
             }
         }
 
@@ -124,7 +124,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(HARDWARE_ID);
+                return GetInt(HardwareIdString);
             }
         }
 
@@ -135,7 +135,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetInt(PROCESSOR_TYPE_ID);
+                return GetInt(ProcessorTypeIdString);
             }
         }
 
@@ -146,7 +146,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetGuid(AUDIO_READING_ID);
+                return GetGuid(AudioReadingIdString);
             }
         }
 
@@ -157,7 +157,7 @@ namespace QutSensors.UI.Display
         {
             get
             {
-                return GetGuid(USER_ID);
+                return GetGuid(UserIdString);
             }
         }
 

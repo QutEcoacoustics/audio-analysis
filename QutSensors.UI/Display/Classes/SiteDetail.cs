@@ -63,7 +63,7 @@ namespace QutSensors.UI.Display.Classes
                 .ToList();
 
             var url = VirtualPathUtility.ToAbsolute("~/UI/Site/SiteDisplay.aspx") + "?" +
-                      QutSensorsPageHelper.CreateQueryString(QutSensorsPageHelper.ENTITY_SITE_ID, siteEntityId);
+                      QutSensorsPageHelper.CreateQueryString(QutSensorsPageHelper.EntitySiteIdString, siteEntityId);
             var siteLink = "Site: <a href='" + url + "'>" + siteName + "</a><br>";
             this.SiteLink = siteLink;
 
