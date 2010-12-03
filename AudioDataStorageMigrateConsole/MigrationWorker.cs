@@ -327,8 +327,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
                     if (info.SqlFileStreamDataLength > 0 && fileExists && file != null && File.Exists(file.FullName) &&
                              info.FileSystemFile.Length < info.SqlFileStreamDataLength &&
-                             MimeTypes.Canonicalise(info.SqlFileStreamMimeType) ==
-                             MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension) &&
+                             MimeTypes.Canonicalise(info.SqlFileStreamMimeType) == MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension) &&
                             location != AudioReadingDataLocation.FileSystem)
                     {
                         // data in db, file exists, file is smaller than sql file stream data, mime type/ext match
