@@ -1220,7 +1220,7 @@ namespace QutSensors.UI.Display.Managers
             depInfo.IsActive = deployment.IsActive;
             depInfo.IsTest = deployment.IsTest;
 
-            if (deployment.Entity_MetaData.Count() > 0)
+            if (deployment.Entity_MetaData.Any())
             {
                 Entity_MetaData meta = deployment.Entity_MetaData.FirstOrDefault();
                 if (meta != null)

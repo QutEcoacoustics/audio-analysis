@@ -287,7 +287,7 @@ namespace QutSensors.UI.Security
     /// Checks if a user is logged in, and redirects to the log in page if not.
     /// </summary>
     [AttributeUsage(AttributeTargets.Method)]
-    public class IsLoggedIn : Attribute
+    public sealed class IsLoggedIn : Attribute
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="IsLoggedIn"/> class.
