@@ -152,9 +152,14 @@ namespace AudioDataStorageMigrateConsole
             // get any audio reading that:
             // is not uploading and is not marked as export failed
             var availableAudioReading = from ar in db.AudioReadings
-                                        where (ar.State != AudioReadingState.Uploading &&
-                                        ar.DataLocation != AudioReadingDataLocation.SqlFileStreamExportFailed) &&
-                                        (!ar.Length.HasValue || !ar.DataSizeBytes.HasValue || ar.DataLocation == AudioReadingDataLocation.SqlFileStream)
+                                        where
+                                        ar.State != AudioReadingState.Uploading &&
+                                        ar.UploadType == null &&
+                                        (
+                                        !ar.Length.HasValue ||
+                                        !ar.DataSizeBytes.HasValue ||
+                                        ar.DataLocation != AudioReadingDataLocation.FileSystem
+                                        )
                                         orderby ar.Length descending, ar.Time descending
                                         select ar;
 
@@ -390,6 +395,16 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                         reading.Length = Convert.ToInt32(exportedFileDuration.TotalMilliseconds);
                     }
 
+                    // get and update data location
+                    AudioReadingDataLocation currentDataLocation =
+                        db.AudioReadings.Where(ar => ar.AudioReadingID == reading.AudioReadingID).FirstOrDefault().
+                            DataLocation;
+
+                    if (currentDataLocation != AudioReadingDataLocation.FileSystem)
+                    {
+                        reading.DataLocation = AudioReadingDataLocation.FileSystem;
+                    }
+
                     // submit updates
                     db.SubmitChanges();
 
@@ -397,7 +412,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     if (info.FileSystemFile.Length > 0 &&
                         fileExists && file != null && File.Exists(file.FullName) &&
                         TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration) &&
-                        reading.DataSizeBytes.Value == exportedFile.Length && 
+                        reading.DataSizeBytes.Value == exportedFile.Length &&
                         location == AudioReadingDataLocation.FileSystem)
                     {
                         ClearSqlFileStreamData(db, reading);
@@ -414,7 +429,14 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     if (reading != null)
                     {
                         reading.DataLocation = AudioReadingDataLocation.SqlFileStreamExportFailed;
-                        reading.State = AudioReadingState.Uploading;
+
+                        string msg = "Error: " + ex.Message;
+                        if (msg.Length > 90)
+                        {
+                            msg = msg.Substring(0, 90);
+                        }
+
+                        reading.UploadType = msg;
                         db.SubmitChanges();
                     }
                 }

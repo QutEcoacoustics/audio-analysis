@@ -6,7 +6,6 @@
 
 namespace QutSensors.UI.Security
 {
-    using System;
     using System.ComponentModel;
     using System.Web.Profile;
     using System.Web.Security;

@@ -177,7 +177,7 @@ namespace QutSensors.UI.Display
         {
             string appPath = HttpRuntime.AppDomainAppVirtualPath;
             if (appPath == "/")
-                appPath = "";
+                appPath = string.Empty;
 
             writer.WriteLine("<!-- noindex -->");
             writer.WriteLine(@"<table width=""220"" border=""0"" cellspacing=""0"" cellpadding=""0"">");

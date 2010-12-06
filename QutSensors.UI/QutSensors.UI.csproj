@@ -125,7 +125,11 @@
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
+-->
+<!--
+  <UsingTask AssemblyFile="C:\Program Files\GendarmeMsBuild\GendarmeMsBuild.dll" TaskName="GendarmeMsBuild.Gendarme"/>
   <Target Name="AfterBuild">
+	<Gendarme Assemblies="$(TargetPath)" IntegrateWithVisualStudio="True" GendarmeExeFilename="C:\Program Files\Gendarme\2.8\gendarme.exe" OutputXmlFilename="C:\Program Files\Gendarme\2.8\output.xml"  />
   </Target>
   -->
 </Project>

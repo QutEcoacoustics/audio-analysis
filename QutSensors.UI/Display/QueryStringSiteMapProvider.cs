@@ -107,11 +107,11 @@ namespace QutSensors.UI.Display
             {
                 var optionalLinks = node["optionalForLink"].Split(",".ToCharArray(), StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim());
             
-                if (optionalLinks.Count() > 0) 
+                if (optionalLinks.Any()) 
                     requiredLinks = requiredLinks.Concat(optionalLinks);
             }
 
-            if (requiredLinks.Count() > 0)
+            if (requiredLinks.Any())
             {
                 newNode.Url += string.Join("&", requiredLinks.Select(s => s + "=" + queryStringNameValues[s]).ToArray());
             }

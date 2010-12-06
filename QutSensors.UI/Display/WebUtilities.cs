@@ -264,7 +264,7 @@ namespace QutSensors.UI.Display
         /// </returns>
         public static string ToQueryString(this Dictionary<string, object> items)
         {
-            if (items == null || items.Count() == 0)
+            if (items == null || !items.Any())
             {
                 return string.Empty;
             }

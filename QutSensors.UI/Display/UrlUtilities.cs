@@ -235,8 +235,8 @@ namespace QutSensors.UI.Display
                 return s + "/sensors/ByID/" + id + "." + extension;
             }
 
-            string inlineValue = useNoiseReduction ? "noise_reduced/" : "";
-            string e = string.IsNullOrEmpty(extension) ? "" : "." + extension;
+            string inlineValue = useNoiseReduction ? "noise_reduced/" : string.Empty;
+            string e = string.IsNullOrEmpty(extension) ? string.Empty : "." + extension;
             string queryStrings = string.Empty;
             if (start.HasValue)
             {
