@@ -100,15 +100,15 @@ namespace QutSensors.UI.Display
         public static void SetupNavigationBar(QutNavigationBar navigationBar, Page page)
         {
             navigationBar.Items.Add(new QutNavigationBarItem("Welcome", page.ResolveUrl("~/")));
-            navigationBar.Items.Add(
-                new QutNavigationBarItem("Listen to Audio", page.ResolveUrl("~/UI/AudioReading/AudioReadingData.aspx")));
+            navigationBar.Items.Add(new QutNavigationBarItem("Listen to Audio", page.ResolveUrl("~/UI/AudioReading/AudioReadingData.aspx")));
             navigationBar.Items.Add(new QutNavigationBarItem("Projects", page.ResolveUrl("~/UI/Projects.aspx")));
             navigationBar.Items.Add(new QutNavigationBarItem("Sensor Map", page.ResolveUrl("~/SensorMap.aspx")));
             navigationBar.Items.Add(new QutNavigationBarItem("Forum", page.ResolveUrl("~/Forum")));
             navigationBar.Items.Add(new QutNavigationBarItem("Reference Tags", page.ResolveUrl("~/UI/Tag/ReferenceTagList.aspx"), false, true));
-            navigationBar.Items.Add(new QutNavigationBarItem("Contact Us", page.ResolveUrl("~/UI/General/ContactUs.aspx")));
+            navigationBar.Items.Add(new QutNavigationBarItem("Explore", page.ResolveUrl("~/UI/Learning/Default.aspx")));
 
             navigationBar.Items.Add(new QutNavigationBarItem("Admin", page.ResolveUrl("~/UI/Management.aspx"), true));
+            navigationBar.Items.Add(new QutNavigationBarItem("Contact Us", page.ResolveUrl("~/UI/General/ContactUs.aspx"), true));
         }
 
         public void AddItem(SiteMapNode node)

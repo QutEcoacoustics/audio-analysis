@@ -45,7 +45,7 @@ namespace QutSensors.UI.Security
             get
             {
                 var settings = this.GetPropertyValue("PlayerSettings") as PlayerSettings ??
-                               new PlayerSettings { TurnOnLooping = true, Volume = 0.9, IsMute = false };
+                               new PlayerSettings();
 
                 return settings;
             }
