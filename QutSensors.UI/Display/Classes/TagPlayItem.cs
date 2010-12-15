@@ -234,7 +234,8 @@ namespace QutSensors.UI.Display.Classes
         {
             get
             {
-                return PaddingPixels;
+                return
+                    Convert.ToInt32(Math.Min(PaddingPixels, TagRelativeStart.TotalMilliseconds * PixelsPerMillisecond));
             }
         }
 

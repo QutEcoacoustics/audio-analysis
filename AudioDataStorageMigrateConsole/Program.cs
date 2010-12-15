@@ -12,7 +12,9 @@ namespace AudioDataStorageMigrateConsole
     using System;
     using System.Configuration;
     using System.Diagnostics;
+    using System.Drawing;
     using System.Drawing.Imaging;
+    using System.Globalization;
     using System.IO;
     using System.Security.Cryptography;
     using System.Text;
@@ -71,8 +73,13 @@ namespace AudioDataStorageMigrateConsole
         public static void Main(string[] args)
         {
             ////GenerateMachineKey("64");
+
             ////GetSpectrogram();
+
+            
+
             Worker.RunMigration();
+
             Console.WriteLine();
             Console.WriteLine("done");
             Console.ReadLine();
