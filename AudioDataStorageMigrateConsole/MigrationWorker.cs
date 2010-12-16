@@ -103,6 +103,8 @@ namespace AudioDataStorageMigrateConsole
 
             MigrationInfo info = null;
 
+            Console.WriteLine("Start Migration run.");
+
             var watch = new Stopwatch();
             watch.Start();
 
@@ -119,6 +121,7 @@ namespace AudioDataStorageMigrateConsole
                         info.OverallRunningCount = count;
                         info.OverallRunningDuration = watch.Elapsed;
                         this.logProvider.WriteEntry(info.LogType, info.Message, info.ToStrings().ToArray());
+                        Console.WriteLine("");
                     }
                 }
                 while (info != null);
@@ -154,7 +157,11 @@ namespace AudioDataStorageMigrateConsole
             var availableAudioReading = from ar in db.AudioReadings
                                         where
                                         ar.State != AudioReadingState.Uploading &&
-                                        ar.UploadType == null &&
+                                        (
+                                        //ar.UploadType == null ||
+                                        ar.UploadType.Contains("Error: There is not enough space on the disk.")
+                                        )
+                                        &&
                                         (
                                         !ar.Length.HasValue ||
                                         !ar.DataSizeBytes.HasValue ||
@@ -164,106 +171,6 @@ namespace AudioDataStorageMigrateConsole
                                         select ar;
 
             return availableAudioReading.FirstOrDefault();
-        }
-
-        /// <summary>
-        /// Get audio reading sql file stream data length.
-        /// </summary>
-        /// <param name="db">
-        /// Data Context.
-        /// </param>
-        /// <param name="reading">
-        /// The reading.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// Audio reading id must be set.
-        /// </exception>
-        /// <returns>
-        /// The audio reading sql file stream data length.
-        /// </returns>
-        private static long AudioReadingSqlFileStreamDataLength(QutSensorsDb db, AudioReading reading)
-        {
-            if (reading == null || reading.AudioReadingID == Guid.Empty)
-            {
-                throw new ArgumentException("Audio reading id must be set.");
-            }
-
-            var items = db.ExecuteQuery(@"
-SELECT top 1 ar.[AudioReadingID], datalength(ar.[Data]) as [DataLength] 
-FROM AudioReadings ar
-WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
-
-            if (items.Count() > 0)
-            {
-                var check = items.Select(i => new
-                {
-                    Id = Guid.Parse(i["AudioReadingID"].ToString()),
-                    DataLength = long.Parse((i["DataLength"] ?? 0).ToString())
-                });
-
-                var item = check.FirstOrDefault();
-
-                if (item != null && item.Id == reading.AudioReadingID)
-                {
-                    return item.DataLength;
-                }
-            }
-
-            return 0;
-        }
-
-        /// <summary>
-        /// Check that time spans match or are close enough.
-        /// </summary>
-        /// <param name="ts1">Time Span 1.</param>
-        /// <param name="ts2">Time Span 2.</param>
-        /// <returns>True if time spans are within range.</returns>
-        private static bool TimeSpansWithinRange(TimeSpan ts1, TimeSpan ts2)
-        {
-            TimeSpan difference;
-
-            if (ts1 > ts2)
-            {
-                difference = ts1 - ts2;
-            }
-            else
-            {
-                difference = ts2 - ts1;
-            }
-
-            return difference <= TimeSpan.FromMilliseconds(200);
-        }
-
-        /// <summary>
-        /// Clear sql file stream data.
-        /// </summary>
-        /// <param name="db">
-        /// Data Context.
-        /// </param>
-        /// <param name="reading">
-        /// The reading.
-        /// </param>
-        /// <exception cref="ArgumentException">
-        /// Audio reading id must be set.
-        /// </exception>
-        /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
-        private static void ClearSqlFileStreamData(QutSensorsDb db, AudioReading reading)
-        {
-            if (reading == null || reading.AudioReadingID == Guid.Empty)
-            {
-                throw new ArgumentException("Audio reading id must be set.");
-            }
-
-            // parameters use braces eg. {0} {1}
-            ////string sql1 = "Update [AudioReadings] Set [Data] = 0x Where [AudioReadingID] = {0}";
-            string sql2 = "Update [AudioReadings] Set [Data] = NULL Where [AudioReadingID] = {0}";
-
-            int rowsAffected = db.ExecuteCommand(sql2, reading.AudioReadingID.ToString());
-
-            if (rowsAffected != 1)
-            {
-                throw new InvalidOperationException("Updated " + rowsAffected + " rows instead of 1. Drop everything, and check this!!!");
-            }
         }
 
         /// <summary>
@@ -290,6 +197,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
                     if (reading == null)
                     {
+                        Console.WriteLine("No more readings to process.");
                         // only time it returns null - no more audio readings to process.
                         return null;
                     }
@@ -302,7 +210,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     info.SqlFileStreamAudioDuration = reading.Length.HasValue
                                                           ? TimeSpan.FromMilliseconds(reading.Length.Value)
                                                           : TimeSpan.Zero;
-                    info.SqlFileStreamDataLength = AudioReadingSqlFileStreamDataLength(db, reading);
+                    info.SqlFileStreamDataLength = MigrationUtils.AudioReadingSqlFileStreamDataLength(reading);
                     AudioReadingDataLocation location = reading.DataLocation;
 
                     bool fileExists = this.AudioReadingFileExists(reading);
@@ -311,22 +219,49 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
                     if (fileExists)
                     {
+                        Console.WriteLine();
+                        Console.WriteLine("File already exists, getting info.");
+
+
                         file = this.fileSystemAudioDataStorage.GetDataFile(reading);
                         info.FileSystemFile = file;
-                        info.FileSystemAudioDuration = this.audioUtility.Duration(file, reading.MimeType);
+
+                        if (file != null && File.Exists(file.FullName) && file.Length > 0)
+                        {
+                            try
+                            {
+                                info.FileSystemAudioDuration = this.audioUtility.Duration(file, reading.MimeType);
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Could not get duration for audio file. Setting File duration to zero (0).");
+                                Console.WriteLine(ex.Message);
+                                info.FileSystemAudioDuration = TimeSpan.Zero;
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Existing file is empty.");
+                            info.FileSystemAudioDuration = TimeSpan.Zero;
+                        }
+
+                        Console.WriteLine();
                     }
 
                     /*****************
                      * first export data
                      * then calculate all that can be calulated, and store in db.
-                     * audio with issues that can't be solved, mark as uploading && export failed.
+                     * audio with issues that can't be solved, record error.
                      *****************/
 
                     if (info.SqlFileStreamDataLength > 0 && !fileExists &&
                              location == AudioReadingDataLocation.SqlFileStream)
                     {
-                        // data in db, no file, location is sql file stream
-                        // -> nothing done yet - export data
+                        Console.WriteLine();
+                        Console.WriteLine("data in db, no file, location is sql file stream");
+                        Console.WriteLine("-> nothing done yet - export data");
+                        Console.WriteLine();
+
                         info = ExportData(db, reading, info);
                     }
 
@@ -335,8 +270,11 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                              MimeTypes.Canonicalise(info.SqlFileStreamMimeType) == MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension) &&
                             location != AudioReadingDataLocation.FileSystem)
                     {
-                        // data in db, file exists, file is smaller than sql file stream data, mime type/ext match
-                        // -> migration stopped during export
+                        Console.WriteLine();
+                        Console.WriteLine("data in db, file exists, file is smaller than sql file stream data, mime type/ext match");
+                        Console.WriteLine("-> migration stopped during export, export again");
+                        Console.WriteLine();
+
                         reading.DataLocation = AudioReadingDataLocation.SqlFileStream;
                         db.SubmitChanges();
 
@@ -352,13 +290,15 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                              info.FileSystemFile.Length == info.SqlFileStreamDataLength &&
                              MimeTypes.Canonicalise(info.SqlFileStreamMimeType) ==
                              MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension) &&
-                             TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration))
+                             MigrationUtils.TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration))
                     {
-                        // file exists, there is data in db, file and data size match, mime types match, durations match
-                        // -> remove data from db.
+                        Console.WriteLine();
+                        Console.WriteLine("file exists, there is data in db, file and data size match, mime types match, durations match");
+                        Console.WriteLine("-> remove data from db");
+                        Console.WriteLine();
 
                         // remove data from sql file stream.
-                        ClearSqlFileStreamData(db, reading);
+                        MigrationUtils.ClearSqlFileStreamData(reading);
 
                         reading.DataLocation = AudioReadingDataLocation.FileSystem;
                         db.SubmitChanges();
@@ -366,11 +306,14 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
                     if (info.SqlFileStreamDataLength == 0 && info.FileSystemFile.Length > 0 &&
                         fileExists && file != null && File.Exists(file.FullName) &&
-                        TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration) &&
+                        MigrationUtils.TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration) &&
                         MimeTypes.Canonicalise(info.SqlFileStreamMimeType) == MimeTypes.GetMimeTypeFromExtension(info.FileSystemFile.Extension))
                     {
-                        // no data in db, file does exist and has data, mime type/ext match, db duration and file duration within range
-                        // -> data location field is incorrect, fix it.
+                        Console.WriteLine();
+                        Console.WriteLine("no data in db, file does exist and has data, mime type/ext match, db duration and file duration within range");
+                        Console.WriteLine("-> data location field is incorrect, fix it");
+                        Console.WriteLine();
+
                         reading.DataLocation = AudioReadingDataLocation.FileSystem;
                         db.SubmitChanges();
                     }
@@ -390,7 +333,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                     // get and update audio file duration
                     TimeSpan exportedFileDuration = this.audioUtility.Duration(exportedFile, reading.MimeType);
 
-                    if (!reading.Length.HasValue || !TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration))
+                    if (!reading.Length.HasValue || !MigrationUtils.TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration))
                     {
                         reading.Length = Convert.ToInt32(exportedFileDuration.TotalMilliseconds);
                     }
@@ -405,17 +348,20 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                         reading.DataLocation = AudioReadingDataLocation.FileSystem;
                     }
 
+                    // reset upload type to null
+                    reading.UploadType = null;
+
                     // submit updates
                     db.SubmitChanges();
 
                     // set Data column to null if all is ok
                     if (info.FileSystemFile.Length > 0 &&
                         fileExists && file != null && File.Exists(file.FullName) &&
-                        TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration) &&
+                        MigrationUtils.TimeSpansWithinRange(TimeSpan.FromMilliseconds(reading.Length.Value), exportedFileDuration) &&
                         reading.DataSizeBytes.Value == exportedFile.Length &&
                         location == AudioReadingDataLocation.FileSystem)
                     {
-                        ClearSqlFileStreamData(db, reading);
+                        MigrationUtils.ClearSqlFileStreamData(reading);
                     }
 
                     overallWatch.Stop();
@@ -458,7 +404,16 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             }
         }
 
-        private bool ReadFromSqlFileStreamWriteToFileSystem(AudioReading reading)
+        /// <summary>
+        /// The read from sql file stream write to file system.
+        /// </summary>
+        /// <param name="reading">
+        /// The reading.
+        /// </param>
+        /// <exception cref="InvalidOperationException">
+        /// <c>InvalidOperationException</c>.
+        /// </exception>
+        private void ReadFromSqlFileStreamWriteToFileSystem(AudioReading reading)
         {
             bool dataToFileSuccess;
 
@@ -470,7 +425,11 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
                 dataToFileSuccess = this.fileSystemAudioDataStorage.AddData(reading, dataStream, 0, true);
             }
 
-            return dataToFileSuccess;
+            if (!dataToFileSuccess)
+            {
+                // Writing from sql file stream to file system MUST be successful.
+                throw new InvalidOperationException("Migration Error: Audio Reading with id " + reading.AudioReadingID + " was NOT written to file system audio data storage.");
+            }
         }
 
         /// <summary>
@@ -493,6 +452,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
         /// </returns>
         private MigrationInfo ExportData(QutSensorsDb db, AudioReading reading, MigrationInfo info)
         {
+            Console.WriteLine("");
             /*****************
              * Export audio reading sql file stream to file.
              *****************/
@@ -500,16 +460,12 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             var watch = new Stopwatch();
             watch.Start();
 
-            bool dataToFileSuccess = ReadFromSqlFileStreamWriteToFileSystem(reading);
+            ReadFromSqlFileStreamWriteToFileSystem(reading);
 
             watch.Stop();
             info.ReadWriteDuration = watch.Elapsed;
 
-            if (!dataToFileSuccess)
-            {
-                // Writing from sql file stream to file system MUST be successful.
-                throw new InvalidOperationException("Migration Error: Audio Reading was NOT written to file system audio data storage.");
-            }
+
 
             /*****************
              * Get audio file info.
@@ -547,7 +503,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
 
             info.FileSystemAudioDuration = this.audioUtility.Duration(file, reading.MimeType);
 
-            if (!TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration))
+            if (!MigrationUtils.TimeSpansWithinRange(info.FileSystemAudioDuration, info.SqlFileStreamAudioDuration))
             {
                 // sqlfilestream data must match file system data
                 const string Msg = "Migration Error: Audio Reading written to file but durations do not match. Sql FileStream: {0}  file: {1}";
@@ -568,7 +524,7 @@ WHERE ar.[AudioReadingID] = '" + reading.AudioReadingID + "';");
             db.SubmitChanges();
 
             // remove data from sql file stream.
-            ClearSqlFileStreamData(db, reading);
+            MigrationUtils.ClearSqlFileStreamData(reading);
 
             info.CopiedFromSqlFileStreamToFileSystem = true;
 

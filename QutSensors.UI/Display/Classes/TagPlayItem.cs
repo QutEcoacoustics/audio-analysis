@@ -317,5 +317,29 @@ namespace QutSensors.UI.Display.Classes
                 Convert.ToInt64(this.SpectrogramRelativeStart.TotalMilliseconds),
                 Convert.ToInt64(this.SpectrogramRelativeEnd.TotalMilliseconds));
         }
+
+        /// <summary>
+        /// Get a link to the sub item that contains the tag.
+        /// </summary>
+        /// <returns>
+        /// Player url.
+        /// </returns>
+        public string UrlPlayerSegment()
+        {
+            // subitemtoload identified by start time of segment
+            var segmentSize = TimeSpan.FromMinutes(6).TotalMilliseconds;
+
+            // get left over from dividing by segment size 
+            var remainder = TagRelativeStart.TotalMilliseconds % segmentSize;
+            var relativeStart = TagRelativeStart.TotalMilliseconds - remainder;
+
+
+            return
+                string.Format(
+                    "/UI/AudioReading/AudioReadingData.aspx?AudioReadingIds={0}&subitemtoload={1}&jumptotimeoffsetms={2}",
+                    AudioId,
+                    relativeStart,
+                    remainder);
+        }
     }
 }

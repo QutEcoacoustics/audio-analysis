@@ -15,6 +15,7 @@ namespace QutSensors.UI.Display.Managers
     using System.Web.Security;
 
     using QutSensors.UI.Display.Classes;
+    using QutSensors.UI.Security;
 
     /// <summary>Manages Users and Roles.
     /// </summary>
@@ -40,14 +41,15 @@ namespace QutSensors.UI.Display.Managers
         {
             var users = Membership.GetAllUsers().Cast<MembershipUser>().Select(mu => new UserDisplayItem
             {
-                UserId = (Guid)mu.ProviderUserKey,
+                UserId = mu.ProviderUserKey == null ? Guid.Empty : (Guid)mu.ProviderUserKey,
                 UserName = mu.UserName,
+                UserDisplayName = QutSensorsUserProfile.GetUserProfile(mu.UserName).DisplayName,
                 Email = mu.Email,
                 IsLockedOut = mu.IsLockedOut ? "Yes" : "No",
                 IsApproved = mu.IsApproved ? "Yes" : "No",
                 IsOnline = mu.IsOnline ? "Yes" : "No",
                 LastLogin = mu.LastLoginDate.ToString("yyyy-MM-dd") + " (" + mu.LastLoginDate.ToDifferenceString(DateTime.Now) + ")",
-                LastOnline = mu.LastActivityDate.ToString("yyyy-MM-dd") + " (" + mu.LastActivityDate.ToDifferenceString(DateTime.Now) + ")"
+                LastOnline = mu.LastActivityDate.ToString("yyyy-MM-dd") + " (" + mu.LastActivityDate.ToDifferenceString(DateTime.Now) + ")",
             });
 
             switch (sortExpression)
