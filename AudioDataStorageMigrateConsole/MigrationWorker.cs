@@ -121,7 +121,9 @@ namespace AudioDataStorageMigrateConsole
                         info.OverallRunningCount = count;
                         info.OverallRunningDuration = watch.Elapsed;
                         this.logProvider.WriteEntry(info.LogType, info.Message, info.ToStrings().ToArray());
-                        Console.WriteLine("");
+                        Console.WriteLine();
+                        Console.WriteLine("****Migration Complete****");
+                        Console.WriteLine();
                     }
                 }
                 while (info != null);
@@ -157,11 +159,8 @@ namespace AudioDataStorageMigrateConsole
             var availableAudioReading = from ar in db.AudioReadings
                                         where
                                         ar.State != AudioReadingState.Uploading &&
-                                        (
-                                        //ar.UploadType == null ||
-                                        ar.UploadType.Contains("Error: There is not enough space on the disk.")
-                                        )
-                                        &&
+                                        ar.UploadType == null &&
+                                        ar.DataLocation != AudioReadingDataLocation.SqlFileStreamExportFailed &&
                                         (
                                         !ar.Length.HasValue ||
                                         !ar.DataSizeBytes.HasValue ||
@@ -169,7 +168,7 @@ namespace AudioDataStorageMigrateConsole
                                         )
                                         orderby ar.Length descending, ar.Time descending
                                         select ar;
-
+            
             return availableAudioReading.FirstOrDefault();
         }
 
@@ -452,7 +451,8 @@ namespace AudioDataStorageMigrateConsole
         /// </returns>
         private MigrationInfo ExportData(QutSensorsDb db, AudioReading reading, MigrationInfo info)
         {
-            Console.WriteLine("");
+            Console.WriteLine("Exporting to file.");
+
             /*****************
              * Export audio reading sql file stream to file.
              *****************/
@@ -464,8 +464,6 @@ namespace AudioDataStorageMigrateConsole
 
             watch.Stop();
             info.ReadWriteDuration = watch.Elapsed;
-
-
 
             /*****************
              * Get audio file info.
@@ -522,9 +520,6 @@ namespace AudioDataStorageMigrateConsole
             // set data location
             reading.DataLocation = AudioReadingDataLocation.FileSystem;
             db.SubmitChanges();
-
-            // remove data from sql file stream.
-            MigrationUtils.ClearSqlFileStreamData(reading);
 
             info.CopiedFromSqlFileStreamToFileSystem = true;
 
