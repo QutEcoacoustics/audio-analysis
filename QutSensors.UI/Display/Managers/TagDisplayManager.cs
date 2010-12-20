@@ -274,7 +274,7 @@ namespace QutSensors.UI.Display.Managers
 
                 if (!AuthenticationHelper.IsCurrentUserAdmin)
                 {
-                    // onlyshow ref tags that user can access.
+                    // only show ref tags that user can access.
                     var deps =
                         EntityManager.Instance.GetEntityItemsForView(
                             db, user, (ei) => ei.Entity_MetaData.DeploymentID.HasValue).Select(
@@ -357,6 +357,9 @@ namespace QutSensors.UI.Display.Managers
         /// <summary>
         /// Get count of reference tags.
         /// </summary>
+        /// <param name="partialTagName">
+        /// The partial Tag Name.
+        /// </param>
         /// <returns>
         /// Number of reference tags.
         /// </returns>
@@ -364,10 +367,32 @@ namespace QutSensors.UI.Display.Managers
         {
             using (var db = new QutSensorsDb())
             {
-                return
-                    db.AudioTags.
-                    Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value).
-                        Count();
+                var query = db.AudioTags.AsQueryable();
+
+                Guid? user = AuthenticationHelper.CurrentUserId;
+
+                // restrict to ref. tags
+                query = query.Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value);
+
+                if (!AuthenticationHelper.IsCurrentUserAdmin)
+                {
+                    // only show ref tags that user can access.
+                    var deps =
+                        EntityManager.Instance.GetEntityItemsForView(
+                            db, user, (ei) => ei.Entity_MetaData.DeploymentID.HasValue).Select(
+                                (d) => d.Entity_MetaData.Deployment);
+
+                    query = from a in query
+                            join d in deps on a.AudioReading.Deployment.DeploymentID equals d.DeploymentID
+                            select a;
+                }
+
+                if (!string.IsNullOrEmpty(partialTagName))
+                {
+                    query = query.Where(at => at.Tag.Contains(partialTagName));
+                }
+
+                return query.Count();
             }
         }
     }
