@@ -395,5 +395,86 @@ namespace QutSensors.UI.Display.Managers
                 return query.Count();
             }
         }
+
+        /// <summary>
+        /// Get Audio Tag Count Info.
+        /// </summary>
+        /// <param name="sortExpression">
+        /// The sort expression.
+        /// </param>
+        /// <param name="intervalMinutes">
+        /// The interval minutes.
+        /// </param>
+        /// <returns>
+        /// Tag Count Info list.
+        /// </returns>
+        public static IEnumerable<TagCountInfo> GetAudioTagCountInfo(string sortExpression, int intervalMinutes)
+        {
+            if (intervalMinutes < 1)
+            {
+                intervalMinutes = 30;
+            }
+
+            if (string.IsNullOrEmpty(sortExpression))
+            {
+                sortExpression = "FromCalculated";
+            }
+
+            using (var db = new QutSensorsDb())
+            {
+                string query =
+                    @"
+declare @interval int = {0}
+select count(*) as TagCount, 
+((datepart(hour,dateadd(millisecond,StartTime,a.[Time]))*60) + datepart(minute,dateadd(millisecond,StartTime,a.[Time])))/@interval*@interval as FromCalculated,
+(((datepart(hour,dateadd(millisecond,StartTime,a.[Time]))*60) + datepart(minute,dateadd(millisecond,StartTime,a.[Time])))/@interval) *@interval+@interval as ToCalculated,
+min((datepart(hour,dateadd(millisecond,StartTime,a.[Time]))*60) + datepart(minute,dateadd(millisecond,StartTime,a.[Time]))) as FromData,
+MAX((datepart(hour,dateadd(millisecond,StartTime,a.[Time]))*60) + datepart(minute,dateadd(millisecond,StartTime,a.[Time]))) as ToData
+from AudioTags t 
+left outer join AudioReadings a on t.AudioReadingID = a.AudioReadingID
+group by 
+((datepart(hour,dateadd(millisecond,StartTime,a.[Time]))*60) + datepart(minute,dateadd(millisecond,StartTime,a.[Time])))/@interval
+order by {1}
+";
+
+                var items = db.ExecuteQuery(string.Format(query, intervalMinutes, sortExpression));
+
+                if (items.Count() > 0)
+                {
+                    var itemDisplay =
+                        items.Select(
+                            i =>
+                            new TagCountInfo
+                                {
+                                    TagCount = int.Parse((i["TagCount"] ?? string.Empty).ToString()),
+                                    FromCalculated =
+                                        TimeSpan.FromMinutes(int.Parse((i["FromCalculated"] ?? string.Empty).ToString())),
+                                    ToCalculated =
+                                        TimeSpan.FromMinutes(int.Parse((i["ToCalculated"] ?? string.Empty).ToString())),
+                                    FromData =
+                                        TimeSpan.FromMinutes(int.Parse((i["FromData"] ?? string.Empty).ToString())),
+                                    ToData = TimeSpan.FromMinutes(int.Parse((i["ToData"] ?? string.Empty).ToString()))
+                                }).ToList();
+
+                    return itemDisplay;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Count Audio Tag Count Info.
+        /// </summary>
+        /// <param name="intervalMinutes">
+        /// The interval minutes.
+        /// </param>
+        /// <returns>
+        /// Count of Audio Tag Count Info.
+        /// </returns>
+        public static int CountAudioTagCountInfo(int intervalMinutes)
+        {
+            return GetAudioTagCountInfo("TagCount DESC", intervalMinutes).Count();
+        }
     }
 }
