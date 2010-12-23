@@ -476,5 +476,206 @@ order by {1}
         {
             return GetAudioTagCountInfo("TagCount DESC", intervalMinutes).Count();
         }
+
+        public static IEnumerable<TagCountInfo> GetAudioDurationInfo(string sortExpression, int intervalMinutes)
+        {
+            if (intervalMinutes < 1)
+            {
+                intervalMinutes = 30;
+            }
+
+            if (string.IsNullOrEmpty(sortExpression))
+            {
+                sortExpression = "FromCalculated";
+            }
+
+            using (var db = new QutSensorsDb())
+            {
+                string query =
+                    @"
+declare @interval int = {0} -- seconds
+select count(*) as AudioCount, 
+(DurationMs/1000)/@interval*@interval as FromCalculated,
+((DurationMs/1000)/@interval) *@interval+@interval as ToCalculated,
+min(DurationMs/1000) as FromData,
+MAX(DurationMs/1000) as ToData
+from AudioReadings 
+group by 
+(DurationMs/1000)/@interval
+order by {1}
+";
+
+                var items = db.ExecuteQuery(string.Format(query, intervalMinutes, sortExpression));
+
+                if (items.Count() > 0)
+                {
+                    var itemDisplay =
+                        items.Select(
+                            i =>
+                            new TagCountInfo
+                            {
+                                TagCount = int.Parse((i["AudioCount"] ?? string.Empty).ToString()),
+                                FromCalculated =
+                                    TimeSpan.FromSeconds(int.Parse((i["FromCalculated"] ?? string.Empty).ToString())),
+                                ToCalculated =
+                                    TimeSpan.FromSeconds(int.Parse((i["ToCalculated"] ?? string.Empty).ToString())),
+                                FromData =
+                                    TimeSpan.FromSeconds(int.Parse((i["FromData"] ?? string.Empty).ToString())),
+                                ToData = TimeSpan.FromSeconds(int.Parse((i["ToData"] ?? string.Empty).ToString()))
+                            }).ToList();
+
+                    return itemDisplay;
+                }
+
+                return null;
+            }
+        }
+
+        public static int CountAudioDurationInfo(int intervalMinutes)
+        {
+            return GetAudioDurationInfo("AudioCount DESC", intervalMinutes).Count();
+        }
+
+        public static IEnumerable<TagCountInfo> GetAudioCountInfo(string sortExpression, int intervalMinutes)
+        {
+            if (intervalMinutes < 1)
+            {
+                intervalMinutes = 30;
+            }
+
+            if (string.IsNullOrEmpty(sortExpression))
+            {
+                sortExpression = "FromCalculated";
+            }
+
+            using (var db = new QutSensorsDb())
+            {
+                string query =
+                    @"
+declare @interval int = {0}
+select count(*) as AudioCount, 
+((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval*@interval as FromCalculated,
+(((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval) *@interval+@interval as ToCalculated,
+min((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time])) as FromData,
+MAX((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time])) as ToData
+from AudioReadings a
+group by 
+((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval
+order by {1}
+";
+
+                var items = db.ExecuteQuery(string.Format(query, intervalMinutes, sortExpression));
+
+                if (items.Count() > 0)
+                {
+                    var itemDisplay =
+                        items.Select(
+                            i =>
+                            new TagCountInfo
+                            {
+                                TagCount = int.Parse((i["AudioCount"] ?? string.Empty).ToString()),
+                                FromCalculated =
+                                    TimeSpan.FromMinutes(int.Parse((i["FromCalculated"] ?? string.Empty).ToString())),
+                                ToCalculated =
+                                    TimeSpan.FromMinutes(int.Parse((i["ToCalculated"] ?? string.Empty).ToString())),
+                                FromData =
+                                    TimeSpan.FromMinutes(int.Parse((i["FromData"] ?? string.Empty).ToString())),
+                                ToData = TimeSpan.FromMinutes(int.Parse((i["ToData"] ?? string.Empty).ToString()))
+                            }).ToList();
+
+                    return itemDisplay;
+                }
+
+                return null;
+            }
+        }
+
+        public static int CountAudioCountInfo(int intervalMinutes)
+        {
+            return GetAudioCountInfo("AudioCount DESC", intervalMinutes).Count();
+        }
+
+        /// <summary>
+        /// Get Audio Tag Count Info.
+        /// </summary>
+        /// <param name="sortExpression">
+        /// The sort expression.
+        /// </param>
+        /// <param name="intervalMinutes">
+        /// The interval minutes.
+        /// </param>
+        /// <returns>
+        /// Tag Count Info list.
+        /// </returns>
+        public static IEnumerable<TagCountInfo> GetAudioWithTagCountInfo(string sortExpression, int intervalMinutes)
+        {
+            if (intervalMinutes < 1)
+            {
+                intervalMinutes = 30;
+            }
+
+            if (string.IsNullOrEmpty(sortExpression))
+            {
+                sortExpression = "FromCalculated";
+            }
+
+            using (var db = new QutSensorsDb())
+            {
+                string query =
+                    @"
+declare @interval int = {0}
+select count(*) as TagCount, 
+((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval*@interval as FromCalculated,
+(((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval) *@interval+@interval as ToCalculated,
+min((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time])) as FromData,
+MAX((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time])) as ToData
+from AudioReadings a
+where (
+select COUNT(*) from AudioTags t where AudioReadingID = a.AudioReadingID
+) > 0
+group by 
+((datepart(hour,a.[Time])*60) + datepart(minute,a.[Time]))/@interval
+order by {1}
+";
+
+                var items = db.ExecuteQuery(string.Format(query, intervalMinutes, sortExpression));
+
+                if (items.Count() > 0)
+                {
+                    var itemDisplay =
+                        items.Select(
+                            i =>
+                            new TagCountInfo
+                            {
+                                TagCount = int.Parse((i["TagCount"] ?? string.Empty).ToString()),
+                                FromCalculated =
+                                    TimeSpan.FromMinutes(int.Parse((i["FromCalculated"] ?? string.Empty).ToString())),
+                                ToCalculated =
+                                    TimeSpan.FromMinutes(int.Parse((i["ToCalculated"] ?? string.Empty).ToString())),
+                                FromData =
+                                    TimeSpan.FromMinutes(int.Parse((i["FromData"] ?? string.Empty).ToString())),
+                                ToData = TimeSpan.FromMinutes(int.Parse((i["ToData"] ?? string.Empty).ToString()))
+                            }).ToList();
+
+                    return itemDisplay;
+                }
+
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Count Audio Tag Count Info.
+        /// </summary>
+        /// <param name="intervalMinutes">
+        /// The interval minutes.
+        /// </param>
+        /// <returns>
+        /// Count of Audio Tag Count Info.
+        /// </returns>
+        public static int CountAudioWithTagCountInfo(int intervalMinutes)
+        {
+            return GetAudioWithTagCountInfo("TagCount DESC", intervalMinutes).Count();
+        }
     }
 }
