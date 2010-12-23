@@ -32,6 +32,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL" />
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Extra Assemblies\JSON.Net\Bin\DotNet\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.configuration" />
@@ -77,6 +80,7 @@
     <Compile Include="Display\ListControlSort.cs" />
     <Compile Include="Display\Managers\EntityDisplayManager.cs" />
     <Compile Include="Display\Managers\HardwareManager.cs" />
+    <Compile Include="Display\Managers\LearningDisplayManager.cs" />
     <Compile Include="Display\Managers\MiscDisplayManager.cs" />
     <Compile Include="Display\Managers\ProcessorManager.cs" />
     <Compile Include="Display\Managers\TagDisplayManager.cs" />

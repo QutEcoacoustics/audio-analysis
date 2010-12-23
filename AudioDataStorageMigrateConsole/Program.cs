@@ -10,6 +10,7 @@
 namespace AudioDataStorageMigrateConsole
 {
     using System;
+    using System.Collections.Generic;
     using System.Configuration;
     using System.Diagnostics;
     using System.Drawing;
@@ -25,7 +26,9 @@ namespace AudioDataStorageMigrateConsole
 
     using QutSensors.Business;
     using QutSensors.Business.Audio;
+    using QutSensors.Business.Request;
     using QutSensors.Business.Storage;
+    using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
 
     /// <summary>
@@ -76,7 +79,7 @@ namespace AudioDataStorageMigrateConsole
 
             ////GetSpectrogram();
 
-            
+            ////GenerateSpectrograms();
 
             Worker.RunMigration();
 
@@ -113,7 +116,7 @@ namespace AudioDataStorageMigrateConsole
         private static void GetSpectrogram()
         {
             string dir =
-                @"C:\Documents and Settings\markcottmanf\My Documents\Sensor Projects\SensorsTrunk\QutSensors.Test\TestData";
+                @"C:\QutSensors\trunk\WebFrontend\UI\Learning\Resources";
 
             ISignalToImage web = new WebSignalToImage();
 
@@ -123,7 +126,7 @@ namespace AudioDataStorageMigrateConsole
 
             var watch = new Stopwatch();
 
-            foreach (FileInfo file in new DirectoryInfo(dir).GetFiles("*.wav"))
+            foreach (FileInfo file in new DirectoryInfo(dir).GetFiles("*.mp3"))
             {
                 try
                 {
@@ -154,8 +157,66 @@ namespace AudioDataStorageMigrateConsole
                     log.WriteEntry(LogType.Error, "Error reading {0} - {1}", file.Name, ex.Message);
                 }
             }
+        }
 
-            Console.ReadLine();
+        private static void GenerateSpectrograms()
+        {
+            var queue = new Queue<DirectoryInfo>();
+
+            queue.Enqueue(new DirectoryInfo(@"C:\QutSensors\trunk\WebFrontend\UI\Learning\Resources\Eastern_Whipbird"));
+
+            while (queue.Count > 0)
+            {
+                var nextDir = queue.Dequeue();
+
+                foreach (FileInfo file in nextDir.GetFiles("*.mp3"))
+                {
+                    SaveSpectrogram(file);
+                }
+
+                foreach (DirectoryInfo dir in nextDir.GetDirectories())
+                {
+                    queue.Enqueue(dir);
+                }
+            }
+        }
+
+        private static void SaveSpectrogram(FileInfo audioFile)
+        {
+            ISignalToImage web = new WebSignalToImage();
+            var audioUtility = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
+
+            string uniqueString = Guid.NewGuid().ToString().Substring(0, 4);
+
+            FileInfo outputAudioFile =
+                new FileInfo(
+                    Path.Combine(
+                        audioFile.DirectoryName,
+                        Path.GetFileNameWithoutExtension(audioFile.Name) + "-" + uniqueString + "." +
+                        MimeTypes.ExtWav));
+
+            audioUtility.Convert(
+                audioFile,
+                MimeTypes.GetMimeTypeFromExtension(audioFile.Extension),
+                outputAudioFile,
+                MimeTypes.MimeTypeWav);
+
+            byte[] bytes = File.ReadAllBytes(outputAudioFile.FullName);
+
+            using (var image = web.Spectrogram(bytes))
+            {
+                image.Save(
+                    Path.Combine(
+                        audioFile.DirectoryName,
+                        Path.GetFileNameWithoutExtension(outputAudioFile.Name) + "-" + uniqueString + "-web.jpg"),
+                    ImageFormat.Jpeg);
+            }
+
+            // delete outputAudioFile
+            if (File.Exists(outputAudioFile.FullName))
+            {
+                File.Delete(outputAudioFile.FullName);
+            }
         }
 
         /*
