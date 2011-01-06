@@ -163,7 +163,7 @@ namespace AudioDataStorageMigrateConsole
         {
             var queue = new Queue<DirectoryInfo>();
 
-            queue.Enqueue(new DirectoryInfo(@"C:\QutSensors\trunk\WebFrontend\UI\Learning\Resources\Koala"));
+            queue.Enqueue(new DirectoryInfo(@"C:\QutSensors\trunk\WebFrontend\UI\Learning\Resources\Eastern_Dwarf_Tree_Frog"));
 
             while (queue.Count > 0)
             {
