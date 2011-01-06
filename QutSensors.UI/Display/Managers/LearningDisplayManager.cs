@@ -21,7 +21,7 @@ namespace QutSensors.UI.Display.Managers
     /// </summary>
     public static class LearningDisplayManager
     {
-        private const string DataFile = "/UI/Learning/Resources/data.json";
+        public static readonly string DataFile = "/UI/Learning/Resources/data.json";
 
         /// <summary>
         /// Get Animal Data grouped by attributes.
