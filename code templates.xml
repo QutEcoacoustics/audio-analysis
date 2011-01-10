@@ -1,0 +1,14 @@
+<TemplatesExport family="Live Templates">
+  <Template uid="8948951b-b5c0-40df-8967-df03d9acf224" shortcut="propStrongNotify" description="" text="private readonly string $NAME$Selector = ObjectExtensions.NameOf&lt;$PARENTTYPE$&gt;((o) =&gt; o.$NAME$);&#xD;&#xA;        private $TYPE$ $NAME$Field;&#xD;&#xA;&#xD;&#xA;        /// &lt;summary&gt;&#xD;&#xA;        /// Gets or sets $NAME$. &#xD;&#xA;        /// This property raises the PropertyChanged event when changed.&#xD;&#xA;        /// &lt;/summary&gt;&#xD;&#xA;        public $TYPE$ $NAME$&#xD;&#xA;        {&#xD;&#xA;            get &#xD;&#xA;			{ &#xD;&#xA;				return $NAME$Field; &#xD;&#xA;			}&#xD;&#xA;&#xD;&#xA;            set&#xD;&#xA;            {&#xD;&#xA;                if ($NAME$Field.Equals(value) != true)&#xD;&#xA;                {&#xD;&#xA;                    $NAME$Field = value;&#xD;&#xA;                    PropertyChanged.Raise(this, $NAME$Selector);&#xD;&#xA;                }&#xD;&#xA;            }&#xD;&#xA;        }" reformat="True" shortenQualifiedReferences="True">
+    <Context>
+      <CSharpContext context="Everywhere" minimumLanguageVersion="3.0" />
+    </Context>
+    <Categories />
+    <Variables>
+      <Variable name="NAME" expression="constant(&quot;PropertyName&quot;)" initialRange="0" />
+      <Variable name="PARENTTYPE" expression="typeName()" initialRange="-1" />
+      <Variable name="TYPE" expression="constant(&quot;int&quot;)" initialRange="1" />
+    </Variables>
+    <CustomProperties />
+  </Template>
+</TemplatesExport>
