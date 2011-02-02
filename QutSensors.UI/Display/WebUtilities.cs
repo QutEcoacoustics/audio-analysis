@@ -13,6 +13,7 @@ namespace QutSensors.UI.Display
     using System.Globalization;
     using System.Linq;
     using System.Net;
+    using System.ServiceModel.Web;
     using System.Web;
     using System.Web.UI;
     using System.Web.UI.WebControls;
@@ -31,6 +32,16 @@ namespace QutSensors.UI.Display
         /// The include test deployments query string key.
         /// </summary>
         public const string IncludeTestDeploymentsQueryStringKey = "Tests";
+
+        /// <summary>
+        /// If you change this... also change in \Sensors\SilverlightControls\Version7\AudioPlayer\AudioPlayer\Code\Settings\AppSettings.cs.
+        /// </summary>
+        public const string XMquterErrorHeader = "X-MQUTeR-Error";
+
+        /// <summary>
+        /// If you change this... also change in \Sensors\SilverlightControls\Version7\AudioPlayer\AudioPlayer\Code\Settings\AppSettings.cs.
+        /// </summary>
+        public const string XMquterErrorMessageHeader = "X-MQUTeR-Error-Message";
 
         /// <summary>
         /// Gets ReadingsDateFormat.
@@ -313,13 +324,11 @@ namespace QutSensors.UI.Display
         /// <returns>
         /// The log error.
         /// </returns>
-        [MoveToBusiness("No reason for this to be here")]
+        [Obsolete("Use HttpErrorHandlerInstead")]
         public static int LogError(Exception ex)
         {
             return ErrorLog.Insert(ex, HttpContext.Current.Request.Url.ToString());
         }
-
-
 
         /// <summary>
         /// A standardised way to report errors in WCF services.
@@ -327,17 +336,77 @@ namespace QutSensors.UI.Display
         /// <param name="exception">
         /// The exception to log.
         /// </param>
-        /// <param name="errorMessage">
+        /// <param name="dbErrorLogMessage">
         /// The error message to log.
         /// </param>
         /// <param name="httpContext">
         /// The http Context.
         /// </param>
-        public static void HttpErrorHandler(Exception exception, string errorMessage, HttpContext httpContext)
+        public static void HttpErrorHandler(this HttpContext httpContext, Exception exception, string dbErrorLogMessage)
         {
-            int errNumber = ErrorLog.Insert(exception, errorMessage);
+            HttpErrorHandler(httpContext, exception, dbErrorLogMessage, HttpStatusCode.InternalServerError);
+        }
+
+        /// <summary>
+        /// A standardised way to report errors in WCF services.
+        /// </summary>
+        /// <param name="exception">
+        ///   The exception to log.
+        /// </param>
+        /// <param name="dbErrorLogMessage">
+        ///   The error message to log.
+        /// </param>
+        /// <param name="httpContext">
+        ///   The http Context.
+        /// </param>
+        /// <param name="statusCode"></param>
+        public static void HttpErrorHandler(this HttpContext httpContext, Exception exception, string dbErrorLogMessage, HttpStatusCode statusCode)
+        {
+            HttpErrorHandler(httpContext, exception, dbErrorLogMessage, statusCode, string.Empty);
+        }
+
+        /// <summary>
+        /// A standardised way to report errors in WCF services.
+        /// </summary>
+        /// <param name="httpContext">
+        ///   The http Context.
+        /// </param>
+        /// <param name="exception">
+        ///   The exception to log.
+        /// </param>
+        /// <param name="dbErrorLogMessage">
+        ///   The error message to log.
+        /// </param>
+        /// <param name="statusCode"></param>
+        /// <param name="publicMessage"></param>
+        public static void HttpErrorHandler(this HttpContext httpContext, Exception exception, string dbErrorLogMessage, HttpStatusCode statusCode, string publicMessage)
+        {
+            bool pmsg = !string.IsNullOrEmpty(publicMessage);
+            int errNumber = ErrorLog.Insert(exception, (pmsg ? publicMessage + "\r\n" : string.Empty) + dbErrorLogMessage);
             httpContext.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
-            httpContext.Response.Headers.Add("x-Error", string.Format("An error occured ({0})", errNumber));
+            httpContext.Response.AddHeader(XMquterErrorHeader, string.Format("An error occured ({0})", errNumber));
+            
+            if (pmsg)
+            {
+                httpContext.Response.AddHeader(XMquterErrorMessageHeader, publicMessage);
+            }
+        }
+
+        /// <summary>
+        /// A standardised way to report errors in WCF services.
+        /// </summary>
+        /// <param name="exception">The exception to log.</param>
+        /// <param name="dbErrorLogMessage">The error message to log.</param>
+        /// <param name="wcfContext">
+        /// A helper class that provides easy access to contextual properties of Web requests and responses.
+        /// Do this: <code>WebOperationContext.Current</code>.
+        /// </param>
+        public static int WcfErrorHandler(Exception exception, string dbErrorLogMessage, WebOperationContext wcfContext)
+        {
+            int errNumber = ErrorLog.Insert(exception, dbErrorLogMessage);
+            wcfContext.OutgoingResponse.StatusCode = HttpStatusCode.InternalServerError;
+            wcfContext.OutgoingResponse.Headers.Add(XMquterErrorHeader, string.Format("An error occured ({0})", errNumber));
+            return errNumber;
         }
 
         /// <summary>
