@@ -324,14 +324,14 @@ namespace QutSensors.UI.Display
         /// <returns>
         /// The log error.
         /// </returns>
-        [Obsolete("Use HttpErrorHandlerInstead")]
+        [Obsolete("Use HttpErrorHandler instead")]
         public static int LogError(Exception ex)
         {
             return ErrorLog.Insert(ex, HttpContext.Current.Request.Url.ToString());
         }
 
         /// <summary>
-        /// A standardised way to report errors in WCF services.
+        /// A standardised way to report errors in Http services.
         /// </summary>
         /// <param name="exception">
         /// The exception to log.
@@ -366,7 +366,7 @@ namespace QutSensors.UI.Display
         }
 
         /// <summary>
-        /// A standardised way to report errors in WCF services.
+        /// A standardised way to report errors in Http services.
         /// </summary>
         /// <param name="httpContext">
         ///   The http Context.

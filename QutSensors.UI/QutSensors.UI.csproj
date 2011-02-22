@@ -55,6 +55,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\AudioDataPrepareLocalAccessConsole\AudioFileUtil.Hybrid.cs">
+      <Link>AudioFileUtil.Hybrid.cs</Link>
+    </Compile>
     <Compile Include="Display\Classes\AudioReadingInfo.cs" />
     <Compile Include="Display\Classes\DataCacheItem.cs" />
     <Compile Include="Display\Classes\DataSetAudioReadingDisplayItem.cs" />
