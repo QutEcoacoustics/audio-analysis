@@ -15,6 +15,7 @@ namespace QutSensors.UI.Display.Managers
 
     using QutSensors.Data;
     using QutSensors.Data.Linq;
+    using QutSensors.Shared.Tools;
     using QutSensors.UI.Display.Classes;
     using QutSensors.UI.Security;
 
@@ -333,9 +334,25 @@ namespace QutSensors.UI.Display.Managers
                         break;
                 }
 
-                query = query.Skip(startIndex).Take(maxItems);
+                // should be after sorting, but damn 'no supported translation to sql' error.... :(
+                var aList = query.Skip(startIndex).Take(maxItems).ToList();
 
-                var queryItems = query.Select(q => new TagPlayItem
+                // test filter by duration and freq
+                var c = new CompareFeatures(3);
+                var refTag = new AudioTag { StartTime = 0, EndTime = 1000, StartFrequency = 3000, EndFrequency = 5000 };
+
+
+                aList =
+                    aList.OrderBy(
+                        audioTag =>
+                        c.Compare(
+                            refTag,
+                            audioTag,
+                            a => a.StartFrequency,
+                            a => a.EndFrequency - a.StartFrequency,
+                            a => a.EndTime - a.StartTime)).ToList();
+
+                var queryItems = aList.Select(q => new TagPlayItem
                 {
                     AudioId = q.AudioReadingID,
                     AudioAbsoluteStart = q.AudioReading.Time,
