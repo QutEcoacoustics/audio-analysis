@@ -373,7 +373,7 @@ namespace QutSensors.UI.Display.Managers
                 aList =
                     aList.OrderBy(
                         audioTag =>
-                        c.GetOverlapArea(
+                        CompareFeatures.GetOverlapArea(
                         0,
                         MaxFrequency - refTag.EndFrequency,
                         Math.Abs(refTag.EndTime - refTag.StartTime),
