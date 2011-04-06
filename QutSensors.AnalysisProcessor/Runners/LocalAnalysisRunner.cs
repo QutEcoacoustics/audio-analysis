@@ -52,7 +52,7 @@ namespace QutSensors.AnalysisProcessor.Runners
         {
             get
             {
-                return true;
+                return false;
             }
         }
 
