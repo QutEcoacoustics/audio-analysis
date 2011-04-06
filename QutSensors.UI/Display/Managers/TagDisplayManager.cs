@@ -414,7 +414,7 @@ namespace QutSensors.UI.Display.Managers
         /// <returns>
         /// List of audio tags for html player.
         /// </returns>
-        public static IEnumerable<TagPlayItem> GetAudioRefTagsMatched(int maxItems, int startIndex, string partialTagName, TagMatchRequest request)
+        public static IEnumerable<TagPlayItem> GetAudioRefTagsMatched(int maxItems, int startIndex, TagMatchRequest request)
         {
             using (var db = new QutSensorsDb())
             {
@@ -438,10 +438,12 @@ namespace QutSensors.UI.Display.Managers
                             select a;
                 }
 
-                if (!string.IsNullOrEmpty(partialTagName))
+                if (!string.IsNullOrEmpty(request.TagName))
                 {
-                    query = query.Where(at => at.Tag.Contains(partialTagName));
+                    query = query.Where(at => at.Tag.Contains(request.TagName));
                 }
+
+                query.OrderBy(a => a.Tag);
 
                 /*
 
@@ -531,7 +533,7 @@ namespace QutSensors.UI.Display.Managers
         /// <returns>
         /// Number of reference tags.
         /// </returns>
-        public static int CountAudioRefTagsMatched(string partialTagName, TagMatchRequest request)
+        public static int CountAudioRefTagsMatched(TagMatchRequest request)
         {
             using (var db = new QutSensorsDb())
             {
@@ -555,9 +557,9 @@ namespace QutSensors.UI.Display.Managers
                             select a;
                 }
 
-                if (!string.IsNullOrEmpty(partialTagName))
+                if (!string.IsNullOrEmpty(request.TagName))
                 {
-                    query = query.Where(at => at.Tag.Contains(partialTagName));
+                    query = query.Where(at => at.Tag.Contains(request.TagName));
                 }
 
                 var manager = new TagMatchRequestManager();
