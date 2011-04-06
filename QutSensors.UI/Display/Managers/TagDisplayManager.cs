@@ -405,9 +405,6 @@ namespace QutSensors.UI.Display.Managers
         /// <param name="startIndex">
         /// The start index.
         /// </param>
-        /// <param name="sortExpression">
-        /// The sort expression.
-        /// </param>
         /// <param name="partialTagName">
         /// The partial Tag Name.
         /// </param>
@@ -417,7 +414,7 @@ namespace QutSensors.UI.Display.Managers
         /// <returns>
         /// List of audio tags for html player.
         /// </returns>
-        public static IEnumerable<TagPlayItem> GetAudioRefTagsMatched(int maxItems, int startIndex, string sortExpression, string partialTagName, TagMatchRequest request)
+        public static IEnumerable<TagPlayItem> GetAudioRefTagsMatched(int maxItems, int startIndex, string partialTagName, TagMatchRequest request)
         {
             using (var db = new QutSensorsDb())
             {
@@ -446,48 +443,7 @@ namespace QutSensors.UI.Display.Managers
                     query = query.Where(at => at.Tag.Contains(partialTagName));
                 }
 
-                switch (sortExpression)
-                {
-                    case "TagName":
-                        query = query.OrderBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "TagName DESC":
-                        query = query.OrderByDescending(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "RelativeStart":
-                        query = query.OrderBy(a => a.StartTime).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "RelativeStart DESC":
-                        query = query.OrderByDescending(a => a.StartTime).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "RelativeEnd":
-                        query = query.OrderBy(a => a.EndTime).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "RelativeEnd DESC":
-                        query = query.OrderByDescending(a => a.EndTime).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "AbsoluteStart":
-                        query = query.OrderBy(a => a.AudioReading.Time.AddMilliseconds(a.StartTime)).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "AbsoluteStart DESC":
-                        query = query.OrderByDescending(a => a.AudioReading.Time.AddMilliseconds(a.StartTime)).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "AbsoluteEnd":
-                        query = query.OrderBy(a => a.AudioReading.Time.AddMilliseconds(a.EndTime)).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "AbsoluteEnd DESC":
-                        query = query.OrderByDescending(a => a.AudioReading.Time.AddMilliseconds(a.EndTime)).ThenBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                    case "DeploymentName":
-                        query = query.OrderBy(a => a.AudioReading.Deployment.Name).ThenBy(a => a.Tag);
-                        break;
-                    case "DeploymentName DESC":
-                        query = query.OrderByDescending(a => a.AudioReading.Deployment.Name).ThenBy(a => a.Tag);
-                        break;
-                    default:
-                        query = query.OrderBy(a => a.Tag).ThenBy(a => a.AudioReading.Deployment.Name);
-                        break;
-                }
+                /*
 
                 //// should be after sorting, but damn 'no supported translation to sql' error.... :(
                 //var aList = query.Skip(startIndex).Take(maxItems).ToList();
@@ -538,6 +494,8 @@ namespace QutSensors.UI.Display.Managers
                 //        Math.Abs(audioTag.EndTime - audioTag.StartTime),
                 //        Math.Abs(audioTag.EndFrequency - audioTag.StartFrequency)
                 //        )).ToList();
+
+                */
 
                 var manager = new TagMatchRequestManager();
                 var aList = manager.GetTagsSorted(request, query);
