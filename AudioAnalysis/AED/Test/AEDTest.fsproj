@@ -44,6 +44,15 @@
     <WarningLevel>3</WarningLevel>
     <OutputPath>bin\AudioAnalysis\</OutputPath>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Core|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>3</WarningLevel>
+    <OutputPath>bin\Core\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="FsCheck">
       <HintPath>..\..\..\Extra Assemblies\FsCheck.dll</HintPath>

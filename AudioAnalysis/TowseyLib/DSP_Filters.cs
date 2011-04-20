@@ -5,91 +5,26 @@ using System.Text;
 namespace TowseyLib
 {
     /// <summary>
-    /// digital signal processing methods
+    /// digital signal processing FILTERS methods
     /// </summary>
-    public static class DSP
+    public static class DSP_Filters
     {
         public const double pi = Math.PI;
 
 
-
         /// <summary>
-        /// returns the start and end index of all frames in a long audio signal
+        /// returns a digital signal having sample rate, duration and harmonic content passed by user.
+        /// Harmonics array should contain Herz values of harmonics. i.e. int[] harmonics = { 500, 1000, 2000, 4000 };
+        /// Phase is not taken into account.
         /// </summary>
-        public static int[,] FrameStartEnds(int dataLength, int windowSize, double windowOverlap)
-        {
-            int step = (int)(windowSize * (1 - windowOverlap));
-
-            if (step < 1)
-                throw new ArgumentException("Frame Step must be at least 1");
-            if (step > windowSize)
-                throw new ArgumentException("Frame Step must be <=" + windowSize);
-
-            int overlap = windowSize - step;
-            int framecount = (dataLength - overlap) / step; //this truncates residual samples
-            if (framecount < 2) throw new ArgumentException("Signal must produce at least two frames!");
-
-            int offset = 0;
-            int[,] frames = new int[framecount, 2]; //col 0 =start; col 1 =end
-
-            for (int i = 0; i < framecount; i++) //foreach frame
-            {
-                frames[i, 0] = offset;                  //start of frame
-                frames[i, 1] = offset + windowSize - 1; //end of frame
-                offset += step;
-            }
-            return frames;
-        }
-
-
-        public static double[,] Frames(double[] data, int[,] startEnds)
-        {
-            int windowSize = startEnds[0, 1] + 1;
-            int framecount = startEnds.GetLength(0);
-            double[,] frames = new double[framecount, windowSize];
-
-            for (int i = 0; i < framecount; i++) //for each frame
-            {
-                for (int j = 0; j < windowSize; j++) frames[i, j] = data[startEnds[i, 0] + j];
-            } //end matrix
-            return frames;
-        }
-
-        
-        /// <summary>
-        /// Breaks a long audio signal into frames with given step
-        /// IMPORTANT: THIS METHOD PRODUCES A LARGE MEMORY-HUNGRY MATRIX.  BEST TO USE THE FrameStartEnds() METHOD.
-        /// </summary>
-        public static double[,] Frames(double[] data, int windowSize, double windowOverlap)
-        {
-            int step = (int)(windowSize * (1 - windowOverlap));
-
-            if (step < 1)
-                throw new ArgumentException("Frame Step must be at least 1");
-            if (step > windowSize)
-                throw new ArgumentException("Frame Step must be <=" + windowSize);
-
-            int overlap = windowSize - step;
-            int framecount = (data.Length - overlap) / step; //this truncates residual samples
-            if (framecount < 2) throw new ArgumentException("Sonogram width must be at least 2");
-
-            int offset = 0;
-            double[,] frames = new double[framecount, windowSize];
-
-            for (int i = 0; i < framecount; i++) //foreach frame
-            {
-                for (int j = 0; j < windowSize; j++) //foreach sample
-                    frames[i, j] = data[offset + j];
-                offset += step;
-            } //end matrix
-            return frames;
-        }
-
-
+        /// <param name="sampleRate">sr of output signal</param>
+        /// <param name="duration">signal duration in seconds</param>
+        /// <param name="freq">frequency in Herz</param>
+        /// <returns></returns>
         public static double[] GetSignal(int sampleRate, double duration, int[] freq)
         {
             double ampl = 10000;
-            int length = (int)(sampleRate * duration); 
+            int length = (int)(sampleRate * duration);
             double[] data = new double[length];
             int count = freq.Length;
             double[] omega = new double[count];
@@ -98,7 +33,6 @@ namespace TowseyLib
             //{
             //    omega[f] = 2.0 * Math.PI * freq[f] / (double)sampleRate;
             //}
-
 
             for (int i = 0; i < length; i++)
             {
@@ -126,58 +60,6 @@ namespace TowseyLib
             return newSig;
         }
 
-        /// <summary>
-        /// returns the min and max values in each frame. Signal values range from -1 to +1.
-        /// </summary>
-        /// <param name="frames"></param>
-        /// <param name="minAmp"></param>
-        /// <param name="maxAmp"></param>
-        public static void SignalEnvelope(double[,] frames, out double[] minAmp, out double[] maxAmp)
-        {
-            int frameCount = frames.GetLength(0);
-            int N  = frames.GetLength(1);
-            minAmp = new double[frameCount];
-            maxAmp = new double[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
-            {
-                double min =  Double.MaxValue;
-                double max = -Double.MaxValue;
-                for (int j = 0; j < N; j++)  //foreach sample in frame
-                {
-                    if (min > frames[i, j]) min = frames[i, j];
-                    else 
-                    if (max < frames[i, j]) max = frames[i, j];
-                }
-                minAmp[i] = min;
-                maxAmp[i] = max;
-            }
-        }
-
-
-
-
-        /// <summary>
-        /// counts the zero crossings in each frame
-        /// This info is used for determing the begin and end points for vocalisations.
-        /// </summary>
-        /// <param name="frames"></param>
-        /// <returns></returns>
-        public static int[] ZeroCrossings(double[,] frames)
-        {
-            int frameCount = frames.GetLength(0);
-            int N = frames.GetLength(1);
-            int[] zc = new int[frameCount];
-            for (int i = 0; i < frameCount; i++) //foreach frame
-            {
-                int count = 0;
-                for (int j = 1; j < N; j++)  //foreach sample in frame
-                {
-                    count += Math.Abs(Math.Sign(frames[i, j]) - Math.Sign(frames[i, j - 1]));
-                }
-                zc[i] = count / 2;
-            }
-            return zc;
-        }
 
         /// <summary>
         /// converts passed arguments into step decay and step radians ie radians per sample or OMEGA
@@ -199,7 +81,6 @@ namespace TowseyLib
             int filterLength = (int)(filterDuration * sf); 
             double[] newSig = Filter_DecayingSinusoid(signal, stepDecay, stepRadians, filterLength);
             return newSig;
-
         }
 
 
@@ -243,7 +124,19 @@ namespace TowseyLib
             return newSig;
         } //Filter_DecayingSinusoid()
 
-        public static double[] Filter(double[] signal, double[] filterCoeff)
+
+        /// <summary>
+        /// A "finite impulse response" (FIR) filter uses only the input signals, 
+        /// while an "infinite impulse response" filter (IIR) uses 
+        /// both the input signal and previous samples of the output signal.
+        /// 
+        /// FIR filters are always stable, while IIR filters may be unstable.
+        /// This filter is linear, causal and time-invariant.
+        /// </summary>
+        /// <param name="signal">input signal</param>
+        /// <param name="filterCoeff">filter coefficients</param>
+        /// <returns>the filtered signal</returns>
+        public static double[] FIR_Filter(double[] signal, double[] filterCoeff)
         {
             int signalLength = signal.Length;
             double[] newSig = new double[signalLength];
@@ -268,7 +161,7 @@ namespace TowseyLib
                 newSig[i] = sum;
             }
             return newSig;
-        } //Filter()
+        } //FIR_Filter()
 
         public static double GetGain(double[] filterCoeff)
         {
@@ -276,7 +169,7 @@ namespace TowseyLib
             //set up the impulse signal
             double[] impulse = new double[3 * filterLength];
             impulse[filterLength] = 1.0;
-            double[] newSig = Filter(impulse, filterCoeff);
+            double[] newSig = FIR_Filter(impulse, filterCoeff);
             double gain = 0.0;
             for (int j = 0; j < impulse.Length; j++) gain += newSig[j];
             return gain;
@@ -284,14 +177,14 @@ namespace TowseyLib
 
         public static void DisplaySignal(double[] sig)
         {
-                double[] newSig = DataTools.normalise(sig);
+            double[] newSig = DataTools.normalise(sig);
 
-                foreach (double value in newSig)
-                {
-                    int count = (int)(value * 50);
-                    for (int i = 0; i < count; i++) Console.Write("=");
-                    Console.WriteLine("=");
-                }
+            foreach (double value in newSig)
+            {
+                int count = (int)(value * 50);
+                for (int i = 0; i < count; i++) Console.Write("=");
+                Console.WriteLine("=");
+            }
         }
 
         public static void DisplaySignal(double[] sig, bool showIndex)
@@ -315,7 +208,7 @@ namespace TowseyLib
 
         static void Main()
         {
-            Console.WriteLine("TESTING METHODS IN CLASS DataTools");
+            Console.WriteLine("TESTING METHODS IN CLASS DSP_Filters");
 
 
 
