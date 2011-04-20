@@ -23,7 +23,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="filterName"></param>
         /// <returns></returns>
-        public static System.Tuple<double[], double[]> CreateFilter(string filterName)
+        public static System.Tuple<int, double[], double[], double> CreateFilter(string filterName)
         {
             if (filterName.StartsWith("Chebyshev_Highpass_400")) return Chebyshev_Highpass_400();
             else
@@ -34,7 +34,7 @@ namespace TowseyLib
         /// <summary>
         /// Create a Chebyshev_Highpass filter, shoulder=400, order=9; ripple=-0.1dB; sr=22050
         /// </summary>
-        public static System.Tuple<double[], double[]> Chebyshev_Highpass_400(/*no variables to pass*/)
+        public static System.Tuple<int, double[], double[], double> Chebyshev_Highpass_400(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order+1];
@@ -59,12 +59,15 @@ namespace TowseyLib
             b_coeff[3] =  62.6708517953;
             b_coeff[2] = -29.5822313447;
             b_coeff[1] =   8.1538488628;
-            return System.Tuple.Create(a_coeff, b_coeff);
+
+            //double gain = 2018526051;  //gain at DC
+            double gain = 1995420162;  //gain at centre
+            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
         }
         /// <summary>
         /// Create a Chebyshev_lowpass filter, shoulder=1000, order=9; ripple=-0.1dB; sr=22050
         /// </summary>
-        public static System.Tuple<double[], double[]> Chebyshev_Lowpass_1000(/*no variables to pass*/)
+        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_1000(/*no variables to pass*/)
         {
             int order = 9;
             double[] a_coeff = new double[order+1];
@@ -90,7 +93,9 @@ namespace TowseyLib
             b_coeff[2] =-31.1520875317;
             b_coeff[1] =  8.3477764588;
 
-            return System.Tuple.Create(a_coeff, b_coeff);
+            double gain = 2018526051;  //gain at DC
+            //double gain = 1995420162;  //gain at centre
+            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
         }
 
 
@@ -100,6 +105,7 @@ namespace TowseyLib
         private double[] a;  //x coefficients
         private double[] b;  //y coefficients
         public int order {get; set;}
+        public double gain;
 
         
         /// <summary>
@@ -109,9 +115,10 @@ namespace TowseyLib
         public DSP_IIRFilter(string filterName)
         {
             var iir = CreateFilter(filterName);
-            this.a = iir.Item1;
-            this.b = iir.Item2;
-            this.order = this.a.Length;
+            this.order = iir.Item1;
+            this.a = iir.Item2;
+            this.b = iir.Item3;
+            this.gain = iir.Item4;
         }
 
         /// <summary>
@@ -124,41 +131,8 @@ namespace TowseyLib
         {
             this.a = a;
             this.b = b;
-            this.order = this.a.Length-1;
+            this.order = this.a.Length - 1;
         }
-
-        /// <summary>
-        /// </summary>
-        /// <param name="signal"></param>
-        /// <param name="filterCoeff"></param>
-        /// <returns></returns>
-        public static double[] Apply_FIR_Filter_OLD_METHOD(double[] signal, double[] filterCoeff)
-        {
-            int signalLength = signal.Length;
-            double[] newSig = new double[signalLength];
-
-            int filterLength = filterCoeff.Length;
-            // transfer initial partially filtered values
-            for (int i = 0; i < filterLength; i++)
-            {
-                double sum = 0.0;
-                for (int j = 0; j < filterLength; j++)
-                {
-                    if ((i - j) < 0) break;
-                    sum += (filterCoeff[filterLength - j - 1] * signal[i - j]);
-                }
-                newSig[i] = sum;
-            }
-            // transfer filtered values
-            for (int i = filterLength; i < signalLength; i++)
-            {
-                double sum = 0.0;
-                for (int j = 0; j < filterLength; j++) sum += (filterCoeff[filterLength - j - 1] * signal[i - j]);
-                newSig[i] = sum;
-            }
-            return newSig;
-        } //Apply_FIR_Filter_OLD_METHOD()
-
 
 
         //public void ApplyIIRFilter(double[] x, out double[] y)
@@ -201,37 +175,32 @@ namespace TowseyLib
 
         public void ApplyIIRFilter(double[] x, out double[] y)
         {
-            int np = x.Length - 1; //signal length
+            int np = x.Length; //signal length
+            int size = this.order + 1; //Length of the A & B arrays;
 
             y = new double[np];
 
             int i, j;
             y[0] = a[0] * x[0];
-            for (i = 1; i < order + 1; i++)
+            for (i = 1; i < size; i++)
             {
-                for (j = 0; j < i; j++) y[i] += (a[j] * x[i - j]);
-               // for (j = 1; j < i; j++) y[i] += (b[j] * y[i - j]);
-                System.Console.WriteLine("y=" + y[i]);
+                for (j = 0; j <= i; j++) y[i] += (a[j] * x[i - j]);
+                for (j = 1; j <= i; j++) y[i] += (b[j] * y[i - j]);
             }
             /* end of initial part */
             
-            for (i = this.order + 1; i < np; i++) //length of signal
+            for (i = size; i < np; i++) //length of signal
             {
                 y[i] += (a[0] * x[i]);
-                for (j = 1; j < this.order; j++) y[i] += (a[j] * x[i - j]);
-               // for (j = 1; j < this.order; j++) y[i] += (b[j] * y[i - j]);
-                // Gain at DC = 2.018526051 billion
-                //y[i] /= 2018526051;
-                //y[i] /= (double)2.018526051;
+                for (j = 1; j < size; j++) y[i] += (a[j] * x[i - j]);
+                for (j = 1; j < size; j++) y[i] += (b[j] * y[i - j]);
             }
-            // get area under curve
-            double area = 0.0;
-            for (i = this.order + 1; i < np; i++) //length of signal
+            //adjust for gain
+            for (i = 0; i < np; i++) 
             {
-            //    y[i] /= 2018526.051;
-                area += Math.Abs(y[i]);
+                y[i] /= this.gain;
             }
-            System.Console.WriteLine("\nArea under curve = "+area);
+
         } //ApplyIIRFilter()
 
 
@@ -265,13 +234,25 @@ namespace TowseyLib
                 System.Console.WriteLine("\nTest " + filterName + ", order=" + order);
 
                 // create impulse
-                double[] impulse = new double[500];
+                int inputLength = 400;
+                double[] impulse = new double[inputLength];
                 impulse[0] = 1;
+                // create step funciton
+                //for (int i = 1; i < inputLength; i++) impulse[i] = 1;
 
                 double[] y;
                 filter.ApplyIIRFilter(impulse, out y);
                 
-                DataTools.writeArray(y);
+                //DataTools.writeArray(y);
+                double area = 0.0;
+                for (int i = 0; i < y.Length; i++) //length of signal
+                {
+                    area += Math.Abs(y[i]);
+                    //area += (y[i] * y[i]); //power
+                    y[i] *= 100;
+                }
+                System.Console.WriteLine("\nArea under curve = " + area);
+
                 DataTools.writeBarGraph(y);
 
                 System.Console.WriteLine("\nEnd Test");
