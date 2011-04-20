@@ -119,10 +119,10 @@
             this.Configuration.epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 
             // SIGNAL PRE-EMPHASIS helps with speech signals
-            if (config.DoPreemphasis) signal = DSP.PreEmphasis(signal, 0.96);
+            if (config.DoPreemphasis) signal = DSP_Filters.PreEmphasis(signal, 0.96);
 
             // FRAME WINDOWING
-            int[,] frameIDs = DSP.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
+            int[,] frameIDs = DSP_Frames.FrameStartEnds(signal.Length, config.WindowSize, config.WindowOverlap);
             FrameCount = frameIDs.GetLength(0);
 
             // ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
@@ -217,7 +217,7 @@
         public double[,] ExtractFreqSubband(WavReader wav, int minHz, int maxHz)
         {
             //double[,] frames = DSP.Frames(wav.Samples, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
-            int[,] framesIDs = DSP.FrameStartEnds(wav.Samples.Length, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
+            int[,] framesIDs = DSP_Frames.FrameStartEnds(wav.Samples.Length, this.Configuration.WindowSize, this.Configuration.WindowOverlap);
             //calculate a minimum amplitude to prevent taking log of small number. This would increase the range when normalising
             //double epsilon = Math.Pow(0.5, wav.BitsPerSample - 1);
 

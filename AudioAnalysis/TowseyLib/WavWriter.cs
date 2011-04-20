@@ -134,7 +134,7 @@ namespace TowseyLib
             //int sampleRate = 44100;
             double duration = 30.245; //sig duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000 };
-            double[] signal = DSP.GetSignal(sampleRate, duration, harmonics);
+            double[] signal = DSP_Filters.GetSignal(sampleRate, duration, harmonics);
             WriteWavFile(signal, sampleRate, path);
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
