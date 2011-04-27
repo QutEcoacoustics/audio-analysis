@@ -57,6 +57,9 @@ namespace AnalysisPrograms
                     case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
                         EPR.Dev(restOfArgs);
                         break;
+                    case "frog_ribbit":  // frog calls
+                        FrogRibit.Dev(restOfArgs);
+                        break;
                     case "spt":  // spectral peak tracking
                         SPT.Dev(restOfArgs);
                         break;

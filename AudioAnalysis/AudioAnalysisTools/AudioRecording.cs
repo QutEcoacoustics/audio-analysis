@@ -82,6 +82,19 @@ namespace AudioAnalysisTools
             Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
         }
 
+        public AudioRecording Filter_IIR(string filterName)
+        {
+            DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
+            double[] output;
+            filter.ApplyIIRFilter(this.wavReader.Samples, out output);
+            int channels = this.wavReader.Channels;
+            int bitsPerSample = this.BitsPerSample;
+            int sampleRate = this.SampleRate;
+            WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
+            var ar = new AudioRecording(wr);
+            return ar;
+        }
+
         /// <summary>
         /// returns the wave form representation of the signal
         /// </summary>

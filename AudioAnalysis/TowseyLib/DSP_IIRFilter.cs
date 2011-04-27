@@ -27,8 +27,15 @@ namespace TowseyLib
         {
             if (filterName.StartsWith("Chebyshev_Highpass_400")) return Chebyshev_Highpass_400();
             else
-            if (filterName.StartsWith("Chebyshev_Lowpass_1000")) return Chebyshev_Lowpass_1000(); 
-            else return null;
+            if (filterName.StartsWith("Chebyshev_Lowpass_1000")) return Chebyshev_Lowpass_1000();
+            else
+            if (filterName.StartsWith("Chebyshev_Lowpass_3000")) return Chebyshev_Lowpass_3000();
+            else
+                {
+                    System.Console.WriteLine("\nWARNING! There is no filter with name: " + filterName);
+                    System.Console.ReadLine();
+                }
+            return null;
         }
 
         /// <summary>
@@ -95,6 +102,39 @@ namespace TowseyLib
 
             double gain = 2018526051;  //gain at DC
             //double gain = 1995420162;  //gain at centre
+            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+        }
+        /// <summary>
+        /// Create a Chebyshev_lowpass filter, shoulder=3000, order=9; ripple=-0.1dB; sr=22050
+        /// </summary>
+        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_3000(/*no variables to pass*/)
+        {
+            int order = 9;
+            double[] a_coeff = new double[order+1];
+            a_coeff[9] =   1.0;
+            a_coeff[8] =   9.0;
+            a_coeff[7] =  36.0;
+            a_coeff[6] =  84.0;
+            a_coeff[5] = 126.0;
+            a_coeff[4] = 126.0;
+            a_coeff[3] =  84.0;
+            a_coeff[2] =  36.0;
+            a_coeff[1] =   9.0;
+            a_coeff[0] =   1.0;
+
+            double[] b_coeff = new double[order+1];
+            b_coeff[9] =  0.2401212964;
+            b_coeff[8] = -2.0732466453;
+            b_coeff[7] =  8.3514809094;
+            b_coeff[6] =-20.5774269817;
+            b_coeff[5] = 34.1759653476;
+            b_coeff[4] =-39.7166333903;
+            b_coeff[3] = 32.3635071573;
+            b_coeff[2] =-17.8943796613;
+            b_coeff[1] =  6.1271000423;
+
+            double gain = 145788.9707;   //gain at DC = 1.457889707e+05
+            //double gain = 1.441201381e+05;  //gain at centre
             return System.Tuple.Create(order, a_coeff, b_coeff, gain);
         }
 
@@ -196,9 +236,12 @@ namespace TowseyLib
                 for (j = 1; j < size; j++) y[i] += (b[j] * y[i - j]);
             }
             //adjust for gain
+            //the factor of 2.30 is an approximate value to make up the difference between theoretical gain and my observed gain.
+            //that is after correction the area under curve of impulse reponse should be close to 1.0.
+            double myGain = this.gain * 2.30;
             for (i = 0; i < np; i++) 
             {
-                y[i] /= this.gain;
+                y[i] /= myGain;
             }
 
         } //ApplyIIRFilter()
@@ -228,7 +271,7 @@ namespace TowseyLib
                 //SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
 
                 // create filter
-                string filterName = "Chebyshev_Lowpass_1000";
+                string filterName = "Chebyshev_Lowpass_3000";
                 DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
                 int order = filter.order;
                 System.Console.WriteLine("\nTest " + filterName + ", order=" + order);
@@ -244,14 +287,14 @@ namespace TowseyLib
                 filter.ApplyIIRFilter(impulse, out y);
                 
                 //DataTools.writeArray(y);
-                double area = 0.0;
+                double myGain = 0.0;
                 for (int i = 0; i < y.Length; i++) //length of signal
                 {
-                    area += Math.Abs(y[i]);
-                    //area += (y[i] * y[i]); //power
+                    myGain += Math.Abs(y[i]);
+                    //myGain += (y[i] * y[i]); //power
                     y[i] *= 100;
                 }
-                System.Console.WriteLine("\nArea under curve = " + area);
+                System.Console.WriteLine("\nMy Gain (area under impulse response curve after DC gain removal.) = " + myGain);
 
                 DataTools.writeBarGraph(y);
 
