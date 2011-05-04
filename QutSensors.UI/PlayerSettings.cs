@@ -64,6 +64,8 @@ namespace QutSensors.UI
 
         private static readonly string DefaultColorsUnsavedTag = Color.FromArgb(48, 255, 255, 255).ToHexString(true);
 
+        private const bool DefaultTagListShowReferenceOnly = false;
+
         #endregion
 
         #region Constructors and Destructors
@@ -93,7 +95,11 @@ namespace QutSensors.UI
             this.UseRemoteFiles = DefaultUseRemoteFiles;
             this.Volume = DefaultVolume;
             this.NavigatorSizeMilliSeconds = DefaultNavigatorSizeMilliSeconds;
+            this.TagListShowReferenceOnly = DefaultTagListShowReferenceOnly;
         }
+
+        [DataMember]
+        public bool TagListShowReferenceOnly { get; set; }
 
         #endregion
 
@@ -256,6 +262,7 @@ namespace QutSensors.UI
             yield return "IsMute: " + this.IsMute;
             yield return "ProfileSaveTimeMilliSeconds: " + this.ProfileSaveTimeMilliSeconds;
             yield return "TurnOnLooping: " + this.TurnOnLooping;
+            yield return "TagListShowReferenceOnly: " + this.TagListShowReferenceOnly;
             yield return "UomFrequencyScale: " + this.UomFrequencyScale;
             yield return "UomMelScale: " + this.UomMelScale;
             yield return "UomTimeScale: " + this.UomTimeScale;
