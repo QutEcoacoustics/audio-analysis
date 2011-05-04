@@ -443,62 +443,6 @@ namespace QutSensors.UI.Display.Managers
                     query = query.Where(at => at.Tag.Contains(request.TagName));
                 }
 
-                query.OrderBy(a => a.Tag);
-
-                /*
-
-                //// should be after sorting, but damn 'no supported translation to sql' error.... :(
-                //var aList = query.Skip(startIndex).Take(maxItems).ToList();
-
-                //// test filter by duration and freq
-                //var c = new CompareFeatures(3);
-                //var refTag = new AudioTag { StartTime = 0, EndTime = 1000, StartFrequency = 3000, EndFrequency = 5000 };
-
-
-                //aList =
-                //    aList.OrderBy(
-                //        audioTag =>
-                //        c.Compare(
-                //            refTag,
-                //            audioTag,
-                //            a => a.StartFrequency,
-                //            a => a.EndFrequency - a.StartFrequency,
-                //            a => a.EndTime - a.StartTime)).ToList();
-
-                //int MaxFrequency = 11025;
-
-                // overlap
-                // x values are always 0, width is duration in milliseconds
-                //foreach (var item in aList)
-                //{
-                //    var overlapArea = c.GetOverlapArea(
-                //        0,
-                //        MaxFrequency - refTag.EndFrequency,
-                //        Math.Abs(refTag.EndTime - refTag.StartTime),
-                //        Math.Abs(refTag.EndFrequency - refTag.StartFrequency),
-                //        0,
-                //        MaxFrequency - item.EndFrequency,
-                //        Math.Abs(item.EndTime - item.StartTime),
-                //        Math.Abs(item.EndFrequency - item.StartFrequency)
-                //        );
-                //}
-
-                //aList =
-                //    aList.OrderBy(
-                //        audioTag =>
-                //        CompareFeatures.GetOverlapArea(
-                //        0,
-                //        MaxFrequency - refTag.EndFrequency,
-                //        Math.Abs(refTag.EndTime - refTag.StartTime),
-                //        Math.Abs(refTag.EndFrequency - refTag.StartFrequency),
-                //        0,
-                //        MaxFrequency - audioTag.EndFrequency,
-                //        Math.Abs(audioTag.EndTime - audioTag.StartTime),
-                //        Math.Abs(audioTag.EndFrequency - audioTag.StartFrequency)
-                //        )).ToList();
-
-                */
-
                 var manager = new TagMatchRequestManager();
                 var aList = manager.GetTagsSorted(request, query);
 
