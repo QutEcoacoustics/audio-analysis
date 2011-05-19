@@ -552,6 +552,13 @@ namespace AudioAnalysisTools
             track.ScoreMax = scoreMax ?? 0;
             return track;
         }
+        public static Image_Track GetScoreTrack(int[] scores, int? scoreMin, int? scoreMax, int? scoreThreshold)
+        {
+            //convert integers to doubles
+            var dscores = new double[scores.Length];
+            for (int x = 0; x < scores.Length; x++) dscores[x] = scores[x];
+            return GetScoreTrack(dscores, (double)scoreMin, (double)scoreMax, (double)scoreThreshold);
+        }
 
 
     }// end  class Image_Track

@@ -122,7 +122,10 @@ namespace TowseyLib
             {
                 sum += data[i];
             }
-            av = sum / (double)N;
+
+            if (N == 0) av = 0.0;
+            //else if (N == 1) av = sum;
+            else av = sum / (double)N;
 
             double var = 0.0;
             for (int i = 0; i < N; i++)

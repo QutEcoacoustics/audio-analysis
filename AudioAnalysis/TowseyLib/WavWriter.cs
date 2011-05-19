@@ -22,15 +22,10 @@ namespace TowseyLib
         /// <param name="signal">IMPORTANT: The signal values must be in range of signed 16 bit integer ie -32768 to +32768</param>
         /// <param name="samplesPerSecond"></param>
         /// <param name="path"></param>
-        public static void WriteWavFile(double[] signal, int samplesPerSecond, string path)
+        public static void Write16bitWavFile(double[] signal, int samplesPerSecond, string path)
         {
-
-            //int samples = 88200 * 4;
-            //short[] perfect5th = Perfect5th(samples, samplesPerSecond);
-
             int samples = signal.Length;
-
-
+            
             FileStream stream = new FileStream(path, FileMode.Create);
             BinaryWriter writer = new BinaryWriter(stream);
 
@@ -69,11 +64,26 @@ namespace TowseyLib
 
             //perfect5th tones
             //for (int i = 0; i < samples; i++) writer.Write(perfect5th[i]);
-            //write the signal
+            //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             for (int i = 0; i < samples; i++) writer.Write((short)signal[i]);//converts double to signed 16 bit
 
             writer.Close();
             stream.Close();
+        }
+
+        public static void WriteWavFile(double[] signal, int samplesPerSecond, int bitRate, string path)
+        {
+            //ONLY HANDLE bit rate = 16.
+            if (bitRate != 16)
+            {
+                System.Console.WriteLine("######### WARNING: CAN ONLY WRITE A BITRATE=16 SIGNAL TO FILE!");
+                return;
+            }
+            //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
+            int length = signal.Length;
+            var newSamples = new double[length];
+            for (int i = 0; i < length; i++) newSamples[i] = signal[i] * short.MaxValue; //converts double to signed 16 bit
+            WavWriter.Write16bitWavFile(newSamples, samplesPerSecond, path);
         }
 
         public static short[] Perfect5th(int samples, int samplesPerSecond)
@@ -135,7 +145,7 @@ namespace TowseyLib
             double duration = 30.245; //sig duration in seconds
             int[] harmonics = { 500, 1000, 2000, 4000 };
             double[] signal = DSP_Filters.GetSignal(sampleRate, duration, harmonics);
-            WriteWavFile(signal, sampleRate, path);
+            Write16bitWavFile(signal, sampleRate, path);
             Console.WriteLine("FINISHED!");
             Console.ReadLine();
 

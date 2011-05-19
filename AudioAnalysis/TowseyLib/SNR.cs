@@ -356,21 +356,35 @@ namespace TowseyLib
         /// <returns></returns>
         public void CalculateDecibelsPerFrame()
         {
+            var results = CalculateDecibelsPerFrame(this.LogEnergy);
+            this.Decibels = results.Item1;
+            this.NoiseSubtracted = results.Item2; //Q
+            this.Min_dB   = results.Item3;   //min decibels of all frames 
+            this.Max_dB   = results.Item4;   //max decibels of all frames 
+            this.Snr      = results.Item5;
+            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
+            //need an appropriate dB reference level for normalising dB arrays.
+            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
+            //this.MaxReference_dBWrtNoise = snr;                             // OK
+            this.MaxReference_dBWrtNoise = this.Min_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+        }
+
+        /// <summary>
+        /// subtract background noise to produce a decibels array in which zero dB = modal noise
+        /// DOES NOT TRUNCATE BELOW ZERO VALUES.
+        /// </summary>
+        /// <param name="logEnergy"></param>
+        /// <returns>System.Tuple.Create(decibels, Q, min_dB, max_dB, snr); System.Tuple(double[], double, double, double, double) 
+        /// </returns>
+        public static System.Tuple<double[], double, double, double, double> CalculateDecibelsPerFrame(double[] logEnergy)
+        {
             double Q;
             double min_dB;
             double max_dB;
-            this.Decibels = NoiseSubtract(this.LogEnergy, out min_dB, out max_dB, out Q);
-            this.NoiseSubtracted = Q;
-            this.Min_dB = min_dB; //min decibels of all frames 
-            this.Max_dB = max_dB;
-            this.NoiseRange = min_dB - Q;
-            this.Snr = max_dB - Q;
-            //need an appropriate dB reference level for normalising dB arrays.
-            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
-            //this.MaxReference_dBWrtNoise = max_dB - Q;                      // OK
-            this.MaxReference_dBWrtNoise = max_dB - min_dB;                   // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+            double[] decibels = NoiseSubtract(logEnergy, out min_dB, out max_dB, out Q);
+            double snr = max_dB - Q;
+            return System.Tuple.Create(decibels, Q, min_dB, max_dB, snr);
         }
-
        
         /// </summary>
         /// <param name="sonogram">sonogram of signal - values in dB</param>

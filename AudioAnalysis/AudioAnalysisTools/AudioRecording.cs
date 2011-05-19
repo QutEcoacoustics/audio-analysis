@@ -259,7 +259,7 @@ namespace AudioAnalysisTools
             //int[] harmonics = { 500, 1000, 2000, 4000 };
             //double[] signal2 = DSP.GetSignal(sampleRate, duration, harmonics);
             //WavWriter.WriteWavFile(signal2, sampleRate, path);
-            WavWriter.WriteWavFile(this.wavReader.Samples, this.SampleRate, path);
+            WavWriter.Write16bitWavFile(this.wavReader.Samples, this.SampleRate, path);
         }
 
 
