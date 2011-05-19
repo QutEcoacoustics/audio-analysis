@@ -92,6 +92,9 @@ namespace TowseyLib
         {
             int frameCount = amplitudeM.GetLength(0);
             int binCount = amplitudeM.GetLength(1);
+            double minDB  = 10 * Math.Log10(epsilon * epsilon     / windowPower / sampleRate);
+            double min2DB = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate);
+            //double thresholdDB = -1;
 
             double[,] spectra = new double[frameCount, binCount];
 
@@ -99,10 +102,11 @@ namespace TowseyLib
             for (int i = 0; i < frameCount; i++)//foreach time step or frame
             {
                 if (amplitudeM[i, 0] < epsilon)
-                       spectra[i, 0] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                    spectra[i, 0] = minDB;
                 else
-                       spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
-                       //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+                    spectra[i, 0] = 10 * Math.Log10(amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower / sampleRate);
+                    //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+                //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
             }
 
 
@@ -111,27 +115,28 @@ namespace TowseyLib
             {                     
                 for (int i = 0; i < frameCount; i++)//foreach time step or frame
                 {
-                    if (amplitudeM[i, j] < epsilon) 
-                        spectra[i, j] = 10 * Math.Log10(epsilon * epsilon * 2 / windowPower / sampleRate); 
+                    if (amplitudeM[i, j] < epsilon)
+                        spectra[i, j] = min2DB; 
                     else
                         spectra[i, j] = 10 * Math.Log10(amplitudeM[i, j] * amplitudeM[i, j] *2 / windowPower / sampleRate);
                         //spectra[i, j] = amplitudeM[i, j] * amplitudeM[i, j] * 2 / windowPower; //calculates power
+                    //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
                 }//end of all frames
             } //end of all freq bins
 
 
             //calculate power of the Nyquist freq bin - last column of matrix
-            for (int i = 0; i < frameCount; i++)//foreach time step or frame
+            for (int i = 0; i < frameCount; i++) //foreach time step or frame
             {
                 //calculate power of the DC value
                 if (amplitudeM[i, binCount - 1] < epsilon)
-                    spectra[i, binCount - 1] = 10 * Math.Log10(epsilon * epsilon / windowPower / sampleRate);
+                    spectra[i, binCount - 1] = minDB;
                 else
                     spectra[i, binCount - 1] = 10 * Math.Log10(amplitudeM[i, binCount - 1] * amplitudeM[i, binCount - 1] / windowPower / sampleRate);
                 //spectra[i, 0] = amplitudeM[i, 0] * amplitudeM[i, 0] / windowPower; //calculates power
+                //if (spectra[i, 0] < thresholdDB) spectra[i, 0] = minDB;
             }
 
-            
             return spectra;
         }
 

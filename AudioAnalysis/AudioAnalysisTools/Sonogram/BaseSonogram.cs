@@ -186,7 +186,7 @@
         {
             int frameCount = frames.GetLength(0);
             int N = frames[0, 1] + 1;     //window or frame width
-            int smoothingWindow = 0;      //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE
+            //int smoothingWindow = 0;      //to smooth the spectrum //#################ADJUST THIS TO REDUCE VARIANCE - BUT NOT USING HERE
 
             //var fft = new TowseyLib.FFT(N, w);     // init class which calculates the FFT
             var fft = new TowseyLib.FFT(N, w, true); // init class which calculates the MATLAB compatible .NET FFT
@@ -204,7 +204,7 @@
                 //double[] f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
                 //double[] f1 = fft.Invoke(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
 
-                if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+                //if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
                 for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
                 {
                     amplitudeSonogram[i, j] = f1[j]; //transfer amplitude
