@@ -27,7 +27,8 @@ namespace AnalysisPrograms
             //string targetName     = args[2];   //prefix of name of created files 
 
             string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\Rheobatrachus_silus_MONO.wav";
-            int windowDuration = 5; // milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
+            double windowDuration = 5.0; // milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
+            int midFreq = 1550; // middle of freq band of interest 
 
 
             //i: Set up the file names
@@ -59,7 +60,7 @@ namespace AnalysisPrograms
             Log.WriteLine("Start sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = windowDuration * sr / 1000;
+            sonoConfig.WindowSize = (int)(windowDuration * sr / 1000.0);
             sonoConfig.WindowOverlap = 0.5;      // set default value
             sonoConfig.DoMelScale = false;
             sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
@@ -70,111 +71,51 @@ namespace AnalysisPrograms
             int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
             int frameCount = frameIDs.GetLength(0);
 
-            //iv: ENERGY PER FRAME and NORMALISED dB PER FRAME AND SNR
-            double[] logEnergy = SNR.SignalLogEnergy(filteredRecording.GetWavReader().Samples, frameIDs); ;
-            var results1 = SNR.CalculateDecibelsPerFrame(logEnergy);
-            var decibelArray = results1.Item1;
-            //double max_dBReference    = SnrFullband.MaxReference_dBWrtNoise;  // Used to normalise the dB values for feature extraction
-            //double decibelsNormalised = SnrFullband.NormaliseDecibelArray_ZeroOne(this.Max_dBReference);
+            //iv: EXTRACT ENVELOPE and ZERO-CROSSINGS
+            var results2 = DSP_Frames.ExtractEnvelopeAndZeroCrossings(filteredRecording.GetWavReader().Samples, sr, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
+            double[] average       = results2.Item1;
+            double[] envelope      = results2.Item2;
+            double[] zeroCrossings = results2.Item3;
+            double[] sampleZCs     = results2.Item4;
+            double[] sampleStd     = results2.Item5;
 
+
+            //v: FRAME ENERGIES
+            var results3 = SNR.SubtractBackgroundNoise(SNR.Signal2Decibels(envelope));
+            //var results3 = SNR.SubtractBackgroundNoise(SNR.Signal2Decibels(average));
+            var dBarray3 = SNR.TruncateNegativeValues2Zero(results3.Item1);
             //AUDIO SEGMENTATION
             //SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(DecibelsPerFrame, this.FrameOffset);
 
-            //var fractionOfHighEnergyFrames = SnrFullband.FractionHighEnergyFrames(EndpointDetectionConfiguration.K2Threshold);
-            //if (fractionOfHighEnergyFrames > SNR.FRACTIONAL_BOUND_FOR_MODE)
-            //{
-            //    Log.WriteIfVerbose("\nWARNING ##############");
-            //    Log.WriteIfVerbose("\t################### BaseSonogram(): This is a high energy recording. Percent of high energy frames = {0:f0} > {1:f0}%",
-            //                              fractionOfHighEnergyFrames * 100, SNR.FRACTIONAL_BOUND_FOR_MODE * 100);
-            //    Log.WriteIfVerbose("\t################### Noise reduction algorithm may not work well in this instance!\n");
-            //}
-
-            //v: EXTRACT FROG RIBBIT
-            var results2 = ExtractZeroCrossings(filteredRecording.GetWavReader().Samples, sr, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
-            double[] zeroCrossings = results2.Item1;
-            double[] sampleZCs     = results2.Item2;
-            double[] sampleStd     = results2.Item3;
-            int[] freq = ConvertZeroCrossings2Hz(zeroCrossings, sonoConfig.WindowSize, sr);
-            double[] tsd = ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
+            //vi: CONVERSIONS: ZERO CROSSINGS to herz; samples to std dev
+            int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, sonoConfig.WindowSize, sr);
+            // convert sample std deviations to milliseconds
+            double[] tsd = DSP_Frames.ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
             //filter the freq array to remove values derived from frames with high standard deviation
-            double[] filteredArray = FilterFreqArray(freq, tsd);
+            double[] filteredArray = FilterFreqArray(freq, tsd, midFreq);
 
 
-            //vi: MAKE SONOGRAM
+
+            //vii: MAKE SONOGRAM
+            sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE/2;
+
             //AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.GetWavReader());
-            SpectralSonogram sonogram = new SpectralSonogram(basegram);  //spectrogram has dim[N,257]
+            SpectralSonogram  sonogram = new SpectralSonogram(basegram);         //spectrogram has dim[N,257]
 
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
             //int bitRate = 16;
             //WavWriter.WriteWavFile(filteredRecording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");        
 
             string imagePath = recordingPath + ".png";
-            DrawSonogram(sonogram, imagePath, decibelArray, filteredArray, tsd);
+            DrawSonogram(sonogram, imagePath, dBarray3, filteredArray, tsd);
 
             Log.WriteLine("# Finished everything!");
             Console.ReadLine();  
         } //DEV()
 
 
-        public static System.Tuple<double[], double[], double[]> ExtractZeroCrossings(double[] signal, int sr, int windowSize, double overlap)
-        {
-            int length = signal.Length;
-            int frameOffset = (int)(windowSize * (1 - overlap));
-            int frameCount = (length - windowSize + frameOffset) / frameOffset;
-            double[] zeroCrossings = new double[frameCount];
-            double[] zcPeriod      = new double[frameCount];
-            double[] sdPeriod      = new double[frameCount];
-            for (int i = 0; i < frameCount; i++)
-            {
-                List<int> periodList = new List<int>();
-                int start = i * frameOffset;
-                int end = start + windowSize;
-                int zeroCrossingCount = 0;
-                int prevLocation = 0;
-                double prevValue = signal[start];
-                for (int x = start + 1; x < end; x++) // go through current frame
-                {
-
-                    if (signal[x] * prevValue < 0.0) //ie zero crossing
-                    {
-                        if (zeroCrossingCount > 0) periodList.Add(x - prevLocation); //do not want to accumulate counts prior to first ZC.
-                        zeroCrossingCount++; //count zero crossings
-                        prevLocation = x;
-                        prevValue = signal[x];
-                    }
-                } //end current frame
-
-                zeroCrossings[i] = zeroCrossingCount;
-                int[] periods = periodList.ToArray();
-                double av = 0.0;
-                double sd = 0.0;
-                NormalDist.AverageAndSD(periods, out av, out sd);
-                zcPeriod[i] = av;
-                sdPeriod[i] = sd;
-            }
-            return System.Tuple.Create(zeroCrossings, zcPeriod, sdPeriod);
-        }
-
-
-        public static int[] ConvertZeroCrossings2Hz(double[] zeroCrossings, int frameWidth, int sampleRate)
-        {
-            int L = zeroCrossings.Length;
-            var freq = new int[L];
-            for (int i = 0; i < L; i++) freq[i] = (int)(zeroCrossings[i] * sampleRate / 2 / frameWidth);
-            return freq;
-        }
-
-        public static double[] ConvertSamples2Milliseconds(double[] sampleCounts, int sampleRate)
-        {
-            int L = sampleCounts.Length;
-            var tValues = new double[L];
-            for (int i = 0; i < L; i++) tValues[i] = sampleCounts[i] * 1000 / (double)sampleRate;
-            return tValues;
-        }
-
-
-        public static double[] FilterFreqArray(int[] freq, double[] tsd)
+        public static double[] FilterFreqArray(int[] freq, double[] tsd, int midFreq)
         {
             //get av and std of the background time variation
             double avBG = 0.0;
@@ -187,7 +128,7 @@ namespace AnalysisPrograms
             var filteredArray = new double[L];
             for (int i = 0; i < L; i++)
             {
-                int freqGap = Math.Abs(1550 - freq[i]);
+                int freqGap = Math.Abs(midFreq - freq[i]);
                 if ((freqGap<300) && (tsd[i] < threshold)) filteredArray[i] = freq[i];
             }
             return filteredArray;

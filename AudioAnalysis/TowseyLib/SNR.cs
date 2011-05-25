@@ -27,7 +27,7 @@ namespace TowseyLib
 
 
         //reference logEnergies for signal segmentation, energy normalisation etc
-        public const double MinLogEnergyReference = -7.0;    // = -70dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
+        public const double MinLogEnergyReference = -6.0;    // = -60dB. Typical noise value for BAC2 recordings = -4.5 = -45dB
         //public const double MaxLogEnergyReference = -0.602;// = Math.Log10(0.25) which assumes max average frame amplitude = 0.5
         //public const double MaxLogEnergyReference = -0.310;// = Math.Log10(0.49) which assumes max average frame amplitude = 0.7
         public const double MaxLogEnergyReference = 0.0;     // = Math.Log10(1.00) which assumes max frame amplitude = 1.0
@@ -41,9 +41,9 @@ namespace TowseyLib
         public double Max_dB {get; set;}
         public double minEnergyRatio {get; set;}
         public double NoiseSubtracted { get; set; } //the modal noise in dB
-        public double NoiseRange {get; set;}        //difference between min_dB and the modal noise dB
-        public double MaxReference_dBWrtNoise {get; set;} //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
-        public double Snr { get; set; }             //sig/noise ratio i.e. max dB wrt modal noise = 0.0
+        public double Snr { get; set; }             //sig/noise ratio i.e. max dB - modal noise
+        public double NoiseRange { get; set; }        //difference between min_dB and the modal noise dB
+        public double MaxReference_dBWrtNoise { get; set; } //max reference dB wrt modal noise = 0.0dB. Used for normalisaion
         public double[] ModalNoiseProfile { get; set; }
 
 
@@ -117,7 +117,12 @@ namespace TowseyLib
         public SNR(double[,] frames)
         {
             this.LogEnergy = SignalLogEnergy(frames);
-            CalculateDecibelsPerFrame();
+            this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
+            SubtractBackgroundNoise();
+            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
+            //need an appropriate dB reference level for normalising dB arrays.
+            //this.MaxReference_dBWrtNoise = this.Snr;                        // OK
+            this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
 
         /// <summary>
@@ -127,8 +132,11 @@ namespace TowseyLib
         /// <param name="frameIDs">starts and end index of each frame</param>
         public SNR(double[] signal, int[,] frameIDs)
         {
-            this.LogEnergy = SignalLogEnergy(signal, frameIDs);
-            CalculateDecibelsPerFrame();
+            this.LogEnergy = Signal2LogEnergy(signal, frameIDs);
+            this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
+            SubtractBackgroundNoise();
+            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
+            this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
 
         /// <summary>
@@ -148,7 +156,7 @@ namespace TowseyLib
         /// <param name="minLogEnergy">an arbitrary minimum to prevent large negative log values</param>
         /// <param name="maxLogEnergy">absolute max to which we normalise</param>
         /// <returns></returns>
-        public static double[] SignalLogEnergy(double[] signal, int[,] frameIDs)
+        public static double[] Signal2LogEnergy(double[] signal, int[,] frameIDs)
         {
             int frameCount = frameIDs.GetLength(0);
             int N          = frameIDs[0,1] + 1; //window or frame width
@@ -187,6 +195,18 @@ namespace TowseyLib
             //    logEnergy[i] = ((logEnergy[i] - maxEnergy) * 0.1) + 1.0; //see method header for reference 
             //}
             return logEnergy;
+        }
+
+
+        public static double[] Signal2Decibels(double[] signal)
+        {
+            int L = signal.Length;
+            double[] dB = new double[L];
+            for (int i = 0; i < L; i++) //foreach signal sample
+            {
+                dB[i] = 20 * Math.Log10(signal[i]); //sum the energy = amplitude squared
+            }
+            return dB;
         }
 
         /// <summary>
@@ -333,7 +353,18 @@ namespace TowseyLib
             return newArray;
         }
 
-        public static double[,] NegValues2Zero(double[,] m)
+        public static double[] TruncateNegativeValues2Zero(double[] inArray)
+        {
+            int L = inArray.Length;
+            var outArray = new double[L];
+            for (int i = 0; i < L; i++) //foreach row
+            {
+                if (inArray[i] < 0.0) outArray[i] = 0.0;
+                else                  outArray[i] = inArray[i];
+            }
+            return outArray;
+        }
+        public static double[,] TruncateNegativeValues2Zero(double[,] m)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
@@ -342,7 +373,8 @@ namespace TowseyLib
             {
                 for (int c = 0; c < cols; c++)  
                 {
-                    if (m[r, c] < 0.0) M[r, c] = 0.0; else M[r, c] = m[r, c];
+                    if (m[r, c] < 0.0) M[r, c] = 0.0;
+                    else               M[r, c] = m[r, c];
                 }
             }
             return M;
@@ -351,37 +383,33 @@ namespace TowseyLib
 
         /// <summary>
         /// subtract background noise to produce a decibels array in which zero dB = modal noise
+        /// DOES NOT TRUNCATE BELOW ZERO VALUES.
         /// </summary>
         /// <param name="logEnergy"></param>
         /// <returns></returns>
-        public void CalculateDecibelsPerFrame()
+        public void SubtractBackgroundNoise()
         {
-            var results = CalculateDecibelsPerFrame(this.LogEnergy);
+            var results = SubtractBackgroundNoise(this.Decibels);
             this.Decibels = results.Item1;
             this.NoiseSubtracted = results.Item2; //Q
             this.Min_dB   = results.Item3;   //min decibels of all frames 
             this.Max_dB   = results.Item4;   //max decibels of all frames 
-            this.Snr      = results.Item5;
-            this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
-            //need an appropriate dB reference level for normalising dB arrays.
-            //this.MaxReference_dBWrtNoise = (SNR.MaxEnergyReference *10) -Q; // NO GOOD!
-            //this.MaxReference_dBWrtNoise = snr;                             // OK
-            this.MaxReference_dBWrtNoise = this.Min_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
+            this.Snr      = results.Item5;   // = max_dB - Q;
         }
 
         /// <summary>
         /// subtract background noise to produce a decibels array in which zero dB = modal noise
         /// DOES NOT TRUNCATE BELOW ZERO VALUES.
         /// </summary>
-        /// <param name="logEnergy"></param>
+        /// <param name="dBarray"></param>
         /// <returns>System.Tuple.Create(decibels, Q, min_dB, max_dB, snr); System.Tuple(double[], double, double, double, double) 
         /// </returns>
-        public static System.Tuple<double[], double, double, double, double> CalculateDecibelsPerFrame(double[] logEnergy)
+        public static System.Tuple<double[], double, double, double, double> SubtractBackgroundNoise(double[] dBarray)
         {
             double Q;
             double min_dB;
             double max_dB;
-            double[] decibels = NoiseSubtract(logEnergy, out min_dB, out max_dB, out Q);
+            double[] decibels = SubtractBackgroundNoise(dBarray, out min_dB, out max_dB, out Q);
             double snr = max_dB - Q;
             return System.Tuple.Create(decibels, Q, min_dB, max_dB, snr);
         }
@@ -436,66 +464,68 @@ namespace TowseyLib
         }
 
 
+        public static double[] ConvertLogEnergy2Decibels(double[] logEnergy)
+        {
+            var dB = new double[logEnergy.Length];
+            for (int i = 0; i < logEnergy.Length; i++) dB[i] = logEnergy[i] * 10; //Convert log energy to decibels.
+            return dB;
+        }
+
+
         /// <summary>
-        /// This method subtracts the estimated background noise from the frame energies and converts all values to dB.
-        /// algorithm described in Lamel et al, 1981.
+        /// Implements the "Adaptive Level Equalisatsion" algorithm of Lamel et al, 1981 - with modifications for our signals.
+        /// This method subtracts the estimated background noise from each frame.
+        /// It has the effect of setting average background noise level = 0 dB.
+        /// Values below zero dB are NOT truncated. 
+        /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
         /// NOTE: noiseThreshold is passed as decibels
-        /// energy array is log energy ie not yet converted to decibels.
-        /// Return energy converted to decibels i.e. multiply by 10.
+        /// Units are assumed to be decibels.
         /// </summary>
-        /// <param name="logEnergy">NOTE: the log energy values are normalised to global constants</param>
+        /// <param name="dBarray">NOTE: the decibel values are assumed to lie between -70 dB and 0 dB</param>
+        /// <param name="noiseThreshold_dB">Sets dB range in which to find value for background noise.</param>
         /// <param name="min_dB"></param>
         /// <param name="max_dB"></param>
-        /// <param name="noiseThreshold_dB"></param>
         /// <param name="Q">noise in decibels subtracted from each frame</param>
         /// <returns></returns>
-        public static double[] NoiseSubtract(double[] logEnergy, out double min_dB, out double max_dB, out double Q)
+        public static double[] SubtractBackgroundNoise(double[] dBarray, double noiseThreshold_dB, out double min_dB, out double max_dB, out double Q)
         {
-            //Following const used to normalise the logEnergy values to the background noise.
-            //Has the effect of setting background noise level to 0 dB.
-            //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
-            const double noiseThreshold_dB = 10.0; //dB
-            double minEnergyRatio = SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference;
 
+            int L = dBarray.Length;
 
-            //ignore first N and last N frames when calculating background noise level because sometimes these frames
-            // have atypically low signal values
+            //ignore first N and last N frames when calculating background noise level because 
+            // sometimes these frames have atypically low signal values
             int buffer = 20; //ignore first N and last N frames when calculating background noise level
             //HOWEVER do not ignore them for short recordings!
-            if (logEnergy.Length < 1000) buffer = 0; //ie recording is < approx 11 seconds long
+            if (L < 1000) buffer = 0; //ie recording is < approx 11 seconds long
+
 
             double min = Double.MaxValue;
             double max = -Double.MaxValue;
-            //Console.WriteLine("minFractionEnergy = " + minFraction);
-            for (int i = buffer; i < logEnergy.Length - buffer; i++)
+            double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10;  // = -70dB
+            for (int i = buffer; i < L - buffer; i++)
             {
-                if (logEnergy[i] == minEnergyRatio) continue; //ignore lowest values in establishing noise level
-                if (logEnergy[i] < min) min = logEnergy[i];
+                if (dBarray[i] <= minDecibels) continue; //ignore lowest values in establishing noise level
+                if (dBarray[i] < min) min = dBarray[i];
                 else
-                    if (logEnergy[i] > max) max = logEnergy[i];
+                if (dBarray[i] > max) max = dBarray[i];
             }
-            min_dB = min * 10;  //multiply by 10 to convert to decibels
-            max_dB = max * 10;
+            min_dB = min;  // return out
+            max_dB = max;
 
             int binCount = 100;
             double binWidth = noiseThreshold_dB / binCount;
             int[] histo = new int[binCount];
-            int L = logEnergy.Length;
             double absThreshold = min_dB + noiseThreshold_dB;
 
             for (int i = 0; i < L; i++)
             {
-                double dB = 10 * logEnergy[i];
-                if (dB <= absThreshold)
+                //double dB = dBarray[i];
+                if (dBarray[i] <= absThreshold)
                 {
-                    int id = (int)((dB - min_dB) / binWidth);
-                    if (id >= binCount)
-                    {
-                        id = binCount - 1;
-                    }
-                    else
-                        if (id < 0) id = 0;
+                    int id = (int)((dBarray[i] - min_dB) / binWidth);
+                    if (id >= binCount) id = binCount - 1;
+                    else if (id < 0) id = 0;
                     histo[id]++;
                 }
             }
@@ -506,13 +536,30 @@ namespace TowseyLib
             int peakID = DataTools.GetMaxIndex(smoothHisto);
             Q = min_dB + ((peakID + 1) * binWidth); //modal noise level
 
-            // subtract noise energy` and return relative energy as decibel values.
+            // subtract noise.
             double[] dBFrames = new double[L];
-            for (int i = 0; i < L; i++) dBFrames[i] = (logEnergy[i] * 10) - Q;
+            for (int i = 0; i < L; i++) dBFrames[i] = dBarray[i] - Q;
             //Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
             //Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
 
             return dBFrames;
+        }
+
+        /// <summary>
+        /// Implements the "Adaptive Level Equalisatsion" of Lamel et al, 1981.
+        /// Value of 10 dB is a default used by Lamel et al.
+        /// </summary>
+        /// <param name="dBarray"></param>
+        /// <param name="min_dB"></param>
+        /// <param name="max_dB"></param>
+        /// <param name="Q"></param>
+        /// <returns></returns>
+        public static double[] SubtractBackgroundNoise(double[] dBarray, out double min_dB, out double max_dB, out double Q)
+        {
+            //Following const used to normalise dB values to the background noise. It has the effect of setting background noise level to 0 dB.
+            //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
+            const double noiseThreshold_dB = 10.0; //dB
+            return SubtractBackgroundNoise(dBarray, noiseThreshold_dB, out min_dB, out max_dB, out Q);
         }
 
 
@@ -578,7 +625,7 @@ namespace TowseyLib
         {
             double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             double[,] mnr = matrix;
-            mnr = SNR.TruncateModalNoise(mnr, modalNoise);
+            mnr = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(mnr, modalNoise);
             mnr = SNR.RemoveBackgroundNoise(mnr, backgroundThreshold);
             //mnr = SNR.TruncateModalNoise(mnr, modalNoise, backgroundThreshold);
             return mnr;
@@ -598,7 +645,7 @@ namespace TowseyLib
             double[,] smoothMatrix = matrix;
             double[]  modalNoise   = SNR.CalculateModalNoise(smoothMatrix);        //calculate modal noise profile
             modalNoise             = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
-            return SubtractModalNoise(smoothMatrix, modalNoise);                   //subtract modal noise but do NOT threshold
+            return SubtractBgNoiseFromSpectrogram(smoothMatrix, modalNoise);                   //subtract modal noise but do NOT threshold
             //return RemoveModalNoise(smoothMatrix, modalNoise);                     //subtract modal noise AND threshold at ZERO
         }
         
@@ -612,7 +659,7 @@ namespace TowseyLib
             //calculate modal noise for each freq bin
             double[] modalNoise = SNR.CalculateModalNoise(matrix);     //calculate modal noise profile
             modalNoise = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
-            double[,] mnr = SNR.SubtractModalNoise(matrix, modalNoise);
+            double[,] mnr = SNR.SubtractBgNoiseFromSpectrogram(matrix, modalNoise);
             mnr = SNR.SetDynamicRange(matrix, 0.0, dynamicRange);
             return mnr;
         }
@@ -691,7 +738,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] TruncateModalNoise(double[,] matrix, double[] modalNoise)
+        public static double[,] SubtractBgNoiseFromSpectrogramAndTruncate(double[,] matrix, double[] modalNoise)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
@@ -713,7 +760,7 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
-        public static double[,] SubtractModalNoise(double[,] matrix, double[] modalNoise)
+        public static double[,] SubtractBgNoiseFromSpectrogram(double[,] matrix, double[] modalNoise)
         {
             int rowCount = matrix.GetLength(0);
             int colCount = matrix.GetLength(1);
