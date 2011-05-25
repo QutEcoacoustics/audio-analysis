@@ -195,7 +195,7 @@ namespace AnalysisPrograms
             ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
 
             //truncate noise
-            sonogram.Data = SNR.TruncateModalNoise(sonogram.Data, modalNoise);
+            sonogram.Data = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(sonogram.Data, modalNoise);
             sonogram.Data = SNR.RemoveBackgroundNoise(sonogram.Data, backgroundThreshold);
 
             double[,] targetMinusNoise = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,

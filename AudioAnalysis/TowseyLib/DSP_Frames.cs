@@ -86,6 +86,75 @@ namespace TowseyLib
         }
 
 
+
+        public static System.Tuple<double[], double[], double[], double[], double[]> ExtractEnvelopeAndZeroCrossings(double[] signal, int sr, int windowSize, double overlap)
+        {
+            int length = signal.Length;
+            int frameOffset = (int)(windowSize * (1 - overlap));
+            int frameCount = (length - windowSize + frameOffset) / frameOffset;
+            double[] average = new double[frameCount];
+            double[] envelope = new double[frameCount];
+            double[] zeroCrossings = new double[frameCount];
+            double[] zcPeriod = new double[frameCount];
+            double[] sdPeriod = new double[frameCount];
+            for (int i = 0; i < frameCount; i++)
+            {
+                List<int> periodList = new List<int>();
+                int start = i * frameOffset;
+                int end = start + windowSize;
+                int zeroCrossingCount = 0;
+                int prevLocation = 0;
+                double prevValue = signal[start];
+                double maxValue = -Double.MaxValue;
+                double total = signal[start];
+                // int    maxLocation = 0;
+                for (int x = start + 1; x < end; x++) // go through current frame
+                {
+                    double absValue = Math.Abs(signal[x]);
+                    total += absValue;
+                    if (absValue > maxValue) maxValue = absValue;
+                    if (signal[x] * prevValue < 0.0) // ie zero crossing
+                    {
+                        if (zeroCrossingCount > 0) periodList.Add(x - prevLocation); // do not want to accumulate counts prior to first ZC.
+                        zeroCrossingCount++; // count zero crossings
+                        prevLocation = x;
+                        prevValue = signal[x];
+                    }
+                } // end current frame
+
+                average[i] = total / windowSize;
+                envelope[i] = maxValue;
+                zeroCrossings[i] = zeroCrossingCount;
+                int[] periods = periodList.ToArray();
+                double av = 0.0;
+                double sd = 0.0;
+                NormalDist.AverageAndSD(periods, out av, out sd);
+                zcPeriod[i] = av;
+                sdPeriod[i] = sd;
+            }
+            return System.Tuple.Create(average, envelope, zeroCrossings, zcPeriod, sdPeriod);
+        }
+
+
+        public static int[] ConvertZeroCrossings2Hz(double[] zeroCrossings, int frameWidth, int sampleRate)
+        {
+            int L = zeroCrossings.Length;
+            var freq = new int[L];
+            for (int i = 0; i < L; i++) freq[i] = (int)(zeroCrossings[i] * sampleRate / 2 / frameWidth);
+            return freq;
+        }
+
+        public static double[] ConvertSamples2Milliseconds(double[] sampleCounts, int sampleRate)
+        {
+            int L = sampleCounts.Length;
+            var tValues = new double[L];
+            for (int i = 0; i < L; i++) tValues[i] = sampleCounts[i] * 1000 / (double)sampleRate;
+            return tValues;
+        }
+
+
+
+
         /// <summary>
         /// returns the min and max values in each frame. Signal values range from -1 to +1.
         /// </summary>
@@ -112,8 +181,6 @@ namespace TowseyLib
                 maxAmp[i] = max;
             }
         }
-
-
 
 
         /// <summary>
