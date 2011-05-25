@@ -89,6 +89,7 @@
     <Compile Include="Display\Managers\MiscDisplayManager.cs" />
     <Compile Include="Display\Managers\ProcessorManager.cs" />
     <Compile Include="Display\Managers\TagDisplayManager.cs" />
+    <Compile Include="Display\Managers\TagSummaryDisplayManager.cs" />
     <Compile Include="Display\Managers\UserDisplayManager.cs" />
     <Compile Include="Display\QueryDataSource.cs" />
     <Compile Include="Display\QueryStringSiteMapProvider.cs" />
