@@ -94,36 +94,48 @@ namespace TowseyLib
             int frameCount = (length - windowSize + frameOffset) / frameOffset;
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
-            double[] zeroCrossings = new double[frameCount];
-            double[] zcPeriod = new double[frameCount];
-            double[] sdPeriod = new double[frameCount];
+            double[] zeroCrossings = new double[frameCount]; // count of zero crossings
+            double[] zcPeriod = new double[frameCount];      // sample count between zero crossings
+            double[] sdPeriod = new double[frameCount];      // standard deviation of sample count between zc.
             for (int i = 0; i < frameCount; i++)
             {
                 List<int> periodList = new List<int>();
                 int start = i * frameOffset;
                 int end = start + windowSize;
-                int zeroCrossingCount = 0;
-                int prevLocation = 0;
-                double prevValue = signal[start];
+
+                //get average and envelope
                 double maxValue = -Double.MaxValue;
                 double total = signal[start];
-                // int    maxLocation = 0;
-                for (int x = start + 1; x < end; x++) // go through current frame
+                for (int x = start + 1; x < end; x++)
                 {
+                    total += signal[x]; // go through current frame to get signal average/DC
                     double absValue = Math.Abs(signal[x]);
-                    total += absValue;
                     if (absValue > maxValue) maxValue = absValue;
-                    if (signal[x] * prevValue < 0.0) // ie zero crossing
+                }
+                average[i]  = total / windowSize;
+                envelope[i] = maxValue;
+
+                //remove the average from signal
+                double[] signalMinusAv = new double[windowSize];
+                for (int j = 0; j < windowSize; j++)
+                    signalMinusAv[j] = signal[start + j] - average[i];
+
+                //get zero crossings and periods
+                int zeroCrossingCount = 0;
+                int prevLocation = 0;
+                double prevValue = signalMinusAv[0];
+                for (int j = 1; j < windowSize; j++) // go through current frame
+                {
+                    //double absValue = Math.Abs(signalMinusAv[j]);
+                    if (signalMinusAv[j] * prevValue < 0.0) // ie zero crossing
                     {
-                        if (zeroCrossingCount > 0) periodList.Add(x - prevLocation); // do not want to accumulate counts prior to first ZC.
+                        if (zeroCrossingCount > 0) periodList.Add(j - prevLocation); // do not want to accumulate counts prior to first ZC.
                         zeroCrossingCount++; // count zero crossings
-                        prevLocation = x;
-                        prevValue = signal[x];
+                        prevLocation = j;
+                        prevValue = signalMinusAv[j];
                     }
                 } // end current frame
 
-                average[i] = total / windowSize;
-                envelope[i] = maxValue;
                 zeroCrossings[i] = zeroCrossingCount;
                 int[] periods = periodList.ToArray();
                 double av = 0.0;
