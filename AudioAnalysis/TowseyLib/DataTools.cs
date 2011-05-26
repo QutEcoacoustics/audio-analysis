@@ -986,13 +986,13 @@ namespace TowseyLib
 
 
 
-    /// <summary>
-    /// normalise an array of double between 0 and 1
-    /// </summary>
-    /// <param name="v"></param>
-    /// <returns></returns>
-  public static double[] normalise(double[] v)
-  {
+        /// <summary>
+        /// normalise an array of double between 0 and 1
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] normalise(double[] v)
+        {
             double min = Double.MaxValue;
             double max = -Double.MaxValue;
 
@@ -1010,6 +1010,23 @@ namespace TowseyLib
 
             return (ret);
 		}
+
+
+        public static double[] ScaleArray(double[] v, int newLength)
+        {
+            int L = v.Length;
+            double[] ret = new double[newLength];
+            double ratio = newLength / (double)L;
+
+            for (int i = 0; i < newLength; i++)
+            {
+                int index = (int)(i / ratio);
+                ret[i] = v[index];
+            }
+            return (ret);
+        }
+
+
 
 		/// <summary>
 		/// returns an array of double initialised with passed value
