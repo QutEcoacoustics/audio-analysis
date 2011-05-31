@@ -209,6 +209,25 @@ namespace AudioAnalysisTools
             return hits;
         }
 
+        /// <summary>
+        ///  fills the gaps in an array of scores
+        /// </summary>
+        /// <param name="oscillations"></param>
+        /// <param name="fillDuration">duration in seconds</param>
+        /// <param name="timeScale">frames per Second</param>
+        /// <returns></returns>
+        public static double[] FillScoreArray(double[] oscillations, double fillDuration, double timeScale)
+        {                   
+            int L = oscillations.Length;
+            var ret = new double[L];
+            int fillLength = (int)Math.Round(timeScale * fillDuration);
+            for (int i = 0; i < L - fillLength; i++)
+            {
+                    for (int j = 0; j < fillLength; j++) if (ret[i + j] < oscillations[i]) ret[i + j] = oscillations[i];
+                i += 1; //skip rows
+            }
+            return ret;
+        }
 
         /// <summary>
         /// Removes single lines of hits from Oscillation matrix.
