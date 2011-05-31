@@ -82,6 +82,21 @@ namespace AudioAnalysisTools
             Log.WriteLine("WARNING: Signal sample rate not 22050Hz and cannot reduce to this value.");
         }
 
+        /// <summary>
+        /// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold. 
+        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
+        /// </summary>
+        public void ReduceSampleRateByFactor(int threshold, int factor)
+        {
+            int sr = wavReader.SampleRate;
+            if (sr > threshold)
+            {
+                wavReader.SubSample(factor);
+                Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate={1} >>> Downsampled to {2}.", sr, wavReader.SampleRate);
+                return;
+            }
+        }
+
         public AudioRecording Filter_IIR(string filterName)
         {
             DSP_IIRFilter filter = new DSP_IIRFilter(filterName);

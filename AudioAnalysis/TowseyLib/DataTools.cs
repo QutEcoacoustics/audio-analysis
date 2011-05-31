@@ -1165,7 +1165,68 @@ namespace TowseyLib
                 }
             return Mt;
         }
+//===========================================================================================================================================================
 
+        /// <summary>
+        /// This algorithm is derived from the Lamel et al algorithm used in the SNR class.
+        /// Only difference is return the true model value whereever it is.
+        /// The relevant lines have been commented.
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="Q"></param>
+        /// <param name="oneSD"></param>
+        public static void ModalValue(double[] array, out double Q, out double oneSD)
+        {
+            int L = array.Length;
+            //CALCULATE THE MIN AND MAX OF THE ARRAY
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+            for (int i = 0; i < L; i++)
+            {
+                if (array[i] < min) min = array[i];
+                else
+                    if (array[i] > max) max = array[i];
+            }
+
+            //set up Histogram
+            int binCount = 100;
+            double binWidth = (max - min) / binCount;
+            int[] histo = new int[binCount];
+
+            for (int i = 0; i < L; i++)
+            {
+                int id = (int)((array[i] - min) / binWidth);
+                if (id >= binCount)
+                {
+                    id = binCount - 1;
+                }
+                else
+                    if (id < 0) id = 0;
+                histo[id]++;
+            }
+            double[] smoothHisto = DataTools.filterMovingAverage(histo, 3);
+            //DataTools.writeBarGraph(histo);
+
+            // find peak of lowBins histogram
+            // FIND MAX VALUE IN BOTTOM FRACTION OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
+            //int upperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE);
+            //for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top N% of intensity bins = 0. 
+            int peakID = DataTools.GetMaxIndex(smoothHisto);
+            Q = min + ((peakID + 1) * binWidth); //modal noise level
+
+            //calculate SD of the background noise
+            double total = 0;
+            double ssd = 0.0; //sum of squared deviations
+            for (int i = 0; i < peakID; i++)
+            {
+                total += smoothHisto[i];
+                double dev = (peakID - i) * binWidth;
+                ssd += dev * dev; //sum of squared deviations
+            }
+
+            if (peakID > 0) oneSD = Math.Sqrt(ssd / total);
+            else oneSD = Math.Sqrt((binWidth * binWidth) / smoothHisto[0]); //deal with case where peakID = 0 to prevent division by 0;
+        }
 
 
 
