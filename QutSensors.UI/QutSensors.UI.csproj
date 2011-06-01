@@ -59,6 +59,7 @@
       <Link>AudioFileUtil.Hybrid.cs</Link>
     </Compile>
     <Compile Include="Display\Classes\AudioReadingInfo.cs" />
+    <Compile Include="Display\Classes\AudioReadingSelectInfo.cs" />
     <Compile Include="Display\Classes\DataCacheItem.cs" />
     <Compile Include="Display\Classes\DataSetAudioReadingDisplayItem.cs" />
     <Compile Include="Display\Classes\DeploymentInfo.cs" />
