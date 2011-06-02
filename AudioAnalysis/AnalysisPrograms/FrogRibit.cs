@@ -31,17 +31,10 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\DavidStewart-northernlaughingtreefrog.wav";
             string recordingPath = @"C:\SensorNetworks\WavFiles\Frogs\DataSet\CaneToads_rural1_20_MONO.wav";
             
-            //double windowDuration = 5.0; // milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
-            double windowDuration = 10.0; // milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
-
-            string filterName = "Chebyshev_Lowpass_1000";
-            //string filterName = "Chebyshev_Lowpass_3000";
-
-
             //i: Set up the file names
             //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
 
-            //ii: READ PARAMETER VALUES FROM INI FILE
+            //ii: READ PARAMETER VALUES FROM INI FILE 
             //var config = new Configuration(iniPath);
             //Dictionary<string, string> dict = config.GetTable();
             //string sourceFile = dict[FeltTemplate_Create.key_SOURCE_RECORDING];
@@ -53,63 +46,74 @@ namespace AnalysisPrograms
             //double templateThreshold = dB_Threshold / maxTemplateIntensity;
             //int bitmapThreshold = (int)(255 - (templateThreshold * 255));
 
+
+            //IMPORTANT NOTE:
+            // You must determine a value for the variable maxOscilScore. This is used to normalize the oscillation scores so that lie in 0,1. 
+            // The default Value = 60.0; but it must be determined for each species.
+            // This is obtained from the score on training data. 
+            // Find the relevant commented Code in the FrogRibbitRecognizer() method.
+
+
+            string frogName; //, filterName;
+            //double windowDuration, windowOverlap, dctDuration, dctThreshold, 
+            int midBandFreq; //, minOscilRate, maxOscilRate;
+            //bool normaliseDCT = false;
+            System.Tuple<double[], AudioRecording, double[], double[]> results;
+
+
+
+
             //i: GET RECORDING
             AudioRecording recording = new AudioRecording(recordingPath);
 
-            System.Console.WriteLine("\nApply filter: " + filterName);
-            var filteredRecording = recording.Filter_IIR(filterName); //return new filtered audio recording.
-            //recording.Dispose(); // DISPOSE ORIGINAL
+            var scores = new List<double[]>();
 
-            //ii: SET UP CONFIGURATION
+            Log.WriteLine("# Scan Audio Recording: " + recordingPath);
+
+            //############### Buffo sp. - CANE TOAD #########################################################################
+            frogName       = "Cane_toad";
+            Log.WriteLine("# Do Recognizer:- "+ frogName);
+            midBandFreq    = 640;    // middle of freq band of interest 
+            //Default windowDuration = 5.0 milliseconds - NOTE: 128 samples @ 22.050kHz = 5.805ms.
+            results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_1000", midBandFreq, windowDuration: 10.0, dctDuration: 0.5, minOscilRate: 11, maxOscilRate: 17, maxOscilScore: 30.0);
+            scores.Add(results.Item1);
+
+            //############### Litoria rothii - Laughing tree Frog #########################################################################
+            frogName = "Litoria_rothii";
+            Log.WriteLine("# Do Recognizer:- " + frogName);
+            midBandFreq = 1850; // middle of freq band of interest 
+            results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration: 0.5, minOscilRate:9, maxOscilRate:11, maxOscilScore: 30.0);
+            scores.Add(results.Item1);
+
+            //############### Rheobatrachus silus -  GASTRIC BROODING FROG #########################################################################
+            frogName = "Rheobatrachus silus";
+            Log.WriteLine("# Do Recognizer:- " + frogName);
+            midBandFreq = 1550; // middle of freq band of interest 
+            results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration: 0.2, minOscilRate: 55, maxOscilRate: 65, maxOscilScore: 60.0);
+            scores.Add(results.Item1);
+
+            //############### Lymnodynastes peronii - TOCK FROG related to POBBLEBONK ##########################################################
+            //WARNING####!!!!!! THIS IS NOT A RIBBIT FROG
+            //frogName = "Lymnodynastes_peronii";
+            //Log.WriteLine("# Do Recognizer:- " + frogName);
+            //midBandFreq    = 1500; // middle of freq band of interest 
+            //results = FrogRibbitRecognizer(recording, "Chebyshev_Lowpass_3000", midBandFreq, dctDuration:0.2, minOscilRate:55, maxOscilRate:75, maxOscilScore:60.0);
+            //scores.Add(results.Item1);
+
+            //########################################################################################################
+            //########################################################################################################
+
+            //vii: MAKE SONOGRAM
+            Log.WriteLine("# Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
-            int sr = recording.SampleRate;
-            sonoConfig.WindowSize = (int)(windowDuration * sr / 1000.0);
+            sonoConfig.SourceFName = recording.FileName;            
+            sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
             sonoConfig.WindowOverlap = 0.5;      // set default value
             sonoConfig.DoMelScale = false;
             sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
             //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD;
-            int signalLength = filteredRecording.GetWavReader().Samples.Length;
-            double frameStep = windowDuration * (1 - sonoConfig.WindowOverlap);
-            double framesPerSecond = 1000 / frameStep;
+            var filteredRecording = results.Item2;
 
-
-            //iii: FRAMING
-            int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
-            int frameCount = frameIDs.GetLength(0);
-
-            //iv: EXTRACT ENVELOPE and ZERO-CROSSINGS
-            Log.WriteLine("# Extract Envelope and Zero-crossings.");
-            var results2 = DSP_Frames.ExtractEnvelopeAndZeroCrossings(filteredRecording.GetWavReader().Samples, sr, sonoConfig.WindowSize, sonoConfig.WindowOverlap);
-            //double[] average       = results2.Item1;
-            double[] envelope      = results2.Item2;
-            double[] zeroCrossings = results2.Item3;
-            //double[] sampleZCs     = results2.Item4;
-            double[] sampleStd     = results2.Item5;
-
-
-            //v: FRAME ENERGIES
-            var results3 = SNR.SubtractBackgroundNoise(SNR.Signal2Decibels(envelope));
-            var dBarray3 = SNR.TruncateNegativeValues2Zero(results3.Item1);
-
-            //vi: CONVERSIONS: ZERO CROSSINGS to herz; samples to std dev
-            int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, sonoConfig.WindowSize, sr);
-            //vi: CONVERSIONS: convert sample std deviations to milliseconds
-            double[] tsd = DSP_Frames.ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
-            //for (int i = 0; i < tsd.Length; i++) if (tsd[i]) Console.WriteLine(i + " = " + tsd[i]);
-
-            //vii: Pass arrays to frog recognizers and accumulate scores
-            Log.WriteLine("# Do Recognizers.");
-            var scores = new List<double[]>();
-            //scores.Add(Recognizer_Rheobatrachus(dBarray3, freq, tsd, framesPerSecond));
-            //scores.Add(Recognizer_LymnodynastesPeronii(dBarray3, freq, tsd, framesPerSecond));
-            //scores.Add(Recognizer_LitoriaRothii(dBarray3, freq, tsd, framesPerSecond));
-            scores.Add(Recognizer_CaneToad(dBarray3, freq, tsd, framesPerSecond));
-
-
-            //vii: MAKE SONOGRAM
-            Log.WriteLine("# Make sonogram.");
-            sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE / 4;
             //AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, filteredRecording.GetWavReader());
             SpectralSonogram  sonogram = new SpectralSonogram(basegram);         //spectrogram has dim[N,257]
@@ -122,7 +126,9 @@ namespace AnalysisPrograms
 
             // ix: DRAW SONOGRAM AND SCORES
             string imagePath = recordingPath + ".png";
-            DrawSonogram(sonogram, imagePath, dBarray3, tsd, scores);
+            var dBarray = results.Item3;
+            var miscell = results.Item4;
+            DrawSonogram(sonogram, imagePath, dBarray, miscell, scores);
 
             Log.WriteLine("# Finished everything!");
             Console.ReadLine();  
@@ -130,193 +136,91 @@ namespace AnalysisPrograms
 
 
         //#########################################################################################################################################################
-        //  FROG RECOGNIZERS
-
-
-        public static double[] Recognizer_Rheobatrachus(double[] dB, int[] freq, double[] tsd, double framesPerSecond)
-        {
-            int midFreq = 1550; // middle of freq band of interest 
-            int sideBand = (int)(midFreq * 0.1);
-
-            var fuzzyFreq = FuzzyFrequency(freq, midFreq, sideBand);
-
-            //filter the freq array to remove values derived from frames with high standard deviation
-            double[] tsdScores = FreqStdDevScore(tsd);
-
-            //GET OSCILLATION SCORE
-            //the oscillation score is normalised wrt the decibel magnitude of the training file.
-            double dctDuration = 0.2; // seconds
-            double dctThreshold = 0.4;
-            bool normaliseDCT = false;
-            int minOscilFreq = 55;
-            int maxOscilFreq = 75;
-            double maxOscillationScore = 60.0; //this is obtained from score on training data. Used to normalise osc scores.
-            double[] rawOscillations = OscillationAnalysis.DetectOscillations(dB, dctDuration,framesPerSecond,dctThreshold,normaliseDCT,minOscilFreq,maxOscilFreq);
-            //normalize the oscillations
-            var oscillations = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                oscillations[i] = rawOscillations[i] / maxOscillationScore;
-                if (oscillations[i] > 1.0) oscillations[i] = 1.0; 
-            }
-
-            //COMBINE the SCORES
-            var combinedScores = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                combinedScores[i] = fuzzyFreq[i] * tsdScores[i] * oscillations[i];
-            }
-            //fill in the oscillation scores
-            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
-
-            //return tsdScores;
-            //return oscillations;
-            return combinedScores;
-        }
-
-        public static double[] Recognizer_LymnodynastesPeronii(double[] dB, int[] freq, double[] tsd, double framesPerSecond)
-        {
-            int midFreq = 1500; // middle of freq band of interest 
-            int sideBand = (int)(midFreq * 0.1);
-
-            var fuzzyFreq = FuzzyFrequency(freq, midFreq, sideBand);
-
-            //filter the freq array to remove values derived from frames with high standard deviation
-            double[] tsdScores = FreqStdDevScore(tsd);
-
-            //GET OSCILLATION SCORE
-            //the oscillation score is normalised wrt the decibel magnitude of the training file.
-            double dctDuration = 0.2; // seconds
-            double dctThreshold = 0.4;
-            bool normaliseDCT = false;
-            int minOscilFreq = 55;
-            int maxOscilFreq = 75;
-            double maxOscillationScore = 60.0; //this is obtained from score on training data. Used to normalise osc scores.
-            double[] rawOscillations = OscillationAnalysis.DetectOscillations(dB, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq);
-            //normalize the oscillations
-            var oscillations = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                oscillations[i] = rawOscillations[i] / maxOscillationScore;
-                if (oscillations[i] > 1.0) oscillations[i] = 1.0;
-            }
-
-            //COMBINE the SCORES
-            var combinedScores = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                combinedScores[i] = fuzzyFreq[i] * tsdScores[i] * oscillations[i];
-            }
-            //fill in the oscillation scores
-            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
-
-            //return tsdScores;
-            //return oscillations;
-            return combinedScores;
-        }
 
         /// <summary>
-        /// Laughing Tree Frog LitoriaRothii
+        /// Searches a recording for frog ribbits having the specified parameters.
         /// </summary>
-        /// <param name="dB"></param>
-        /// <param name="freq"></param>
-        /// <param name="tsd"></param>
-        /// <param name="framesPerSecond"></param>
+        /// <param name="recording"></param>
+        /// <param name="filterName"></param>
+        /// <param name="midBandFreq">middle of freq band of interest </param>
+        /// <param name="windowDuration">milliseconds duration of one frame. default = 5 ms.</param>
+        /// <param name="windowOverlap">Default = 0.5</param>
+        /// <param name="dctDuration">time duration for DCT search for oscillations. default = 0.5 seconds</param>
+        /// <param name="dctThreshold">determines sensitivity of oscillation detection. Default = 0.4</param>
+        /// <param name="normaliseDCT">boolean - default = false</param>
+        /// <param name="minOscilRate">lower bound on oscillation rate</param>
+        /// <param name="maxOscilRate">upper bound on oscillation rate</param>
+        /// <param name="maxOscilScore">this is obtained from score on training data. Used to normalise osc scores</param>
         /// <returns></returns>
-        public static double[] Recognizer_LitoriaRothii(double[] dB, int[] freq, double[] tsd, double framesPerSecond)
+        public static System.Tuple<double[], AudioRecording, double[], double[]>
+         FrogRibbitRecognizer(AudioRecording recording, string filterName, int midBandFreq, double windowDuration = 5.0, double windowOverlap = 0.5, 
+           double dctDuration = 0.5, double dctThreshold = 0.4, bool normaliseDCT = false, int minOscilRate = 11, int maxOscilRate = 17, double maxOscilScore=20.0)
         {
-            int midFreq = 1850; // middle of freq band of interest 
-            int sideBand = (int)(midFreq * 0.1);
+            int sr = recording.SampleRate;
+            int windowSize = (int)(windowDuration * sr / 1000.0);
+            double frameStep = windowDuration * (1 - windowOverlap);
+            double framesPerSecond = 1000 / frameStep;
 
-            var fuzzyFreq = FuzzyFrequency(freq, midFreq, sideBand);
+            //i: Apply filter
+            Log.WriteLine("#   Filter: " + filterName);
+            var filteredRecording = recording.Filter_IIR(filterName); //return new filtered audio recording.
+            int signalLength = filteredRecording.GetWavReader().Samples.Length;
+            //recording.Dispose(); // DISPOSE ORIGINAL
 
+            //ii: FRAMING
+            int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, windowSize, windowOverlap);
+            int frameCount = frameIDs.GetLength(0);
+
+            //iii: EXTRACT ENVELOPE and ZERO-CROSSINGS
+            Log.WriteLine("#   Extract Envelope and Zero-crossings.");
+            var results2 = DSP_Frames.ExtractEnvelopeAndZeroCrossings(filteredRecording.GetWavReader().Samples, sr, windowSize, windowOverlap);
+            //double[] average       = results2.Item1;
+            double[] envelope = results2.Item2;
+            double[] zeroCrossings = results2.Item3;
+            //double[] sampleZCs     = results2.Item4;
+            double[] sampleStd = results2.Item5;
+
+            Log.WriteLine("#   Normalize values.");
+            //iv: FRAME ENERGIES
+            var results3 = SNR.SubtractBackgroundNoise(SNR.Signal2Decibels(envelope));
+            var dBarray = SNR.TruncateNegativeValues2Zero(results3.Item1);
+
+            //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
+            int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, windowSize, sr);
+            int sideBand = (int)(midBandFreq * 0.1);
+            var fuzzyFreq = FuzzyFrequency(freq, midBandFreq, sideBand);
+
+            //vi: CONVERSIONS: convert sample std deviations to milliseconds - then NORMALIZE to PROBs
+            double[] tsd = DSP_Frames.ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
+            //for (int i = 0; i < tsd.Length; i++) if (tsd[i]) Console.WriteLine(i + " = " + tsd[i]);
             //filter the freq array to remove values derived from frames with high standard deviation
             double[] tsdScores = FreqStdDevScore(tsd);
 
-            //GET OSCILLATION SCORE
-            //the oscillation score is normalised wrt the decibel magnitude of the training file.
-            double dctDuration = 0.5; // seconds
-            double dctThreshold = 0.4;
-            bool normaliseDCT = false;
-            int minOscilFreq = 9;
-            int maxOscilFreq = 11;
-            double maxOscillationScore = 30.0; //this is obtained from score on training data. Used to normalise osc scores.
-            double[] rawOscillations = OscillationAnalysis.DetectOscillations(dB, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq);
-            //normalize the oscillations
+            //vii: GET OSCILLATION SCORE AND NORMALIZE
+            double[] rawOscillations = OscillationAnalysis.DetectOscillations(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
+            //normalise oscillation scores wrt scores obtained on a training.
             //double maxOscillationScore = rawOscillations[DataTools.GetMaxIndex(rawOscillations)];
             //Console.WriteLine("maxOscillationScore=" + maxOscillationScore);
-            var oscillations = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
+            var oscillations = new double[dBarray.Length];
+            for (int i = 0; i < dBarray.Length; i++)
             {
-                oscillations[i] = rawOscillations[i] / maxOscillationScore;
+                oscillations[i] = rawOscillations[i] / maxOscilScore;
                 if (oscillations[i] > 1.0) oscillations[i] = 1.0;
             }
 
-            //COMBINE the SCORES
-            var combinedScores = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
+            //viii: COMBINE the SCORES
+            Log.WriteLine("#   Combine Scores.");
+            var combinedScores = new double[dBarray.Length];
+            for (int i = 0; i < dBarray.Length; i++)
             {
                 combinedScores[i] = fuzzyFreq[i] * tsdScores[i] * oscillations[i];
             }
-            //fill in the oscillation scores
-            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
 
-            //return tsdScores;
-            //return oscillations;
-            return combinedScores;
+            //ix: fill in the oscillation scores
+            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
+            return System.Tuple.Create(combinedScores, filteredRecording, dBarray, tsd);
         }
 
-        /// <summary>
-        /// Cane Toad
-        /// require a low pass filter with shoulder at 1000 Hz in order to detect cane toads.
-        /// </summary>
-        /// <param name="dB"></param>
-        /// <param name="freq"></param>
-        /// <param name="tsd"></param>
-        /// <param name="framesPerSecond"></param>
-        /// <returns></returns>
-        public static double[] Recognizer_CaneToad(double[] dB, int[] freq, double[] tsd, double framesPerSecond)
-        {
-            int midFreq = 640; // middle of freq band of interest 
-            int sideBand = (int)(midFreq * 0.1);
-
-            var fuzzyFreq = FuzzyFrequency(freq, midFreq, sideBand);
-
-            //filter the freq array to remove values derived from frames with high standard deviation
-            double[] tsdScores = FreqStdDevScore(tsd);
-
-            //GET OSCILLATION SCORE
-            //the oscillation score is normalised wrt the decibel magnitude of the training file.
-            double dctDuration = 0.5; // seconds
-            double dctThreshold = 0.4;
-            bool normaliseDCT = false;
-            int minOscilFreq = 11;
-            int maxOscilFreq = 17;
-            double maxOscillationScore = 19.41; //this is obtained from score on training data. Used to normalise osc scores.
-            double[] rawOscillations = OscillationAnalysis.DetectOscillations(dB, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq);
-            //normalize the oscillations
-            //double maxOscillationScore = rawOscillations[DataTools.GetMaxIndex(rawOscillations)];
-            //Console.WriteLine("maxOscillationScore=" + maxOscillationScore);
-            var oscillations = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                oscillations[i] = rawOscillations[i] / maxOscillationScore;
-                if (oscillations[i] > 1.0) oscillations[i] = 1.0;
-            }
-
-            //COMBINE the SCORES
-            var combinedScores = new double[dB.Length];
-            for (int i = 0; i < dB.Length; i++)
-            {
-                combinedScores[i] = fuzzyFreq[i] * tsdScores[i] * oscillations[i];
-            }
-            //fill in the oscillation scores
-            combinedScores = OscillationAnalysis.FillScoreArray(combinedScores, dctDuration, framesPerSecond);
-
-            //return tsdScores;
-            //return oscillations;
-            return combinedScores;
-        }
 
 
         //#########################################################################################################################################################
