@@ -10,7 +10,7 @@ namespace QutSensors.UI.Security
     using System.Web.Profile;
     using System.Web.Security;
 
-    using YAF.Classes.Utils;
+    using YAF.Utils;
 
     /// <summary>
     /// The qut sensors user profile.
