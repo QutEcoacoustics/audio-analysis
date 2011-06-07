@@ -50,8 +50,11 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="YAF.Classes.Utils">
-      <HintPath>..\Extra Assemblies\YAF\YAF.Classes.Utils.dll</HintPath>
+    <Reference Include="YAF.Types">
+      <HintPath>..\Extra Assemblies\YAF\YAF.Types.dll</HintPath>
+    </Reference>
+    <Reference Include="YAF.Utils">
+      <HintPath>..\Extra Assemblies\YAF\YAF.Utils.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
