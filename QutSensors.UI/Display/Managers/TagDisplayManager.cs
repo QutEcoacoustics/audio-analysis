@@ -13,6 +13,7 @@ namespace QutSensors.UI.Display.Managers
     using System.Collections.Generic;
     using System.Linq;
 
+    using QutSensors.Business.Buses;
     using QutSensors.Business.Request;
     using QutSensors.Data;
     using QutSensors.Data.Linq;
@@ -39,30 +40,9 @@ namespace QutSensors.UI.Display.Managers
         /// </returns>
         public static IEnumerable<string> GetAudioTags(string partialText, int count)
         {
-            using (var db = new QutSensorsDb())
-            {
-                IQueryable<AudioTag> ats;
-
-                if (AuthenticationHelper.IsCurrentUserAdmin)
-                {
-                    ats = db.AudioTags.AsQueryable();
-                }
-                else
-                {
-                    ats =
-                        EntityManager.Instance.GetEntityItemsForView(
-                            db, AuthenticationHelper.CurrentUserId, ei => ei.Entity_MetaData.DeploymentID.HasValue).
-                            SelectMany(ei => ei.Entity_MetaData.Deployment.AudioReadings).SelectMany(ar => ar.AudioTags);
-                }
-
-                return ats
-                    .Where(at => at.Tag.ToLower().Contains(partialText.Trim().ToLower()))
-                    .OrderByDescending(at => at.Tag)
-                    .Take(count)
-                    .Select(at => at.Tag)
-                    .Distinct()
-                    .ToArray();
-            }
+            var tagBus = new TagBus();
+            return tagBus.GetAudioTags(
+                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId);
         }
 
         /// <summary>
@@ -80,31 +60,9 @@ namespace QutSensors.UI.Display.Managers
         /// </returns>
         public static IEnumerable<string> GetAudioRefTags(string partialText, int count)
         {
-            using (var db = new QutSensorsDb())
-            {
-                IQueryable<AudioTag> ats;
-
-                if (AuthenticationHelper.IsCurrentUserAdmin)
-                {
-                    ats = db.AudioTags.AsQueryable();
-                }
-                else
-                {
-                    ats =
-                        EntityManager.Instance.GetEntityItemsForView(
-                            db, AuthenticationHelper.CurrentUserId, ei => ei.Entity_MetaData.DeploymentID.HasValue).
-                            SelectMany(ei => ei.Entity_MetaData.Deployment.AudioReadings).SelectMany(ar => ar.AudioTags);
-                }
-
-                return ats
-                    .Where(at => at.Tag.ToLower().Contains(partialText.Trim().ToLower()))
-                    .Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value)
-                    .OrderByDescending(at => at.Tag)
-                    .Take(count)
-                    .Select(at => at.Tag)
-                    .Distinct()
-                    .ToArray();
-            }
+            var tagBus = new TagBus();
+            return tagBus.GetAudioRefTags(
+                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId);
         }
 
         /// <summary>
