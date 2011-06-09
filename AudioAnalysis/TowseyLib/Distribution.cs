@@ -367,7 +367,7 @@ public class Distribution
   public double[] getNormalisedDistribution()
   { 
     int[] combinedDist = concatenatePosAndNeg();
-    return DataTools.normaliseArea(combinedDist);    
+    return DataTools.NormaliseArea(combinedDist);    
   }
   
   

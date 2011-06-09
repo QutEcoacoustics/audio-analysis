@@ -74,12 +74,12 @@ namespace AnalysisPrograms
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
                         MFCC_OD.Dev(restOfArgs);
                         break;
-                    case "htk":  // run an HTK template over a recording
+                    case "htk":     // run an HTK template over a recording
                         HTKRecogniser.Dev(restOfArgs);
                         break;
 
                     // UNDER DEVELOPMENT
-                    case "dimred":  // dimensionality reduction
+                    case "dimred":   // dimensionality reduction
                         DimReduction.Dev(restOfArgs);
                         break;
                     case "felt":     // find other acoustic events like this
@@ -96,6 +96,9 @@ namespace AnalysisPrograms
                         break;
                     case "edittemplate_felt":     // edits the FELT template created above
                         FeltTemplate_Edit.Dev(restOfArgs);
+                        break;
+                    case "richness_indices":      // richness_indices
+                        RichnessIndices.Dev(restOfArgs);
                         break;
 
 

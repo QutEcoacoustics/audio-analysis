@@ -252,6 +252,66 @@ namespace TowseyLib
             return ndata;
         }
 
+
+
+        /// <summary>
+        /// Converts an array of values (assumed to be a signal superimposed on Gaussian noise)
+        /// to z-scores and then converts z-scores to probabilites 
+        /// </summary>
+        /// <param name="values">array of score values</param>
+        /// <returns>array of probability scores</returns>
+        public static double[] Values2Probabilities(double[] values)
+        {
+            //get mode and std dev of the background variation
+            double sd = 0.0;
+            double mode = 0.0;
+            //NormalDist.AverageAndSD(tsdScore, out mode, out sdBG);
+            DataTools.ModalValue(values, out mode, out sd);
+
+            //calculate a threshold using 3 standard deviations;
+            double threshold1 = mode - (2.31 * sd); //area =  1%
+            double threshold2 = mode - (1.64 * sd); //area =  5%
+            double threshold3 = mode - (1.48 * sd); //area =  7%
+            double threshold4 = mode - (1.28 * sd); //area = 10%
+            double threshold5 = mode - (1.00 * sd); //area = 16%
+            double threshold6 = mode - (0.52 * sd); //area = 30%
+            double threshold7 = mode - (0.25 * sd); //area = 40%
+            if (threshold1 < 0.0) threshold1 = 0.0;
+            if (threshold2 < 0.0) threshold2 = 0.0;
+            if (threshold3 < 0.0) threshold3 = 0.0;
+            if (threshold4 < 0.0) threshold4 = 0.0;
+            if (threshold5 < 0.0) threshold5 = 0.0;
+            if (threshold6 < 0.0) threshold6 = 0.0;
+            if (threshold7 < 0.0) threshold7 = 0.0;
+            //double threshold7 = avBG - (0.50 * sdBG);
+
+            int L = values.Length;
+            var op = new double[L];
+            for (int i = 0; i < L; i++)
+            {
+                if (values[i] < threshold1) op[i] = 0.99;  // = (1.00-0.5)*2
+                else
+                    if (values[i] < threshold2) op[i] = 0.90; // = (0.95-0.5)*2
+                    else
+                        if (values[i] < threshold3) op[i] = 0.86; // = (0.93-0.5)*2
+                        else
+                            if (values[i] < threshold4) op[i] = 0.80; // = (0.90-0.5)*2
+                            else
+                                if (values[i] < threshold5) op[i] = 0.68; // = (0.84-0.5)*2
+                                else
+                                    if (values[i] < threshold6) op[i] = 0.40; // = (0.70-0.5)*2
+                                    else
+                                        if (values[i] < threshold7) op[i] = 0.20; // = (0.60-0.5)*2
+                                        else
+                                            if (values[i] >= mode) op[i] = 0.00;  // = (0.50-0.5)*2
+                                            else op[i] = 0.0;
+            }
+            return op;
+        }
+
+
+
+
         /**
          * returns the upper limit for each bin in a 16 bin histogram 
          * from an array of data given the data's

@@ -85,6 +85,49 @@ namespace TowseyLib
             return frames;
         }
 
+        public static System.Tuple<double[], double[], double[,]> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
+        {
+            int length = signal.Length;
+            int frameOffset = (int)(windowSize * (1 - overlap));
+            int frameCount = (length - windowSize + frameOffset) / frameOffset;
+            double[] average = new double[frameCount];
+            double[] envelope = new double[frameCount];
+            int fftSize = windowSize / 2;
+            double[,] spectrogram = new double[frameCount, fftSize];
+
+            //cycle through the frames
+            for (int i = 0; i < frameCount; i++)
+            {
+                List<int> periodList = new List<int>();
+                int start = i * frameOffset;
+                int end = start + windowSize;
+
+                //get average and envelope
+                double maxValue = -Double.MaxValue;
+                double total = signal[start];
+                for (int x = start + 1; x < end; x++)
+                {
+                    total += signal[x]; // go through current frame to get signal average/DC
+                    double absValue = Math.Abs(signal[x]);
+                    if (absValue > maxValue) maxValue = absValue;
+                }
+                average[i] = total / windowSize;
+                envelope[i] = maxValue;
+
+                //remove the average from signal
+                double[] signalMinusAv = new double[windowSize];
+                for (int j = 0; j < windowSize; j++)
+                    signalMinusAv[j] = signal[start + j] - average[i];
+
+                //do fft
+                for (int j = 1; j < windowSize; j++) // go through current frame
+                { // ####################################################################### DO FFTs HERE @@@@@@@@@@@@@@@@@@@@@@@@@@
+                } // end current frame
+
+            }
+            return System.Tuple.Create(average, envelope, spectrogram);
+        }
+
 
 
         public static System.Tuple<double[], double[], double[], double[], double[]> ExtractEnvelopeAndZeroCrossings(double[] signal, int sr, int windowSize, double overlap)

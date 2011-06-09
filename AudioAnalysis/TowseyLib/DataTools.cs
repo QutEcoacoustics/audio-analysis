@@ -433,6 +433,63 @@ namespace TowseyLib
         return binary;
     }
 
+
+    public static void CountPeaks(double[] array, out int count, out double sum)
+    {
+        count = 0;
+        sum = 0.0;
+        int L = array.Length;
+
+        for (int i = 1; i < L-1; i++) // iterate through array
+            if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
+            {
+                count ++;
+                sum += array[i];
+            }
+    }
+
+        /// <summary>
+        /// returns an array showing locaiton of peaks
+        /// </summary>
+        /// <param name="array"></param>
+        /// <param name="count"></param>
+        /// <param name="sum"></param>
+    public static void PeakLocations(double[] array, out int count, out double[] locations)
+    {
+        count = 0;
+        int L = array.Length;
+        locations = new double[L];
+
+        for (int i = 1; i < L - 1; i++) // iterate through array
+            if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
+            {
+                count++;
+                locations[i] = 1.0;
+            }
+    }
+        /// <summary>
+        /// returns a list of gaps between 1s in a binary array
+        /// </summary>
+        /// <param name="peakLocations">a binary array</param>
+        /// <returns></returns>
+        public static List<int> GapLengths(double[] binaryArray)
+        {
+            int L = binaryArray.Length;
+            var gaps = new List<int>();
+            int prev = 0;
+
+            for (int i = 1; i < L; i++) // iterate through array
+            {
+                if ((binaryArray[i] == 1.0) && (prev > 0))
+                {
+                    gaps.Add(i - prev);
+                    prev = i;
+                }
+                else if (binaryArray[i] == 1.0) prev = i;
+            }
+            return gaps;
+        }
+
 //=============================================================================
 
     public static double[] AutoCorrelation(double[] X, int minLag, int maxLag)
@@ -722,6 +779,34 @@ namespace TowseyLib
       }
       return bins;
   }
+
+  /// <summary>
+  /// returns a fixed width histogram.
+  /// Width is determined by user supplied min and max.
+  /// </summary>
+  /// <param name="data"></param>
+  /// <param name="binWidth"> should be an integer width</param>
+  /// <param name="min"></param>
+  /// <param name="max"></param>
+  /// <returns></returns>
+  public static int[] Histo_FixedWidth(int[] data, int binWidth, int min, int max)
+  {
+      int range = max - min + 1;
+      int binCount = range / binWidth;
+      // init freq bin array
+      int[] bins = new int[binCount];
+      for (int i = 0; i < data.Length; i++)
+      {
+          int id = (int)((data[i] - min) / binWidth);
+          if (id >= binCount) id = binCount - 1;
+          else
+              if (id < 0) id = 0;
+          bins[id]++;
+      }
+      return bins;
+  }
+
+
 
   static public int[] Histo(double[,] data, int binCount, out double binWidth, out double min, out double max)
   {
@@ -1467,6 +1552,23 @@ namespace TowseyLib
         }
 
 
+        /**
+         * differs from above in that want area under curve = 1;
+         * @param v
+         * @return
+         */
+        public static double[] NormaliseArea(int[] v)
+        {
+            int sum = 0;
+
+            for (int i = 0; i < v.Length; i++) sum += v[i];
+
+            double[] ret = new double[v.Length];
+            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / (double)(sum);
+
+            return (ret);
+        }
+
         /// <summary>
         /// normalises the values in a matrix such that the minimum value
         /// is the average of the edge values.
@@ -1522,23 +1624,6 @@ namespace TowseyLib
             return (ret);
         }
 
-
-        /**
-         * differs from above in that want area under curve = 1;
-         * @param v
-         * @return
-         */
-        public static double[] normaliseArea(int[] v)
-        {
-            int sum = 0;
-
-            for (int i = 0; i < v.Length; i++) sum += v[i];
-
-            double[] ret = new double[v.Length];
-            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / (double)(sum);
-
-            return (ret);
-        }
 
 
 
@@ -1655,9 +1740,12 @@ namespace TowseyLib
 
       for (int i = 0; i < distr.Length; i++)
       {
-          if (distr[i] != 0.00) H -= distr[i] * Math.Log(distr[i]) / ln2;
+          if (distr[i] != 0.00)
+          {
+              H -= distr[i] * Math.Log(distr[i]);
+          }
       }
-      return H;
+      return H / DataTools.ln2;
   }
 	
  	
@@ -1667,7 +1755,7 @@ namespace TowseyLib
  	 * It is assumed that each of the elements in dist[] 
  	 * represents the probability of a symbol/state and the 
  	 * probabilities sum to 1.0
- 	 * The relative entropy is with respect a uniform distribution. 
+ 	 * The relative entropy is with respect to a uniform distribution. 
  	 */
   public static double RelativeEntropy(double[] distr)
  	{   int length = distr.Length;

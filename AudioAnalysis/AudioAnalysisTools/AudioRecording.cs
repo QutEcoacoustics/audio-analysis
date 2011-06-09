@@ -34,7 +34,7 @@ namespace AudioAnalysisTools
         }
         public AudioRecording(string path)
         {
-            Log.WriteLine("Reading file: " + path);
+            //Log.WriteLine("Reading file: " + path);
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);
@@ -83,6 +83,17 @@ namespace AudioAnalysisTools
         }
 
         /// <summary>
+        /// Reduces the signal sample rate by a factor of N if sample rate. 
+        /// Requires the existing signal to be either 44100Hz or 88200 Hz.
+        /// </summary>
+        public void ReduceSampleRateByFactor(int factor)
+        {
+            int sr = wavReader.SampleRate;
+            wavReader.SubSample(factor);
+            Log.WriteLine("SIGNAL DOWN-SAMPLED: Original sample rate=" + sr + " >>> Downsampled to " + wavReader.SampleRate + ".");
+        }
+
+        /// <summary>
         /// Reduces the signal sample rate by a factor of N if sample rate exceed passed threshold. 
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>
@@ -97,14 +108,27 @@ namespace AudioAnalysisTools
             }
         }
 
-        public AudioRecording Filter_IIR(string filterName)
+        public void Filter_IIR(string filterName)
         {
             DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
             double[] output;
             filter.ApplyIIRFilter(this.wavReader.Samples, out output);
-            int channels = this.wavReader.Channels;
-            int bitsPerSample = this.BitsPerSample;
-            int sampleRate = this.SampleRate;
+            //int channels = this.wavReader.Channels;
+            //int bitsPerSample = this.BitsPerSample;
+            //int sampleRate = this.SampleRate;
+            //WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
+            //var ar = new AudioRecording(wr);
+            this.wavReader.Samples = output;
+        }
+
+        static public AudioRecording Filter_IIR(AudioRecording audio, string filterName)
+        {
+            DSP_IIRFilter filter = new DSP_IIRFilter(filterName);
+            double[] output;
+            filter.ApplyIIRFilter(audio.wavReader.Samples, out output);
+            int channels = audio.wavReader.Channels;
+            int bitsPerSample = audio.BitsPerSample;
+            int sampleRate = audio.SampleRate;
             WavReader wr = new WavReader(output, channels, bitsPerSample, sampleRate);
             var ar = new AudioRecording(wr);
             return ar;
