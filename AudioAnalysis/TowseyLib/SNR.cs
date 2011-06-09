@@ -118,7 +118,7 @@ namespace TowseyLib
         {
             this.LogEnergy = SignalLogEnergy(frames);
             this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
-            SubtractBackgroundNoise();
+            SubtractBackgroundNoise_dB();
             this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
             //need an appropriate dB reference level for normalising dB arrays.
             //this.MaxReference_dBWrtNoise = this.Snr;                        // OK
@@ -134,7 +134,7 @@ namespace TowseyLib
         {
             this.LogEnergy = Signal2LogEnergy(signal, frameIDs);
             this.Decibels = ConvertLogEnergy2Decibels(this.LogEnergy); //convert logEnergy to decibels.
-            SubtractBackgroundNoise();
+            SubtractBackgroundNoise_dB();
             this.NoiseRange = this.Min_dB - this.NoiseSubtracted;
             this.MaxReference_dBWrtNoise = this.Max_dB - this.Min_dB;         // BEST BECAUSE TAKES NOISE LEVEL INTO ACCOUNT
         }
@@ -198,13 +198,25 @@ namespace TowseyLib
         }
 
 
+        public static double[] Signal2Power(double[] signal)
+        {
+            int L = signal.Length;
+            double[] energy = new double[L];
+            for (int i = 0; i < L; i++) //foreach signal sample
+            {
+                energy[i] =  signal[i] * signal[i]; //energy = amplitude squared
+            }
+            return energy;
+        }
+
+
         public static double[] Signal2Decibels(double[] signal)
         {
             int L = signal.Length;
             double[] dB = new double[L];
             for (int i = 0; i < L; i++) //foreach signal sample
             {
-                dB[i] = 20 * Math.Log10(signal[i]); //sum the energy = amplitude squared
+                dB[i] = 20 * Math.Log10(signal[i]); //10 times log of amplitude squared
             }
             return dB;
         }
@@ -387,9 +399,9 @@ namespace TowseyLib
         /// </summary>
         /// <param name="logEnergy"></param>
         /// <returns></returns>
-        public void SubtractBackgroundNoise()
+        public void SubtractBackgroundNoise_dB()
         {
-            var results = SubtractBackgroundNoise(this.Decibels);
+            var results = SubtractBackgroundNoise_dB(this.Decibels);
             this.Decibels = results.Item1;
             this.NoiseSubtracted = results.Item2; //Q
             this.Min_dB   = results.Item3;   //min decibels of all frames 
@@ -400,11 +412,12 @@ namespace TowseyLib
         /// <summary>
         /// subtract background noise to produce a decibels array in which zero dB = modal noise
         /// DOES NOT TRUNCATE BELOW ZERO VALUES.
+        /// RETURNS: 1) noise reduced decibel array; 2) Q - the modal BG level; 3) min value 4) max value; 5) snr
         /// </summary>
         /// <param name="dBarray"></param>
         /// <returns>System.Tuple.Create(decibels, Q, min_dB, max_dB, snr); System.Tuple(double[], double, double, double, double) 
         /// </returns>
-        public static System.Tuple<double[], double, double, double, double> SubtractBackgroundNoise(double[] dBarray)
+        public static System.Tuple<double[], double, double, double, double> SubtractBackgroundNoise_dB(double[] dBarray)
         {
             double Q;
             double min_dB;
@@ -479,7 +492,7 @@ namespace TowseyLib
         /// Values below zero dB are NOT truncated. 
         /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
-        /// NOTE: noiseThreshold is passed as decibels
+        /// NOTE: noiseThreshold is passed as decibels. Algorithm ONLY SEARCHES in range min to 10dB above min.
         /// Units are assumed to be decibels.
         /// </summary>
         /// <param name="dBarray">NOTE: the decibel values are assumed to lie between -70 dB and 0 dB</param>

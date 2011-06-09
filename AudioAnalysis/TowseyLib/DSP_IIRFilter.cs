@@ -31,6 +31,8 @@ namespace TowseyLib
             else
             if (filterName.StartsWith("Chebyshev_Lowpass_3000")) return Chebyshev_Lowpass_3000();
             else
+            if (filterName.StartsWith("Chebyshev_Lowpass_5000")) return Chebyshev_Lowpass_5000();
+            else
                 {
                     System.Console.WriteLine("\nWARNING! There is no filter with name: " + filterName);
                     System.Console.ReadLine();
@@ -135,6 +137,40 @@ namespace TowseyLib
 
             double gain = 145788.9707;   //gain at DC = 1.457889707e+05
             //double gain = 1.441201381e+05;  //gain at centre
+            return System.Tuple.Create(order, a_coeff, b_coeff, gain);
+        }
+        /// <summary>
+        /// Create a Chebyshev_lowpass filter, shoulder=5000, order=9; ripple=-0.1dB; sr=22050
+        /// Shoulder located at 0.2267573696 Pi.
+        /// </summary>
+        public static System.Tuple<int, double[], double[], double> Chebyshev_Lowpass_5000(/*no variables to pass*/)
+        {
+            int order = 9;
+            double[] a_coeff = new double[order + 1];
+            a_coeff[9] = 1.0;
+            a_coeff[8] = 9.0;
+            a_coeff[7] = 36.0;
+            a_coeff[6] = 84.0;
+            a_coeff[5] = 126.0;
+            a_coeff[4] = 126.0;
+            a_coeff[3] = 84.0;
+            a_coeff[2] = 36.0;
+            a_coeff[1] = 9.0;
+            a_coeff[0] = 1.0;
+
+            double[] b_coeff = new double[order + 1];
+            b_coeff[9] =  0.0935666122;
+            b_coeff[8] = -0.5848434328;
+            b_coeff[7] =  1.9318205319;
+            b_coeff[6] = -4.2953935797;
+            b_coeff[5] =  7.0142697632;
+            b_coeff[4] = -8.7332273064;
+            b_coeff[3] =  8.3100433803;
+            b_coeff[2] = -6.0112693980;
+            b_coeff[1] =  2.9946493876;
+
+            double gain = 1826.066837;   //gain at DC = 1.826066837e+03
+            //double gain = 1.805164023e+03;  //gain at centre
             return System.Tuple.Create(order, a_coeff, b_coeff, gain);
         }
 

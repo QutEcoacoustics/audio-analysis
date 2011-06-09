@@ -380,19 +380,18 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// returns the periodicity in the column sums of a matrix
+        /// returns the periodicity in an array of values
         /// </summary>
-        /// <param name="m"></param>
+        /// <param name="array"></param>
         /// <returns></returns>
-        public static double[] PeriodicityAnalysis(double[,] m)
+        public static double[] PeriodicityAnalysis(double[] array)
         {
-            var colSums = DataTools.GetColumnsAverages(m);
-            DataTools.writeBarGraph(colSums);
-            var A = DataTools.AutoCorrelation(colSums, 0, colSums.Length * 3 / 4); // do 2/3rds of maximum possible lag
+            //DataTools.writeBarGraph(array);
+            var A = DataTools.AutoCorrelation(array, 0, array.Length * 3 / 4); // do 2/3rds of maximum possible lag
             int dctLength = A.Length;
 
             A = DataTools.SubtractMean(A);
-            DataTools.writeBarGraph(A);
+            //DataTools.writeBarGraph(A);
 
             double[,] cosines = Speech.Cosines(dctLength, dctLength); //set up the cosine coefficients
             double[] dct = Speech.DCT(A, cosines);

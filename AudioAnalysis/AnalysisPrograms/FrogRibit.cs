@@ -163,7 +163,7 @@ namespace AnalysisPrograms
 
             //i: Apply filter
             Log.WriteLine("#   Filter: " + filterName);
-            var filteredRecording = recording.Filter_IIR(filterName); //return new filtered audio recording.
+            var filteredRecording = AudioRecording.Filter_IIR(recording, filterName); //return new filtered audio recording.
             int signalLength = filteredRecording.GetWavReader().Samples.Length;
             //recording.Dispose(); // DISPOSE ORIGINAL
 
@@ -182,7 +182,7 @@ namespace AnalysisPrograms
 
             Log.WriteLine("#   Normalize values.");
             //iv: FRAME ENERGIES
-            var results3 = SNR.SubtractBackgroundNoise(SNR.Signal2Decibels(envelope));
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.Item1);
 
             //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
@@ -194,7 +194,7 @@ namespace AnalysisPrograms
             double[] tsd = DSP_Frames.ConvertSamples2Milliseconds(sampleStd, sr); //time standard deviation
             //for (int i = 0; i < tsd.Length; i++) if (tsd[i]) Console.WriteLine(i + " = " + tsd[i]);
             //filter the freq array to remove values derived from frames with high standard deviation
-            double[] tsdScores = FreqStdDevScore(tsd);
+            double[] tsdScores = NormalDist.Values2Probabilities(tsd);
 
             //vii: GET OSCILLATION SCORE AND NORMALIZE
             double[] rawOscillations = OscillationAnalysis.DetectOscillations(dBarray, dctDuration, framesPerSecond, dctThreshold, normaliseDCT, minOscilRate, maxOscilRate);
@@ -241,60 +241,6 @@ namespace AnalysisPrograms
             return fuzzy;
         }
 
-        /// <summary>
-        /// Converts time-standard-deviation scores into z-scores and z-scores to probabilites 
-        /// assuming that the values can be modelled as signal superimposed on Gaussian noise.
-        /// </summary>
-        /// <param name="tsdScore">array of scores</param>
-        /// <returns>array of probability scores</returns>
-        public static double[] FreqStdDevScore(double[] tsdScore)
-        {
-            //get av and std of the background time variation
-            double sdBG = 0.0;
-            double mode = 0.0;
-            //NormalDist.AverageAndSD(tsdScore, out mode, out sdBG);
-            DataTools.ModalValue(tsdScore, out mode, out sdBG);
-
-            //calculate a threshold using 3 standard deviations;
-            double threshold1 = mode - (2.31 * sdBG); //area =  1%
-            double threshold2 = mode - (1.64 * sdBG); //area =  5%
-            double threshold3 = mode - (1.48 * sdBG); //area =  7%
-            double threshold4 = mode - (1.28 * sdBG); //area = 10%
-            double threshold5 = mode - (1.00 * sdBG); //area = 16%
-            double threshold6 = mode - (0.52 * sdBG); //area = 30%
-            double threshold7 = mode - (0.25 * sdBG); //area = 40%
-            if (threshold1 < 0.0) threshold1 = 0.0;
-            if (threshold2 < 0.0) threshold2 = 0.0;
-            if (threshold3 < 0.0) threshold3 = 0.0;
-            if (threshold4 < 0.0) threshold4 = 0.0;
-            if (threshold5 < 0.0) threshold5 = 0.0;
-            if (threshold6 < 0.0) threshold6 = 0.0;
-            if (threshold7 < 0.0) threshold7 = 0.0;
-            //double threshold7 = avBG - (0.50 * sdBG);
-
-            int L = tsdScore.Length;
-            var op = new double[L];
-            for (int i = 0; i < L; i++)
-            {
-                if (tsdScore[i] < threshold1) op[i] = 0.99;  // = (1.00-0.5)*2
-                else
-                    if (tsdScore[i] < threshold2) op[i] = 0.90; // = (0.95-0.5)*2
-                    else
-                        if (tsdScore[i] < threshold3) op[i] = 0.86; // = (0.93-0.5)*2
-                        else
-                            if (tsdScore[i] < threshold4) op[i] = 0.80; // = (0.90-0.5)*2
-                            else
-                                if (tsdScore[i] < threshold5) op[i] = 0.68; // = (0.84-0.5)*2
-                                else
-                                    if (tsdScore[i] < threshold6) op[i] = 0.40; // = (0.70-0.5)*2
-                                    else
-                                        if (tsdScore[i] < threshold7) op[i] = 0.20; // = (0.60-0.5)*2
-                                        else
-                                            if (tsdScore[i] >= mode) op[i] = 0.00;  // = (0.50-0.5)*2
-                                            else op[i] = 0.0;
-            }
-            return op;
-        }
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[] array1, double[] array2, List<double[]> scores)
         {

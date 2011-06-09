@@ -20,6 +20,8 @@ namespace AudioAnalysisTools
         public List<AcousticEvent> EventList { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         private double superImposedMaxScore;
+        private int[] ZCFreqHits;
+        private int nyquistFreq;
         #endregion
 
         /// <summary>
@@ -46,6 +48,12 @@ namespace AudioAnalysisTools
         {
             this.SuperimposedMatrix = m;
             this.superImposedMaxScore = maxScore;
+        }
+
+        public void AddZCFrequencyValues(int[] f, int nyquist)
+        {
+            this.ZCFreqHits = f;
+            this.nyquistFreq = nyquist;
         }
 
         /// <summary>
@@ -89,6 +97,7 @@ namespace AudioAnalysisTools
 
                 if (this.SuperimposedMatrix != null) Superimpose(g);
                 if (this.EventList != null) DrawEvents(g);
+                if (this.ZCFreqHits != null) DrawZCFreqHits(g);
             }
 
             //now add tracks to the image
@@ -140,6 +149,24 @@ namespace AudioAnalysisTools
                 g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
             }
         }
+
+
+        void DrawZCFreqHits(Graphics g)
+        {
+            int L = this.ZCFreqHits.Length;
+            Pen p1 = new Pen(Color.Red);
+            //Pen p2 = new Pen(Color.Black);
+            for (int i = 0; i < L; i++)
+            {
+                if (this.ZCFreqHits[i] == 0) continue;
+                int x = i;
+                int y = (int)(256 * (1 - (this.ZCFreqHits[i] / (double)this.nyquistFreq)));
+                //g.DrawRectangle(p1, x, y, x + 1, y + 1);
+                g.DrawLine(p1, x, y, x, y + 2);
+                //g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
+            }
+        }
+
 
         void Superimpose(Graphics g)
         {
