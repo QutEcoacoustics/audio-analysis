@@ -13,12 +13,12 @@ namespace AudioDataStorageMigrateConsole
     using System.Collections.Generic;
     using System.Configuration;
     using System.Diagnostics;
-    using System.Drawing;
     using System.Drawing.Imaging;
-    using System.Globalization;
     using System.IO;
     using System.Security.Cryptography;
     using System.Text;
+
+    using AudioDataStorageMigrateConsole.Diag;
 
     using AudioTools.AudioUtlity;
 
@@ -26,7 +26,6 @@ namespace AudioDataStorageMigrateConsole
 
     using QutSensors.Business;
     using QutSensors.Business.Audio;
-    using QutSensors.Business.Request;
     using QutSensors.Business.Storage;
     using QutSensors.Shared;
     using QutSensors.Shared.LogProviders;
@@ -36,12 +35,13 @@ namespace AudioDataStorageMigrateConsole
     /// </summary>
     public static class Program
     {
-        private static readonly MigrationWorker Worker;
-
         /// <summary>
-        /// Initializes static members of the <see cref="Program"/> class.
+        /// Main program entry.
         /// </summary>
-        static Program()
+        /// <param name="args">
+        /// The arguments.
+        /// </param>
+        public static void Main(string[] args)
         {
             string ffmpegExe = ConfigurationManager.AppSettings["AudioUtilityFfmpegExe"];
             string wvunpackExe = ConfigurationManager.AppSettings["AudioUtilityWvunpackExe"];
@@ -60,31 +60,25 @@ namespace AudioDataStorageMigrateConsole
                 audioDataStorageDir,
                 tempFileUploadDir);
 
-            var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
+            // var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
             var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
             var audioutil = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
 
-            Worker = new MigrationWorker(logFileDir, sqlFs, fileSys, audioutil);
-        }
+            //Worker = new MigrationWorker(logFileDir, sqlFs, fileSys, audioutil);
 
-        /// <summary>
-        /// Main program entry.
-        /// </summary>
-        /// <param name="args">
-        /// The arguments.
-        /// </param>
-        public static void Main(string[] args)
-        {
+            var diag = new AudioReadingDataDiagnostic(logFileDir, fileSys, audioutil);
+            diag.Run();
+
             ////GenerateMachineKey("64");
 
             ////GetSpectrogram();
 
             ////GenerateSpectrograms();
 
-            Worker.RunMigration();
+            //Worker.RunMigration();
 
             Console.WriteLine();
-            Console.WriteLine("done");
+            Console.WriteLine("Done, press any key to close...");
             Console.ReadLine();
         }
 
