@@ -1,7 +1,6 @@
 ﻿namespace AudioDataStorageMigrateConsole.Diag
 {
     using System;
-    using System.Collections.Generic;
     using System.Diagnostics;
     using System.IO;
     using System.Linq;
@@ -70,7 +69,7 @@
                         // record as error
                         this.logProvider.WriteEntry(LogType.Error, "No information available.", reading.AudioReadingID);
                     }
-                    else if (diag.HasProblems())
+                    else if (diag.GetIssues().Count() > 0)
                     {
                         diag.OverallRunningCount = count;
                         diag.OverallRunningDuration = watch.Elapsed;
@@ -187,10 +186,6 @@ where AudioReadingID = '" + reading.AudioReadingID + "'";
                 diag.FileDurationMs = (long)diag.FileDuration.TotalMilliseconds;
 
                 // TODO: how to check if readable? Just if duration can be calculated?
-            }
-            else
-            {
-
             }
 
             return diag;

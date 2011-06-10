@@ -71,30 +71,31 @@ namespace AudioDataStorageMigrateConsole.Diag
             this.exceptions.Add(ex.Message);
         }
 
-        public bool HasProblems()
+        public IEnumerable<string> GetIssues()
         {
-            return this.exceptions.Count > 0 ||
-                this.DbMimeTypeIsNull ||
-                this.DbMimeType != this.FileMimeType ||
-                !this.DbDataIsNull ||
-                !this.FileExists ||
-                this.DbDataSizeBytesIsNull ||
-                this.DbDataLength != this.DbDataSizeBytes ||
-                this.DbDataLength != this.FileDataSizeBytes ||
-                this.DbDataSizeBytes != this.FileDataSizeBytes ||
-                string.IsNullOrEmpty(this.DbDataLocation) ||
-                this.DbDataLocation.ToLower() != "filesystem" ||
-                this.DbDurationMsIsNull ||
-                this.DbDurationMs != this.FileDurationMs;
+            if (this.exceptions.Count > 0) yield return this.exceptions.Count + " exceptions";
+            if (this.DbMimeTypeIsNull) yield return "Mime type column is null";
+            if (this.DbMimeType != this.FileMimeType) yield return "Db mime type does not match file mime type";
+            if (!this.DbDataIsNull) yield return "Data in db";
+            if (!this.FileExists) yield return "Audio file does not exist";
+            if (this.DbDataSizeBytesIsNull) yield return "DataSizeBytes column is null";
+            if (this.DbDataLength != this.DbDataSizeBytes) yield return "Db data length does not match db DataSizeBytes";
+            if (this.DbDataLength != this.FileDataSizeBytes) yield return "DB data length does not match file size bytes";
+            if (this.DbDataSizeBytes != this.FileDataSizeBytes) yield return "DB DataSizeBytes does not match file size bytes";
+            if (string.IsNullOrEmpty(this.DbDataLocation)) yield return "DB DataLocation is null or empty";
+            if (!string.IsNullOrEmpty(this.DbDataLocation) && this.DbDataLocation.ToLower() != "filesystem") yield return "Db data location is not 'filesystem'";
+            if (this.DbDurationMsIsNull) yield return "Db duration is null";
+            if (this.FileDurationMs < 1) yield return "File duration is less than 1";
+            if (this.DbDurationMs != this.FileDurationMs) yield return "Db duration does not match file duation";
 
-         // TODO: include file hash matching hash of data exported from sql filestream col.
+            // TODO: include file hash matching hash of data exported from sql filestream col.
         }
 
         /// <summary>
-        /// Migration Info to String.
+        /// Properties to String.
         /// </summary>
         /// <returns>
-        /// String representation of Migration info.
+        /// String representation of Properties.
         /// </returns>
         public override string ToString()
         {
@@ -102,10 +103,10 @@ namespace AudioDataStorageMigrateConsole.Diag
         }
 
         /// <summary>
-        /// Get Migration info properties as string array.
+        /// Get properties as string array.
         /// </summary>
         /// <returns>
-        /// String array of migraiton properties.
+        /// String array of properties.
         /// </returns>
         public IEnumerable<object> ToStrings()
         {
@@ -141,6 +142,9 @@ namespace AudioDataStorageMigrateConsole.Diag
 
                     FileExtension,
                     FileHash,
+
+                    string.Join(" | ",Exceptions),
+                    string.Join(" | ",this.GetIssues()),
 
                     OverallRunningCount.ToString(),
                     OverallRunningDuration.ToString(),
@@ -185,6 +189,9 @@ namespace AudioDataStorageMigrateConsole.Diag
 
                     "FileExtension",
                     "FileHash",
+
+                    "Exceptions",
+                    "Reasons",
 
                     "OverallRunningCount",
                     "OverallRunningDuration",
