@@ -65,6 +65,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Diag\AudioReadingDataDiagnostic.cs" />
+    <Compile Include="Diag\AudioReadingDiagItem.cs" />
     <Compile Include="MigrationInfo.cs" />
     <Compile Include="MigrationUtils.cs" />
     <Compile Include="MigrationWorker.cs" />
