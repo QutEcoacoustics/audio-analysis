@@ -66,8 +66,10 @@ namespace AudioDataStorageMigrateConsole
 
             //Worker = new MigrationWorker(logFileDir, sqlFs, fileSys, audioutil);
 
-            var diag = new AudioReadingDataDiagnostic(logFileDir, fileSys, audioutil);
-            diag.Run();
+            using (var diag = new AudioReadingDataDiagnostic(logFileDir, fileSys, audioutil))
+            {
+                diag.Run();
+            }
 
             ////GenerateMachineKey("64");
 
