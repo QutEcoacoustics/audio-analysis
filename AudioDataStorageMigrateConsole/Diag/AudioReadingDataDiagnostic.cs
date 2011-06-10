@@ -52,6 +52,7 @@
                     count += 1;
 
                     AudioReadingDiagItem diag = null;
+                    Exception exTemp = null;
                     try
                     {
                         diag = this.GetInfo(reading);
@@ -61,13 +62,22 @@
                         if (diag != null)
                         {
                             diag.AddException(ex);
+                        }else
+                        {
+                            exTemp = ex;
                         }
                     }
 
                     if (diag == null)
                     {
+                        diag = new AudioReadingDiagItem { AudioReadingId = reading.AudioReadingID };
+                        if (exTemp != null)
+                        {
+                            diag.AddException(exTemp);
+                        }
+
                         // record as error
-                        this.logProvider.WriteEntry(LogType.Error, "No information available.", reading.AudioReadingID);
+                        this.logProvider.WriteEntry(LogType.Error, "See audio reading id and exceptions.", diag.ToStrings().ToArray());
                     }
                     else if (diag.GetIssues().Count() > 0)
                     {
@@ -152,11 +162,12 @@ where AudioReadingID = '" + reading.AudioReadingID + "'";
                                     : long.Parse(i["DurationMs"].ToString()),
                             });
 
-                    var item = itemDisplay.First();
-                    item.DbDuration = TimeSpan.FromMilliseconds(item.DbDurationMs);
+                    var diag = itemDisplay.First();
+                    diag.DbDuration = TimeSpan.FromMilliseconds(diag.DbDurationMs);
+                    return diag;
                 }
 
-                throw new InvalidOperationException("argh");
+                throw new InvalidOperationException("Error occured - there was not exactly one result from db query.");
             }
         }
 
