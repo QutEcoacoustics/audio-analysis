@@ -62,7 +62,8 @@
                         if (diag != null)
                         {
                             diag.AddException(ex);
-                        }else
+                        }
+                        else
                         {
                             exTemp = ex;
                         }
@@ -141,7 +142,7 @@ where AudioReadingID = '" + reading.AudioReadingID + "'";
                             {
                                 AudioReadingId = reading.AudioReadingID,
                                 DbDataIsNull = bool.Parse(i["IsDataNull"].ToString()),
-                                DbDataLength = long.Parse(i["DataLength"].ToString()),
+                                DbDataLength = i["DataLength"] == null ? 0 : (string.IsNullOrEmpty(i["DataLength"].ToString()) ? 0 : long.Parse(i["DataLength"].ToString())),
                                 DbMimeTypeIsNull = bool.Parse(i["IsMimeTypeNull"].ToString()),
                                 DbMimeType = i["MimeType"] == null || string.IsNullOrEmpty(i["MimeType"].ToString())
                                     ? "not given"
@@ -191,7 +192,11 @@ where AudioReadingID = '" + reading.AudioReadingID + "'";
                 diag.FileDataSizeBytes = file.Length;
 
                 diag.FileExtension = file.Extension;
-                diag.FileHash = Convert.ToBase64String(this.sha1.ComputeHash(File.ReadAllBytes(file.FullName)));
+
+                using (var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+                {
+                    diag.FileHash = Convert.ToBase64String(this.sha1.ComputeHash(fileStream));
+                }
 
                 diag.FileDuration = this.audioUtility.Duration(file, diag.FileMimeType);
                 diag.FileDurationMs = (long)diag.FileDuration.TotalMilliseconds;
