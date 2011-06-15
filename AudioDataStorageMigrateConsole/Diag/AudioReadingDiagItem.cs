@@ -79,13 +79,13 @@ namespace AudioDataStorageMigrateConsole.Diag
             if (!this.DbDataIsNull) yield return "Data in db";
             if (!this.FileExists) yield return "Audio file does not exist";
             if (this.DbDataSizeBytesIsNull) yield return "DataSizeBytes column is null";
-            if (this.DbDataLength != this.DbDataSizeBytes) yield return "Db data length does not match db DataSizeBytes";
-            if (this.DbDataLength != this.FileDataSizeBytes) yield return "DB data length does not match file size bytes";
+            if (!this.DbDataIsNull && this.DbDataLength != this.DbDataSizeBytes) yield return "Db contains data and the data length does not match db DataSizeBytes";
+            if (!this.DbDataIsNull && this.DbDataLength != this.FileDataSizeBytes) yield return "DB contains data and the data length does not match file size bytes";
             if (this.DbDataSizeBytes != this.FileDataSizeBytes) yield return "DB DataSizeBytes does not match file size bytes";
             if (string.IsNullOrEmpty(this.DbDataLocation)) yield return "DB DataLocation is null or empty";
-            if (!string.IsNullOrEmpty(this.DbDataLocation) && this.DbDataLocation.ToLower() != "filesystem") yield return "Db data location is not 'filesystem'";
+            if (!string.IsNullOrEmpty(this.DbDataLocation) && this.DbDataLocation.ToLower() != "filesystem") yield return "Db data location is not 'filesystem', it is '" + this.DbDataLocation + "'";
             if (this.DbDurationMsIsNull) yield return "Db duration is null";
-            if (this.FileDurationMs < 1) yield return "File duration is less than 1";
+            if (this.FileDurationMs < 1) yield return "File duration is less than 1ms";
             if (this.DbDurationMs != this.FileDurationMs) yield return "Db duration does not match file duation";
 
             // TODO: include file hash matching hash of data exported from sql filestream col.
