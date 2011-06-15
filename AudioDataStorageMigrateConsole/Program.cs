@@ -21,6 +21,7 @@ namespace AudioDataStorageMigrateConsole
     using AudioDataStorageMigrateConsole.Diag;
 
     using AudioTools.AudioUtlity;
+    using AudioTools.WavAudio;
 
     using Autofac;
 
@@ -82,6 +83,8 @@ namespace AudioDataStorageMigrateConsole
             Console.WriteLine();
             Console.WriteLine("Done, press any key to close...");
             Console.ReadLine();
+
+            //var asr = new AudioStreamReader();
         }
 
         private static void GenerateMachineKey(params string[] argv)
