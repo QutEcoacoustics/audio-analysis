@@ -288,6 +288,45 @@ namespace TowseyLib
             }
             return db;
         }
+        /// <summary>
+        /// returns a spectrogram with reduced number of frequency bins
+        /// </summary>
+        /// <param name="inSpectro">input spectrogram</param>
+        /// <param name="subbandCount">numbre of req bands in output spectrogram</param>
+        /// <returns></returns>
+        public static double[,] ReduceFreqBinsInSpectrogram(double[,] inSpectro, int subbandCount)
+        {
+            int frameCount = inSpectro.GetLength(0);
+            int N = inSpectro.GetLength(1);
+            double[,] outSpectro = new double[frameCount, subbandCount];
+            int binWidth = N / subbandCount;
+            for (int i = 0; i < frameCount; i++) //foreach frame
+            {
+                int startBin;
+                int endBin;
+                double sum = 0.0;
+                for (int j = 0; j < subbandCount-1; j++)  // foreach output band EXCEPT THE LAST
+                {
+                    startBin = j * binWidth;
+                    endBin   = startBin + binWidth;
+                    for (int b = startBin; b < endBin; b++)  // foreach output band
+                    {
+                        sum += inSpectro[i, b];              // sum the spectral values
+                    }
+                    outSpectro[i, j] = sum;
+                }
+                //now do the top most freq band
+                startBin = (subbandCount-1) * binWidth;
+                for (int b = startBin; b < N; b++)  // foreach output band
+                {
+                    sum += inSpectro[i, b];              // sum the spectral values
+                }
+                outSpectro[i, subbandCount-1] = sum;
+            }
+            return outSpectro;
+        }
+
+
 
 
 
