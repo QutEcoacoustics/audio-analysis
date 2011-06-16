@@ -454,18 +454,21 @@ namespace TowseyLib
         /// <param name="array"></param>
         /// <param name="count"></param>
         /// <param name="sum"></param>
-    public static void PeakLocations(double[] array, out int count, out double[] locations)
+    public static void PeakLocations(double[] array, double threshold, out int count, out double[] locations)
     {
         count = 0;
         int L = array.Length;
         locations = new double[L];
 
         for (int i = 1; i < L - 1; i++) // iterate through array
+        {
+            if (array[i] < threshold) continue;
             if ((array[i] > array[i - 1]) && (array[i] > array[i + 1]))
             {
                 count++;
                 locations[i] = 1.0;
             }
+        }
     }
         /// <summary>
         /// returns a list of gaps between 1s in a binary array
@@ -805,6 +808,32 @@ namespace TowseyLib
       }
       return bins;
   }
+  /// <summary>
+  /// returns a fixed width histogram.
+  /// Width is determined by user supplied min and max.
+  /// </summary>
+  /// <param name="data"></param>
+  /// <param name="binWidth"> should be an integer width</param>
+  /// <param name="min"></param>
+  /// <param name="max"></param>
+  /// <returns></returns>
+  public static int[] Histo_FixedWidth(double[] data, double binWidth, double min, double max)
+  {
+      double range = max - min + 1;
+      int binCount = (int)(range / binWidth);
+      // init freq bin array
+      int[] bins = new int[binCount];
+      for (int i = 0; i < data.Length; i++)
+      {
+          int id = (int)((data[i] - min) / binWidth);
+          if (id >= binCount) id = binCount - 1;
+          else
+              if (id < 0) id = 0;
+          bins[id]++;
+      }
+      return bins;
+  }
+
 
 
 
@@ -1560,13 +1589,26 @@ namespace TowseyLib
         public static double[] NormaliseArea(int[] v)
         {
             int sum = 0;
-
             for (int i = 0; i < v.Length; i++) sum += v[i];
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++) ret[i] = v[i] / (double)(sum);
 
             return (ret);
+        }
+        /**
+         * @param v
+         * @return
+         */
+        public static double[] NormaliseArea(double[] v)
+        {
+            double sum = 0.0;
+            for (int i = 0; i < v.Length; i++) sum += v[i];
+
+            double[] ret = new double[v.Length];
+            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
+
+            return ret;
         }
 
         /// <summary>
@@ -1732,8 +1774,7 @@ namespace TowseyLib
   /// 
   /// </summary>
   /// <param name="data"></param>
-  /// <returns></returns>
-      
+  /// <returns></returns>  
   static public double Entropy(double[] distr)
   {
       double H=0.0;
@@ -1743,6 +1784,21 @@ namespace TowseyLib
           if (distr[i] != 0.00)
           {
               H -= distr[i] * Math.Log(distr[i]);
+          }
+      }
+      return H / DataTools.ln2;
+  }
+  static public double Entropy(double[,] matrixDistr)
+  {
+      double H = 0.0;
+      int RowCount = matrixDistr.GetLength(0);
+      int ColCount = matrixDistr.GetLength(1);
+
+      for (int i = 0; i < RowCount; i++)
+      {
+          for (int j = 0; j < ColCount; j++)
+          {
+              if (matrixDistr[i, j] != 0.00) H -= matrixDistr[i,j] * Math.Log(matrixDistr[i,j]);
           }
       }
       return H / DataTools.ln2;

@@ -16,19 +16,22 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Indices
         {
-            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy;
+            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy, peakFreqEntropy, spectralEntropy;
             public int peakCount;
 
-            public Indices(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp)
+            public Indices(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp,
+                           double _peakFreqEntropy, double _spectralEntropy)
             {
-                snr = _snr;
-                bgNoise = _bgNoise;
-                activity = _activity;
-                avAmp = _avAmp;
-                peakCount = _peakCount;
-                peakSum = _peakSum;
+                snr        = _snr;
+                bgNoise    = _bgNoise;
+                activity   = _activity;
+                avAmp      = _avAmp;
+                peakCount  = _peakCount;
+                peakSum    = _peakSum;
                 gapEntropy = _gapEntropy;
                 ampEntropy = _entropyAmp;
+                peakFreqEntropy = _peakFreqEntropy;
+                spectralEntropy = _spectralEntropy;
             }
         } 
 
@@ -52,7 +55,7 @@ namespace AnalysisPrograms
             string outputDir = recordingDir;
             string outpuCSV  = outputDir + "results1.csv";
             //write header to results file
-            string header = "count,minutes,FileName,snr-dB,bg-dB,activity,avAmp,peakCount,peakSum,gapEntropy,ampEntropy";
+            string header = "count,minutes,FileName,snr-dB,bg-dB,activity,avAmp,peakCount,peakSum,gapEntropy,ampEntropy,peakFreqEntropy";
             FileTools.WriteTextFile(outpuCSV, header);
             //init counters
             int fileCount = 0;
@@ -91,10 +94,10 @@ namespace AnalysisPrograms
             //iv:  store results
             elapsedTime += recording.GetWavReader().Time.TotalMinutes;
             Indices indices = results.Item1;
-            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4}",
+            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4}",
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
                 indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
-                indices.ampEntropy);
+                indices.ampEntropy, indices.peakFreqEntropy);
             FileTools.Append2TextFile(outpuCSV, values);
 
             //v: STORE IMAGES
@@ -120,82 +123,133 @@ namespace AnalysisPrograms
         /// <summary>
         /// </summary>
         /// <param name="recording"></param>
-        /// <param name="windowDuration">samples per frame</param>
+        /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices, List<double[]>> 
-                       ExtractIndices(AudioRecording recording, int windowDuration = 128)
+        public static System.Tuple<Indices, List<double[]>> ExtractIndices(AudioRecording recording, int frameSize = 128)
         {
-            int sr = recording.SampleRate;
-            int windowSize = (int)(windowDuration * sr / 1000.0);
-            double framesPerSecond = 1000 / windowSize;
-            double windowOverlap = 0.0;
+            Indices indices; // struct in which to store all indices
 
+            int sr = recording.SampleRate;
+            double windowOverlap = 0.0;
+            //double framesPerSecond = sr / frameSize / (1-windowOverlap);
             int signalLength = recording.GetWavReader().Samples.Length;
 
-            //ii: FRAMING
-            int[,] frameIDs = DSP_Frames.FrameStartEnds(signalLength, windowSize, windowOverlap);
-            int frameCount = frameIDs.GetLength(0);
-            Log.WriteLine("#   FrameCount=" + frameCount);
-
-            //iii: EXTRACT ENVELOPE and ZERO-CROSSINGS
-            Log.WriteLine("#   Extract Envelope and Zero-crossings.");
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, windowSize, windowOverlap);
+            //i: EXTRACT ENVELOPE and FFTs
+            Log.WriteLine("#   Extract Envelope and FFTs.");
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
             //double[] average       = results2.Item1;
             double[] envelope = results2.Item2;
-            double[,] spectrogram = results2.Item3;
 
-            Log.WriteLine("#   Normalize values.");
-            //iv: FRAME ENERGIES
+            Log.WriteLine("#   Calculate Frame Energies.");
+            //ii: FRAME ENERGIES
+            double dBThreshold = 3.0; //used to select frames that have more than this intensity
             var array2 = SNR.Signal2Decibels(envelope);
             var results3 = SNR.SubtractBackgroundNoise_dB(array2);//use Lamel et al. Only search in range 10dB above min dB.
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
-            int zeroCount = dBarray.Count((x) => (x <= 1.5)); //fraction of frames with activity less than 1.5dB above background
-            double bgNoise = results3.Item2;
-            double snr     = results3.Item5;
+            int zeroCount = dBarray.Count((x) => (x < dBThreshold)); //fraction of frames with activity less than 3dB above background
+            indices.activity = 1 - (zeroCount / (double)dBarray.Length);
+            indices.bgNoise = results3.Item2;
+            indices.snr = results3.Item5;
 
-            //PEAK ANALYSIS
+            //iii: ENERGY PEAK ANALYSIS
             // count peaks ??after smoothing??
             //var smoothed = DataTools.filterMovingAverage(envelope, 3);
             int peakCount;
             double peakSum;
             DataTools.CountPeaks(dBarray, out peakCount, out peakSum);
+            indices.peakSum = peakSum;
+            indices.peakCount = peakCount;
             double[] peakLocations;
-            DataTools.PeakLocations(dBarray, out peakCount, out peakLocations);
+            DataTools.PeakLocations(dBarray, dBThreshold, out peakCount, out peakLocations);
             peakSum = DataTools.DotProduct(envelope, peakLocations);
-            List<int> gaps = DataTools.GapLengths(peakLocations);
+            List<int> gaps     = DataTools.GapLengths(peakLocations);
             int[] gapDurations = gaps.ToArray();
-            int[] gapHistogram = DataTools.Histo_FixedWidth(gapDurations, 2, 1, 50); //50 frames = 0.5 second for max gap.
-            double[] pmf1 = DataTools.NormaliseArea(gapHistogram);                   //pmf = probability mass funciton
-            double normFactor = Math.Log(pmf1.Length) / DataTools.ln2;               //normalize for length of the array
-            double gapEntropy = DataTools.Entropy(pmf1) / normFactor;
-            //Console.WriteLine("Peak Count=" + peakCount + "   Gap Entropy= " + gapEntropy);
+            int[] gapHistogram = DataTools.Histo_FixedWidth(gapDurations, 2, 1, 50);  //50 frames = 0.5 second for max gap.
+            double[] pmf1      = DataTools.NormaliseArea(gapHistogram);               //pmf = probability mass funciton
+            double normFactor  = Math.Log(pmf1.Length) / DataTools.ln2;               //normalize for length of the array
+            indices.gapEntropy = DataTools.Entropy(pmf1) / normFactor;
+            //Console.WriteLine("Peak Count=" + peakCount + "   Gap Entropy= " + indices.gapEntropy);
 
-            //ENTROPY ANALYSIS
-            double avAmplitude = envelope.Average();
+            //iv: ENVELOPE ENTROPY ANALYSIS
+            indices.avAmp = envelope.Average();
             //double[] newArray = { 3.0, 3.0, 3.0, 3.0,  3.0, 3.0, 3.0, 3.0};
             double[] pmf2 = DataTools.NormaliseProbabilites(envelope); //pmf = probability mass funciton
             normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
-            double amplitudeEntropy = DataTools.Entropy(pmf2) / normFactor;
-            //Console.WriteLine("amplitudeEntropy= " + amplitudeEntropy);
+            indices.ampEntropy = DataTools.Entropy(pmf2) / normFactor;
+            //Console.WriteLine("amplitudeEntropy= " + indices.ampEntropy);
 
-            //v: CONVERSIONS: FFT 
-            //vii: GET OSCILLATION SCORE AND NORMALIZE
-            //double[] periods = OscillationAnalysis.PeriodicityAnalysis(dBarray);
+            //v: SPECTROGRAM ANALYSIS 
+            int L = dBarray.Length;
+            double[,] spectrogram = results2.Item3;
+            //double HammingWindowPower = results2.Item4;
+            //double epsilon = Math.Pow(0.5, recording.BitsPerSample - 1);
+            //spectrogram = Speech.DecibelSpectra(spectrogram, HammingWindowPower, recording.SampleRate, epsilon);
+            //calculate modal noise for each freq bin
+            //double[] modalNoise = SNR.CalculateModalNoise(spectrogram);     //calculate modal noise profile
+            //modalNoise = DataTools.filterMovingAverage(modalNoise, 7);      //smooth the noise profile
+            //spectrogram = SNR.NoiseReduce_Standard(spectrogram, modalNoise);//set neg value = zero
+
+            double[] freqPeaks = new double[L];
+            for (int i = 0; i < L; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i)) + 1; //add 1 for top end of bin
+                    freqPeaks[i] = (recording.Nyquist * j / (double)spectrogram.GetLength(1));
+                }
+            }
+
+            //vi: FREQ PROPERTIES
+            double binWidth = 100.0;
+            int[] freqHistogram;
+            double[] pmf3;
+            // Entropy of peak distributions
+            freqHistogram = DataTools.Histo_FixedWidth(freqPeaks, binWidth, 0, recording.Nyquist); //
+            freqHistogram[0] = 0; //remove frames having freq=0 i.e frames with no activity from calculation of entropy.
+            pmf3       = DataTools.NormaliseArea(freqHistogram);                   //pmf = probability mass funciton
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
+            indices.peakFreqEntropy = DataTools.Entropy(pmf3) / normFactor;
+
+            //Entropy of background noise spectrum
+            //pmf3 = DataTools.NormaliseArea(modalNoise);                          //pmf = probability mass funciton
+            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            //indices.bgNoiseEntropy = DataTools.Entropy(pmf3) / normFactor;
+            ////Entropy of average spectrum derived frames with energy
+            //double[] avSpectrum = GetAverageSpectrum();
+            //pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
+            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            //indices.bgNoiseEntropy = DataTools.Entropy(pmf3) / normFactor;
+            //entropy of three freq bands concatenated
+            //relative entropy = BG entropy - Total entorpy
+
+            //Entropy of average spectrum of those frames having activity
+            int freqBinCount = spectrogram.GetLength(1) - 1;
+            double[] avSpectrum = new double[freqBinCount];
+            for (int i = 0; i < L; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    for (int j = 0; j < freqBinCount; j++) avSpectrum[j] += spectrogram[i,j+1];
+                }
+            }
+            pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            indices.spectralEntropy = DataTools.Entropy(pmf3) / normFactor;
+            //DataTools.writeBarGraph(avSpectrum);
+
+            //Entropy of Concatenated Subbands
+            //int subbandCount = 3;
+            //double[,] splitSpectro = SNR.ReduceFreqBinsInSpectrogram(spectrogram, subbandCount);
+            //pmf3 = DataTools.NormaliseArea(splitSpectro);                        //pmf = probability mass funciton
+            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            //indices.spectralEntropy = DataTools.Entropy(pmf3) / normFactor;
 
 
+            // ASSEMBLE FEATURES
             var scores = new List<double[]>();
+            scores.Add(freqPeaks);
             scores.Add(envelope);
             scores.Add(peakLocations);
-            Indices indices;
-            indices.snr        = snr;
-            indices.bgNoise    = bgNoise;
-            indices.activity   = 1 - (zeroCount / (double)dBarray.Length);
-            indices.avAmp      = avAmplitude;
-            indices.peakCount  = peakCount;
-            indices.peakSum    = peakSum;
-            indices.gapEntropy = gapEntropy;
-            indices.ampEntropy = amplitudeEntropy;
-
             return System.Tuple.Create(indices, scores);
         }
 
@@ -232,12 +286,12 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
                 //add freq locations derived from zero-crossings.
-                //var newArray = DataTools.ScaleArray(scores[0], length);
-                //int[] freq = new int[newArray.Length];
-                //for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
-                //image.AddZCFrequencyValues(freq, sonogram.NyquistFrequency);
+                var newArray = DataTools.ScaleArray(scores[0], length);
+                int[] freq = new int[newArray.Length];
+                for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
+                image.AddFreqHitValues(freq, sonogram.NyquistFrequency);
 
-                for (int i = 0; i < scores.Count; i++)
+                for (int i = 1; i < scores.Count; i++)
                 {
                     int maxIndex = DataTools.GetMaxIndex(scores[i]);
                     double max = scores[i][maxIndex];

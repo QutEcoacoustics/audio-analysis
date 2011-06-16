@@ -19,6 +19,7 @@ namespace AudioAnalysisTools
         public string FilePath { get; private set; }
         public byte[] Bytes { get; set; }
         public int SampleRate    { get { if (wavReader != null) return wavReader.SampleRate;    else return -999; } }
+        public int Nyquist       { get { if (wavReader != null) return wavReader.SampleRate/2;  else return -999; } }
         public int BitsPerSample { get { if (wavReader != null) return wavReader.BitsPerSample; else return -999; } }
         #endregion
 
@@ -34,7 +35,6 @@ namespace AudioAnalysisTools
         }
         public AudioRecording(string path)
         {
-            //Log.WriteLine("Reading file: " + path);
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);

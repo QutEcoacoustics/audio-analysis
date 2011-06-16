@@ -20,7 +20,7 @@ namespace AudioAnalysisTools
         public List<AcousticEvent> EventList { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         private double superImposedMaxScore;
-        private int[] ZCFreqHits;
+        private int[] FreqHits;
         private int nyquistFreq;
         #endregion
 
@@ -50,9 +50,9 @@ namespace AudioAnalysisTools
             this.superImposedMaxScore = maxScore;
         }
 
-        public void AddZCFrequencyValues(int[] f, int nyquist)
+        public void AddFreqHitValues(int[] f, int nyquist)
         {
-            this.ZCFreqHits = f;
+            this.FreqHits = f;
             this.nyquistFreq = nyquist;
         }
 
@@ -97,7 +97,7 @@ namespace AudioAnalysisTools
 
                 if (this.SuperimposedMatrix != null) Superimpose(g);
                 if (this.EventList != null) DrawEvents(g);
-                if (this.ZCFreqHits != null) DrawZCFreqHits(g);
+                if (this.FreqHits != null) DrawFreqHits(g);
             }
 
             //now add tracks to the image
@@ -151,18 +151,17 @@ namespace AudioAnalysisTools
         }
 
 
-        void DrawZCFreqHits(Graphics g)
+        void DrawFreqHits(Graphics g)
         {
-            int L = this.ZCFreqHits.Length;
+            int L = this.FreqHits.Length;
             Pen p1 = new Pen(Color.Red);
             //Pen p2 = new Pen(Color.Black);
-            for (int i = 0; i < L; i++)
+            for (int x = 0; x < L; x++)
             {
-                if (this.ZCFreqHits[i] == 0) continue;
-                int x = i;
-                int y = (int)(256 * (1 - (this.ZCFreqHits[i] / (double)this.nyquistFreq)));
+                if (this.FreqHits[x] <= 0) continue;
+                int y = (int)(this.SonoImage.Height * (1 - (this.FreqHits[x] / (double)this.nyquistFreq)));
                 //g.DrawRectangle(p1, x, y, x + 1, y + 1);
-                g.DrawLine(p1, x, y, x, y + 2);
+                g.DrawLine(p1, x, y, x, y + 1);
                 //g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
             }
         }

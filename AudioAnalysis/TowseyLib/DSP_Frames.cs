@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+//using MathNet.Numerics;
+using MathNet.Numerics.Transformations;
+
 
 namespace TowseyLib
 {
@@ -85,15 +88,19 @@ namespace TowseyLib
             return frames;
         }
 
-        public static System.Tuple<double[], double[], double[,]> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
+        public static System.Tuple<double[], double[], double[,], double> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
         {
             int length = signal.Length;
             int frameOffset = (int)(windowSize * (1 - overlap));
             int frameCount = (length - windowSize + frameOffset) / frameOffset;
             double[] average = new double[frameCount];
             double[] envelope = new double[frameCount];
-            int fftSize = windowSize / 2;
-            double[,] spectrogram = new double[frameCount, fftSize];
+
+            //set up the FFT parameters
+            TowseyLib.FFT.WindowFunc w = TowseyLib.FFT.GetWindowFunction(FFT.Key_HammingWindow);
+            var fft = new TowseyLib.FFT(windowSize, w, true); // init class which calculates the MATLAB compatible .NET FFT
+            double[,] spectrogram = new double[frameCount, fft.CoeffCount]; //init amplitude sonogram
+            double[] f1; //the fft
 
             //cycle through the frames
             for (int i = 0; i < frameCount; i++)
@@ -103,7 +110,7 @@ namespace TowseyLib
                 int end = start + windowSize;
 
                 //get average and envelope
-                double maxValue = -Double.MaxValue;
+                double maxValue = Math.Abs(signal[start]);
                 double total = signal[start];
                 for (int x = start + 1; x < end; x++)
                 {
@@ -119,13 +126,17 @@ namespace TowseyLib
                 for (int j = 0; j < windowSize; j++)
                     signalMinusAv[j] = signal[start + j] - average[i];
 
-                //do fft
-                for (int j = 1; j < windowSize; j++) // go through current frame
-                { // ####################################################################### DO FFTs HERE @@@@@@@@@@@@@@@@@@@@@@@@@@
-                } // end current frame
+                //generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
+                f1 = fft.InvokeDotNetFFT(signalMinusAv);                 //returns fft amplitude spectrum
+                //f1 = fft.InvokeDotNetFFT(DataTools.GetRow(frames, i)); //returns fft amplitude spectrum
+                //f1 = fft.Invoke(DataTools.GetRow(frames, i));          //returns fft amplitude spectrum
 
-            }
-            return System.Tuple.Create(average, envelope, spectrogram);
+                //if (smoothingWindow > 2) f1 = DataTools.filterMovingAverage(f1, smoothingWindow); //smooth spectrum to reduce variance
+                for (int j = 0; j < fft.CoeffCount; j++) //foreach freq bin
+                    spectrogram[i, j] = f1[j]; //transfer amplitude
+                
+            } // end frames
+            return System.Tuple.Create(average, envelope, spectrogram, fft.WindowPower);
         }
 
 
