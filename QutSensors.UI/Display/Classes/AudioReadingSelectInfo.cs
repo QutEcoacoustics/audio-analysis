@@ -30,6 +30,7 @@
                 var segmentSize = TimeSpan.FromMinutes(6);
                 var segments = new List<long>();
 
+
                 var audioReadingTags = db.AudioTags
                 .Where(t => t.AudioReadingID == audioReading.AudioReadingID && filter.AudioTags.AsEnumerable().Contains(t.Tag))
                 .Select(t => new { StartTimeMs = t.StartTime, EndTimeMs = t.EndTime })
@@ -37,8 +38,12 @@
 
                 foreach (var tag in audioReadingTags)
                 {
+                    // watch out for rounding errors
+                    // eg: 21447071 / 360000 = 59.57519722222222 
+                    // rounds up to 60, which is the wrong segment
+
                     long startSegment =
-                        Convert.ToInt64((double)tag.StartTimeMs / (double)segmentSize.TotalMilliseconds);
+                        Convert.ToInt64(Math.Floor((double)tag.StartTimeMs / (double)segmentSize.TotalMilliseconds));
                     long startOffsetMs = Convert.ToInt64(startSegment * segmentSize.TotalMilliseconds);
                     if (!segments.Contains(startOffsetMs))
                     {
