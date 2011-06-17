@@ -16,11 +16,11 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Indices
         {
-            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy, peakFreqEntropy, spectralEntropy;
+            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy, entropyOfPeakFreqDistr, entropyOfAvSpectrum, relEntropyOfSpectra;
             public int peakCount;
 
             public Indices(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp,
-                           double _peakFreqEntropy, double _spectralEntropy)
+                           double _peakFreqEntropy, double _entropyOfAvSpectrum, double _relEntropyOfSpectra)
             {
                 snr        = _snr;
                 bgNoise    = _bgNoise;
@@ -30,8 +30,9 @@ namespace AnalysisPrograms
                 peakSum    = _peakSum;
                 gapEntropy = _gapEntropy;
                 ampEntropy = _entropyAmp;
-                peakFreqEntropy = _peakFreqEntropy;
-                spectralEntropy = _spectralEntropy;
+                entropyOfPeakFreqDistr = _peakFreqEntropy;
+                entropyOfAvSpectrum    = _entropyOfAvSpectrum;
+                relEntropyOfSpectra    = _relEntropyOfSpectra;
             }
         } 
 
@@ -55,7 +56,8 @@ namespace AnalysisPrograms
             string outputDir = recordingDir;
             string outpuCSV  = outputDir + "results1.csv";
             //write header to results file
-            string header = "count,minutes,FileName,snr-dB,bg-dB,activity,avAmp,peakCount,peakSum,gapEntropy,ampEntropy,peakFreqEntropy";
+            string header = "count,minutes,FileName,snr-dB,bg-dB,activity,avAmp,peakCount,peakSum,gapEntropy,ampEntropy," +
+                              "peakFreqEntropy,entropyOfAvSpectrum,relEntropyOfSpectra";
             FileTools.WriteTextFile(outpuCSV, header);
             //init counters
             int fileCount = 0;
@@ -94,10 +96,10 @@ namespace AnalysisPrograms
             //iv:  store results
             elapsedTime += recording.GetWavReader().Time.TotalMinutes;
             Indices indices = results.Item1;
-            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4}",
+            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4}",
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
                 indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
-                indices.ampEntropy, indices.peakFreqEntropy);
+                indices.ampEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.relEntropyOfSpectra);
             FileTools.Append2TextFile(outpuCSV, values);
 
             //v: STORE IMAGES
@@ -177,8 +179,12 @@ namespace AnalysisPrograms
             normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
             indices.ampEntropy = DataTools.Entropy(pmf2) / normFactor;
             //Console.WriteLine("amplitudeEntropy= " + indices.ampEntropy);
-
+            Log.WriteLine("#   Calculate Spectral Entropy.");
             //v: SPECTROGRAM ANALYSIS 
+            // obtain three spectral indices - derived ONLY from frames having acoustic energy.
+            //1) entropy of distribution of spectral peaks
+            //2) entropy of the average spectrum
+            //3) relative entropy of combined spectra wrt average 
             int L = dBarray.Length;
             double[,] spectrogram = results2.Item3;
             //double HammingWindowPower = results2.Item4;
@@ -189,6 +195,7 @@ namespace AnalysisPrograms
             //modalNoise = DataTools.filterMovingAverage(modalNoise, 7);      //smooth the noise profile
             //spectrogram = SNR.NoiseReduce_Standard(spectrogram, modalNoise);//set neg value = zero
 
+            //vi: DISTRIBUTION OF SPECTRAL PEAKS
             double[] freqPeaks = new double[L];
             for (int i = 0; i < L; i++)
             {
@@ -198,8 +205,6 @@ namespace AnalysisPrograms
                     freqPeaks[i] = (recording.Nyquist * j / (double)spectrogram.GetLength(1));
                 }
             }
-
-            //vi: FREQ PROPERTIES
             double binWidth = 100.0;
             int[] freqHistogram;
             double[] pmf3;
@@ -208,20 +213,10 @@ namespace AnalysisPrograms
             freqHistogram[0] = 0; //remove frames having freq=0 i.e frames with no activity from calculation of entropy.
             pmf3       = DataTools.NormaliseArea(freqHistogram);                   //pmf = probability mass funciton
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
-            indices.peakFreqEntropy = DataTools.Entropy(pmf3) / normFactor;
+            indices.entropyOfPeakFreqDistr = DataTools.Entropy(pmf3) / normFactor;
+            //DataTools.writeBarGraph(freqHistogram);
 
-            //Entropy of background noise spectrum
-            //pmf3 = DataTools.NormaliseArea(modalNoise);                          //pmf = probability mass funciton
-            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            //indices.bgNoiseEntropy = DataTools.Entropy(pmf3) / normFactor;
-            ////Entropy of average spectrum derived frames with energy
-            //double[] avSpectrum = GetAverageSpectrum();
-            //pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
-            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            //indices.bgNoiseEntropy = DataTools.Entropy(pmf3) / normFactor;
-            //entropy of three freq bands concatenated
-            //relative entropy = BG entropy - Total entorpy
-
+            //vi: DISTRIBUTION OF AVERAGE SPECTRUM
             //Entropy of average spectrum of those frames having activity
             int freqBinCount = spectrogram.GetLength(1) - 1;
             double[] avSpectrum = new double[freqBinCount];
@@ -234,16 +229,37 @@ namespace AnalysisPrograms
             }
             pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            indices.spectralEntropy = DataTools.Entropy(pmf3) / normFactor;
+            indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
             //DataTools.writeBarGraph(avSpectrum);
 
-            //Entropy of Concatenated Subbands
-            //int subbandCount = 3;
-            //double[,] splitSpectro = SNR.ReduceFreqBinsInSpectrogram(spectrogram, subbandCount);
-            //pmf3 = DataTools.NormaliseArea(splitSpectro);                        //pmf = probability mass funciton
-            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            //indices.spectralEntropy = DataTools.Entropy(pmf3) / normFactor;
+            //relative entropy = BG entropy - Total entropy
+            double h1 = indices.entropyOfAvSpectrum * normFactor;
+            double relEntropy = 0.0;
+            int frameCount = 0;
+            for (int i = 0; i < L; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    double[] spectrum = new double[freqBinCount];
+                    for (int j = 0; j < freqBinCount; j++) spectrum[j] += spectrogram[i, j + 1];
+                    pmf3 = DataTools.NormaliseArea(spectrum);                          //pmf = probability mass funciton
+                    relEntropy += (h1 - DataTools.Entropy(pmf3));
+                    frameCount++;
+                }
+            }
+            normFactor = Math.Log(freqBinCount*frameCount) / DataTools.ln2; //normalize for concatenated length of all spectra.
+            indices.relEntropyOfSpectra = relEntropy / normFactor;
 
+            double[] d1 = {1.0, 0.0, 0.0, 0.0};
+            double[] d2 = {0.25, 0.25, 0.25, 0.25};
+            double re1 = DataTools.RelativeEntropy(d1, d2); // +DataTools.RelativeEntropy(d1, d2);
+            re1 /= (Math.Log(4) / DataTools.ln2);
+            Log.WriteLine("RE1="+ re1);
+            double[] d3 = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+            double[] d4 = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
+            double re2 = DataTools.RelativeEntropy(d3, d4); // +DataTools.RelativeEntropy(d1, d2);
+            re2 /= (Math.Log(8) / DataTools.ln2);
+            Log.WriteLine("RE2=" + re2);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
