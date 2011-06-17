@@ -42,7 +42,7 @@ namespace QutSensors.UI.Display.Managers
         {
             var tagBus = new TagBus();
             return tagBus.GetAudioTags(
-                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId);
+                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId, false);
         }
 
         /// <summary>
@@ -61,8 +61,8 @@ namespace QutSensors.UI.Display.Managers
         public static IEnumerable<string> GetAudioRefTags(string partialText, int count)
         {
             var tagBus = new TagBus();
-            return tagBus.GetAudioRefTags(
-                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId);
+            return tagBus.GetAudioTags(
+                partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId, true);
         }
 
         /// <summary>
@@ -376,22 +376,23 @@ namespace QutSensors.UI.Display.Managers
         {
             using (var db = new QutSensorsDb())
             {
-                var query = db.AudioTags.AsQueryable();
+                IQueryable<AudioTag> query;
 
-                Guid? user = AuthenticationHelper.CurrentUserId;
-
-                // restrict to ref. tags
-                query = query.Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value);
-
-                if (!AuthenticationHelper.IsCurrentUserAdmin)
+                if (AuthenticationHelper.IsCurrentUserAdmin)
                 {
+                    query = db.AudioTags.AsQueryable();
+                }
+                else
+                {
+                    Guid? user = AuthenticationHelper.CurrentUserId;
+
                     // only show ref tags that user can access.
                     var deps =
                         EntityManager.Instance.GetEntityItemsForView(
                             db, user, (ei) => ei.Entity_MetaData.DeploymentID.HasValue).Select(
                                 (d) => d.Entity_MetaData.Deployment);
 
-                    query = from a in query
+                    query = from a in db.AudioTags
                             join d in deps on a.AudioReading.Deployment.DeploymentID equals d.DeploymentID
                             select a;
                 }
@@ -400,6 +401,9 @@ namespace QutSensors.UI.Display.Managers
                 {
                     query = query.Where(at => at.Tag.Contains(request.TagName));
                 }
+
+                // restrict to ref. tags
+                query = query.Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value);
 
                 var manager = new TagMatchRequestManager();
                 var aList = manager.GetTagsSorted(request, query);
@@ -417,7 +421,7 @@ namespace QutSensors.UI.Display.Managers
                     TagName = q.Tag,
                     TagFrequencyMax = Convert.ToInt32(q.EndFrequency),
                     TagFrequencyMin = Convert.ToInt32(q.StartFrequency)
-                }).ToList();
+                }).Skip(startIndex).Take(maxItems).ToList();
 
                 return queryItems;
             }
@@ -439,22 +443,23 @@ namespace QutSensors.UI.Display.Managers
         {
             using (var db = new QutSensorsDb())
             {
-                var query = db.AudioTags.AsQueryable();
+                IQueryable<AudioTag> query;
 
-                Guid? user = AuthenticationHelper.CurrentUserId;
-
-                // restrict to ref. tags
-                query = query.Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value);
-
-                if (!AuthenticationHelper.IsCurrentUserAdmin)
+                if (AuthenticationHelper.IsCurrentUserAdmin)
                 {
+                    query = db.AudioTags.AsQueryable();
+                }
+                else
+                {
+                    Guid? user = AuthenticationHelper.CurrentUserId;
+
                     // only show ref tags that user can access.
                     var deps =
                         EntityManager.Instance.GetEntityItemsForView(
                             db, user, (ei) => ei.Entity_MetaData.DeploymentID.HasValue).Select(
                                 (d) => d.Entity_MetaData.Deployment);
 
-                    query = from a in query
+                    query = from a in db.AudioTags
                             join d in deps on a.AudioReading.Deployment.DeploymentID equals d.DeploymentID
                             select a;
                 }
@@ -463,6 +468,9 @@ namespace QutSensors.UI.Display.Managers
                 {
                     query = query.Where(at => at.Tag.Contains(request.TagName));
                 }
+
+                // restrict to ref. tags
+                query = query.Where(at => at.AudioTags_MetaData.ReferenceTag.HasValue && at.AudioTags_MetaData.ReferenceTag.Value);
 
                 var manager = new TagMatchRequestManager();
                 var aList = manager.GetTagsSorted(request, query);
