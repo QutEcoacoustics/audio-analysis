@@ -19,6 +19,7 @@ namespace AudioDataStorageMigrateConsole
     using System.Text;
 
     using AudioDataStorageMigrateConsole.Diag;
+    using AudioDataStorageMigrateConsole.ExportAndVerify;
 
     using AudioTools.AudioUtlity;
     using AudioTools.WavAudio;
@@ -61,15 +62,20 @@ namespace AudioDataStorageMigrateConsole
                 audioDataStorageDir,
                 tempFileUploadDir);
 
-            // var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
+            var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
             var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
-            var audioutil = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
+            //var audioutil = QutDependencyContainer.Instance.Container.Resolve<IAudioUtility>();
 
             //Worker = new MigrationWorker(logFileDir, sqlFs, fileSys, audioutil);
 
-            using (var diag = new AudioReadingDataDiagnostic(logFileDir, fileSys, audioutil))
+            //using (var diag = new AudioReadingDataDiagnostic(logFileDir, fileSys, audioutil))
+            //{
+            //    diag.Run();
+            //}
+
+            using (var simpleExporter = new SimpleExporter(logFileDir, sqlFs, fileSys))
             {
-                diag.Run();
+                simpleExporter.Run();
             }
 
             ////GenerateMachineKey("64");
