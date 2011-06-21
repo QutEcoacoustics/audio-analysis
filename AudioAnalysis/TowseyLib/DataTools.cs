@@ -680,6 +680,12 @@ namespace TowseyLib
       double min;
       double max;
       MinMax(data, out min, out max);
+      if(max < 10.0)
+      {
+          min = 0;
+          max = 80;
+          data = DataTools.Normalise(data, min, max);
+      }
       int[] intdata = new int[data.Length];
       for(int i=0; i<data.Length; i++) intdata[i] = (int)Math.Round(2*(data[i] - min));//subtract min to remove neg values
       writeBarGraph(intdata);
@@ -724,6 +730,7 @@ namespace TowseyLib
       if((v>0.00)&&(v<1.00)) ht = 1;
       for (int j = 0; j <ht; j++) Console.Write("=");
       Console.WriteLine();
+      //if(i % 50 == 0) Console.ReadLine();
     }
     Console.WriteLine("Min="+min+" Max="+max+"  Scaling factor="+sf);
     Console.WriteLine();
@@ -953,7 +960,27 @@ namespace TowseyLib
 
 
   /// <summary>
-  /// Subtrace matrix m2 from matrix m1
+  /// Subtract vector v2 from vector v1
+  /// </summary>
+  /// <param name="m1"></param>
+  /// <param name="m2"></param>
+  /// <returns></returns>
+  public static double[] SubtractVectors(double[] v1, double[] v2)
+  {
+      int L1 = v1.Length;
+      int L2 = v2.Length;
+      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+
+      double[] difference = new double[L1];
+      for (int i = 0; i < L1; i++)
+          {
+              difference[i] = v1[i] - v2[i];
+          }
+      return difference;
+  }
+
+  /// <summary>
+  /// Subtract matrix m2 from matrix m1
   /// </summary>
   /// <param name="m1"></param>
   /// <param name="m2"></param>
