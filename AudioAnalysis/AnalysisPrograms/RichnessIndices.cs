@@ -16,11 +16,12 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Indices
         {
-            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy, entropyOfPeakFreqDistr, entropyOfAvSpectrum, relEntropyOfSpectra;
+            public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy;
+            public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1, entropyOfDiffSpectra2;
             public int peakCount;
 
             public Indices(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp,
-                           double _peakFreqEntropy, double _entropyOfAvSpectrum, double _relEntropyOfSpectra)
+                           double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, double _entropyOfDifferenceSpectra2)
             {
                 snr        = _snr;
                 bgNoise    = _bgNoise;
@@ -30,55 +31,152 @@ namespace AnalysisPrograms
                 peakSum    = _peakSum;
                 gapEntropy = _gapEntropy;
                 ampEntropy = _entropyAmp;
-                entropyOfPeakFreqDistr = _peakFreqEntropy;
-                entropyOfAvSpectrum    = _entropyOfAvSpectrum;
-                relEntropyOfSpectra    = _relEntropyOfSpectra;
+                entropyOfPeakFreqDistr= _peakFreqEntropy;
+                entropyOfAvSpectrum   = _entropyOfAvSpectrum;
+                entropyOfDiffSpectra1 = _entropyOfDifferenceSpectra1;
+                entropyOfDiffSpectra2 = _entropyOfDifferenceSpectra2;
             }
         } 
 
 
         public static void Dev(string[] args)
         {
-            string title = "# EXTRACT RICHNESS INDICES.";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
-            Log.WriteLine(title);
-            Log.WriteLine(date);
 
             //SET VERBOSITY
+            DateTime datetime = DateTime.Now;
             Log.Verbosity = 1;
 
-            //string recordingPath   = args[0];
-            //string iniPath        = args[0];
-            //string targetName     = args[2];   //prefix of name of created files 
-
             //i: Set up the dir and file names
-            string recordingDir = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\";
+            string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\";
+            var fileList         = Directory.GetFiles(recordingDir, "*.wav");
+            string recordingPath = fileList[0];
+            string fileName      = Path.GetFileName(recordingPath);
+            //string fileName    = "BAC2_20071008-085040.wav";
+            Log.WriteLine("Directory: " + recordingDir);
+            Log.WriteLine("Directory contains " + fileList.Count() + " wav files.");
+
             string outputDir = recordingDir;
-            string outpuCSV  = outputDir + "results1.csv";
+            Log.WriteIfVerbose("# Output folder =" + outputDir);
+            string opFileName = "Results_ARI_" + FileTools.TimeStamp2FileName(datetime) + ".csv";
+            string opPath = outputDir + opFileName; // .csv file
+
             //write header to results file
-            string header = "count,minutes,FileName,snr-dB,bg-dB,activity,avAmp,peakCount,peakSum,gapEntropy,ampEntropy," +
-                              "peakFreqEntropy,entropyOfAvSpectrum,relEntropyOfSpectra";
-            FileTools.WriteTextFile(outpuCSV, header);
+            if (!File.Exists(opPath))
+            {
+                string header = "count, minutes, FileName, snr-dB, bg-dB, activity, avAmp, peakCount, peakSum, H[gaps],"+
+                                "H[amplitude], H[peakFreq], H[avSpectrum], H1[diffSpectra], H2[diffSpectra]";
+                FileTools.WriteTextFile(opPath, header);
+            }
+
             //init counters
             int fileCount = 0;
             double elapsedTime = 0.0;
-
-            var fileList = Directory.GetFiles(recordingDir, "*.wav");
-            Log.WriteLine("Directory: " + recordingDir);
-            Log.WriteLine("Directory contains "+ fileList.Count()+" wav files.");
             DateTime tStart = DateTime.Now;
-
-
-            //########################################################################################
-            //START LOOP
-            string recordingPath = fileList[0];
-            string fileName = Path.GetFileName(recordingPath);
-            //string fileName = "BAC2_20071008-085040.wav";
 
             Console.WriteLine("\n\n");
             Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
 
+            ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
+
+        ////########################################################################################
+        ////START LOOP
+        ////i: GET RECORDING, FILTER and DOWNSAMPLE
+        //AudioRecording recording = new AudioRecording(recordingPath);
+        //string filterName = "Chebyshev_Lowpass_5000";
+        //recording.Filter_IIR(filterName); //filter audio recording.
+        //recording.ReduceSampleRateByFactor(2);
+
+        ////ii WRITE FILTERED SIGNAL IF NEED TO DEBUG
+        ////write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
+        ////int bitRate = 16;
+        ////WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");        
+
+        ////iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050Hz = 5.805ms, @ 11025kHz = 11.61ms.
+        //var results = ExtractIndices(recording);
+            
+        ////iv:  store results
+        //elapsedTime += recording.GetWavReader().Time.TotalMinutes;
+        //Indices indices = results.Item1;
+        //var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14:f4}",
+        //    fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
+        //    indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
+        //    indices.ampEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1, indices.entropyOfDiffSpectra2);
+        //FileTools.Append2TextFile(outputCSV, values);
+
+        ////v: STORE IMAGES
+        //var scores = results.Item2;
+        //MakeAndDrawSonogram(recording, recordingDir, scores);
+        //recording.Dispose(); // DISPOSE FILTERED SIGNAL
+
+        ////END LOOP
+        ////########################################################################################################
+
+            DateTime tEnd = DateTime.Now;
+            TimeSpan duration = tEnd - tStart;
+            Log.WriteLine("# Elapsed Time = " + duration.TotalSeconds);
+            Log.WriteLine("# Finished everything!");
+            Console.ReadLine();
+        } //DEV()
+
+        /// <summary>
+        /// EXECUTABLE - To CALL THIS METHOD MUST EDIT THE MAINENTRY.cs FILE
+        /// extracts acoustic richness indices from a single recording.
+        /// </summary>
+        /// <param name="args"></param>
+        public static void Executable(string[] args)
+        {
+            DateTime tStart = DateTime.Now;
+            //SET VERBOSITY
+            Log.Verbosity = 1;
+            CheckArguments(args);
+
+            string recordingPath = args[0];
+            string opPath        = args[1];
+
+            //i: Set up the dir and file names
+            string recordingDir = Path.GetDirectoryName(recordingPath);
+            string outputDir    = Path.GetDirectoryName(opPath);
+            string fileName     = Path.GetFileName(recordingPath);
+
+            //init counters
+            double elapsedTime = 0.0;
+            int fileCount = 0;
+
+            //write header to results file
+            if (!File.Exists(opPath))
+            {
+                string header = "count, minutes, FileName, snr-dB, bg-dB, activity, avAmp, peakCount, peakSum, H[gaps]," +
+                                "H[amplitude], H[peakFreq], H[avSpectrum], H1[diffSpectra], H2[diffSpectra]";
+                FileTools.WriteTextFile(opPath, header);
+            }
+            else //calculate file number and total elapsed time so far
+            {
+                List<string> text = FileTools.ReadTextFile(opPath);  //read results file
+                string[] lastLine = text[text.Count - 1].Split(','); // read and split the last line
+                if (!lastLine[0].Equals("count"))   Int32.TryParse(lastLine[0],  out fileCount);
+                fileCount++;
+                if (!lastLine[1].Equals("minutes")) Double.TryParse(lastLine[1], out elapsedTime);
+            }
+
+            Console.WriteLine("\n\n");
+            Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
+
+            ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
+
+            DateTime tEnd = DateTime.Now;
+            TimeSpan duration = tEnd - tStart;
+            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################");
+            //Log.WriteLine("# Finished!");
+            //Console.ReadLine();
+        } //EXECUTABLE()
+
+
+        //#########################################################################################################################################################
+
+        public static void ScanRecording(string recordingPath, string opPath, int fileCount, double elapsedTime)
+        {
             //i: GET RECORDING, FILTER and DOWNSAMPLE
+            Console.WriteLine("recordingPath=" + recordingPath);
             AudioRecording recording = new AudioRecording(recordingPath);
             string filterName = "Chebyshev_Lowpass_5000";
             recording.Filter_IIR(filterName); //filter audio recording.
@@ -92,35 +190,22 @@ namespace AnalysisPrograms
 
             //iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050Hz = 5.805ms, @ 11025kHz = 11.61ms.
             var results = ExtractIndices(recording);
-            
+
             //iv:  store results
             elapsedTime += recording.GetWavReader().Time.TotalMinutes;
             Indices indices = results.Item1;
-            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4}",
+            var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14:f4}",
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
                 indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
-                indices.ampEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.relEntropyOfSpectra);
-            FileTools.Append2TextFile(outpuCSV, values);
+                indices.ampEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1, indices.entropyOfDiffSpectra2);
+            FileTools.Append2TextFile(opPath, values);
 
             //v: STORE IMAGES
             var scores = results.Item2;
+            string recordingDir = Path.GetDirectoryName(recordingPath)+"\\";
             MakeAndDrawSonogram(recording, recordingDir, scores);
             recording.Dispose(); // DISPOSE FILTERED SIGNAL
-
-            //END LOOP
-            //########################################################################################################
-
-            DateTime tEnd = DateTime.Now;
-            TimeSpan duration = tEnd - tStart;
-            Log.WriteLine("# Elapsed Time = " + duration.TotalSeconds);
-            Log.WriteLine("# Finished everything!");
-            Console.ReadLine();
-        } //DEV()
-
-
-        //#########################################################################################################################################################
-
-
+        }
 
         /// <summary>
         /// </summary>
@@ -218,6 +303,7 @@ namespace AnalysisPrograms
 
             //vi: DISTRIBUTION OF AVERAGE SPECTRUM
             //Entropy of average spectrum of those frames having activity
+            int frameCount = 0;
             int freqBinCount = spectrogram.GetLength(1) - 1;
             double[] avSpectrum = new double[freqBinCount];
             for (int i = 0; i < L; i++)
@@ -225,41 +311,55 @@ namespace AnalysisPrograms
                 if (dBarray[i] >= dBThreshold)
                 {
                     for (int j = 0; j < freqBinCount; j++) avSpectrum[j] += spectrogram[i,j+1];
+                    frameCount++;
                 }
             }
+            for (int j = 0; j < freqBinCount; j++) avSpectrum[j] /= frameCount;  //get average - need later for difference spectra
             pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
             indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
             //DataTools.writeBarGraph(avSpectrum);
 
-            //relative entropy = BG entropy - Total entropy
-            double h1 = indices.entropyOfAvSpectrum * normFactor;
-            double relEntropy = 0.0;
-            int frameCount = 0;
+            //entropy of difference spectra ie H[spectrumN - spectrumAv]
+            double entropy1 = 0.0; //average of individual entropies
             for (int i = 0; i < L; i++)
             {
                 if (dBarray[i] >= dBThreshold)
                 {
                     double[] spectrum = new double[freqBinCount];
                     for (int j = 0; j < freqBinCount; j++) spectrum[j] += spectrogram[i, j + 1];
-                    pmf3 = DataTools.NormaliseArea(spectrum);                          //pmf = probability mass funciton
-                    relEntropy += (h1 - DataTools.Entropy(pmf3));
-                    frameCount++;
+                    var difference = DataTools.SubtractVectors(spectrum, avSpectrum);
+                    difference = DataTools.Normalise(difference, 0, 1);    //normalize in 0,1 to remove negative values
+                    pmf3 = DataTools.NormaliseArea(difference);             //pmf = probability mass funciton
+                    entropy1 += (DataTools.Entropy(pmf3) / normFactor);
+                    //DataTools.writeBarGraph(difference);
                 }
             }
-            normFactor = Math.Log(freqBinCount*frameCount) / DataTools.ln2; //normalize for concatenated length of all spectra.
-            indices.relEntropyOfSpectra = relEntropy / normFactor;
+            indices.entropyOfDiffSpectra1 = entropy1 / frameCount;
 
-            double[] d1 = {1.0, 0.0, 0.0, 0.0};
-            double[] d2 = {0.25, 0.25, 0.25, 0.25};
-            double re1 = DataTools.RelativeEntropy(d1, d2); // +DataTools.RelativeEntropy(d1, d2);
-            re1 /= (Math.Log(4) / DataTools.ln2);
-            Log.WriteLine("RE1="+ re1);
-            double[] d3 = { 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-            double[] d4 = { 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25, 0.25 };
-            double re2 = DataTools.RelativeEntropy(d3, d4); // +DataTools.RelativeEntropy(d1, d2);
-            re2 /= (Math.Log(8) / DataTools.ln2);
-            Log.WriteLine("RE2=" + re2);
+            // repeat but calculate entropy from a concatenated spectrum
+            int startCount = 0;
+            double[] concatSpectrum = new double[freqBinCount * frameCount];   //init conatenated spectrum
+            for (int i = 0; i < L; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    double[] spectrum = new double[freqBinCount];   
+                    for (int j = 0; j < freqBinCount; j++) spectrum[j] += spectrogram[i, j + 1]; //+1 to skip the DC value at position zero.
+                    var difference = DataTools.SubtractVectors(spectrum, avSpectrum);
+                    for (int j = 0; j < freqBinCount; j++) concatSpectrum[startCount + j] = difference[j];
+                    startCount += freqBinCount;
+                }
+            }
+            concatSpectrum = DataTools.Normalise(concatSpectrum, 0, 1);    //normalize in 0,1 to remove negative values
+            //DataTools.writeBarGraph(concatSpectrum);
+            pmf3 = DataTools.NormaliseArea(concatSpectrum);                //pmf = probability mass funciton
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;   
+            double entropy2 = DataTools.Entropy(pmf3) / normFactor;
+            indices.entropyOfDiffSpectra2 = entropy2;
+
+            //Log.WriteLine("Spectral difference entropy1 =" + indices.entropyOfDiffSpectra1);
+            //Log.WriteLine("Spectral difference entropy2 =" + indices.entropyOfDiffSpectra2);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
@@ -318,6 +418,60 @@ namespace AnalysisPrograms
                 image.Save(imagePath);
             } // using
         } // MakeAndDrawSonogram()
+
+
+        public static void CheckArguments(string[] args)
+        {
+            int argumentCount = 2;
+            if (args.Length != argumentCount)
+            {
+                Log.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
+                foreach (string arg in args) Log.WriteLine(arg + "  ");
+                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", argumentCount);
+                Usage();
+            }
+            CheckPaths(args);
+        }
+
+        /// <summary>
+        /// this method checks for the existence of a file and directory expected as two arguments of the command line.
+        /// </summary>
+        /// <param name="args"></param>
+        public static void CheckPaths(string[] args)
+        {
+            if (!File.Exists(args[0]))
+            {
+                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+            string opDir = Path.GetDirectoryName(args[1]);
+            if (!Directory.Exists(opDir))
+            {
+                Console.WriteLine("Cannot find output directory: <" + opDir + ">");
+                Usage();
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+        }
+
+
+        public static void Usage()
+        {
+            Console.WriteLine("INCORRECT COMMAND LINE.");
+            Console.WriteLine("USAGE:");
+            Console.WriteLine("RichnessIndices.exe recordingPath outputFilePath");
+            Console.WriteLine("where:");
+            Console.WriteLine("recordingFileName:-(string) Path of the audio file to be processed.");
+            Console.WriteLine("outputFileName:-   (string) Path of the output file to store results.");
+            Console.WriteLine("");
+            Console.WriteLine("\nPress <ENTER> key to exit.");
+            Console.ReadLine();
+            System.Environment.Exit(1);
+        }
+
 
     }
 }

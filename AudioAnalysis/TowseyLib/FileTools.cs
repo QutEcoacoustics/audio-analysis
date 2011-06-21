@@ -73,6 +73,15 @@ namespace TowseyLib
             Log.WriteLine("CLOSE CONSOLE"); //end
         } //end MAIN
 
+
+
+        public static string TimeStamp2FileName(DateTime datetime)
+        {
+            string name = String.Format("{0}{1:D2}{2:D2}_{3:D2}{4:D2}", datetime.Year, datetime.Month, datetime.Day, datetime.Hour, datetime.Minute);
+            return name;
+        }
+
+
         public static bool BackupFile(string path)
         {
             Log.WriteLine("COPYING FILE:- " + path);
