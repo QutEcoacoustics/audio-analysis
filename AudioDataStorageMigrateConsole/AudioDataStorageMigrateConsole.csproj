@@ -65,6 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\AudioFileInfo.cs" />
+    <Compile Include="Classes\DbDataInfo.cs" />
+    <Compile Include="Classes\OnlyExports.cs" />
     <Compile Include="Diag\AudioReadingDataDiagnostic.cs" />
     <Compile Include="Diag\AudioReadingDiagItem.cs" />
     <Compile Include="ExportAndVerify\ExportVerifyRunner.cs" />
@@ -96,6 +99,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy "$(ProjectDir)..\AudioTools\Executables" "$(TargetDir)Executables\" /S /Y</PostBuildEvent>

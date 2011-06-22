@@ -141,7 +141,7 @@ END;
 SELECT @hashRegister1 as hashresult;
 
 ");
-                
+
                 if (items.Count() > 0)
                 {
                     var check =
@@ -157,6 +157,7 @@ SELECT @hashRegister1 as hashresult;
                                     : (string.IsNullOrEmpty(i["hashresult"].ToString())
                                            ? string.Empty
                                            : i["hashresult"].ToString()),
+                                    DataLength = new long?()
                                 });
 
                     var item = check.FirstOrDefault();
@@ -182,10 +183,12 @@ SELECT @hashRegister1 as hashresult;
 
                     if (item.Id.HasValue && item.DataLength.HasValue && item.Id == reading.AudioReadingID)
                     {
-                        return item.DataLength.Value;
+                        //return item.DataLength.Value;
                     }
+
+                    return null;
                 }
-                
+
 
                 throw new ArgumentOutOfRangeException(
                     "reading",
@@ -271,7 +274,7 @@ SELECT @hashRegister1 as hashresult;
             }
         }
 
-        public static bool AudioReadingSqlFileStreamDataIsNull(AudioReading reading)
+        public static bool AudioReadingSqlFileStreamDataExists(AudioReading reading)
         {
             if (reading == null || reading.AudioReadingID == Guid.Empty)
             {
@@ -319,7 +322,7 @@ WHERE ar.[AudioReadingID] = '" +
                     if (item.Id.HasValue && item.DataIsNullResult.HasValue && item.Id == reading.AudioReadingID)
                     {
                         // data is null when query returns 0
-                        return item.DataIsNullResult.Value == 0 ? true : false;
+                        return item.DataIsNullResult.Value == 0 ? false : true;
                     }
                 }
 

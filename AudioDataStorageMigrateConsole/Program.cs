@@ -18,6 +18,7 @@ namespace AudioDataStorageMigrateConsole
     using System.Security.Cryptography;
     using System.Text;
 
+    using AudioDataStorageMigrateConsole.Classes;
     using AudioDataStorageMigrateConsole.Diag;
     using AudioDataStorageMigrateConsole.ExportAndVerify;
 
@@ -44,6 +45,56 @@ namespace AudioDataStorageMigrateConsole
         /// The arguments.
         /// </param>
         public static void Main(string[] args)
+        {/*
+            string ffmpegExe = ConfigurationManager.AppSettings["AudioUtilityFfmpegExe"];
+            string wvunpackExe = ConfigurationManager.AppSettings["AudioUtilityWvunpackExe"];
+            string mp3SpltExe = ConfigurationManager.AppSettings["AudioUtilityMp3SpltExe"];
+
+            string audioDataStorageDir = ConfigurationManager.AppSettings["AudioDataStorageDir"];
+
+            string tempFileUploadDir = ConfigurationManager.AppSettings["UploadFolder"];
+
+            string logFileDir = ConfigurationManager.AppSettings["LogFileDir"];
+
+            QutDependencyContainer.Instance.BuildIoCContainer(
+                ffmpegExe,
+                wvunpackExe,
+                mp3SpltExe,
+                audioDataStorageDir,
+                tempFileUploadDir);
+
+            var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
+            var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
+
+            var onlyExport = new OnlyExports(logFileDir, sqlFs, fileSys);
+            onlyExport.Run();
+            Console.ReadLine();
+            */
+
+            /*
+            --insert into audioreadings 
+--([Time],HardwareId,[Data]) 
+--values 
+--(GETDATE(),1,cast(REPLICATE('a',4000) as varbinary(max)));
+
+select HASHBYTES('sha1',[Data])
+from AudioReadings
+where AudioReadingID = '666D0B15-F87B-4A99-B765-74E3108AF0C6'
+            */
+
+            // hash in db
+            // 0x38E4F3C0C14B64B1E112B7F4DC370FD962AD31DE
+            // 0x38E4F3C0C14B64B1E112B7F4DC370FD962AD31DE
+
+            var hash =
+                Sha1HashFile(
+                    new FileInfo(
+                        @"C:\Sensors\trunk\AudioDataStorage\66\666d0b15-f87b-4a99-b765-74e3108af0c6_110622-1148.mp3"));
+            Console.WriteLine(hash);
+            Console.ReadLine();
+        }
+
+        private static void Setup()
         {
             string ffmpegExe = ConfigurationManager.AppSettings["AudioUtilityFfmpegExe"];
             string wvunpackExe = ConfigurationManager.AppSettings["AudioUtilityWvunpackExe"];
@@ -222,6 +273,21 @@ namespace AudioDataStorageMigrateConsole
             {
                 File.Delete(outputAudioFile.FullName);
             }
+        }
+
+        private static string Sha1HashFile(FileInfo file)
+        {
+            string hash;
+
+            using (var sha1 = new SHA1CryptoServiceProvider())
+            using (var fileStream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                var result = sha1.ComputeHash(fileStream);
+                string hex = BitConverter.ToString(result).Replace("-", string.Empty);
+                hash = Convert.ToBase64String(result);
+            }
+
+            return hash;
         }
 
         /*
