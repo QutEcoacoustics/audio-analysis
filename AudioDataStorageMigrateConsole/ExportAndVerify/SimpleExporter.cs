@@ -99,7 +99,7 @@ namespace AudioDataStorageMigrateConsole.ExportAndVerify
 
         private string HashSqlExtended(AudioReading reading)
         {
-            
+            return string.Empty;
         }
 
         private class InfoHolder
@@ -139,7 +139,7 @@ namespace AudioDataStorageMigrateConsole.ExportAndVerify
                 }
 
                 // see if there is data in the database
-                dbDataIsNull = MigrationUtils.AudioReadingSqlFileStreamDataIsNull(reading);
+                dbDataIsNull = !MigrationUtils.AudioReadingSqlFileStreamDataExists(reading);
 
                 // if there is, get it's byte count
 
