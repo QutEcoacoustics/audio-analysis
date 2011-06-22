@@ -158,6 +158,9 @@ namespace AudioDataStorageMigrateConsole.Classes
                 {
                     // if both file exists and db data exists, check the byte sizes match, then delete from db.
                     this.DbDataInfo.ClearData(reading);
+
+                    // update db.
+                    UpdateFileInfo(db, reading);
                     msg = "Both file exists and db data exists. The byte sizes match so deleted from db.";
                 }
                 else if (fileExists && dbDataExists && fileByteCount != dbDataLength)
@@ -175,15 +178,14 @@ namespace AudioDataStorageMigrateConsole.Classes
                     this.exportWatch.Stop();
                     exportTime = this.exportWatch.Elapsed;
 
-                    if (success)
-                    {
-                        // update reading
-                        reading.DataLocation = AudioReadingDataLocation.FileSystem;
-                        reading.DataSizeBytes = fileByteCount;
-                        reading.State = AudioReadingState.Ready;
-                        db.SubmitChanges();
+                    // check again to see if file exists
+                    fileExists = this.AudioFileInfo.DataExists(reading);
 
-                        // remove data from db
+                    if (success && fileExists)
+                    {
+                        UpdateFileInfo(db, reading);
+
+                        // only remove data from db if file exists
                         this.DbDataInfo.ClearData(reading);
 
                         msg = "File does not exist and data does exist. Exported data from db. Updated db. Deleted data from db.";
@@ -200,6 +202,7 @@ namespace AudioDataStorageMigrateConsole.Classes
                 }
                 else if (fileExists && !dbDataExists)
                 {
+                    UpdateFileInfo(db, reading);
                     msg = "File exists and data does not exist. This is what we're after so do nothing.";
                 }
             }
@@ -276,6 +279,23 @@ namespace AudioDataStorageMigrateConsole.Classes
             }
 
             return dataToFileSuccess;
+        }
+
+        private void UpdateFileInfo(QutSensorsDb db, AudioReading reading)
+        {
+            // see if file exists
+            bool fileExists = this.AudioFileInfo.DataExists(reading);
+
+            if (fileExists)
+            {
+                long fileByteCount = this.AudioFileInfo.GetByteSize(reading);
+
+                // update reading
+                reading.DataLocation = AudioReadingDataLocation.FileSystem;
+                reading.DataSizeBytes = fileByteCount;
+                reading.State = AudioReadingState.Ready;
+                db.SubmitChanges();
+            }
         }
 
         private class InfoHolder
