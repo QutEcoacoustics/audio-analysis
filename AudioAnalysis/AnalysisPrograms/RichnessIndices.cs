@@ -140,7 +140,7 @@ namespace AnalysisPrograms
 
             //init counters
             double elapsedTime = 0.0;
-            int fileCount = 0;
+            int fileCount = 1;
 
             //write header to results file
             if (!File.Exists(opPath))
@@ -158,14 +158,14 @@ namespace AnalysisPrograms
                 if (!lastLine[1].Equals("minutes")) Double.TryParse(lastLine[1], out elapsedTime);
             }
 
-            Console.WriteLine("\n\n");
-            Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
+            //Console.WriteLine("\n\n");
+            Log.WriteLine("###### " + fileCount + " #### Process Recording: " + fileName + " ###############################");
 
             ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
 
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
-            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################");
+            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################\n");
             //Log.WriteLine("# Finished!");
             //Console.ReadLine();
         } //EXECUTABLE()
@@ -176,7 +176,6 @@ namespace AnalysisPrograms
         public static void ScanRecording(string recordingPath, string opPath, int fileCount, double elapsedTime)
         {
             //i: GET RECORDING, FILTER and DOWNSAMPLE
-            Console.WriteLine("recordingPath=" + recordingPath);
             AudioRecording recording = new AudioRecording(recordingPath);
             string filterName = "Chebyshev_Lowpass_5000";
             recording.Filter_IIR(filterName); //filter audio recording.
