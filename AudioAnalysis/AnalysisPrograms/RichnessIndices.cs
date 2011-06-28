@@ -46,6 +46,14 @@ namespace AnalysisPrograms
             DateTime datetime = DateTime.Now;
             Log.Verbosity = 1;
 
+            //READ CSV FILE TO MASSAGE DATA
+            MASSAGE_DATA();
+            if (true)
+            {
+                Console.ReadLine();
+                Environment.Exit(999);
+            }
+
             //i: Set up the dir and file names
             string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\";
             var fileList         = Directory.GetFiles(recordingDir, "*.wav");
@@ -417,6 +425,58 @@ namespace AnalysisPrograms
                 image.Save(imagePath);
             } // using
         } // MakeAndDrawSonogram()
+
+
+        public static void MASSAGE_DATA()
+        {
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor.csv";
+            string opFile = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor_Padded.csv";
+            FileTools.WriteTextFile(opFile, "min,time,count");
+            List<string> lines = FileTools.ReadTextFile(fileName);
+            string line;
+            int minPrev  = 0;
+            int minTotal = 0;
+            int speciesTotal = 0;
+            for (int i = 1; i < lines.Count-1; i++) //ignore last line
+            {
+                string[] words = lines[i].Split(',');
+                int speciesCount = Int32.Parse(words[1]);
+                speciesTotal += speciesCount;
+                string[] splitTime = words[0].Split(':');
+                int hour = Int32.Parse(splitTime[0]);
+                int min  = Int32.Parse(splitTime[1]);
+                minTotal = (hour * 60) + min;
+                if (minTotal > minPrev +1)
+                {
+                    for (int j = minPrev + 1; j < minTotal; j++)
+                    {
+                        line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                    Console.WriteLine(line);
+                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                    FileTools.Append2TextFile(opFile, line);
+                    }
+                }
+
+                line = String.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
+                Console.WriteLine(line);
+                line = String.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
+                FileTools.Append2TextFile(opFile, line);
+                minPrev = minTotal;
+            }
+            //fill in misisng minutes at end.
+            int minsIn24hrs = 24 * 60;
+            if (minsIn24hrs > minPrev + 1)
+            {
+                for (int j = minPrev + 1; j < minsIn24hrs; j++)
+                {
+                    line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                    Console.WriteLine(line);
+                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                    FileTools.Append2TextFile(opFile, line);
+                }
+            }
+            Console.WriteLine("speciesTotal= " + speciesTotal);
+        }
 
 
         public static void CheckArguments(string[] args)
