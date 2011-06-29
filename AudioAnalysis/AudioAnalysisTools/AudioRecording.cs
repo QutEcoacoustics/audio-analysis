@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using AudioTools;
+using AudioTools.AudioUtlity;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -38,6 +39,12 @@ namespace AudioAnalysisTools
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);
+        }
+        public AudioRecording(string path, SpecificWavAudioUtility swau)
+        {
+            this.FilePath = path;
+            this.FileName = Path.GetFileNameWithoutExtension(path);
+            this.wavReader = new WavReader(path, swau);
         }
         public AudioRecording(byte[] bytes, string name)
         {

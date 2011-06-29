@@ -4,7 +4,9 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
+using AudioTools.AudioUtlity;
 using AudioAnalysisTools;
+using QutSensors.Shared.LogProviders;
 
 
 namespace AnalysisPrograms
@@ -47,11 +49,11 @@ namespace AnalysisPrograms
             Log.Verbosity = 1;
 
             //READ CSV FILE TO MASSAGE DATA
-            MASSAGE_DATA();
-            if (true)
+            if (false)
             {
+                MASSAGE_DATA();
                 Console.ReadLine();
-                Environment.Exit(999);
+                Environment.Exit(666);
             }
 
             //i: Set up the dir and file names
@@ -86,39 +88,6 @@ namespace AnalysisPrograms
 
             ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
 
-        ////########################################################################################
-        ////START LOOP
-        ////i: GET RECORDING, FILTER and DOWNSAMPLE
-        //AudioRecording recording = new AudioRecording(recordingPath);
-        //string filterName = "Chebyshev_Lowpass_5000";
-        //recording.Filter_IIR(filterName); //filter audio recording.
-        //recording.ReduceSampleRateByFactor(2);
-
-        ////ii WRITE FILTERED SIGNAL IF NEED TO DEBUG
-        ////write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
-        ////int bitRate = 16;
-        ////WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav");        
-
-        ////iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050Hz = 5.805ms, @ 11025kHz = 11.61ms.
-        //var results = ExtractIndices(recording);
-            
-        ////iv:  store results
-        //elapsedTime += recording.GetWavReader().Time.TotalMinutes;
-        //Indices indices = results.Item1;
-        //var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14:f4}",
-        //    fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
-        //    indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
-        //    indices.ampEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1, indices.entropyOfDiffSpectra2);
-        //FileTools.Append2TextFile(outputCSV, values);
-
-        ////v: STORE IMAGES
-        //var scores = results.Item2;
-        //MakeAndDrawSonogram(recording, recordingDir, scores);
-        //recording.Dispose(); // DISPOSE FILTERED SIGNAL
-
-        ////END LOOP
-        ////########################################################################################################
-
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
             Log.WriteLine("# Elapsed Time = " + duration.TotalSeconds);
@@ -127,7 +96,7 @@ namespace AnalysisPrograms
         } //DEV()
 
         /// <summary>
-        /// EXECUTABLE - To CALL THIS METHOD MUST EDIT THE MAINENTRY.cs FILE
+        /// EXECUTABLE - To CALL THIS METHOD MUST EDIT THE MainEntry.cs FILE
         /// extracts acoustic richness indices from a single recording.
         /// </summary>
         /// <param name="args"></param>
@@ -184,10 +153,19 @@ namespace AnalysisPrograms
         public static void ScanRecording(string recordingPath, string opPath, int fileCount, double elapsedTime)
         {
             //i: GET RECORDING, FILTER and DOWNSAMPLE
+            /* OLD CODE
             AudioRecording recording = new AudioRecording(recordingPath);
             string filterName = "Chebyshev_Lowpass_5000";
             recording.Filter_IIR(filterName); //filter audio recording.
             recording.ReduceSampleRateByFactor(2);
+            */
+            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
+            audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
+            audioUtility.SoxAudioUtility.TargetSampleRateHz = 11025;
+            audioUtility.SoxAudioUtility.ReduceToMono = true;
+            audioUtility.SoxAudioUtility.UseSteepFilter = true;
+            audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
+            AudioRecording recording = new AudioRecording(recordingPath, audioUtility);
 
             //ii WRITE FILTERED SIGNAL IF NEED TO DEBUG
             //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
@@ -208,10 +186,10 @@ namespace AnalysisPrograms
             FileTools.Append2TextFile(opPath, values);
 
             //v: STORE IMAGES
-            var scores = results.Item2;
-            string recordingDir = Path.GetDirectoryName(recordingPath)+"\\";
-            MakeAndDrawSonogram(recording, recordingDir, scores);
-            recording.Dispose(); // DISPOSE FILTERED SIGNAL
+            //var scores = results.Item2;
+            //string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
+            //MakeAndDrawSonogram(recording, recordingDir, scores);
+            //recording.Dispose(); // DISPOSE FILTERED SIGNAL
         }
 
         /// <summary>
