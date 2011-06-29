@@ -167,18 +167,57 @@ namespace AudioDataStorageMigrateConsole.Classes
                     UpdateFileInfo(db, reading);
                     msg = "Both file exists and db data exists. The byte sizes match so deleted from db. Updated db.";
                 }
-                else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore != dbDataLengthBefore && fileByteCountBefore > 0 && dbDataLengthBefore > 0)
+                else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore > 0 && dbDataLengthBefore > 0 && fileByteCountBefore != dbDataLengthBefore)
                 {
                     // if the byte sizes don't match, just record this
-                    msg = "Both file exists and db data exists. The byte sizes don't match so nothing done.";
+                    msg = "Both file exists and db data exists. The byte sizes don't match.";
                 }
-                else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore != dbDataLengthBefore && fileByteCountBefore > 0 && dbDataLengthBefore == 0)
+                else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore > 0 && dbDataLengthBefore == 0 && fileByteCountBefore != dbDataLengthBefore)
                 {
                     // there is data in the file, but 0 length data in db. just delete data in db, and update db.
                     this.DbDataInfo.ClearData(reading);
 
                     UpdateFileInfo(db, reading);
                     msg = "File exists and db data exists. File byte count is more than 0. Db data had length 0. Deleted data from db. Updated db.";
+                }
+                else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore == 0 && dbDataLengthBefore > 0 && fileByteCountBefore != dbDataLengthBefore)
+                {
+                    // the file is 0 length, but there is data in db. 
+                    //export the db data (which overwrites the existing file data), 
+                    //delete the db data, and update db.
+                    this.exportWatch.Restart();
+
+                    bool success = ReadFromSqlFileStreamWriteToFileSystem(reading);
+
+                    this.exportWatch.Stop();
+                    exportTime = this.exportWatch.Elapsed;
+
+                    // check again to see if file exists
+                    bool doesNewFileExist = this.AudioFileInfo.DataExists(reading);
+                    long newFileByteCount = 0;
+                    if (doesNewFileExist)
+                    {
+                        newFileByteCount = this.AudioFileInfo.GetByteSize(reading);
+                    }
+
+                    if (success && doesNewFileExist && newFileByteCount == dbDataLengthBefore)
+                    {
+                        // only remove data from db if file exists
+                        this.DbDataInfo.ClearData(reading);
+
+                        UpdateFileInfo(db, reading);
+                        msg = "File exists and has byte count of 0 and data does exist. Exported data from db. Updated db. Deleted data from db.";
+                    }
+                    else
+                    {
+                        msg =
+                            string.Format(
+                                "File exists and has byte count of 0 and data does exist. Tried to export data from db but it failed (export success: {0} file exists: {1} dbDataLengthBefore: {2} newFileByteCount: {3}). Data is still in db.",
+                                success,
+                                doesNewFileExist,
+                                dbDataLengthBefore,
+                                newFileByteCount);
+                    }
                 }
                 else if (!fileExistsBefore && dbDataExistsBefore)
                 {
@@ -191,14 +230,14 @@ namespace AudioDataStorageMigrateConsole.Classes
                     exportTime = this.exportWatch.Elapsed;
 
                     // check again to see if file exists
-                    bool doesFileExist = this.AudioFileInfo.DataExists(reading);
+                    bool doesNewFileExist = this.AudioFileInfo.DataExists(reading);
                     long newFileByteCount = 0;
-                    if (doesFileExist)
+                    if (doesNewFileExist)
                     {
                         newFileByteCount = this.AudioFileInfo.GetByteSize(reading);
                     }
 
-                    if (success && doesFileExist && newFileByteCount == dbDataLengthBefore)
+                    if (success && doesNewFileExist && newFileByteCount == dbDataLengthBefore)
                     {
                         // only remove data from db if file exists
                         this.DbDataInfo.ClearData(reading);
@@ -212,7 +251,7 @@ namespace AudioDataStorageMigrateConsole.Classes
                             string.Format(
                                 "File does not exist and data does exist. Tried to export data from db but it failed (export success: {0} file exists: {1} dbDataLengthBefore: {2} newFileByteCount: {3}). Data is still in db.",
                                 success,
-                                doesFileExist,
+                                doesNewFileExist,
                                 dbDataLengthBefore,
                                 newFileByteCount);
                     }
@@ -225,7 +264,7 @@ namespace AudioDataStorageMigrateConsole.Classes
                 else if (fileExistsBefore && !dbDataExistsBefore)
                 {
                     UpdateFileInfo(db, reading);
-                    msg = "File exists and data does not exist. This is what we're after so do nothing.";
+                    msg = "File exists and data does not exist. This is what we're after. Update db.";
                 }
             }
             catch (Exception ex)
@@ -238,8 +277,8 @@ namespace AudioDataStorageMigrateConsole.Classes
             infoHolder.RunningTimeSoFar += this.singleItemWatch.Elapsed;
 
             /*
-                 * Collect some info after processing.
-                 */
+             * Collect some info after processing.
+             */
 
             // see if file exists
             bool fileExistsAfter = this.AudioFileInfo.DataExists(reading);
