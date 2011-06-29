@@ -11,6 +11,8 @@ using AudioTools;
 
 namespace AnalysisPrograms
 {
+    using AudioTools.AudioUtlity;
+
     //INFORMATION FOR MARK
     //The CURRAWONG template under version control is located on my machine at:
     //C:\SensorNetworks\Software\AudioAnalysis\RecogniserTemplates\Template_CURRAWONG1\CURRAWONG1.zip
@@ -83,7 +85,7 @@ namespace AnalysisPrograms
             var destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
 
             Log.WriteLine("Checking to see if conversion necessary...");
-            if (WavReader.ConvertToWav(recordingPath, destinationAudioFile))
+            if (SpecificWavAudioUtility.ConvertToWav(recordingPath, destinationAudioFile))
             {
                 Log.WriteLine("Wav pcm file created.");
             }

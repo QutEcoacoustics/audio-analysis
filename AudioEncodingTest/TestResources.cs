@@ -9,7 +9,11 @@ namespace AudioEncodingTest
     using System;
     using System.IO;
 
+    using AudioAnalysisTools;
+
     using AudioTools;
+    using AudioTools.AudioUtlity;
+
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     /// <summary>
@@ -73,7 +77,9 @@ namespace AudioEncodingTest
             // check if conversion is required.
             var destFile = Path.ChangeExtension(this.TestAudioFile.FullName, "wav");
             destFile = Path.Combine(this.TestWorkingDir.FullName, Path.GetFileName(destFile));
-            var success = WavReader.ConvertToWav(this.TestAudioFile.FullName, destFile);
+            SpecificWavAudioUtility.ConvertToWav(this.TestAudioFile.FullName, destFile);
+
+            var success = File.Exists(destFile);
 
             Assert.IsTrue(success, "Could not get wav pcm file for " + this.TestAudioFile.FullName);
             this.TestAudioFile = new FileInfo(destFile);

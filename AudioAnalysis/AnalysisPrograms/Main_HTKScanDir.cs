@@ -11,6 +11,8 @@ using AudioTools;
 
 namespace AnalysisPrograms
 {
+    using AudioTools.AudioUtlity;
+
     class Main_HTKScanDir
     {
         public static bool DRAW_SONOGRAMS = false;
@@ -151,7 +153,7 @@ namespace AnalysisPrograms
                     destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
 
                     Log.WriteLine("Checking to see if conversion necessary...");
-                    if (WavReader.ConvertToWav(recordingPath, destinationAudioFile))
+                    if (SpecificWavAudioUtility.ConvertToWav(recordingPath, destinationAudioFile))
                     {
                         Log.WriteLine("Wav pcm file created.");
                     }
