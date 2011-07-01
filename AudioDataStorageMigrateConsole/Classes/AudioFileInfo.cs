@@ -52,16 +52,33 @@ namespace AudioDataStorageMigrateConsole.Classes
         /// </returns>
         public long GetByteSize(AudioReading reading)
         {
+            long byteSize = 0;
+            FileInfo file = null;
+
             try
             {
-                FileInfo file = this.fileSystemAudioDataStorage.GetDataFile(reading);
-                if (file != null) return file.Length;
+                file = this.fileSystemAudioDataStorage.GetDataFile(reading);
             }
-            catch
+            catch (InvalidOperationException ex)
             {
+                // only caters for a known exception.
+                // all other exceptions are thrown
+                if (ex.Message.Contains("File for audio reading does not exist"))
+                {
+                    byteSize = 0;
+                }
+                else
+                {
+                    throw;
+                }
             }
 
-            return 0;
+            if (file != null && File.Exists(file.FullName))
+            {
+                byteSize = file.Length;
+            }
+
+            return byteSize;
         }
 
         /// <summary>
@@ -83,6 +100,8 @@ namespace AudioDataStorageMigrateConsole.Classes
             }
             catch (InvalidOperationException ex)
             {
+                // only caters for a known exception.
+                // all other exceptions are thrown
                 if (ex.Message.Contains("File for audio reading does not exist"))
                 {
                     return false;

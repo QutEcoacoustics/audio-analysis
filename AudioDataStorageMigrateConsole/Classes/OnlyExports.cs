@@ -103,6 +103,8 @@ namespace AudioDataStorageMigrateConsole.Classes
             {
                 var infoHolder = new InfoHolder { CountSoFar = 0, RunningTimeSoFar = TimeSpan.Zero };
 
+                // exclude all with state = uploading. these may need to be fixed manually.
+                // !(ar.State == AudioReadingState.Uploading && ar.UploadStartUTC.HasValue)
                 var audioreadings =
                     db.AudioReadings.Where(ar => ar.State != AudioReadingState.Uploading).OrderByDescending(
                         ar => ar.Length).ThenByDescending(ar => ar.Time);
@@ -162,15 +164,17 @@ namespace AudioDataStorageMigrateConsole.Classes
                 if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore > 0 && dbDataLengthBefore > 0 && fileByteCountBefore == dbDataLengthBefore)
                 {
                     // if both file exists and db data exists and the byte sizes match and are more than 0, delete from db.
-                    this.DbDataInfo.ClearData(reading);
+                    // assumption: matching byte sizes indicates that data in file and in db is identical. This may not be true.
+                    //this.DbDataInfo.ClearData(reading);
 
-                    UpdateFileInfo(db, reading);
-                    msg = "Both file exists and db data exists. The byte sizes match so deleted from db. Updated db.";
+                    //UpdateFileInfo(db, reading);
+                    //msg = "Both file exists and db data exists. The byte sizes match. Assume that contents are identical. Deleted data from db. Updated db.";
+                    msg = string.Format("Both file exists and db data exists. The byte sizes do match. File: {0} Database: {1}.  Nothing done.", fileByteCountBefore, dbDataLengthBefore);
                 }
                 else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore > 0 && dbDataLengthBefore > 0 && fileByteCountBefore != dbDataLengthBefore)
                 {
                     // if the byte sizes don't match, just record this
-                    msg = "Both file exists and db data exists. The byte sizes don't match.";
+                    msg = string.Format("Both file exists and db data exists. The byte sizes don't match. File: {0} Database: {1}.  Nothing done.", fileByteCountBefore, dbDataLengthBefore);
                 }
                 else if (fileExistsBefore && dbDataExistsBefore && fileByteCountBefore > 0 && dbDataLengthBefore == 0 && fileByteCountBefore != dbDataLengthBefore)
                 {
@@ -202,17 +206,17 @@ namespace AudioDataStorageMigrateConsole.Classes
 
                     if (success && doesNewFileExist && newFileByteCount == dbDataLengthBefore)
                     {
-                        // only remove data from db if file exists
+                        // only remove data from db if export reported success, file exists and byte counts match
                         this.DbDataInfo.ClearData(reading);
 
                         UpdateFileInfo(db, reading);
-                        msg = "File exists and has byte count of 0 and data does exist. Exported data from db. Updated db. Deleted data from db.";
+                        msg = "File exists and has byte count of 0 and db data does exist. Exported data from db. Deleted data from db. Updated db.";
                     }
                     else
                     {
                         msg =
                             string.Format(
-                                "File exists and has byte count of 0 and data does exist. Tried to export data from db but it failed (export success: {0} file exists: {1} dbDataLengthBefore: {2} newFileByteCount: {3}). Data is still in db.",
+                                "File exists and has byte count of 0 and db data does exist. Tried to export data from db but it failed (export success: {0} file exists: {1} dbDataLengthBefore: {2} newFileByteCount: {3}). Data is still in db.",
                                 success,
                                 doesNewFileExist,
                                 dbDataLengthBefore,
@@ -243,7 +247,7 @@ namespace AudioDataStorageMigrateConsole.Classes
                         this.DbDataInfo.ClearData(reading);
 
                         UpdateFileInfo(db, reading);
-                        msg = "File does not exist and data does exist. Exported data from db. Updated db. Deleted data from db.";
+                        msg = "File does not exist and db data does exist. Exported data from db. Deleted data from db. Updated db.";
                     }
                     else
                     {
@@ -259,12 +263,24 @@ namespace AudioDataStorageMigrateConsole.Classes
                 }
                 else if (!fileExistsBefore && !dbDataExistsBefore)
                 {
-                    msg = "File does not exist and data does not exist. PROBLEM but nothing to do about it.";
+                    msg = "File does not exist and db data does not exist. PROBLEM but nothing to do about it.";
+                }
+                else if (!fileExistsBefore && dbDataExistsBefore && dbDataLengthBefore == 0)
+                {
+                    msg = string.Format("File does not exist and db data exists. Db data is 0 length. PROBLEM but nothing to do about it.");
+                }
+                else if (fileExistsBefore && !dbDataExistsBefore && fileByteCountBefore == 0)
+                {
+                    msg = string.Format("File exists and db data does not exist. File is 0 length. PROBLEM but nothing to do about it.");
                 }
                 else if (fileExistsBefore && !dbDataExistsBefore)
                 {
                     UpdateFileInfo(db, reading);
-                    msg = "File exists and data does not exist. This is what we're after. Update db.";
+                    msg = "File exists and db data does not exist. This is what we're after. Update db.";
+                }
+                else
+                {
+                    msg = string.Format("Unknown condition. File exists: {0} File size: {1} Db data exists: {2} Db data size: {3}.  Nothing done.", fileExistsBefore, fileByteCountBefore, dbDataExistsBefore, dbDataLengthBefore);
                 }
             }
             catch (Exception ex)
