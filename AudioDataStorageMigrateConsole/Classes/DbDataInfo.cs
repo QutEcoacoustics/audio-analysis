@@ -46,16 +46,18 @@ namespace AudioDataStorageMigrateConsole.Classes
         /// </returns>
         public long GetByteSize(AudioReading reading)
         {
+            long dataLength = 0;
+
             try
             {
-                long dataLength = MigrationUtils.AudioReadingSqlFileStreamDataLength(reading);
-                return dataLength;
+                dataLength = MigrationUtils.AudioReadingSqlFileStreamDataLength(reading);
             }
             catch
             {
+                dataLength = 0;
             }
 
-            return 0;
+            return dataLength;
         }
 
         /// <summary>
@@ -69,17 +71,19 @@ namespace AudioDataStorageMigrateConsole.Classes
         /// </returns>
         public bool DataExists(AudioReading reading)
         {
+            // use caution: need to default to saying there is data, just in case.
+            bool dataExists = true;
+
             try
             {
-                bool dataExists = MigrationUtils.AudioReadingSqlFileStreamDataExists(reading);
-                return dataExists;
+                dataExists = MigrationUtils.AudioReadingSqlFileStreamDataExists(reading);
             }
             catch
             {
+                dataExists = true;
             }
 
-            // use caution: need to default to saying there is data, just in case.
-            return true;
+            return dataExists;
         }
 
         /// <summary>
@@ -93,6 +97,6 @@ namespace AudioDataStorageMigrateConsole.Classes
             MigrationUtils.ClearSqlFileStreamData(reading);
         }
 
-        
+
     }
 }
