@@ -36,7 +36,12 @@ namespace TowseyLib
         }
 
 
-
+        /// <summary>
+        /// wrapper for FFT. 
+        /// Window Power equals sum of squared window values. Default window is Hamming.
+        /// </summary>
+        /// <param name="windowSize"></param>
+        /// <param name="w"></param>
         public FFT(int windowSize, WindowFunc w)
         {
             if (!IsPowerOf2(windowSize)) throw new ArgumentException("WindowSize must be a power of 2.");

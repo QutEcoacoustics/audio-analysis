@@ -790,7 +790,23 @@ namespace TowseyLib
       return bins;
   }
 
-  /// <summary>
+  public static int[] Histo(double[] data, int binCount, out double binWidth, out double min, out double max)
+  {
+      MinMax(data, out min, out max);
+      double range = max - min;
+      binWidth = range / (double)binCount;
+      // init freq bin array
+      int[] bins = new int[binCount];
+      for (int i = 0; i < data.Length; i++)
+      {
+          int id = (int)((data[i] - min) / binWidth);
+          if (id == binCount) id--;
+          bins[id]++;
+      }
+      return bins;
+  }
+
+        /// <summary>
   /// returns a fixed width histogram.
   /// Width is determined by user supplied min and max.
   /// </summary>

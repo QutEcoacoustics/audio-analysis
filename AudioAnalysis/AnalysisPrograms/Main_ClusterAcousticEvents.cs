@@ -105,7 +105,7 @@ namespace AnalysisPrograms
             int categoryCount;
             double[,] data = Oblong.FeatureMatrix(oblongs); //derive data set from oblongs
             NeuralNets.ART.DEBUG = true;
-            NeuralNets.FuzzyART.Verbose = true;
+            NeuralNets.FuzzyART.Verbose = Oblong.Verbose;
             int[] categories = NeuralNets.FuzzyART.ClusterWithFuzzyART(data, out categoryCount);
             Console.WriteLine("Number of categories = " + categoryCount);
             Oblong.AssignCategories(oblongs, categories);

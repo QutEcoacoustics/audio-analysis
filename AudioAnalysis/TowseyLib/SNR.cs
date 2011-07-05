@@ -7,7 +7,7 @@ using System.Text;
 namespace TowseyLib
 {
 
-    public enum NoiseReductionType { NONE, STANDARD, FIXED_DYNAMIC_RANGE, PEAK_TRACKING, HARMONIC_DETECTION }
+    public enum NoiseReductionType { NONE, STANDARD, MODAL, FIXED_DYNAMIC_RANGE, PEAK_TRACKING, HARMONIC_DETECTION }
 
 
     public class SNR
@@ -59,11 +59,19 @@ namespace TowseyLib
         /// <returns></returns>
         public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double dynamicRange)
         {
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate noise profile, smooth and return for later use
-
+            double[] smoothedArray = null;
             if (nrt == NoiseReductionType.STANDARD)
             {
-                m = SNR.NoiseReduce_Standard(m, modalNoise);
+                double[] modalNoise = SNR.CalculateModalNoise(m);             //calculate noise profile
+                smoothedArray = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
+                m = SNR.NoiseReduce_Standard(m, smoothedArray);               //assumes a dB spectrogram. More complex treatment than MODAL
+            }
+            else
+            if (nrt == NoiseReductionType.MODAL)
+            {
+                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile
+                smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+                m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
             }
             else
             if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
@@ -83,7 +91,7 @@ namespace TowseyLib
                 Log.WriteIfVerbose("\tNoise reduction: HARMONIC_DETECTION");
                 m = SNR.NoiseReduce_HarmonicDetection(m);
             }
-            var tuple = System.Tuple.Create(m, modalNoise);
+            var tuple = System.Tuple.Create(m, smoothedArray);
             return tuple;
         }
 
@@ -673,13 +681,18 @@ namespace TowseyLib
             return NoiseReduce_Standard(matrix, modalNoise);
         }
 
+        /// <summary>
+        /// expects a spectrogram in dB values
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="modalNoise"></param>
+        /// <returns></returns>
         public static double[,] NoiseReduce_Standard(double[,] matrix, double[] modalNoise)
         {
             double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             double[,] mnr = matrix;
             mnr = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(mnr, modalNoise);
             mnr = SNR.RemoveBackgroundNoise(mnr, backgroundThreshold);
-            //mnr = SNR.TruncateModalNoise(mnr, modalNoise, backgroundThreshold);
             return mnr;
         }
 
@@ -828,11 +841,6 @@ namespace TowseyLib
             return outM;
         }// end of SubtractModalNoise()
 
-        public static double[] CalculateModalNoise(double[,] matrix, int smoothingWindow)
-        {
-            var m = CalculateModalNoise(matrix);
-            return DataTools.filterMovingAverage(m, smoothingWindow); //smooth the noise profile
-        }
 
         /// <summary>
         /// Calculates the modal noise value for each freq bin.
@@ -890,7 +898,12 @@ namespace TowseyLib
             return modalNoise;
         }// end of CalculateModalNoise(double[,] matrix)
 
-
+        /// <summary>
+        /// IMPORTANT: this method assumes that the first N frames (N=frameCount) DO NOT contain signal.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <param name="frameCount"></param>
+        /// <returns></returns>
         public static double[] CalculateModalNoiseUsingStartFrames(double[,] matrix, int frameCount)
         {
             int rowCount = matrix.GetLength(0);
@@ -908,6 +921,43 @@ namespace TowseyLib
             
             return modalNoise;
         }
+
+        /// <summary>
+        /// Calculates the modal value for each column in a matrix.
+        /// Matrix is expected to be a spectrogram (transposed) but is quite general.
+        /// </summary>
+        /// <param name="matrix"></param>
+        /// <returns></returns>
+        public static double[] CalculateModalValues(double[,] matrix)
+        {
+            //set parameters for histograms
+            //*******************************************************************************************************************
+            int histoBarCount = 100;  // number of pixel intensity bins
+            double upperLimitForMode = 0.666; // sets upper limit to modal noise bin. Higher values = more severe noise removal.
+            int binLimit = (int)(histoBarCount * upperLimitForMode);
+            //*******************************************************************************************************************
+
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+
+            // init matrix from which histogram derived
+            double[] ModalValues = new double[colCount];
+
+            for (int col = 0; col < colCount; col++) // for all cols i.e. freq bins
+            {
+                double binWidth, min, max;
+                double[] column = DataTools.GetColumn(matrix, col);
+                int[] histo = DataTools.Histo(column, histoBarCount, out binWidth, out min, out max);
+                //DataTools.writeBarGraph(histo);
+                double[] smoothHisto = DataTools.filterMovingAverage(histo, 7);
+                int maxindex; //mode
+                DataTools.getMaxIndex(smoothHisto, out maxindex); //this is mode of histogram
+                if (maxindex > binLimit) maxindex = binLimit;
+                ModalValues[col] = min + (maxindex * binWidth);
+            }//end for all cols
+            return ModalValues;
+        }// end of CalculateModalValues(double[,] matrix)
+
 
 
         /// <summary>

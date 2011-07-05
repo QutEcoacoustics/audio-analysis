@@ -98,8 +98,8 @@ namespace AnalysisPrograms
                         FeltTemplate_Edit.Dev(restOfArgs);
                         break;
                     case "richness_indices":      // richness_indices
-                        RichnessIndices.Dev(restOfArgs);
-                        //RichnessIndices.Executable(restOfArgs);
+                        RichnessIndices2.Dev(restOfArgs);
+                        //RichnessIndices2.Executable(restOfArgs);
                         break;
 
 
