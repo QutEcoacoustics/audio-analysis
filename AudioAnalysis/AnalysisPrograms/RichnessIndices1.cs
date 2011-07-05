@@ -11,18 +11,18 @@ using QutSensors.Shared.LogProviders;
 
 namespace AnalysisPrograms
 {
-    class RichnessIndices
+    class RichnessIndices1
     {
         /// <summary>
         /// a set of indices derived from each recording.
         /// </summary>
-        public struct Indices
+        public struct Indices1
         {
             public double snr, bgNoise, activity, avAmp, peakSum, gapEntropy, ampEntropy;
             public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1, entropyOfDiffSpectra2;
             public int peakCount;
 
-            public Indices(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp,
+            public Indices1(double _snr, double _bgNoise, double _activity, double _avAmp, int _peakCount, double _peakSum, double _gapEntropy, double _entropyAmp,
                            double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, double _entropyOfDifferenceSpectra2)
             {
                 snr        = _snr;
@@ -178,7 +178,7 @@ namespace AnalysisPrograms
 
             //iv:  store results
             elapsedTime += recording.GetWavReader().Time.TotalMinutes;
-            Indices indices = results.Item1;
+            Indices1 indices = results.Item1;
             var values = String.Format("{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14:f4}",
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
                 indices.activity, indices.avAmp, indices.peakCount, indices.peakSum, indices.gapEntropy,
@@ -197,9 +197,9 @@ namespace AnalysisPrograms
         /// <param name="recording"></param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices, List<double[]>> ExtractIndices(AudioRecording recording, int frameSize = 128)
+        public static System.Tuple<Indices1, List<double[]>> ExtractIndices(AudioRecording recording, int frameSize = 128)
         {
-            Indices indices; // struct in which to store all indices
+            Indices1 indices; // struct in which to store all indices
 
             int sr = recording.SampleRate;
             double windowOverlap = 0.0;

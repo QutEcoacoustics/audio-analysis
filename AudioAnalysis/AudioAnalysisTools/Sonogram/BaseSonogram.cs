@@ -1105,7 +1105,9 @@
             //double[,] m = Speech.DecibelSpectra(matrix);
 
             //NOISE REDUCTION
-            double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile, smooth and store for possible later use
+            double[] modalNoise = SNR.CalculateModalNoise(m); //calculate modal noise profile, 
+            modalNoise = DataTools.filterMovingAverage(modalNoise, 7); //smooth and store for possible later use
+
             this.SnrFullband.ModalNoiseProfile = modalNoise;
             if (Configuration.NoiseReductionType == NoiseReductionType.STANDARD)
             {

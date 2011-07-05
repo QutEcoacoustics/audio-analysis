@@ -152,6 +152,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="RichnessIndices2.cs" />
     <Compile Include="FrogRibit.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
@@ -174,7 +175,7 @@
     <Compile Include="Processing\LocalProcessor.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
-    <Compile Include="RichnessIndices.cs" />
+    <Compile Include="RichnessIndices1.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="HTKRecogniser.cs" />

@@ -88,6 +88,18 @@ namespace TowseyLib
             return frames;
         }
 
+        /// <summary>
+        /// returns a Tuple containing four items:
+        /// 1) the average amplitude or DC value for each frame of signal
+        /// 2) the maximum amplitude (absoilute value) for each frame i.e. the signal envelope.
+        /// 3) the signal amplitude spectrogram
+        /// 4) the power of the Hamming Window, i.e. sum of squared window values.
+        /// </summary>
+        /// <param name="signal"></param>
+        /// <param name="sr"></param>
+        /// <param name="windowSize"></param>
+        /// <param name="overlap"></param>
+        /// <returns></returns>
         public static System.Tuple<double[], double[], double[,], double> ExtractEnvelopeAndFFTs(double[] signal, int sr, int windowSize, double overlap)
         {
             int length = signal.Length;
