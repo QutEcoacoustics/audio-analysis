@@ -158,103 +158,103 @@ namespace NeuralNets
 //  close  (F);
 //end;
 
-    //public void RepeatTrainNet(double[,] dataArray, int maxIter, int repNum, int seed, int code)
-    //{
-    //    int dataSetSize = dataArray.GetLength(0);
-    //    bool trainSetLearned = false;    //     : boolean;
-    //    int[] randomArray = RandomNumber.RandomizeNumberOrder(dataSetSize, seed); //randomize order of trn set
-    //    int[] SkippedBecauseFull = new int[ART.numberOfRepeats]; // : array[1..MaxRepeatNo] of word;{for training only}
-    //    prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
+    public void RepeatTrainNet(double[,] dataArray, int maxIter, int repNum, int seed, int code)
+    {
+        int dataSetSize = dataArray.GetLength(0);
+        bool trainSetLearned = false;    //     : boolean;
+        int[] randomArray = RandomNumber.RandomizeNumberOrder(dataSetSize, seed); //randomize order of trn set
+        int[] SkippedBecauseFull = new int[ART.numberOfRepeats]; // : array[1..MaxRepeatNo] of word;{for training only}
+        prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
 
 
-    //    //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
+        //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-    //    if (FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
-    //    if (FuzzyART.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
+        if (FuzzyART.Verbose) Console.WriteLine("\n BEGIN TRAINING");
+        if (FuzzyART.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
 
-    //    //repeat //{training set until max iter or trn set learned}
-    //    int iterNum = 0;
-    //    while (!trainSetLearned && (iterNum < maxIter))
-    //    {
-    //        iterNum++;
-    //        if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
-    //        SkippedBecauseFull[repNum] = 0;
+        //repeat //{training set until max iter or trn set learned}
+        int iterNum = 0;
+        while (!trainSetLearned && (iterNum < maxIter))
+        {
+            iterNum++;
+            if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum + 1) + " iter=" + iterNum);
+            SkippedBecauseFull[repNum-1] = 0;
 
-    //        //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
-    //        inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
-    //        F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
+            //F2ScoreMatrix = new int[F2size, noClasses]; //keeps record of all F2 node classification results
+            inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
+            F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
 
-    //        //initialise convergence criteria.
-    //        // For ARTMAP want train set learned but for other ART versions want stable F2node allocations
-    //        trainSetLearned = true;
-    //        int changedCategory = 0;
-
-
-    //        //{READ AND PROCESS signals until end of the data file}
-    //        for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
-    //        {
-    //            //select an input signal. Later use sigID to enable test of convergence
-    //            int sigID = sigNum;                                         //do signals in order
-    //            if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
-
-    //            // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
-    //            //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
-                
-
-    //            //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
-    //            double[] rawIP = GetOneIPVector(sigID, dataArray);
-    //            double[] IP = ComplementCode(ContrastEnhance(rawIP));
-
-    //            //{*********** NOW PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
-    //            double[] OP = PropagateIPToF2(IP);
-                
-    //            // change wts depending on prediction. Index is the winning node whose wts were changed
-    //            int index = ChangeWts(IP, OP);
-    //            if (index == -1)
-    //            {
-    //                SkippedBecauseFull[repNum]++;
-    //                Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
-    //                break;
-    //            }
-    //            else
-    //            {
-    //                inputCategory[sigID] = index; //winning F2 node for current input
-    //                F2Wins[index]++;
-    //                //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
-    //                if (inputCategory[sigID] != prevCategory[sigID])
-    //                {
-    //                    trainSetLearned = false;
-    //                    changedCategory++;
-    //                }
-    //                //Console.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
-    //            }
-
-    //            //scoring in case where have targets or labels for the training data
-    //            //F2ScoreMatrix[index, noClasses + 1]++;   //{total count going to F2node}
-    //            //F2ScoreMatrix[index, target]++;          //{# in class going to F2node}
+            //initialise convergence criteria.
+            // For ARTMAP want train set learned but for other ART versions want stable F2node allocations
+            trainSetLearned = true;
+            int changedCategory = 0;
 
 
-    //            iterToConv[repNum] = iterNum;
+            //{READ AND PROCESS signals until end of the data file}
+            for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
+            {
+                //select an input signal. Later use sigID to enable test of convergence
+                int sigID = sigNum;                                         //do signals in order
+                if (ART.randomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
-    //        } //end for loop (sigNum < DataSetSize)
-
-    //        for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
-    //        //remove committed F2 nodes that are not having wins
-    //        for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-    //        if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
-    //        //Console.ReadLine();
-
-    //        if (trainSetLearned)
-    //        {
-    //            if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
-    //            break;
-    //        }
-    //    }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
-
-    //}  //}  //end; TrainNet()
+                // {*********** DISPLAY ITER, Epoch, Ch AND OTHER MESSAGE ************}
+                //if (ART.DEBUG) Console.WriteLine(" rep=" + (repNum+1) + " iter=" + (iterNum+1) + " sigNum=" + sigNum + " sigID=" + sigID);
 
 
-    public void TrainNet(double[,] dataArray, int maxIter, int seed)
+                //{*************** GET INPUT, PRE-PROCESS and TRANSFER TO F0 of ART net ********}
+                double[] rawIP = GetOneIPVector(sigID, dataArray);
+                double[] IP = ComplementCode(ContrastEnhance(rawIP));
+
+                //{*********** NOW PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
+                double[] OP = PropagateIPToF2(IP);
+
+                // change wts depending on prediction. Index is the winning node whose wts were changed
+                int index = ChangeWts(IP, OP);
+                if (index == -1)
+                {
+                    SkippedBecauseFull[repNum-1]++;
+                    Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
+                    break;
+                }
+                else
+                {
+                    inputCategory[sigID] = index; //winning F2 node for current input
+                    F2Wins[index]++;
+                    //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
+                    if (inputCategory[sigID] != prevCategory[sigID])
+                    {
+                        trainSetLearned = false;
+                        changedCategory++;
+                    }
+                    //Console.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
+                }
+
+                //scoring in case where have targets or labels for the training data
+                //F2ScoreMatrix[index, noClasses + 1]++;   //{total count going to F2node}
+                //F2ScoreMatrix[index, target]++;          //{# in class going to F2node}
+
+
+                iterToConv[repNum-1] = iterNum;
+
+            } //end for loop (sigNum < DataSetSize)
+
+            for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
+            //remove committed F2 nodes that are not having wins
+            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
+            if (ART.DEBUG) Console.WriteLine(" rep" + (repNum + 1) + " iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            //Console.ReadLine();
+
+            if (trainSetLearned)
+            {
+                if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
+                break;
+            }
+        }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
+
+    }  //}  //end; TrainNet()
+
+
+    public System.Tuple<int, int> TrainNet(double[,] dataArray, int maxIter, int seed)
     {
         int dataSetSize = dataArray.GetLength(0);
         int[] randomArray = RandomNumber.RandomizeNumberOrder(dataSetSize, seed); //randomize order of trn set
@@ -317,7 +317,7 @@ namespace NeuralNets
                         trainSetLearned = false;
                         changedCategory++;
                     }
-                    //Console.WriteLine("sigNum=" + sigNum + " Index Of Winning Node=" + keepScore[sigID]);
+                    //Console.WriteLine("sigNum=" + sigNum);
                 }
 
                 //scoring in case where have targets or labels for the training data
@@ -326,18 +326,20 @@ namespace NeuralNets
             } //end loop - for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
 
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
+
             //remove committed F2 nodes that are not having wins
             for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            if (ART.DEBUG) Console.WriteLine(" iter=" + iterNum + " committed=" + CountCommittedF2Nodes() + " changedCategory=" + changedCategory);
+            if (ART.DEBUG) Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
             //Console.ReadLine();
 
             if (trainSetLearned)
             {
-                if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
+                //if (FuzzyART.Verbose) Console.WriteLine("Training set learned after " + iterNum + " iterations");
+                //return System.Tuple.Create(iterNum, CountCommittedF2Nodes());
                 break;
             }
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
-
+        return System.Tuple.Create(iterNum, CountCommittedF2Nodes());
     }  //}  //end; TrainNet()
 
 
@@ -606,7 +608,7 @@ namespace NeuralNets
 
 
 
-    public static int[] ClusterWithFuzzyART(double[,] trainingData, out int committedNodeCount)
+    public static int[] ClusterWithFuzzyART(double[,] trainingData, out int noOfCommittedF2Nodes)
     {
         int trnSetSize = trainingData.GetLength(0);
         int IPSize = trainingData.GetLength(1);
@@ -615,39 +617,27 @@ namespace NeuralNets
         if (FuzzyART.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
 
         //************************** INITIALISE PARAMETER VALUES *************************
-        //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
-        //double beta = 0.5;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
-        //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
-        //double theta = 0.05; //threshold for contrast enhancing
-
-        //double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
-        //double beta = 0.1;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
-        //double rho = 0.9;   //vigilance parameter - increasing rho proliferates categories
-        //double theta = 0.0; //threshold for contrast enhancing
-
-        double alpha = 0.2;  //increasing alpha proliferates categories - 0.57 is good value
-        double beta = 0.2;   //beta=1 for fast learning/no momentum. beta=0 for no change in weights
-        double rho = 0.8;   //vigilance parameter - increasing rho proliferates categories
-        double theta = 0.0; //threshold for contrast enhancing
-        int seed     = 12345; //to seed random number gnerator
+        double alpha = 0.2;   //increasing alpha proliferates categories - 0.57 is good value
+        double beta  = 0.8;   //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
+        double rho   = 0.9;   //vigilance parameter - increasing rho proliferates categories
+        double theta = 0.1;   //threshold for contrast enhancing - values < threshold := 0.0
+        int seed     = 12345; //to seed random number generator
 
         FuzzyART fuzzyART = new FuzzyART(IPSize, F2Size); //initialise FuzzyART class
 
         fuzzyART.SetParameterValues(alpha, beta, rho, theta);
         if (FuzzyART.Verbose) fuzzyART.WriteParameters();
-
         fuzzyART.InitialiseArrays();
-        fuzzyART.TrainNet(trainingData, maxIterations, seed);
+        
+        //fuzzyART.RepeatTrainNet(trainingData, maxIterations, 1, seed, 3);
+        //noOfCommittedF2Nodes = fuzzyART.CountCommittedF2Nodes();
 
-        int noOfCommittedF2Nodes = fuzzyART.CountCommittedF2Nodes();
-        //ScoreTrainingResults (noOfCommittedF2[rep], noClasses, F2classLabel, F2classProb);
-        //wtsFpath = ART.ARTDir + ART.wtsFname + "s" + simul + rep + ART.wtsFExt;
-        //art2a.WriteWts(wtsFpath, F2classLabel, F2classProb);
-        //if (ART.DEBUG) Console.WriteLine("wts= " + wtsFpath + "  train set= " + trnSetFpath);
-        if (FuzzyART.Verbose) Console.WriteLine("Number Of Committed F2 Nodes=" + noOfCommittedF2Nodes);
-        int iterToCon = 0; //# training iterations}
+        var output = fuzzyART.TrainNet(trainingData, maxIterations, seed);
+        int iterNum = output.Item1;
+        noOfCommittedF2Nodes = output.Item2;
 
-        committedNodeCount = noOfCommittedF2Nodes;
+        if (FuzzyART.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
+        
         return fuzzyART.inputCategory;  //keepScore;
 
     } //END of ClusterShapesWithFuzzyART.
