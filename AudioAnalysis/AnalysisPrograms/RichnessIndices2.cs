@@ -184,8 +184,9 @@ namespace AnalysisPrograms
 
             //v: STORE IMAGES
             var scores = results.Item2;
+            var clusters = results.Item3;
             string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
-            MakeAndDrawSonogram(recording, recordingDir, scores);
+            MakeAndDrawSonogram(recording, recordingDir, scores, clusters);
             recording.Dispose(); // DISPOSE FILTERED SIGNAL
         }
 
@@ -196,7 +197,7 @@ namespace AnalysisPrograms
         /// <param name="int lowFreqBound = 500">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices2, List<double[]>> ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
+        public static System.Tuple<Indices2, List<double[]>, double[,]> ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
         {
             Indices2 indices; // struct in which to store all indices
 
@@ -219,6 +220,7 @@ namespace AnalysisPrograms
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
             int zeroCount = dBarray.Count((x) => (x < dBThreshold)); //fraction of frames with activity less than 3dB above background
             indices.activity = 1 - (zeroCount / (double)dBarray.Length);
+            int activeCount = dBarray.Length - zeroCount; //used below for cluster training data
             indices.bgNoise = results3.Item2;
             indices.snr = results3.Item5;
 
@@ -285,7 +287,7 @@ namespace AnalysisPrograms
                 if (dBarray[i] >= dBThreshold)
                 {
                     int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i));
-                    if (spectrogram[i, j] > bgThreshold) freqPeaks[i] = (recording.Nyquist * j / (double)spectrogram.GetLength(1));//i+1 to get top end of each freq bin
+                    if (spectrogram[i, j] > bgThreshold) freqPeaks[i] = (recording.Nyquist * j / (double)spectrogram.GetLength(1));
                 }
             }
             double histoBarWidth = 100.0;
@@ -318,7 +320,7 @@ namespace AnalysisPrograms
             indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
             //DataTools.writeBarGraph(avSpectrum);
 
-            //entropy of difference spectra ie H[spectrumN - spectrumAv]
+            //vii: ENTROPY of difference spectra ie H[spectrumN - spectrumAv]
             double entropy1 = 0.0; //average of individual entropies
             for (int i = 0; i < L; i++)
             {
@@ -336,18 +338,46 @@ namespace AnalysisPrograms
             indices.entropyOfDiffSpectra1 = entropy1 / frameCount;
             //Log.WriteLine("Spectral difference entropy1 =" + indices.entropyOfDiffSpectra1);
 
+            //viii: CLUSTERING
+            double[,] trainingData = new double[activeCount, freqBinCount - excludeBins];
+            int count = 0;
+            for (int i = 0; i < activeCount; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    for (int j = 0; j < freqBinCount - excludeBins; j++) trainingData[count, j] += spectrogram[i, j + excludeBins];
+                    count++;
+                }
+            }
             int categoryCount;
             NeuralNets.ART.DEBUG = true;
             NeuralNets.ART.randomiseTrnSetOrder = false;
             NeuralNets.FuzzyART.Verbose = true;
-            int[] clusters = FuzzyART.ClusterWithFuzzyART(spectrogram, out categoryCount);//cluster[] stores the category (winning F2 node) for each input vector
+            int[] clusters = FuzzyART.ClusterWithFuzzyART(trainingData, out categoryCount);//cluster[] stores the category (winning F2 node) for each input vector
             indices.clusterCount = categoryCount;
+            Console.WriteLine("Number of Categories (committed F2 Nodes) after FuzzyART clustering =" + categoryCount);
+            //reassemble spectrogram to visualise the clusters
+            var clusterMatrix = new double[L, freqBinCount];
+            count = 0;
+            for (int i = 0; i < L; i++)
+            {
+                if (dBarray[i] >= dBThreshold)
+                {
+                    for (int j = excludeBins; j < freqBinCount; j++)
+                    {
+                        if (spectrogram[i, j] > bgThreshold) clusterMatrix[i, j] = clusters[count];
+                    }
+                    count++;
+                }
+            }
+            int spectroLength = signalLength / SonogramConfig.DEFAULT_WINDOW_SIZE;
+            clusterMatrix = DataTools.ScaleMatrix(clusterMatrix, spectroLength, SonogramConfig.DEFAULT_WINDOW_SIZE / 2);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
             scores.Add(freqPeaks);
             scores.Add(envelope);
-            return System.Tuple.Create(indices, scores);
+            return System.Tuple.Create(indices, scores, clusterMatrix);
         }
 
 
@@ -355,7 +385,7 @@ namespace AnalysisPrograms
         //  OTHER METHODS
 
 
-        public static void MakeAndDrawSonogram(AudioRecording recording, string dir, List<double[]> scores)
+        public static void MakeAndDrawSonogram(AudioRecording recording, string dir, List<double[]> scores, double[,]clusterMatrix)
         {
             //i: MAKE SONOGRAM
             Log.WriteLine("# Make sonogram.");
@@ -383,11 +413,14 @@ namespace AnalysisPrograms
                 //add time scale
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
-                //add freq locations derived from zero-crossings.
-                var newArray = DataTools.ScaleArray(scores[0], length);
-                int[] freq = new int[newArray.Length];
-                for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
-                image.AddFreqHitValues(freq, sonogram.NyquistFrequency);
+                //add peak freq locations
+                //var newArray = DataTools.ScaleArray(scores[0], length);
+                //int[] freq = new int[newArray.Length]; //convert array of double to array of int
+                //for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
+                //image.AddFreqHitValues(freq, sonogram.NyquistFrequency); //freq must be an array of int 
+
+                //for (int i = 0; i < clusterMatrix.GetLength(0); i++)clusterMatrix[i,100] = 19;
+                image.AddSuperimposedMatrix(clusterMatrix, 20);
 
                 for (int i = 1; i < scores.Count; i++)
                 {

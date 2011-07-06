@@ -1322,6 +1322,32 @@ namespace TowseyLib
                 }
             return Mt;
         }
+
+
+        public static double[,] ScaleMatrix(double[,] matrix, int newRowCount, int newColCount)
+    {
+            int mrows = matrix.GetLength(0);
+            int mcols = matrix.GetLength(1);
+            var newMatrix = new double[newRowCount, newColCount];
+            double rowScale = newRowCount / (double)matrix.GetLength(0);
+            double colScale = newColCount / (double)matrix.GetLength(1);
+            for (int r = 0; r < mrows; r++)
+            {
+                    for (int c = 0; c < mcols; c++)
+                    {
+                        if (matrix[r,c] == 0.0) continue;
+                        int newRow = (int)Math.Floor(r * rowScale);
+                        int newCol = (int)Math.Floor(c * colScale);
+                        newCol = (int)Math.Floor(c * 3.9);
+                        if (newRow >= newRowCount) newRow = newRowCount - 1;
+                        if (newCol >= newColCount) newCol = newColCount - 1;
+                        //if (newMatrix[newRow, newCol] < matrix[r, c]) newMatrix[newRow, newCol] = matrix[r, c];
+                    }
+            }
+            return newMatrix;
+    }
+
+
 //===========================================================================================================================================================
 
         /// <summary>
