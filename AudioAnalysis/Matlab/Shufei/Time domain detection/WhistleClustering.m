@@ -3,10 +3,26 @@ function [StartPoint,EndPoint,AcousFrq,AcousFrm,FreqBins,OutStart1,OutEnd1,OutSt
 %filters. 
 %parameters
 
-timeInterval=0.1;
+timeInterval=0.10;
 frmNumThe=5;
 frmClusThe=3;
 whisFramTheh=fix(timeInterval*fs/window);
+
+
+StartPoint=0;
+EndPoint=0;
+AcousFrq=0;
+AcousFrm=0;
+OutStart1=0;
+OutEnd1=0;
+OutStart2=0;
+OutEnd2=0;
+SFrq=0;
+EFrq=0;
+
+
+
+
 % first we need to combine the data generated from three band pass filters
 for index=1:size(AcousticFrame1,2)
     if (AcousticFrequency2(index)~=0)&&(AcousticFrame2(index)~=0)

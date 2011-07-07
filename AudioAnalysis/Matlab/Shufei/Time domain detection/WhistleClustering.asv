@@ -3,8 +3,8 @@ function [StartPoint,EndPoint,AcousFrq,AcousFrm,FreqBins,OutStart1,OutEnd1,OutSt
 %filters. 
 %parameters
 
-timeInterval=0.5;
-frmNumThe=3;
+timeInterval=0.1;
+frmNumThe=5;
 frmClusThe=3;
 whisFramTheh=fix(timeInterval*fs/window);
 % first we need to combine the data generated from three band pass filters
