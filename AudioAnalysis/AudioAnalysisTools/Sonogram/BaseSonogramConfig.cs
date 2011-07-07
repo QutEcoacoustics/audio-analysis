@@ -34,7 +34,7 @@ namespace AudioAnalysisTools
 
         public bool DoSnr { get; set; }
         public NoiseReductionType NoiseReductionType { get; set; }
-        public double DynamicRange { get; set; }
+        public double NoiseReductionParameter { get; set; }
 
         public FftConfiguration fftConfig { get; set; }
         public MfccConfiguration mfccConfig { get; set; }
@@ -134,7 +134,7 @@ namespace AudioAnalysisTools
             DoSnr = true; // set false if only want to 
             string noisereduce = config.GetString(ConfigKeys.Mfcc.Key_NoiseReductionType);
             NoiseReductionType = (NoiseReductionType)Enum.Parse(typeof(NoiseReductionType), noisereduce.ToUpperInvariant());
-            DynamicRange       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
+            NoiseReductionParameter       = config.GetDouble(SNR.key_Snr.key_DYNAMIC_RANGE);
 
             //FREQ BAND PARAMETERS
             DoFullBandwidth = false; // set true if only want to 
@@ -166,8 +166,8 @@ namespace AudioAnalysisTools
 			writer.WriteConfigValue("MAX_FREQ", MaxFreqBand);
             writer.WriteConfigValue("MID_FREQ", MidFreqBand); //=3500
             writer.WriteConfigValue(ConfigKeys.Mfcc.Key_NoiseReductionType, this.NoiseReductionType.ToString());
-            if (this.DynamicRange > 1.0)
-                writer.WriteConfigValue(SNR.key_Snr.key_DYNAMIC_RANGE, this.DynamicRange.ToString("F1"));
+            if (this.NoiseReductionParameter > 1.0)
+                writer.WriteConfigValue(SNR.key_Snr.key_DYNAMIC_RANGE, this.NoiseReductionParameter.ToString("F1"));
             writer.WriteLine("#");
             writer.WriteLine("#**************** INFO ABOUT FEATURE EXTRACTION");
             writer.WriteLine("FEATURE_TYPE=mfcc");

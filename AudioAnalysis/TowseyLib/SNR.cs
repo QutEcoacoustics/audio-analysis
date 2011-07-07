@@ -7,7 +7,7 @@ using System.Text;
 namespace TowseyLib
 {
 
-    public enum NoiseReductionType { NONE, STANDARD, MODAL, FIXED_DYNAMIC_RANGE, PEAK_TRACKING, HARMONIC_DETECTION }
+    public enum NoiseReductionType { NONE, STANDARD, MODAL, BINARY, FIXED_DYNAMIC_RANGE, PEAK_TRACKING, HARMONIC_DETECTION }
 
 
     public class SNR
@@ -55,35 +55,47 @@ namespace TowseyLib
         /// </summary>
         /// <param name="m"></param>
         /// <param name="nrt"></param>
-        /// <param name="dynamicRange"></param>
+        /// <param name="parameter"></param>
         /// <returns></returns>
-        public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double dynamicRange)
+        public static System.Tuple<double[,], double[]> NoiseReduce(double[,] m, NoiseReductionType nrt, double parameter)
         {
             double[] smoothedArray = null;
             if (nrt == NoiseReductionType.STANDARD)
             {
-                double[] modalNoise = SNR.CalculateModalNoise(m);             //calculate noise profile
+                double[] modalNoise = SNR.CalculateModalNoise(m);             //calculate noise profile - assumes a dB spectrogram.
                 smoothedArray = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
-                m = SNR.NoiseReduce_Standard(m, smoothedArray);               //assumes a dB spectrogram. More complex treatment than MODAL
+                m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
+                double backgroundThreshold = parameter;
+                m = SNR.RemoveBackgroundNoise(m, backgroundThreshold);
             }
             else
             if (nrt == NoiseReductionType.MODAL)
             {
-                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile
+                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile - any matrix of values
                 smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
                 m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
             }
             else
+            if (nrt == NoiseReductionType.BINARY)
+            {
+                double[] modalValues = SNR.CalculateModalValues(m);            //calculate modal profile
+                smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+                m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray); //remove BG noise
+                double backgroundThreshold = parameter;
+                m = SNR.RemoveBackgroundNoise(m, backgroundThreshold);         //smooth background further
+                m = DataTools.Matrix2Binary(m, 2*backgroundThreshold);         //convert to binary 
+            }
+            else
             if (nrt == NoiseReductionType.FIXED_DYNAMIC_RANGE)
             {
-                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + dynamicRange);
-                m = SNR.NoiseReduce_FixedRange(m, dynamicRange);
+                Log.WriteIfVerbose("\tNoise reduction: FIXED DYNAMIC RANGE = " + parameter);
+                m = SNR.NoiseReduce_FixedRange(m, parameter);
             }
             else
             if (nrt == NoiseReductionType.PEAK_TRACKING)
             {
-                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + dynamicRange);
-                m = SNR.NoiseReduce_PeakTracking(m, dynamicRange);
+                Log.WriteIfVerbose("\tNoise reduction: PEAK_TRACKING. Dynamic range= " + parameter);
+                m = SNR.NoiseReduce_PeakTracking(m, parameter);
             }
             else
             if (nrt == NoiseReductionType.HARMONIC_DETECTION)
@@ -955,6 +967,7 @@ namespace TowseyLib
                 if (maxindex > binLimit) maxindex = binLimit;
                 ModalValues[col] = min + (maxindex * binWidth);
             }//end for all cols
+            //DataTools.writeBarGraph(ModalValues);
             return ModalValues;
         }// end of CalculateModalValues(double[,] matrix)
 

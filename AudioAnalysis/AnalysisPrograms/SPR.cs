@@ -157,8 +157,8 @@ namespace AnalysisPrograms
             else if (callName.Equals("CURLEW"))
             {
                 //SPT
-                double dynamicRange = 0.0;
-                var result1 = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dynamicRange);
+                double backgroundThreshold = 4.0;
+                var result1 = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, backgroundThreshold);
                 //var result1 = SPT.doSPT(sonogram, intensityThreshold, smallLengthThreshold);
                 //var result1 = doNoiseRemoval(sonogram, intensityThreshold, smallLengthThreshold);
 

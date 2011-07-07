@@ -339,6 +339,8 @@ namespace AnalysisPrograms
             //Log.WriteLine("Spectral difference entropy1 =" + indices.entropyOfDiffSpectra1);
 
             //viii: CLUSTERING
+            //first convert to Binary
+            spectrogram = DataTools.Matrix2Binary(spectrogram, 2 * bgThreshold);         //convert to binary 
             double[,] trainingData = new double[activeCount, freqBinCount - excludeBins];
             int count = 0;
             for (int i = 0; i < activeCount; i++)
@@ -349,13 +351,19 @@ namespace AnalysisPrograms
                     count++;
                 }
             }
-            int categoryCount;
-            NeuralNets.ART.DEBUG = true;
-            NeuralNets.ART.randomiseTrnSetOrder = false;
-            NeuralNets.FuzzyART.Verbose = true;
-            int[] clusters = FuzzyART.ClusterWithFuzzyART(trainingData, out categoryCount);//cluster[] stores the category (winning F2 node) for each input vector
-            indices.clusterCount = categoryCount;
-            Console.WriteLine("Number of Categories (committed F2 Nodes) after FuzzyART clustering =" + categoryCount);
+            //int categoryCount;
+            //NeuralNets.ART.DEBUG = true;
+            //NeuralNets.ART.randomiseTrnSetOrder = false;
+            //NeuralNets.FuzzyART.Verbose = true;
+            //int[] clusters = FuzzyART.ClusterWithFuzzyART(trainingData, out categoryCount);//cluster[] stores the category (winning F2 node) for each input vector
+
+
+            BinaryCluster.Verbose = true;
+            BinaryCluster.RandomiseTrnSetOrder = false;
+            var output = BinaryCluster.ClusterBinaryVectors(trainingData);//cluster[] stores the category (winning F2 node) for each input vector
+            int[] clusters = output.Item1;
+            indices.clusterCount = output.Item2;
+            Console.WriteLine("Number of Categories (committed F2 Nodes) after clustering =" + indices.clusterCount);
             //reassemble spectrogram to visualise the clusters
             var clusterMatrix = new double[L, freqBinCount];
             count = 0;
@@ -378,7 +386,7 @@ namespace AnalysisPrograms
             scores.Add(freqPeaks);
             scores.Add(envelope);
             return System.Tuple.Create(indices, scores, clusterMatrix);
-        }
+        } //ExtractIndices()
 
 
         //#########################################################################################################################################################
@@ -396,7 +404,9 @@ namespace AnalysisPrograms
             sonoConfig.DoMelScale = false;
             //sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
             sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MODAL values assumed to be dB values
-            //sonoConfig.NoiseReductionType = NoiseReductionType.MODAL;  //MODAL values not dependent on dB values
+            //sonoConfig.NoiseReductionType = NoiseReductionType.MODAL;    //MODAL values not dependent on dB values
+            //sonoConfig.NoiseReductionType = NoiseReductionType.BINARY;     //MODAL values assumed to be dB values
+            sonoConfig.NoiseReductionParameter = 4.0; //ie 4 dB threshold for BG noise removal
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
             SpectralSonogram sonogram = new SpectralSonogram(basegram);         //spectrogram has dim[N,257]
@@ -419,7 +429,6 @@ namespace AnalysisPrograms
                 //for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
                 //image.AddFreqHitValues(freq, sonogram.NyquistFrequency); //freq must be an array of int 
 
-                //for (int i = 0; i < clusterMatrix.GetLength(0); i++)clusterMatrix[i,100] = 19;
                 image.AddSuperimposedMatrix(clusterMatrix, 20);
 
                 for (int i = 1; i < scores.Count; i++)

@@ -73,12 +73,11 @@ namespace AnalysisPrograms
             double[,] mnr        = sonogram.Data;
             mnr = ImageTools.WienerFilter(mnr, 3);
 
-            int smoothingWindow = 7;
-            double[] modalNoise = SNR.CalculateModalNoise(mnr);
-            modalNoise = DataTools.filterMovingAverage(modalNoise, smoothingWindow); //smooth the noise profile
-            mnr = SNR.NoiseReduce_Standard(mnr, modalNoise);
+            double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
+            var output = SNR.NoiseReduce(mnr, NoiseReductionType.STANDARD, backgroundThreshold);
+
             double dynamicRange = 70;        //sets the the max dB
-            mnr = SNR.SetDynamicRange(mnr, 0.0, dynamicRange);
+            mnr = SNR.SetDynamicRange(output.Item1, 0.0, dynamicRange);
 
             //3: Spectral tracks sonogram
             byte[,] binary = SNR.IdentifySpectralRidges(mnr);

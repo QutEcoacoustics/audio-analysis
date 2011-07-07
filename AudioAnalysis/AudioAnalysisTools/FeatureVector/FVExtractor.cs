@@ -184,7 +184,7 @@ namespace AudioAnalysisTools
             sonoConfig.WindowSize     = Int32.Parse(parameters["FRAME_SIZE"]);
             sonoConfig.WindowOverlap  = Double.Parse(parameters["FRAME_OVERLAP"]);
             sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType(parameters["NOISE_REDUCTION_TYPE"]);
-            sonoConfig.DynamicRange   = Double.Parse(parameters["DYNAMIC_RANGE"]);
+            sonoConfig.NoiseReductionParameter   = Double.Parse(parameters["DYNAMIC_RANGE"]);
             sonoConfig.mfccConfig.CcCount      = ccCount;                 //Number of mfcc coefficients
             sonoConfig.mfccConfig.DoMelScale   = doMelScale;
             sonoConfig.mfccConfig.IncludeDelta = includeDelta;

@@ -152,6 +152,26 @@ namespace TowseyLib
         }
 
 
+        /*
+         * converts a matrix of doubles to binary using passed threshold
+         */
+        public static double[,] Matrix2Binary(double[,] M, double threshold)
+        {
+            int rowCount = M.GetLength(0);
+            int colCount = M.GetLength(1);
+            double[,] op = new double[rowCount, colCount];
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                for (int c = 0; c < colCount; c++)
+                {
+                    if (M[r, c] > threshold) op[r, c] = 1.0;
+                }
+            }
+            return op;
+        }
+
+
         public static double[,] TwoOfThree(double[,] m1, double[,] m2, double[,] m3)
         {
             int rows = m1.GetLength(0); //assume all matrices have same dimensions
@@ -1336,14 +1356,17 @@ namespace TowseyLib
                     for (int c = 0; c < mcols; c++)
                     {
                         if (matrix[r,c] == 0.0) continue;
-                        int newRow = (int)Math.Floor(r * rowScale);
-                        int newCol = (int)Math.Floor(c * colScale);
-                        newCol = (int)Math.Floor(c * 3.9);
+                        int newRow = (int)Math.Round(r * rowScale);
+                        int newCol = (int)Math.Round(c * colScale);
+                        newCol = (int)Math.Round(c * 4.1);
+                        //newCol = 1;
                         if (newRow >= newRowCount) newRow = newRowCount - 1;
                         if (newCol >= newColCount) newCol = newColCount - 1;
-                        //if (newMatrix[newRow, newCol] < matrix[r, c]) newMatrix[newRow, newCol] = matrix[r, c];
+                        //if (newMatrix[newRow, newCol] < matrix[r, c]) 
+                            newMatrix[newRow, newCol] = matrix[r, c];
                     }
             }
+
             return newMatrix;
     }
 
@@ -1478,7 +1501,21 @@ namespace TowseyLib
             return sum;
         }
 
-
+        /// <summary>
+        /// Clculates Hamming distance for two vectors of doubles.
+        /// d[i] = 1 if((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 )
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
+        public static int HammingDistance(double[] v1, double[] v2)
+        {
+            //assume v1 and v2 have same dimensions
+            int L = v1.Length;
+            int d = 0;
+            for (int i = 0; i < L; i++) if((int)Math.Round(Math.Abs(v1[i] - v2[i])) == 1 ) d++;
+            return d;
+        }
 
 
         /// <summary>

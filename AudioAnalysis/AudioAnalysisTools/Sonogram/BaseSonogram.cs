@@ -837,7 +837,7 @@
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
         
             // (iii) NOISE REDUCTION
-            var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.DynamicRange);
+            var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
             this.Data = tuple.Item1;   // store data matrix
 
             if (this.SnrFullband != null)
@@ -1009,7 +1009,7 @@
             m = Speech.DecibelSpectra(m, config.WindowPower, sampleRate, epsilon); //from spectrogram
 
             //(iii) NOISE REDUCTION
-            var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.DynamicRange);
+            var tuple1 = SNR.NoiseReduce(m, config.NoiseReductionType, config.NoiseReductionParameter);
             m = tuple1.Item1;
 
             //(iv) calculate cepstral coefficients 
@@ -1105,22 +1105,9 @@
             //double[,] m = Speech.DecibelSpectra(matrix);
 
             //NOISE REDUCTION
-            double[] modalNoise = SNR.CalculateModalNoise(m); //calculate modal noise profile, 
-            modalNoise = DataTools.filterMovingAverage(modalNoise, 7); //smooth and store for possible later use
-
-            this.SnrFullband.ModalNoiseProfile = modalNoise;
-            if (Configuration.NoiseReductionType == NoiseReductionType.STANDARD)
-            {
-                m = SNR.NoiseReduce_Standard(m, modalNoise);
-            }
-            else
-                if (Configuration.NoiseReductionType == NoiseReductionType.FIXED_DYNAMIC_RANGE)
-                {
-                    Log.WriteIfVerbose("\tNoise reduction: dynamic range = " + this.Configuration.DynamicRange);
-                    m = SNR.NoiseReduce_FixedRange(m, this.Configuration.DynamicRange);
-                }
-
-            return ImageTools.SobelEdgeDetection(m);
+            var output = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
+            this.SnrFullband.ModalNoiseProfile = output.Item2;
+            return ImageTools.SobelEdgeDetection(output.Item1);
         }
     }// end SobelEdgeSonogram : BaseSonogram
 

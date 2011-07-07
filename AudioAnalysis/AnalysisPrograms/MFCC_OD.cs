@@ -176,7 +176,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = frameOverlap;
             sonoConfig.DoMelScale = doMelScale;
             sonoConfig.NoiseReductionType = nrt;
-            sonoConfig.DynamicRange = dynamicRange;
+            sonoConfig.NoiseReductionParameter = dynamicRange;
             sonoConfig.mfccConfig.CcCount = ccCount;                 //Number of mfcc coefficients
             sonoConfig.mfccConfig.DoMelScale = doMelScale;
             sonoConfig.mfccConfig.IncludeDelta = includeDelta;
