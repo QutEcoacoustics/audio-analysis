@@ -1,0 +1,6 @@
+function Q1=zero_mean(Xn,L3)
+for h=1:L3
+end
+
+
+end
