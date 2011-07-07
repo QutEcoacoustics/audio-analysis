@@ -617,7 +617,7 @@ namespace NeuralNets
         if (FuzzyART.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
 
         //************************** INITIALISE PARAMETER VALUES *************************
-        double alpha = 0.2;   //increasing alpha proliferates categories - 0.57 is good value
+        double alpha = 0.57;   //increasing alpha proliferates categories - 0.57 is good value
         double beta  = 0.8;   //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
         double rho   = 0.9;   //vigilance parameter - increasing rho proliferates categories
         double theta = 0.1;   //threshold for contrast enhancing - values < threshold := 0.0
