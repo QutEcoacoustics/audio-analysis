@@ -107,7 +107,7 @@ namespace TowseyLib
 
         /// <summary>
         /// Returns the submatrix of passed matrix.
-        /// Assume that r1<r2, c1<c2. 
+        /// Assume that r1 < r2, c1 < c2. 
         /// Row, column indices start at 0
         /// </summary>
         /// <param name="M"></param>
@@ -118,18 +118,34 @@ namespace TowseyLib
         /// <returns></returns>
         public static double[,] Submatrix(double[,] M, int r1, int c1, int r2, int c2)
         {
-            int smRows = r2 - r1 +1;
-            int smCols = c2 - c1 + 1;
+            int subRowCount = r2 - r1 +1;
+            int subColCount = c2 - c1 + 1;
 
-            double[,] sm = new double[smRows, smCols];
+            double[,] sm = new double[subRowCount, subColCount];
 
-            for (int i = 0; i < smRows; i++)
+            for (int i = 0; i < subRowCount; i++)
             {
-                for (int j = 0; j < smCols; j++)
+                for (int j = 0; j < subColCount; j++)
                 {   sm[i,j] = M[r1+i,c1+j];
                 }
             }
             return sm;
+        }
+
+
+        public static double[,] ConvertList2Matrix(List<double[]> list)
+        {
+            int rows = list.Count;
+            int cols = list[0].Length; //assume all vectors in list are of same length
+            double[,] op = new double[rows,cols];
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < cols; j++)
+                {
+                    op[i, j] = list[i][j];
+                }
+            }
+            return op;
         }
 
         /*
@@ -909,7 +925,7 @@ namespace TowseyLib
       min = Int32.MaxValue;
       max = -Int32.MaxValue;
       MinMax(data, out min, out max);
-      binWidth = (max - min) / binCount;
+      binWidth = (max - min + 1) / (double)binCount;
 
       for (int i = 0; i < length; i++)
       {
@@ -926,7 +942,7 @@ namespace TowseyLib
       double min; 
       double max;
       DataTools.MinMax(data, out min, out max);
-      double binWidth = (max - min) / (double)binCount;
+      double binWidth = (max - min + 1) / (double)binCount;
       Console.WriteLine("data min="+min+"  data max="+ max + " binwidth="+binWidth);
 
       return Histo(data, binCount, min, max, binWidth);
@@ -1095,6 +1111,12 @@ namespace TowseyLib
       double[] row = new double[cols];
       for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
       return row;
+  }
+
+  public static double GetRowSum(double[,] m, int rowID)
+  {
+      double[] row = GetRow(m, rowID);
+      return row.Sum();
   }
 
   public static int SumRow(int[,] m, int rowID)

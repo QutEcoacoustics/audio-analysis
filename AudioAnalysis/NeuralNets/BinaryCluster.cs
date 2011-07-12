@@ -11,55 +11,45 @@ namespace NeuralNets
     {
 
         public int IPSize { get; set; }
-        public int F2Size { get; set; }
+        public int OPSize { get; set; }
         public double beta { get; set; }
         public double rho { get; set; }
 
         public static bool Verbose { get; set; }
         public static bool RandomiseTrnSetOrder { get; set; }
 
-        double[,] wts;               //F2 units
-        bool[] uncommittedJ;         //rrayOfBool;
-
-        //OUTPUT
-        public int[] inputCategory { get; set; } //stores the category (winning F2 node) for each input vector
-        public int[] prevCategory { get; set; } //stores the category (winning F2 node) for each input vector
-        public int[] F2Wins { get; set; }    //stores the number of times each F2 node wins
-
-
+        List<double[]> wts;           //of the OP or F2 units/nodes
+        bool[] committedNode;         //arrayOfBool;
 
     /// <summary>
     /// CONSTRUCTOR
     /// </summary>
     /// <param name="F1Size"></param>
     /// <param name="F2Size"></param>
-    public BinaryCluster(int IPSize, int F2Size)
+    public BinaryCluster(int IPSize, int OPSize)
     {
         this.IPSize = IPSize;
-        this.F2Size = F2Size;
+        this.OPSize = OPSize;
     }
 
     /// <summary>
     ///Initialise Uncommitted array := true
     ///Initialize weight array
     /// </summary>
-    public void InitialiseWtArrays(double[,] dataArray, int[] randomArray)
+    public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialWtCount)
     {
-        wts = new double[F2Size, IPSize];
-        int templateCount = 10;
-        int dataSetSize = dataArray.GetLength(0);
-        for (int i = 0; i < templateCount; i++)
+        this.wts = new List<double[]>();
+        int dataSetSize = trainingData.Count;
+        for (int i = 0; i < initialWtCount; i++)
         {
-            int id = randomArray[i];
-            for (int j = 0; j < dataArray.GetLength(1); j++)
-            {
-                wts[i, j] = dataArray[id, j];
-            }
+            int id = randomIntegers[i];
+            wts.Add(trainingData[id]);
+            //Console.WriteLine("Sum of wts[" + i + "]= " + wts[i].Sum());
         }//end all templates
 
         //set committed nodes = false
-        this.uncommittedJ = new bool[F2Size];
-        for (int uNo = templateCount; uNo < F2Size; uNo++) uncommittedJ[uNo] = true;
+        this.committedNode = new bool[OPSize];
+        for (int uNo = 0; uNo < initialWtCount; uNo++) committedNode[uNo] = true;
     }
 
 
@@ -77,30 +67,31 @@ namespace NeuralNets
 
 
 
-    public System.Tuple<int, int> TrainNet(double[,] dataArray, int maxIter, int seed)
+    public System.Tuple<int, int, int[], List<double[]>> TrainNet(List<double[]> trainingData, int maxIter, int seed, int initialWtCount)
     {
-        int dataSetSize = dataArray.GetLength(0);
+        int dataSetSize = trainingData.Count;
 
         int[] randomArray = RandomNumber.RandomizeNumberOrder(dataSetSize, seed); //randomize order of trn set
-        bool trainSetLearned = false;    //     : boolean;
-        bool skippedBecauseFull;
-        prevCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
-        this.InitialiseWtArrays(dataArray, randomArray);
+        //bool skippedBecauseFull;
+
+        int[] inputCategory = new int[dataSetSize]; //stores the winning OP node for each current  input signal
+        int[] prevCategory  = new int[dataSetSize]; //stores the winning OP node for each previous input signal
+        this.InitialiseWtArrays(trainingData, randomArray, initialWtCount);
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
 
-        if (BinaryCluster.Verbose) Console.WriteLine("\n BEGIN TRAINING");
-        if (BinaryCluster.Verbose) Console.WriteLine(" Maximum iterations = " + maxIter);
+        if (BinaryCluster.Verbose) Console.WriteLine("\n BEGIN TRAINING  for " + maxIter + " iterations.");
 
         //repeat //{training set until max iter or trn set learned}
+        int[] OPwins=null;   //stores the number of times each OP node wins
         int iterNum = 0;
+        bool trainSetLearned = false;    //     : boolean;
+        int countOfCommittedNodes = CountCommittedF2Nodes(); 
         while (!trainSetLearned && (iterNum < maxIter))
         {
             iterNum++;
-            skippedBecauseFull = false;
 
-            inputCategory = new int[dataSetSize]; //stores the winning F2 node for each input signal
-            F2Wins = new int[dataSetSize]; //stores the number of times each F2 node wins
+            OPwins = new int[OPSize];      //stores the number of times each OP node wins
 
             //initialise convergence criteria.  Want stable F2node allocations
             trainSetLearned = true;
@@ -114,12 +105,13 @@ namespace NeuralNets
                 int sigID = sigNum;                                         //do signals in order
                 if (BinaryCluster.RandomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
-                //{*************** GET INPUT ********}
-                double[] IP = GetOneIPVector(sigID, dataArray);
+                //{*********** PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
+                double[] OP = PropagateIP2OP(trainingData[sigID]);
+                int index = DataTools.GetMaxIndex(OP);
+                double winningOP = OP[index];
+                if (winningOP < this.rho) ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
 
-                //{*********** NOW PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
-                double[] OP = PropagateInput2F2(IP);
-                int index = IndexOfMaxF2Unit(OP);
+                //int index = IndexOfMaxF2Unit(OP); // more complex version
 
                 // change wts depending on prediction. Index is the winning node whose wts were changed
                 //int index = ChangeWts(IP, OP);
@@ -132,7 +124,7 @@ namespace NeuralNets
                 //else
                 //{
                     inputCategory[sigID] = index; //winning F2 node for current input
-                    F2Wins[index]++;
+                    OPwins[index]++;
                     //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
                     if (inputCategory[sigID] != prevCategory[sigID])
                     {
@@ -146,27 +138,17 @@ namespace NeuralNets
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
 
             //remove committed F2 nodes that are not having wins
-            for (int j = 0; j < this.F2Size; j++) if ((!this.uncommittedJ[j]) && (F2Wins[j] == 0)) this.uncommittedJ[j] = true;
-            Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+            countOfCommittedNodes = CountCommittedF2Nodes();
+            for (int j = 0; j < this.OPSize; j++) if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
+            Console.WriteLine(" iter={0:D2}  committed=" + countOfCommittedNodes + "\t changedCategory=" + changedCategory, iterNum);
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
 
-        return System.Tuple.Create(iterNum, CountCommittedF2Nodes());
+        Console.WriteLine("FINISHED TRAINING: CountOfCommittedNodes=" + countOfCommittedNodes);
+        for (int i = 0; i < this.OPSize; i++) if (this.committedNode[i]) Console.WriteLine("Commited={0}  Wt sum={1}  wins={2}", i, this.wts[i].Sum(), OPwins[i]);
+        return System.Tuple.Create(iterNum, countOfCommittedNodes, inputCategory, this.wts);
     }  //TrainNet()
-
-
-
-
-
-    public double[] GetOneIPVector(int sigID, double[,] data)
-    {
-        int dim = data.GetLength(1); //length of single vector
-        double[] vector = new double[dim];
-        for (int i = 0; i < dim; i++) vector[i] = data[sigID, i];  //  {transfer a signal}
-        return vector;
-    }//end GetOneIPVector()
-
 
 
     /// <summary>
@@ -176,18 +158,16 @@ namespace NeuralNets
     /// </summary>
     /// <param name="IP"></param>
     /// <returns></returns>
-    public double[] PropagateInput2F2(double[] IP)
+    public double[] PropagateIP2OP(double[] IP)
     {
-        double[] wtsj = new double[this.IPSize];
-        double[] OP = new double[this.F2Size];
+        double[] OP = new double[this.OPSize];
 
-        for (int F2uNo = 0; F2uNo < this.F2Size; F2uNo++)  //{for all F2 nodes}
+        for (int F2uNo = 0; F2uNo < this.OPSize; F2uNo++)  //{for all F2 nodes}
         {
-            if (!uncommittedJ[F2uNo]) //only calculate OPs of committed nodes
+            if (committedNode[F2uNo]) //only calculate OPs of committed nodes
             {
                 //get wts of current F2 node
-                for (int F1uNo = 0; F1uNo < this.IPSize; F1uNo++) wtsj[F1uNo] = this.wts[F2uNo, F1uNo];
-                OP[F2uNo] = BinaryCluster.HammingSimilarity(IP, wtsj);
+                OP[F2uNo] = BinaryCluster.HammingSimilarity(IP, wts[F2uNo]);
             }
         }  //end for all the F2 nodes}
            
@@ -207,22 +187,6 @@ namespace NeuralNets
         return maxIndex;
     }
 
-    /// <summary>
-    /// returns -1 if all F2 nodes committed
-    /// </summary>
-    /// <returns></returns>
-    public int IndexOfFirstUncommittedNode()
-    {
-        int length = this.uncommittedJ.Length;
-        int id = -1;
-        for (int i = 0; i < length; i++)
-            if (this.uncommittedJ[i])
-            {
-                id = i;
-                break;
-            }
-        return id;
-    }
 
     /// <summary>
     /// original Pascal header was: Procedure ChangeWtsFuzzyART(var index:word);
@@ -243,18 +207,14 @@ namespace NeuralNets
             return index; 
         }
 
-        double[] wtsJ = new double[this.IPSize];
         bool matchFound = false;
         int numberOfTestedNodes = 0;
         while (!matchFound)  //repeat //{until a good match found}
         {
             index = IndexOfMaxF2Unit(OP);  //get index of the winning F2 node i.e. the unit with maxOP. 
-            //get wts of this F2 node
-            for (int F1uNo = 0; F1uNo < this.IPSize; F1uNo++) wtsJ[F1uNo] = this.wts[index, F1uNo];
-
             //{calculate match between the weight and input vectors of the max unit.
             // match = |IP^wts|/|IP|   which is measure of degree to which the input is a fuzzy subset of the wts. }
-            double match = BinaryCluster.HammingSimilarity(IP, wtsJ);
+            double match = BinaryCluster.HammingSimilarity(IP, this.wts[index]);
 
             numberOfTestedNodes++;   //{count number of nodes tested}
             if (match < this.rho)  // ie vigilance indicates a BAD match}
@@ -285,13 +245,36 @@ namespace NeuralNets
         return -1; //something is wrong!!!
     }
 
+    /// <summary>
+    /// returns -1 if all F2 nodes committed
+    /// </summary>
+    /// <returns></returns>
+    public int GetIndexOfFirstUncommittedNode()
+    {
+        int length = this.committedNode.Length;
+        int id = -1;
+        for (int i = 0; i < length; i++) 
+            if (!this.committedNode[i]) return i;
+            //{
+            //    id = i;
+            //    break;
+            //}
+        return id;
+    }
+
+        /// <summary>
+        /// sets wts of first uncommitted node to the current IP vector
+        /// </summary>
+        /// <param name="IP"></param>
+        /// <returns></returns>
     public int ChangeWtsOfFirstUncommittedNode(double[] IP)
     {
-        int index = IndexOfFirstUncommittedNode();
+        int index = GetIndexOfFirstUncommittedNode();
         if(index == -1) return index; //all nodes committed
         
-        for (int j = 0; j < this.IPSize; j++) wts[index, j] = IP[j];
-        uncommittedJ[index] = false;
+        if(index >= this.wts.Count) this.wts.Add(IP);
+        else this.wts[index] = IP;
+        committedNode[index] = true;
         return index;
     }
 
@@ -303,24 +286,13 @@ namespace NeuralNets
     /// <param name="index"></param>
     public void ChangeWtsOfCommittedNode(double[] IP, int index)
     {
+        this.wts[index] = IP;
+    }        
 
-        //get wts of current F2 node
-        double[] wtsJ = new double[this.IPSize];
-        for (int i = 0; i < this.IPSize; i++) wtsJ[i] = this.wts[index, i];
-
-        //double[] ANDvector = FuzzyAND(IP, wtsJ);
-        //for (int i = 0; i < this.IPSize; i++)
-        //    wts[index, i] = (this.beta * ANDvector[i]) + ((1 - this.beta) * wts[index, i]);
-        return;
-    }
-
-
-    //method assumes that uncommitted node = true and committed node = false}
-    //i.e. counts nodes that are NOT uncommitted!
     public int CountCommittedF2Nodes()
     {
         int count = 0;
-        for (int i = 0; i < this.F2Size; i++) if (!this.uncommittedJ[i]) count++;
+        for (int i = 0; i < this.OPSize; i++) if (this.committedNode[i]) count++;
         return count;
     }
 
@@ -347,31 +319,32 @@ namespace NeuralNets
     }
 
 
-    public static System.Tuple<int[], int> ClusterBinaryVectors(double[,] trainingData)
+    public static System.Tuple<int[], int, List<double[]>> ClusterBinaryVectors(List<double[]> trainingData)
     {
-        int trnSetSize = trainingData.GetLength(0);
-        int IPSize = trainingData.GetLength(1);
-        int F2Size = trnSetSize;
-        int maxIterations = 100;
-        if (BinaryCluster.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + F2Size);
+        int trnSetSize = trainingData.Count;
+        int IPSize = trainingData[0].Length;
+        if (BinaryCluster.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + trnSetSize);
 
         //************************** INITIALISE PARAMETER VALUES *************************
-        double beta  = 0.5;   //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
-        double rho   = 0.05;   //vigilance parameter - increasing rho proliferates categories
-        int seed     = 12345; //to seed random number generator
+        int initialWtCount = 10;
+        int seed = 12345;           //to seed random number generator
+        double beta = 0.5;          //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
+        double vigilance  = 0.7;    //vigilance parameter - increasing this proliferates categories
+        int maxIterations = 50;
 
-        BinaryCluster binaryCluster = new BinaryCluster(IPSize, F2Size); //initialise BinaryCluster class
-
-        binaryCluster.SetParameterValues(beta, rho);
+        BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
+        binaryCluster.SetParameterValues(beta, vigilance);
         if (BinaryCluster.Verbose) binaryCluster.WriteParameters();
-        
-        var output = binaryCluster.TrainNet(trainingData, maxIterations, seed);
+
+        var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialWtCount);
         int iterNum = output.Item1;
         int noOfCommittedF2Nodes = output.Item2;
+        int[] inputCategories = output.Item3;
+        var wts = output.Item4;
 
         if (BinaryCluster.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
-        
-        return System.Tuple.Create(binaryCluster.inputCategory, noOfCommittedF2Nodes);  //keepScore;
+
+        return System.Tuple.Create(inputCategories, noOfCommittedF2Nodes, wts);  //keepScore;
 
     } //END of ClusterBinaryVectors.
 

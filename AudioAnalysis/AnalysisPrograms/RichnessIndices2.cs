@@ -54,7 +54,7 @@ namespace AnalysisPrograms
             //READ CSV FILE TO MASSAGE DATA
             if (false)
             {
-                MASSAGE_DATA();
+                MASSAGE_CSV_DATA();
                 Console.ReadLine();
                 Environment.Exit(666);
             }
@@ -184,9 +184,13 @@ namespace AnalysisPrograms
 
             //v: STORE IMAGES
             var scores = results.Item2;
-            var clusters = results.Item3;
+            var clusterIDs = results.Item3;
+            var wtsList = results.Item4;
+            var clusterSpectrogram = results.Item5;
+            string imagePath = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
+            OutputClusterInfo(clusterIDs, wtsList, imagePath);
             string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
-            MakeAndDrawSonogram(recording, recordingDir, scores, clusters);
+            MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
             recording.Dispose(); // DISPOSE FILTERED SIGNAL
         }
 
@@ -197,7 +201,7 @@ namespace AnalysisPrograms
         /// <param name="int lowFreqBound = 500">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices2, List<double[]>, double[,]> ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
+        public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]> ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
         {
             Indices2 indices; // struct in which to store all indices
 
@@ -341,51 +345,50 @@ namespace AnalysisPrograms
             //viii: CLUSTERING
             //first convert to Binary
             spectrogram = DataTools.Matrix2Binary(spectrogram, 2 * bgThreshold);         //convert to binary 
-            double[,] trainingData = new double[activeCount, freqBinCount - excludeBins];
+
+            double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
+            bool[] activeFrames = new bool[spectrogram.GetLength(0)];
             int count = 0;
-            for (int i = 0; i < activeCount; i++)
+            var trainingData = new List<double[]>();
+            for (int i = 0; i < subMatrix.GetLength(0); i++)
             {
-                if (dBarray[i] >= dBThreshold)
+                double[] row = DataTools.GetRow(subMatrix, i);
+                if (row.Sum() > 0.0)
                 {
-                    for (int j = 0; j < freqBinCount - excludeBins; j++) trainingData[count, j] += spectrogram[i, j + excludeBins];
-                    count++;
+                    trainingData.Add(row);
+                    activeFrames[i] = true;
                 }
             }
-            //int categoryCount;
-            //NeuralNets.ART.DEBUG = true;
-            //NeuralNets.ART.randomiseTrnSetOrder = false;
-            //NeuralNets.FuzzyART.Verbose = true;
-            //int[] clusters = FuzzyART.ClusterWithFuzzyART(trainingData, out categoryCount);//cluster[] stores the category (winning F2 node) for each input vector
-
 
             BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
             var output = BinaryCluster.ClusterBinaryVectors(trainingData);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusters = output.Item1;
+            int[] clusterIDs     = output.Item1;
             indices.clusterCount = output.Item2;
+            List<double[]> wts   = output.Item3;
             Console.WriteLine("Number of Categories (committed F2 Nodes) after clustering =" + indices.clusterCount);
             //reassemble spectrogram to visualise the clusters
-            var clusterMatrix = new double[L, freqBinCount];
+            var clusterSpectrogram = new double[L, freqBinCount];
             count = 0;
             for (int i = 0; i < L; i++)
             {
-                if (dBarray[i] >= dBThreshold)
+                if (activeFrames[i])
                 {
                     for (int j = excludeBins; j < freqBinCount; j++)
                     {
-                        if (spectrogram[i, j] > bgThreshold) clusterMatrix[i, j] = clusters[count];
+                        if (spectrogram[i, j] > bgThreshold) clusterSpectrogram[i, j] = clusterIDs[count];
                     }
                     count++;
                 }
             }
-            int spectroLength = signalLength / SonogramConfig.DEFAULT_WINDOW_SIZE;
-            clusterMatrix = DataTools.ScaleMatrix(clusterMatrix, spectroLength, SonogramConfig.DEFAULT_WINDOW_SIZE / 2);
+            int lengthOfDisplaySpectro = signalLength / SonogramConfig.DEFAULT_WINDOW_SIZE;
+            clusterSpectrogram = DataTools.ScaleMatrix(clusterSpectrogram, lengthOfDisplaySpectro, SonogramConfig.DEFAULT_WINDOW_SIZE / 2);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
             scores.Add(freqPeaks);
             scores.Add(envelope);
-            return System.Tuple.Create(indices, scores, clusterMatrix);
+            return System.Tuple.Create(indices, scores, clusterIDs, wts, clusterSpectrogram);
         } //ExtractIndices()
 
 
@@ -403,9 +406,9 @@ namespace AnalysisPrograms
             sonoConfig.WindowOverlap = 0.0;                   // set default value
             sonoConfig.DoMelScale = false;
             //sonoConfig.NoiseReductionType = NoiseReductionType.NONE;
-            sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MODAL values assumed to be dB values
+            //sonoConfig.NoiseReductionType = NoiseReductionType.STANDARD; //MODAL values assumed to be dB values
             //sonoConfig.NoiseReductionType = NoiseReductionType.MODAL;    //MODAL values not dependent on dB values
-            //sonoConfig.NoiseReductionType = NoiseReductionType.BINARY;     //MODAL values assumed to be dB values
+            sonoConfig.NoiseReductionType = NoiseReductionType.BINARY;     //MODAL values assumed to be dB values
             sonoConfig.NoiseReductionParameter = 4.0; //ie 4 dB threshold for BG noise removal
 
             AmplitudeSonogram basegram = new AmplitudeSonogram(sonoConfig, recording.GetWavReader());
@@ -443,8 +446,31 @@ namespace AnalysisPrograms
             } // using
         } // MakeAndDrawSonogram()
 
+        /// <summary>
+        /// displays a histogram of cluster counts.
+        /// the argument clusters isinteger array. Indicates cluster assigned to each binary frame. 
+        /// </summary>
+        /// <param name="clusters"></param>
+        public static void OutputClusterInfo(int[] clusters, List<double[]> wts, string imagePath)
+        {
+            int min, max;
+            int maxIndex;
+            DataTools.getMaxIndex(clusters, out maxIndex);
+            int binCount = clusters[maxIndex] + 1;
+            double binWidth;
+            int[] histo = DataTools.Histo(clusters, binCount, out binWidth, out min, out max);
+            Console.WriteLine("Sum = " + histo.Sum());
+            DataTools.writeArray(histo);
+            //DataTools.writeBarGraph(histo);
 
-        public static void MASSAGE_DATA()
+            //make image of the wts matrix
+            var m = DataTools.ConvertList2Matrix(wts);
+            m = DataTools.MatrixTranspose(m);
+            ImageTools.DrawMatrix(m, imagePath);
+        }
+
+
+        public static void MASSAGE_CSV_DATA()
         {
             string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor.csv";
             string opFile = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor_Padded.csv";
