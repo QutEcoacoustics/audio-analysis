@@ -1,5 +1,5 @@
 function [y3,fs,I10,F2,T2]=smoothSpectrogram(S,fs)
-window1 = 512; % hamming window using 512 samples
+window1 = 256; % hamming window using 512 samples
 noverlap = round(0.0*window1);
 nfft =window1; % yield 257 frequency bins to be consistent with C# libraries
 [y3,F1,T1,P] = spectrogram(S,window1,noverlap,nfft,fs);

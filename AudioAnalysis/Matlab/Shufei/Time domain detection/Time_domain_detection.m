@@ -11,12 +11,12 @@ window=256;
 % window=1024;
 %noverlap = round(0.5*window); % 50% overlap between frames
 
-% pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
+ pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\3hours samford tagged dataset\single channel\2 mins\NEJB_NE465_20101013-043000\NEJB_NE465_20101013-044200.wav';
  
 % pathtofile='C:\SensorNetworks\WavFiles\download\SERF 3_20100913-083000.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081122-203000.wav';
-pathtofile='C:\SensorNetworks\WavFiles\whipbird\file0151mono.wav_segment_14.wav';
+% pathtofile='C:\SensorNetworks\WavFiles\whipbird\file0151mono.wav_segment_14.wav';
 
 [y, fs] = wavread(pathtofile);
 [yy,fs,I1,F,T] = wavToSpectrogram(pathtofile);
@@ -80,13 +80,13 @@ L=length(y); S=y;
 [StartPoint,EndPoint,AcousticFrequency,AcousticFrame,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq]=WhistleClustering(freqBin1,FrameZero1,freqBin2,FrameZero2,freqBin3,FrameZero3,fs,window);
 [AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW]=WhipClustering(WhipFrequencydB1,WhipFramedB1,WhipFrequencydB2,WhipFramedB2,WhipFrequencydB3,WhipFramedB3,fs,window);
 % [AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW]=WhipClustering(freqBindB1,FrameZerodB1,freqBindB2,FrameZerodB2,freqBindB3,FrameZerodB3,fs,window);
-[AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(BlockFrequencydB1,BlockFramedB1,BlockFrequencydB2,BlockFramedB2,BlockFrequencydB3,BlockFramedB3,fs,window);
-% [AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(freqBindB1,FrameZerodB1,freqBindB2,FrameZerodB2,freqBindB3,FrameZerodB3,fs,window);
-% showImage2(c,I1,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,T,F,18,1);
+% [AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(BlockFrequencydB1,BlockFramedB1,BlockFrequencydB2,BlockFramedB2,BlockFrequencydB3,BlockFramedB3,fs,window);
+[AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(freqBindB1,FrameZerodB1,freqBindB2,FrameZerodB2,freqBindB3,FrameZerodB3,fs,window);
+showImage2(c,I1,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,T,F,18,1);
 
 % showImage2(c,I1,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,18,1);
 % showImage1(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,T,F,19,1);
-showComponents(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,20,1);
+% showComponents(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,20,1);
 
 %
 

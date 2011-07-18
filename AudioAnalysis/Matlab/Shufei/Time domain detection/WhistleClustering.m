@@ -107,9 +107,6 @@ for index=size(temFrq,1):-1:1
            if Sum>0
                   distance1=nonValue(index,index1-1)-nonValue(index,index1-2);
                   if distance1>whisFramTheh
-               
-               % check whether there is 'x' in the above frequency band
-                
                      StartPoint(index,index2)=nonValue(index,index1-count);
                      EndPoint(index,index2)=nonValue(index,index1-2);
                      index2=index2+1;

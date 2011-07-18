@@ -5,10 +5,10 @@ function [AcousSig,frequency,timeFrame,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,
 
 timeBetw=0.05;
 frameThreshold=30;
-freqNThe=20;
+freqNThe=6;
 freqDistance=1;
 freNumbThe=5;
-frmInFrq=5;
+frmInFrq=3;
 
 widthBetBlock=fix(timeBetw*fs/window);
 
@@ -158,8 +158,6 @@ for index=1:size(AcousSig,2)
                     if size(FreqBins1,2)>=freqNThe
                         %add rules to  frequency bands
                         countFre=0;
-                        
-                       
                         temFreq=0;
                         for freIndex=1:(size(FreqBins1,2)-1)
                             diff=abs(FreqBins1(freIndex+1)-FreqBins1(freIndex));
@@ -237,20 +235,18 @@ for index=1:size(AcousSig,2)
                                     BlockFrame=storeFre2;
                                     BlockFrequency=storeFre1;
                                     
-                                    
-                                    
                                     MaxFrmHFrq=max(BlockFrame);
                                     MinFrmHFrq=min(BlockFrame);
-                                    OutEndH(index7)=MaxFrmHFrq;
-                                   
+                                    OutEndH(index7)=MaxFrmHFrq;                                   
                                     HFrequency=FreStart;
                                     OutStartH(index7)=MinFrmHFrq;                        
                                     HFrq(index7)=HFrequency;
                                     index7=index7+1;
+                                    
+                                    
                                     MaxFrmLFrq=max(BlockFrame);
                                     MinFrmLFrq=min(BlockFrame);
-                                    OutEndL(index8)=MaxFrmLFrq;                                                       
-
+                                    OutEndL(index8)=MaxFrmLFrq;                                                     
                                     LFrequency=FreEnd;
                                     OutStartL(index8)=MinFrmLFrq;
                                     LFrq(index8)=LFrequency;

@@ -17,12 +17,12 @@ warning off % this line is included to suppress the warning that MATLAB
     view(0,90);
     switch(o)
         case 1
-            title('Spectrogram with markers based on Residuals','FontSize',20);
+            title('Spectrogram','FontSize',20);
             ylabel('Frequency (Hz)','FontSize',20);
             xlabel('Time (s)','FontSize',20);     
             hold on;
         case 2
-            title('Spectrogram with markers based on dB','FontSize',20);
+            title('Spectrogram','FontSize',20);
             ylabel('Frequency (Hz)','FontSize',20);
             xlabel('Time (s)','FontSize',20);     
             hold on;
