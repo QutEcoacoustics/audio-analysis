@@ -889,9 +889,9 @@
         public static System.Tuple<double[,], double[]> GetCepstrogram(double[,] data, int minHz, int maxHz,
                                                         int freqBinCount, double freqBinWidth, bool doMelScale, int ccCount)
         {
-            ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage1.jpg");
+            ImageTools.DrawMatrix(data, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage1.jpg", false);
             double[,] m = BaseSonogram.ExtractFreqSubband(data, minHz, maxHz, doMelScale, freqBinCount, freqBinWidth);
-            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage2.jpg");
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage2.jpg", false);
 
             //DO NOT DO NOISE REDUCTION BECAUSE ALREADY DONE
             //double[] modalNoise = SNR.CalculateModalNoise(m, 7); //calculate modal noise profile and smooth
@@ -900,7 +900,7 @@
 
             m = Speech.Cepstra(m, ccCount);
             m = DataTools.normalise(m);
-            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage3.jpg");
+            ImageTools.DrawMatrix(m, @"C:\SensorNetworks\Output\MFCC_LewinsRail\tempImage3.jpg", false);
             double[] modalNoise = null;
             return System.Tuple.Create(m, modalNoise);
         }

@@ -1541,6 +1541,35 @@ namespace TowseyLib
             return m;
         }
 
+        /// <summary>
+        /// returns a palette of a variety of coluor.
+        /// Used for displaying clusters identified by colour.
+        /// </summary>
+        /// <param name="paletteSize"></param>
+        /// <returns></returns>
+        public static List<Pen> GetColorPalette(int paletteSize)
+        {
+            int max = 255;
+            RandomNumber rn = new RandomNumber(1234567);
+            var pens = new List<Pen>();
+            pens.Add(new Pen(Color.Red));
+            pens.Add(new Pen(Color.Orange));
+            pens.Add(new Pen(Color.Yellow));
+            pens.Add(new Pen(Color.Green));
+            pens.Add(new Pen(Color.Blue));
+            pens.Add(new Pen(Color.Indigo));
+            pens.Add(new Pen(Color.Violet));
+            for (int c = 7; c <= paletteSize; c++)
+            {
+                Int32 rd = rn.GetInt(max);
+                Int32 gr = rn.GetInt(max);
+                Int32 bl = rn.GetInt(max);
+                pens.Add(new Pen(Color.FromArgb(rd, gr, 255)));
+            }
+            return pens;
+        }
+
+
 
         public static Color[] GrayScale()
         {
@@ -1555,22 +1584,27 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix">the data</param>
         /// <param name="pathName"></param>
-        public static void DrawMatrix(double[,] matrix, string pathName)
+        public static void DrawMatrix(double[,] matrix, string pathName, bool doScale)
         {
-            int maxYpixels = 1000;
-            int maxXpixels = 1000;
-            
             int rows = matrix.GetLength(0); //number of rows
             int cols = matrix.GetLength(1); //number
 
-            int cellYpixels = maxYpixels / rows;
-            int cellXpixels = maxXpixels / cols;
+            int maxYpixels = rows;
+            int maxXpixels = cols;
+            int YpixelsPerCell = 1;
+            int XpixelsPerCell = 1;
+            if (doScale)
+            {
+                maxYpixels = 1000;
+                maxXpixels = 2500;
+                YpixelsPerCell = maxYpixels / rows;
+                XpixelsPerCell = maxXpixels / cols;
+                if (YpixelsPerCell == 0) YpixelsPerCell = 1;
+                if (XpixelsPerCell == 0) XpixelsPerCell = 1;
+            }
 
-            if (cellYpixels == 0) cellYpixels = 1;
-            if (cellXpixels == 0) cellXpixels = 1;
-
-            int Ypixels = cellYpixels * rows;
-            int Xpixels = cellXpixels * cols;
+            int Ypixels = YpixelsPerCell * rows;
+            int Xpixels = XpixelsPerCell * cols;
             //Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
             //Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
 
@@ -1584,23 +1618,83 @@ namespace TowseyLib
             {
                 for (int c = 0; c < cols; c++)
                 {
-                    double val = norm[r, c];
-                    int colorId = (int)Math.Floor(norm[r, c] * 255);
-                    int xOffset = (cellXpixels * c);
-                    int yOffset = (cellYpixels * r);
+                    //double val = norm[r, c];
+                    int greyId = (int)Math.Floor(norm[r, c] * 255);
+                    int xOffset = (XpixelsPerCell * c);
+                    int yOffset = (YpixelsPerCell * r);
                     //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
 
-                    for (int x = 0; x < cellXpixels; x++)
+                    for (int x = 0; x < XpixelsPerCell; x++)
                     {
-                        for (int y = 0; y < cellYpixels; y++)
+                        for (int y = 0; y < YpixelsPerCell; y++)
                         {
                             //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
-                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[colorId]);
+                            bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
                         }
                     }
                 }//end all columns
             }//end all rows
 
+
+            bmp.Save(pathName);
+        }
+
+        /// <summary>
+        /// Draws colour matrix but automatically determines the scale to fit 1000x1000 pixel image.
+        /// </summary>
+        /// <param name="matrix">the data</param>
+        /// <param name="pathName"></param>
+        public static void DrawMatrixInColour(double[,] matrix, string pathName, bool doScale)
+        {
+            int paletteSize = 50;
+            var pens = ImageTools.GetColorPalette(paletteSize);
+
+            int rows = matrix.GetLength(0); //number of rows
+            int cols = matrix.GetLength(1); //number
+
+            int maxYpixels = rows;
+            int maxXpixels = cols;
+            int YpixelsPerCell = 1;
+            int XpixelsPerCell = 1;
+            if (doScale)
+            {
+                maxYpixels = 1000;
+                maxXpixels = 2500;
+                YpixelsPerCell = maxYpixels / rows;
+                XpixelsPerCell = maxXpixels / cols;
+                if (YpixelsPerCell == 0) YpixelsPerCell = 1;
+                if (XpixelsPerCell == 0) XpixelsPerCell = 1;
+            }
+
+            int Ypixels = YpixelsPerCell * rows;
+            int Xpixels = XpixelsPerCell * cols;
+            //Console.WriteLine("Xpixels=" + Xpixels + "  Ypixels=" + Ypixels);
+            //Console.WriteLine("cellXpixels=" + cellXpixels + "  cellYpixels=" + cellYpixels);
+
+            Bitmap bmp = new Bitmap(Xpixels, Ypixels, PixelFormat.Format24bppRgb);
+
+            double[,] norm = DataTools.normalise(matrix);
+            for (int r = 0; r < rows; r++)
+            {
+                for (int c = 0; c < cols; c++)
+                {
+                    //double val = norm[r, c];
+                    int greyId = (int)Math.Floor(norm[r, c] * 255);
+                    int xOffset = (XpixelsPerCell * c);
+                    int yOffset = (YpixelsPerCell * r);
+                    //Console.WriteLine("xOffset=" + xOffset + "  yOffset=" + yOffset + "  colorId=" + colorId);
+
+                    for (int x = 0; x < XpixelsPerCell; x++)
+                    {
+                        for (int y = 0; y < YpixelsPerCell; y++)
+                        {
+                            //Console.WriteLine("x=" + (xOffset+x) + "  yOffset=" + (yOffset+y) + "  colorId=" + colorId);
+                            //bmp.SetPixel(xOffset + x, yOffset + y, grayScale[greyId]);
+                            bmp.SetPixel(xOffset + x, yOffset + y, pens[(int)(paletteSize * norm[r, c])].Color);
+                        }
+                    }
+                }//end all columns
+            }//end all rows
 
             bmp.Save(pathName);
         }
