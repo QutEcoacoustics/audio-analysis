@@ -363,32 +363,44 @@ namespace AnalysisPrograms
             BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
             var output = BinaryCluster.ClusterBinaryVectors(trainingData);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterIDs     = output.Item1;
+            int[] clusterHits    = output.Item1;//the cluster to which each frame belongs
             indices.clusterCount = output.Item2;
-            List<double[]> wts   = output.Item3;
+            List<double[]> clusterWts   = output.Item3;
             Console.WriteLine("Number of Categories (committed F2 Nodes) after clustering =" + indices.clusterCount);
+            BinaryCluster.DisplayClusterWeights(clusterWts);
+            double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts < threshold
+            int hitThreshold   = 10;  //used to remove wt vectors which have fewer than the thershold hits
+            int countRemoved = BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
+            BinaryCluster.DisplayClusterWeights(clusterWts);
+            Console.WriteLine("Number of Categories after pruning clusters =" + (clusterWts.Count - countRemoved));
+
+
             //reassemble spectrogram to visualise the clusters
             var clusterSpectrogram = new double[L, freqBinCount];
             count = 0;
-            for (int i = 0; i < L; i++)
+            for (int i = 0; i < L; i++) //loop over original frames
             {
                 if (activeFrames[i])
                 {
                     for (int j = excludeBins; j < freqBinCount; j++)
                     {
-                        if (spectrogram[i, j] > bgThreshold) clusterSpectrogram[i, j] = clusterIDs[count];
+                        if (spectrogram[i, j] > bgThreshold) 
+                            clusterSpectrogram[i, j] = clusterHits[count]+1;//+1 so do not have zero index for a cluster 
+                        if (clusterSpectrogram[i, j] < 0) clusterSpectrogram[i, j] = 0; //correct for case where set hit count < 0 for pruned wts.
                     }
                     count++;
                 }
             }
             int lengthOfDisplaySpectro = signalLength / SonogramConfig.DEFAULT_WINDOW_SIZE;
+            ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster1.png", false);
             clusterSpectrogram = DataTools.ScaleMatrix(clusterSpectrogram, lengthOfDisplaySpectro, SonogramConfig.DEFAULT_WINDOW_SIZE / 2);
+            ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster2.png", false);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
             scores.Add(freqPeaks);
             scores.Add(envelope);
-            return System.Tuple.Create(indices, scores, clusterIDs, wts, clusterSpectrogram);
+            return System.Tuple.Create(indices, scores, clusterHits, clusterWts, clusterSpectrogram);
         } //ExtractIndices()
 
 
@@ -432,7 +444,9 @@ namespace AnalysisPrograms
                 //for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
                 //image.AddFreqHitValues(freq, sonogram.NyquistFrequency); //freq must be an array of int 
 
-                image.AddSuperimposedMatrix(clusterMatrix, 20);
+                double[] array = DataTools.Matrix2Array(clusterMatrix);
+                int maxindex = DataTools.GetMaxIndex(array);
+                image.AddSuperimposedMatrix(clusterMatrix, array[maxindex]);
 
                 for (int i = 1; i < scores.Count; i++)
                 {
@@ -448,7 +462,7 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// displays a histogram of cluster counts.
-        /// the argument clusters isinteger array. Indicates cluster assigned to each binary frame. 
+        /// the argument clusters is an array of integer. Indicates cluster assigned to each binary frame. 
         /// </summary>
         /// <param name="clusters"></param>
         public static void OutputClusterInfo(int[] clusters, List<double[]> wts, string imagePath)
@@ -464,9 +478,10 @@ namespace AnalysisPrograms
             //DataTools.writeBarGraph(histo);
 
             //make image of the wts matrix
+            wts = DataTools.RemoveNullElementsFromList(wts);
             var m = DataTools.ConvertList2Matrix(wts);
             m = DataTools.MatrixTranspose(m);
-            ImageTools.DrawMatrix(m, imagePath);
+            ImageTools.DrawMatrixInColour(m, imagePath, false);
         }
 
 

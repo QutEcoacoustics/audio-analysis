@@ -102,7 +102,7 @@ namespace AudioAnalysisTools
             cepstralM = DataTools.normalise(cepstralM);
 
             Log.WriteIfVerbose("dim of cepstral matrix = " + frameCount + "*" + cepstralM.GetLength(1));
-            ImageTools.DrawMatrix(cepstralM, @"C:\SensorNetworks\Templates\Template_4\matrix1.bmp");
+            ImageTools.DrawMatrix(cepstralM, @"C:\SensorNetworks\Templates\Template_4\matrix1.bmp", true);
 
             //pad to fixed number of frames
             double duration = 0.5; //duration of padded matrix in seconds
@@ -111,7 +111,7 @@ namespace AudioAnalysisTools
             Log.WriteIfVerbose("dim of padded matrix   = " + padM.GetLength(0) + "*" + padM.GetLength(1));
             for (int r = 0; r < frameCount; r++)
                 for (int c = 0; c < config.mfccConfig.CcCount; c++) padM[r, c] = cepstralM[r, c];
-            ImageTools.DrawMatrix(padM, @"C:\SensorNetworks\Templates\Template_4\matrix2.bmp");
+            ImageTools.DrawMatrix(padM, @"C:\SensorNetworks\Templates\Template_4\matrix2.bmp", true);
 
             //do the DCT
             double[,] cosines = Speech.Cosines(dim, config.mfccConfig.CcCount + 1); //set up the cosine coefficients
@@ -123,7 +123,7 @@ namespace AudioAnalysisTools
                 double[] dct = Speech.DCT(col, cosines);
                 for (int r = 0; r < config.mfccConfig.CcCount; r++) dctM[r, c] = dct[r + 1]; //+1 in order to skip first DC value
             }
-            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix3.bmp");
+            ImageTools.DrawMatrix(dctM, @"C:\SensorNetworks\Templates\Template_4\matrix3.bmp", true);
 
             //store as single FV using the zig-zag 2D-DCT matrix
             if (Speech.zigzag12x12.GetLength(0) != config.mfccConfig.CcCount)

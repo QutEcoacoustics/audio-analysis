@@ -133,6 +133,16 @@ namespace TowseyLib
         }
 
 
+        public static List<Double[]> RemoveNullElementsFromList(List<Double[]> list)
+        {
+            var newList = new List<Double[]>();
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (list[i] != null) newList.Add(list[i]);
+            }
+            return newList;
+        }
+
         public static double[,] ConvertList2Matrix(List<double[]> list)
         {
             int rows = list.Count;
@@ -1292,8 +1302,6 @@ namespace TowseyLib
 
         /// <summary>
         /// Rotates a matrix 90 degrees clockwise.
-        /// Used for Syntactic pattern recognition
-        /// Converts Image matrix to Spectrogram data orientation
         /// </summary>
         /// <param name="M">the matrix to rotate</param>
         /// <returns></returns>
@@ -1308,23 +1316,22 @@ namespace TowseyLib
                     ret[c, r] = m[rows - r - 1, c];
             return ret;
         }
-
-
         /// <summary>
-        /// transforms a matrix of char.
-        /// Used for Syntatctic pttern recognition
+        /// Rotates a matrix 90 degrees anticlockwise.
+        /// Used for Syntactic pattern recognition
+        /// Converts Image matrix to Spectrogram data orientation
         /// </summary>
-        /// <param name="M">the matrix to transform</param>
+        /// <param name="M">the matrix to rotate</param>
         /// <returns></returns>
 
-        public static char[,] MatrixTranspose(char[,] m)
+        public static double[,] MatrixRotate90Anticlockwise(double[,] m)
         {
             int rows = m.GetLength(0);
             int cols = m.GetLength(1);
-            var ret = new char[cols, rows];
+            var ret = new double[cols, rows];
             for (int r = 0; r < rows; r++)
                 for (int c = 0; c < cols; c++)
-                    ret[c, r] = m[r, c];
+                    ret[c, r] = m[r, cols -1-c];
             return ret;
         }
 
@@ -1346,6 +1353,25 @@ namespace TowseyLib
                 }
             return Mt;
         }
+
+        /// <summary>
+        /// transforms a matrix of char.
+        /// Used for Syntatctic pttern recognition
+        /// </summary>
+        /// <param name="M">the matrix to transform</param>
+        /// <returns></returns>
+
+        public static char[,] MatrixTranspose(char[,] m)
+        {
+            int rows = m.GetLength(0);
+            int cols = m.GetLength(1);
+            var ret = new char[cols, rows];
+            for (int r = 0; r < rows; r++)
+                for (int c = 0; c < cols; c++)
+                    ret[c, r] = m[r, c];
+            return ret;
+        }
+
         /// <summary>
         /// performs a matrix transform
         /// </summary>

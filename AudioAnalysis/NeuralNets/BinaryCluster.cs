@@ -86,7 +86,6 @@ namespace NeuralNets
         int[] OPwins=null;   //stores the number of times each OP node wins
         int iterNum = 0;
         bool trainSetLearned = false;    //     : boolean;
-        int countOfCommittedNodes = CountCommittedF2Nodes(); 
         while (!trainSetLearned && (iterNum < maxIter))
         {
             iterNum++;
@@ -111,42 +110,35 @@ namespace NeuralNets
                 double winningOP = OP[index];
                 if (winningOP < this.rho) ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
 
-                //int index = IndexOfMaxF2Unit(OP); // more complex version
+                inputCategory[sigID] = index; //winning F2 node for current input
+                OPwins[index]++;
+                //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
+                if (inputCategory[sigID] != prevCategory[sigID])
+                {
+                    trainSetLearned = false;
+                    changedCategory++;
+                }
+            } //end loop over all signal inputs
 
-                // change wts depending on prediction. Index is the winning node whose wts were changed
-                //int index = ChangeWts(IP, OP);
-                //if (index == -1)
-                //{
-                //    skippedBecauseFull = true;
-                //    Console.WriteLine(" BREAK LEARNING BECAUSE ALL F2 NODES COMMITTED");
-                //    break;
-                //}
-                //else
-                //{
-                    inputCategory[sigID] = index; //winning F2 node for current input
-                    OPwins[index]++;
-                    //{test if training set is learned ie each signal is classified to the same F2 node as previous iteration}
-                    if (inputCategory[sigID] != prevCategory[sigID])
-                    {
-                        trainSetLearned = false;
-                        changedCategory++;
-                    }
-                    //Console.WriteLine("sigNum=" + sigNum);
-                //} //end if..else..
-            } //end loop - for (int sigNum = 0; sigNum < dataSetSize; sigNum++)
-
+            //set the previous categories
             for (int x = 0; x < dataSetSize; x++) prevCategory[x] = inputCategory[x];
 
             //remove committed F2 nodes that are not having wins
-            countOfCommittedNodes = CountCommittedF2Nodes();
-            for (int j = 0; j < this.OPSize; j++) if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
-            Console.WriteLine(" iter={0:D2}  committed=" + countOfCommittedNodes + "\t changedCategory=" + changedCategory, iterNum);
+            for (int j = 0; j < this.OPSize; j++) 
+                if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
+
+            if(BinaryCluster.Verbose) Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
 
+        int countOfCommittedNodes = CountCommittedF2Nodes(); 
         Console.WriteLine("FINISHED TRAINING: CountOfCommittedNodes=" + countOfCommittedNodes);
-        for (int i = 0; i < this.OPSize; i++) if (this.committedNode[i]) Console.WriteLine("Commited={0}  Wt sum={1}  wins={2}", i, this.wts[i].Sum(), OPwins[i]);
+        if (BinaryCluster.Verbose)
+        {
+            for (int i = 0; i < this.OPSize; i++)
+                if (this.committedNode[i]) Console.WriteLine("Commited={0}  Wt sum={1}  wins={2}", i, this.wts[i].Sum(), OPwins[i]);
+        }
         return System.Tuple.Create(iterNum, countOfCommittedNodes, inputCategory, this.wts);
     }  //TrainNet()
 
@@ -167,7 +159,8 @@ namespace NeuralNets
             if (committedNode[F2uNo]) //only calculate OPs of committed nodes
             {
                 //get wts of current F2 node
-                OP[F2uNo] = BinaryCluster.HammingSimilarity(IP, wts[F2uNo]);
+                //OP[F2uNo] = BinaryCluster.HammingSimilarity(IP, wts[F2uNo]);
+                OP[F2uNo] = BinaryCluster.AND_OR_Similarity(IP, wts[F2uNo]);
             }
         }  //end for all the F2 nodes}
            
@@ -304,6 +297,61 @@ namespace NeuralNets
     //***************************************************************************************************************************************
     //***************************************************************************************************************************************
 
+    /// <summary>
+    /// Need to allow for possibility that a wt vector = null.
+    /// </summary>
+    /// <param name="wts"></param>
+    public static void DisplayClusterWeights(List<double[]> wts)
+    {
+        Console.WriteLine("wts   sum");
+        for (int i = 0; i < wts.Count; i++)
+        {
+            Console.Write("wts{0:D3}   ", i);
+            if (wts[i] == null)
+            {
+                for (int j = 0; j < 20; j++) Console.Write("=");
+                Console.WriteLine();
+            }
+            else
+            {
+                for (int j = 0; j < wts[i].Length; j++) if (wts[i][j] > 0.0) Console.Write("1"); else Console.Write("0");
+                Console.WriteLine("     {0}", wts[i].Sum());
+            }
+        }
+    }
+
+
+    public static int PruneClusters(List<double[]> wts, int[] clusterHits, double wtThreshold, int hitThreshold)
+    {
+        //make histogram of cluster sizes
+        int[] clusterSizes = new int[wts.Count]; //init histogram
+        for (int j = 0; j < clusterHits.Length; j++) clusterSizes[clusterHits[j]]++;
+
+        int prunedCount = 0;
+        // first prune wt vectors where sum of wts less than threshold 
+        for (int i = 0; i < wts.Count; i++)
+        {
+            if (wts[i] == null) continue;
+            if (wts[i].Sum() <= wtThreshold)
+            {
+                wts[i] = null; //set null
+                for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
+                prunedCount++;
+            }
+        }
+        // second prune wt vectors where cluster has hit count less than threshold 
+        for (int i = 0; i < wts.Count; i++)
+        {
+            if (wts[i] == null) continue;
+            if (clusterSizes[i] <= hitThreshold)
+            {
+                wts[i] = null;
+                for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
+                prunedCount++;
+            }
+        }
+        return prunedCount;
+    }
 
     /// <summary>
     /// returns a value between 0-1
@@ -317,6 +365,26 @@ namespace NeuralNets
         int hammingDistance = DataTools.HammingDistance(v1, v2);
         return (1 - (hammingDistance / (double)v1.Length));
     }
+    /// <summary>
+    /// returns a value between 0-1
+    /// AND count / OR count.
+    /// Is equivalent to average of recall and precision if one of the vectors is considered a target.
+    /// assume both vectors are of the same length
+    /// </summary>
+    /// <param name="v1">binary vector</param>
+    /// <param name="v2">binary vector</param>
+    /// <returns></returns>
+    public static double AND_OR_Similarity(double[] v1, double[] v2)
+    {
+        int AND_count = 0;
+        int OR_count = 0;
+        for (int i = 0; i < v1.Length; i++)
+        {
+            if ((v1[i] == 1.0) && (v2[i] == 1.0)) AND_count++;
+            if ((v1[i] == 1.0) || (v2[i] == 1.0)) OR_count++;
+        }
+        return AND_count / (double)OR_count;
+    }
 
 
     public static System.Tuple<int[], int, List<double[]>> ClusterBinaryVectors(List<double[]> trainingData)
@@ -329,7 +397,7 @@ namespace NeuralNets
         int initialWtCount = 10;
         int seed = 12345;           //to seed random number generator
         double beta = 0.5;          //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
-        double vigilance  = 0.7;    //vigilance parameter - increasing this proliferates categories
+        double vigilance  = 0.2;    //vigilance parameter - increasing this proliferates categories
         int maxIterations = 50;
 
         BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
@@ -337,14 +405,14 @@ namespace NeuralNets
         if (BinaryCluster.Verbose) binaryCluster.WriteParameters();
 
         var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialWtCount);
-        int iterNum = output.Item1;
-        int noOfCommittedF2Nodes = output.Item2;
-        int[] inputCategories = output.Item3;
-        var wts = output.Item4;
+        int iterNum       = output.Item1;
+        int clusterCount  = output.Item2;
+        int[] clusterHits = output.Item3;
+        var clusterWts    = output.Item4;
 
-        if (BinaryCluster.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + noOfCommittedF2Nodes);
+        if (BinaryCluster.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + clusterCount);
 
-        return System.Tuple.Create(inputCategories, noOfCommittedF2Nodes, wts);  //keepScore;
+        return System.Tuple.Create(clusterHits, clusterCount, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.
 

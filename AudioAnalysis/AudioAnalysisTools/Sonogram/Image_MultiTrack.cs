@@ -169,27 +169,13 @@ namespace AudioAnalysisTools
 
         void Superimpose(Graphics g)
         {
-            Pen p1 = new Pen(Color.Red);
-            Pen p2 = new Pen(Color.Orange);
-            Pen p3 = new Pen(Color.Yellow);
-            Pen p4 = new Pen(Color.Green);
-            Pen p5 = new Pen(Color.Blue);
-            Pen p6 = new Pen(Color.Indigo);
-            Pen p7 = new Pen(Color.Violet);
-            var pens = new List<Pen>();
-            pens.Add(p1);
-            pens.Add(p2);
-            pens.Add(p3);
-            pens.Add(p4);
-            pens.Add(p5);
-            pens.Add(p6);
-            pens.Add(p7);
-            Pen pen = null;
+            int paletteSize = 50;
+            var pens = ImageTools.GetColorPalette(paletteSize);
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
             int imageHt = this.SonoImage.Height - 1; //subtract 1 because indices start at zero
-            double[] bounds = { 0.0, 0.14, 0.28, 0.42, 0.56, 0.70, 0.85, 1.0 }; //for normalised score
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(this.SuperimposedMatrix), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\superimposed1.png", false);
 
             for (int c = 1; c < cols; c++)//traverse columns - skip DC column
             {
@@ -198,28 +184,10 @@ namespace AudioAnalysisTools
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    if ((normScore > bounds[0]) && (normScore <= bounds[1])) pen = pens[0]; //red
-                    else
-                        if ((normScore > bounds[1]) && (normScore <= bounds[2])) pen = pens[1]; //orange
-                        else
-                            if ((normScore > bounds[2]) && (normScore <= bounds[3])) pen = pens[2]; //yellow
-                            else
-                                if ((normScore > bounds[3]) && (normScore <= bounds[4])) pen = pens[3]; //green
-                                else
-                                    if ((normScore > bounds[4]) && (normScore <= bounds[5])) pen = pens[4]; //blue
-                                    else
-                                        if ((normScore > bounds[5]) && (normScore <= bounds[6])) pen = pens[5]; //indigo
-                                        else
-                                            if ((normScore > bounds[6]) && (normScore <= bounds[7])) pen = pens[6]; //violet
-                                            else pen = new Pen(Color.Brown);                                        //brown
-                    g.DrawLine(pen, r, imageHt - c, r, imageHt - c + 1);
-                    r += 1;
+                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c + 1);
                 }
-                c += 1;
             }
-
-
-        }
+        } //Superimpose()
 
 
         #region IDisposable Members
@@ -228,7 +196,6 @@ namespace AudioAnalysisTools
         {
             this.EventList = null;
             this.SonoImage.Dispose();
-
         }
 
         #endregion

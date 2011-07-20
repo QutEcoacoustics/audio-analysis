@@ -141,7 +141,7 @@ namespace AnalysisPrograms
             {
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                 DrawSonogram(sonogram, imagePath, mfccScores, oscilScores, predictedEvents, eventThreshold);
-                ImageTools.DrawMatrix(avMatrix, outputDir+"\\acousticVectors.jpg");
+                ImageTools.DrawMatrix(avMatrix, outputDir+"\\acousticVectors.jpg", true);
             }
             else
             if ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
