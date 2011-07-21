@@ -20,8 +20,8 @@ namespace AnalysisPrograms
         public struct Indices2
         {
             public double snr, bgNoise, activity, avAmp, amp1minusEntropy;
-            public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1, clusterCount;
-            public int percentCover;
+            public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1;
+            public int percentCover, clusterCount;
 
             public Indices2(double _snr, double _bgNoise, double _activity, double _avAmp, double _entropyAmp, int _percentCover,
                            double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, int _clusterCount)
@@ -362,17 +362,19 @@ namespace AnalysisPrograms
 
             BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
-            var output = BinaryCluster.ClusterBinaryVectors(trainingData);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterHits    = output.Item1;//the cluster to which each frame belongs
-            indices.clusterCount = output.Item2;
-            List<double[]> clusterWts   = output.Item3;
-            Console.WriteLine("Number of Categories (committed F2 Nodes) after clustering =" + indices.clusterCount);
-            BinaryCluster.DisplayClusterWeights(clusterWts);
+            double vigilance = 0.1;    //vigilance parameter - increasing this proliferates categories
+            var output = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
+            int[] clusterHits         = output.Item1;//the cluster to which each frame belongs
+            List<double[]> clusterWts = output.Item2;
+
+            //Console.WriteLine("Number of Categories (committed F2 Nodes) after clustering =" + indices.clusterCount);
+            //BinaryCluster.DisplayClusterWeights(clusterWts);
             double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts < threshold
             int hitThreshold   = 10;  //used to remove wt vectors which have fewer than the thershold hits
-            int countRemoved = BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
-            BinaryCluster.DisplayClusterWeights(clusterWts);
-            Console.WriteLine("Number of Categories after pruning clusters =" + (clusterWts.Count - countRemoved));
+            BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
+            //BinaryCluster.DisplayClusterWeights(clusterWts);
+            Console.WriteLine("Number of Categories after pruning =" + clusterWts.Count);
+            indices.clusterCount = clusterWts.Count;
 
 
             //reassemble spectrogram to visualise the clusters
@@ -391,10 +393,29 @@ namespace AnalysisPrograms
                     count++;
                 }
             }
+
+            //add in the weights to first part of spectrogram
+            int space = 30;
+            int col = space;
+            for (int i = 0; i < clusterWts.Count; i++)
+            {
+                if (clusterWts[i] == null) continue;
+                for (int c = 0; c < space; c++)
+                {
+                    col++;
+                    //for (int j = 0; j < clusterSpectrogram.GetLength(1); j++) clusterSpectrogram[col, j] = clusterWts.Count+3;
+                    for (int j = 0; j < clusterWts[i].Length; j++)
+                    {
+                        if (clusterWts[i][j] > 0.0) clusterSpectrogram[col, excludeBins + j-1] = i+1;
+                    }
+                }
+                col += 2;
+            }
+
             int lengthOfDisplaySpectro = signalLength / SonogramConfig.DEFAULT_WINDOW_SIZE;
-            ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster1.png", false);
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster1.png", false);
             clusterSpectrogram = DataTools.ScaleMatrix(clusterSpectrogram, lengthOfDisplaySpectro, SonogramConfig.DEFAULT_WINDOW_SIZE / 2);
-            ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster2.png", false);
+            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster2.png", false);
 
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();

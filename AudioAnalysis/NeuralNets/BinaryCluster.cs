@@ -79,9 +79,6 @@ namespace NeuralNets
         this.InitialiseWtArrays(trainingData, randomArray, initialWtCount);
 
         //{********* GO THROUGH THE TRAINING SET for 1 to MAX ITERATIONS *********}
-
-        if (BinaryCluster.Verbose) Console.WriteLine("\n BEGIN TRAINING  for " + maxIter + " iterations.");
-
         //repeat //{training set until max iter or trn set learned}
         int[] OPwins=null;   //stores the number of times each OP node wins
         int iterNum = 0;
@@ -132,14 +129,7 @@ namespace NeuralNets
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
 
-        int countOfCommittedNodes = CountCommittedF2Nodes(); 
-        Console.WriteLine("FINISHED TRAINING: CountOfCommittedNodes=" + countOfCommittedNodes);
-        if (BinaryCluster.Verbose)
-        {
-            for (int i = 0; i < this.OPSize; i++)
-                if (this.committedNode[i]) Console.WriteLine("Commited={0}  Wt sum={1}  wins={2}", i, this.wts[i].Sum(), OPwins[i]);
-        }
-        return System.Tuple.Create(iterNum, countOfCommittedNodes, inputCategory, this.wts);
+        return System.Tuple.Create(iterNum, CountCommittedF2Nodes(), inputCategory, this.wts);
     }  //TrainNet()
 
 
@@ -321,13 +311,12 @@ namespace NeuralNets
     }
 
 
-    public static int PruneClusters(List<double[]> wts, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static void PruneClusters(List<double[]> wts, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make histogram of cluster sizes
         int[] clusterSizes = new int[wts.Count]; //init histogram
         for (int j = 0; j < clusterHits.Length; j++) clusterSizes[clusterHits[j]]++;
 
-        int prunedCount = 0;
         // first prune wt vectors where sum of wts less than threshold 
         for (int i = 0; i < wts.Count; i++)
         {
@@ -336,7 +325,6 @@ namespace NeuralNets
             {
                 wts[i] = null; //set null
                 for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
-                prunedCount++;
             }
         }
         // second prune wt vectors where cluster has hit count less than threshold 
@@ -347,11 +335,10 @@ namespace NeuralNets
             {
                 wts[i] = null;
                 for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
-                prunedCount++;
             }
         }
-        return prunedCount;
-    }
+        //wts = DataTools.RemoveNullElementsFromList(wts);
+    } //PruneClusters()
 
     /// <summary>
     /// returns a value between 0-1
@@ -387,32 +374,44 @@ namespace NeuralNets
     }
 
 
-    public static System.Tuple<int[], int, List<double[]>> ClusterBinaryVectors(List<double[]> trainingData)
+    public static System.Tuple<int[], List<double[]>> ClusterBinaryVectors(List<double[]> trainingData, double vigilance)
     {
         int trnSetSize = trainingData.Count;
         int IPSize = trainingData[0].Length;
-        if (BinaryCluster.Verbose) Console.WriteLine("trnSetSize=" + trnSetSize + "  IPSize=" + IPSize + "  F2Size=" + trnSetSize);
-
         //************************** INITIALISE PARAMETER VALUES *************************
         int initialWtCount = 10;
         int seed = 12345;           //to seed random number generator
         double beta = 0.5;          //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
-        double vigilance  = 0.2;    //vigilance parameter - increasing this proliferates categories
         int maxIterations = 50;
 
         BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
         binaryCluster.SetParameterValues(beta, vigilance);
-        if (BinaryCluster.Verbose) binaryCluster.WriteParameters();
 
+        if (BinaryCluster.Verbose)
+        {
+            Console.WriteLine("trnSetSize=" + trainingData.Count + "  IPsize=" + trainingData[0].Length + "  Vigilance=" + vigilance);
+            Console.WriteLine("\n BEGIN TRAINING");
+        }
         var output = binaryCluster.TrainNet(trainingData, maxIterations, seed, initialWtCount);
-        int iterNum       = output.Item1;
+        int iterCount     = output.Item1;
         int clusterCount  = output.Item2;
         int[] clusterHits = output.Item3;
         var clusterWts    = output.Item4;
+        if (BinaryCluster.Verbose)
+        {
+            Console.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)");
+            Console.WriteLine("  CountOfCommittedNodes=" + clusterCount);
+            for (int i = 0; i < clusterCount; i++)
+                if (clusterWts[i] == null) Console.WriteLine("{0}  ======= null =======", i);
+                else
+                {
+                    int wins = 0; //calculate the winds for current cluster[i]
+                    for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j]==i) wins++;
+                    Console.WriteLine("{0}  Wt sum={1}  wins={2}", i, clusterWts[i].Sum(), wins);
+                }
+        }
 
-        if (BinaryCluster.Verbose) Console.WriteLine("Training iterations=" + iterNum + ".   Categories=" + clusterCount);
-
-        return System.Tuple.Create(clusterHits, clusterCount, clusterWts);  //keepScore;
+        return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.
 
