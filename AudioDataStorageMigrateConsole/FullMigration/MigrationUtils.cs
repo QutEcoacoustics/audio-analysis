@@ -316,7 +316,7 @@ WHERE ar.[AudioReadingID] = '" +
 
                     if (!item.DataIsNullResult.HasValue)
                     {
-                        throw new InvalidOperationException("Audio reading with id " + reading.AudioReadingID + " did not return a data length.");
+                        throw new InvalidOperationException("Audio reading with id " + reading.AudioReadingID + " did not return a value.");
                     }
 
                     if (item.Id.HasValue && item.DataIsNullResult.HasValue && item.Id == reading.AudioReadingID)

@@ -18,12 +18,10 @@ namespace AudioDataStorageMigrateConsole
     using System.Security.Cryptography;
     using System.Text;
 
-    using AudioDataStorageMigrateConsole.Classes;
-    using AudioDataStorageMigrateConsole.Diag;
     using AudioDataStorageMigrateConsole.ExportAndVerify;
+    using AudioDataStorageMigrateConsole.MissingFiles;
 
     using AudioTools.AudioUtlity;
-    using AudioTools.WavAudio;
 
     using Autofac;
 
@@ -63,13 +61,18 @@ namespace AudioDataStorageMigrateConsole
                 audioDataStorageDir,
                 tempFileUploadDir);
 
-            var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
+            //var sqlFs = QutDependencyContainer.Instance.Container.Resolve<SqlFileStreamAudioDataStorage>();
             var fileSys = QutDependencyContainer.Instance.Container.Resolve<FileSystemAudioDataStorage>();
 
-            var onlyExport = new OnlyExports(logFileDir, sqlFs, fileSys);
-            onlyExport.Run();
-            Console.ReadLine();
+            // this is used for export (23/7/2011)
+            //var onlyExport = new OnlyExports(logFileDir, sqlFs, fileSys);
+            //onlyExport.Run();
+            //Console.ReadLine();
 
+
+            var check = new AudioReadingsWithoutFiles(logFileDir, fileSys);
+            check.Run();
+            Console.ReadLine();
 
             /*
             --insert into audioreadings 
