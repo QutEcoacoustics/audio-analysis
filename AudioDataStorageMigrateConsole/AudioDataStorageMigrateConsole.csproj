@@ -72,9 +72,10 @@
     <Compile Include="Diag\AudioReadingDiagItem.cs" />
     <Compile Include="ExportAndVerify\ExportVerifyRunner.cs" />
     <Compile Include="ExportAndVerify\SimpleExporter.cs" />
-    <Compile Include="MigrationInfo.cs" />
-    <Compile Include="MigrationUtils.cs" />
-    <Compile Include="MigrationWorker.cs" />
+    <Compile Include="FullMigration\MigrationInfo.cs" />
+    <Compile Include="FullMigration\MigrationUtils.cs" />
+    <Compile Include="FullMigration\MigrationWorker.cs" />
+    <Compile Include="MissingFiles\AudioReadingsWithoutFiles.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
