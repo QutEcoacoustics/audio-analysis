@@ -1,0 +1,12 @@
+this file only contains block.
+so just applied the block clustering,
+
+
+parameters:
+
+timeBetw=0.035;
+frameThreshold=30;
+freqNThe=5;
+freqDistance=1;
+freNumbThe=5;
+frmInFrq=3;

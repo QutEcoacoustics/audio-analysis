@@ -3,15 +3,15 @@ function [AcousSig,frequency,timeFrame,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,
 % AcousticFrequency: the frequency bin of whistle, Block, block
 % AcouticFrame: the frame of whistle,Block,block
 
-timeBetw=0.05;
+timeBetw=0.035;
 frameThreshold=30;
-freqNThe=6;
+freqNThe=5;
 freqDistance=1;
 freNumbThe=5;
 frmInFrq=3;
 
-widthBetBlock=fix(timeBetw*fs/window);
 
+widthBetBlock=fix(timeBetw*fs/window);
 % widthOfBlock=fix(timeInterval*fs/window);
 GroupNumbers=size(AcousticFrame1,1);
 % BlockFrame=zeros(GroupNumbers,size(AcousticFrame1,2));

@@ -18,6 +18,7 @@ switch (o)
             below2=nosle+1.96*t;
             below3=nosle+3*t;
             below4=nosle+1.50*t;
+            below5=nosle+1*t;
 end
 switch(o)
     case 1
@@ -31,7 +32,7 @@ switch(o)
         Q7=sig1;
     case 2
         for q=1:g
-           if w1(q)-below2>0
+           if w1(q)-below>0
             sig1(q)=w1(q);
            else
             sig1(q)=NaN; %NaN=not a number

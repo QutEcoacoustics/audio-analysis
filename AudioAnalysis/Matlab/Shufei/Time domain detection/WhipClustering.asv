@@ -9,10 +9,10 @@ function [AcousSig,frequency,timeFrame,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,
 % meanwhile, please pay attention to filter's bandwidth
 
 % timeInterval=0.05;
-timeBetw=0.025; % whip中点的间距，如果大于此间距，视为下一信号的开始，不在本whip之内。
-frameThreshold=8;% 连续这么多个点之间的间距小于timeBetW，则将这几个连续值的第一个视为whip的开端点。然后继续检测，知道间距大于timeBetW，将终点值存放
-freqNThe=4;%在检测到的假设whip区间内，如果总共跨越频带多余这个阈值，则视为存在whip信号，否则放弃，继续检测下一序列信号
-freqDistance=8;%粗略估算，如果相邻频带间距超越5个带宽，
+timeBetw=0.05; % whip中点的间距，如果大于此间距，视为下一信号的开始，不在本whip之内。
+frameThreshold=5;% 连续这么多个点之间的间距小于timeBetW，则将这几个连续值的第一个视为whip的开端点。然后继续检测，知道间距大于timeBetW，将终点值存放
+freqNThe=15;%在检测到的假设whip区间内，如果总共跨越频带多余这个阈值，则视为存在whip信号，否则放弃，继续检测下一序列信号
+freqDistance=7;%粗略估算，如果相邻频带间距超越5个带宽，
 freNumbThe=5;
 % gapThe=20;  %在上述通过time frame 限定的假设whip区间内，如果相邻频带的间距小于此阈值，则判定相邻两点同属于一个whip信号，如果大于，则放弃，继续检测下一信号 
 % numThe=10;   % 继续增强上一阈值，如果连续numThe个点所在频带的间距小于gapThe，则，将这连续numThe的第一个值作为信号的开端，继续检测终端，直到，相邻频带距离大于gapThe，确定终端位置
@@ -148,7 +148,7 @@ for index=1:size(AcousSig,2)
                                          end
                                     end 
                                     MaxFrmHFrq=max(frame);
-                                    OutEndH(index7)=MaxFrmHFrq;
+%                                     OutEndH(index7)=MaxFrmHFrq;
                                     if (index6-1)>=2
                                         index11=1;
                                         while MaxFrmHFrq
@@ -166,7 +166,8 @@ for index=1:size(AcousSig,2)
                                         MinFrmHFrq=max(frame);
                                     end
                                     HFrequency=FreStart;
-                                    OutStartH(index7)=MinFrmHFrq;                        
+                                    OutStartH(index7)=MinFrmHFrq;
+                                    OutEndH(index7)=MinFrmHFrq;
                                     HFrq(index7)=HFrequency;
                                     index7=index7+1;
                                     
@@ -182,7 +183,7 @@ for index=1:size(AcousSig,2)
                                     end
 
                                     MaxFrmLFrq=max(frame1);
-                                    OutEndL(index8)=MaxFrmLFrq;
+%                                     OutEndL(index8)=MaxFrmLFrq;
                                     if (index6-1)>=2
                                         index11=1;
                                         while MaxFrmLFrq
@@ -202,6 +203,7 @@ for index=1:size(AcousSig,2)
 
                                     LFrequency=FreEnd;
                                     OutStartL(index8)=MinFrmLFrq;
+                                    OutEndL(index8)=MinFrmLFrq;
                                     LFrq(index8)=LFrequency;
                                     index8=index8+1;
                                     
@@ -231,7 +233,7 @@ for index=1:size(AcousSig,2)
                                          end
                                     end 
                                     MaxFrmHFrq=max(frame);
-                                    OutEndH(index7)=MaxFrmHFrq;
+%                                     OutEndH(index7)=MaxFrmHFrq;
                                     if (index6-1)>=2
                                         index11=1;
                                         while MaxFrmHFrq
@@ -249,7 +251,8 @@ for index=1:size(AcousSig,2)
                                         MinFrmHFrq=max(frame);
                                     end
                                     HFrequency=FreStart;
-                                    OutStartH(index7)=MinFrmHFrq;                        
+                                    OutStartH(index7)=MinFrmHFrq;  
+                                    OutEndH(index7)=MinFrmHFrq;
                                     HFrq(index7)=HFrequency;
                                     index7=index7+1;
                                    
@@ -265,7 +268,7 @@ for index=1:size(AcousSig,2)
                                     end
 
                                     MaxFrmLFrq=max(frame1);
-                                    OutEndL(index8)=MaxFrmLFrq;
+%                                     OutEndL(index8)=MaxFrmLFrq;
                                     if (index6-1)>=2
                                         index11=1;
                                         while MaxFrmLFrq
@@ -285,6 +288,7 @@ for index=1:size(AcousSig,2)
 
                                     LFrequency=FreEnd;
                                     OutStartL(index8)=MinFrmLFrq;
+                                     OutEndL(index8)=MinFrmLFrq;
                                     LFrq(index8)=LFrequency;
                                     index8=index8+1;
                                    
@@ -319,7 +323,26 @@ for index=1:size(AcousSig,2)
   end 
 end             
  
-                        
+                                             
+function FreqBins=freqBins_calculation(array)
+%calculate the frequency bins covered by the AcousticFrequency 
+CopyOfAcousticFreq=array;
+MaxFreq=1;
+index1=1;
+while MaxFreq
+    MaxFreq=max(CopyOfAcousticFreq);
+    PrefreqBins(index1)=MaxFreq;
+    for index=1:size(array,2)
+        if CopyOfAcousticFreq(index)==MaxFreq
+            CopyOfAcousticFreq(index)=0;
+        end
+    end
+    index1=index1+1;
+end
+% get rid of frequency band 0
+FreqBins=PrefreqBins(1:(index1-2));
+
+end                        
                         
                         
                         
@@ -461,23 +484,3 @@ end
 
     
     
-                                             
-function FreqBins=freqBins_calculation(array)
-%calculate the frequency bins covered by the AcousticFrequency 
-CopyOfAcousticFreq=array;
-MaxFreq=1;
-index1=1;
-while MaxFreq
-    MaxFreq=max(CopyOfAcousticFreq);
-    PrefreqBins(index1)=MaxFreq;
-    for index=1:size(array,2)
-        if CopyOfAcousticFreq(index)==MaxFreq
-            CopyOfAcousticFreq(index)=0;
-        end
-    end
-    index1=index1+1;
-end
-% get rid of frequency band 0
-FreqBins=PrefreqBins(1:(index1-2));
-
-end

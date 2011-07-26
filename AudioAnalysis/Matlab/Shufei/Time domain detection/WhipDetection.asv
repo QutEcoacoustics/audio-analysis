@@ -54,10 +54,7 @@ for groupIndex=1:GroupNumbers
                    for index3=(index1-1-count1+1):(index1-1)
                        WhipFrame(groupIndex,indexSeries(index3))=AcousticFrame(groupIndex,indexSeries(index3));
                        WhipFrequency(groupIndex,indexSeries(index3))=AcousticFrequency(groupIndex,indexSeries(index3));
-                   end                 
-                   
-                   
-                   
+                   end                    
                 end
             elseif (difference2>widthOfWhip)&&(difference1>widthOfWhip)
                 baseValue=NonzerosValue(index1-1);

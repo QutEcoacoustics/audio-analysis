@@ -11,9 +11,9 @@ window=256;
 % window=1024;
 %noverlap = round(0.5*window); % 50% overlap between frames
 
- pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
+%  pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\3hours samford tagged dataset\single channel\2 mins\NEJB_NE465_20101013-043000\NEJB_NE465_20101013-044200.wav';
- 
+ pathtofile='C:\Documents and Settings\n7594879\My Documents\sandra\Project Codes\Matlab\dataset\training data\BAC2_20071015-045040.wav';
 % pathtofile='C:\SensorNetworks\WavFiles\download\SERF 3_20100913-083000.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081122-203000.wav';
 % pathtofile='C:\SensorNetworks\WavFiles\whipbird\file0151mono.wav_segment_14.wav';
@@ -44,18 +44,18 @@ L=length(y); S=y;
 % showImage(c,I10,T1,F1,5);
 
 %Add chebyshev type1 band pass filter(200-3500Hz)
-[h1,S1]=ChebyshevFilter(10,0.1,200,2500,fs/2,y);
+[h1,S1]=ChebyshevFilter(10,0.1,3000,5500,fs/2,y);
 
 [y3,fs,I10,F1,T1]=smoothSpectrogram(S1,fs);
 % showImage(c,I10,T1,F1,5);
 
 %Add chebyshev type1 band pass filter(2000-4000Hz)
-[h2,S2]=ChebyshevFilter(10,0.1,2000,5000,fs/2,y);
+[h2,S2]=ChebyshevFilter(10,0.1,4500,7500,fs/2,y);
 [y4,fs,I11,F1,T1]=smoothSpectrogram(S2,fs);
 % showImage(c,I11,T1,F1,6);
 
 %Add chebyshev type1 band pass filter(2000-4000Hz)
-[h3,S3]=ChebyshevFilter(10,0.1,4000,6500,fs/2,y);
+[h3,S3]=ChebyshevFilter(10,0.1,6000,9500,fs/2,y);
 
 [y4,fs,I12,F1,T1]=smoothSpectrogram(S3,fs);
 % showImage(c,I12,T1,F1,7);
@@ -82,11 +82,11 @@ L=length(y); S=y;
 % [AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW]=WhipClustering(freqBindB1,FrameZerodB1,freqBindB2,FrameZerodB2,freqBindB3,FrameZerodB3,fs,window);
 % [AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(BlockFrequencydB1,BlockFramedB1,BlockFrequencydB2,BlockFramedB2,BlockFrequencydB3,BlockFramedB3,fs,window);
 [AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq]=BlockClustering(freqBindB1,FrameZerodB1,freqBindB2,FrameZerodB2,freqBindB3,FrameZerodB3,fs,window);
-showImage2(c,I1,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,T,F,18,1);
+% showImage2(c,I1,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,T,F,18,1);
 
 % showImage2(c,I1,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,18,1);
 % showImage1(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,T,F,19,1);
-% showComponents(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,20,1);
+showComponents(c,I1,AcousticFrequency,AcousticFrame,StartPoint,EndPoint,FreqBins,OutStart1,OutEnd1,OutStart2,OutEnd2,SFrq,EFrq,AcousSig,frequency,timeframe,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,LFrq,AcousSigWhip,frequencyWhip,timeframeWhip,OutStartHW,OutEndHW,OutStartLW,OutEndLW,HFrqW,LFrqW,T,F,20,1);
 
 %
 
