@@ -72,6 +72,10 @@ namespace AudioDataStorageMigrateConsole
 
             var check = new AudioReadingsWithoutFiles(logFileDir, fileSys);
             check.Run();
+
+
+
+            Console.WriteLine("Done. Press any key to close...");
             Console.ReadLine();
 
             /*

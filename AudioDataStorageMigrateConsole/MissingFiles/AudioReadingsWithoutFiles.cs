@@ -77,7 +77,18 @@ namespace AudioDataStorageMigrateConsole.MissingFiles
 
             try
             {
-                FileInfo file = this.fileSystemAudioDataStorage.GetDataFile(reading);
+                FileInfo file = null;
+                try
+                {
+                    file = this.fileSystemAudioDataStorage.GetDataFile(reading);
+                }
+                catch (InvalidOperationException ioex)
+                {
+                    if (ioex.Message.Contains("File for audio reading does not exist."))
+                    {
+                        file = null;
+                    }
+                }
 
                 // see if file exists
                 fileExists = file != null && File.Exists(file.FullName);
