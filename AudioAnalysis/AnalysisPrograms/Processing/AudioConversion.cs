@@ -37,8 +37,6 @@ namespace AnalysisPrograms.Processing
                 Write(file.Name);
 
                 UseWavReader(file);
-                UseAudioInfo(file);
-                UseDSGetDuration(file);
             }
 
             Console.ReadLine();
@@ -67,43 +65,6 @@ namespace AnalysisPrograms.Processing
             }
         }
 
-        private static void UseAudioInfo(FileInfo file)
-        {
-            Write("AudioInfo");
-
-            try
-            {
-                var audioInfo = DShowConverter.GetAudioInfo(file.FullName, null);
-
-                Write(audioInfo.BitsPerSample.ToString());
-                Write(audioInfo.BytesPerSample.ToString());
-                Write(audioInfo.Channels.ToString());
-                Write(string.Empty);
-                Write(audioInfo.SamplesPerSecond.ToString());
-                Write(audioInfo.SampleCount.ToString());
-            }
-            catch
-            {
-                Write("AudioInfo could not read file.");
-            }
-        }
-
-        private static void UseDSGetDuration(FileInfo file)
-        {
-            Write("DShowConverter.GetDuration");
-
-            try
-            {
-                var duration = DShowConverter.GetDuration(file.FullName, null);
-
-                Write(duration.ToString(), true, false);
-            }
-            catch
-            {
-                Write("DShowConverter.GetDuration could not read file.");
-            }
-        }
-
         private static void Write(string data, bool appendNewLine, bool overwriteFile)
         {
             Console.WriteLine(data);
@@ -129,11 +90,6 @@ namespace AnalysisPrograms.Processing
         private static void Write(string data)
         {
             Write(data + ", ", false, false);
-        }
-
-        public static void Segment(string audioFilePath)
-        {
-
         }
     }
 }
