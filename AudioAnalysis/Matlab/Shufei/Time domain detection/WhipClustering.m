@@ -9,10 +9,10 @@ function [AcousSig,frequency,timeFrame,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,
 % meanwhile, please pay attention to filter's bandwidth
 
 % timeInterval=0.05;
-timeBetw=0.025; % whip中点的间距，如果大于此间距，视为下一信号的开始，不在本whip之内。
+timeBetw=0.05; % whip中点的间距，如果大于此间距，视为下一信号的开始，不在本whip之内。
 frameThreshold=8;% 连续这么多个点之间的间距小于timeBetW，则将这几个连续值的第一个视为whip的开端点。然后继续检测，知道间距大于timeBetW，将终点值存放
-freqNThe=8;%在检测到的假设whip区间内，如果总共跨越频带多余这个阈值，则视为存在whip信号，否则放弃，继续检测下一序列信号
-freqDistance=3;%粗略估算，如果相邻频带间距超越5个带宽，
+freqNThe=15;%在检测到的假设whip区间内，如果总共跨越频带多余这个阈值，则视为存在whip信号，否则放弃，继续检测下一序列信号
+freqDistance=7;%粗略估算，如果相邻频带间距超越5个带宽，
 freNumbThe=5;
 % gapThe=20;  %在上述通过time frame 限定的假设whip区间内，如果相邻频带的间距小于此阈值，则判定相邻两点同属于一个whip信号，如果大于，则放弃，继续检测下一信号 
 % numThe=10;   % 继续增强上一阈值，如果连续numThe个点所在频带的间距小于gapThe，则，将这连续numThe的第一个值作为信号的开端，继续检测终端，直到，相邻频带距离大于gapThe，确定终端位置

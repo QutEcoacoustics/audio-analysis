@@ -7,7 +7,7 @@ function [WhipFrequency,WhipFrame]=WhipDetection(AcousticFrequency,AcousticFrame
 %2) frameThreshold (3-6)
 % meanwhile, please pay attention to filter's bandwidth
 
-timeInterval=0.10;
+timeInterval=0.05;
 frameThreshold=5;
 
 widthOfWhip=fix(timeInterval*fs/window);

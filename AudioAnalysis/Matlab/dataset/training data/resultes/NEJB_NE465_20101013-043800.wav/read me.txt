@@ -1,0 +1,29 @@
+parameters for detecting whistle, whip, block
+
+
+based upon 1.96*onestd
+
+
+%whistle
+
+
+timeInterval=0.1;
+frmNumThe=5;
+frmClusThe=3;
+
+%whip
+
+timeBetw=0.025; % whip中点的间距，如果大于此间距，视为下一信号的开始，不在本whip之内。
+frameThreshold=8;% 连续这么多个点之间的间距小于timeBetW，则将这几个连续值的第一个视为whip的开端点。然后继续检测，知道间距大于timeBetW，将终点值存放
+freqNThe=4;%在检测到的假设whip区间内，如果总共跨越频带多余这个阈值，则视为存在whip信号，否则放弃，继续检测下一序列信号
+freqDistance=8;%粗略估算，如果相邻频带间距超越5个带宽，
+freNumbThe=5;
+
+%block
+
+timeBetw=0.05;
+frameThreshold=25;
+freqNThe=6;
+freqDistance=1;
+freNumbThe=5;
+frmInFrq=3;

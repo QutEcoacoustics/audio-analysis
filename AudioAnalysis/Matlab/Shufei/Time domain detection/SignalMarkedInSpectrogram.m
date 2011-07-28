@@ -1,6 +1,6 @@
 %  function [freqBin,FrameZero,freqBindB,FrameZerodB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
 % function [WhistleFrequencyStd, WhistleFrameStd,WhistleFrequencydB, WhistleFramedB,IstdH,IstdV,IdBH,IdBV]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
-function [freqBin,FrameZero,freqBindB,FrameZerodB,WhipFrequencydB, WhipFramedB,BlockFrequencydB,BlockFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
+function [freqBin,FrameZero,freqBindB,FrameZerodB,WhipFrequencydB, WhipFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
 % function [BlockFrequencyStd,BlockFrameStd,BlockFrequencydB,BlockFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
 [dB,ZeroCrossing,Std,fz,X]=ExtractfeaturesInTimeDomain(window,S,L,fs);
 
@@ -99,7 +99,7 @@ sigdB=signalExtract(NdB,NoneStd,X,Nosle2,2);
  %Add the detection algorithm of whip.
 [WhipFrequencydB, WhipFramedB]=WhipDetection(freqBindB,FrameZerodB, fs,window);
 %Add the detection algorithm of whip.
- [BlockFrequencydB,BlockFramedB]=Block_detection(freqBindB,FrameZerodB,fs,window);
+%  [BlockFrequencydB,BlockFramedB]=Block_detection(freqBindB,FrameZerodB,fs,window);
  
 %mark all points in the spectrogram
 %change I1[M*N] according to the [FrameN, SigFz]

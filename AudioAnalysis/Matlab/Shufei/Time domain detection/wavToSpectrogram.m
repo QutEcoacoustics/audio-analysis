@@ -2,7 +2,7 @@ function [y,fs,I1,F2,T2] = wavToSpectrogram(pathToFile)
 global window;
 [y, fs, nbits, opts] = wavread(pathToFile);
 
-%window=1024;
+% window=1024;
  window = 256; % hamming window using 512 samples
 noverlap=round(0*window);
 %noverlap = round(0.5*window); % 50% overlap between frames

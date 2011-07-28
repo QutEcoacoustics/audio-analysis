@@ -3,9 +3,9 @@ function [AcousSig,frequency,timeFrame,OutStartH,OutEndH,OutStartL,OutEndL,HFrq,
 % AcousticFrequency: the frequency bin of whistle, Block, block
 % AcouticFrame: the frame of whistle,Block,block
 
-timeBetw=0.035;
+timeBetw=0.05;
 frameThreshold=30;
-freqNThe=5;
+freqNThe=6;
 freqDistance=1;
 freNumbThe=5;
 frmInFrq=3;

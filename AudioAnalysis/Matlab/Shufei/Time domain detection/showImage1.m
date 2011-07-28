@@ -17,7 +17,7 @@ warning off % this line is included to suppress the warning that MATLAB
     view(0,90);
     switch(o)
         case 1
-            title('Spectrogram with markers based on Residuals','FontSize',20);
+            title('Spectrogram with markers based on Std','FontSize',20);
             ylabel('Frequency (Hz)','FontSize',20);
             xlabel('Time (s)','FontSize',20);     
             hold on;
@@ -49,8 +49,8 @@ SFrq=(SFrq /IstdH1_Frquencybinnumber) * max(F);
 EFrq=(EFrq /IstdH1_Frquencybinnumber) * max(F);
     % cycle through each plot 
      numGroups1 = size(IstdV1,1); 
-%      numGroups2 = size(IstdV2,1); 
-%      numGroups3= size(IstdV3,1); 
+     numGroups2 = size(IstdV2,1); 
+     numGroups3= size(IstdV3,1); 
     switch (o)
         case 1
             colors = {'xb';'xg';'xy';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
@@ -100,7 +100,7 @@ EFrq=(EFrq /IstdH1_Frquencybinnumber) * max(F);
                     end
                 end
             end
-            
+% % % % % %             
 
 %             if (length(colors) < numGroups2)
 %                 error('Not enough colors!');
@@ -117,7 +117,7 @@ EFrq=(EFrq /IstdH1_Frquencybinnumber) * max(F);
 %                 % end for (group)
 %                groupIndex1=groupIndex1+1;
 %             end
-            
+%             
 %             if (length(colors) < numGroups3)
 %                 error('Not enough colors!');
 %             end   

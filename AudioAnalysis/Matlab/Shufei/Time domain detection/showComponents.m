@@ -73,7 +73,7 @@ warning off % this line is included to suppress the warning that MATLAB
 
     switch (o)
         case 1
-            colors = {'xb';'xg';'xy';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
+            colors = {'xy';'xg';'xy';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
                                       % ......
                                       %  green dots represent the last
                                       %  group which locates at the top
@@ -123,7 +123,7 @@ warning off % this line is included to suppress the warning that MATLAB
                         if startpoint(indexFreq,index1)~=0
                             for index=1:AcousticFrame_SamplesLength
                                 if (index==startpoint(indexFreq,index1)) && (AcousticFrequency(groupIndex,index)==FreqBins(indexFreq))
-                                    line([AcousticFrame(groupIndex,index),AcousticFrame(groupIndex,endpoint(indexFreq,index1))],[AcousticFrequency(groupIndex,index),AcousticFrequency(groupIndex,index)],'Color','g');
+                                    line([AcousticFrame(groupIndex,index),AcousticFrame(groupIndex,endpoint(indexFreq,index1))],[AcousticFrequency(groupIndex,index),AcousticFrequency(groupIndex,index)],'LineWidth',2,'Color','b');
                                 end
                             end
                         end
@@ -135,9 +135,9 @@ warning off % this line is included to suppress the warning that MATLAB
                 for index=1:size(OutStart1,2)
                     for index1=1:AcousticFrame_SamplesLength
                         if (index1==OutStart1(index)) &&(AcousticFrequency(groupIndex,index1)==SFrq(index))
-                            line([AcousticFrame(groupIndex,OutStart1(index)),AcousticFrame(groupIndex,OutStart2(index))],[SFrq(index),EFrq(index)],'color','g');
+                            line([AcousticFrame(groupIndex,OutStart1(index)),AcousticFrame(groupIndex,OutStart2(index))],[SFrq(index),EFrq(index)],'LineWidth',2,'color','b');
                         elseif (index1==OutEnd1(index))&&(AcousticFrequency(groupIndex,index1)==SFrq(index))
-                            line([AcousticFrame(groupIndex,OutEnd1(index)),AcousticFrame(groupIndex,OutEnd2(index))],[SFrq(index),EFrq(index)],'color','g');
+                            line([AcousticFrame(groupIndex,OutEnd1(index)),AcousticFrame(groupIndex,OutEnd2(index))],[SFrq(index),EFrq(index)],'LineWidth',2,'color','b');
                         end
                     end
                 end
@@ -148,15 +148,15 @@ warning off % this line is included to suppress the warning that MATLAB
             for groupIndex=numGroups1:-1:1
                 for index1=1:size(OutStartH,2)
                     if OutStartH(index1)<=OutStartL(index1)
-                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'Color','r');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'color','r');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'color','r');
-                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'color','r');
+                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',1,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
                     else
-                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'Color','r');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'color','r');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'color','r');
-                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'color','r');
+                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',1,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
                     end
                 end
             end
@@ -165,22 +165,22 @@ warning off % this line is included to suppress the warning that MATLAB
             for groupIndex=numGroups1:-1:1
                 for index1=1:size(OutStartHW,2)
                     if OutStartHW(index1)<=OutStartLW(index1)
-                        line([OutStartHW(index1),OutStartLW(index1)],[HFrqW(index1),LFrqW(index1)],'Color','y');
-                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'color','y');
-                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'color','y');
-                        line([OutEndHW(index1),OutEndLW(index1)],[HFrqW(index1),LFrqW(index1)],'color','y');
+                        line([OutStartHW(index1),OutStartLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',1,'Color','g');
+                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutEndHW(index1),OutEndLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
                     else
-                        line([OutStartLW(index1),OutStartHW(index1)],[LFrqW(index1),HFrqW(index1)],'Color','y');
-                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'color','y');
-                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'color','y');
-                        line([OutEndLW(index1),OutEndHW(index1)],[LFrqW(index1),HFrqW(index1)],'color','y');
+                        line([OutStartLW(index1),OutStartHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',1,'Color','g');
+                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutEndLW(index1),OutEndHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
                     end
                 end
             end
 
             hold off
         case 2
-            colors = {'xb';'xg';'xy';'xr'; 'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
+            colors = {'xy';'xg';'xy';'xr'; 'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
                                       % ......
                                       %  green dots represent the last
                                       %  group which locates at the top

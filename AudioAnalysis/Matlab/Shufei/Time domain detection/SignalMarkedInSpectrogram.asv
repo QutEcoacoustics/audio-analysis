@@ -1,7 +1,7 @@
-%  function [freqBin,FrameZero,freqBindB,FrameZerodB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
+ function [freqBin,FrameZero,freqBindB,FrameZerodB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
 % function [WhistleFrequencyStd, WhistleFrameStd,WhistleFrequencydB, WhistleFramedB,IstdH,IstdV,IdBH,IdBV]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
-% function [WhipFrequencyStd, WhipFrameStd,WhipFrequencydB, WhipFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
-function [BlockFrequencyStd,BlockFrameStd,BlockFrequencydB,BlockFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
+% % % function [freqBin,FrameZero,freqBindB,FrameZerodB,WhipFrequencydB, WhipFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
+% function [BlockFrequencyStd,BlockFrameStd,BlockFrequencydB,BlockFramedB]=SignalMarkedInSpectrogram(window,S,L,fs,I1,F)
 [dB,ZeroCrossing,Std,fz,X]=ExtractfeaturesInTimeDomain(window,S,L,fs);
 
 %  figure (14);
@@ -86,9 +86,9 @@ sigdB=signalExtract(NdB,NoneStd,X,Nosle2,2);
 %Add the detection algorithm of whistle.
 %  [WhistleFrequencyStd, WhistleFrameStd]=WhistleLocation(freqBin,FrameZero, fs,window);
 %Add the detection algorithm of whip.
-% [WhipFrequencyStd,WhipFrameStd]=WhipDetection(freqBin,FrameZero, fs,window);
+%  [WhipFrequencyStd,WhipFrameStd]=WhipDetection(freqBin,FrameZero, fs,window);
 %Add the detection algorithm of whip.
-[BlockFrequencyStd,BlockFrameStd]=Block_detection(freqBin,FrameZero,fs,window);
+% [BlockFrequencyStd,BlockFrameStd]=Block_detection(freqBin,FrameZero,fs,window);
 
 [FrameNdB,SigDB,freqBindB,FrameZerodB]=framenumber(sigdB,fz,F,X);
 
@@ -99,7 +99,7 @@ sigdB=signalExtract(NdB,NoneStd,X,Nosle2,2);
  %Add the detection algorithm of whip.
 [WhipFrequencydB, WhipFramedB]=WhipDetection(freqBindB,FrameZerodB, fs,window);
 %Add the detection algorithm of whip.
-[BlockFrequencydB,BlockFramedB]=Block_detection(freqBindB,FrameZerodB,fs,window);
+%  [BlockFrequencydB,BlockFramedB]=Block_detection(freqBindB,FrameZerodB,fs,window);
  
 %mark all points in the spectrogram
 %change I1[M*N] according to the [FrameN, SigFz]

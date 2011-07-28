@@ -3,7 +3,7 @@ function [StartPoint,EndPoint,AcousFrq,AcousFrm,FreqBins,OutStart1,OutEnd1,OutSt
 %filters. 
 %parameters
 
-timeInterval=0.10;
+timeInterval=0.1;
 frmNumThe=5;
 frmClusThe=3;
 whisFramTheh=fix(timeInterval*fs/window);
