@@ -8,6 +8,7 @@ namespace AnalysisPrograms
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
 
     using AnalysisPrograms.Processing;
 
@@ -187,8 +188,9 @@ namespace AnalysisPrograms
 
                 Console.WriteLine();
 
-                AED.GenerateImage(wavFilePath, @"C:\SensorNetworks\Output\", result.Item1, eprEvents);
-                ProcessingTypes.SaveAeCsv(eprEvents, @"C:\SensorNetworks\Output\", wavFilePath);
+                string outputFolder = Path.GetDirectoryName(iniPath) ?? @"C:\SensorNetworks\Output\";
+                AED.GenerateImage(wavFilePath, outputFolder, result.Item1, eprEvents);
+                ProcessingTypes.SaveAeCsv(eprEvents, outputFolder, wavFilePath);
 
                 Log.WriteLine("Finished");
             }
