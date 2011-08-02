@@ -31,7 +31,7 @@ namespace AnalysisPrograms
         {
             if (args.Length == 0)
             {
-                Console.WriteLine("ERROR: YOU HAVE CALLED THE AanalysisPrograms.MainEntry() method without command line arguments.");
+                Console.WriteLine("ERROR: You have called the AanalysisPrograms.MainEntry() method without command line arguments.");
             }
             else
             {
@@ -116,6 +116,7 @@ namespace AnalysisPrograms
                         break;
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
+                        Console.WriteLine("Press any key to exit...");
                         Console.ReadLine();
                         break;
                 }
