@@ -148,15 +148,15 @@ warning off % this line is included to suppress the warning that MATLAB
             for groupIndex=numGroups1:-1:1
                 for index1=1:size(OutStartH,2)
                     if OutStartH(index1)<=OutStartL(index1)
-                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',1,'Color','w');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
-                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',2,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
                     else
-                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',1,'Color','w');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',1,'color','w');
-                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',1,'color','w');
+                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',2,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
                     end
                 end
             end
@@ -165,15 +165,15 @@ warning off % this line is included to suppress the warning that MATLAB
             for groupIndex=numGroups1:-1:1
                 for index1=1:size(OutStartHW,2)
                     if OutStartHW(index1)<=OutStartLW(index1)
-                        line([OutStartHW(index1),OutStartLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',1,'Color','g');
-                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
-                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
-                        line([OutEndHW(index1),OutEndLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutStartHW(index1),OutStartLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',2,'Color','g');
+                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',2,'color','g');
+                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',2,'color','g');
+                        line([OutEndHW(index1),OutEndLW(index1)],[HFrqW(index1),LFrqW(index1)],'LineWidth',2,'color','g');
                     else
-                        line([OutStartLW(index1),OutStartHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',1,'Color','g');
-                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
-                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',1,'color','g');
-                        line([OutEndLW(index1),OutEndHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',1,'color','g');
+                        line([OutStartLW(index1),OutStartHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',2,'Color','g');
+                        line([OutStartHW(index1),OutEndHW(index1)],[HFrqW(index1),HFrqW(index1)],'LineWidth',2,'color','g');
+                        line([OutStartLW(index1),OutEndLW(index1)],[LFrqW(index1),LFrqW(index1)],'LineWidth',2,'color','g');
+                        line([OutEndLW(index1),OutEndHW(index1)],[LFrqW(index1),HFrqW(index1)],'LineWidth',2,'color','g');
                     end
                 end
             end

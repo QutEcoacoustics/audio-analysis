@@ -50,7 +50,7 @@ warning off % this line is included to suppress the warning that MATLAB
 
     switch (o)
         case 1
-            colors = {'xb';'xg';'xy';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
+            colors = {'xy';'xg';'xy';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr';'xr'};%  red dots represent the first group which locates at the bottom of the NdB/Nsig
                                       % ......
                                       %  green dots represent the last
                                       %  group which locates at the top
@@ -73,15 +73,15 @@ warning off % this line is included to suppress the warning that MATLAB
             for groupIndex=numGroups1:-1:1
                 for index1=1:size(OutStartH,2)
                     if OutStartH(index1)<=OutStartL(index1)
-                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'Color','g');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'color','g');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'color','g');
-                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'color','g');
+                        line([OutStartH(index1),OutStartL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',2,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutEndH(index1),OutEndL(index1)],[HFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
                     else
-                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'Color','g');
-                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'color','g');
-                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'color','g');
-                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'color','g');
+                        line([OutStartL(index1),OutStartH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',2,'Color','w');
+                        line([OutStartH(index1),OutEndH(index1)],[HFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutStartL(index1),OutEndL(index1)],[LFrq(index1),LFrq(index1)],'LineWidth',2,'color','w');
+                        line([OutEndL(index1),OutEndH(index1)],[LFrq(index1),HFrq(index1)],'LineWidth',2,'color','w');
                     end
                 end
             end

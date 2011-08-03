@@ -13,7 +13,7 @@ switch (o)
             below2=nosle-1.96*t;
             below3=nosle-3*t;
              below4=nosle-1.50*t;
-              below5=nosle-1*t;
+              below5=nosle-0.5*t;
     case 2
             below=nosle+2.58*t;
             below2=nosle+1.96*t;

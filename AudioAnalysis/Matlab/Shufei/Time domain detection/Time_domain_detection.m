@@ -12,7 +12,7 @@ window=256;
 
 pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\3hours samford tagged dataset\single channel\2 mins\NEJB_NE465_20101013-043000\NEJB_NE465_20101013-044200.wav';
-% pathtofile='C:\Documents and Settings\n7594879\My Documents\sandra\Project Codes\Matlab\dataset\training data\NEJB_NE465_20101013-055500.wav';
+% pathtofile='C:\Documents and Settings\n7594879\My Documents\sandra\Project Codes\Matlab\dataset\training data\BAC2_20071008-195040.wav';
 % pathtofile='C:\SensorNetworks\WavFiles\download\SERF 3_20100913-083000.wav';
 %  pathtofile='C:\SensorNetworks\WavFiles\Koala_Female\HoneymoonBay_StBees_20081122-203000.wav';
 % pathtofile='C:\SensorNetworks\WavFiles\whipbird\file0151mono.wav_segment_14.wav';
