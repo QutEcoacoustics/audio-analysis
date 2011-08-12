@@ -20,7 +20,7 @@ pathtofile='C:\SensorNetworks\WavFiles\BAC\BAC1_20071008-084607.wav';
 [y, fs] = wavread(pathtofile);
 [yy,fs,I1,F,T] = wavToSpectrogram(pathtofile);
 [M,N]=size(I1);
-%  showImage(c,I1,T,F,1);
+ showImage(c,I1,T,F,1);
 
 L=length(y); S=y;
 
