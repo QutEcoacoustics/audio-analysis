@@ -283,61 +283,68 @@ namespace NeuralNets
 
     //***************************************************************************************************************************************
     //***************************************************************************************************************************************
-    //*****************************************   STATIC METHODS    **********************************************************************************************
+    //*****************************************    STATIC METHODS    ************************************************************************
     //***************************************************************************************************************************************
     //***************************************************************************************************************************************
 
     /// <summary>
     /// Need to allow for possibility that a wt vector = null.
     /// </summary>
-    /// <param name="wts"></param>
-    public static void DisplayClusterWeights(List<double[]> wts)
+    /// <param name="clusterWts"></param>
+    public static void DisplayClusterWeights(List<double[]> clusterWts, int[] clusterHits)
     {
-        Console.WriteLine("wts   sum");
-        for (int i = 0; i < wts.Count; i++)
+        int clusterCount = 0;
+        Console.WriteLine("                              wts               wtSum\t wins");
+        for (int i = 0; i < clusterWts.Count; i++)
         {
-            Console.Write("wts{0:D3}   ", i);
-            if (wts[i] == null)
+            int wins = 0;
+            Console.Write("wts{0:D3}   ", (i+1)); //write the cluster number
+            if (clusterWts[i] == null)
             {
-                for (int j = 0; j < 20; j++) Console.Write("=");
-                Console.WriteLine();
+                for (int j = 0; j < 32; j++) Console.Write(" ");
+                Console.WriteLine("     null");
             }
             else
             {
-                for (int j = 0; j < wts[i].Length; j++) if (wts[i][j] > 0.0) Console.Write("1"); else Console.Write("0");
-                Console.WriteLine("     {0}", wts[i].Sum());
+                for (int j = 0; j < clusterWts[i].Length; j++) if (clusterWts[i][j] > 0.0) Console.Write("1"); else Console.Write("0");
+                for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) wins++;
+                Console.WriteLine("     {0}\t\t{1}", clusterWts[i].Sum(), wins);
+                clusterCount++;
             }
         }
-    }
+        Console.WriteLine("Cluster Count = {0}", clusterCount);
+    } // end DisplayClusterWeights()
 
 
-    public static void PruneClusters(List<double[]> wts, int[] clusterHits, double wtThreshold, int hitThreshold)
+        /// <summary>
+        /// removes wtVectors from a list where two threshold coniditons not satisfied
+        /// 1) Sum of positive wts must exceed threshold
+        /// 2) Cluster size (i.e. total frames hit by wtVector must exceed threshold
+        /// returns number of clusters remaining
+        /// </summary>
+        /// <param name="wtVectors"></param>
+        /// <param name="clusterHits"></param>
+        /// <param name="wtThreshold"></param>
+        /// <param name="hitThreshold"></param>
+    public static int PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make histogram of cluster sizes
-        int[] clusterSizes = new int[wts.Count]; //init histogram
+        int[] clusterSizes = new int[wtVectors.Count]; //init histogram
         for (int j = 0; j < clusterHits.Length; j++) clusterSizes[clusterHits[j]]++;
 
-        // first prune wt vectors where sum of wts less than threshold 
-        for (int i = 0; i < wts.Count; i++)
+        // remove wt vector if ((sum of wts) OR (# cluster hits)) is less than threshold  
+        for (int i = 0; i < wtVectors.Count; i++)
         {
-            if (wts[i] == null) continue;
-            if (wts[i].Sum() <= wtThreshold)
+            if (wtVectors[i] == null) continue;
+            if ((wtVectors[i].Sum() <= wtThreshold) || (clusterSizes[i] <= hitThreshold))
             {
-                wts[i] = null; //set null
-                for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
+                wtVectors[i] = null; //set null
             }
         }
-        // second prune wt vectors where cluster has hit count less than threshold 
-        for (int i = 0; i < wts.Count; i++)
-        {
-            if (wts[i] == null) continue;
-            if (clusterSizes[i] <= hitThreshold)
-            {
-                wts[i] = null;
-                for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j] == i) clusterHits[j] = -99; //remove hits
-            }
-        }
-        //wts = DataTools.RemoveNullElementsFromList(wts);
+
+        int clusterCount = 0;
+        for (int i = 0; i < wtVectors.Count; i++) if (wtVectors[i] != null) clusterCount++; //count number of remaining clusters
+        return clusterCount;
     } //PruneClusters()
 
     /// <summary>
@@ -399,18 +406,8 @@ namespace NeuralNets
         var clusterWts    = output.Item4;
         if (BinaryCluster.Verbose)
         {
-            Console.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)");
-            Console.WriteLine("  CountOfCommittedNodes=" + clusterCount);
-            for (int i = 0; i < clusterCount; i++)
-                if (clusterWts[i] == null) Console.WriteLine("{0}  ======= null =======", i);
-                else
-                {
-                    int wins = 0; //calculate the winds for current cluster[i]
-                    for (int j = 0; j < clusterHits.Length; j++) if (clusterHits[j]==i) wins++;
-                    Console.WriteLine("{0}  Wt sum={1}  wins={2}", i, clusterWts[i].Sum(), wins);
-                }
+            Console.WriteLine("FINISHED TRAINING: (" + iterCount + " iterations)" + "    CommittedNodes=" + clusterCount);
         }
-
         return System.Tuple.Create(clusterHits, clusterWts);  //keepScore;
 
     } //END of ClusterBinaryVectors.
