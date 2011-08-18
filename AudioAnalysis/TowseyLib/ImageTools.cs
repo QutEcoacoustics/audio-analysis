@@ -1549,22 +1549,28 @@ namespace TowseyLib
         /// <returns></returns>
         public static List<Pen> GetColorPalette(int paletteSize)
         {
-            int max = 255;
-            RandomNumber rn = new RandomNumber(1234567);
             var pens = new List<Pen>();
+            pens.Add(new Pen(Color.Pink));
             pens.Add(new Pen(Color.Red));
             pens.Add(new Pen(Color.Orange));
             pens.Add(new Pen(Color.Yellow));
             pens.Add(new Pen(Color.Green));
             pens.Add(new Pen(Color.Blue));
-            pens.Add(new Pen(Color.Indigo));
+            pens.Add(new Pen(Color.Crimson));
+            pens.Add(new Pen(Color.LimeGreen));
+            pens.Add(new Pen(Color.Tomato));
+            //pens.Add(new Pen(Color.Indigo));
             pens.Add(new Pen(Color.Violet));
-            for (int c = 7; c <= paletteSize; c++)
+
+            //now add random coloured pens
+            int max = 255;
+            RandomNumber rn = new RandomNumber(1234567);
+            for (int c = 10; c <= paletteSize; c++)
             {
                 Int32 rd = rn.GetInt(max);
                 Int32 gr = rn.GetInt(max);
                 Int32 bl = rn.GetInt(max);
-                pens.Add(new Pen(Color.FromArgb(rd, gr, 255)));
+                pens.Add(new Pen(Color.FromArgb(rd, gr, bl)));
             }
             return pens;
         }
