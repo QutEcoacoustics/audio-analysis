@@ -143,12 +143,10 @@
     <Compile Include="Main_ScanOneRecording.cs" />
     <Compile Include="Main_ScoreBirgitsResults.cs" />
     <Compile Include="Main_HTKScanDir.cs" />
-    <Compile Include="Processing\AudioConversion.cs" />
     <Compile Include="Processing\LocalProcessor.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
     <Compile Include="RichnessIndices1.cs" />
-    <Compile Include="Running\AnalysisRunner.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="HTKRecogniser.cs" />
