@@ -51,26 +51,47 @@ namespace AnalysisPrograms
                     case "od":   // Oscillation Recogniser
                         OscillationRecogniser.Dev(restOfArgs);
                         break;
-                    case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
+                    case "hd":   // Harmonic Recogniser
+                        HarmonicRecogniser.Dev(restOfArgs);
+                        break;
+					case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
                         break;
-                    case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
-                        EPR.Dev(restOfArgs);
+					case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
+                        Create_MFCC_OD_Template.Dev(restOfArgs);
+                        break;
+
+                    // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
+                    case "felt":     // find other acoustic events like this
+                        FeltTemplates_Use.Dev(restOfArgs);
+                        break;
+					case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
+                        FeltTemplate_Create.Dev(restOfArgs);
+                        break;
+                    case "edittemplate_felt":     // edits the FELT template created above
+                        FeltTemplate_Edit.Dev(restOfArgs);
                         break;
                     case "frog_ribbit":  // frog calls
                         FrogRibit.Dev(restOfArgs);
                         break;
-                    case "spt":  // spectral peak tracking
+					case "spt":  // spectral peak tracking
                         SPT.Dev(restOfArgs);
                         break;
                     case "spr":  // syntactic pattern recognition
                         SPR.Dev(restOfArgs);
                         break;
-                    case "hd":   // Harmonic Recogniser
-                        HarmonicRecogniser.Dev(restOfArgs);
+                    case "richness_indices":      // richness_indices
+                        RichnessIndices2.Dev(restOfArgs);
+                        //RichnessIndices2.Executable(restOfArgs);
+                        break;
+					case "dimred":   // dimensionality reduction
+                        DimReduction.Dev(restOfArgs);
+                        break;
+                    case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
+                        EPR.Dev(restOfArgs);
                         break;
 
-                    // READY TO BE USED - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
+					// Use at own risk - REQUIRE PARAMS FILE AND ZIPPED RESOURCES FILE.
                     case "mfcc-od": // special use of MFCCs and OD for calls haveing oscillating character ie Lewin's Rail
                         MFCC_OD.Dev(restOfArgs);
                         break;
@@ -78,37 +99,9 @@ namespace AnalysisPrograms
                         HTKRecogniser.Dev(restOfArgs);
                         break;
 
-                    // UNDER DEVELOPMENT
-                    case "dimred":   // dimensionality reduction
-                        DimReduction.Dev(restOfArgs);
-                        break;
-                    case "felt":     // find other acoustic events like this
-                        FeltTemplates_Use.Dev(restOfArgs);
-                        break;
-
-
-                    // Analysis development - FOR MICHAEL'S USE ONLY
-                    case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
-                        Create_MFCC_OD_Template.Dev(restOfArgs);
-                        break;
-                    case "createtemplate_felt":   // extract an acoustic event and make a template for FELT
-                        FeltTemplate_Create.Dev(restOfArgs);
-                        break;
-                    case "edittemplate_felt":     // edits the FELT template created above
-                        FeltTemplate_Edit.Dev(restOfArgs);
-                        break;
-                    case "richness_indices":      // richness_indices
-                        RichnessIndices2.Dev(restOfArgs);
-                        //RichnessIndices2.Executable(restOfArgs);
-                        break;
-
-
                     // Analysis runs - FOR MARK'S USE ONLY
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(restOfArgs);
-                        break;
-                    case "localrun": // audio conversion tests
-                        AudioConversion.Convert(restOfArgs);
                         break;
                     case "processing-csv":
                         var localProcesser = new LocalProcessor();
