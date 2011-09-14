@@ -156,7 +156,7 @@ namespace AnalysisPrograms.Processing
         internal static void PrintUsage()
         {
             Console.WriteLine();
-            Console.WriteLine("This console app is used to run analyses on a compute node in the processing cluster.");
+            Console.WriteLine("This console app is used to run analyses on a compute node.");
             Console.WriteLine("It takes these parameters:");
             Console.WriteLine("\t1. [Required] 'processing' - indicates this is a processing run.");
             Console.WriteLine("\t2. [Required] Type of analysis to run.");
