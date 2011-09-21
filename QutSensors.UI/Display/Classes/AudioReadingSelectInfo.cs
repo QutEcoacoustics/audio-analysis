@@ -9,10 +9,15 @@
 
     public class AudioReadingSelectInfo
     {
-        public AudioReadingSelectInfo(QutSensorsDb db, AudioReading audioReading, ReadingsFilter filter)
+        public AudioReadingSelectInfo(QutSensorsDb db, AudioReading audioReading, ReadingsFilter filter, string userName)
         {
+
+            if (!string.IsNullOrEmpty(userName))
+            {
+                this.Read = audioReading.HasRead(userName) ? string.Empty : "Unread";
+            }
+
             this.AudioReadingId = audioReading.AudioReadingID;
-            this.Read = audioReading.Read ? string.Empty : "Unread";
             this.State = audioReading.State == AudioReadingState.Uploading ? "NotReady" : string.Empty;
             this.DateDisplay = audioReading.Time.ToString("ddd, d MMM yyyy");
             this.TimeDisplay = audioReading.Time.ToString("HH:mm:ss");
