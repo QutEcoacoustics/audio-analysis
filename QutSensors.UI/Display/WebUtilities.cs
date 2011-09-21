@@ -309,25 +309,10 @@ namespace QutSensors.UI.Display
                 }
                 catch (Exception e)
                 {
-                    LogError(e);
+                    ErrorLog.Insert(e, HttpContext.Current.Request.Url.ToString());
                     return false;
                 }
             }
-        }
-
-        /// <summary>
-        /// The log error.
-        /// </summary>
-        /// <param name="ex">
-        /// The ex.
-        /// </param>
-        /// <returns>
-        /// The log error.
-        /// </returns>
-        [Obsolete("Use HttpErrorHandler instead")]
-        public static int LogError(Exception ex)
-        {
-            return ErrorLog.Insert(ex, HttpContext.Current.Request.Url.ToString());
         }
 
         /// <summary>
