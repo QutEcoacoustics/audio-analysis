@@ -66,7 +66,7 @@ namespace QutSensors.UI.Display.Managers
                                     new
                                         {
                                             Id = ar.AudioReadingID,
-                                            Duration = ar.Length,
+                                            Duration = ar.DurationMs,
                                             TagCount = db.AudioTags.Count(t => t.AudioReadingID == ar.AudioReadingID),
                                             HeardByCurrentUser =
                                     db.ReadReadings.Any(
