@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
+
 using TowseyLib;
 using AudioTools.AudioUtlity;
 using AudioAnalysisTools;
@@ -21,10 +24,10 @@ namespace AnalysisPrograms
         {
             public double snr, bgNoise, activity, avAmp, amp1minusEntropy;
             public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1;
-            public int percentCover, clusterCount;
+            public int percentCover, clusterCount, percentIsolatedHitCount;
 
             public Indices2(double _snr, double _bgNoise, double _activity, double _avAmp, double _entropyAmp, int _percentCover,
-                           double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, int _clusterCount)
+                           double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, int _clusterCount, int _percentIsolatedHitCount)
             {
                 snr        = _snr;
                 bgNoise    = _bgNoise;
@@ -36,12 +39,13 @@ namespace AnalysisPrograms
                 entropyOfAvSpectrum   = _entropyOfAvSpectrum;
                 entropyOfDiffSpectra1 = _entropyOfDifferenceSpectra1;
                 clusterCount = _clusterCount;
+                percentIsolatedHitCount = _percentIsolatedHitCount; //number of isolated cluster hits.
             }
         }
         private const string _HEADER = "count, minutes, FileName, snr-dB, bg-dB, " +
                                        "activity, avAmp, %cover, 1-H[ampl], " +
-                                       "H[peakFreq], H[avSpectrum], H1[diffSpectra], clusters";
-        private const string _FORMAT_STRING = "{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f4},{9:f4},{10:f4},{11:f4},{12}";
+                                       "H[peakFreq], H[avSpectrum], H1[diffSpectra], #clusters, %isolHits";
+        private const string _FORMAT_STRING = "{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f5},{7},{8:f4},{9:f4},{10:f4},{11:f4},{12},{13}";
 
 
         public static void Dev(string[] args)
@@ -50,11 +54,20 @@ namespace AnalysisPrograms
             //SET VERBOSITY
             DateTime datetime = DateTime.Now;
             Log.Verbosity = 1;
+            bool doStoreImages = true;
 
             //READ CSV FILE TO MASSAGE DATA
             if (false)
             {
                 MASSAGE_CSV_DATA();
+                Console.ReadLine();
+                Environment.Exit(666);
+            }
+
+            //READ CSV FILE TO MASSAGE DATA
+            if (true)
+            {
+                VISUALIZE_CSV_DATA();
                 Console.ReadLine();
                 Environment.Exit(666);
             }
@@ -65,8 +78,9 @@ namespace AnalysisPrograms
             string recordingPath = fileList[1]; //get just one from list
             string fileName      = Path.GetFileName(recordingPath);
             //string fileName    = "BAC2_20071008-085040.wav";
-            Log.WriteLine("Directory: " + recordingDir);
-            Log.WriteLine("Directory contains " + fileList.Count() + " wav files.");
+            Log.WriteLine("Directory:          " + recordingDir);
+            Log.WriteLine("Directory contains: " + fileList.Count() + " wav files.");
+            Log.WriteLine("Selected file:      " + fileName);
 
             string outputDir = recordingDir;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
@@ -87,7 +101,7 @@ namespace AnalysisPrograms
             Console.WriteLine("\n\n");
             Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
 
-            ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
+            ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages);
 
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
@@ -105,7 +119,8 @@ namespace AnalysisPrograms
         {
             DateTime tStart = DateTime.Now;
             //SET VERBOSITY
-            Log.Verbosity = 1;
+            Log.Verbosity = 0;
+            bool doStoreImages = false;
             CheckArguments(args);
 
             string recordingPath = args[0];
@@ -137,7 +152,7 @@ namespace AnalysisPrograms
             //Console.WriteLine("\n\n");
             Log.WriteLine("###### " + fileCount + " #### Process Recording: " + fileName + " ###############################");
 
-            ScanRecording(recordingPath, opPath, fileCount, elapsedTime);
+            ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages);
 
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
@@ -147,7 +162,7 @@ namespace AnalysisPrograms
 
         //#########################################################################################################################################################
 
-        public static void ScanRecording(string recordingPath, string opPath, int fileCount, double elapsedTime)
+        public static void ScanRecording(string recordingPath, string opPath, int fileCount, double elapsedTime, bool doStoreImages)
         {
             //i: GET RECORDING, FILTER and DOWNSAMPLE
             /* OLD CODE
@@ -179,18 +194,22 @@ namespace AnalysisPrograms
             var values = String.Format(_FORMAT_STRING,
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
                 indices.activity, indices.avAmp, indices.percentCover, indices.amp1minusEntropy, 
-                indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1, indices.clusterCount);
+                indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1,
+                indices.clusterCount, indices.percentIsolatedHitCount);
             FileTools.Append2TextFile(opPath, values);
 
             //v: STORE IMAGES
-            var scores = results.Item2;
-            var clusterIDs = results.Item3;
-            var clusterWts = results.Item4;
-            var clusterSpectrogram = results.Item5;
-            //string imagePath = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
-            //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
-            string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
-            MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
+            if (doStoreImages)
+            {
+                var scores = results.Item2;
+                //var clusterIDs = results.Item3;
+                //var clusterWts = results.Item4;
+                var clusterSpectrogram = results.Item5;
+                //string imagePath = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
+                //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
+                string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
+                MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
+            }
             recording.Dispose(); // DISPOSE FILTERED SIGNAL
         }
 
@@ -212,13 +231,13 @@ namespace AnalysisPrograms
 
 
             //i: EXTRACT ENVELOPE and FFTs
-            Log.WriteLine("#   Extract Envelope and FFTs.");
+            Log.WriteIfVerbose("#   Extract Envelope and FFTs.");
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
             //double[] average       = results2.Item1;
             double[] envelope = results2.Item2;
 
 
-            Log.WriteLine("#   Calculate Frame Energies.");
+            Log.WriteIfVerbose("#   Calculate Frame Energies.");
             //ii: FRAME ENERGIES - 
             double dBThreshold = 3.0; //used to select frames that have more than this intensity
             var array2   = SNR.Signal2Decibels(envelope);
@@ -240,7 +259,7 @@ namespace AnalysisPrograms
 
             
             //iv: SPECTROGRAM ANALYSIS 
-            Log.WriteLine("#   Calculate Spectral Entropy.");
+            Log.WriteIfVerbose("#   Calculate Spectral Entropy.");
             // obtain three spectral indices - derived ONLY from frames having acoustic energy.
             //1) entropy of distribution of spectral peaks
             //2) entropy of the average spectrum
@@ -248,8 +267,8 @@ namespace AnalysisPrograms
 
             //set three amplitude thresholds
             double bgThreshold     = 0.015; //for smoothing backgorund
-            double peakThreshold   = 0.03;  //for selecting spectral peaks
-            double binaryThreshold = 0.05;  //for deriving binary spectrogram
+            double peakThreshold   = bgThreshold * 3;  //for selecting spectral peaks
+            double binaryThreshold = 0.015;  //for deriving binary spectrogram
 
             int L = dBarray.Length;
             double[,] spectrogram = results2.Item3;
@@ -346,29 +365,41 @@ namespace AnalysisPrograms
             double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
             bool[] activeFrames = new bool[spectrogram.GetLength(0)];
             var trainingData = new List<double[]>(); //training data will be used for clustering
+
+            //ACTIVITY THREHSOLD - require activity in X% of bins to include for training
+            int percentActivityThreshold = 4;
+            int activityThreshold = (int)Math.Round(percentActivityThreshold * subMatrix.GetLength(1) / (double)100);
             for (int i = 0; i < subMatrix.GetLength(0); i++)
             {
                 double[] row = DataTools.GetRow(subMatrix, i);
-                if (row.Sum() > 0.0) //only include frames where there is activity
+                if (row.Sum() > activityThreshold) //only include frames where activity exceeds threshold 
                 {
                     trainingData.Add(row);
                     activeFrames[i] = true;
                 }
             }
 
-            BinaryCluster.Verbose = true;
+            BinaryCluster.Verbose = false;
+            if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
-            double vigilance = 0.1;    //vigilance parameter - increasing this proliferates categories
+            double vigilance = 0.2;    //vigilance parameter - increasing this proliferates categories
+                                       //if vigilance=0.1, require similairty (AND/OR) > 10%
             var output = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
             int[] clusterHits         = output.Item1;//the cluster to which each frame belongs
             List<double[]> clusterWts = output.Item2;
 
-            //BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
-            double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts < threshold
-            int hitThreshold   = 10;  //used to remove wt vectors which have fewer than the thershold hits
-            indices.clusterCount = BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
-            //BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
-
+            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
+            double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts <= threshold
+            int hitThreshold   = 10;  //used to remove wt vectors which have fewer than the threshold hits
+            var output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
+            indices.clusterCount = output2.Item1;
+            indices.percentIsolatedHitCount = output2.Item2;
+            
+            if (BinaryCluster.Verbose)
+            {
+                BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
+                Console.WriteLine("cluster count = {0}", indices.clusterCount);
+            }
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
             scores.Add(freqPeaks);
@@ -386,7 +417,7 @@ namespace AnalysisPrograms
         public static void MakeAndDrawSonogram(AudioRecording recording, string dir, List<double[]> scores, double[,]clusterMatrix)
         {
             //i: MAKE SONOGRAM
-            Log.WriteLine("# Make sonogram.");
+            Log.WriteIfVerbose("# Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); // default values config
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = SonogramConfig.DEFAULT_WINDOW_SIZE;
@@ -571,6 +602,173 @@ namespace AnalysisPrograms
             }
             Console.WriteLine("speciesTotal= " + speciesTotal);
         }
+
+
+        public static void VISUALIZE_CSV_DATA()
+        {
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev2\Exp2_Results.csv";
+            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev2\Exp2_Results.png";
+            FileTools.WriteTextFile(opFile, "min,time,count");
+            List<string> lines = FileTools.ReadTextFile(fileName);
+
+            //CSV COLUMN HEADINGS
+            //count	 minutes	hours	 FileName	 snr-dB	 bg-dB	 activity	 avAmp	 %cover	 1-H[ampl]	 H[peakFreq]	 H[avSpectrum]	 H1[diffSpectra]	 #clusters	 %isolHits	min	time	count	avCount		jitter1	#clust+jitter	jitter2	count+jitter
+            string[] columnHeadings = {"count","minutes","FileName","snr-dB","bg-dB","activity","avAmp","%cover","1-H[ampl]","H[peakFreq]","H[avSpectrum]","H1[diffSpectra]","#clusters","%isolHits","min","time","count","avCount","jitter1","#clust+jitter","jitter2","count+jitter"};
+
+            //read data into arrays
+            //set up the arrays
+            double[] timeScale = new double[lines.Count - 2]; //column 3 into time scale
+            double[] snr_dB    = new double[lines.Count - 2]; //column 4 into snr
+            double[] bg_dB     = new double[lines.Count - 2]; //column 5 into background noise
+            double[] activity  = new double[lines.Count - 2]; //column 6 into 
+            double[] avAmp     = new double[lines.Count - 2]; //column 7 into 
+            double[] percentCover = new double[lines.Count - 2];    //column 8 into 
+            double[] InvH_ampl = new double[lines.Count - 2]; //column 9 into 
+            double[] H_PeakFreq = new double[lines.Count - 2];   //column 10 int0
+            double[] H_avSpect = new double[lines.Count - 2];    //column 11 into 
+            double[] H_diffSpect = new double[lines.Count - 2];  //column 12 into 
+            double[] clusterCount = new double[lines.Count - 2]; //column 13 into 
+            double[] isolatedHits = new double[lines.Count - 2]; //column 14 into 
+
+            //read csv data into arrays.
+            for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines
+            {
+                string[] words   = lines[i].Split(',');
+                timeScale[i - 1] = Double.Parse(words[1]) / (double)60; //convert minutes to hours
+                snr_dB[i - 1]    = Double.Parse(words[3]);
+                bg_dB[i - 1]     = Double.Parse(words[4]);
+                activity[i - 1]  = Double.Parse(words[5]);
+                avAmp[i - 1]     = Double.Parse(words[6]);
+                percentCover[i - 1] = (double)Int32.Parse(words[7]);
+                InvH_ampl[i - 1]    = Double.Parse(words[8]);
+                H_PeakFreq[i - 1]   = Double.Parse(words[9]);
+                H_avSpect[i - 1]    = Double.Parse(words[10]);
+                H_diffSpect[i - 1]  = Double.Parse(words[11]);
+                clusterCount[i - 1] = (double)Int32.Parse(words[12]);
+                isolatedHits[i - 1] = (double)Int32.Parse(words[13]);
+
+            }//end 
+
+            //set up the canvas
+            int imageWidth  = lines.Count - 2; // Number of spectra in sonogram
+            int titleWidth = 100;
+            int totalWidth = imageWidth + titleWidth;
+            int numberOftracks = 13;
+            int trackHeight = 20;   //pixel height of a track
+            int imageHeight = numberOftracks * trackHeight; // image ht
+            //prepare the canvas
+            Bitmap bmp = new Bitmap(totalWidth, imageHeight, PixelFormat.Format24bppRgb);
+            int yOffset = 0;
+
+            //draw background dB track
+            string title = "Time (hours)";
+            int duration = imageWidth;
+            int scale = 60;
+            Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
+            title = "Background dB";
+            double minDB = -50;
+            double maxDB = -20;
+            double threshold = 0.0;
+            yOffset += trackHeight;
+
+            Image_Track.DrawScoreTrack(bmp, bg_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
+            //draw snr track
+            title = "SNR";
+            minDB = 0;
+            maxDB = 30;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, snr_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
+            //draw activity track
+            title = "Activity";
+            double min = 0.0;
+            double max = 1.0;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, activity, yOffset, trackHeight, min, max, threshold, title);
+            //draw Amplitude track
+            title = "av Amplitude";
+            min = 0.0;
+            max = 0.05;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, avAmp, yOffset, trackHeight, min, max, threshold, title);
+            //draw percentCover track
+            title = "% spectral cover";
+            min = 0.0;
+            max = 35.0;
+            threshold = 5.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, percentCover, yOffset, trackHeight, min, max, threshold, title);
+            
+            //draw percentCover track
+            title = "1-H(ampl)";
+            //min = 0.0;
+            //max = 0.05;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, percentCover, yOffset, trackHeight, threshold, title);
+
+            //draw H(PeakFreq) track
+            title = "H(PeakFreq)";
+            //min = 0.0;
+            //max = 0.05;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, H_PeakFreq, yOffset, trackHeight, threshold, title);
+
+            //draw H(avSpect) track
+            title = "H(avSpect)";
+            //min = 0.0;
+            //max = 0.05;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, H_avSpect, yOffset, trackHeight, threshold, title);
+
+            //draw H(diffSpect) track
+            title = "H(diffSpect)";
+            //min = 0.0;
+            //max = 0.05;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, H_diffSpect, yOffset, trackHeight, threshold, title);
+
+            //draw clusterCount track
+            title = "ClusterCount";
+            min = 0.0;
+            max = 20.0;
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, clusterCount, yOffset, trackHeight, min, max, threshold, title);
+
+            //draw isolated Cluster track
+            title = "IsolatedClusterHits";
+            threshold = 0.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, isolatedHits, yOffset, trackHeight, threshold, title);
+
+            title = "Time (hours)";
+            duration = imageWidth;
+            scale = 60;
+            yOffset += trackHeight;
+            Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
+
+
+            using (Image_MultiTrack image = new Image_MultiTrack(bmp))
+            {
+                //add time scale
+                //image.AddTrack(Image_Track.GetTimeTrack(new TimeSpan(120), 80));
+                image.Save(opFile);
+            } // using
+
+
+            Console.WriteLine("finished visualization");
+            Console.ReadLine();
+            Environment.Exit(666);
+        }
+
+
+
 
 
         public static void CheckArguments(string[] args)

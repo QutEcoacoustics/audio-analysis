@@ -560,6 +560,63 @@ namespace AudioAnalysisTools
             return GetScoreTrack(dscores, (double)scoreMin, (double)scoreMax, (double)scoreThreshold);
         }
 
+        /// <summary>
+        /// used to draw richness indices 
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="scoreMin"></param>
+        /// <param name="scoreMax"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <returns></returns>
+        public static void DrawScoreTrack(Bitmap bmp, double[] array, int yOffset, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        {
+            Color[] grayScale = ImageTools.GrayScale();
+            int imageWidth = array.Length;
+            double range = maxVal - minVal;
+            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            {
+                // normalise and bound the value - use min bound, max and 255 image intensity range
+                double value = (array[x] - minVal) / range;
+                int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                if (c < threshold) c = 0;
+                else
+                if (c >= 256) c = 255;
+
+                Color col = grayScale[c];
+                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, yOffset + y, col);
+                bmp.SetPixel(x, yOffset, grayScale[0]); //draw upper boundary
+            }//end over all pixels
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth+5, yOffset));
+        }
+
+        public static void DrawScoreTrack(Bitmap bmp, double[] array, int yOffset, int trackHeight, double threshold, string title)
+        {
+            double minVal;
+            double maxVal;
+            DataTools.MinMax(array, out minVal, out maxVal);
+            DrawScoreTrack(bmp, array, yOffset, trackHeight, minVal, maxVal, threshold, title);
+        }
+
+        // mark of time scale according to scale.
+        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+        {
+            Color[] grayScale = ImageTools.GrayScale();
+            Color col = grayScale[255];
+            Graphics g = Graphics.FromImage(bmp);
+            int hour = 0;
+
+            for (int x = 0; x < duration; x++) //for pixels in the line
+            {
+                if (x % scale != 0) continue;
+                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, yOffset + y, col);
+                bmp.SetPixel(x, yOffset, grayScale[0]); //draw upper boundary
+                g.DrawString(hour.ToString(), new Font("Tahoma", 8), Brushes.White, new PointF(x + 2, yOffset)); //draw time
+                hour++;
+            }//end over all pixels
+            
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(duration + 5, yOffset));
+        }
 
     }// end  class Image_Track
 }
