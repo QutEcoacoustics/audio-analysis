@@ -12,8 +12,8 @@ namespace NeuralNets
 
         public int IPSize { get; set; }
         public int OPSize { get; set; }
-        public double beta { get; set; }
-        public double rho { get; set; }
+        public double vigilance_rho { get; set; } //vigilance
+        public double momentum_beta { get; set; } //momentum #### NOT USED AT PRESENT
 
         public static bool Verbose { get; set; }
         public static bool RandomiseTrnSetOrder { get; set; }
@@ -36,11 +36,12 @@ namespace NeuralNets
     ///Initialise Uncommitted array := true
     ///Initialize weight array
     /// </summary>
-    public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialWtCount)
+    public void InitialiseWtArrays(List<double[]> trainingData, int[] randomIntegers, int initialWtVectorCount)
     {
+        if (initialWtVectorCount > trainingData.Count) initialWtVectorCount = trainingData.Count;
         this.wts = new List<double[]>();
         int dataSetSize = trainingData.Count;
-        for (int i = 0; i < initialWtCount; i++)
+        for (int i = 0; i < initialWtVectorCount; i++)
         {
             int id = randomIntegers[i];
             wts.Add(trainingData[id]);
@@ -49,20 +50,20 @@ namespace NeuralNets
 
         //set committed nodes = false
         this.committedNode = new bool[OPSize];
-        for (int uNo = 0; uNo < initialWtCount; uNo++) committedNode[uNo] = true;
+        for (int uNo = 0; uNo < initialWtVectorCount; uNo++) committedNode[uNo] = true;
     }
 
 
     public void SetParameterValues(double beta, double rho)
     {
-        this.beta    = beta;  //learning parameter
-        this.rho     = rho;   //vigilance parameter
+        this.momentum_beta = beta;  //learning parameter
+        this.vigilance_rho = rho;   //vigilance parameter
     }
 
 
     public void WriteParameters()
     {
-        Console.WriteLine("\nBinaryCluster:- beta=" + this.beta + " rho=" + this.rho);
+        Console.WriteLine("\n  BinaryCluster:-  Vigilance=" + this.vigilance_rho +  "   Momentum=" + this.momentum_beta);
     }
 
 
@@ -102,10 +103,11 @@ namespace NeuralNets
                 if (BinaryCluster.RandomiseTrnSetOrder) sigID = randomArray[sigNum];  //pick at random
 
                 //{*********** PASS ONE INPUT SIGNAL THROUGH THE NETWORK ***********}
-                double[] OP = PropagateIP2OP(trainingData[sigID]);
+                double[] OP = PropagateIP2OP(trainingData[sigID]);   //output = AND divided by OR of two vectors
                 int index = DataTools.GetMaxIndex(OP);
                 double winningOP = OP[index];
-                if (winningOP < this.rho) ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
+                //create new category if similarity OP of best matching node is too low
+                if (winningOP < this.vigilance_rho) ChangeWtsOfFirstUncommittedNode(trainingData[sigID]);
 
                 inputCategory[sigID] = index; //winning F2 node for current input
                 OPwins[index]++;
@@ -124,7 +126,8 @@ namespace NeuralNets
             for (int j = 0; j < this.OPSize; j++) 
                 if ((this.committedNode[j]) && (OPwins[j] == 0)) this.committedNode[j] = false;
 
-            if(BinaryCluster.Verbose) Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
+            if(BinaryCluster.Verbose)
+                Console.WriteLine(" iter={0:D2}  committed=" + CountCommittedF2Nodes() + "\t changedCategory=" + changedCategory, iterNum);
 
             if (trainSetLearned) break;
         }  //end of while (! trainSetLearned or (iterNum < maxIter) or terminate);
@@ -134,7 +137,9 @@ namespace NeuralNets
 
 
     /// <summary>
-    /// Only calculate ouputs for committed nodes. THe uncommitted OPs remain = 0;
+    /// Only calculate ouputs for committed nodes. Output of uncommitted nodes = 0;
+    /// Output for any OP node = AND_OR_Similarity with input.
+    /// 
     /// Output = 1 - fractional Hamming distance
     ///        = 1 - (hammingDistance / (double)this.IPSize)
     /// </summary>
@@ -200,7 +205,7 @@ namespace NeuralNets
             double match = BinaryCluster.HammingSimilarity(IP, this.wts[index]);
 
             numberOfTestedNodes++;   //{count number of nodes tested}
-            if (match < this.rho)  // ie vigilance indicates a BAD match}
+            if (match < this.vigilance_rho)  // ie vigilance indicates a BAD match}
             {
                 // 2:  none of the committed nodes offer a good match - therefore draft an uncommitted node
                 if (numberOfTestedNodes == noCommittedNodes) 
@@ -317,35 +322,65 @@ namespace NeuralNets
 
 
         /// <summary>
-        /// removes wtVectors from a list where two threshold coniditons not satisfied
+        /// removes wtVectors from a list where three threshold conditions not satisfied
         /// 1) Sum of positive wts must exceed threshold
         /// 2) Cluster size (i.e. total frames hit by wtVector must exceed threshold
-        /// returns number of clusters remaining
+        /// 3) All hits are isolated hits ie do not last more than one frame
+        /// returns 1) number of clusters remaining; and 2) percent isolated hits.
         /// </summary>
         /// <param name="wtVectors"></param>
         /// <param name="clusterHits"></param>
         /// <param name="wtThreshold"></param>
         /// <param name="hitThreshold"></param>
-    public static int PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static System.Tuple<int, int> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
-        //make histogram of cluster sizes
-        int[] clusterSizes = new int[wtVectors.Count]; //init histogram
-        for (int j = 0; j < clusterHits.Length; j++) clusterSizes[clusterHits[j]]++;
-
-        // remove wt vector if ((sum of wts) OR (# cluster hits)) is less than threshold  
-        for (int i = 0; i < wtVectors.Count; i++)
+        //make two histograms: 1) of cluster sizes; 2) and isolated hits ie when a cluster hit is different from the one before and after
+        int[] clusterSizes         = new int[wtVectors.Count]; //init histogram 1
+        int[] cluster_isolatedHits = new int[wtVectors.Count]; //init histogram 2
+        int isolatedHitCount = 0;
+        for (int i = 1; i < clusterHits.Length - 1; i++)
         {
-            if (wtVectors[i] == null) continue;
-            if ((wtVectors[i].Sum() <= wtThreshold) || (clusterSizes[i] <= hitThreshold))
+            clusterSizes[clusterHits[i]]++;
+            if ((clusterHits[i] != clusterHits[i + 1]) && (clusterHits[i] != clusterHits[i - 1]))
             {
-                wtVectors[i] = null; //set null
+                isolatedHitCount++;
+                cluster_isolatedHits[clusterHits[i]]++;
             }
         }
 
-        int clusterCount = 0;
-        for (int i = 0; i < wtVectors.Count; i++) if (wtVectors[i] != null) clusterCount++; //count number of remaining clusters
-        return clusterCount;
+
+        // remove wt vector if it does NOT SATISFY three constraints  
+        int clusterCount_final = 0;
+        for (int i = 0; i < wtVectors.Count; i++)
+        {
+            if (wtVectors[i] == null) continue;
+            if (wtVectors[i].Sum() <= wtThreshold)
+            {
+                wtVectors[i] = null; //set null
+                continue;
+            } else
+            if (clusterSizes[i] <= hitThreshold)  //set null
+            {
+                wtVectors[i] = null;
+                continue;
+            } else
+            if ((cluster_isolatedHits[i] * 100 / clusterSizes[i]) > 90) //calculate percent of isloated hits
+            {
+                wtVectors[i] = null;
+                continue;
+            }
+            clusterCount_final++; //count number of remaining clusters
+
+            //Console.WriteLine("cluster {0}: isolatedHitCount={1}  %={2}%", i, +cluster_isolatedHits[i], percent);
+            //if (wtVectors[i] == null) Console.WriteLine("{0}:    null", i);
+            //else                      Console.WriteLine("{0}: isolatedHitCount={1}", i, cluster_isolatedHits[i]);
+        }
+
+        int percentIsolatedHitCount = 0;
+        if(clusterHits.Length > 4) percentIsolatedHitCount = isolatedHitCount * 100 / (clusterHits.Length - 2);
+        return System.Tuple.Create(clusterCount_final, percentIsolatedHitCount);
     } //PruneClusters()
+
 
     /// <summary>
     /// returns a value between 0-1
@@ -360,10 +395,11 @@ namespace NeuralNets
         return (1 - (hammingDistance / (double)v1.Length));
     }
     /// <summary>
-    /// returns a value between 0-1
-    /// AND count / OR count.
+    /// Given two binary vectors, returns the 'AND count' divided by the 'OR count'. 
+    /// The AND count is always less than or equal to OR count and therefore
+    /// the returned values must lie in 0,1.
     /// Is equivalent to average of recall and precision if one of the vectors is considered a target.
-    /// assume both vectors are of the same length
+    /// Method assumes that both vectors are of the same length
     /// </summary>
     /// <param name="v1">binary vector</param>
     /// <param name="v2">binary vector</param>
@@ -388,8 +424,8 @@ namespace NeuralNets
         //************************** INITIALISE PARAMETER VALUES *************************
         int initialWtCount = 10;
         int seed = 12345;           //to seed random number generator
-        double beta = 0.5;          //Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
-        int maxIterations = 50;
+        double beta = 0.5;          //NOT USED AT PRESENT  - Beta=1.0 for fast learning/no momentum. Beta=0.0 for no change in weights
+        int maxIterations = 20;
 
         BinaryCluster binaryCluster = new BinaryCluster(IPSize, trnSetSize); //initialise BinaryCluster class
         binaryCluster.SetParameterValues(beta, vigilance);
