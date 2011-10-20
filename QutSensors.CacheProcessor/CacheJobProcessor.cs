@@ -123,7 +123,7 @@ namespace QutSensors.CacheProcessor
                     throw new ArgumentException("Could not get audio reading for job id: " + jobId);
                 }
 
-                if (!reading.Length.HasValue)
+				if ( !reading.DurationMs.HasValue )
                 {
                     throw new InvalidOperationException("Audio reading id " + reading.AudioReadingID + " for job id " + jobId + " does not have a valid duration (.Length).");
                 }
@@ -205,7 +205,7 @@ namespace QutSensors.CacheProcessor
                         throw new InvalidOperationException("Could not get audio reading for job.");
                     }
 
-                    if (!reading.Length.HasValue)
+					if ( !reading.DurationMs.HasValue )
                     {
                         throw new InvalidOperationException("Cannot process Audio reading with id " + reading.AudioReadingID + ". It has null length.");
                     }
@@ -298,16 +298,16 @@ namespace QutSensors.CacheProcessor
         /// <exception cref="InvalidOperationException"><c>InvalidOperationException</c>.</exception>
         private byte[] GenerateSpectrogram(AudioReading reading, CacheRequest request)
         {
-            if (!reading.Length.HasValue)
+			if ( !reading.DurationMs.HasValue )
             {
-                if (!reading.Length.HasValue)
+				if ( !reading.DurationMs.HasValue )
                 {
                     throw new InvalidOperationException("Audio reading id " + reading.AudioReadingID + " does not have a valid duration (.Length).");
                 }
             }
 
             var sectrogramRequest = SpectrogramRequest.Create(
-                request.Start, request.End, null, null, null, false, TimeSpan.FromMilliseconds(reading.Length.Value));
+				request.Start, request.End, null, null, null, false, TimeSpan.FromMilliseconds( reading.DurationMs.Value ) );
 
             Image spectrogram = this.spectrogramRequestManager.GetSpectrogram(reading, sectrogramRequest);
             byte[] bytes = spectrogram.ToByteArray(ImageFormat.Jpeg);

@@ -591,7 +591,7 @@ namespace QutSensors.UI.Display.Managers
                             MimeType = arl.MimeType,
                             SensorName = arl.Hardware.FriendlyName + ": " + arl.Deployment.Name,
                             UploadStatus = arl.State.ToString(),
-                            UploadFileLengthMilliseconds = new TimeSpan(0, 0, 0, 0, arl.Length.HasValue ? arl.Length.Value : 0).ToReadableString(),
+							UploadFileLengthMilliseconds = new TimeSpan( 0, 0, 0, 0, arl.DurationMs.HasValue ? arl.DurationMs.Value : 0 ).ToReadableString(),
                             UploadBy = arl.UserId.HasValue ? arl.Aspnet_User.UserName : "unknown"
                         };
 

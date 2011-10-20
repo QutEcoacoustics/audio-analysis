@@ -21,7 +21,8 @@ namespace QutSensors.UI.Display
     /// This class contains utilities for calculating certain urls in the application, particularly for 
     /// attaching to classes from other assemblies.
     /// </summary>
-    public static class UrlUtilities
+    
+	public static class UrlUtilities
     {
         #region Public Methods
 
@@ -502,6 +503,7 @@ namespace QutSensors.UI.Display
             this AudioReading reading, long? start, long? end, bool? isWaveForm, int? height, double? ppms, bool resolve)
         {
             string retVal = GetAudioReadingHRef(reading, "jpg", false);
+
             if (resolve)
             {
                 retVal = VirtualPathUtility.ToAbsolute(retVal);

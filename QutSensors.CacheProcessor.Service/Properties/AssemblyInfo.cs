@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("QutSensors.CacheProcessor")]
-[assembly: AssemblyCopyright( "Copyright © Queensland University of Technology 2010" )]
+[assembly: AssemblyCopyright("Copyright © Microsoft 2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

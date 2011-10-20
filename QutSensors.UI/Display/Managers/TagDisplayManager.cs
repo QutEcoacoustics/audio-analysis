@@ -297,7 +297,7 @@ namespace QutSensors.UI.Display.Managers
                 {
                     AudioId = q.AudioReadingID,
                     AudioAbsoluteStart = q.AudioReading.Time,
-                    AudioDuration = q.AudioReading.Length.HasValue ? TimeSpan.FromMilliseconds(q.AudioReading.Length.Value) : TimeSpan.Zero,
+					AudioDuration = q.AudioReading.DurationMs.HasValue ? TimeSpan.FromMilliseconds( q.AudioReading.DurationMs.Value ) : TimeSpan.Zero,
                     TagId = q.AudioTagID,
                     DeploymentName = q.AudioReading.Deployment.Name,
                     TagIsReference = q.AudioTags_MetaData.ReferenceTag.HasValue ? q.AudioTags_MetaData.ReferenceTag.Value : false,
@@ -412,7 +412,7 @@ namespace QutSensors.UI.Display.Managers
                 {
                     AudioId = q.AudioReadingID,
                     AudioAbsoluteStart = q.AudioReading.Time,
-                    AudioDuration = q.AudioReading.Length.HasValue ? TimeSpan.FromMilliseconds(q.AudioReading.Length.Value) : TimeSpan.Zero,
+					AudioDuration = q.AudioReading.DurationMs.HasValue ? TimeSpan.FromMilliseconds( q.AudioReading.DurationMs.Value ) : TimeSpan.Zero,
                     TagId = q.AudioTagID,
                     DeploymentName = q.AudioReading.Deployment.Name,
                     TagIsReference = q.AudioTags_MetaData.ReferenceTag.HasValue ? q.AudioTags_MetaData.ReferenceTag.Value : false,
