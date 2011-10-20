@@ -361,10 +361,10 @@ namespace QutSensors.UI.Display.Managers
                         results = results.OrderByDescending(r => r.Deployment.Name);
                         break;
                     case "AudioReadingEnd":
-                        results = results.OrderBy(r => r.Time.AddMilliseconds(r.Length.HasValue ? r.Length.Value : 0));
+						results = results.OrderBy( r => r.Time.AddMilliseconds( r.DurationMs.HasValue ? r.DurationMs.Value : 0 ) );
                         break;
                     case "AudioReadingEnd DESC":
-                        results = results.OrderByDescending(r => r.Time.AddMilliseconds(r.Length.HasValue ? r.Length.Value : 0));
+						results = results.OrderByDescending( r => r.Time.AddMilliseconds( r.DurationMs.HasValue ? r.DurationMs.Value : 0 ) );
                         break;
                     case "AudioReadingStart":
                         results = results.OrderBy(r => r.Time);
@@ -373,10 +373,10 @@ namespace QutSensors.UI.Display.Managers
                         results = results.OrderByDescending(r => r.Time);
                         break;
                     case "AudioReadingDuration":
-                        results = results.OrderBy(r => r.Length);
+						results = results.OrderBy( r => r.DurationMs );
                         break;
                     case "AudioReadingDuration DESC":
-                        results = results.OrderByDescending(r => r.Length);
+                        results = results.OrderByDescending(r => r.DurationMs);
                         break;
                     case "State":
                         results = results.OrderBy(r => r.State).ThenBy(r => r.Time);
@@ -605,10 +605,10 @@ namespace QutSensors.UI.Display.Managers
             var audioreadingsCount = audioreadings.Count();
             var heardReadingCount = audioreadings.Count(ar => db.ReadReadings.Any(rr => rr.AudioReadingID == ar.AudioReadingID && rr.UserName == userName));
             var heardReadingPercent = audioreadingsCount > 0 ? Math.Round(((double)heardReadingCount / (double)audioreadingsCount) * 100.0, 0) : 0.0;
-            var audioTotalDuration = audioreadings.Sum(ar => (long?)ar.Length);
+			var audioTotalDuration = audioreadings.Sum( ar => (long?) ar.DurationMs.Value );
             var audioTotalDurationString = new TimeSpan(audioTotalDuration.HasValue ? (long)audioTotalDuration.Value * TimeSpan.TicksPerMillisecond : 0).ToReadableString();
-            var heardDuration = audioreadings.Where(ar => db.ReadReadings.Any(rr => rr.AudioReadingID == ar.AudioReadingID && rr.UserName == userName)).Sum(ar => (long?)ar.Length);
-            var heardDurationString = new TimeSpan(heardDuration.HasValue ? (long)heardDuration.Value * TimeSpan.TicksPerMillisecond : 0).ToReadableString();
+			var heardDuration = audioreadings.Where( ar => db.ReadReadings.Any( rr => rr.AudioReadingID == ar.AudioReadingID && rr.UserName == userName ) ).Sum( ar => (long?) ar.DurationMs );
+			var heardDurationString = new TimeSpan( heardDuration.HasValue ? (long) heardDuration.Value * TimeSpan.TicksPerMillisecond : 0 ).ToReadableString();
             var heardDurationPercent = audioTotalDuration > 0 ? Math.Round((heardDuration.HasValue ? (double)heardDuration.Value : 0) / (audioTotalDuration.HasValue ? (double)audioTotalDuration.Value : 1) * 100.0, 0) : 0.0;
 
             var displayItem = new ProjectDisplayItem

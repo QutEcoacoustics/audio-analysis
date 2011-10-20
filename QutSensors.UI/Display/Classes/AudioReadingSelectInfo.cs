@@ -21,12 +21,12 @@
             this.State = audioReading.State == AudioReadingState.Uploading ? "NotReady" : string.Empty;
             this.DateDisplay = audioReading.Time.ToString("ddd, d MMM yyyy");
             this.TimeDisplay = audioReading.Time.ToString("HH:mm:ss");
-            this.DurationDisplay = audioReading.Length.HasValue
-                                       ? new TimeSpan(0, 0, 0, 0, audioReading.Length.Value).ToReadableString()
+			this.DurationDisplay = audioReading.DurationMs.HasValue
+                                       ? new TimeSpan( 0, 0, 0, 0, audioReading.DurationMs.Value ).ToReadableString()
                                        : "unknown";
             this.StartDate = audioReading.Time.ToString("yyyy-MM-dd");
             this.StartTimeMs = audioReading.Time.TimeOfDay.TotalMilliseconds.ToString();
-            this.DurationMs = audioReading.Length.HasValue ? audioReading.Length.Value : 0;
+			this.DurationMs = audioReading.DurationMs.HasValue ? audioReading.DurationMs.Value : 0;
             this.DeploymentName = audioReading.DeploymentName;
 
             // tags

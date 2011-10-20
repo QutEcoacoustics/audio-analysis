@@ -219,22 +219,22 @@ order by COUNT(*) desc
                         results = results.OrderByDescending(s => s.Status);
                         break;
                     case "LastAccessed":
-                        results = results.OrderBy(s => s.Data.LastAccessed);
+                        results = results.OrderBy(s => s.Cache_Data.LastAccessed);
                         break;
                     case "LastAccessed DESC":
-                        results = results.OrderByDescending(s => s.Data.LastAccessed);
+                        results = results.OrderByDescending(s => s.Cache_Data.LastAccessed);
                         break;
                     case "CreatedTime":
-                        results = results.OrderBy(s => s.Data.CreatedTime);
+                        results = results.OrderBy(s => s.Cache_Data.CreatedTime);
                         break;
                     case "CreatedTime DESC":
-                        results = results.OrderByDescending(s => s.Data.CreatedTime);
+                        results = results.OrderByDescending(s => s.Cache_Data.CreatedTime);
                         break;
                     case "TimeSpentGenerating":
-                        results = results.OrderBy(s => s.Data.TimeSpentGenerating);
+                        results = results.OrderBy(s => s.Cache_Data.TimeSpentGenerating);
                         break;
                     case "TimeSpentGenerating DESC":
-                        results = results.OrderByDescending(s => s.Data.TimeSpentGenerating);
+						results = results.OrderByDescending( s => s.Cache_Data.TimeSpentGenerating );
                         break;
                     case "ProcessingStartTime":
                         results = results.OrderBy(s => s.ProcessingStartTime);
@@ -267,7 +267,7 @@ order by COUNT(*) desc
                         results = results.OrderByDescending(s => s.End - s.Start);
                         break;
                     default:
-                        results = results.OrderByDescending(s => s.Data.LastAccessed);
+						results = results.OrderByDescending( s => s.Cache_Data.LastAccessed );
                         break;
                 }
 
@@ -288,13 +288,13 @@ order by COUNT(*) desc
                             Status = s.Status,
                             MimeType = s.MimeType,
                             ProcessingStartTime = s.ProcessingStartTime,
-                            LastAccessed = s.Status == CacheJobItemStatus.Complete ? s.Data.LastAccessed : new DateTime?(),
-                            TimeSpentGeneratingMs = s.Status == CacheJobItemStatus.Complete ? s.Data.TimeSpentGenerating.TotalMilliseconds : 0,
-                            CreatedTime = s.Status == CacheJobItemStatus.Complete ? s.Data.CreatedTime : new DateTime?(),
-                            Time = s.Job.AudioReading.Time,
+							LastAccessed = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.LastAccessed : new DateTime?(),
+							TimeSpentGeneratingMs = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.TimeSpentGenerating.TotalMilliseconds : 0,
+							CreatedTime = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.CreatedTime : new DateTime?(),
+							Time = s.Cache_Job.AudioReading.Time,
                             End = s.End,
                             Start = s.Start,
-                            AudioReadingId = s.Job.AudioReadingID
+                            AudioReadingId = s.Cache_Job.AudioReadingID
                         });
 
 
