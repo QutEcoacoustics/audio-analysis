@@ -6,14 +6,15 @@ using System.Threading;
 using System.Diagnostics;
 using System.Text;
 
-using QutSensors.AnalysisProcessor;
-using QutSensors.AnalysisProcessor.Runners;
 using QutSensors.Shared;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace AudioEncodingTest
 {
+    using QutSensors.AnalysisProcessor;
+    using QutSensors.ProcessorService.Analysis;
+
     public class Backend
     {
         public static void Start(IEnumerable<string> files, List<KeyValuePair<string, IEnumerable<String>>> options)
