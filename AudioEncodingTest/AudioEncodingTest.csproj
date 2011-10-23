@@ -126,13 +126,9 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
-    <ProjectReference Include="..\QutSensors.AnalysisProcessor\QutSensors.AnalysisProcessor.csproj">
-      <Project>{E51F554E-51AF-4064-980A-1637F91236D4}</Project>
-      <Name>QutSensors.AnalysisProcessor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\QutSensors.CacheProcessor\QutSensors.CacheProcessor.csproj">
-      <Project>{4EC9FD7E-6543-44A9-B872-906DFCB229AF}</Project>
-      <Name>QutSensors.CacheProcessor</Name>
+    <ProjectReference Include="..\QutSensors.ProcessorService\QutSensors.ProcessorService.csproj">
+      <Project>{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}</Project>
+      <Name>QutSensors.ProcessorService</Name>
     </ProjectReference>
     <ProjectReference Include="..\QutSensors.Shared\QutSensors.Shared.csproj">
       <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>

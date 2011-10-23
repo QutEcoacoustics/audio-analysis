@@ -4,6 +4,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AB65DE93-90BB-4AC1-AF20-99CD18C69C0A}"
 	ProjectSection(SolutionItems) = preProject
 		LocalTestRun.testrunconfig = LocalTestRun.testrunconfig
+		Website-Lawrence.vsmdi = Website-Lawrence.vsmdi
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Silverlight", "Silverlight", "{1078E05E-D251-4225-AEC0-B8077B0ABB75}"
@@ -21,7 +22,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 		SccLocalPath = ""
 		SccProvider = ""
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv3.5"
-		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.dll;{86855CBC-7243-492A-A500-2DE36CC7C825}|AudioAnalysisTools.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}|MarkovModels.dll;{13547AB0-068A-4EDD-A2DD-A9644F982E59}|QutSensors.Shared.dll;{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}|QutSensors.Business.dll;{3453DB43-46DA-45E6-AD22-48BC081BC738}|NeuralNets.dll;{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}|QutSensors.UI.dll;{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}|RikMigrations.dll;{4EC9FD7E-6543-44A9-B872-906DFCB229AF}|QutSensors.CacheProcessor.dll;"
+		ProjectReferences = "{BDAEA7B5-28BE-45D5-952E-76820E474649}|QutSensors.Data.dll;{7E0D2209-A416-4784-B350-83778D20A64B}|TowseyLib.dll;{86855CBC-7243-492A-A500-2DE36CC7C825}|AudioAnalysisTools.dll;{6A03A803-AD91-4E12-967E-39DCDB2BB030}|AudioTools.dll;{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}|MarkovModels.dll;{13547AB0-068A-4EDD-A2DD-A9644F982E59}|QutSensors.Shared.dll;{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}|QutSensors.Business.dll;{3453DB43-46DA-45E6-AD22-48BC081BC738}|NeuralNets.dll;{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}|QutSensors.UI.dll;{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}|RikMigrations.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/WebFrontend"
 		Debug.AspNetCompiler.PhysicalPath = "WebFrontend\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\WebFrontend\"
@@ -43,8 +44,6 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "WebFrontend", "WebFrontend\
 	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{EC323929-0160-46BC-A04B-B4A66D02E757} = {EC323929-0160-46BC-A04B-B4A66D02E757}
-		{E51F554E-51AF-4064-980A-1637F91236D4} = {E51F554E-51AF-4064-980A-1637F91236D4}
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF} = {4EC9FD7E-6543-44A9-B872-906DFCB229AF}
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Data", "QutSensors.Data\QutSensors.Data.csproj", "{BDAEA7B5-28BE-45D5-952E-76820E474649}"
@@ -73,13 +72,9 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Shared", "QutSen
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Business", "QutSensors.Business\QutSensors.Business.csproj", "{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.CacheProcessor", "QutSensors.CacheProcessor\QutSensors.CacheProcessor.csproj", "{4EC9FD7E-6543-44A9-B872-906DFCB229AF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Hybrid.Silverlight.LinkedFiles", "QutSensors.Hybrid.Silverlight.LinkedFiles\QutSensors.Hybrid.Silverlight.LinkedFiles.csproj", "{00C16C4B-FF14-4EBB-804D-525AD5DDC17D}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AEDTest", "AudioAnalysis\AED\Test\AEDTest.fsproj", "{3BDC343E-005B-4A94-B90E-62D17F5CABEB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.AnalysisProcessor", "QutSensors.AnalysisProcessor\QutSensors.AnalysisProcessor.csproj", "{E51F554E-51AF-4064-980A-1637F91236D4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioPlayer", "SilverlightControls\Version7\AudioPlayer\AudioPlayer\AudioPlayer.csproj", "{677A24F2-5643-4960-BD8E-FFD739696099}"
 EndProject
@@ -100,8 +95,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.Test.Console", "QutSensors.Test.Console\QutSensors.Test.Console.csproj", "{951E2418-783B-4E0A-B248-16E2B9002E60}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioEncodingTest", "AudioEncodingTest\AudioEncodingTest.csproj", "{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioDataStorageMigrateConsole", "AudioDataStorageMigrateConsole\AudioDataStorageMigrateConsole.csproj", "{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.UI", "QutSensors.UI\QutSensors.UI.csproj", "{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}"
 EndProject
@@ -140,13 +133,13 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "AudioTest.Web", "..\..\QUT\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RikMigrations", "RikMigrations\RikMigrations.csproj", "{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.CacheProcessor.Service", "QutSensors.CacheProcessor.Service\QutSensors.CacheProcessor.Service.csproj", "{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebServices", "SilverlightControls\Version7\WebServices\WebServices.csproj", "{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QutSensors.ProcessorService", "QutSensors.ProcessorService\QutSensors.ProcessorService.csproj", "{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Website.vsmdi
+		CategoryFile = Website-Lawrence.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		AudioAnalysis|.NET = AudioAnalysis|.NET
@@ -417,6 +410,7 @@ Global
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{993980A0-8D06-4635-8296-40E9FFF9C301}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -487,6 +481,7 @@ Global
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{EC323929-0160-46BC-A04B-B4A66D02E757}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -556,6 +551,7 @@ Global
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -591,6 +587,7 @@ Global
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|x86.ActiveCfg = Debug|x86
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.Debug|x86.Build.0 = Debug|x86
 		{DEF90871-7891-4EC9-B7F3-15AEFD6A8CA7}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|x86
@@ -686,40 +683,6 @@ Global
 		{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}.WebOnly|Mixed Platforms.Build.0 = Release|Any CPU
 		{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}.WebOnly|x86.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.AudioAnalysis|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.FileUpload Build|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|.NET.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.Release|x86.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.WebOnly|.NET.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.WebOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.WebOnly|Mixed Platforms.Build.0 = Release|Any CPU
-		{4EC9FD7E-6543-44A9-B872-906DFCB229AF}.WebOnly|x86.ActiveCfg = Release|Any CPU
 		{00C16C4B-FF14-4EBB-804D-525AD5DDC17D}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|x86
 		{00C16C4B-FF14-4EBB-804D-525AD5DDC17D}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
 		{00C16C4B-FF14-4EBB-804D-525AD5DDC17D}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
@@ -766,6 +729,7 @@ Global
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -789,41 +753,6 @@ Global
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.WebOnly|Any CPU.Build.0 = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB}.WebOnly|x86.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.AudioAnalysis|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.FileUpload Build|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|.NET.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.Release|x86.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|.NET.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|Any CPU.Build.0 = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|Mixed Platforms.Build.0 = Release|Any CPU
-		{E51F554E-51AF-4064-980A-1637F91236D4}.WebOnly|x86.ActiveCfg = Release|Any CPU
 		{677A24F2-5643-4960-BD8E-FFD739696099}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{677A24F2-5643-4960-BD8E-FFD739696099}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
 		{677A24F2-5643-4960-BD8E-FFD739696099}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
@@ -974,6 +903,7 @@ Global
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{C9A87706-BDD5-4596-9B4D-59EEA4BA6407}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -1007,6 +937,7 @@ Global
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{0C8D967A-FF1B-4F1D-95E9-9203D6D04783}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -1040,6 +971,7 @@ Global
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{FB088810-E5A8-4A22-9598-5BA99A963D5B}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -1074,6 +1006,7 @@ Global
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{B9EC9F19-9EDD-4DB4-BB56-01296A20E91F}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
@@ -1109,6 +1042,7 @@ Global
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|x86.ActiveCfg = Debug|x86
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.Debug|x86.Build.0 = Debug|x86
 		{951E2418-783B-4E0A-B248-16E2B9002E60}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
@@ -1143,6 +1077,7 @@ Global
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|x86.ActiveCfg = Debug|x86
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.Debug|x86.Build.0 = Debug|x86
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.FileUpload Build|.NET.ActiveCfg = Release|Any CPU
@@ -1167,40 +1102,6 @@ Global
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.WebOnly|Mixed Platforms.ActiveCfg = Release|x86
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.WebOnly|x86.ActiveCfg = Release|x86
 		{DDDFD9AB-261C-49EE-94E8-5BB0711667D9}.WebOnly|x86.Build.0 = Release|x86
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|.NET.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|Any CPU.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|Any CPU.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|Mixed Platforms.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.AudioAnalysis|x86.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|.NET.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|Any CPU.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|Any CPU.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|Mixed Platforms.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.FileUpload Build|x86.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|.NET.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.Release|x86.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.SilverlightOnly|.NET.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.SilverlightOnly|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|.NET.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|Any CPU.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|Mixed Platforms.Build.0 = Release|Any CPU
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2}.WebOnly|x86.ActiveCfg = Release|Any CPU
 		{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}.AudioAnalysis|.NET.ActiveCfg = Release|Any CPU
 		{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}.AudioAnalysis|Any CPU.ActiveCfg = Release|Any CPU
 		{B4AC6A4B-450F-4BA5-AE65-7B51D7122205}.AudioAnalysis|Any CPU.Build.0 = Release|Any CPU
@@ -1245,6 +1146,7 @@ Global
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|.NET.ActiveCfg = Debug|x86
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|Any CPU.ActiveCfg = Debug|x86
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|x86.ActiveCfg = Debug|x86
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.Debug|x86.Build.0 = Debug|x86
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B}.FileUpload Build|.NET.ActiveCfg = Release|x86
@@ -1522,42 +1424,6 @@ Global
 		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.WebOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.WebOnly|Mixed Platforms.Build.0 = Release|Any CPU
 		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.WebOnly|x86.ActiveCfg = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.AudioAnalysis|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|.NET.ActiveCfg = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.FileUpload Build|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|.NET.ActiveCfg = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|Any CPU.Build.0 = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.Release|x86.ActiveCfg = Release|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.SilverlightOnly|x86.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|.NET.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|Any CPU.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
-		{0716152E-0464-4ABE-BE7A-6A8A1383C5EF}.WebOnly|x86.ActiveCfg = AudioAnalysis|Any CPU
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.AudioAnalysis|.NET.ActiveCfg = AudioAnalysis|Any CPU
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.AudioAnalysis|Any CPU.ActiveCfg = AudioAnalysis|Any CPU
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.AudioAnalysis|Any CPU.Build.0 = AudioAnalysis|Any CPU
@@ -1594,6 +1460,42 @@ Global
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.WebOnly|Mixed Platforms.ActiveCfg = AudioAnalysis|Any CPU
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.WebOnly|Mixed Platforms.Build.0 = AudioAnalysis|Any CPU
 		{0B5BC2C3-0F71-48B9-B2D7-8B0A7172742B}.WebOnly|x86.ActiveCfg = AudioAnalysis|Any CPU
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|.NET.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|Any CPU.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|Mixed Platforms.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|Mixed Platforms.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|x86.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.AudioAnalysis|x86.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|.NET.ActiveCfg = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|x86.ActiveCfg = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Debug|x86.Build.0 = Debug|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|.NET.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|Any CPU.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|Mixed Platforms.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|Mixed Platforms.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|x86.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.FileUpload Build|x86.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|.NET.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|Any CPU.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|Mixed Platforms.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|x86.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.Release|x86.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|.NET.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|Any CPU.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|Mixed Platforms.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|x86.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.SilverlightOnly|x86.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|.NET.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|Any CPU.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|Mixed Platforms.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|Mixed Platforms.Build.0 = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|x86.ActiveCfg = Release|x86
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}.WebOnly|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1626,8 +1528,9 @@ Global
 		{86855CBC-7243-492A-A500-2DE36CC7C825} = {728B5CF4-0711-4E63-A30F-8E18AA453CD2}
 		{A42738F5-2A52-4E99-BB3A-3D6F2299C2A5} = {728B5CF4-0711-4E63-A30F-8E18AA453CD2}
 		{3BDC343E-005B-4A94-B90E-62D17F5CABEB} = {728B5CF4-0711-4E63-A30F-8E18AA453CD2}
-		{1A0C7A7B-31C2-4E73-AAC9-478E1802CEC2} = {90E03B2E-E0A4-4FCC-A907-2872FAC80A11}
 		{735D79F2-C07E-45B2-8CE5-314EBB0FE11B} = {90E03B2E-E0A4-4FCC-A907-2872FAC80A11}
+		{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9} = {90E03B2E-E0A4-4FCC-A907-2872FAC80A11}
+		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9} = {90E03B2E-E0A4-4FCC-A907-2872FAC80A11}
 	EndGlobalSection
 	GlobalSection(NDepend) = preSolution
 		Project = ""
