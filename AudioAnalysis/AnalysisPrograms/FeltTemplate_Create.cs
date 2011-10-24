@@ -196,7 +196,7 @@ namespace AnalysisPrograms
 
             //truncate noise
             sonogram.Data = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(sonogram.Data, modalNoise);
-            sonogram.Data = SNR.RemoveBackgroundNoise(sonogram.Data, backgroundThreshold);
+            sonogram.Data = SNR.RemoveNeighbourhoodBackgroundNoise(sonogram.Data, backgroundThreshold);
 
             double[,] targetMinusNoise = BaseSonogram.ExtractEvent(sonogram.Data, eventStart, eventEnd, sonogram.FrameOffset,
                                                          minHz, maxHz, false, sonogram.NyquistFrequency, sonogram.FBinWidth);
