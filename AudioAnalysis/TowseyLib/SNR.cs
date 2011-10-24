@@ -66,7 +66,7 @@ namespace TowseyLib
                 smoothedArray = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
                 m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray);
                 double backgroundThreshold = parameter;
-                m = SNR.RemoveBackgroundNoise(m, backgroundThreshold);
+                m = SNR.RemoveNeighbourhoodBackgroundNoise(m, backgroundThreshold);
             }
             else
             if (nrt == NoiseReductionType.MODAL)
@@ -82,7 +82,7 @@ namespace TowseyLib
                 smoothedArray = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
                 m = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(m, smoothedArray); //remove BG noise
                 double backgroundThreshold = parameter;
-                m = SNR.RemoveBackgroundNoise(m, backgroundThreshold);         //smooth background further
+                m = SNR.RemoveNeighbourhoodBackgroundNoise(m, backgroundThreshold);         //smooth background further
                 m = DataTools.Matrix2Binary(m, 2*backgroundThreshold);         //convert to binary 
             }
             else
@@ -580,7 +580,11 @@ namespace TowseyLib
                 if (dBarray[i] <= minDecibels) continue; //ignore lowest values in establishing noise level
                 if (dBarray[i] < min) min = dBarray[i];
                 else
-                if (dBarray[i] > max) max = dBarray[i];
+                    if (dBarray[i] > max)
+                    {
+                        max = dBarray[i];
+                        //Console.WriteLine("max="+max+"    at index "+i);
+                    }
             }
             min_dB = min;  // return out
             max_dB = max;
@@ -704,7 +708,7 @@ namespace TowseyLib
             double backgroundThreshold = 4.0;   //SETS MIN DECIBEL BOUND
             double[,] mnr = matrix;
             mnr = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(mnr, modalNoise);
-            mnr = SNR.RemoveBackgroundNoise(mnr, backgroundThreshold);
+            mnr = SNR.RemoveNeighbourhoodBackgroundNoise(mnr, backgroundThreshold);
             return mnr;
         }
 
@@ -1011,7 +1015,7 @@ namespace TowseyLib
         /// <param name="matrix">the sonogram</param>
         /// <param name="threshold">user defined threshold in dB i.e. typically 3-4 dB</param>
         /// <returns></returns>
-        public static double[,] RemoveBackgroundNoise(double[,] matrix, double threshold)
+        public static double[,] RemoveNeighbourhoodBackgroundNoise(double[,] matrix, double threshold)
         {
             int M = 3; // each row is a frame or time instance
             int N = 9; // each column is a frequency bin

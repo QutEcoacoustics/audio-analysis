@@ -995,6 +995,48 @@ namespace TowseyLib
       return histo;
   }
 
+        
+
+  /// <summary>
+  /// Add vector v2 to v1
+  /// </summary>
+  /// <param name="v1"></param>
+  /// <param name="v2"></param>
+  /// <returns></returns>
+  public static double[] AddVectors(double[] v1, double[] v2)
+  {
+      int L1 = v1.Length;
+      int L2 = v2.Length;
+      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+
+      double[] addition = new double[L1];
+      for (int i = 0; i < L1; i++)
+          {
+              addition[i] = v1[i] + v2[i];
+          }
+      return addition;
+  }
+
+  /// <summary>
+  /// Subtract vector v2 from vector v1
+  /// </summary>
+  /// <param name="v1"></param>
+  /// <param name="v2"></param>
+  /// <returns></returns>
+  public static double[] SubtractVectors(double[] v1, double[] v2)
+  {
+      int L1 = v1.Length;
+      int L2 = v2.Length;
+      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+
+      double[] difference = new double[L1];
+      for (int i = 0; i < L1; i++)
+      {
+          difference[i] = v1[i] - v2[i];
+      }
+      return difference;
+  }
+     
 
   /// <summary>
   /// ADD matrix m2 to matrix m1
@@ -1018,27 +1060,6 @@ namespace TowseyLib
               newMatrix[i, j] = m1[i, j] + m2[i, j];
           }
       return newMatrix;
-  }
-
-
-  /// <summary>
-  /// Subtract vector v2 from vector v1
-  /// </summary>
-  /// <param name="m1"></param>
-  /// <param name="m2"></param>
-  /// <returns></returns>
-  public static double[] SubtractVectors(double[] v1, double[] v2)
-  {
-      int L1 = v1.Length;
-      int L2 = v2.Length;
-      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
-
-      double[] difference = new double[L1];
-      for (int i = 0; i < L1; i++)
-          {
-              difference[i] = v1[i] - v2[i];
-          }
-      return difference;
   }
 
   /// <summary>

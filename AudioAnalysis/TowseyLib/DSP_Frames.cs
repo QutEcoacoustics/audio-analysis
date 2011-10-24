@@ -90,8 +90,8 @@ namespace TowseyLib
 
         /// <summary>
         /// returns a Tuple containing four items:
-        /// 1) the average amplitude or DC value for each frame of signal
-        /// 2) the maximum amplitude (absoilute value) for each frame i.e. the signal envelope.
+        /// 1) the average of absolute amplitudes for each frame
+        /// 2) the maximum of absolute amplitudes for each frame i.e. the signal envelope.
         /// 3) the signal amplitude spectrogram
         /// 4) the power of the Hamming Window, i.e. sum of squared window values.
         /// </summary>
@@ -122,21 +122,24 @@ namespace TowseyLib
                 int end = start + windowSize;
 
                 //get average and envelope
-                double maxValue = Math.Abs(signal[start]);
-                double total = signal[start];
+                double frameDC = signal[start];
+                double total = Math.Abs(signal[start]);
+                double maxValue = total;
                 for (int x = start + 1; x < end; x++)
                 {
-                    total += signal[x]; // go through current frame to get signal average/DC
+                    frameDC += signal[x];
                     double absValue = Math.Abs(signal[x]);
+                    total += absValue; // go through current frame to get signal (absolute) average
                     if (absValue > maxValue) maxValue = absValue;
                 }
+                frameDC /= windowSize;
                 average[i] = total / windowSize;
                 envelope[i] = maxValue;
 
-                //remove the average from signal
+                //remove DC value from signal values
                 double[] signalMinusAv = new double[windowSize];
                 for (int j = 0; j < windowSize; j++)
-                    signalMinusAv[j] = signal[start + j] - average[i];
+                    signalMinusAv[j] = signal[start + j] - frameDC;
 
                 //generate the spectra of FFT AMPLITUDES - NOTE: f[0]=DC;  f[64]=Nyquist  
                 f1 = fft.InvokeDotNetFFT(signalMinusAv);                 //returns fft amplitude spectrum

@@ -17,25 +17,28 @@ namespace AnalysisPrograms
 {
     class RichnessIndices2
     {
+        public static double activityThreshold_dB = 3.0; //used to select frames that have more than this intensity
+
+
         /// <summary>
         /// a set of indices derived from each recording.
         /// </summary>
         public struct Indices2
         {
-            public double snr, bgNoise, activity, avAmp, amp1minusEntropy;
-            public double entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1;
-            public int percentCover, clusterCount, percentIsolatedHitCount;
+            public double snr, bgNoise, activity, avSig_dB, ampl_1minusEntropy; //amplitude indices
+            public double spectralCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfDiffSpectra1; //spectral indices
+            public int clusterCount, percentIsolatedHitCount;
 
-            public Indices2(double _snr, double _bgNoise, double _activity, double _avAmp, double _entropyAmp, int _percentCover,
+            public Indices2(double _snr, double _bgNoise, double _activity, double _avSig_dB, double _entropyAmp, int _percentCover,
                            double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfDifferenceSpectra1, int _clusterCount, int _percentIsolatedHitCount)
             {
                 snr        = _snr;
                 bgNoise    = _bgNoise;
                 activity   = _activity;
-                avAmp      = _avAmp;
-                percentCover = _percentCover;
-                amp1minusEntropy = _entropyAmp;
-                entropyOfPeakFreqDistr= _peakFreqEntropy;
+                avSig_dB   = _avSig_dB;
+                ampl_1minusEntropy = _entropyAmp;
+                spectralCover = _percentCover;
+                entropyOfPeakFreqDistr = _peakFreqEntropy;
                 entropyOfAvSpectrum   = _entropyOfAvSpectrum;
                 entropyOfDiffSpectra1 = _entropyOfDifferenceSpectra1;
                 clusterCount = _clusterCount;
@@ -65,7 +68,7 @@ namespace AnalysisPrograms
             }
 
             //READ CSV FILE TO MASSAGE DATA
-            if (true)
+            if (false)
             {
                 VISUALIZE_CSV_DATA();
                 Console.ReadLine();
@@ -176,6 +179,7 @@ namespace AnalysisPrograms
             audioUtility.SoxAudioUtility.TargetSampleRateHz = 11025;
             audioUtility.SoxAudioUtility.ReduceToMono = true;
             audioUtility.SoxAudioUtility.UseSteepFilter = true;
+            //##### ######  IMPORTANT :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = 5512 Hz.
             audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
             AudioRecording recording = new AudioRecording(recordingPath, audioUtility);
 
@@ -193,7 +197,7 @@ namespace AnalysisPrograms
             Indices2 indices = results.Item1;
             var values = String.Format(_FORMAT_STRING,
                 fileCount, elapsedTime, recording.FileName, indices.snr, indices.bgNoise,
-                indices.activity, indices.avAmp, indices.percentCover, indices.amp1minusEntropy, 
+                indices.activity, indices.avSig_dB, indices.spectralCover, indices.ampl_1minusEntropy, 
                 indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfDiffSpectra1,
                 indices.clusterCount, indices.percentIsolatedHitCount);
             FileTools.Append2TextFile(opPath, values);
@@ -211,16 +215,19 @@ namespace AnalysisPrograms
                 MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
             }
             recording.Dispose(); // DISPOSE FILTERED SIGNAL
-        }
+        } //ScanRecording()
+
 
         /// <summary>
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="int frameSize = 128">number of signal samples in frame. Default = 128</param>
-        /// <param name="int lowFreqBound = 500">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz</param>
+        /// <param name="int lowFreqBound = 500">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
+        ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]> ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
+        public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]> 
+            ExtractIndices(AudioRecording recording, int frameSize = 128, int lowFreqBound = 500)
         {
             Indices2 indices; // struct in which to store all indices
 
@@ -233,131 +240,174 @@ namespace AnalysisPrograms
             //i: EXTRACT ENVELOPE and FFTs
             Log.WriteIfVerbose("#   Extract Envelope and FFTs.");
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            //double[] average       = results2.Item1;
-            double[] envelope = results2.Item2;
+            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
+            double[] envelope   = results2.Item2;
 
 
             Log.WriteIfVerbose("#   Calculate Frame Energies.");
             //ii: FRAME ENERGIES - 
-            double dBThreshold = 3.0; //used to select frames that have more than this intensity
-            var array2   = SNR.Signal2Decibels(envelope);
-            var results3 = SNR.SubtractBackgroundNoise_dB(array2);//use Lamel et al. Only search in range 10dB above min dB.
+            var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
-            int zeroCount = dBarray.Count((x) => (x < dBThreshold)); //fraction of frames with activity less than threshold dB above background
-            indices.activity = 1 - (zeroCount / (double)dBarray.Length);
-            //int activeCount = dBarray.Length - zeroCount; //used below for cluster training data
-            indices.bgNoise = results3.Item2;  //bg noise in dB
-            indices.snr     = results3.Item5;  //snr
+            int activeFrameCount  = dBarray.Count((x) => (x >= RichnessIndices2.activityThreshold_dB)); //count of frames with activity >= threshold dB above background
+            indices.activity = activeFrameCount / (double)dBarray.Length;     //fraction of frames having acoustic activity 
+            indices.bgNoise  = results3.Item2;                           //bg noise in dB
+            indices.snr      = results3.Item5;                           //snr
+            indices.avSig_dB = 20 * Math.Log10(envelope.Average());    //10 times log of amplitude squared 
 
             //iii: ENVELOPE ENTROPY ANALYSIS
-            indices.avAmp = envelope.Average();
             //double[] newArray = { 3.0, 3.0, 3.0, 3.0,  3.0, 3.0, 3.0, 3.0};
             double[] pmf2 = DataTools.NormaliseProbabilites(envelope); //pmf = probability mass funciton
             double normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
-            indices.amp1minusEntropy = 1 - (DataTools.Entropy(pmf2) / normFactor);
-            //Console.WriteLine("1-H[amplitude]= " + indices.amp1minusEntropy);
+            indices.ampl_1minusEntropy = 1 - (DataTools.Entropy(pmf2) / normFactor);
+            Console.WriteLine("1-H[amplitude]= " + indices.ampl_1minusEntropy);
 
             
-            //iv: SPECTROGRAM ANALYSIS 
+            //iv: SPECTROGRAM ANALYSIS - SPECTRAL COVER
             Log.WriteIfVerbose("#   Calculate Spectral Entropy.");
             // obtain three spectral indices - derived ONLY from frames having acoustic energy.
             //1) entropy of distribution of spectral peaks
             //2) entropy of the average spectrum
             //3) relative entropy of combined spectra wrt average
 
-            //set three amplitude thresholds
-            double bgThreshold     = 0.015; //for smoothing backgorund
-            double peakThreshold   = bgThreshold * 3;  //for selecting spectral peaks
-            double binaryThreshold = 0.015;  //for deriving binary spectrogram
+            // set three spectral amplitude thresholds
+            double spectralBgThreshold = 0.015;            // for smoothing backgorund
+            double peakThreshold   = spectralBgThreshold * 3;  // for selecting spectral peaks
+            double binaryThreshold = 0.015;            // for deriving binary spectrogram
 
-            int L = dBarray.Length;
-            double[,] spectrogram = results2.Item3;
-            double[] modalValues = SNR.CalculateModalValues(spectrogram);
-            double[] smoothedValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the profile
+            double[,] spectrogram = results2.Item3; //amplitude spectrogram
+            double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
+            double[] smoothedValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, smoothedValues);
-            spectrogram = SNR.RemoveBackgroundNoise(spectrogram, bgThreshold);
+            spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            int binCount = frameSize / 2;
-            double binWidth = recording.Nyquist / (double)binCount;
+            int freqBinCount = frameSize / 2; 
+            double binWidth = recording.Nyquist / (double)freqBinCount;
             int excludeBins = (int)Math.Ceiling(lowFreqBound / binWidth);
             // remove low lowFreqBound bins and calculate spectral coverage
             int coverage = 0;
             int cellCount = 0;
-            for (int i = 0; i < L; i++)
+            for (int i = 0; i < dBarray.Length; i++) //for all rows of spectrogram
             {
-                for (int j = 0; j < excludeBins; j++)
+                for (int j = 0; j < excludeBins; j++)//set exclusion bands brings to zero
                 {
                     spectrogram[i,j] = 0.0;
                 }
                 //caluclate coverage
-                for (int j = excludeBins; j < binCount; j++)
+                for (int j = excludeBins; j < freqBinCount; j++)
                 {
-                    if (spectrogram[i, j] >= bgThreshold) coverage++;
+                    if (spectrogram[i, j] >= spectralBgThreshold) coverage++;
                     cellCount++;
                 }
             }
+            indices.spectralCover = coverage / (double)cellCount;
 
-            indices.percentCover = 100 * coverage / cellCount;
 
-
-            //v: DISTRIBUTION OF SPECTRAL PEAKS
-            double[] freqPeaks = new double[L];
-            for (int i = 0; i < L; i++)
+            //v: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
+            double[] freqPeaks = new double[dBarray.Length]; //store frequency of peaks - return later for imaging purposes
+            int[] freqHistogram = new int[freqBinCount];
+            for (int i = 0; i < dBarray.Length; i++)
             {
-                if (dBarray[i] >= dBThreshold) //select only frames having acoustic energy
+                if (dBarray[i] < RichnessIndices2.activityThreshold_dB) continue; //select only frames having acoustic energy >= threshold
+             
+                int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i)); //locate maximum peak
+                if (spectrogram[i, j] > peakThreshold) 
                 {
-                    int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i));
-                    if (spectrogram[i, j] > peakThreshold) freqPeaks[i] = (recording.Nyquist * j / (double)spectrogram.GetLength(1));
+                    freqHistogram[j-1] ++;  //spectrogram has a DC freq column which want to ignore.           
+                    freqPeaks[i] = recording.Nyquist * j / (double)spectrogram.GetLength(1); //store frequency of peak as double
                 }
-            }
-            double histoBarWidth = 100.0;
-            int[] freqHistogram;
+            } // over all frames in dB array
+
+            // calculate entropy of spectral peak distributions
+            //DataTools.writeBarGraph(freqHistogram);
             double[] pmf3;
-            // Entropy of peak distributions
-            freqHistogram = DataTools.Histo_FixedWidth(freqPeaks, histoBarWidth, 0, recording.Nyquist); //
-            freqHistogram[0] = 0; //remove frames having freq=0 i.e frames with no activity from calculation of entropy.
-            pmf3       = DataTools.NormaliseArea(freqHistogram);                   //pmf = probability mass funciton
+            freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
+            pmf3 = DataTools.NormaliseArea(freqHistogram);                         //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
             indices.entropyOfPeakFreqDistr = DataTools.Entropy(pmf3) / normFactor;
-            //DataTools.writeBarGraph(freqHistogram);
+            DataTools.writeBarGraph(freqHistogram);
 
-            //vi: DISTRIBUTION OF AVERAGE SPECTRUM
+
+            //vi: DISTRIBUTION OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
             //Entropy of average spectrum of those frames having activity
-            int frameCount = 0;
-            int freqBinCount = spectrogram.GetLength(1) - 1;
-            double[] avSpectrum = new double[freqBinCount];
-            for (int i = 0; i < L; i++)
+            double[] avSpectrum  = new double[freqBinCount - excludeBins];  //for average  of the spectral bins
+            double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
+            for (int j = excludeBins; j < freqBinCount; j++)
             {
-                if (dBarray[i] >= dBThreshold)
+                double[] bin = DataTools.GetColumn(spectrogram, j);
+                double[] acousticFrames = new double[activeFrameCount];
+                int count = 0;
+                for (int i = 0; i < dBarray.Length; i++)
                 {
-                    for (int j = 0; j < freqBinCount; j++) avSpectrum[j] += spectrogram[i,j+1];
-                    frameCount++;
+                    if (dBarray[i] >= RichnessIndices2.activityThreshold_dB) //select only frames having acoustic energy >= threshold
+                    {
+                        acousticFrames[count] = spectrogram[i, j];
+                        count ++;
+                    }
                 }
+
+                double av, sd;
+                NormalDist.AverageAndSD(acousticFrames, out av, out sd);
+                avSpectrum[j - excludeBins]  = av;
+                varSpectrum[j - excludeBins] = sd * sd;
             }
-            for (int j = 0; j < freqBinCount; j++) avSpectrum[j] /= frameCount;  //get average - need later for difference spectra
-            pmf3 = DataTools.NormaliseArea(avSpectrum);                          //pmf = probability mass funciton
+
+            //get partial spectrum ie exclude the low freq band.
+            pmf3 = DataTools.NormaliseArea(avSpectrum);                        //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
             indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
-            //DataTools.writeBarGraph(avSpectrum);
+            Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
+            DataTools.writeBarGraph(avSpectrum);
 
-            //vii: ENTROPY of difference spectra ie H[spectrumN - spectrumAv]
-            double entropy1 = 0.0; //average of individual entropies
-            for (int i = 0; i < L; i++)
-            {
-                if (dBarray[i] >= dBThreshold)
-                {
-                    double[] spectrum = new double[freqBinCount];
-                    for (int j = 0; j < freqBinCount; j++) spectrum[j] += spectrogram[i, j + 1];
-                    var difference = DataTools.SubtractVectors(spectrum, avSpectrum);
-                    difference = DataTools.Normalise(difference, 0, 1);    //normalize in 0,1 to remove negative values
-                    pmf3 = DataTools.NormaliseArea(difference);             //pmf = probability mass funciton
-                    entropy1 += (DataTools.Entropy(pmf3) / normFactor);
-                    //DataTools.writeBarGraph(difference);
-                }
-            }
-            indices.entropyOfDiffSpectra1 = entropy1 / frameCount;
-            //Log.WriteLine("Spectral difference entropy1 =" + indices.entropyOfDiffSpectra1);
+            //vii: ENTROPY of spectral variance
+            pmf3 = DataTools.NormaliseArea(varSpectrum);                        //pmf = probability mass function
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            indices.entropyOfDiffSpectra1 = (DataTools.Entropy(pmf3) / normFactor);
+            Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfAvSpectrum);
+            DataTools.writeBarGraph(varSpectrum);
 
+            ////vi: DISTRIBUTION OF AVERAGE SPECTRUM
+            ////Entropy of average spectrum of those frames having activity
+            //activeCount = 0;
+            //double[] avSpectrum = new double[freqBinCount]; 
+            //for (int i = 0; i < dBarray.Length; i++)
+            //{
+            //    if (dBarray[i] < RichnessIndices2.activityThreshold_dB) continue; //select only frames having acoustic energy >= threshold
+                
+
+            //    for (int j = 0; j < freqBinCount; j++) avSpectrum[j] += spectrogram[i,j];
+            //    activeCount++;
+            //}
+            //for (int j = 0; j < freqBinCount; j++) avSpectrum[j] /= activeCount;  //get average - need later for difference spectra
+
+            ////get partial spectrum ie exclude the low freq band.
+            //double[] partialSpect = new double[freqBinCount - excludeBins];
+            //for (int j = excludeBins; j < freqBinCount; j++) partialSpect[j - excludeBins] = avSpectrum[j];
+            //pmf3 = DataTools.NormaliseArea(partialSpect);                        //pmf = probability mass function
+            //normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
+            //indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
+            //Log.WriteLine("H(Average spectrum) =" + indices.entropyOfAvSpectrum);
+            //DataTools.writeBarGraph(partialSpect);
+
+            ////vii: ENTROPY of difference spectra ie H[spectrumN - spectrumAv]
+            //double[] cumulativeDifference= new double[freqBinCount];
+            //for (int i = 0; i < dBarray.Length; i++)
+            //{
+            //    if (dBarray[i] < RichnessIndices2.activityThreshold_dB) continue; //select only frames having acoustic energy >= threshold
+                
+            //    double[] spectrum = new double[freqBinCount];
+            //    for (int j = 0; j < freqBinCount; j++) spectrum[j] += spectrogram[i, j + 1];
+            //    var difference = DataTools.SubtractVectors(spectrum, avSpectrum);
+            //    cumulativeDifference = DataTools.AddVectors(cumulativeDifference, difference);
+            //}
+
+            //for (int j = excludeBins; j < freqBinCount; j++) partialSpect[j - excludeBins] = Math.Abs(cumulativeDifference[j]);
+            ////partialSpect = DataTools.Normalise(partialSpect, 0, 1);     //normalize in 0,1 to remove negative values
+            //pmf3 = DataTools.NormaliseArea(partialSpect);                 //pmf = probability mass funciton
+            //indices.entropyOfDiffSpectra1 = (DataTools.Entropy(pmf3) / normFactor);
+            //Log.WriteLine("H(Cumulative spectral differences) =" + indices.entropyOfDiffSpectra1);
+            //DataTools.writeBarGraph(partialSpect);
+
+            
             //viii: CLUSTERING
             //first convert to Binary
             spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);         //convert to binary 
@@ -367,7 +417,7 @@ namespace AnalysisPrograms
             var trainingData = new List<double[]>(); //training data will be used for clustering
 
             //ACTIVITY THREHSOLD - require activity in X% of bins to include for training
-            int percentActivityThreshold = 4;
+            int percentActivityThreshold = 5;
             int activityThreshold = (int)Math.Round(percentActivityThreshold * subMatrix.GetLength(1) / (double)100);
             for (int i = 0; i < subMatrix.GetLength(0); i++)
             {
@@ -402,7 +452,7 @@ namespace AnalysisPrograms
             }
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
-            scores.Add(freqPeaks);
+            scores.Add(freqPeaks); //location of peaks for spectral images
             scores.Add(envelope);
             var clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins,
                                                                 activeFrames, binaryThreshold, clusterWts, clusterHits);
@@ -665,7 +715,8 @@ namespace AnalysisPrograms
             int duration = imageWidth;
             int scale = 60;
             Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
-            title = "Background dB";
+
+            title = "1: Background dB";
             double minDB = -50;
             double maxDB = -20;
             double threshold = 0.0;
@@ -673,44 +724,45 @@ namespace AnalysisPrograms
 
             Image_Track.DrawScoreTrack(bmp, bg_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
             //draw snr track
-            title = "SNR";
+            title = "2: SNR";
             minDB = 0;
             maxDB = 30;
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, snr_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
             //draw activity track
-            title = "Activity";
+            title = "3: % Activity(>3dB)";
             double min = 0.0;
             double max = 1.0;
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, activity, yOffset, trackHeight, min, max, threshold, title);
             //draw Amplitude track
-            title = "av Amplitude";
+            title = "4: av Amplitude";
             min = 0.0;
             max = 0.05;
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, avAmp, yOffset, trackHeight, min, max, threshold, title);
+
             //draw percentCover track
-            title = "% spectral cover";
-            min = 0.0;
-            max = 35.0;
-            threshold = 5.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, percentCover, yOffset, trackHeight, min, max, threshold, title);
-            
-            //draw percentCover track
-            title = "1-H(ampl)";
+            title = "5: 1-H(ampl)";
             //min = 0.0;
             //max = 0.05;
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, percentCover, yOffset, trackHeight, threshold, title);
 
+            //draw percentCover track
+            title = "6: % spectral cover";
+            min = 0.0;
+            max = 35.0;
+            threshold = 5.0;
+            yOffset += trackHeight;
+            Image_Track.DrawScoreTrack(bmp, percentCover, yOffset, trackHeight, min, max, threshold, title);
+            
             //draw H(PeakFreq) track
-            title = "H(PeakFreq)";
+            title = "7: H(PeakFreq)";
             //min = 0.0;
             //max = 0.05;
             threshold = 0.0;
@@ -718,7 +770,7 @@ namespace AnalysisPrograms
             Image_Track.DrawScoreTrack(bmp, H_PeakFreq, yOffset, trackHeight, threshold, title);
 
             //draw H(avSpect) track
-            title = "H(avSpect)";
+            title = "8: H(avSpect)";
             //min = 0.0;
             //max = 0.05;
             threshold = 0.0;
@@ -726,7 +778,7 @@ namespace AnalysisPrograms
             Image_Track.DrawScoreTrack(bmp, H_avSpect, yOffset, trackHeight, threshold, title);
 
             //draw H(diffSpect) track
-            title = "H(diffSpect)";
+            title = "9: H(diffSpect)";
             //min = 0.0;
             //max = 0.05;
             threshold = 0.0;
@@ -734,7 +786,7 @@ namespace AnalysisPrograms
             Image_Track.DrawScoreTrack(bmp, H_diffSpect, yOffset, trackHeight, threshold, title);
 
             //draw clusterCount track
-            title = "ClusterCount";
+            title = "10: ClusterCount";
             min = 0.0;
             max = 20.0;
             threshold = 0.0;
@@ -742,7 +794,7 @@ namespace AnalysisPrograms
             Image_Track.DrawScoreTrack(bmp, clusterCount, yOffset, trackHeight, min, max, threshold, title);
 
             //draw isolated Cluster track
-            title = "IsolatedClusterHits";
+            title = "11: IsolatedClusterHits";
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, isolatedHits, yOffset, trackHeight, threshold, title);
@@ -754,12 +806,7 @@ namespace AnalysisPrograms
             Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
 
 
-            using (Image_MultiTrack image = new Image_MultiTrack(bmp))
-            {
-                //add time scale
-                //image.AddTrack(Image_Track.GetTimeTrack(new TimeSpan(120), 80));
-                image.Save(opFile);
-            } // using
+            bmp.Save(opFile, ImageFormat.Png);
 
 
             Console.WriteLine("finished visualization");
