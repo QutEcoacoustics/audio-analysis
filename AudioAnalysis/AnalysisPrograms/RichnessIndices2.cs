@@ -17,7 +17,7 @@ namespace AnalysisPrograms
 {
     class RichnessIndices2
     {
-        public static double activityThreshold_dB = 3.0; //used to select frames that have more than this intensity
+        public static double activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
 
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace AnalysisPrograms
             //i: Set up the dir and file names
             string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\";
             var fileList         = Directory.GetFiles(recordingDir, "*.wav");
-            string recordingPath = fileList[1]; //get just one from list
+            string recordingPath = fileList[0]; //get just one from list
             string fileName      = Path.GetFileName(recordingPath);
             //string fileName    = "BAC2_20071008-085040.wav";
             Log.WriteLine("Directory:          " + recordingDir);
@@ -179,7 +179,9 @@ namespace AnalysisPrograms
             audioUtility.SoxAudioUtility.TargetSampleRateHz = 11025;
             audioUtility.SoxAudioUtility.ReduceToMono = true;
             audioUtility.SoxAudioUtility.UseSteepFilter = true;
-            //##### ######  IMPORTANT :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = 5512 Hz.
+            //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = 5512 Hz.
+            //##### ######  IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
+            //##### ######                               BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
             audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
             AudioRecording recording = new AudioRecording(recordingPath, audioUtility);
 
@@ -259,7 +261,7 @@ namespace AnalysisPrograms
             double[] pmf2 = DataTools.NormaliseProbabilites(envelope); //pmf = probability mass funciton
             double normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
             indices.ampl_1minusEntropy = 1 - (DataTools.Entropy(pmf2) / normFactor);
-            Console.WriteLine("1-H[amplitude]= " + indices.ampl_1minusEntropy);
+            Console.WriteLine("1-H(amplitude)= " + indices.ampl_1minusEntropy);
 
             
             //iv: SPECTROGRAM ANALYSIS - SPECTRAL COVER
@@ -317,14 +319,13 @@ namespace AnalysisPrograms
                 }
             } // over all frames in dB array
 
-            // calculate entropy of spectral peak distributions
-            //DataTools.writeBarGraph(freqHistogram);
             double[] pmf3;
             freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
             pmf3 = DataTools.NormaliseArea(freqHistogram);                         //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
-            indices.entropyOfPeakFreqDistr = DataTools.Entropy(pmf3) / normFactor;
-            DataTools.writeBarGraph(freqHistogram);
+            indices.entropyOfPeakFreqDistr = 1 - (DataTools.Entropy(pmf3) / normFactor);
+            //DataTools.writeBarGraph(freqHistogram);
+            //Log.WriteLine("1-H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
 
 
             //vi: DISTRIBUTION OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
@@ -354,16 +355,16 @@ namespace AnalysisPrograms
             //get partial spectrum ie exclude the low freq band.
             pmf3 = DataTools.NormaliseArea(avSpectrum);                        //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;
-            Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
-            DataTools.writeBarGraph(avSpectrum);
+            indices.entropyOfAvSpectrum = 1 - (DataTools.Entropy(pmf3) / normFactor);
+            //DataTools.writeBarGraph(avSpectrum);
+            //Log.WriteLine("1-H(Spectral averages) =" + indices.entropyOfAvSpectrum);
 
             //vii: ENTROPY of spectral variance
             pmf3 = DataTools.NormaliseArea(varSpectrum);                        //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                  //normalize for length of the array
-            indices.entropyOfDiffSpectra1 = (DataTools.Entropy(pmf3) / normFactor);
-            Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfAvSpectrum);
-            DataTools.writeBarGraph(varSpectrum);
+            indices.entropyOfDiffSpectra1 = 1 - (DataTools.Entropy(pmf3) / normFactor);
+            //DataTools.writeBarGraph(varSpectrum);
+            //Log.WriteLine("1-H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
             ////vi: DISTRIBUTION OF AVERAGE SPECTRUM
             ////Entropy of average spectrum of those frames having activity
@@ -413,21 +414,26 @@ namespace AnalysisPrograms
             spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);         //convert to binary 
 
             double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
-            bool[] activeFrames = new bool[spectrogram.GetLength(0)];
+            bool[] selectedFrames = new bool[spectrogram.GetLength(0)];
             var trainingData = new List<double[]>(); //training data will be used for clustering
 
             //ACTIVITY THREHSOLD - require activity in X% of bins to include for training
-            int percentActivityThreshold = 5;
-            int activityThreshold = (int)Math.Round(percentActivityThreshold * subMatrix.GetLength(1) / (double)100);
+            int rowSumThreshold = 0;
+            int selectedFrameCount = 0;
             for (int i = 0; i < subMatrix.GetLength(0); i++)
             {
+                if (dBarray[i] < RichnessIndices2.activityThreshold_dB) continue; //select only frames having acoustic energy >= threshold
                 double[] row = DataTools.GetRow(subMatrix, i);
-                if (row.Sum() > activityThreshold) //only include frames where activity exceeds threshold 
+                if (row.Sum() > rowSumThreshold) //only include frames where activity exceeds threshold 
                 {
                     trainingData.Add(row);
-                    activeFrames[i] = true;
+                    selectedFrames[i] = true;
+                    selectedFrameCount++;
                 }
             }
+
+
+            Log.WriteLine("ActiveFrameCount=" + activeFrameCount + "  selectedFrameCount=" + selectedFrameCount);
 
             BinaryCluster.Verbose = false;
             if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
@@ -455,7 +461,7 @@ namespace AnalysisPrograms
             scores.Add(freqPeaks); //location of peaks for spectral images
             scores.Add(envelope);
             var clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins,
-                                                                activeFrames, binaryThreshold, clusterWts, clusterHits);
+                                                                selectedFrames, binaryThreshold, clusterWts, clusterHits);
             return System.Tuple.Create(indices, scores, clusterHits, clusterWts, clusterSpectrogram);
         } //ExtractIndices()
 
