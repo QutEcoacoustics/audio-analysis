@@ -13,6 +13,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace AudioEncodingTest
 {
     using QutSensors.AnalysisProcessor;
+    using QutSensors.Business.Analysis;
     using QutSensors.ProcessorService.Analysis;
 
     public class Backend

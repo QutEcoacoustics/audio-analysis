@@ -126,6 +126,10 @@
       <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
       <Name>AudioTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\QutSensors.Business\QutSensors.Business.csproj">
+      <Project>{AC5DBE76-D7D9-4F1C-8369-4C2F6156133E}</Project>
+      <Name>QutSensors.Business</Name>
+    </ProjectReference>
     <ProjectReference Include="..\QutSensors.ProcessorService\QutSensors.ProcessorService.csproj">
       <Project>{C69E97A6-52FC-4235-9A2B-7E14F1EA74B9}</Project>
       <Name>QutSensors.ProcessorService</Name>
