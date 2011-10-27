@@ -233,6 +233,7 @@ namespace AnalysisPrograms
         {
             Indices2 indices; // struct in which to store all indices
 
+            frameSize = SonogramConfig.DEFAULT_WINDOW_SIZE; //############################ TRY THIS
             int sr = recording.SampleRate;
             double windowOverlap = 0.0;
             //double framesPerSecond = sr / frameSize / (1-windowOverlap);
@@ -274,7 +275,6 @@ namespace AnalysisPrograms
             // set three spectral amplitude thresholds
             double spectralBgThreshold = 0.015;            // for smoothing backgorund
             double peakThreshold   = spectralBgThreshold * 3;  // for selecting spectral peaks
-            double binaryThreshold = 0.015;            // for deriving binary spectrogram
 
             double[,] spectrogram = results2.Item3; //amplitude spectrogram
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
@@ -411,58 +411,89 @@ namespace AnalysisPrograms
             
             //viii: CLUSTERING
             //first convert to Binary
-            spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);         //convert to binary 
+            double binaryThreshold = 0.030;                                       // for deriving binary spectrogram
+            spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);  // convert to binary 
 
             double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
             bool[] selectedFrames = new bool[spectrogram.GetLength(0)];
             var trainingData = new List<double[]>(); //training data will be used for clustering
 
-            //ACTIVITY THREHSOLD - require activity in X% of bins to include for training
-            int rowSumThreshold = 0;
+            int rowSumThreshold = 1;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
             int selectedFrameCount = 0;
             for (int i = 0; i < subMatrix.GetLength(0); i++)
             {
                 if (dBarray[i] < RichnessIndices2.activityThreshold_dB) continue; //select only frames having acoustic energy >= threshold
                 double[] row = DataTools.GetRow(subMatrix, i);
-                if (row.Sum() > rowSumThreshold) //only include frames where activity exceeds threshold 
+                if (row.Sum() >= rowSumThreshold) //only include frames where activity exceeds threshold 
                 {
                     trainingData.Add(row);
                     selectedFrames[i] = true;
                     selectedFrameCount++;
                 }
             }
+            Log.WriteLine("ActiveFrameCount=" + activeFrameCount + "  frames selected for clustering=" + selectedFrameCount);
 
-
-            Log.WriteLine("ActiveFrameCount=" + activeFrameCount + "  selectedFrameCount=" + selectedFrameCount);
-
-            BinaryCluster.Verbose = false;
+            //DO CLUSTERING
+            BinaryCluster.Verbose = true;
             if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
             double vigilance = 0.2;    //vigilance parameter - increasing this proliferates categories
                                        //if vigilance=0.1, require similairty (AND/OR) > 10%
             var output = BinaryCluster.ClusterBinaryVectors(trainingData, vigilance);//cluster[] stores the category (winning F2 node) for each input vector
-            int[] clusterHits         = output.Item1;//the cluster to which each frame belongs
+            int[] clusterHits1        = output.Item1;   //the cluster to which each frame belongs
             List<double[]> clusterWts = output.Item2;
+            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
 
-            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
+            //PRUNE THE CLUSTERS
             double wtThreshold = 1.0; //used to remove wt vectors whose sum of wts <= threshold
             int hitThreshold   = 10;  //used to remove wt vectors which have fewer than the threshold hits
-            var output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits, wtThreshold, hitThreshold);
+            var output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
             indices.clusterCount = output2.Item1;
-            indices.percentIsolatedHitCount = output2.Item2;
+            indices.percentIsolatedHitCount = 0;
+            if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits1);
+            if (BinaryCluster.Verbose) Console.WriteLine("pruned cluster count = {0}", indices.clusterCount);
             
+            //ix: AVERAGE CLUSTER DURATION
+            //reassemble cluster hits into an array matching the original array of active frames.
+            int hitCount = 0;
+            int[] clusterHits2 = new int[dBarray.Length]; 
+            for (int i = 0; i < dBarray.Length; i++)
+            {
+                if (selectedFrames[i]) //select only frames having acoustic energy >= threshold
+                {
+                    clusterHits2[i] = clusterHits1[hitCount] + 1;//+1 so do not have zero index for a cluster 
+                    hitCount++;
+                }
+            }
+            List<int> hitDurations = new List<int>();
+            int currentDuration = 1;
+            for (int i = 1; i < clusterHits2.Length; i++)
+            {
+                if (clusterHits2[i] != clusterHits2[i - 1])
+                {
+                    if (clusterHits2[i-1] != 0) hitDurations.Add(currentDuration); //do not add if cluster = 0
+                    currentDuration = 1;
+                }
+                else
+                {
+                    currentDuration++;
+                }
+            }
+            double av2, sd2;
+            NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
             if (BinaryCluster.Verbose)
             {
-                BinaryCluster.DisplayClusterWeights(clusterWts, clusterHits);
-                Console.WriteLine("cluster count = {0}", indices.clusterCount);
+                for (int i = 1200; i < 1296 /*clusterHits2.Length*/; i++) Console.WriteLine(i +"   "+clusterHits2[i]);
+                Console.WriteLine("Average Cluster Length = {0} +/- {1}", av2, sd2);
             }
+
             // ASSEMBLE FEATURES
             var scores = new List<double[]>();
             scores.Add(freqPeaks); //location of peaks for spectral images
             scores.Add(envelope);
             var clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins,
-                                                                selectedFrames, binaryThreshold, clusterWts, clusterHits);
-            return System.Tuple.Create(indices, scores, clusterHits, clusterWts, clusterSpectrogram);
+                                                                selectedFrames, binaryThreshold, clusterWts, clusterHits1);
+            return System.Tuple.Create(indices, scores, clusterHits1, clusterWts, clusterSpectrogram);
         } //ExtractIndices()
 
 
@@ -547,7 +578,7 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// this method is used to only to visualize the clusters and which frames they hit.
+        /// this method is used only to visualize the clusters and which frames they hit.
         /// Create new spectrogram of full size from the reduced spectrogram.
         /// Later on it is superimposed on a detailed spectrogram.
         /// </summary>

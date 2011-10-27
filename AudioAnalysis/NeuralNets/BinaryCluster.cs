@@ -325,17 +325,59 @@ namespace NeuralNets
         /// removes wtVectors from a list where three threshold conditions not satisfied
         /// 1) Sum of positive wts must exceed threshold
         /// 2) Cluster size (i.e. total frames hit by wtVector must exceed threshold
-        /// 3) All hits are isolated hits ie do not last more than one frame
-        /// returns 1) number of clusters remaining; and 2) percent isolated hits.
+        /// returns 1) number of clusters remaining;
         /// </summary>
         /// <param name="wtVectors"></param>
         /// <param name="clusterHits"></param>
         /// <param name="wtThreshold"></param>
         /// <param name="hitThreshold"></param>
-    public static System.Tuple<int, int> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static System.Tuple<int> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
         //make two histograms: 1) of cluster sizes; 2) and isolated hits ie when a cluster hit is different from the one before and after
         int[] clusterSizes         = new int[wtVectors.Count]; //init histogram 1
+        for (int i = 1; i < clusterHits.Length - 1; i++)
+        {
+            clusterSizes[clusterHits[i]]++;
+        }
+
+
+        // remove wt vector if it does NOT SATISFY constraints  
+        int clusterCount_final = 0;
+        for (int i = 0; i < wtVectors.Count; i++)
+        {
+            if (wtVectors[i] == null) continue;
+            if (wtVectors[i].Sum() <= wtThreshold)
+            {
+                wtVectors[i] = null; //set null
+                continue;
+            } else
+            if (clusterSizes[i] <= hitThreshold)  //set null
+            {
+                wtVectors[i] = null;
+                continue;
+            } 
+            clusterCount_final++; //count number of remaining clusters
+        }
+        return System.Tuple.Create(clusterCount_final);
+    } //PruneClusters()
+
+
+
+    /// <summary>
+    /// removes wtVectors from a list where three threshold conditions not satisfied
+    /// 1) Sum of positive wts must exceed threshold
+    /// 2) Cluster size (i.e. total frames hit by wtVector must exceed threshold
+    /// 3) All hits are isolated hits ie do not last more than one frame
+    /// returns 1) number of clusters remaining; and 2) percent isolated hits.
+    /// </summary>
+    /// <param name="wtVectors"></param>
+    /// <param name="clusterHits"></param>
+    /// <param name="wtThreshold"></param>
+    /// <param name="hitThreshold"></param>
+    public static System.Tuple<int, int> PruneClusters2(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    {
+        //make two histograms: 1) of cluster sizes; 2) and isolated hits ie when a cluster hit is different from the one before and after
+        int[] clusterSizes = new int[wtVectors.Count]; //init histogram 1
         int[] cluster_isolatedHits = new int[wtVectors.Count]; //init histogram 2
         int isolatedHitCount = 0;
         for (int i = 1; i < clusterHits.Length - 1; i++)
@@ -358,17 +400,19 @@ namespace NeuralNets
             {
                 wtVectors[i] = null; //set null
                 continue;
-            } else
-            if (clusterSizes[i] <= hitThreshold)  //set null
-            {
-                wtVectors[i] = null;
-                continue;
-            } else
-            if ((cluster_isolatedHits[i] * 100 / clusterSizes[i]) > 90) //calculate percent of isloated hits
-            {
-                wtVectors[i] = null;
-                continue;
             }
+            else
+                if (clusterSizes[i] <= hitThreshold)  //set null
+                {
+                    wtVectors[i] = null;
+                    continue;
+                }
+                else
+                    if ((cluster_isolatedHits[i] * 100 / clusterSizes[i]) > 90) //calculate percent of isloated hits
+                    {
+                        wtVectors[i] = null;
+                        continue;
+                    }
             clusterCount_final++; //count number of remaining clusters
 
             //Console.WriteLine("cluster {0}: isolatedHitCount={1}  %={2}%", i, +cluster_isolatedHits[i], percent);
@@ -377,7 +421,7 @@ namespace NeuralNets
         }
 
         int percentIsolatedHitCount = 0;
-        if(clusterHits.Length > 4) percentIsolatedHitCount = isolatedHitCount * 100 / (clusterHits.Length - 2);
+        if (clusterHits.Length > 4) percentIsolatedHitCount = isolatedHitCount * 100 / (clusterHits.Length - 2);
         return System.Tuple.Create(clusterCount_final, percentIsolatedHitCount);
     } //PruneClusters()
 
