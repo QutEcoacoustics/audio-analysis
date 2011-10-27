@@ -145,6 +145,11 @@ namespace TowseyLib
         }
 
 
+        static public void AverageAndSD(List<int> data, out double av, out double sd)
+        {
+            AverageAndSD(data.ToArray(), out av, out sd);
+        }
+
         /**
          * returns the average and SD of a set of real values
          * @param data
@@ -176,6 +181,10 @@ namespace TowseyLib
             //Console.WriteLine("av="+av+" SD="+SD);
         }
 
+        static public void AverageAndSD(List<double> data, out double av, out double sd)
+        {
+            AverageAndSD(data.ToArray(), out av, out sd);
+        }
 
 
         public static void AverageAndSD(double[,] data, out double av, out double sd)
