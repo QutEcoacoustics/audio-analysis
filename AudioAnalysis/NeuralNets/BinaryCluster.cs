@@ -331,34 +331,22 @@ namespace NeuralNets
         /// <param name="clusterHits"></param>
         /// <param name="wtThreshold"></param>
         /// <param name="hitThreshold"></param>
-    public static System.Tuple<int> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
+    public static System.Tuple<List<double[]>> PruneClusters(List<double[]> wtVectors, int[] clusterHits, double wtThreshold, int hitThreshold)
     {
-        //make two histograms: 1) of cluster sizes; 2) and isolated hits ie when a cluster hit is different from the one before and after
-        int[] clusterSizes         = new int[wtVectors.Count]; //init histogram 1
-        for (int i = 1; i < clusterHits.Length - 1; i++)
-        {
-            clusterSizes[clusterHits[i]]++;
-        }
-
-
-        // remove wt vector if it does NOT SATISFY constraints  
-        int clusterCount_final = 0;
+        //make two histogram of cluster sizes;
+        int[] clusterSizes = new int[wtVectors.Count]; //init histogram 1
+        for (int i = 1; i < clusterHits.Length - 1; i++) clusterSizes[clusterHits[i]]++;
+        
+        //init new list of wt vectors and add wt vectors that SATISFY conditions
+        List<double[]> prunedList = new List<double[]>();
         for (int i = 0; i < wtVectors.Count; i++)
         {
             if (wtVectors[i] == null) continue;
-            if (wtVectors[i].Sum() <= wtThreshold)
-            {
-                wtVectors[i] = null; //set null
-                continue;
-            } else
-            if (clusterSizes[i] <= hitThreshold)  //set null
-            {
-                wtVectors[i] = null;
-                continue;
-            } 
-            clusterCount_final++; //count number of remaining clusters
+            if (wtVectors[i].Sum() < wtThreshold) continue;
+            if (clusterSizes[i] < hitThreshold)   continue;
+            prunedList.Add(wtVectors[i]); 
         }
-        return System.Tuple.Create(clusterCount_final);
+        return System.Tuple.Create(prunedList);
     } //PruneClusters()
 
 
