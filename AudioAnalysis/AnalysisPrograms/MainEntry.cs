@@ -81,10 +81,14 @@ namespace AnalysisPrograms
                         SPR.Dev(restOfArgs);
                         break;
                     case "richness_indices":      // richness_indices
-                        //RichnessIndices2.Dev(restOfArgs);
-                        RichnessIndices2.Executable(restOfArgs);
+                        RichnessIndices2.Dev(restOfArgs);
+                        //RichnessIndices2.Executable(restOfArgs);
                         break;
-					case "dimred":   // dimensionality reduction
+                    case "species_accumulation_curves":      // species accumulation curves
+                        SpeciesAccumulationCurve.Dev(restOfArgs);
+                        //SpeciesAccumulationCurve.Executable(restOfArgs);
+                        break;
+                    case "dimred":   // dimensionality reduction
                         DimReduction.Dev(restOfArgs);
                         break;
                     case "epr2": // event pattern recognition - used for ground-parrots (TOWSEY)
