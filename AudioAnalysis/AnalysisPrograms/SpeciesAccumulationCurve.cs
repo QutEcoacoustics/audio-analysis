@@ -33,14 +33,10 @@ namespace AnalysisPrograms
 
 
             //i: Set up the dir and file names
-            string inputDir = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\";
+            string inputDir = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
             string inputfile = "SE_13102010_Full Day_AndTotals.csv";
-            //var fileList = Directory.GetFiles(inputDir, "*.wav");
-            //string recordingPath = fileList[0]; //get just one from list
-            //string fileName = Path.GetFileName(recordingPath);
-            //string fileName    = "BAC2_20071008-085040.wav";
+            string occurenceFile = inputDir + inputfile;
             Log.WriteLine("Directory:          " + inputDir);
-            //Log.WriteLine("Directory contains: " + fileList.Count() + " wav files.");
             Log.WriteLine("Selected file:      " + inputfile);
 
             string outputDir = inputDir;
@@ -48,12 +44,18 @@ namespace AnalysisPrograms
             string opFileName = "Results_ARI_" + FileTools.TimeStamp2FileName(datetime) + ".csv";
             string opPath = outputDir + opFileName; // .csv file
 
-            //write header to results file
+            //READ CSV FILE TO MASSAGE DATA
+            var results1 = READ_OCCURENCE_CSV_DATA(occurenceFile);
+            List<string> speciesList = results1.Item1;
+            //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
+            byte[,] occurenceMatrix = results1.Item2;
 
-            if (!File.Exists(opPath))
+            if (false)
             {
-                FileTools.WriteTextFile(opPath, HEADER);
+                Console.ReadLine();
+                Environment.Exit(666);
             }
+
 
             //init counters
             int fileCount = 0;
@@ -122,6 +124,42 @@ namespace AnalysisPrograms
 
         //#########################################################################################################################################################
 
+
+
+
+        public static System.Tuple<List<string>, byte[,]> READ_OCCURENCE_CSV_DATA(string occurenceFile)
+        {
+            int startColumn = 3;
+            int endColumn = 64;
+            List<string> text = FileTools.ReadTextFile(occurenceFile);  // read occurence file
+            List<string> speciesList = new List<string>();
+            string[] line = text[0].Split(',');                    // read and split the first line
+            for (int j = startColumn; j <= endColumn; j++) speciesList.Add(line[j]);
+
+            byte[,]  occurenceMatrix = new byte[text.Count - 1, line.Length];
+            byte[] speciesCount = new byte[text.Count - 1];
+            for (int i = 1; i < text.Count; i++)
+            {
+                line = text[i].Split(',');                    // read and split the first line
+                for (int j = startColumn; j <= endColumn; j++)
+                {
+                    if (line[j].StartsWith("1")) occurenceMatrix[i, j] = 1;
+                }
+                speciesCount[i-1] = Byte.Parse(line[endColumn+2]);
+            }
+            //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
+
+            //now cross check that all is OK
+            for (int i = 0; i < occurenceMatrix.GetLength(0); i++)
+            {
+                int sum = 0;
+                for (int j = 0; j < occurenceMatrix.GetLength(1); j++) sum += occurenceMatrix[i,j];
+
+                if (speciesCount[i] != sum) Console.WriteLine("WARNING: ROW {0}: Matrix row sum != Species count i.e. {1} != {2}", i, speciesCount[i], sum);
+            }
+
+            return Tuple.Create(speciesList, occurenceMatrix);
+        }
 
 
         public static void CheckArguments(string[] args)
