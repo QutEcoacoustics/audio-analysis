@@ -995,6 +995,26 @@ namespace TowseyLib
       return histo;
   }
 
+
+  /// <summary>
+  /// Logical AND of two vectors vector v2 to v1
+  /// </summary>
+  /// <param name="v1"></param>
+  /// <param name="v2"></param>
+  /// <returns></returns>
+  public static byte[] LogicalORofTwoVectors(byte[] v1, byte[] v2)
+  {
+      int L1 = v1.Length;
+      int L2 = v2.Length;
+      if (L1 != L2) throw new Exception("ERROR! Vectors must be of same length.");
+
+      byte[] addition = new byte[L1];
+      for (int i = 0; i < L1; i++)
+      {
+          if ((v1[i] >= 1) || (v2[i] >= 1)) addition[i] = 1;
+      }
+      return addition;
+  }
         
 
   /// <summary>
@@ -1128,6 +1148,17 @@ namespace TowseyLib
   }
 
 
+  /// <summary>
+  /// set all values in the passed column to zero.
+  /// </summary>
+  /// <param name="m"></param>
+  /// <param name="colID"></param>
+  public static void SetColumnZero(byte[,] m, int colID)
+  {
+      int rows = m.GetLength(0);
+      for (int r = 0; r < rows; r++) m[r, colID] = 0;
+  }
+
   public static int SumColumn(int[,] m, int colID)
   {
       int rows = m.GetLength(0);
@@ -1144,13 +1175,40 @@ namespace TowseyLib
       return row;
   }
 
+  public static byte[] GetRow(byte[,] m, int rowID)
+  {
+      int cols = m.GetLength(1);
+      byte[] row = new byte[cols];
+      for (int i = 0; i < cols; i++) row[i] = m[rowID, i];
+      return row;
+  }
+
   public static double GetRowSum(double[,] m, int rowID)
   {
       double[] row = GetRow(m, rowID);
       return row.Sum();
   }
 
-  public static int SumRow(int[,] m, int rowID)
+  public static int GetRowSum(byte[,] m, int rowID)
+  {
+      int sum = 0;
+      for (int j = 0; j < m.GetLength(1); j++) sum += m[rowID, j];
+      return sum;
+  }
+
+  public static int[] GetRowSums(byte[,] m)
+  {
+      int[] rowSums = new int[m.GetLength(0)];
+      for (int i = 0; i < m.GetLength(0); i++)
+      {
+          int sum = 0;
+          for (int j = 0; j < m.GetLength(1); j++) sum += m[i, j];
+          rowSums[i] = sum;
+      }
+      return rowSums;
+  }
+
+  public static int GetRowSum(int[,] m, int rowID)
   {
       int cols = m.GetLength(1);
       int sum = 0;
@@ -2155,6 +2213,28 @@ namespace TowseyLib
   }
 
 
+  /// <summary>
+  /// Same as above method but returns index instead of outting it!
+  /// returns the index of max value in an array of doubles.
+  /// array index starts at zero.
+  /// If more than one value is equal max, then returns location of first.
+  /// </summary>
+  /// <param name="data"></param>
+  /// <returns></returns>
+  static public int GetMaxIndex(int[] data)
+  {
+      int indexOfMax = 0;
+      int max = data[0];
+      for (int i = 1; i < data.Length; i++)
+      {
+          if (data[i] > max)
+          {
+              max = data[i];
+              indexOfMax = i;
+          }
+      }
+      return indexOfMax;
+  }
   /**
    * returns the index of max value in an array of doubles.
    * array index starts at zero.
