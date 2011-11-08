@@ -22,7 +22,7 @@ namespace TowseyLib
 
         public static double RowRelativeFrequency(int[,] table, int row, int totalCount)
         {
-            return DataTools.SumRow(table, row) / (double)totalCount;
+            return DataTools.GetRowSum(table, row) / (double)totalCount;
         }
 
         public static double CellExpectedValue(int[,] table, int row, int column, int totalCount)
@@ -64,7 +64,7 @@ namespace TowseyLib
 
                     //############################################# WARNING!! CHECK THE FOLLOWING 3 LINES OF CODE
                     // SEE WIKIPEDIA EXAMPLE IN LIKELIHOOD RATIO
-                    double lr = o * totalCount / DataTools.SumRow(contingencyTable, row) / DataTools.SumColumn(contingencyTable, col);
+                    double lr = o * totalCount / DataTools.GetRowSum(contingencyTable, row) / DataTools.SumColumn(contingencyTable, col);
                     if (lr == 0) llrs[row, col] = -999.9; // take log to get LLR
 				    else         llrs[row, col] = Math.Log10(lr);
 			    }	

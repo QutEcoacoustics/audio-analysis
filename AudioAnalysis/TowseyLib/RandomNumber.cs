@@ -50,27 +50,29 @@ namespace TowseyLib
 		/// <summary>
 		/// Returns integers up to N in random order.
 		/// Use of seed will always return the same order.
-		/// If seed is negative, it will be ignored ie different random order every time method called.
+		/// Pass a negative seed value to ignore it and to have a different random order every time method called.
+        /// Use this method if you want random numbers up to N without replacement.
 		/// </summary>
-		public static int[] RandomizeNumberOrder(int n, int seed)
+		public static int[] RandomizeNumberOrder(int N, int seed)
 		{
 			RandomNumber rn = new RandomNumber(seed);
 			if (seed < 0) rn = new RandomNumber();
-			int r;      //: word;      {a random number between 0 and k-1}
-			int dummy;  // : word;      {holder for random number}
+			int R;      //: word;       {a random number between 0 and k-1}
+			int valueAtIndexK;  // : word;      {holder for random number}
 
-			int[] randomArray = new int[n];
-			for (int i = 0; i < n; i++) randomArray[i] = i;   // integers in ascending order
+			int[] randomArray = new int[N];
+			for (int i = 0; i < N; i++) randomArray[i] = i;   // integers in ascending order
 
-			for (int k = n - 1; k >= 0; k--)
+			for (int k = N - 1; k >= 0; k--) // in decending order
 			{
-				r = rn.GetInt(k);       //a random integer between 0 and k
-				dummy = randomArray[k];
-				randomArray[k] = randomArray[r];
-				randomArray[r] = dummy;
+				R = rn.GetInt(k);                 // a random integer between 0 and k
+				valueAtIndexK  = randomArray[k];  // swap the numbers in position K and romdon  position R 
+				randomArray[k] = randomArray[R];
+				randomArray[R] = valueAtIndexK;
 			}
 			return randomArray;
 		} //end of RandomizeNumberOrder()
+
 
 		/// <summary>
 		/// IMPORTANT - THIS METHOD NEEDS WORK!!
@@ -92,5 +94,31 @@ namespace TowseyLib
 			//}
 			return rArray;
 		}
-	}
+
+
+        /// <summary>
+        /// Returns N random integers between 0 - K-1 without replacement.
+        /// If seed is negative, it will be ignored ie different random order every time method called.
+        /// </summary>
+        public static int[] RandomNumbersWithoutReplacement(int n, int seed)
+        {
+            RandomNumber rn = new RandomNumber(seed);
+            if (seed < 0) rn = new RandomNumber();
+            int r;      //: word;      {a random number between 0 and k-1}
+            int dummy;  // : word;      {holder for random number}
+
+            int[] randomArray = new int[n];
+            for (int i = 0; i < n; i++) randomArray[i] = i;   // integers in ascending order
+
+            for (int k = n - 1; k >= 0; k--)
+            {
+                r = rn.GetInt(k);       //a random integer between 0 and k
+                dummy = randomArray[k];
+                randomArray[k] = randomArray[r];
+                randomArray[r] = dummy;
+            }
+            return randomArray;
+        } //end of RandomizeNumberOrder()
+
+    }
 }
