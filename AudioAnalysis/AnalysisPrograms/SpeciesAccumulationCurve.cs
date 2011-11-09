@@ -118,20 +118,45 @@ namespace AnalysisPrograms
                 Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
             }
 
-            //random sampling OVER FIXED INTERVAL GIVEN START and END
+            // SMART SAMPLING
             if (true)
             {
-                int startSample = 270;  // start of morning chorus
-                //int startSample = 291;  // 4:51am = civil dawn
+                string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.csv";
+                int colNumber = 9;
+                double[] array = ReadColumnOfCSVFile(fileName, colNumber);
+                var results2 = DataTools.SortRowIDsByRankOrder(array);
+                int[] rankOrder = results2.Item1;
+                double[] sort = results2.Item2;
+                //for (int i = 0; i < array.Length; i++)
+                //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+                //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
+                //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+
+                int N = occurenceMatrix.GetLength(0); //maximum Sample Number
+                int C = occurenceMatrix.GetLength(1); //total species count
+                int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
+                System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, C);
+                Console.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
+            }
+
+            //random sampling OVER FIXED INTERVAL GIVEN START and END
+            if (false)
+            {
+                //int startSample = 270;  // start of morning chorus
+                int startSample = 291;  // 4:51am = civil dawn
                 //int startSample = 315;  // 5:15am = sunrise
-                int duration = 180; //minutes
                 int trialCount = 5000;
+                //int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
+                int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
+                //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours 
+                //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours 
+                int C = occurenceMatrix.GetLength(1); //total species count
+
                 int[] s25array = new int[trialCount];
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
-                int N = 180; //maximum Sample Number
-                int C = occurenceMatrix.GetLength(1); //total species count
+
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
@@ -210,6 +235,37 @@ namespace AnalysisPrograms
 
 
         //#########################################################################################################################################################
+
+
+
+        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber)
+        {                
+            List<string> lines = FileTools.ReadTextFile(fileName);
+            double[] array = new double[lines.Count - 2];
+
+            //read csv data into arrays.
+            for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines - first line = header.
+            {
+                string[] words = lines[i].Split(',');
+                array[i - 1] = Double.Parse(words[colNumber]);
+                //timeScale[i - 1] = Int32.Parse(words[0]) / (double)60; //convert minutes to hours
+                //avAmp_dB[i - 1] = Double.Parse(words[3]);
+                //snr_dB[i - 1] = Double.Parse(words[4]);
+                //bg_dB[i - 1] = Double.Parse(words[5]);
+                //activity[i - 1] = Double.Parse(words[6]);
+                //segmentCount[i - 1] = Double.Parse(words[7]);
+                //avSegmentDur[i - 1] = Double.Parse(words[8]);
+                //spectralCover[i - 1] = Double.Parse(words[9]);
+                //H_ampl[i - 1] = Double.Parse(words[10]);
+                //H_PeakFreq[i - 1] = Double.Parse(words[11]);
+                //H_avSpect[i - 1] = Double.Parse(words[12]);
+                //H_varSpect[i - 1] = Double.Parse(words[13]);
+                //clusterCount[i - 1] = (double)Int32.Parse(words[14]);
+                //avClusterDuration[i - 1] = Double.Parse(words[15]);
+                //speciesCount[i - 1] = (double)Int32.Parse(words[16]);
+            }//end 
+            return array;
+        }
 
 
         public static int[] GetAccumulationCurve(byte[,] occurenceMatrix, int[] randomOrder)

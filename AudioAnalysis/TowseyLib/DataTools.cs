@@ -335,6 +335,26 @@ namespace TowseyLib
             return newArray;
         }
 
+
+        public static System.Tuple<int[], double[]> SortRowIDsByRankOrder(double[] array)
+        {
+            int[] rankOrder = new int[array.Length];
+            double[] sort   = new double[array.Length];
+            for (int i = 0; i < array.Length; i++)
+            {
+                int maxIndex = DataTools.GetMaxIndex(array);
+                rankOrder[i] = maxIndex;
+                sort[i] = array[maxIndex];
+                //if(i % 100==0)
+                //    Console.WriteLine("{0}: {1}   {2:f2}", i, maxIndex, array[maxIndex]);
+                array[maxIndex] = -Double.MaxValue;
+            }
+            return Tuple.Create(rankOrder, sort);
+        }
+
+
+
+
         /// <summary>
         /// bounds a matrix of numbers between a minimum and a maximum.
         /// Numbers that fall outside the bound are truncated to the bound.
