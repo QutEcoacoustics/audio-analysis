@@ -122,10 +122,11 @@ namespace AnalysisPrograms
             if (true)
             {
                 string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.csv";
-                int colNumber = 9;
+                int colNumber = 10;
                 double[] array = ReadColumnOfCSVFile(fileName, colNumber);
                 var results2 = DataTools.SortRowIDsByRankOrder(array);
                 int[] rankOrder = results2.Item1;
+                //rankOrder = DataTools.reverseArray(rankOrder);
                 double[] sort = results2.Item2;
                 //for (int i = 0; i < array.Length; i++)
                 //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
