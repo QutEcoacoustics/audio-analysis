@@ -312,6 +312,18 @@ namespace TowseyLib
             }
             return newArray;
         }
+        public static int[] reverseArray(int[] V)
+        {
+            int L = V.Length;
+            int[] newArray = new int[L];
+
+            for (int i = 0; i < L; i++)
+            {
+                newArray[i] = V[L - i - 1];
+            }
+            return newArray;
+        }
+
 
         /// <summary>
         /// bounds a sequence of numbers between a minimum and a maximum.
