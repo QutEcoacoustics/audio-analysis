@@ -1304,34 +1304,6 @@ namespace TowseyLib
         return v2;
     }
 
-
-
-        /// <summary>
-        /// normalise an array of double between 0 and 1
-        /// </summary>
-        /// <param name="v"></param>
-        /// <returns></returns>
-        public static double[] normalise(double[] v)
-        {
-            double min = Double.MaxValue;
-            double max = -Double.MaxValue;
-
-            double[] ret = (double[])v.Clone();
-            for (int i = 0; i < v.Length; i++)
-            {
-                if (v[i] > max)
-                    max = v[i];
-                if (v[i] < min)
-                    min = v[i];
-            }
-
-            for (int i = 0; i < v.Length; i++)
-                ret[i] = (v[i] - min) / (max - min);
-
-            return (ret);
-		}
-
-
         public static double[] ScaleArray(double[] v, int newLength)
         {
             int L = v.Length;
@@ -1826,12 +1798,17 @@ namespace TowseyLib
             return (ret);
         }
 
-        
+        /// <summary>
+        /// normalizes the passed array between 0,1.
+        /// Ensures all values are positive
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
         public static double[] normalise(int[] v)
         {
+            //find min an max
             int min = Int32.MaxValue;
             int max = -Int32.MaxValue;
-
             for (int i = 0; i < v.Length; i++)
             {
                 if (v[i] > max) max = v[i];
@@ -1844,29 +1821,57 @@ namespace TowseyLib
 
             return (ret);
         }
-
-
-        /**
-         * differs from above in that want area under curve = 1;
-         * @param v
-         * @return
-         */
-        public static double[] NormaliseArea(int[] v)
+        /// <summary>
+        /// normalizes the passed array between 0,1.
+        /// Ensures all values are positive
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] normalise(double[] v)
         {
-            int sum = 0;
-            for (int i = 0; i < v.Length; i++) sum += v[i];
+            //find min an max
+            double min = Double.MaxValue;
+            double max = -Double.MaxValue;
+            for (int i = 0; i < v.Length; i++)
+            {
+                if (v[i] > max) max = v[i];
+                if (v[i] < min) min = v[i];
+            }
 
             double[] ret = new double[v.Length];
-            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / (double)(sum);
+            for (int i = 0; i < v.Length; i++)
+                ret[i] = (v[i] - min) / (max - min);
 
             return (ret);
         }
-        /**
-         * @param v
-         * @return
-         */
-        public static double[] NormaliseArea(double[] v)
+
+        /// <summary>
+        /// Normalizes an array so that the sum of its values (area under curve) = 1.0
+        /// Use to express data as probability funciton.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] NormaliseArea(int[] array)
         {
+            double[] v = DataTools.normalise(array); //ensures all values in 0,1
+            double sum = 0;
+            for (int i = 0; i < v.Length; i++) sum += v[i];
+
+            double[] ret = new double[v.Length];
+            for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
+
+            return (ret);
+        }
+
+        /// <summary>
+        /// Normalizes an array so that the sum of its values (area under curve) = 1.0
+        /// Use to express data as probability funciton.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <returns></returns>
+        public static double[] NormaliseArea(double[] array)
+        {
+            double[] v = DataTools.normalise(array); //ensures all values in 0,1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++) sum += v[i];
 

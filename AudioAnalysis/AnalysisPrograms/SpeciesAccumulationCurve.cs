@@ -122,16 +122,14 @@ namespace AnalysisPrograms
             if (true)
             {
                 string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.csv";
-                int colNumber = 10;
-                double[] array = ReadColumnOfCSVFile(fileName, colNumber);
-                var results2 = DataTools.SortRowIDsByRankOrder(array);
-                int[] rankOrder = results2.Item1;
+
+                //use following two lines to rank by just a single column of acoustic indices matrix.
+                //int colNumber = 10;
+                //int[] rankOrder = GetRankOrder(fileName, colNumber);
+
+                //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
+                int[] rankOrder = GetRankOrder(fileName);
                 //rankOrder = DataTools.reverseArray(rankOrder);
-                double[] sort = results2.Item2;
-                //for (int i = 0; i < array.Length; i++)
-                //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
-                //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-                //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
 
                 int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int C = occurenceMatrix.GetLength(1); //total species count
@@ -237,6 +235,81 @@ namespace AnalysisPrograms
 
         //#########################################################################################################################################################
 
+        /// <summary>
+        /// returns the row indices for a single column of an array, ranked by value.
+        /// Used to order the sampling of an acoustic recording split into one minute chunks.
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="colNumber"></param>
+        /// <returns></returns>
+        public static int[] GetRankOrder(string fileName, int colNumber)
+        {
+            double[] array = ReadColumnOfCSVFile(fileName, colNumber);
+            var results2 = DataTools.SortRowIDsByRankOrder(array);
+
+            //double[] sort = results2.Item2;
+            //for (int i = 0; i < array.Length; i++)
+            //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+            //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
+            //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+
+            return results2.Item1;   
+        }
+
+        public static int[] GetRankOrder(string fileName)
+        {
+            int colNumber1 = 7;
+            double[] array1 = ReadColumnOfCSVFile(fileName, colNumber1);
+            array1 = DataTools.NormaliseArea(array1);
+
+            int colNumber2 = 14;
+            double[] array2 = ReadColumnOfCSVFile(fileName, colNumber2);
+            array2 = DataTools.NormaliseArea(array2);
+
+            int colNumber3 = 12;
+            double[] array3 = ReadColumnOfCSVFile(fileName, colNumber3);
+            for (int i = 0; i < array1.Length; i++) array3[i] = 1 - array3[i]; //reverse the order
+            array3 = DataTools.NormaliseArea(array3);
+
+            int colNumber4 = 13;
+            double[] array4 = ReadColumnOfCSVFile(fileName, colNumber4);
+            for (int i = 0; i < array1.Length; i++) array4[i] = 1 - array4[i]; //reverse the order
+            array4 = DataTools.NormaliseArea(array4);
+
+            //create sampling bias array
+            double[] bias = new double[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+            {
+                if ((i > 290) && (i < 471)) bias[i] = 1.2; else bias[i] = 1.0;
+                //if ((i > 290) && (i < 532)) bias[i] = 1.4; else bias[i] = 1.0;
+            }
+            //bias = DataTools.NormaliseArea(bias);
+
+            double wt1 = 0.50;
+            double wt2 = 0.1;
+            double wt3 = 0.2;
+            double wt4 = 0.2;
+            double[] combined = new double[array1.Length];
+            for (int i = 0; i < array1.Length; i++)
+            {
+                combined[i] = ((wt1*array1[i]) + (wt2*array2[i]) + (wt3*array3[i]) + (wt4*array4[i])) * bias[i];
+                //combined[i] =  array1[i] * array2[i] * array3[i] * array4[i] * bias[i];
+            }
+
+            var results2 = DataTools.SortRowIDsByRankOrder(combined);
+
+            int[] rankOrder = results2.Item1;
+
+            //rankOrder = DataTools.reverseArray(rankOrder);
+
+            //double[] sort = results2.Item2;
+            //for (int i = 0; i < array.Length; i++)
+            //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+            //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
+            //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+
+            return rankOrder;
+        }
 
 
         public static double[] ReadColumnOfCSVFile(string fileName, int colNumber)
