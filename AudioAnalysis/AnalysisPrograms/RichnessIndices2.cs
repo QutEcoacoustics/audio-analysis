@@ -72,7 +72,7 @@ namespace AnalysisPrograms
             }
 
             //READ CSV FILE TO MASSAGE DATA
-            if (true)
+            if (false)
             {
                 VISUALIZE_CSV_DATA();
                 Console.ReadLine();
@@ -80,7 +80,7 @@ namespace AnalysisPrograms
             }
 
             //i: Set up the dir and file names
-            string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\";
+            string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp1\";
             var fileList         = Directory.GetFiles(recordingDir, "*.wav");
             string recordingPath = fileList[0]; //get just one from list
             string fileName      = Path.GetFileName(recordingPath);
@@ -95,7 +95,7 @@ namespace AnalysisPrograms
             string opPath = outputDir + opFileName; // .csv file
 
             //write header to results file
-            if (!File.Exists(opPath))
+            if (!File.Exists(opPath)) // if file does not exist already, create the file and write a HEADER .
             {
                 FileTools.WriteTextFile(opPath, _HEADER);
             }
@@ -108,7 +108,7 @@ namespace AnalysisPrograms
             Console.WriteLine("\n\n");
             Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
 
-            ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages);
+            ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages); //this does all the work.
 
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
@@ -278,19 +278,17 @@ namespace AnalysisPrograms
             double[] pmf2 = DataTools.NormaliseProbabilites(envelope); //pmf = probability mass funciton
             double normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
             indices.entropyOfAmpl = DataTools.Entropy(pmf2) / normFactor;
-            //Console.WriteLine("1-H(amplitude)= " + indices.ampl_1minusEntropy);
+            //Console.WriteLine("H(amplitude)= " + indices.ampl_1minusEntropy);
 
             
             //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER
-            Log.WriteIfVerbose("#   Calculate Spectral Entropy.");
+            Log.WriteIfVerbose("#   Calculate Spectral Entropies.");
+            double spectralBgThreshold = 0.015;   // SPECTRAL AMPLITUDE THRESHOLD for smoothing backgorund
+
             // obtain three spectral indices - derived ONLY from frames having acoustic energy.
             //1) entropy of distribution of spectral peaks
             //2) entropy of the average spectrum
-            //3) relative entropy of combined spectra wrt average
-
-            // set three spectral amplitude thresholds
-            double spectralBgThreshold = 0.015;            // for smoothing backgorund
-            double peakThreshold   = spectralBgThreshold * 3;  // for selecting spectral peaks
+            //3) entropy of   variance  spectrum
 
             double[,] spectrogram = results2.Item3; //amplitude spectrogram
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
@@ -321,6 +319,8 @@ namespace AnalysisPrograms
 
 
             //vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
+            double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
+
             double[] freqPeaks = new double[dBarray.Length]; //store frequency of peaks - return later for imaging purposes
             int[] freqHistogram = new int[freqBinCount];
             for (int i = 0; i < dBarray.Length; i++)
@@ -339,9 +339,9 @@ namespace AnalysisPrograms
             freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
             pmf3 = DataTools.NormaliseArea(freqHistogram);                         //pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
-            indices.entropyOfPeakFreqDistr = 1 - (DataTools.Entropy(pmf3) / normFactor);
+            indices.entropyOfPeakFreqDistr = DataTools.Entropy(pmf3) / normFactor;
             //DataTools.writeBarGraph(freqHistogram);
-            //Log.WriteLine("1-H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
+            //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
 
 
             //vii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
@@ -368,17 +368,17 @@ namespace AnalysisPrograms
                 varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
             }
 
-            pmf3 = DataTools.NormaliseArea(avSpectrum);                        //pmf = probability mass function of average spectrum
-            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                 //normalize for length of the array
-            indices.entropyOfAvSpectrum = 1 - (DataTools.Entropy(pmf3) / normFactor);
+            pmf3 = DataTools.NormaliseArea(avSpectrum);                               //pmf = probability mass function of average spectrum
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                       //normalize for length of the array
+            indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;       //ENTROPY of spectral averages
             //DataTools.writeBarGraph(avSpectrum);
-            //Log.WriteLine("1-H(Spectral averages) =" + indices.entropyOfAvSpectrum);
+            //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
 
-            pmf3 = DataTools.NormaliseArea(varSpectrum);                        // pmf = probability mass function
-            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                 // normalize for length of the array
-            indices.entropyOfVarianceSpectra1 = 1 - (DataTools.Entropy(pmf3) / normFactor); //ENTROPY of spectral variance
+            pmf3 = DataTools.NormaliseArea(varSpectrum);                              // pmf = probability mass function
+            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                       // normalize for length of the array
+            indices.entropyOfVarianceSpectra1 = DataTools.Entropy(pmf3) / normFactor; //ENTROPY of spectral variances
             //DataTools.writeBarGraph(varSpectrum);
-            //Log.WriteLine("1-H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
+            //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
             
             //viii: CLUSTERING
@@ -388,7 +388,7 @@ namespace AnalysisPrograms
 
             double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
             bool[] selectedFrames = new bool[spectrogram.GetLength(0)];
-            var trainingData = new List<double[]>(); //training data will be used for clustering
+            var trainingData = new List<double[]>();                              //training data will be used for clustering
 
             int rowSumThreshold = 1;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
             int selectedFrameCount = 0;
@@ -797,8 +797,6 @@ namespace AnalysisPrograms
 
             //draw spectral Cover track
             title = "8: H(ampl)";
-            //min = 0.0;
-            max = 0.05;
             threshold = 0.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, H_ampl, yOffset, trackHeight, threshold, title);
