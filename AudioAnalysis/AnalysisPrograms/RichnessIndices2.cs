@@ -50,7 +50,7 @@ namespace AnalysisPrograms
             }
         }
         private const string _HEADER = "count, minutes, FileName, avAmp-dB, snr-dB, bg-dB, " +
-                                       "activity, segCount, avSegDur, spCover, 1-H[ampl], " +
+                                       "activity, segCount, avSegDur, spCover, H[ampl], " +
                                        "H[peakFreq], H[avSpectrum], H1[varSpectra], #clusters, avClustDur";
         private const string _FORMAT_STRING = "{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f2},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14},{15:f2}";
 
@@ -72,7 +72,7 @@ namespace AnalysisPrograms
             }
 
             //READ CSV FILE TO MASSAGE DATA
-            if (false)
+            if (true)
             {
                 VISUALIZE_CSV_DATA();
                 Console.ReadLine();
@@ -136,7 +136,6 @@ namespace AnalysisPrograms
             //i: Set up the dir and file names
             string recordingDir = Path.GetDirectoryName(recordingPath);
             string outputDir    = Path.GetDirectoryName(opPath);
-            string fileName     = Path.GetFileName(recordingPath);
 
             //init counters
             double elapsedTime = 0.0;
@@ -157,13 +156,13 @@ namespace AnalysisPrograms
             }
 
             //Console.WriteLine("\n\n");
-            Log.WriteLine("###### " + fileCount + " #### Process Recording: " + fileName + " ###############################");
+            //Log.WriteLine("###### " + fileCount + " #### Process Recording: " + Path.GetFileName(recordingPath) + " ###############################");
 
             ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages);
 
             DateTime tEnd = DateTime.Now;
             TimeSpan duration = tEnd - tStart;
-            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " #####################################\n");
+            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " ######\n");
         } //EXECUTABLE()
 
 
@@ -180,7 +179,8 @@ namespace AnalysisPrograms
             */
             SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
             audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
-            audioUtility.SoxAudioUtility.TargetSampleRateHz = 11025;
+            //audioUtility.SoxAudioUtility.TargetSampleRateHz = 11025;  //original setting
+            audioUtility.SoxAudioUtility.TargetSampleRateHz = 17640;
             audioUtility.SoxAudioUtility.ReduceToMono = true;
             audioUtility.SoxAudioUtility.UseSteepFilter = true;
             //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = 5512 Hz.
@@ -343,6 +343,11 @@ namespace AnalysisPrograms
             //DataTools.writeBarGraph(freqHistogram);
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
 
+            //SET UP ARRAY OF SCORES TO BE RETURNED LATER
+            var scores = new List<double[]>();
+            scores.Add(freqPeaks); //location of peaks for spectral images
+            scores.Add(envelope);
+
 
             //vii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
             //Entropy of average spectrum of those frames having activity
@@ -380,8 +385,8 @@ namespace AnalysisPrograms
             //DataTools.writeBarGraph(varSpectrum);
             //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
-            
-            //viii: CLUSTERING
+
+            //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
             spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);  // convert to binary 
@@ -403,9 +408,22 @@ namespace AnalysisPrograms
                     selectedFrameCount++;
                 }
             }
+            //return if no suitable training data for clustering
+            if (trainingData.Count  <= 1)
+            {
+                indices.clusterCount = 0;
+                indices.avClusterDuration = 0; //av cluster durtaion in milliseconds
+                int[] clusterHits_dummy = null;
+                List<double[]> clusterWts_dummy = null;
+                double[,] clusterSpectrogram_dummy = null;
+                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+            }
+
+
+
             //Log.WriteLine("ActiveFrameCount=" + activeFrameCount + "  frames selected for clustering=" + selectedFrameCount);
 
-            //DO CLUSTERING
+            //DO CLUSTERING - if have suitable data
             BinaryCluster.Verbose = false;
             //if (Log.Verbosity > 0) BinaryCluster.Verbose = true;
             BinaryCluster.RandomiseTrnSetOrder = false;
@@ -425,8 +443,8 @@ namespace AnalysisPrograms
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
             if (BinaryCluster.Verbose) Console.WriteLine("pruned cluster count = {0}", indices.clusterCount);
             
-            //ix: AVERAGE CLUSTER DURATION
-            //reassemble cluster hits into an array matching the original array of active frames.
+            //ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
+            //  first:  reassemble cluster hits into an array matching the original array of active frames.
             int hitCount = 0;
             int[] clusterHits2 = new int[dBarray.Length]; 
             for (int i = 0; i < dBarray.Length; i++)
@@ -437,11 +455,12 @@ namespace AnalysisPrograms
                     hitCount++;
                 }
             }
+            //  second:  calculate duration (ms) of each spectral event
             List<int> hitDurations = new List<int>();
             int currentDuration = 1;
             for (int i = 1; i < clusterHits2.Length; i++)
             {
-                if (clusterHits2[i] != clusterHits2[i - 1])
+                if (clusterHits2[i] != clusterHits2[i - 1]) //if the spectrum changes
                 {
                     if ((clusterHits2[i - 1] != 0) && (currentDuration > 1)) hitDurations.Add(currentDuration); //do not add if cluster = 0
                     currentDuration = 1;
@@ -454,17 +473,17 @@ namespace AnalysisPrograms
             double av2, sd2;
             NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
             indices.avClusterDuration = av2 * frameDuration * 1000; //av cluster durtaion in milliseconds
-            sd2 = sd2 * frameDuration * 1000;
-            if (false)
-            {
-                for (int i = 1200; i < 1296 /*clusterHits2.Length*/; i++) Console.WriteLine(i +"   "+clusterHits2[i]);
-                Console.WriteLine("Average Cluster Length = {0} +/- {1}", indices.avClusterDuration, sd2);
-            }
+            //if (false)
+            //{
+            //    sd2 = sd2 * frameDuration * 1000;
+            //    for (int i = 1200; i < 1296 /*clusterHits2.Length*/; i++) Console.WriteLine(i + "   " + clusterHits2[i]);
+            //    Console.WriteLine("Average Cluster Length = {0} +/- {1}", indices.avClusterDuration, sd2);
+            //}
 
             //xi: ASSEMBLE FEATURES
-            var scores = new List<double[]>();
-            scores.Add(freqPeaks); //location of peaks for spectral images
-            scores.Add(envelope);
+            //var scores = new List<double[]>();
+            //scores.Add(freqPeaks); //location of peaks for spectral images
+            //scores.Add(envelope);
             var clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins,
                                                                 selectedFrames, binaryThreshold, prunedClusterWts, clusterHits2);
 
@@ -497,10 +516,15 @@ namespace AnalysisPrograms
 
 
             //SCALE THE SPECTROGRAM
-            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster1.png", false);
-            double[,] newClusterMatrix = DataTools.ScaleMatrix(clusterMatrix, sonogram.FrameCount, sonogram.Configuration.FreqBinCount);
-            //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster2.png", false);
-
+            double[,] newClusterMatrix = null;
+            double[] array = null;
+            if (null != clusterMatrix)
+            {
+                //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster1.png", false);
+                newClusterMatrix = DataTools.ScaleMatrix(clusterMatrix, sonogram.FrameCount, sonogram.Configuration.FreqBinCount);
+                //ImageTools.DrawMatrix(DataTools.MatrixRotate90Anticlockwise(clusterSpectrogram), @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\cluster2.png", false);
+                array = DataTools.Matrix2Array(newClusterMatrix);
+            }
 
 
             //ii: DRAW SONOGRAM AND SCORES
@@ -520,16 +544,18 @@ namespace AnalysisPrograms
                 //for (int i = 0; i < newArray.Length; i++) freq[i] = (int)newArray[i];
                 //image.AddFreqHitValues(freq, sonogram.NyquistFrequency); //freq must be an array of int 
 
-                double[] array = DataTools.Matrix2Array(newClusterMatrix);
                 int maxindex = DataTools.GetMaxIndex(array);
                 image.AddSuperimposedMatrix(newClusterMatrix, array[maxindex]);
 
-                for (int i = 1; i < scores.Count; i++)
+                if (scores != null)
                 {
-                    int maxIndex = DataTools.GetMaxIndex(scores[i]);
-                    double max = scores[i][maxIndex];
-                    if (max <= 0.0) max = 1.0;
-                    image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(scores[i], length), 0.0, max, 0.1));
+                    for (int i = 1; i < scores.Count; i++)
+                    {
+                        int maxIndex = DataTools.GetMaxIndex(scores[i]);
+                        double max = scores[i][maxIndex];
+                        if (max <= 0.0) max = 1.0;
+                        image.AddTrack(Image_Track.GetScoreTrack(DataTools.ScaleArray(scores[i], length), 0.0, max, 0.1));
+                    }
                 }
                 string imagePath = dir + recording.FileName + ".png";
                 image.Save(imagePath);
@@ -674,14 +700,14 @@ namespace AnalysisPrograms
 
         public static void VISUALIZE_CSV_DATA()
         {
-            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.csv";
-            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.png";
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Test4Results.csv";
+            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\test4Results.png";
             //FileTools.WriteTextFile(opFile, "min,time,count");
             List<string> lines = FileTools.ReadTextFile(fileName);
 
             //CSV COLUMN HEADINGS
-            //count	 minutes	hours	 FileName	 snr-dB	 bg-dB	 activity	 avAmp	 %cover	 1-H[ampl]	 H[peakFreq]	 H[avSpectrum]	 H1[diffSpectra]	 #clusters	 %isolHits	min	time	count	avCount		jitter1	#clust+jitter	jitter2	count+jitter
-            //string[] columnHeadings2 = {"count","minutes","FileName","snr-dB","bg-dB","activity","avAmp","%cover","1-H[ampl]","H[peakFreq]","H[avSpectrum]","H1[diffSpectra]","#clusters","%isolHits","min","time","count","avCount","jitter1","#clust+jitter","jitter2","count+jitter"};
+            //count	 minutes	hours	 FileName	 snr-dB	 bg-dB	 activity	 avAmp	 %cover	 H[ampl]	 H[peakFreq]	 H[avSpectrum]	 H1[diffSpectra]	 #clusters	 %isolHits	min	time	count	avCount		jitter1	#clust+jitter	jitter2	count+jitter
+            //string[] columnHeadings2 = {"count","minutes","FileName","snr-dB","bg-dB","activity","avAmp","%cover","H[ampl]","H[peakFreq]","H[avSpectrum]","H1[diffSpectra]","#clusters","%isolHits","min","time","count","avCount","jitter1","#clust+jitter","jitter2","count+jitter"};
 
             string[] columnHeadings = { "count", "minutes", "FileName", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "H[ampl]", "H[peakFreq]", "H[avSpectrum]", "H1[varSpectra]", "#clusters", "avClustDur", "speciesCount"};
             //read data into arrays
@@ -766,40 +792,40 @@ namespace AnalysisPrograms
             //draw activity track
             title = "4: Activity(>3dB)";
             double min = 0.0;
-            double max = 0.5;
-            threshold = 0.0;
+            double max = 0.4;
+            threshold = 0.1;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, activity, yOffset, trackHeight, min, max, threshold, title);
 
             //draw segment count track
             title = "5: # Segments";
-            //min = 0.0;
-            //max = 0.05;
-            threshold = 0.0;
+            threshold = 1.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, segmentCount, yOffset, trackHeight, threshold, title);
 
             //draw avSegment Duration track
             title = "6: Av Seg Duration";
-            //min = 0.0;
-            max = 10; //milliseconds
-            threshold = 0.0;
+            min = 0.0;
+            max = 100; //milliseconds
+            threshold = 5.0;
             yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, avSegmentDur, yOffset, trackHeight, threshold, title);
+            Image_Track.DrawScoreTrack(bmp, avSegmentDur, yOffset, trackHeight, min, max, threshold, title);
 
             //draw percent spectral Cover track
             title = "7: Spectral cover";
             min = 0.0;
             max = 0.5;
-            threshold = 5.0;
+            threshold = 0.05;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, spectralCover, yOffset, trackHeight, min, max, threshold, title);
 
             //draw spectral Cover track
             title = "8: H(ampl)";
-            threshold = 0.0;
+            min = 0.95;
+            max = 1.0;
+            threshold = 0.96;
             yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, H_ampl, yOffset, trackHeight, threshold, title);
+            Image_Track.DrawScoreTrack(bmp, H_ampl, yOffset, trackHeight, min, max, threshold, title);
 
             //draw H(PeakFreq) track
             title = "9: H(PeakFreq)";
@@ -829,17 +855,19 @@ namespace AnalysisPrograms
             title = "12: ClusterCount";
             min = 0.0;
             max = 15.0;
-            threshold = 0.0;
+            threshold = 1.0;
             yOffset += trackHeight;
             Image_Track.DrawScoreTrack(bmp, clusterCount, yOffset, trackHeight, min, max, threshold, title);
 
-            //draw isolated Cluster track
+            //draw average Cluster Duration track
             title = "13: Av Cluster Dur";
-            threshold = 0.0;
+            min = 0.0;
+            max = 100.0;
+            threshold = 5.0;
             yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, avClusterDuration, yOffset, trackHeight, threshold, title);
+            Image_Track.DrawScoreTrack(bmp, avClusterDuration, yOffset, trackHeight, min, max, threshold, title);
 
-            //draw isolated Cluster track
+            //draw track
             title = "14: Species Count";
             threshold = 0.0;
             yOffset += trackHeight;

@@ -81,8 +81,8 @@ namespace AnalysisPrograms
                         SPR.Dev(restOfArgs);
                         break;
                     case "richness_indices":      // richness_indices
-                        RichnessIndices2.Dev(restOfArgs);
-                        //RichnessIndices2.Executable(restOfArgs);
+                        //RichnessIndices2.Dev(restOfArgs);
+                        RichnessIndices2.Executable(restOfArgs);
                         break;
                     case "species_accumulation_curves":      // species accumulation curves
                         SpeciesAccumulationCurve.Dev(restOfArgs);
