@@ -453,6 +453,7 @@ namespace NeuralNets
     {
         int trnSetSize = trainingData.Count;
         int IPSize = trainingData[0].Length;
+        if (trnSetSize <= 1) return null;
         //************************** INITIALISE PARAMETER VALUES *************************
         int initialWtCount = 10;
         int seed = 12345;           //to seed random number generator
