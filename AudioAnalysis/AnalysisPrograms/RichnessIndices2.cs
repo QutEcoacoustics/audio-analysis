@@ -700,8 +700,8 @@ namespace AnalysisPrograms
 
         public static void VISUALIZE_CSV_DATA()
         {
-            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Test4Results.csv";
-            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\test4Results.png";
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
+            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.png";
             //FileTools.WriteTextFile(opFile, "min,time,count");
             List<string> lines = FileTools.ReadTextFile(fileName);
 
@@ -712,11 +712,11 @@ namespace AnalysisPrograms
             string[] columnHeadings = { "count", "minutes", "FileName", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "H[ampl]", "H[peakFreq]", "H[avSpectrum]", "H1[varSpectra]", "#clusters", "avClustDur", "speciesCount"};
             //read data into arrays
             //set up the arrays
-            double[] timeScale = new double[lines.Count - 2]; //column 3 into time scale
-            double[] avAmp_dB  = new double[lines.Count - 2]; //column 7 into 
-            double[] snr_dB = new double[lines.Count - 2]; //column 4 into snr
-            double[] bg_dB     = new double[lines.Count - 2]; //column 5 into background noise
-            double[] activity  = new double[lines.Count - 2]; //column 6 into 
+            double[] timeScale     = new double[lines.Count - 2];    //column 3 into time scale
+            double[] avAmp_dB      = new double[lines.Count - 2];    //column 7 into 
+            double[] snr_dB        = new double[lines.Count - 2];    //column 4 into snr
+            double[] bg_dB         = new double[lines.Count - 2];    //column 5 into background noise
+            double[] activity      = new double[lines.Count - 2];    //column 6 into activity
             double[] segmentCount  = new double[lines.Count - 2];    //column 8 into 
             double[] avSegmentDur  = new double[lines.Count - 2];    //column 8 into 
             double[] spectralCover = new double[lines.Count - 2];    //column 8 into 
@@ -725,28 +725,29 @@ namespace AnalysisPrograms
             double[] H_avSpect     = new double[lines.Count - 2];    //column 11 into 
             double[] H_varSpect    = new double[lines.Count - 2];    //column 12 into 
             double[] clusterCount  = new double[lines.Count - 2];    //column 13 into 
-            double[] avClusterDuration  = new double[lines.Count - 2];    //column 14 into 
+            double[] avClusterDuration = new double[lines.Count - 2]; //column 14 into 
             double[] speciesCount  = new double[lines.Count - 2];    //column 14 into 
 
             //read csv data into arrays.
+            int avAmpRow = 3;
             for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines
             {
                 string[] words   = lines[i].Split(',');
-                timeScale[i - 1] = Int32.Parse(words[0]) / (double)60; //convert minutes to hours
-                avAmp_dB[i - 1]  = Double.Parse(words[3]);
-                snr_dB[i - 1] = Double.Parse(words[4]);
-                bg_dB[i - 1]     = Double.Parse(words[5]);
-                activity[i - 1]  = Double.Parse(words[6]);
-                segmentCount[i - 1] = Double.Parse(words[7]);
-                avSegmentDur[i - 1] = Double.Parse(words[8]);
-                spectralCover[i - 1] = Double.Parse(words[9]);
-                H_ampl[i - 1]    = Double.Parse(words[10]);
-                H_PeakFreq[i - 1]   = Double.Parse(words[11]);
-                H_avSpect[i - 1]    = Double.Parse(words[12]);
-                H_varSpect[i - 1]  = Double.Parse(words[13]);
-                clusterCount[i - 1] = (double)Int32.Parse(words[14]);
-                avClusterDuration[i - 1] = Double.Parse(words[15]);
-                speciesCount[i - 1] = (double)Int32.Parse(words[16]);
+                timeScale[i - 1] = (Int32.Parse(words[0]) - 1) / (double)60; //convert minutes to hours
+                avAmp_dB[i - 1] = Double.Parse(words[avAmpRow]);
+                snr_dB[i - 1] = Double.Parse(words[avAmpRow+1]);
+                bg_dB[i - 1] = Double.Parse(words[avAmpRow+2]);
+                activity[i - 1] = Double.Parse(words[avAmpRow+3]);
+                segmentCount[i - 1] = Double.Parse(words[avAmpRow+4]);
+                avSegmentDur[i - 1] = Double.Parse(words[avAmpRow+5]);
+                spectralCover[i - 1] = Double.Parse(words[avAmpRow+6]);
+                H_ampl[i - 1]    = Double.Parse(words[avAmpRow+7]);
+                H_PeakFreq[i - 1]   = Double.Parse(words[avAmpRow+8]);
+                H_avSpect[i - 1]    = Double.Parse(words[avAmpRow+9]);
+                H_varSpect[i - 1]  = Double.Parse(words[avAmpRow+10]);
+                clusterCount[i - 1] = (double)Int32.Parse(words[avAmpRow+11]);
+                avClusterDuration[i - 1] = Double.Parse(words[avAmpRow+12]);
+                speciesCount[i - 1] = (double)Int32.Parse(words[avAmpRow+13]);
 
             }//end 
 
