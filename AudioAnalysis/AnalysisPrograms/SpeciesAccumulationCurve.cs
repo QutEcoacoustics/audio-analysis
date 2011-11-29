@@ -34,9 +34,9 @@ namespace AnalysisPrograms
 
             //i: Set up the dir and file names
             string inputDir = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            string inputfile = "SE_13102010_Full Day_AndTotals.csv";
-            string outputfile = "SE_13102010_Full Day_SAMPLING.txt";
-            string occurenceFile = inputDir + inputfile;
+            string inputfile = "SE_2010Oct13_Calls.csv";
+            string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //only used for greedy sampling option.
+            string callOccurenceFile = inputDir + inputfile;
             Log.WriteLine("Directory:          " + inputDir);
             Log.WriteLine("Selected file:      " + inputfile);
 
@@ -46,16 +46,16 @@ namespace AnalysisPrograms
             string opPath = outputDir + opFileName; // .csv file
 
             //READ CSV FILE TO MASSAGE DATA
-            var results1 = READ_OCCURENCE_CSV_DATA(occurenceFile);
+            var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFile);
             List<string> speciesList = results1.Item1;
-            //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
+            //the speciesList contains N species names from columns 3 to N+2.
             byte[,] occurenceMatrix = results1.Item2;
 
             int speciesCount = 0;
             int sampleNumber = 0;
 
             // GREEDY SAMPLING TO GET MAXIMUM EFFICIENT SPECIES ACCUMULATION
-            if (false)
+            if (true)
             {
                 List<string> text = new List<string>();
 
@@ -83,8 +83,8 @@ namespace AnalysisPrograms
                 Console.WriteLine("remaining species ="+totalSum);
 
 
-                    Console.ReadLine();
-                    Environment.Exit(666);
+                Console.ReadLine();
+                Environment.Exit(666);
             }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
             //random sampling OVER ENTIRE 24 HOURS
@@ -390,14 +390,16 @@ namespace AnalysisPrograms
             return System.Tuple.Create(s25, s50, s75, s100);
         }
 
-        public static System.Tuple<List<string>, byte[,]> READ_OCCURENCE_CSV_DATA(string occurenceFile)
+        public static System.Tuple<List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {
             int startColumn = 3;
-            int endColumn = 64;
+            int ignoreLastColumns = 2;
             List<string> text = FileTools.ReadTextFile(occurenceFile);  // read occurence file
             List<string> speciesList = new List<string>();
             string[] line = text[0].Split(',');                    // read and split the first line
+            int endColumn = line.Length - ignoreLastColumns;
             for (int j = startColumn; j <= endColumn; j++) speciesList.Add(line[j]);
+            Console.WriteLine("Unique Species Count = " + speciesList.Count);
 
             int speciesNumber = endColumn - startColumn + 1;
             byte[,] occurenceMatrix = new byte[text.Count - 1, speciesNumber];
