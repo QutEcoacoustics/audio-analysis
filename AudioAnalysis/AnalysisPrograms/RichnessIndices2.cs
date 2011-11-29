@@ -72,7 +72,7 @@ namespace AnalysisPrograms
             }
 
             //READ CSV FILE TO MASSAGE DATA
-            if (true)
+            if (false)
             {
                 VISUALIZE_CSV_DATA();
                 Console.ReadLine();
@@ -700,8 +700,10 @@ namespace AnalysisPrograms
 
         public static void VISUALIZE_CSV_DATA()
         {
-            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
-            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.png";
+//            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
+//            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.png";
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\SE_5days.csv";
+            string opFile   = @"C:\SensorNetworks\WavFiles\SpeciesRichness\SE_5days.png";
             //FileTools.WriteTextFile(opFile, "min,time,count");
             List<string> lines = FileTools.ReadTextFile(fileName);
 
@@ -729,11 +731,11 @@ namespace AnalysisPrograms
             double[] speciesCount  = new double[lines.Count - 2];    //column 14 into 
 
             //read csv data into arrays.
-            int avAmpRow = 3;
+            int avAmpRow = 6;
             for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines
             {
                 string[] words   = lines[i].Split(',');
-                timeScale[i - 1] = (Int32.Parse(words[0]) - 1) / (double)60; //convert minutes to hours
+                timeScale[i - 1] = (Int32.Parse(words[4]) - 1) / (double)60; //convert minutes to hours
                 avAmp_dB[i - 1] = Double.Parse(words[avAmpRow]);
                 snr_dB[i - 1] = Double.Parse(words[avAmpRow+1]);
                 bg_dB[i - 1] = Double.Parse(words[avAmpRow+2]);
