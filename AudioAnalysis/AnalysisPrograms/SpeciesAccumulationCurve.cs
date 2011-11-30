@@ -34,8 +34,8 @@ namespace AnalysisPrograms
 
             //i: Set up the dir and file names
             string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            string callsFileName   = "SE_2010Oct16_Calls.csv";
-            string indicesFilePath = inputDir + @"\Exp4\Oct16_Results.csv";   //used only for smart sampling
+            string callsFileName   = "SE_2010Oct17_Calls.csv";
+            string indicesFilePath = inputDir + @"\Exp4\Oct17_Results.csv";   //used only for smart sampling
             string outputfile      = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
 
             
@@ -141,7 +141,7 @@ namespace AnalysisPrograms
                 //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
                 //int[] rankOrder = GetRankOrder(indicesFileName);
 
-                //USE FOLLOWING LINE TO REVERSE THE RANKING
+                //USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
                 //rankOrder = DataTools.reverseArray(rankOrder);
 
                 int N = occurenceMatrix.GetLength(0); //maximum Sample Number
@@ -433,16 +433,16 @@ namespace AnalysisPrograms
             //Console.WriteLine("Unique Species Count = " + speciesList.Count);
             
 
-            //now cross check that all is OK
+            //now cross check that all is OK - this code now needs debugging
             //for (int i = 0; i < occurenceMatrix.GetLength(0); i++)
             //{
             //    int rowSum = DataTools.GetRowSum(occurenceMatrix, i);
             //    if (speciesCounts[i] != rowSum)
             //        Console.WriteLine("WARNING: ROW {0}: Matrix row sum != Species count i.e. {1} != {2}", (i+1), rowSum, speciesCounts[i]);
             //}
-            //check the names
-            //int count = 0;
-            //foreach (string name in speciesList) Console.WriteLine(++count +"\t"+ name);
+            //check the species names
+            int count = 0;
+            foreach (string name in speciesList) Console.WriteLine(++count +"\t"+ name);
 
             return Tuple.Create(speciesList, occurenceMatrix);
         }
