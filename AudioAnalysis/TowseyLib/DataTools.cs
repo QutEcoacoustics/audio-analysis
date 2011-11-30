@@ -1240,11 +1240,31 @@ namespace TowseyLib
       return rowSums;
   }
 
+  public static int[] GetColumnSums(byte[,] m)
+  {
+      int[] colSums = new int[m.GetLength(1)];
+      for (int c = 0; c < m.GetLength(1); c++)
+      {
+          int sum = 0;
+          for (int r = 0; r < m.GetLength(0); r++) sum += m[r, c];
+          colSums[c] = sum;
+      }
+      return colSums;
+  }
+
   public static int GetRowSum(int[,] m, int rowID)
   {
       int cols = m.GetLength(1);
       int sum = 0;
       for (int i = 0; i < cols; i++) sum += m[rowID, i];
+      return sum;
+  }
+
+  public static int GetColumnSum(int[,] m, int colID)
+  {
+      int rowCount = m.GetLength(0);
+      int sum = 0;
+      for (int r = 0; r < rowCount; r++) sum += m[r, colID];
       return sum;
   }
 

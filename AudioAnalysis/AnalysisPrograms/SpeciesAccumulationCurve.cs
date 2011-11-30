@@ -33,12 +33,15 @@ namespace AnalysisPrograms
 
 
             //i: Set up the dir and file names
-            string inputDir = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            string inputfile = "SE_2010Oct13_Calls.csv";
-            string outputfile = "SE_2010Oct13_Calls_GreedySampling.txt"; //only used for greedy sampling option.
-            string callOccurenceFile = inputDir + inputfile;
+            string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
+            string callsFileName   = "SE_2010Oct16_Calls.csv";
+            string indicesFilePath = inputDir + @"\Exp4\Oct16_Results.csv";   //used only for smart sampling
+            string outputfile      = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+
+            
+            string callOccurenceFilePath = inputDir + callsFileName;
             Log.WriteLine("Directory:          " + inputDir);
-            Log.WriteLine("Selected file:      " + inputfile);
+            Log.WriteLine("Selected file:      " + callsFileName);
 
             string outputDir = inputDir;
             Log.WriteIfVerbose("# Output folder =" + outputDir);
@@ -46,16 +49,18 @@ namespace AnalysisPrograms
             string opPath = outputDir + opFileName; // .csv file
 
             //READ CSV FILE TO MASSAGE DATA
-            var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFile);
+            var results1 = READ_CALL_OCCURENCE_CSV_DATA(callOccurenceFilePath);
             List<string> speciesList = results1.Item1;
-            //the speciesList contains N species names from columns 3 to N+2.
+            Console.WriteLine("Unique Species Count = " + speciesList.Count);
+
+            //the speciesList contains N species names from columns 3 to N+2. Some species will not call in a particular day i.e. column sum = zero.
             byte[,] occurenceMatrix = results1.Item2;
 
             int speciesCount = 0;
             int sampleNumber = 0;
 
             // GREEDY SAMPLING TO GET MAXIMUM EFFICIENT SPECIES ACCUMULATION
-            if (true)
+            if (false)
             {
                 List<string> text = new List<string>();
 
@@ -69,7 +74,9 @@ namespace AnalysisPrograms
                     int count = 0;
                     for(int i = 0; i < row.Length; i++) count += row[i];
                     speciesCount += count;
-                    text.Add(String.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount));
+                    string line = String.Format("sample {0}:\t min:{1:d3}\t count={2}\t total={3}", sampleNumber, maxRow, count, speciesCount);
+                    text.Add(line);
+                    Console.WriteLine(line);
 
                     for(int i = 0; i < row.Length; i++) if(row[i] == 1) DataTools.SetColumnZero(occurenceMatrix, i);
 
@@ -97,12 +104,12 @@ namespace AnalysisPrograms
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
                 int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                int C = occurenceMatrix.GetLength(1); //total species count
+                //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, C);
+                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
                     //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
@@ -116,25 +123,32 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
                 Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+
+                Console.ReadLine();
+                Environment.Exit(666);
             }
 
             // SMART SAMPLING
             if (true)
             {
-                string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev3\Exp3_Results.csv";
+                List<string> lines = FileTools.ReadTextFile(indicesFilePath);
+                string[] headers = lines[0].Split(',');
 
-                //use following two lines to rank by just a single column of acoustic indices matrix.
-                //int colNumber = 10;
-                //int[] rankOrder = GetRankOrder(fileName, colNumber);
+                //######################## use following two lines to rank by just a single column of acoustic indices matrix.
+                int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
+                int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
-                int[] rankOrder = GetRankOrder(fileName);
+                //int[] rankOrder = GetRankOrder(indicesFileName);
+
+                //USE FOLLOWING LINE TO REVERSE THE RANKING
                 //rankOrder = DataTools.reverseArray(rankOrder);
 
                 int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                int C = occurenceMatrix.GetLength(1); //total species count
+                //int C = occurenceMatrix.GetLength(1); //total species count
                 int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
-                System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, C);
+                System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
+                Console.WriteLine("SAMPLES REQUIRED WHEN RANK BY "+ headers[colNumber]);
                 Console.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
             }
 
@@ -145,11 +159,11 @@ namespace AnalysisPrograms
                 int startSample = 291;  // 4:51am = civil dawn
                 //int startSample = 315;  // 5:15am = sunrise
                 int trialCount = 5000;
-                //int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
-                int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
+                int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
+                //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
                 //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours 
                 //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours 
-                int C = occurenceMatrix.GetLength(1); //total species count
+                //int C = occurenceMatrix.GetLength(1); //total species count
 
                 int[] s25array = new int[trialCount];
                 int[] s50array = new int[trialCount];
@@ -161,7 +175,7 @@ namespace AnalysisPrograms
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample; 
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, C);
+                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
                     //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
@@ -174,7 +188,7 @@ namespace AnalysisPrograms
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
-                Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+                Console.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
             }
             
             DateTime tEnd = DateTime.Now;
@@ -393,16 +407,13 @@ namespace AnalysisPrograms
         public static System.Tuple<List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
         {
             int startColumn = 3;
-            int ignoreLastColumns = 2;
+            int ignoreLastNColumns = 2;
             List<string> text = FileTools.ReadTextFile(occurenceFile);  // read occurence file
-            List<string> speciesList = new List<string>();
             string[] line = text[0].Split(',');                    // read and split the first line
-            int endColumn = line.Length - ignoreLastColumns;
-            for (int j = startColumn; j <= endColumn; j++) speciesList.Add(line[j]);
-            Console.WriteLine("Unique Species Count = " + speciesList.Count);
+            int endColumn = line.Length - ignoreLastNColumns -1;
 
-            int speciesNumber = endColumn - startColumn + 1;
-            byte[,] occurenceMatrix = new byte[text.Count - 1, speciesNumber];
+            int columnNumber = endColumn - startColumn + 1;
+            byte[,] occurenceMatrix = new byte[text.Count - 1, columnNumber];
             byte[] speciesCounts = new byte[text.Count - 1];
             for (int i = 1; i < text.Count; i++)              //skip header
             {
@@ -411,9 +422,16 @@ namespace AnalysisPrograms
                 {
                     if (Int32.Parse(line[j]) >= 1) occurenceMatrix[i-1, j - startColumn] = 1;
                 }
-                speciesCounts[i-1] = Byte.Parse(line[endColumn+2]); //
+                //speciesCounts[i-1] = Byte.Parse(line[endColumn]); //
             }
+
             //the speciesList contains 62 species names from columns 3 to 64 i.e. 62 species.
+            List<string> speciesList = new List<string>();
+            string[] headerLine = text[0].Split(',');                    // read and split the first line
+            int[] columnSums = DataTools.GetColumnSums(occurenceMatrix);
+            for (int j = 0; j < columnSums.Length; j++) if (columnSums[j] > 0) speciesList.Add(headerLine[startColumn + j]);
+            //Console.WriteLine("Unique Species Count = " + speciesList.Count);
+            
 
             //now cross check that all is OK
             //for (int i = 0; i < occurenceMatrix.GetLength(0); i++)
