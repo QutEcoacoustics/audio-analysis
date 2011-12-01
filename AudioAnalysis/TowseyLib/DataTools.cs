@@ -1857,10 +1857,13 @@ namespace TowseyLib
                 if (v[i] > max) max = v[i];
                 if (v[i] < min) min = v[i];
             }
+            double diff = max - min;
+
+            if (diff == 0.0) return v;
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++)
-                ret[i] = (v[i] - min) / (max - min);
+                ret[i] = (v[i] - min) / diff;
 
             return (ret);
         }
@@ -1894,6 +1897,7 @@ namespace TowseyLib
             double[] v = DataTools.normalise(array); //ensures all values in 0,1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++) sum += v[i];
+            if (sum == 0.0) return array;
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
