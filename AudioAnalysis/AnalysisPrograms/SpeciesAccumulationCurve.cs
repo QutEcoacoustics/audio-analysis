@@ -34,8 +34,8 @@ namespace AnalysisPrograms
 
             //i: Set up the dir and file names
             string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            string callsFileName   = "SE_2010Oct17_Calls.csv";
-            string indicesFilePath = inputDir + @"\Exp4\Oct17_Results.csv";   //used only for smart sampling
+            string callsFileName   = "SE_2010Oct13_Calls.csv";
+            string indicesFilePath = inputDir + @"\Exp4\Oct13_Results.csv";   //used only for smart sampling
             string outputfile      = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
 
             
@@ -135,20 +135,19 @@ namespace AnalysisPrograms
                 string[] headers = lines[0].Split(',');
 
                 //######################## use following two lines to rank by just a single column of acoustic indices matrix.
-                int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
-                int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
+                //int colNumber = 17;  // 7=segCount;   9= spCover;  10=H[ampl];  13=H1[varSpectra]
+                //Console.WriteLine("SAMPLES REQUIRED WHEN RANK BY " + headers[colNumber]);
+                //int[] rankOrder = GetRankOrder(indicesFilePath, colNumber);
 
                 //use following two lines to rank by weighted multiple columns of acoustic indices matrix.
-                //int[] rankOrder = GetRankOrder(indicesFileName);
+                int[] rankOrder = GetRankOrder(indicesFilePath);
 
                 //USE FOLLOWING LINE TO REVERSE THE RANKING - end up only using for H(amplitude)
                 //rankOrder = DataTools.reverseArray(rankOrder);
 
-                int N = occurenceMatrix.GetLength(0); //maximum Sample Number
-                //int C = occurenceMatrix.GetLength(1); //total species count
+                //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
                 System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
-                Console.WriteLine("SAMPLES REQUIRED WHEN RANK BY "+ headers[colNumber]);
                 Console.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
             }
 
@@ -258,7 +257,8 @@ namespace AnalysisPrograms
         /// <returns></returns>
         public static int[] GetRankOrder(string fileName, int colNumber)
         {
-            double[] array = ReadColumnOfCSVFile(fileName, colNumber);
+            string header1;
+            double[] array = ReadColumnOfCSVFile(fileName, colNumber, out header1);
             var results2 = DataTools.SortRowIDsByRankOrder(array);
 
             //double[] sort = results2.Item2;
@@ -272,42 +272,63 @@ namespace AnalysisPrograms
 
         public static int[] GetRankOrder(string fileName)
         {
-            int colNumber1 = 7;
-            double[] array1 = ReadColumnOfCSVFile(fileName, colNumber1);
+            //int offset = 6; //for 15th October 2010
+            int offset = 4;  //for 13th October 2010
+            string header1, header2, header3, header4, header5, header6;
+
+            int colNumber1 = offset;  //snr>>>> 13Oct = 7; 14Oct=10; 15Oct=9
+            double[] array1 = ReadColumnOfCSVFile(fileName, colNumber1, out header1);
             array1 = DataTools.NormaliseArea(array1);
 
-            int colNumber2 = 14;
-            double[] array2 = ReadColumnOfCSVFile(fileName, colNumber2);
+            int colNumber2 = offset + 3;  //SegmentCount>>>> 13Oct = 12; 14Oct=15
+            double[] array2 = ReadColumnOfCSVFile(fileName, colNumber2, out header2);
             array2 = DataTools.NormaliseArea(array2);
 
-            int colNumber3 = 12;
-            double[] array3 = ReadColumnOfCSVFile(fileName, colNumber3);
-            for (int i = 0; i < array1.Length; i++) array3[i] = 1 - array3[i]; //reverse the order
+            int colNumber3 = offset + 8;  //H[avSpectrum]>>>> 13Oct = 13; 14Oct=16
+            double[] array3 = ReadColumnOfCSVFile(fileName, colNumber3, out header3);
+            //for (int i = 0; i < array1.Length; i++) array3[i] = 1 - array3[i]; //reverse the order
             array3 = DataTools.NormaliseArea(array3);
 
-            int colNumber4 = 13;
-            double[] array4 = ReadColumnOfCSVFile(fileName, colNumber4);
-            for (int i = 0; i < array1.Length; i++) array4[i] = 1 - array4[i]; //reverse the order
+            int colNumber4 = offset + 9;  //H[varSpectrum] cluster Count>>> 13Oct = 14; 14Oct=17
+            double[] array4 = ReadColumnOfCSVFile(fileName, colNumber4, out header4);
+            //for (int i = 0; i < array1.Length; i++) array4[i] = 1 - array4[i]; //reverse the order
             array4 = DataTools.NormaliseArea(array4);
 
+            int colNumber5 = offset + 10;  //number of clusters
+            double[] array5 = ReadColumnOfCSVFile(fileName, colNumber5, out header5);
+            array5 = DataTools.NormaliseArea(array5);
+
+            int colNumber6 = offset + 11;  //av cluster duration
+            double[] array6 = ReadColumnOfCSVFile(fileName, colNumber6, out header6);
+            for (int i = 0; i < array6.Length; i++) array6[i] = 1 - array6[i]; //reverse the order
+            array6 = DataTools.NormaliseArea(array6);
+
             //create sampling bias array
+            double biasWeight = 1.1;
             double[] bias = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                if ((i > 290) && (i < 471)) bias[i] = 1.2; else bias[i] = 1.0;
-                //if ((i > 290) && (i < 532)) bias[i] = 1.4; else bias[i] = 1.0;
+                if ((i > 290) && (i < 471)) bias[i] = biasWeight; else bias[i] = 1.0; //civil dawn plus 3 hours
+                //if ((i > 290) && (i < 532)) bias[i] = biasWeight; else bias[i] = 1.0;  //civil dawn plus 4 hours
             }
             //bias = DataTools.NormaliseArea(bias);
 
-            double wt1 = 0.50;
-            double wt2 = 0.1;
-            double wt3 = 0.2;
-            double wt4 = 0.2;
+            double wt1 = 0.0;//snr
+            double wt2 = 0.2;//SegmentCount
+            double wt3 = 0.2;//H[avSpectrum]
+            double wt4 = 0.1;//H[varSpectrum] 
+            double wt5 = 0.2;//number of clusters
+            double wt6 = 0.3;//av cluster duration
+
+
+            Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
+                                               header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
+            Console.WriteLine("Bias wt ="+ biasWeight);
+
             double[] combined = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                combined[i] = ((wt1*array1[i]) + (wt2*array2[i]) + (wt3*array3[i]) + (wt4*array4[i])) * bias[i];
-                //combined[i] =  array1[i] * array2[i] * array3[i] * array4[i] * bias[i];
+                combined[i] = ((wt1 * array1[i]) + (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * bias[i];
             }
 
             var results2 = DataTools.SortRowIDsByRankOrder(combined);
@@ -326,31 +347,24 @@ namespace AnalysisPrograms
         }
 
 
-        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber)
+        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber, out string header)
         {                
             List<string> lines = FileTools.ReadTextFile(fileName);
-            double[] array = new double[lines.Count - 2];
+            string[] words = lines[0].Split(',');
+            header = words[colNumber];
 
+            Console.WriteLine("READING COLUMN " + header);
+            double[] array = new double[lines.Count - 2];
             //read csv data into arrays.
             for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines - first line = header.
             {
-                string[] words = lines[i].Split(',');
+                words = lines[i].Split(',');
                 array[i - 1] = Double.Parse(words[colNumber]);
-                //timeScale[i - 1] = Int32.Parse(words[0]) / (double)60; //convert minutes to hours
-                //avAmp_dB[i - 1] = Double.Parse(words[3]);
-                //snr_dB[i - 1] = Double.Parse(words[4]);
-                //bg_dB[i - 1] = Double.Parse(words[5]);
-                //activity[i - 1] = Double.Parse(words[6]);
-                //segmentCount[i - 1] = Double.Parse(words[7]);
-                //avSegmentDur[i - 1] = Double.Parse(words[8]);
-                //spectralCover[i - 1] = Double.Parse(words[9]);
-                //H_ampl[i - 1] = Double.Parse(words[10]);
-                //H_PeakFreq[i - 1] = Double.Parse(words[11]);
-                //H_avSpect[i - 1] = Double.Parse(words[12]);
-                //H_varSpect[i - 1] = Double.Parse(words[13]);
-                //clusterCount[i - 1] = (double)Int32.Parse(words[14]);
-                //avClusterDuration[i - 1] = Double.Parse(words[15]);
-                //speciesCount[i - 1] = (double)Int32.Parse(words[16]);
+                if (Double.IsNaN(array[i - 1]))
+                {
+                    array[i - 1] = 0.0;
+                    //Console.WriteLine("NAN############");
+                }
             }//end 
             return array;
         }
