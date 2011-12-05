@@ -272,26 +272,25 @@ namespace AnalysisPrograms
 
         public static int[] GetRankOrder(string fileName)
         {
-            //int offset = 6; //for 15th October 2010
             int offset = 4;  //for 13th October 2010
+            //int offset = 7;  //for 14th October 2010
+            //int offset = 6; //for 15th October 2010
             string header1, header2, header3, header4, header5, header6;
 
-            int colNumber1 = offset;  //snr>>>> 13Oct = 7; 14Oct=10; 15Oct=9
+            int colNumber1 = offset+1;    //background noise
             double[] array1 = ReadColumnOfCSVFile(fileName, colNumber1, out header1);
-            array1 = DataTools.NormaliseArea(array1);
+            //array1 = DataTools.NormaliseArea(array1);
 
-            int colNumber2 = offset + 3;  //SegmentCount>>>> 13Oct = 12; 14Oct=15
+            int colNumber2 = offset + 3;  //SegmentCount
             double[] array2 = ReadColumnOfCSVFile(fileName, colNumber2, out header2);
             array2 = DataTools.NormaliseArea(array2);
 
-            int colNumber3 = offset + 8;  //H[avSpectrum]>>>> 13Oct = 13; 14Oct=16
+            int colNumber3 = offset + 8;  //H[avSpectrum]
             double[] array3 = ReadColumnOfCSVFile(fileName, colNumber3, out header3);
-            //for (int i = 0; i < array1.Length; i++) array3[i] = 1 - array3[i]; //reverse the order
             array3 = DataTools.NormaliseArea(array3);
 
-            int colNumber4 = offset + 9;  //H[varSpectrum] cluster Count>>> 13Oct = 14; 14Oct=17
+            int colNumber4 = offset + 9;  //H[varSpectrum] 
             double[] array4 = ReadColumnOfCSVFile(fileName, colNumber4, out header4);
-            //for (int i = 0; i < array1.Length; i++) array4[i] = 1 - array4[i]; //reverse the order
             array4 = DataTools.NormaliseArea(array4);
 
             int colNumber5 = offset + 10;  //number of clusters
@@ -300,35 +299,37 @@ namespace AnalysisPrograms
 
             int colNumber6 = offset + 11;  //av cluster duration
             double[] array6 = ReadColumnOfCSVFile(fileName, colNumber6, out header6);
-            for (int i = 0; i < array6.Length; i++) array6[i] = 1 - array6[i]; //reverse the order
             array6 = DataTools.NormaliseArea(array6);
 
-            //create sampling bias array
-            double biasWeight = 1.1;
-            double[] bias = new double[array1.Length];
+            //create sampling bias array - ie bias towards the dawn chorus
+            double chorusBiasWeight = 1.1;
+            double[] chorusBias = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                if ((i > 290) && (i < 471)) bias[i] = biasWeight; else bias[i] = 1.0; //civil dawn plus 3 hours
+                if ((i > 290) && (i < 471)) chorusBias[i] = chorusBiasWeight; else chorusBias[i] = 1.0; //civil dawn plus 3 hours
                 //if ((i > 290) && (i < 532)) bias[i] = biasWeight; else bias[i] = 1.0;  //civil dawn plus 4 hours
             }
             //bias = DataTools.NormaliseArea(bias);
 
-            double wt1 = 0.0;//snr
-            double wt2 = 0.2;//SegmentCount
-            double wt3 = 0.2;//H[avSpectrum]
+            //create sampling bias array - ie bias away from high background noise
+            double[] bgBias = CalculateBGNoiseSamplingBias(array1);
+           
+            double wt1 = 0.0;//background noise //do not use here - use instead to bias sampling
+            double wt2 = 0.0;//SegmentCount
+            double wt3 = 0.4;//H[avSpectrum]
             double wt4 = 0.1;//H[varSpectrum] 
-            double wt5 = 0.2;//number of clusters
-            double wt6 = 0.3;//av cluster duration
+            double wt5 = 0.4;//number of clusters
+            double wt6 = 0.1;//av cluster duration
 
 
             Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
                                                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
-            Console.WriteLine("Bias wt ="+ biasWeight);
+            Console.WriteLine("Chorus Bias wt ="+ chorusBiasWeight);
 
             double[] combined = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                combined[i] = ((wt1 * array1[i]) + (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * bias[i];
+                combined[i] = ((wt1 * array1[i]) + (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * chorusBias[i] * bgBias[i];
             }
 
             var results2 = DataTools.SortRowIDsByRankOrder(combined);
@@ -370,23 +371,62 @@ namespace AnalysisPrograms
         }
 
 
-        public static int[] GetAccumulationCurve(byte[,] occurenceMatrix, int[] randomOrder)
+        public static double[] CalculateBGNoiseSamplingBias(double[] bgArray)
         {
-            int N = randomOrder.Length;           //maximum Sample Number
-            int C = occurenceMatrix.GetLength(1); //total species count
+            int resolution = 24; //i.e. calculate bg variance in blocks of one hour
+            int oneHourCount = bgArray.Length / 24; 
+
+            double[] bgVariance = new double[bgArray.Length];
+            for (int b = 0; b < resolution; b++) //over all blocks
+            {
+                double[] oneHourArray = new double[oneHourCount];
+                for (int i = 0; i < oneHourCount; i++) oneHourArray[i] = bgArray[(b * oneHourCount)+i];
+                double av, sd;
+                NormalDist.AverageAndSD(oneHourArray, out av, out sd);
+                Console.WriteLine("Hour {0}:  av={1:f2}   sd={2:f2}", b, av, sd);
+                for (int i = 0; i < oneHourCount; i++) bgVariance[(b * oneHourCount)+i] = sd;
+            }
+            bgVariance = DataTools.filterMovingAverage(bgVariance, 5);
+
+            double[] bgBias = new double[bgArray.Length]; 
+            for (int i = 0; i < bgArray.Length; i++)
+            {
+                //if ((bgArray[i] > -30)||(bgArray[i] < -41)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
+                //if ((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
+
+                //if (bgArray[i] > -30) bgBias[i] = 0.6;
+                //else
+                //if ((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) bgBias[i] = 0.6; 
+                //else bgBias[i] = 1.0; //
+
+
+                if (((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) && (bgArray[i] > -30)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
+            }
+            return bgBias;
+        }
+
+
+
+        public static int[] GetAccumulationCurve(byte[,] occurenceMatrix, int[] sampleOrder)
+        {
+            int N = sampleOrder.Length;           //maximum Sample Number
+            int C = occurenceMatrix.GetLength(1); //total species count - number of column in the occurence matrix
             int[] accumlationCurve = new int[N];
 
-            byte[] cumulativeSpeciesRichness = DataTools.GetRow(occurenceMatrix, randomOrder[0]);
+            //take the first sample and count the species
+            int sampleID = 0; // sample ID
+            byte[] cumulativeSpeciesRichness = DataTools.GetRow(occurenceMatrix, sampleOrder[sampleID]);
             int speciesCount = 0;
             for (int j = 0; j < C; j++) if (cumulativeSpeciesRichness[j] > 0) speciesCount++;
             accumlationCurve[0] = speciesCount;
             //Console.WriteLine("sample {0}:\t min:{1:d3}\t {2}\t {3}", 1, randomOrder[0], speciesCount, speciesCount);
 
             int cummulativeCount = 0;
-            int sampleID = 1; // sample ID
+            sampleID = 1; // sample ID
             while ((sampleID < N) && (cummulativeCount < C))
             {
-                byte[] sample = DataTools.GetRow(occurenceMatrix, randomOrder[sampleID]);
+                if (sampleOrder[sampleID] < 0) continue; //i.e. no sample to take
+                byte[] sample = DataTools.GetRow(occurenceMatrix, sampleOrder[sampleID]);
                 speciesCount = 0;
                 for (int j = 0; j < C; j++) if (sample[j] > 0) speciesCount++;
                 cumulativeSpeciesRichness = DataTools.LogicalORofTwoVectors(sample, cumulativeSpeciesRichness);
