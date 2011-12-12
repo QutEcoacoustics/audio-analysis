@@ -1,0 +1,105 @@
+MQUTeR Sensors Codebase
+========================
+
+This document describes the structure of the website, Windows Service and database.
+It is mostly concerned with high-level outline and discussion, rather than implementation and code.
+
+Website
+---------
+
+The website provides public access to the collected audio data, spectrograms and analysis tools.
+
+Principles:
+ - Keep the website as simple and quick as possible. Long-running calculations or actions should be 
+ stored in db in some representation and processed by the Windows Service instead. This means that
+ the website does not segment audio or generate spectrograms or run analysis jobs.
+ - The website can only interact with:
+ -- database
+ -- file system
+ -- windows service via WCF service
+
+Windows Service
+---------------
+
+The windows service has a number of functions:
+ - provides a communication channel with the High Performance Computing (HPC) compute cluster for running audio segmentation, spectrogram generation and analysis jobs.
+ - polls the database for new audio, spectrogram or analysis tasks, prepares and executes them.
+ - checks that audio has cache items and existing files for segmented audio and spectrograms. Will create and initiate processing for those that do not.
+ - allows the website to create and store information about analysis jobs without having to spend the time creating them. The windows service will create
+ the analysis job items in the database.
+ - Gathers and inserts results of analysis runs (local runs and/or remote runs).
+
+ Audio Upload Process
+ -------------------
+
+ There are a few places that are able to upload audio. They need to be condensed into one, taking automatic uplaoding phone sensors into account.
+ (found by searching for IAudioReadingManager)
+
+ - /services/AudioUploadsService.svc
+ - /RestInterface/DataUpload.ashx
+ - /SensorV2.asmx
+
+ HPC conversion and Segment scripts
+ --------------------------------
+
+ There are three target/output formats:
+  - .jpeg for spectrogram images - standard jpeg format
+  - .mp3 for Silverlight player - usually 128 kbps, however many channels, 44100hz
+  - .wav for analysis - exact format: 44100hz, 16bit pcm, one channel
+
+Scripts are needed to process an entire audio file at once, or to obtain a particular segment (for immediate request).
+
+There are essentially an unlimited number of source formats, but these are the main conversions that are required:
+ - wvunpack is for .wv files. It can convert to .wav and .wv, and can have a specified start and end point.
+ - mp3splt is for .mp3 files. Can't convert, but can split into one or more new .mp3 files.
+ - ffmpeg and sox are multi-purpose tools - they can convert and segment by start and end points.
+
+For .wv files:
+ - must first use wvunpack to convert and segment into .wav
+
+For .mp3 files:
+ - if segmenting is required, use mp3splt
+
+For once used (or not used) wvunpack or mp3splt and target is .mp3
+ - use ffmpeg to convert to .mp3
+
+For once used (or not used) wvunpack or mp3splt and target is .wav
+ - first try sox to convert to specific format .wav
+ - otherwise use ffmpeg to convert to .wav, then sox to convert to specific .wav format
+
+For spectrograms:
+ - first get as close as possible to specific format .wav (must at least be .wav)
+ - use spectrogram gen (C# app, sox, or something else) to get spectrogram
+
+Process to .mp3
+---------------
+
+For .wv:
+- convert and segment (start and end) with wvunpack to .wav
+- convert with ffmpeg
+- use mp3splt to further segment if necessary
+
+For .mp3:
+- use mp3splt to segment if necessary
+
+For anything else:
+- convert and segment (start and end) with ffmpeg
+- use mp3splt to further segment if necessary
+
+Process to .wav
+---------------
+
+For .wv:
+- convert and segment (start and end) with wvunpack to .wav
+- use sox to further segment (also can use ffmpeg to convert and segment first, then sox to specific format)
+
+For anything else:
+- use sox to segment (also can use ffmpeg to convert and segment first, then sox to specific format)
+
+Process to .jpg
+---------------
+
+For anything:
+- follow instructions to get to specific .wav
+- use tool to generate spectrogram
+
