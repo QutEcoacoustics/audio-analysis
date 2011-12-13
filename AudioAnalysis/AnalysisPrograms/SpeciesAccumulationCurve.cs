@@ -34,9 +34,12 @@ namespace AnalysisPrograms
 
             //i: Set up the dir and file names
             string inputDir        = @"C:\SensorNetworks\WavFiles\SpeciesRichness\";
-            string callsFileName   = "SE_2010Oct13_Calls.csv";
-            string indicesFilePath = inputDir + @"\Exp4\Oct13_Results.csv";   //used only for smart sampling
+            //IMPORTANT: IF CHANGE FILE NAMES, MUST ALSO CHANGE ARRAY INDICES BELOW IN METHOD GetRankOrder(string fileName) BECAUSE FILE FORMATS CHANGE
+            string callsFileName   = "SE_2010Oct14_Calls.csv";
+            string indicesFilePath = inputDir + @"\Exp4\Oct14_Results.csv";   //used only for smart sampling
             string outputfile      = "SE_2010Oct13_Calls_GreedySampling.txt"; //used only for greedy sampling.
+            int sampleConstant     = 60;    //Fixed number of samples an ecologist is prepared to process. 
+                                            //Equivalent to a manual survey of 20mins each at morning, noon and dusk.
 
             
             string callOccurenceFilePath = inputDir + callsFileName;
@@ -94,7 +97,7 @@ namespace AnalysisPrograms
                 Environment.Exit(666);
             }// end GREEDY ALGORITHM FOR EFFICIENT SAMPLING
 
-            //random sampling OVER ENTIRE 24 HOURS
+            //RANDOM SAMPLING OVER ENTIRE 24 HOURS
             int seed = tStart.Millisecond;
             if (false)
             {
@@ -103,27 +106,31 @@ namespace AnalysisPrograms
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
+                int[] fixedsampleArray = new int[trialCount];
                 int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 //int C = occurenceMatrix.GetLength(1); //total species count
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
+                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
                     //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
                     s75array[i] = results.Item3;
                     s100array[i] = results.Item4;
+                    fixedsampleArray[i] = results.Item5;
+
                     if (i % 100 == 0) Console.WriteLine("trial "+ i);
                 } //over all trials
-                double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
+                double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
+                NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 Console.WriteLine("s25={0}+/-{1}\t s50={2}+/-{3}\t s75={4}+/-{5}\t s100={6}+/-{7}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-
+                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
                 Console.ReadLine();
                 Environment.Exit(666);
             }
@@ -147,8 +154,9 @@ namespace AnalysisPrograms
 
                 //int N = occurenceMatrix.GetLength(0); //maximum Sample Number
                 int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, rankOrder);
-                System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
+                System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
                 Console.WriteLine("s25={0}\t  s50={1}\t  s75={2}\t  s100={3}", results.Item1, results.Item2, results.Item3, results.Item4);
+                Console.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
             }
 
             //random sampling OVER FIXED INTERVAL GIVEN START and END
@@ -168,26 +176,30 @@ namespace AnalysisPrograms
                 int[] s50array = new int[trialCount];
                 int[] s75array = new int[trialCount];
                 int[] s100array = new int[trialCount];
+                int[] fixedsampleArray = new int[trialCount];
 
                 for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
                 {
                     int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
                     for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample; 
                     int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count);
+                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
                     //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
                     s25array[i] = results.Item1;
                     s50array[i] = results.Item2;
                     s75array[i] = results.Item3;
                     s100array[i] = results.Item4;
+                    fixedsampleArray[i] = results.Item5;
                     if (i % 100 == 0) Console.WriteLine("trial " + i);
                 } //over all trials
-                double av25, sd25, av50, sd50, av75, sd75, av100, sd100;
+                double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
                 NormalDist.AverageAndSD(s25array, out av25, out sd25);
                 NormalDist.AverageAndSD(s50array, out av50, out sd50);
                 NormalDist.AverageAndSD(s75array, out av75, out sd75);
                 NormalDist.AverageAndSD(s100array, out av100, out sd100);
+                NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
                 Console.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
             }
             
             DateTime tEnd = DateTime.Now;
@@ -272,9 +284,9 @@ namespace AnalysisPrograms
 
         public static int[] GetRankOrder(string fileName)
         {
-            int offset = 4;  //for 13th October 2010
-            //int offset = 7;  //for 14th October 2010
-            //int offset = 6; //for 15th October 2010
+            //int offset = 4;  //for 13th October 2010
+            int offset = 7;  //for 14th October 2010
+            //int offset = 6;    //for 15,16,17th October 2010
             string header1, header2, header3, header4, header5, header6;
 
             int colNumber1 = offset+1;    //background noise
@@ -312,7 +324,10 @@ namespace AnalysisPrograms
             //bias = DataTools.NormaliseArea(bias);
 
             //create sampling bias array - ie bias away from high background noise
-            double[] bgBias = CalculateBGNoiseSamplingBias(array1);
+            double noiseBias = 0.6;
+            double bgThreshold = -35; //dB
+            double bgVarianceThreshold = 2.5; //dB
+            double[] bgBias = CalculateBGNoiseSamplingBias(array1, bgThreshold, bgVarianceThreshold, noiseBias); //array1 contains BG noise values.
            
             double wt1 = 0.0;//background noise //do not use here - use instead to bias sampling
             double wt2 = 0.0;//SegmentCount
@@ -324,12 +339,15 @@ namespace AnalysisPrograms
 
             Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
                                                header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
-            Console.WriteLine("Chorus Bias wt ="+ chorusBiasWeight);
+            Console.WriteLine("Chorus Bias wt  ="+ chorusBiasWeight);
+            Console.WriteLine("BG threshold    =" + bgThreshold+" dB");
+            Console.WriteLine("BG var threshold=" + bgVarianceThreshold + " dB");
+            Console.WriteLine("Noise bias  wt  =" + noiseBias);
 
             double[] combined = new double[array1.Length];
             for (int i = 0; i < array1.Length; i++)
             {
-                combined[i] = ((wt1 * array1[i]) + (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * chorusBias[i] * bgBias[i];
+                combined[i] = (/* (wt1 * array1[i]) +*/ (wt2 * array2[i]) + (wt3 * array3[i]) + (wt4 * array4[i]) + (wt5 * array5[i]) + (wt6 * array6[i])) * chorusBias[i] * bgBias[i];
             }
 
             var results2 = DataTools.SortRowIDsByRankOrder(combined);
@@ -371,13 +389,13 @@ namespace AnalysisPrograms
         }
 
 
-        public static double[] CalculateBGNoiseSamplingBias(double[] bgArray)
+        public static double[] CalculateBGNoiseSamplingBias(double[] bgArray, double bgThreshold, double bgVarianceThreshold, double noiseBias)
         {
-            int resolution = 24; //i.e. calculate bg variance in blocks of one hour
-            int oneHourCount = bgArray.Length / 24; 
+            int resolution = 12; //i.e. calculate bg variance in blocks of one hour
+            int oneHourCount = bgArray.Length / resolution; 
 
             double[] bgVariance = new double[bgArray.Length];
-            for (int b = 0; b < resolution; b++) //over all blocks
+            for (int b = 0; b < resolution; b++) //over all onr hour blocks
             {
                 double[] oneHourArray = new double[oneHourCount];
                 for (int i = 0; i < oneHourCount; i++) oneHourArray[i] = bgArray[(b * oneHourCount)+i];
@@ -391,16 +409,14 @@ namespace AnalysisPrograms
             double[] bgBias = new double[bgArray.Length]; 
             for (int i = 0; i < bgArray.Length; i++)
             {
-                //if ((bgArray[i] > -30)||(bgArray[i] < -41)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
-                //if ((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
-
-                //if (bgArray[i] > -30) bgBias[i] = 0.6;
+                //if (bgArray[i] > bgThreshold) bgBias[i] = noiseBias;
                 //else
-                //if ((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) bgBias[i] = 0.6; 
+                //if ((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) bgBias[i] = noiseBias; 
                 //else bgBias[i] = 1.0; //
 
+                if ((bgVariance[i] > bgVarianceThreshold) && (bgArray[i] > bgThreshold)) bgBias[i] = noiseBias; else bgBias[i] = 1.0; //
 
-                if (((bgVariance[i] > 3.0) || (bgVariance[i] < 1.0)) && (bgArray[i] > -30)) bgBias[i] = 0.6; else bgBias[i] = 1.0; //
+                //if (((bgVariance[i] > bgVarianceThreshold) || (bgVariance[i] < 1.0)) && (bgArray[i] > bgThreshold)) bgBias[i] = noiseBias; else bgBias[i] = 1.0; //
             }
             return bgBias;
         }
@@ -439,23 +455,21 @@ namespace AnalysisPrograms
             return accumlationCurve;
         }
 
-        public static System.Tuple<int, int, int, int> GetAccumulationCurveStatistics(int[] accumulationCurve, int speciesCount)
+        
+        public static System.Tuple<int, int, int, int, int> GetAccumulationCurveStatistics(int[] accumulationCurve, int totalSpeciesCount, int sampleConstant)
         {
-            int s25threshold = (int)Math.Round(speciesCount*0.25);
-            int s50threshold = (int)Math.Round(speciesCount*0.50);
-            int s75threshold = (int)Math.Round(speciesCount*0.75);
-            int s100threshold = speciesCount;
+            int s25threshold = (int)Math.Round(totalSpeciesCount*0.25);
+            int s50threshold = (int)Math.Round(totalSpeciesCount*0.50);
+            int s75threshold = (int)Math.Round(totalSpeciesCount*0.75);
+            int s100threshold = totalSpeciesCount;
+            int idPercent = (int)Math.Round(accumulationCurve[sampleConstant - 1] * 100 / (double)totalSpeciesCount); //percent of total species identified when sample number = <sampleConstant>
 
             int s25 = 0; int s50 = 0; int s75 = 0; int s100 = 0;
-            for (int i = 0; i < accumulationCurve.Length; i++)
-            {
-                if (accumulationCurve[i] <= s25threshold) s25 = i+1;
-                if (accumulationCurve[i] <= s50threshold) s50 = i+1;
-                if (accumulationCurve[i] <= s75threshold) s75 = i+1;
-                if (accumulationCurve[i] <= s100threshold) s100 = i+1;
-                if (accumulationCurve[i] == speciesCount) break;
-            }
-            return System.Tuple.Create(s25, s50, s75, s100);
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s25threshold) { s25 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s50threshold) { s50 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s75threshold) { s75 = i + 1; break; }
+            for (int i = 0; i < accumulationCurve.Length; i++) if (accumulationCurve[i] >= s100threshold) { s100 = i + 1; break; }
+            return System.Tuple.Create(s25, s50, s75, s100, idPercent);
         }
 
         public static System.Tuple<List<string>, byte[,]> READ_CALL_OCCURENCE_CSV_DATA(string occurenceFile)
