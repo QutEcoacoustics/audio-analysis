@@ -11,11 +11,18 @@ namespace QutSensors.UI.Display.Managers
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
+    using System.IO;
     using System.Linq;
     using System.Web;
 
+    using Autofac;
+
+    using QutSensors.Business;
+    using QutSensors.Business.Storage;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
+    using QutSensors.Shared.Tools;
     using QutSensors.UI.Display.Classes;
 
     /// <summary>
@@ -234,7 +241,7 @@ order by COUNT(*) desc
                         results = results.OrderBy(s => s.Cache_Data.TimeSpentGenerating);
                         break;
                     case "TimeSpentGenerating DESC":
-						results = results.OrderByDescending( s => s.Cache_Data.TimeSpentGenerating );
+                        results = results.OrderByDescending(s => s.Cache_Data.TimeSpentGenerating);
                         break;
                     case "ProcessingStartTime":
                         results = results.OrderBy(s => s.ProcessingStartTime);
@@ -267,7 +274,7 @@ order by COUNT(*) desc
                         results = results.OrderByDescending(s => s.End - s.Start);
                         break;
                     default:
-						results = results.OrderByDescending( s => s.Cache_Data.LastAccessed );
+                        results = results.OrderByDescending(s => s.Cache_Data.LastAccessed);
                         break;
                 }
 
@@ -288,10 +295,10 @@ order by COUNT(*) desc
                             Status = s.Status,
                             MimeType = s.MimeType,
                             ProcessingStartTime = s.ProcessingStartTime,
-							LastAccessed = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.LastAccessed : new DateTime?(),
-							TimeSpentGeneratingMs = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.TimeSpentGenerating.TotalMilliseconds : 0,
-							CreatedTime = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.CreatedTime : new DateTime?(),
-							Time = s.Cache_Job.AudioReading.Time,
+                            LastAccessed = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.LastAccessed : new DateTime?(),
+                            TimeSpentGeneratingMs = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.TimeSpentGenerating.TotalMilliseconds : 0,
+                            CreatedTime = s.Status == CacheJobItemStatus.Complete ? s.Cache_Data.CreatedTime : new DateTime?(),
+                            Time = s.Cache_Job.AudioReading.Time,
                             End = s.End,
                             Start = s.Start,
                             AudioReadingId = s.Cache_Job.AudioReadingID
@@ -332,5 +339,134 @@ order by COUNT(*) desc
                 return db.Cache_JobItems.Count();
             }
         }
+
+        public static IEnumerable<DataStorageItem> GetDataStorageItems(int maxItems, int startIndex, string sortExpression)
+        {
+            var originalDirs = AppConfigHelper.OriginalAudioStorageDirs;
+            var segmentedDirs = AppConfigHelper.SegmentedAudioStorageDirs;
+            var spectrogramDirs = AppConfigHelper.SpectrogramStorageDirs;
+
+            var list = new List<DataStorageItem>();
+            list.AddRange(originalDirs.Select(d => CreateDataStorageItem(d, "Original Audio")));
+            list.AddRange(segmentedDirs.Select(d => CreateDataStorageItem(d, "Segmented Audio")));
+            list.AddRange(spectrogramDirs.Select(d => CreateDataStorageItem(d, "Spectrogram Images")));
+
+            var results = list.AsEnumerable();
+
+            switch (sortExpression)
+            {
+                case "StorageType":
+                    results = results.OrderBy(s => s.StorageType);
+                    break;
+                case "StorageType DESC":
+                    results = results.OrderByDescending(s => s.StorageType);
+                    break;
+                case "Directory":
+                    results = results.OrderBy(s => s.Directory);
+                    break;
+                case "Directory DESC":
+                    results = results.OrderByDescending(s => s.Directory);
+                    break;
+                case "Extensions":
+                    results = results.OrderBy(s => s.Extensions);
+                    break;
+                case "Extensions DESC":
+                    results = results.OrderByDescending(s => s.Extensions);
+                    break;
+                case "MimeTypes":
+                    results = results.OrderBy(s => s.MimeTypes);
+                    break;
+                case "MimeTypes DESC":
+                    results = results.OrderByDescending(s => s.MimeTypes);
+                    break;
+                case "SubDirectoryCount":
+                    results = results.OrderBy(s => s.SubDirectoryCount);
+                    break;
+                case "SubDirectoryCount DESC":
+                    results = results.OrderByDescending(s => s.SubDirectoryCount);
+                    break;
+                case "FileCount":
+                    results = results.OrderBy(s => s.FileCount);
+                    break;
+                case "FileCount DESC":
+                    results = results.OrderByDescending(s => s.FileCount);
+                    break;
+                case "EarliestFile":
+                    results = results.OrderBy(s => s.EarliestFile);
+                    break;
+                case "EarliestFile DESC":
+                    results = results.OrderByDescending(s => s.EarliestFile);
+                    break;
+                case "LatestFile":
+                    results = results.OrderBy(s => s.LatestFile);
+                    break;
+                case "LatestFile DESC":
+                    results = results.OrderByDescending(s => s.LatestFile);
+                    break;
+                case "TotalFileSize":
+                    results = results.OrderBy(s => s.TotalFileSize);
+                    break;
+                case "TotalFileSize DESC":
+                    results = results.OrderByDescending(s => s.TotalFileSize);
+                    break;
+            }
+
+            var items = results.Skip(startIndex).Take(maxItems);
+
+            return items;
+        }
+
+        private static DataStorageItem CreateDataStorageItem(DirectoryInfo dir, string storageType)
+        {
+            var allSubDirs = Directory.GetDirectories(dir.FullName);
+            var allFiles = Directory.GetFiles(dir.FullName, "*.*", SearchOption.AllDirectories);
+            var allFileInfos = allFiles.Select(f => new FileInfo(f));
+            var allFileTimesStrings = allFiles.Select(
+                f =>
+                {
+                    var index1 = f.IndexOf('_');
+                    var removed1 = f.Substring(index1 + 1);
+                    var index2 = removed1.IndexOfAny(new[] { '_', '.' });
+                    var removed2 = removed1.Substring(0, index2);
+                    return removed2;
+                });
+
+            var allFileTimes =
+                allFileTimesStrings.Select(f => DateTime.ParseExact(f, "yyMMdd-HHmm", CultureInfo.InvariantCulture));
+            var totalFileSize = allFileInfos.Sum(f => f.Length);
+
+            var item = new DataStorageItem
+                {
+                    Directory = dir,
+                    StorageType = storageType,
+                    Extensions = allFileInfos.Select(f => f.Extension).Distinct(),
+                    FileCount = allFiles.LongLength,
+                    SubDirectoryCount = allSubDirs.LongLength,
+                    EarliestFile = allFileTimes.Any() ? allFileTimes.Min() : DateTime.MinValue,
+                    LatestFile = allFileTimes.Any() ? allFileTimes.Max() : DateTime.MinValue,
+                    TotalFileSize = totalFileSize
+                };
+
+            return item;
+        }
+
+        public static int GetDataStorageItemsCount()
+        {
+            var originalDirs = AppConfigHelper.OriginalAudioStorageDirs;
+            var segmentedDirs = AppConfigHelper.SegmentedAudioStorageDirs;
+            var spectrogramDirs = AppConfigHelper.SpectrogramStorageDirs;
+
+            var allDirs = originalDirs.Concat(segmentedDirs).Concat(spectrogramDirs);
+
+            int totalTopDirs = allDirs.Count();
+
+
+            //long totalSubDirs = allDirs.Aggregate<DirectoryInfo, long>(0, (current, dir) => current + Directory.GetDirectories(dir.FullName, "*.*", SearchOption.TopDirectoryOnly).Length);
+
+            //long totalFiles = allDirs.Aggregate<DirectoryInfo, long>(0, (current, dir) => current + Directory.GetFiles(dir.FullName, "*.*", SearchOption.AllDirectories).Length);
+
+            return totalTopDirs;
+        }
+
     }
 }
