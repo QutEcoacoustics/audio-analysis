@@ -69,6 +69,7 @@
     <Compile Include="Display\Classes\AudioReadingSelectInfo.cs" />
     <Compile Include="Display\Classes\DataCacheItem.cs" />
     <Compile Include="Display\Classes\DataSetAudioReadingDisplayItem.cs" />
+    <Compile Include="Display\Classes\DataStorageItem.cs" />
     <Compile Include="Display\Classes\DeploymentInfo.cs" />
     <Compile Include="Display\Classes\DeploymentPinDetail.cs" />
     <Compile Include="Display\Classes\DeviceInfo.cs" />
