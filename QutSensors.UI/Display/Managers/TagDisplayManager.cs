@@ -13,7 +13,7 @@ namespace QutSensors.UI.Display.Managers
     using System.Collections.Generic;
     using System.Linq;
 
-    using QutSensors.Business.Buses;
+    using QutSensors.Business;
     using QutSensors.Business.Request;
     using QutSensors.Data;
     using QutSensors.Data.Linq;
@@ -40,7 +40,7 @@ namespace QutSensors.UI.Display.Managers
         /// </returns>
         public static IEnumerable<string> GetAudioTags(string partialText, int count)
         {
-            var tagBus = new TagBus();
+            var tagBus = new TagManager();
             return tagBus.GetAudioTags(
                 partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId, false);
         }
@@ -60,7 +60,7 @@ namespace QutSensors.UI.Display.Managers
         /// </returns>
         public static IEnumerable<string> GetAudioRefTags(string partialText, int count)
         {
-            var tagBus = new TagBus();
+            var tagBus = new TagManager();
             return tagBus.GetAudioTags(
                 partialText, count, AuthenticationHelper.IsCurrentUserAdmin, AuthenticationHelper.CurrentUserId, true);
         }
