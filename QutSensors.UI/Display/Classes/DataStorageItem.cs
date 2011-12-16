@@ -21,7 +21,7 @@ namespace QutSensors.UI.Display.Classes
         {
             get
             {
-                return Extensions.Select(Shared.MimeTypes.GetMimeTypeFromExtension);
+                return Extensions.Select(Shared.MediaTypes.GetMediaType);
             }
         }
 

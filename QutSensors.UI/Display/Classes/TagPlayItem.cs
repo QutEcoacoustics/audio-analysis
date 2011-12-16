@@ -291,7 +291,7 @@ namespace QutSensors.UI.Display.Classes
         /// </returns>
         public string UrlAudioMimeType(string mimeType)
         {
-            return this.UrlAudioExt(MimeTypes.GetExtension(mimeType));
+            return this.UrlAudioExt(MediaTypes.GetExtension(mimeType));
         }
 
         /// <summary>
@@ -305,7 +305,7 @@ namespace QutSensors.UI.Display.Classes
         /// </returns>
         public string UrlAudioExt(string ext)
         {
-            string canonExt = MimeTypes.GetExtension(MimeTypes.GetMimeTypeFromExtension(ext));
+            string canonExt = MediaTypes.GetExtension(MediaTypes.GetMediaType(ext));
 
             // /sensors/ByID/
             // "/AudioReading.ashx?ID={0}&Type={1}&start={2}&end={3}",

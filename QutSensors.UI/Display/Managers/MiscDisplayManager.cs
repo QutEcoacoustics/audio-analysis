@@ -16,10 +16,6 @@ namespace QutSensors.UI.Display.Managers
     using System.Linq;
     using System.Web;
 
-    using Autofac;
-
-    using QutSensors.Business;
-    using QutSensors.Business.Storage;
     using QutSensors.Data.Linq;
     using QutSensors.Shared;
     using QutSensors.Shared.Tools;

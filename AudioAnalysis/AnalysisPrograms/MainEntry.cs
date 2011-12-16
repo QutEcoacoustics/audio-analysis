@@ -107,10 +107,6 @@ namespace AnalysisPrograms
                     case "processing": // for running on the processing cluster
                         ProcessingUtils.Run(restOfArgs);
                         break;
-                    case "processing-csv":
-                        var localProcesser = new LocalProcessor();
-                        localProcesser.Run();
-                        break;
                     default:
                         Console.WriteLine("Analysis option unrecognised>>>" + args[0]);
                         Console.WriteLine("Press any key to exit...");
