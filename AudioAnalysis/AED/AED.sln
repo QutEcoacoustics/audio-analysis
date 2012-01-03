@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AED", "AED\AED.fsproj", "{993980A0-8D06-4635-8296-40E9FFF9C301}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AEDTest", "Test\AEDTest.fsproj", "{3BDC343E-005B-4A94-B90E-62D17F5CABEB}"
