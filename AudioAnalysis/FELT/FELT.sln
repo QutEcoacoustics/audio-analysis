@@ -3,11 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FELT", "FELT\FELT.fsproj", "{73B9C579-F539-426F-9852-1EFCBA75C0D5}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Shared", "Shared\Shared.fsproj", "{9A0FBE53-07FD-4DCF-97EC-7812BADD89D4}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "MQUTeR.FSharp.Shared", "Shared\MQUTeR.FSharp.Shared.fsproj", "{9A0FBE53-07FD-4DCF-97EC-7812BADD89D4}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FeltRunner", "FeltRunner\FeltRunner.fsproj", "{372A71B7-7505-4A40-8139-BE6D89281C9B}"
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FELT.Runner", "FeltRunner\FELT.Runner.fsproj", "{372A71B7-7505-4A40-8139-BE6D89281C9B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{23FF621A-EBF9-4776-9E26-C3561881A75A}"
+	ProjectSection(SolutionItems) = preProject
+		FELT.vsmdi = FELT.vsmdi
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FELT.Tests", "FELT.Tests\FELT.Tests.csproj", "{D5761255-D675-463A-98CB-2E6F60F39408}"
 EndProject
 Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = FELT.vsmdi
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms
@@ -47,6 +59,16 @@ Global
 		{372A71B7-7505-4A40-8139-BE6D89281C9B}.Release|Mixed Platforms.Build.0 = Release|x86
 		{372A71B7-7505-4A40-8139-BE6D89281C9B}.Release|x86.ActiveCfg = Release|x86
 		{372A71B7-7505-4A40-8139-BE6D89281C9B}.Release|x86.Build.0 = Release|x86
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{D5761255-D675-463A-98CB-2E6F60F39408}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

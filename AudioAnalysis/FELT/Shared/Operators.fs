@@ -4,7 +4,7 @@
 
 *)
 
-namespace Felt.Shared
+namespace MQUTeR.FSharp.Shared
 
     open System
 
@@ -13,11 +13,11 @@ namespace Felt.Shared
         let inline (@@) (a: 'a) (b: 'a array) =
             Array.append [|a|] b
 
-        let (|Rest|_|) (input: seq<'a>) =
-                match Seq.length input with
+        let (|Rest|_|) (input: array<'a>) =
+                match input.Length with
                     | 0 -> Option.None
-                    | 1 -> Option.Some(Seq.nth 0 input, Seq.empty)
-                    | _ -> Option.Some(Seq.nth 0 input, Seq.skip 1 input) 
+                    | 1 -> Option.Some(input.[0], [||])
+                    | _ -> Option.Some(input.[0], input.[1..]) 
         
         let (=~) input pattern =
             System.Text.RegularExpressions.Regex.IsMatch(input, pattern)
@@ -38,3 +38,11 @@ namespace Felt.Shared
                     | (_::_)::_ -> inner (List.map List.head lst :: acc) (List.map List.tail lst)
                     | _         -> List.rev acc
             inner [] lst
+
+        let transpose (mtx : _ [,]) func = Array2D.init (mtx.GetLength 1) (mtx.GetLength 0) (fun x y -> func(mtx.[y,x]))
+
+
+        type System.Array with
+            member this.zeroLength =
+                this.Length - 1
+        
