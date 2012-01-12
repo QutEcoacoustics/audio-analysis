@@ -23,7 +23,7 @@ steps:
 *)
 
 
-open Felt.Shared
+open MQUTeR.FSharp.Shared
 open System
 open System.Configuration
 open System.IO
@@ -44,7 +44,7 @@ let runDate = DateTime.Now
 
 let resultsDirectory =
     try
-         Directory.CreateDirectory (ResultsDirectory + runDate.ToString("yyyymmdd_HHmmss\\"))
+         Directory.CreateDirectory (ResultsDirectory + runDate.ToString("yyyyMMdd_HHmmss\\"))
     with
         | ex -> 
             eprintfn "%s" ex.Message
@@ -52,8 +52,22 @@ let resultsDirectory =
 
 // load data
 
-let trFile = IO.readFileAsString TrainingData
-let teFile = IO.readFileAsString TestData
+let loadAndConvert filename = 
+    let lines = IO.readFileAsString filename
+    if lines.IsNone then
+        eprintfn "There are no lines to read in %s" filename
+        Option.None
+    else
+        lines.Value |> CSV.csvToVectors |> Option.Some
+
+
+let trFile = loadAndConvert TrainingData 
+let teFile = loadAndConvert TestData
+
+
+
+
+Console.ReadKey(false) |> ignore
 
 
 

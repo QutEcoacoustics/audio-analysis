@@ -1,5 +1,5 @@
 ﻿
-namespace Felt.Shared
+namespace MQUTeR.FSharp.Shared
     
     open System
     open System.IO
