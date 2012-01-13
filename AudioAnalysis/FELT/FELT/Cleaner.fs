@@ -1,6 +1,5 @@
-﻿module Cleaner
-    let clean data = 
-
-
-        data
-
+﻿namespace FELT.Cleaners
+    type BasicCleaner() = class
+        
+        end
+        
