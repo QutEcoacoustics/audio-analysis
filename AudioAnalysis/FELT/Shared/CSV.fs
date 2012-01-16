@@ -18,12 +18,13 @@ namespace MQUTeR.FSharp.Shared
             | Number=0// of float
             | Date=1// of DateTime
             | Text=2// of string
+            | Bit = 3 // of bool
 
         type 'a Column =
             {
                 Name: string
                 Values: 'a array
-                //DataType: DataType
+                DataType: DataType
             }
 
 //        type ColType =

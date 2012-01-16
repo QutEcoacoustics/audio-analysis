@@ -186,7 +186,7 @@ namespace AnalysisPrograms
             var dBarray = SNR.TruncateNegativeValues2Zero(results3.Item1);
 
             //v: CONVERSIONS: ZERO CROSSINGS to herz - then NORMALIZE to Fuzzy freq
-            int[] freq = DSP_Frames.ConvertZeroCrossings2Hz(zeroCrossings, windowSize, sr);
+            int[] freq = DSP_Frames.ConvertZeroCrossingsToHz(zeroCrossings, windowSize, sr);
             int sideBand = (int)(midBandFreq * 0.1);
             var fuzzyFreq = FuzzyFrequency(freq, midBandFreq, sideBand);
 
