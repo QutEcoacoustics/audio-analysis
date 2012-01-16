@@ -4,4 +4,6 @@
     type OneForOneTrainer() =
         inherit TrainerBase()
         
+        override this.Train data =
+            data
         

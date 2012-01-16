@@ -1,8 +1,8 @@
 ﻿namespace FELT.Results
-    type ResultsComputation() = class
-        
-        end
-           
-
     // distributions graph
     // species composition
+    type ResultsComputation() = class
+        
+        member this.Calculate someStuff =
+             someStuff
+        end

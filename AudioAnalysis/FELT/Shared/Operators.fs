@@ -45,4 +45,5 @@ namespace MQUTeR.FSharp.Shared
         type System.Array with
             member this.zeroLength =
                 this.Length - 1
+
         
