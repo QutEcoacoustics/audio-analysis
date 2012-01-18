@@ -10,45 +10,48 @@
     type GroupTrainer(agg) =
         inherit TrainerBase()
 
+        let grp index (state:Map<_, index list>) ele =
+            if state.ContainsKey(ele) then
+                state.Add(ele, (index :: state.[ele]))
+            else
+                state.Add(ele, [index])
 
             
 
-        let averageBits xs =
-            stats.mean xs
+        let avgValue (xs: Value array) : Value =
+            
+            failwith "not implemented"
 
         /// some sort of histogram style thing
         let averageStrings ss =
             
             ss
             
-                         
-            
+                              
 
-        let aggregator state key (value: int list) = 
-            let (oldData, avgData) = state
-            let (dt:DataType) = oldData.Headers.[key]
-            match dt with
-                | DataType.Number -> {state with Numbers =  state.Numbers.Add(key, (state.Numbers.[key].getValues value) |> stats.mean)  }
-                | _ -> failwith "Aggregator function not defined for type %A" dt
-            
+        /// For column 
+        let aggregator (grps:Map<Class, index list>) state columnName (values: Value array) = 
+            // inside this function is the data from one column
 
-        let grp index (state: Map<string, int list>) ele =
-            if state.ContainsKey(ele) then
-                state.Add(ele, (index :: state.[ele]))
-            else
-                state.Add(ele, [index])
+            let avg (i: index list) =
+                (values.getValues i) |> avgValue   
+
+            // for each group, pick out all the values and average them
+            let values = Map.fold (fun list _ indexes -> avg(indexes) :: list) list.Empty grps |> List.toArray
+
+            // we are then left with all the elements for this column
+            Map.add columnName values state
+
 
         override this.Train (data: Data) : Data =
             // groups by class
             let c = data.Classes
             
-            let groups = Array.foldi grp Map.empty<string, int list> c
-            
-            let names = groups.
+            let groupedClasses = Array.foldi grp Map.empty<Class, int list> c
+            let agFunc = aggregator groupedClasses
+
             // then run aggregator function over all other values
+            let avgValuesForAllColumns = Map.fold agFunc Map.empty<ColumnHeader, Value array> data.Instances
             
-
-            let avgValues :  Map<ColumnHeader, Value array> = Map.fold aggregator data groups
-
-            let data' = {data with Instances = (avgValues)}
+            let data' = {data with Instances = (avgValuesForAllColumns)}
             data'

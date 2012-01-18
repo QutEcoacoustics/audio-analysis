@@ -8,6 +8,8 @@ namespace MQUTeR.FSharp.Shared
 
     open System
 
+    type index = int
+
     module Utilities =
 
         let inline (@@) (a: 'a) (b: 'a array) =
