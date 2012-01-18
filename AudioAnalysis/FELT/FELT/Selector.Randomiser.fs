@@ -3,6 +3,7 @@ namespace FELT.Selectors
     open FELT.Selectors
     open MathNet.Numerics.Random
     open Microsoft.FSharp.Collections
+    open MQUTeR.FSharp.Shared
 
     /// <summary>
     ///
@@ -29,6 +30,6 @@ namespace FELT.Selectors
                 ) 
                 indexes
 
-            let resortedLabels = Array.foldBack (fun ele state -> labels.[ele] :: state ) indexes List<string>.Empty
+            let resortedLabels = Array.foldBack (fun ele state -> labels.[ele] :: state ) indexes List<Class>.Empty
             
             {data with Classes = (List.toArray resortedLabels)}

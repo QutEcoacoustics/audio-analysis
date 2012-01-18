@@ -14,23 +14,9 @@ namespace MQUTeR.FSharp.Shared
     module CSV =
         let CsvColumnLinesTypeCheck = 5
         let quotation = "\""
-        type DataType =
-            | Number=0// of float
-            | Date=1// of DateTime
-            | Text=2// of string
-            | Bit = 3 // of bool
 
-        type 'a Column =
-            {
-                Name: string
-                Values: 'a array
-                DataType: DataType
-            }
 
-//        type ColType =
-//            | Number of float Column
-//            | Date of DateTime Column
-//            | Text of string Column
+
 
 
         //:rowToList "Hello, this is  a,test,\"hell,lo\", to see,, what happen, soooo, \"\"\"we need a value\"\", said bree\", something else " ',';;

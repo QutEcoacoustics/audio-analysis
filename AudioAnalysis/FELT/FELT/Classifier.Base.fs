@@ -1,5 +1,5 @@
 ﻿namespace FELT.Classifiers
-    open FELT.Core
+    open MQUTeR.FSharp.Shared
 
     [<AbstractClass>]
     type ClassifierBase() = class

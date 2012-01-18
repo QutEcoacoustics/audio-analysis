@@ -1,5 +1,5 @@
 ﻿namespace FELT.Trainers
-    open FELT.Core
+    open MQUTeR.FSharp.Shared
 
     [<AbstractClass>]
     type TrainerBase() = class

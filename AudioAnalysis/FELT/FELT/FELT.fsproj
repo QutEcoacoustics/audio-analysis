@@ -12,6 +12,9 @@
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <Name>FELT</Name>
+    <ProjectTypeGuids>{f2a71f9b-5d33-465a-a702-920d77279786}</ProjectTypeGuids>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\FELT\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <DebugSymbols>true</DebugSymbols>
@@ -37,12 +40,8 @@
   <Import Project="$(MSBuildExtensionsPath32)\FSharp\1.0\Microsoft.FSharp.Targets" Condition="!Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <ItemGroup>
-    <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
-    <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
-    <None Include="packages.config" />
     <None Include="App.config" />
     <Compile Include="Program.fs" />
-    <Compile Include="DataSet.fs" />
     <Compile Include="Cleaner.fs" />
     <Compile Include="Selector.Base.fs" />
     <Compile Include="Trainer.Base.fs" />
@@ -55,7 +54,7 @@
     <Compile Include="Classifier.ZScore.fs" />
     <Compile Include="ResultsComputation.fs" />
     <Compile Include="RunAnalysis.fs" />
-    <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack">
@@ -92,12 +91,16 @@
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="zlib.net" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
       <Name>MQUTeR.FSharp.Shared</Name>
       <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
       <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.
 	<Target Name="BeforeBuild">

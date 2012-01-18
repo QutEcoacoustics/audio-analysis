@@ -6,8 +6,10 @@ namespace FELT.Tests
 {
     using System.Diagnostics;
 
-    using FELT.Core;
     using System.Linq;
+
+    using MQUTeR.FSharp.Shared;
+
     /// <summary>
     ///This is a test class for RandomiserSelectorTest and is intended
     ///to contain all RandomiserSelectorTest Unit Tests
@@ -77,7 +79,7 @@ namespace FELT.Tests
             var seed = new[] { "Hello", "I'm", "not", "sure", "what", "I", "want", "to", "wear", "today" };
             CollectionAssert.AllItemsAreUnique(seed);
 
-            var d = new Data(DataSet.Training, null, null, null, null, null, null, null, seed);
+            var d = new Data(DataSet.Training, null, null, null, null, null, null, seed);
             var result = target.Pick(d);
 
             foreach (string s in result.Classes)

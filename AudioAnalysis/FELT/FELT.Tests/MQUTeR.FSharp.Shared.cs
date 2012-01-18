@@ -23,13 +23,13 @@ namespace FELT.Tests
 
             var fSharpList = ListModule.OfSeq(test);
 
-            CSV.DataType dataType = CSV.guessType(fSharpList);
+            DataType dataType = CSV.guessType(fSharpList);
 
-            Assert.AreEqual(dataType,CSV.DataType.Text);
+            Assert.AreEqual(dataType, DataType.Text);
 
             dataType = CSV.guessType(ListModule.Reverse(fSharpList));
 
-            Assert.AreEqual(dataType, CSV.DataType.Text);
+            Assert.AreEqual(dataType, DataType.Text);
         }
 
         [TestMethod]
@@ -39,9 +39,9 @@ namespace FELT.Tests
 
             var fSharpList = ListModule.OfSeq(test);
 
-            CSV.DataType dataType = CSV.guessType(fSharpList);
+            DataType dataType = CSV.guessType(fSharpList);
 
-            Assert.AreEqual(dataType, CSV.DataType.Date);
+            Assert.AreEqual(dataType, DataType.Date);
         }
 
 
@@ -52,9 +52,9 @@ namespace FELT.Tests
 
             var fSharpList = ListModule.OfSeq(test);
 
-            CSV.DataType dataType = CSV.guessType(fSharpList);
+            DataType dataType = CSV.guessType(fSharpList);
 
-            Assert.AreEqual(dataType, CSV.DataType.Number);
+            Assert.AreEqual(dataType, DataType.Number);
         }
 
 

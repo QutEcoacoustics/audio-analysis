@@ -1,6 +1,6 @@
 ﻿namespace FELT.Selectors
     open FELT.Selectors
-    open FELT.Core
+    open MQUTeR.FSharp.Shared
 
     type OneForOneSelector() =
         inherit SelectorBase()
