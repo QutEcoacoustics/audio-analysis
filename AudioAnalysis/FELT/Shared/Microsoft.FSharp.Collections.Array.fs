@@ -20,7 +20,9 @@
                 member this.getValues
                     with get(indexes: array<int>) =
                         Array.init (Array.length indexes) (fun index -> this.[indexes.[index]]) 
+//                member this.getValues
+//                    with get(indexes: list<int>) =
+//                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes 
                 member this.getValues
                     with get(indexes: list<int>) =
-                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes
-            
+                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes |> List.toArray
