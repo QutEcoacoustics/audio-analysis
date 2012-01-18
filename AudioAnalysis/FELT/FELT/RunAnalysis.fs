@@ -11,7 +11,7 @@
     open FELT.Selectors
     open FELT.Trainers
     open FELT.Results
-    open FELT.Core
+    open MQUTeR.FSharp.Shared
 
     type WorkflowItem =
         | Cleaner of BasicCleaner

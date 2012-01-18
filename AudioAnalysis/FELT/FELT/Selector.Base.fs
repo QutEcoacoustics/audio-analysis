@@ -1,5 +1,5 @@
 ﻿namespace FELT.Selectors
-    open FELT.Core
+    open MQUTeR.FSharp.Shared
 
     
     [<AbstractClass>]
