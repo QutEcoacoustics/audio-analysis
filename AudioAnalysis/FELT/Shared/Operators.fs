@@ -12,6 +12,8 @@ namespace MQUTeR.FSharp.Shared
 
     module Utilities =
 
+        let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
+
         let inline (@@) (a: 'a) (b: 'a array) =
             Array.append [|a|] b
 

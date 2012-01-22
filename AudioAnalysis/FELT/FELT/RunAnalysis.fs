@@ -1,4 +1,4 @@
-﻿module FindEventsLikeThis =
+﻿module FELT.FindEventsLikeThis 
     // then essential point of this file is that given a data-set,
     // it should be able to run analysis in a configurable,
     // consistent manner.

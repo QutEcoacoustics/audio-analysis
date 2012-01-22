@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.FSharp.Collections
     open MQUTeR.FSharp.Shared.Utilities
-    
+
     [<AutoOpen>]
     module Array =
         /// Implementation stolen from Vector<_>.foldi
@@ -11,6 +11,8 @@
             acc
 
         let inline mean xs = (Array.fold (+) 0.0<_> xs) / double (Array.length xs)
+
+        let inline head (arr:'a array) = Seq.head arr
     
     //module Microsoft.FSharp.Core.ArrayExtensions 
 
