@@ -51,6 +51,8 @@
     <Compile Include="Trainer.Group.fs" />
     <Compile Include="Trainer.OneForOne.fs" />
     <Compile Include="Classifier.Euclidean.fs" />
+    <Compile Include="Classifier.CosineSimilarity.fs" />
+    <Compile Include="Classifier.PearsonCorrelationCoefficient.fs" />
     <Compile Include="Classifier.ZScore.fs" />
     <Compile Include="ResultsComputation.fs" />
     <Compile Include="RunAnalysis.fs" />
@@ -84,6 +86,7 @@
     <Reference Include="mscorlib" />
     <Reference Include="FSharp.Core" />
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />

@@ -79,7 +79,7 @@ namespace FELT.Tests
             var seed = new[] { "Hello", "I'm", "not", "sure", "what", "I", "want", "to", "wear", "today" };
             CollectionAssert.AllItemsAreUnique(seed);
 
-            var d = new Data(DataSet.Training, null, null, null, null, null, null, seed);
+            var d = new Data(DataSet.Training, null, null, null, seed);
             var result = target.Pick(d);
 
             foreach (string s in result.Classes)
@@ -90,6 +90,26 @@ namespace FELT.Tests
             CollectionAssert.AreEquivalent(seed, result.Classes);
 
             CollectionAssert.AreNotEqual(seed, result.Classes);
+        }
+
+        [TestMethod]
+        public void FuzzyBitTest()
+        {
+            var bit = new FuzzyBit(0.0);
+
+            var bit1 = new FuzzyBit(0.5);
+
+            var bit2 = new FuzzyBit(1.0);
+            
+        }
+
+
+        [TestMethod]
+        [ExpectedException(typeof(Exception), AllowDerivedTypes = true)]
+        public void FuzzyBitTestEx()
+        {
+            var bit = new FuzzyBit(-0.5);
+
         }
     }
 }
