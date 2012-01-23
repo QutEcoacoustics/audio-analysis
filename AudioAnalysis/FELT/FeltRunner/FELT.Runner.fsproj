@@ -46,7 +46,6 @@
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
     <None Include="App.config" />
     <None Include="packages.config" />
-    
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">

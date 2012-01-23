@@ -3,11 +3,18 @@
 
     [<AutoOpen>]
     module Array =
-        /// Implementation stolen from Vector<_>.foldi
+            /// Implementation stolen from Vector<_>.foldi
         let inline foldi folder state (array:array<_>) =
             let mA = array.zeroLength
             let mutable acc = state
             for i = 0 to mA do acc <- folder i acc array.[i]
+            acc
+
+        /// Implementation stolen from Vector<_>.foldi
+        let inline foldri folder state (array:array<_>) =
+            let mA = array.zeroLength
+            let mutable acc = state
+            for i = mA downto 0 do acc <- folder i acc array.[i]
             acc
 
         let inline mean xs = (Array.fold (+) 0.0<_> xs) / double (Array.length xs)

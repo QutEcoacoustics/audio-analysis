@@ -48,7 +48,7 @@
         [ 
         Cleaner(new BasicCleaner()); 
         Selection(new OneForOneSelector());
-        Trainer(new OneForOneTrainer()); 
+        Trainer(new GroupTrainer()); 
         Classifier(new EuclideanClassifier())
         ]
 

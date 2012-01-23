@@ -8,7 +8,7 @@
     
 
 
-    type GroupTrainer(agg) =
+    type GroupTrainer() =
         inherit TrainerBase()
 
         let emptyDT = Map.empty<ColumnHeader, Value array> 
@@ -31,7 +31,7 @@
             let grp (state:Map<string, float>) (txt:Text)  =
                 let str = txt.Value
                 let count  = if state.ContainsKey(str) then state.[str] else 0.0
-                state.Add(str, state.[str] + 1.0)
+                state.Add(str, count + 1.0)
 
             let grps = Array.fold grp Map.empty<string, float> ss
             
@@ -60,7 +60,7 @@
                 (values.getValues i) |> avgValue   
 
             // for each group, pick out all the values and average them
-            let values' = Map.fold (fun list _ indexes -> avg(indexes) :: list) list.Empty grps |> List.toArray
+            let values' = Map.foldBack (fun _ indexes list -> avg(indexes) :: list) grps list.Empty |> List.toArray
 
             // we are then left with all the elements for this column
             Map.add columnName values' state
@@ -78,5 +78,5 @@
             // then run aggregator function over all other values
             let avgValuesForAllColumns = Map.fold agFunc emptyDT data.Instances
             
-            let data' = {data with Instances = (avgValuesForAllColumns)}
+            let data' = {data with Classes = (Map.keys groupedClasses); Instances = (avgValuesForAllColumns)}
             data'

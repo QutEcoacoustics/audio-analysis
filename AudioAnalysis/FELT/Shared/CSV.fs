@@ -15,10 +15,6 @@ namespace MQUTeR.FSharp.Shared
         let CsvColumnLinesTypeCheck = 5
         let quotation = "\""
 
-
-
-
-
         //:rowToList "Hello, this is  a,test,\"hell,lo\", to see,, what happen, soooo, \"\"\"we need a value\"\", said bree\", something else " ',';;
         let rowToList delimitter (line:string)  =
             let line' = line.ToCharArray()
