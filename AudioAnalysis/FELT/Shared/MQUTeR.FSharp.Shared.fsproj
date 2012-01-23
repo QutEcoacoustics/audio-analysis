@@ -40,8 +40,10 @@
     <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
+    <Compile Include="Equality.fs" />
     <Compile Include="Operators.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
+    <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
     <Compile Include="DataSet.fs" />
     <Compile Include="CSV.fs" />

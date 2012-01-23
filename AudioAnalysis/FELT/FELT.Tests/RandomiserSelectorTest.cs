@@ -86,9 +86,10 @@ namespace FELT.Tests
             {
                 Debug.Print(s);
             }
+
             CollectionAssert.AllItemsAreUnique(result.Classes);
             CollectionAssert.AreEquivalent(seed, result.Classes);
-
+            
             CollectionAssert.AreNotEqual(seed, result.Classes);
         }
 

@@ -1,7 +1,7 @@
 ﻿namespace MQUTeR.FSharp.Shared
     open System
     open System.ComponentModel.DataAnnotations
-
+    open Microsoft.FSharp.Collections
    
 
     type DataSet =
@@ -40,6 +40,20 @@
         default this.Value
             with get() = value
 
+        override x.Equals(yobj) =
+            match yobj with
+            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
+            | _ -> false
+    
+        override x.GetHashCode() = Unchecked.hash x.Value
+ 
+        interface System.IComparable with
+            member x.CompareTo yobj =
+                match yobj with
+                | :? BaseValue<'T> as y -> Unchecked.compare x.Value y.Value
+                | _ -> invalidArg "yobj" "cannot compare values of different types"
+   
+            end
         end
 
     type Text(s) = class
@@ -59,7 +73,7 @@
             new Number(LanguagePrimitives.DivideByInt x.Value i)
         static member Zero =
             new Number(LanguagePrimitives.GenericZero)
-
+      
         end
 
  
@@ -67,7 +81,23 @@
     type AverageText(s, histogram) = class
         inherit Text(s)
         member this.Histogtram 
-            with get() : (string * float) array = histogram            
+            with get() : (string * float) array = histogram        
+            
+        override x.Equals(yobj) =
+            match yobj with
+            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
+            | _ -> false
+    
+        override x.GetHashCode() = Unchecked.hash x.Value
+ 
+        interface System.IComparable with
+            member x.CompareTo yobj =
+                match yobj with
+                | :? BaseValue<'T> as y -> Unchecked.compare x.Value y.Value
+                | _ -> invalidArg "yobj" "cannot compare values of different types"
+   
+            end
+            vnsdnvggisngvsdn broken    
         end
     
     module tt =
@@ -127,14 +157,24 @@
         //let inline testAndCheck<'T when 'T :> Value> (input:obj) = if input :? 'T then Option.Some(input :?> 'T) else Option.None
 
 
-        let inline castTo<'T> (x:obj) = x :?> 'T
-        let inline checkAndCastTo<'T> (input:obj) = if input :? 'T then Option.Some(input :?> 'T) else Option.None
+        let castTo<'T> (x:obj) = x :?> 'T
+        let canCastTo<'T> (x:obj) = x :? 'T
+        let checkAndCastTo<'T> (input:obj) = if input :? 'T then Option.Some(input :?> 'T) else Option.None
 
-        let inline testAndCastArray<'CastTo> (input: 'a array) =
-            if typeof<'a> = typeof<'CastTo> then
-                Option.Some(Array.map (castTo<'CastTo>) input)
+        let testAndCastArray<'CastTo> (input: 'a array) : Option<'CastTo array> =
+            
+            let c = typeof<'CastTo>
+
+            if input.Length = 0 then
+                Some(Array.empty<'CastTo>)
             else
-                Option.None
+                let h = Array.head input
+                if h.GetType() = c then
+                    //Option.Some(input |> castTo<'CastTo array>)
+//                elif h :? 'Cast then
+                   Option.Some(Array.map (castTo<'CastTo>) input)
+                else
+                    Option.None
 
 
 
