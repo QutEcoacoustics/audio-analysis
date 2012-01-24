@@ -2,6 +2,7 @@
     open System
     open System.ComponentModel.DataAnnotations
     open Microsoft.FSharp.Collections
+    open Microsoft.FSharp.Quotations
    
 
     type DataSet =
@@ -30,6 +31,7 @@
 
         end
 
+
     /// A generic data holding class. All types should inherit from this.
     [<AbstractClass>]
     type BaseValue<'T>(v) = class
@@ -40,11 +42,15 @@
         default this.Value
             with get() = value
 
+
+
         override x.Equals(yobj) =
-            match yobj with
-            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
-            | _ -> false
-    
+            Equality.equals [ <@ x.Value @> ] x yobj
+//            let t = x.Value
+//            match yobj with
+//            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
+//            | _ -> false
+//    
         override x.GetHashCode() = Unchecked.hash x.Value
  
         interface System.IComparable with
@@ -85,7 +91,7 @@
             
         override x.Equals(yobj) =
             match yobj with
-            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
+            | :? AverageText as at ->  (Unchecked.equals x.Value at.Value)
             | _ -> false
     
         override x.GetHashCode() = Unchecked.hash x.Value
@@ -97,7 +103,7 @@
                 | _ -> invalidArg "yobj" "cannot compare values of different types"
    
             end
-            vnsdnvggisngvsdn broken    
+            //vnsdnvggisngvsdn broken    
         end
     
     module tt =
@@ -162,16 +168,11 @@
         let checkAndCastTo<'T> (input:obj) = if input :? 'T then Option.Some(input :?> 'T) else Option.None
 
         let testAndCastArray<'CastTo> (input: 'a array) : Option<'CastTo array> =
-            
-            let c = typeof<'CastTo>
-
             if input.Length = 0 then
                 Some(Array.empty<'CastTo>)
             else
                 let h = Array.head input
-                if h.GetType() = c then
-                    //Option.Some(input |> castTo<'CastTo array>)
-//                elif h :? 'Cast then
+                if h.GetType() = typeof<'CastTo> then
                    Option.Some(Array.map (castTo<'CastTo>) input)
                 else
                     Option.None
