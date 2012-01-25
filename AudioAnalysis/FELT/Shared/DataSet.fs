@@ -42,23 +42,14 @@
         default this.Value
             with get() = value
 
-
-
         override x.Equals(yobj) =
-            Equality.equals [ <@ x.Value @> ] x yobj
-//            let t = x.Value
-//            match yobj with
-//            | :? BaseValue<'T> as y -> Unchecked.equals x.Value y.Value
-//            | _ -> false
-//    
-        override x.GetHashCode() = Unchecked.hash x.Value
+            Equality.equalsCast x yobj [(fun z -> z.Value)]
+ 
+        override x.GetHashCode() = Equality.GetHashCode([x.Value])
  
         interface System.IComparable with
             member x.CompareTo yobj =
-                match yobj with
-                | :? BaseValue<'T> as y -> Unchecked.compare x.Value y.Value
-                | _ -> invalidArg "yobj" "cannot compare values of different types"
-   
+                Equality.CompareTo x yobj [fun z -> z.Value]
             end
         end
 
@@ -86,25 +77,19 @@
 
     type AverageText(s, histogram) = class
         inherit Text(s)
-        member this.Histogtram 
+        member this.Histogram 
             with get() : (string * float) array = histogram        
             
         override x.Equals(yobj) =
-            match yobj with
-            | :? AverageText as at ->  (Unchecked.equals x.Value at.Value)
-            | _ -> false
-    
-        override x.GetHashCode() = Unchecked.hash x.Value
+            Equality.equalsCast x yobj [(fun z -> z.Value); (fun z -> z.Histogram)]
+ 
+        override x.GetHashCode() = Equality.GetHashCode([x.Value; x.Histogram])
  
         interface System.IComparable with
             member x.CompareTo yobj =
-                match yobj with
-                | :? BaseValue<'T> as y -> Unchecked.compare x.Value y.Value
-                | _ -> invalidArg "yobj" "cannot compare values of different types"
-   
+                Equality.CompareTo x yobj [(fun z -> z.Value) ; (fun a -> a.Histogram)]
             end
-            //vnsdnvggisngvsdn broken    
-        end
+        end    
     
     module tt =
         let t =

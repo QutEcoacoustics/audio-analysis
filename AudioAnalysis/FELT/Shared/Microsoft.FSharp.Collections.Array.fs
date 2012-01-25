@@ -20,6 +20,19 @@
         let inline mean xs = (Array.fold (+) 0.0<_> xs) / double (Array.length xs)
 
         let inline head (arr:'a array) = Seq.head arr
+
+        let pickSafe f (array: _[]) = 
+            let rec loop i = 
+                if i >= array.Length then 
+                    Option.None
+                else 
+                    match f array.[i] with 
+                    | None -> loop(i+1)
+                    | Some res as r -> r
+            if array = null then
+                None
+            else
+                loop 0 
     
     //module Microsoft.FSharp.Core.ArrayExtensions 
 
