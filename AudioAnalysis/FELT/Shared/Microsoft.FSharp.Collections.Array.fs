@@ -33,18 +33,26 @@
                 None
             else
                 loop 0 
-    
-    //module Microsoft.FSharp.Core.ArrayExtensions 
 
         type ``[]``<'T> with
-                member this.zeroLength =
-                    this.Length - 1
-                member this.getValues
-                    with get(indexes: array<int>) =
-                        Array.init (Array.length indexes) (fun index -> this.[indexes.[index]]) 
+            member this.zeroLength =
+                this.Length - 1
+            member this.getValues
+                with get(indexes: array<int>) =
+                    Array.init (Array.length indexes) (fun index -> this.[indexes.[index]]) 
 //                member this.getValues
 //                    with get(indexes: list<int>) =
 //                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes 
-                member this.getValues
-                    with get(indexes: list<int>) =
-                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes |> List.toArray
+            member this.getValues
+                with get(indexes: list<int>) =
+                    List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes |> List.toArray
+    
+    module Array2D =
+        let flatten (A:'a[,]) = A |> Seq.cast<'a>
+
+        let getColumn c (A:_[,]) =
+            flatten A.[*,c..c] |> Seq.toArray
+
+        let getRow r (A:_[,]) =
+            flatten A.[r..r,*] |> Seq.toArray  
+

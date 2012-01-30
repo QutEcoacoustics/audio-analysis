@@ -42,6 +42,8 @@
     //        let n (v: 'a when 'a : equality) = <@ v = v @>
             //e
 
+
+
     let equals x y (tests)  =
             List.forall (fun (f: 'a-> 'b) -> Unchecked.equals (f x) (f y) ) tests
 
@@ -56,8 +58,9 @@
         let combineHashes = List.fold (fun state h -> ((state <<< 5) + h) ^^^ h) 0
         hs |> combineHashes
 
+    
 
-    let inline CompareTo (x: 'T) (y: obj) (tests: ('T -> 'a ) list when 'a : equality) =
+    let inline CompareTo (x: 'T) (y: obj) (tests: ('T -> 'a ) list when 'a :> obj ) =
         match y with
             | :? 'T as y' -> 
 //                match (x,y') with

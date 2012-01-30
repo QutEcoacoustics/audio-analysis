@@ -8,15 +8,6 @@
     type DataSet =
         | Training = 0
         | Test = 1
-    
-    
-    type FuzzyBit = 
-        {
-            [<System.ComponentModel.DataAnnotations.RangeAttribute(0.0,1.0)>]
-            Value : float;
-        }
-        
-
 
 
     type DataType =
@@ -51,7 +42,7 @@
             member x.CompareTo yobj =
                 Equality.CompareTo x yobj [fun z -> z.Value]
             end
-        end
+        end 
 
     type Text(s) = class
         inherit BaseValue<string>(s)
@@ -72,7 +63,13 @@
             new Number(LanguagePrimitives.GenericZero)
       
         end
-
+    
+    type FuzzyBit(b) = class
+        inherit Number(b)
+        do
+            if (b > 1.0) || (b < 0.0) then
+                raise (ArgumentOutOfRangeException(sprintf "A bit can only contain values between 1 and 0 (inclusive). %f is invalid." b))
+    end
  
 
     type AverageText(s, histogram) = class
@@ -81,13 +78,13 @@
             with get() : (string * float) array = histogram        
             
         override x.Equals(yobj) =
-            Equality.equalsCast x yobj [(fun z -> z.Value); (fun z -> z.Histogram)]
+            Equality.equalsCast x yobj [(fun z -> box z.Value); (fun z -> box z.Histogram)]
  
-        override x.GetHashCode() = Equality.GetHashCode([x.Value; x.Histogram])
+        override x.GetHashCode() = Equality.GetHashCode([ box x.Value ; box x.Histogram ])
  
         interface System.IComparable with
             member x.CompareTo yobj =
-                Equality.CompareTo x yobj [(fun z -> z.Value) ; (fun a -> a.Histogram)]
+                Equality.CompareTo x yobj [(fun z -> box z.Value) ; (fun a -> box a.Histogram)]
             end
         end    
     
@@ -118,7 +115,7 @@
         }
 
     type ColumnHeader = string
-    type Class = string //<'a when 'a : equality> = 'a -> 'a
+    type Class = string
 
     
 
@@ -162,7 +159,8 @@
                 else
                     Option.None
 
-
+        let unwrap (input: #BaseValue<'c> array) =
+                    Array.map castTo<'c> input
 
         /// Active pattern for the value type
         /// to make pattern matching easier
@@ -173,7 +171,10 @@
 
         let (|IsNumbers|_|) (input: #Value array) =
             testAndCastArray<Number> input
+       
         let (|IsTexts|_|) (input: #Value array) =
             testAndCastArray<Text> input
         let (|IsStrings|_|) (input: #Value array) =
             testAndCastArray<string> input
+
+        

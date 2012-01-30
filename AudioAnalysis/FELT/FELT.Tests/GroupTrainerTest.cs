@@ -56,11 +56,19 @@ namespace FELT.Tests
                     new AverageText("billy", new[] { new Tuple<string, double>("billy", 0.5) }),
                     new AverageText("ann", new[] { new Tuple<string, double>("ann", 1) })
                 };
-            CollectionAssert.AreEqual(
+            CollectionAssert.AreNotEqual(
                 values,
                 names);
 
-            "".CompareTo()
+            var values2 = new Value[]
+                {
+                    new AverageText("billy", new[] { new Tuple<string, double>("billy", 1.0) }),
+                    new AverageText("ann", new[] { new Tuple<string, double>("ann", 1.0) })
+                };
+            CollectionAssert.AreEqual(
+                values2,
+                names);
+
 
         }
     }
