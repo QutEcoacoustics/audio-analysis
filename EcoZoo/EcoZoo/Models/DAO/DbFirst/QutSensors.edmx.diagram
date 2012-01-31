@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="2.0" xmlns:edmx="http://schemas.microsoft.com/ado/2008/10/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2008/10/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="1e83b31a7a494cb9be81300f85f0c5f6" Name="Diagram1">
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_Applications" Width="1.5" PointX="0.75" PointY="15.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_Membership" Width="1.5" PointX="5.25" PointY="11.375" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_Profile" Width="1.5" PointX="5.25" PointY="17.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_Roles" Width="1.5" PointX="0.75" PointY="19" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_SchemaVersions" Width="1.5" PointX="0.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.aspnet_Users" Width="1.5" PointX="3" PointY="16.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.AudioReading" Width="1.5" PointX="5.25" PointY="25.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.AudioSearchResult" Width="1.5" PointX="7.5" PointY="21" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.AudioTag" Width="1.5" PointX="7.5" PointY="24.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.AudioTags_MetaData" Width="1.5" PointX="15" PointY="25.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Cache_Data" Width="1.5" PointX="12" PointY="37.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Cache_JobItems" Width="1.5" PointX="9.75" PointY="37.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Cache_Jobs" Width="1.5" PointX="7.5" PointY="37.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Deployment" Width="1.5" PointX="3" PointY="30.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.DeploymentTag" Width="1.5" PointX="5.25" PointY="32.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.DeviceLog" Width="1.5" PointX="3" PointY="37.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.DeviceSchedule" Width="1.5" PointX="3" PointY="40.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.DeviceStatus" Width="1.5" PointX="3" PointY="44.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.DeviceTask" Width="1.5" PointX="2.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Entity_Items" Width="1.5" PointX="6" PointY="43.625" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Entity_MetaData" Width="1.5" PointX="8.25" PointY="31.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Entity_Permissions" Width="1.5" PointX="0.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.ErrorLog" Width="1.5" PointX="2.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Hardware" Width="1.5" PointX="0.75" PointY="22.5" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.ModuleVersion" Width="1.5" PointX="4.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.NoiseReducedAudioReading" Width="1.5" PointX="7.5" PointY="29.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.PhotoReading" Width="1.5" PointX="3" PointY="47.25" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_JobItems" Width="1.5" PointX="10.5" PointY="27" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_Jobs" Width="1.5" PointX="8.25" PointY="16" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_Results" Width="1.5" PointX="12.75" PointY="27.125" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_TemplateResult" Width="1.5" PointX="4.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_Templates" Width="1.5" PointX="6.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.Processor_Types" Width="1.5" PointX="0.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.ReadReading" Width="1.5" PointX="7.5" PointY="40.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.RoleDeployment" Width="1.5" PointX="5.25" PointY="35.875" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.sysdiagram" Width="1.5" PointX="2.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_Applications" Width="1.5" PointX="6.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_MembershipUsers" Width="1.5" PointX="7.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_Profiles" Width="1.5" PointX="4.75" PointY="6.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_Roles" Width="1.5" PointX="8.75" PointY="0.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_Users" Width="1.5" PointX="9.75" PointY="3.75" IsExpanded="true" />
+        <EntityTypeShape EntityType="QutSensorsModel.vw_aspnet_UsersInRoles" Width="1.5" PointX="9.75" PointY="7.75" IsExpanded="true" />
+        <AssociationConnector Association="QutSensorsModel.FK__aspnet_Me__Appli__6F7F8B4B" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__aspnet_Ro__Appli__11D4A34F" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__aspnet_Us__Appli__3BFFE745" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__aspnet_Me__UserI__7073AF84" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__aspnet_Pr__UserI__4C364F0E" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__RoleDeplo__RoleI__04459E07" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioReadings_UserId" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_Entity_Items_Owner_aspnet_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__AudioSear__Audio__53A266AC" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Cache_Job__Audio__46F27704" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Processor__Audio__2B5F6B28" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioReadings_Deployments" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioReadings_Hardware" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioTags_AudioReadings" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_NoiseReducedAudioReadings_AudioReadings" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_ReadReadings_AudioReadings" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioTags_MetaData_AudioTagID" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_AudioTagsMetaData_ProcessorResultID_Processor_Results" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Cache_Dat__JobIt__51700577" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Cache_Job__JobID__4BB72C21" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Deploymen__Hardw__2B0A656D" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__RoleDeplo__Deplo__035179CE" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_DeploymentTags_Deployments" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_Entity_MetaData_DeploymentID_Deployments" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__DeviceLog__Hardw__5E54FF49" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__DeviceSch__Hardw__6319B466" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__DeviceSta__Hardw__5F492382" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_Entity_MetaData_EntityID_Entity_Items" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_Entity_MetaData_JobID_Processor_Jobs" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__PhotoRead__Hardw__5D60DB10" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK__Processor__JobID__2A6B46EF" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.FK_Processor_Results_Processor_JobItems" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.aspnet_UsersInRoles" ManuallyRouted="false" />
+        <AssociationConnector Association="QutSensorsModel.Entity_Relationships" ManuallyRouted="false" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

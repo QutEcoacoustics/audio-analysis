@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoZoo", "EcoZoo\EcoZoo.csproj", "{13C38E2D-DE76-46A1-9C76-0B736A449333}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EcoZoo.Tests", "EcoZoo.Tests\EcoZoo.Tests.csproj", "{4A78E952-0EF5-4B49-9915-60A13E6AF398}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13C38E2D-DE76-46A1-9C76-0B736A449333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13C38E2D-DE76-46A1-9C76-0B736A449333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13C38E2D-DE76-46A1-9C76-0B736A449333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13C38E2D-DE76-46A1-9C76-0B736A449333}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4A78E952-0EF5-4B49-9915-60A13E6AF398}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4A78E952-0EF5-4B49-9915-60A13E6AF398}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4A78E952-0EF5-4B49-9915-60A13E6AF398}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4A78E952-0EF5-4B49-9915-60A13E6AF398}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
