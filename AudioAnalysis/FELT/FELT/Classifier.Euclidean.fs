@@ -31,11 +31,17 @@
             // we dont need column names so much for this
             let trd = deMap trainingData.Instances
             let ted = deMap testData.Instances
-              
+            
+            // distances is an cross-joined array of test and training intances, e.g.:
+            // WARNING: BIG OP
+            // [ [ d(t1-s1); d(t1-s2) ]
+            //   [ d(t2-s1); d(t2-s2) ] ]
             let distances = Array2D.init (Array2D.length1 trd) (Array2D.length1 ted) (fun tedIdx trdIdx -> distance (Array2D.getRow tedIdx ted) (Array2D.getRow trdIdx trd))
 
+            // now, sort the array, row by row
+            // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
+            let sortedDistances = Array.init (Array2D.base1 distances) (fun i -> Array2D.getRow i distances |> Array.sortWithIndex)
 
-
-            new obj()
+            sortedDistances
 
         end

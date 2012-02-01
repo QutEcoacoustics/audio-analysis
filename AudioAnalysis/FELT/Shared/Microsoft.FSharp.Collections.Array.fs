@@ -3,7 +3,7 @@
 
     [<AutoOpen>]
     module Array =
-            /// Implementation stolen from Vector<_>.foldi
+        /// Implementation stolen from Vector<_>.foldi
         let inline foldi folder state (array:array<_>) =
             let mA = array.zeroLength
             let mutable acc = state
@@ -20,6 +20,8 @@
         let inline mean xs = (Array.fold (+) 0.0<_> xs) / double (Array.length xs)
 
         let inline head (arr:'a array) = Seq.head arr
+
+        let sortWithIndex arr = arr |> Array.mapi (fun x t -> (t,x)) |> Array.sortBy fst 
 
         let pickSafe f (array: _[]) = 
             let rec loop i = 
