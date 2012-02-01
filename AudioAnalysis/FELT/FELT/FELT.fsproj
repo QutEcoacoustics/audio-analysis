@@ -109,7 +109,8 @@
 	<!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
 	     Other similar extension points exist, see Microsoft.Common.targets.	-->
 	<Target Name="BeforeBuild">
-		<SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="C:\Program Files (x86)\CollabNet\Subversion Server\">
+		<!-- C:\Program Files (x86)\CollabNet\Subversion Server\ -->
+		<SvnVersion LocalPath="$(MSBuildProjectDirectory)" ToolPath="$(MSBuildProjectDirectory)\..\..\..\Extra Assemblies\">
 			<Output TaskParameter="Revision" PropertyName="Revision"/>
 		</SvnVersion>
 
