@@ -1,6 +1,10 @@
 ﻿namespace FELT.Results
+    open System.Reflection
+    
     // distributions graph
     // species composition
+
+
     type ResultsComputation() = class
         
         member this.Calculate someStuff =
@@ -17,7 +21,8 @@
                         - 
             *)
 
+            let version = Assembly.GetAssembly(typeof<ResultsComputation>).FullName
 
 
-             ()
+            ()
         end
