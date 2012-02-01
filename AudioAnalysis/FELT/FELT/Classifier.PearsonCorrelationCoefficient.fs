@@ -5,4 +5,4 @@
         inherit ClassifierBase()
         
         override this.Classify (dataA, dataB) =
-            new obj()
+            Array.empty<Result>

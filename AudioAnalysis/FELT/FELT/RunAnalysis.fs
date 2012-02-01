@@ -24,15 +24,17 @@
     let workflow trainingData testData  operationsList = 
         let oplst' = List.append operationsList [Result(new ResultsComputation())]
         
-        let f (state: Data * Data * obj) (wfItem: WorkflowItem) =
+        let f (state: Data * Data * Result[]) (wfItem: WorkflowItem) =
             let trData, teData, results = state
             match wfItem with
                 | Cleaner c -> (c.Clean(trData), c.Clean(teData), results)
                 | Selection s -> (s.Pick(trData), teData, results)
                 | Trainer t -> (t.Train(trData), teData, results)
                 | Classifier c -> (trData, teData, c.Classify(trData, teData))
-                | Result r -> (r.Calculate(trData, teData, results))
-
+                | Result r -> 
+                    // statefull
+                    r.Calculate(trData, teData, results) |> ignore
+                    state
         List.scan f (trainingData, testData, null) operationsList
 
 
