@@ -134,7 +134,7 @@ namespace AudioAnalysisTools
                 //int minF = e.MinFreq;
                 //int maxF = e.MaxFreq;
                 int x = e.oblong.r1;
-                int y = 256 - e.oblong.c2;
+                int y = e.FreqBinCount - e.oblong.c2;
                 int width = e.oblong.r2 - x + 1;
                 int height = e.oblong.c2 - e.oblong.c1 + 1;
                 g.DrawRectangle(p1, x, y, width, height);
@@ -146,7 +146,7 @@ namespace AudioAnalysisTools
                 g.DrawLine(p2, x + 1, y1, x + 1, y2);
                 //g.DrawLine(p2, x + 2, y1, x + 2, y2);
                 //g.DrawLine(p2, x + 3, y1, x + 3, y2);
-                g.DrawString(e.Name, new Font("Tahoma", 6), Brushes.Black, new PointF(x, y - 1));
+                g.DrawString(e.Name, new Font("Tahoma", 14), Brushes.Black, new PointF(x, y - 1));
             }
         }
 
@@ -184,7 +184,7 @@ namespace AudioAnalysisTools
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c + 1);
+                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c+1);
                 }
             }
         } //Superimpose()
