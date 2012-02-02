@@ -74,7 +74,10 @@ namespace AnalysisPrograms
                     case "frog_ribbit":  // frog calls
                         FrogRibit.Dev(restOfArgs);
                         break;
-					case "spt":  // spectral peak tracking
+                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
+                        KiwiRecogniser.Dev(restOfArgs);
+                        break;
+                    case "spt":  // spectral peak tracking
                         SPT.Dev(restOfArgs);
                         break;
                     case "spr":  // syntactic pattern recognition

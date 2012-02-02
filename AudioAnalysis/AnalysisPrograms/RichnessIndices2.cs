@@ -183,7 +183,7 @@ namespace AnalysisPrograms
             audioUtility.SoxAudioUtility.TargetSampleRateHz = 17640;
             audioUtility.SoxAudioUtility.ReduceToMono = true;
             audioUtility.SoxAudioUtility.UseSteepFilter = true;
-            //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = 5512 Hz.
+            //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = SAMPLERATE / 2 Hz.
             //##### ######  IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
             //##### ######                               BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
             audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 

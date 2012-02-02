@@ -27,8 +27,8 @@ namespace AudioAnalysisTools
         public bool IsMelscale { get; set; }
         public Oblong oblong { get; set; }
 
-        /// <summary> required for conversions to & from MEL scale</summary>
-        public int FreqBinCount { get; private set; } 
+        /// <summary> required for conversions to & from MEL scale AND for drawing event on spectrum</summary>
+        public int FreqBinCount { get; set; } 
         public double FreqBinWidth { get; private set; }    //required for freq-binID conversions
         /// <summary> Frame duration in seconds</summary>
         public double FrameDuration { get; private set; }

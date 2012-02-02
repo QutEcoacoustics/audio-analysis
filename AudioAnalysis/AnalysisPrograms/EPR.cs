@@ -267,7 +267,7 @@ namespace AnalysisPrograms
 
             // #############################################################################################################################################
             // vi: look for oscillation at required OR for ground parrots.
-            double[] odScores = OscillationAnalysis.DetectOscillations(dBArray, dctDuration, sonogram.FramesPerSecond, dctThreshold,
+            double[] odScores = OscillationAnalysis.DetectOscillationsInScoreArray(dBArray, dctDuration, sonogram.FramesPerSecond, dctThreshold,
                                                     normaliseDCT, minOscilFreq, maxOscilFreq);
             //odScores = SNR.NoiseSubtractMode(odScores, out Q, out SD);
             double maxOD = 1.0;

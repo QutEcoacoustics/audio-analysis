@@ -12,7 +12,8 @@ namespace AudioAnalysisTools
 
 
         /// <summary>
-        /// Segments a spectrogram based on acoustic energy in freq band of interest.
+        /// FINDS OSCILLATIONS IN A SONOGRAM
+        /// But first it segments the sonogram based on acoustic energy in freq band of interest.
         /// </summary>
         /// <param name="sonogram">sonogram derived from the recording</param>
         /// <param name="minHz">min bound freq band to search</param>
@@ -51,13 +52,13 @@ namespace AudioAnalysisTools
             DateTime startTime2 = DateTime.Now; 
 
             //DETECT OSCILLATIONS
-            hits = DetectOscillations(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq, segmentEvents);
+            hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq, segmentEvents);
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
             scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
             double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
-            events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, scoreThreshold,
+            events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, sonogram.Configuration.FreqBinCount, scoreThreshold,
                                             minDuration, maxDuration, sonogram.Configuration.SourceFName);
 
             //events = segmentEvents;  //#################################### to see segment events in output image.
@@ -66,6 +67,51 @@ namespace AudioAnalysisTools
             Log.WriteLine(" TOTAL COMP TIME = " + span2.ToString()+"s");
             totalTime = endTime2.Subtract(startTime1);
         }//end method
+
+
+
+        /// <summary>
+        /// FINDS OSCILLATIONS IN A SONOGRAM
+        /// SAME METHOD AS ABOVE BUT .....
+        /// 1) WITHOUT CALCULATING THE COMPUTATION TIME
+        /// 2) WITHOUT DOING SEGMENTATION
+        /// </summary>
+        /// <param name="sonogram">sonogram derived from the recording</param>
+        /// <param name="minHz">min bound freq band to search</param>
+        /// <param name="maxHz">max bound freq band to search</param>
+        /// <param name="dctDuration">duration of DCT in seconds</param>
+        /// <param name="dctThreshold">minimum amplitude of DCT </param>
+        /// <param name="minOscilFreq">ignore oscillation frequencies below this threshold</param>
+        /// <param name="maxOscilFreq">ignore oscillation frequencies greater than this </param>
+        /// <param name="scoreThreshold">used for FP/FN</param>
+        /// <param name="minDuration">ignore hits whose duration is shorter than this</param>
+        /// <param name="maxDuration">ignore hits whose duration is longer than this</param>
+        /// <param name="scores">return an array of scores over the entire recording</param>
+        /// <param name="events">return a list of acoustic events</param>
+        /// <param name="hits">a matrix to be superimposed over the final sonogram which shows where DCY exceed threshold</param>
+        public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
+                                   double dctDuration, double dctThreshold, bool normaliseDCT, double minOscilFreq, double maxOscilFreq,
+                                   double scoreThreshold, double minDuration, double maxDuration,
+                                   out double[] scores, out List<AcousticEvent> events, out Double[,] hits)
+        {
+            //convert the entire recording to an acoustic event - this is the legacy of previous experimentation!!!!!!!!!
+            List<AcousticEvent> segmentEvents = new List<AcousticEvent>();
+            var ae = new AcousticEvent(0.0, sonogram.Duration.TotalSeconds, minHz, maxHz);
+            ae.SetTimeAndFreqScales(sonogram.FramesPerSecond, sonogram.FBinWidth);
+            segmentEvents.Add(ae);
+
+            //DETECT OSCILLATIONS
+            hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, minOscilFreq, maxOscilFreq, segmentEvents);
+            hits = RemoveIsolatedOscillations(hits);
+
+            //EXTRACT SCORES AND ACOUSTIC EVENTS
+            scores = GetODScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            double[] oscFreq = GetODFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
+            events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, sonogram.Configuration.FreqBinCount, scoreThreshold,
+                                            minDuration, maxDuration, sonogram.Configuration.SourceFName);
+        }//end method
+
+
 
 
         /// <summary>
@@ -87,8 +133,8 @@ namespace AudioAnalysisTools
         /// <param name="maxOscilFreq"></param>
         /// <param name="events"></param>
         /// <returns></returns>
-        public static Double[,] DetectOscillations(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold, 
-                                                    bool normaliseDCT, int minOscilFreq, int maxOscilFreq, List<AcousticEvent>events)
+        public static Double[,] DetectOscillationsInSonogram(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
+                                                    bool normaliseDCT, double minOscilFreq, double maxOscilFreq, List<AcousticEvent> events)
         {
             if (events == null) return null;
             int minBin = (int)(minHz / sonogram.FBinWidth);
@@ -158,8 +204,30 @@ namespace AudioAnalysisTools
         }
 
 
+        /// <summary>
+        /// Calls the above method but converts integer oscillations rate to doubles
+        /// </summary>
+        /// <param name="sonogram"></param>
+        /// <param name="minHz"></param>
+        /// <param name="maxHz"></param>
+        /// <param name="dctDuration"></param>
+        /// <param name="dctThreshold"></param>
+        /// <param name="normaliseDCT"></param>
+        /// <param name="minOscilFreq"></param>
+        /// <param name="maxOscilFreq"></param>
+        /// <param name="events"></param>
+        /// <returns></returns>
+        public static Double[,] DetectOscillationsInSonogram(SpectralSonogram sonogram, int minHz, int maxHz, double dctDuration, double dctThreshold,
+                                                           bool normaliseDCT, int minOscilFreq, int maxOscilFreq, List<AcousticEvent> events)
+        {
+            //double minOscilFreq = ; 
+            //double maxOscilFreq = ; 
+            Double[,] hits = DetectOscillationsInSonogram(sonogram, minHz, maxHz, dctDuration, dctThreshold, normaliseDCT, (double)minOscilFreq, (double)maxOscilFreq, events);
+            return hits;
+        }
 
-        public static double[] DetectOscillations(double[] scoreArray, double dctDuration, double timeScale, double dctThreshold,
+
+        public static double[] DetectOscillationsInScoreArray(double[] scoreArray, double dctDuration, double timeScale, double dctThreshold,
                                                     bool normaliseDCT, int minOscilFreq, int maxOscilFreq)
         {
             int dctLength = (int)Math.Round(timeScale * dctDuration);
@@ -208,6 +276,8 @@ namespace AudioAnalysisTools
             }
             return hits;
         }
+
+
 
         /// <summary>
         ///  fills the gaps in an array of scores
@@ -330,7 +400,7 @@ namespace AudioAnalysisTools
         /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
         /// <returns></returns>
         public static List<AcousticEvent> ConvertODScores2Events(double[] scores, double[] oscFreq, int minHz, int maxHz,
-                                                               double framesPerSec, double freqBinWidth,
+                                                               double framesPerSec, double freqBinWidth, int freqBinCount,
                                                                double scoreThreshold, double minDuration, double maxDuration, 
                                                                string fileName)
         {
@@ -360,6 +430,7 @@ namespace AudioAnalysisTools
                         ev.Name = "OscillationEvent"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
                         ev.SourceFile = fileName;
+                        ev.FreqBinCount = freqBinCount; //required for drawing event on the spectrogram
 
                         // obtain average score.
                         double av = 0.0;
