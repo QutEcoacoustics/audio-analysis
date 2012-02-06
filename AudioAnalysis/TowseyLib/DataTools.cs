@@ -2778,6 +2778,14 @@ namespace TowseyLib
 
   //============================================================================================================================
 
+  public static string Time_ConvertSecs2Mins(double seconds)
+  {
+      int mins = (int)Math.Floor(seconds / 60);
+      double remainder = seconds % 60;
+      string str = String.Format("{0}m {1:f3}s", mins, remainder);
+      return str;
+  }
+
 
   public static int String2Int(string str)
   {
