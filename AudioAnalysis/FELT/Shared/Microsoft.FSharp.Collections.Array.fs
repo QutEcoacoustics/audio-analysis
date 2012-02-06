@@ -1,5 +1,5 @@
 ﻿namespace Microsoft.FSharp.Collections
-    open MQUTeR.FSharp.Shared.Utilities
+    open System
 
     [<AutoOpen>]
     module Array =

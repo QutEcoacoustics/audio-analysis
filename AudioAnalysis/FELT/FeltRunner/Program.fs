@@ -27,6 +27,7 @@ open MQUTeR.FSharp.Shared
 open System
 open System.Configuration
 open System.IO
+open FELT.FindEventsLikeThis
 
 
 let config = ConfigurationManager.AppSettings
@@ -50,24 +51,39 @@ let resultsDirectory =
             eprintfn "%s" ex.Message
             null
 
+// load in features
+let features = new ResizeArray<string>(config.["TrainingData"].Split(','))
+
 // load data
 
-let loadAndConvert filename = 
+let loadAndConvert features filename = 
     let lines = IO.readFileAsString filename
     if lines.IsNone then
         eprintfn "There are no lines to read in %s" filename
         Option.None
     else
-        lines.Value |> CSV.csvToVectors |> Option.Some
+        lines.Value |> CSV.csvToData features |> Option.Some
 
 
-let trFile = loadAndConvert TrainingData 
-let teFile = loadAndConvert TestData
+// create data
+let trFile = loadAndConvert features TrainingData 
+let teFile = loadAndConvert features TestData
 
+if trFile.IsNone || teFile.IsNone
+    prinfn "An error occurred loading one of the data files, exiting..."
+else 
+    // run the analysis
+    let config =
+            {
+                RunDate runDate
+                TestDataBytes: int64
+                TrainingDataBytes: int64
+                ReportDestination: FileInfo
+                ReportTemplate: FileInfo
+            }
+    RunAnalysis Basic 
 
-
-
-Console.ReadKey(false) |> ignore
+    Console.ReadKey(false) |> ignore
 
 
 

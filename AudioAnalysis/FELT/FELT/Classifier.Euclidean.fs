@@ -22,7 +22,7 @@
         override this.Classify (trainingData, testData) =
 
             let colCount = trainingData.Instances.Count
-            if colCount = testData.Instances.Count then
+            if colCount <> testData.Instances.Count then
                 failwith "Input data sets must have same number of columns"
 
             // for each vector (t) in test data (td)
@@ -40,7 +40,7 @@
 
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
-            let sortedDistances = Array.init (Array2D.base1 distances) (fun i -> Array2D.getRow i distances |> Array.sortWithIndex)
+            let sortedDistances = Array.init (Array2D.length1 distances) (fun i -> Array2D.getRow i distances |> Array.sortWithIndex)
 
             sortedDistances
 
