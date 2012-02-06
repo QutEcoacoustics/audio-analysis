@@ -1,9 +1,8 @@
 ﻿namespace MQUTeR.FSharp.Shared
     open System
-    open System.ComponentModel.DataAnnotations
     open Microsoft.FSharp.Collections
     open Microsoft.FSharp.Quotations
-   
+    open MQUTeR.FSharp.Shared.Equality
 
     type DataSet =
         | Training = 0
@@ -64,6 +63,10 @@
       
         end
     
+    type Date(d) = class
+        inherit BaseValue<DateTime>(d)
+        end
+
     type FuzzyBit(b) = class
         inherit Number(b)
         do
@@ -159,8 +162,8 @@
                 else
                     Option.None
 
-        let unwrap (input: #BaseValue<'c> array) =
-                    Array.map castTo<'c> input
+        let inline unwrap (input: #BaseValue<'c> array) =
+                    Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
 
         /// Active pattern for the value type
         /// to make pattern matching easier

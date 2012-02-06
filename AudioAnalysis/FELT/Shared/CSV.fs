@@ -7,7 +7,6 @@
 namespace MQUTeR.FSharp.Shared
     open System
     open MQUTeR.FSharp.Shared
-    open MQUTeR.FSharp.Shared.Utilities
     open Microsoft.FSharp.Math
     open System.Text.RegularExpressions
 
@@ -73,6 +72,61 @@ namespace MQUTeR.FSharp.Shared
                 first
             else
                 DataType.Text
+
+
+        let csvToData (features: ResizeArray<string> ) (text: string array)  =
+            match text with
+                | Rest (firstRow, rest) ->
+
+                    let headers = firstRow |> rowToList ','
+
+                    let cells = Array.map (rowToList ',') rest  
+                    
+                    let typeCheckCount = min CsvColumnLinesTypeCheck cells.Length
+
+                    // take first CsvColumnLinesTypeCheck rows of each column, and attempt to guess type
+                    let firstFewRows = cells.[0..typeCheckCount - 1]     
+                    let grabCol index = ((Array.fold (fun lst (x : string array) ->  x.[index] :: lst ) List<string>.Empty  firstFewRows) |> guessType, index)
+                    let bounds =  Array.init firstFewRows.[0].Length   (fun x -> x)                         
+                    let types = Array.map grabCol bounds
+
+                    // filter out unwanted columns
+                    let filteredTypes = Array.filter (fun (dt, index) -> features.Contains(headers.[index])) types
+                    
+                    let finalHeaders =  Array.fold (fun state (typ, index) -> Map.add headers.[index] typ state) Map.empty<ColumnHeader, DataType> filteredTypes
+
+                    // storge
+                    let populateColumn (map:Map<ColumnHeader, Value array>) (datatype, columnIndex) =
+                        let convert rowIndex = 
+                            let row = cells.[rowIndex]
+                            let cell = row.[columnIndex] 
+                            let (v:Value) = 
+                                match datatype with
+                                    | DataType.Date -> upcast new Date(DateTime.Parse(cell))
+                                    | DataType.Number ->upcast new Number(Double.Parse(cell))
+                                    | DataType.Text -> upcast new Text(cell)
+                                    | _ -> failwith "Invalid data type"
+                            v
+
+                        let columnValues  = Array.init cells.Length convert
+                        map.Add(headers.[columnIndex], columnValues)
+
+
+                    let make dt : Map<ColumnHeader, Value array> =
+                        Array.fold populateColumn Map.empty<ColumnHeader, Value array> dt              
+                   
+                    let instances = make filteredTypes
+                    let className = features.[0]
+                    let classes =  Array.map (fun (x:Value) -> (x :?> BaseValue<string>).Value) instances.[className] 
+                     
+                    {
+                        DataSet = DataSet.Training; // : DataSet
+                        Headers = finalHeaders.Remove(className);//: Map<ColumnHeader, DataType>
+                        Instances  = instances.Remove(className);//:  Map<ColumnHeader, Value array>
+                        ClassHeader = className; //: ColumnHeader
+                        Classes = classes //:  Class array
+                    }
+                | _ -> failwith "no text input given"
         
         let csvToVectors (text: string array)  =
             match text with

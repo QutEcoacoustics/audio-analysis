@@ -4,12 +4,13 @@
 
 *)
 
-namespace MQUTeR.FSharp.Shared
+namespace System
 
     open System
 
     type index = int
 
+    [<AutoOpen>]
     module Utilities =
 
         let inline (!>) (arg:^b) : ^a = (^b : (static member op_Implicit: ^b -> ^a) arg)
@@ -32,6 +33,9 @@ namespace MQUTeR.FSharp.Shared
                     this + (string stringb)
                 else
                     this
+
+        let inline flip f a b = f b a
+        let inline (><) f a b = f b a
 
         // http://stackoverflow.com/a/3928197/224512
         let inline isNull o = System.Object.ReferenceEquals(o, null)

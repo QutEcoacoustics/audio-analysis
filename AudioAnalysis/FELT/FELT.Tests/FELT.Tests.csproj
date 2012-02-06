@@ -35,6 +35,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EPPlus">
+      <HintPath>..\..\..\Extra Assemblies\EPPlus 3.0\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\packages\FSPowerPack.Community.2.1.1.1\Lib\Net40\FSharp.PowerPack.dll</HintPath>
@@ -62,6 +65,7 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Numerics" />
+    <Reference Include="System.XML" />
     <Reference Include="zlib.net">
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
     </Reference>
@@ -72,12 +76,15 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EuclideanClassifierTest.cs" />
+    <Compile Include="FindEventsLikeThisTest.cs" />
     <Compile Include="GroupTrainerTest.cs" />
     <Compile Include="MathTest.cs" />
     <Compile Include="OneForOneSelectorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MQUTeR.FSharp.Shared.cs" />
     <Compile Include="RandomiserSelectorTest.cs" />
+    <Compile Include="ResultsComputationTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FELT\FELT.fsproj">
@@ -90,6 +97,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\FELT\ExcelResultsComputationTemplate.xlsx">
+      <Link>ExcelResultsComputationTemplate.xlsx</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="democsv2.csv" />
     <None Include="packages.config" />
   </ItemGroup>
