@@ -546,6 +546,26 @@ namespace AudioAnalysisTools
         }
 
 
+        /// <summary>
+        /// merges two acoustic events in a list if they are separated by fewer than S seconds.
+        /// Method assumes that the events in list are in temporal order.
+        /// </summary>
+        /// <param name="events"></param>
+        /// <param name="secondsGap"></param>
+        public static void MergeAdjacentEvents(List<AcousticEvent> events, int secondsGap)
+        {
+            for (int e = events.Count-2; e >=0; e--)
+            {
+                if ((events[e+1].StartTime - events[e].EndTime) <= secondsGap)
+                {
+                    events[e].EndTime = events[e + 1].EndTime;
+                    events[e].Duration = events[e].EndTime - events[e].StartTime;
+                    events[e].oblong.r2 = events[e + 1].oblong.r2;
+                    events.RemoveRange(e + 1, 1);
+                } 
+            }
+        }
+
 
         /// <summary>
         /// Given two lists of AcousticEvents, one being labelled events and the other being predicted events,
