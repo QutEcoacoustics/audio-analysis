@@ -26,9 +26,30 @@ steps:
 open MQUTeR.FSharp.Shared
 open System
 open System.Configuration
+open System.Diagnostics
 open System.IO
+open System.Reflection
 open FELT.FindEventsLikeThis
+open FELT.Results
 
+let fail() =
+    eprintfn "Exiting because of error!"
+    #if DEBUG
+    printfn "Debug hook...  press any key to continue..."
+    Console.ReadKey(false) |> ignore
+    #endif
+    Environment.Exit(1);
+
+let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
+printfn "Welcome to felt version:"
+printfn "%s" version
+
+#if DEBUG
+printfn "Debug hook...  press any key to continue..."
+Console.ReadKey(false) |> ignore
+#endif
+
+printfn "Start: read configuration settings..."
 
 let config = ConfigurationManager.AppSettings
 
@@ -49,11 +70,15 @@ let resultsDirectory =
     with
         | ex -> 
             eprintfn "%s" ex.Message
+            fail()
             null
+let reportDest = new  FileInfo(ResultsDirectory.ToString() + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx")
 
 // load in features
-let features = new ResizeArray<string>(config.["TrainingData"].Split(','))
+let features = new ResizeArray<string>(config.["Features"].Split(','))
 
+printfn "end: configuration settings..."
+printfn "Start: data import..."
 // load data
 
 let loadAndConvert features filename = 
@@ -69,20 +94,37 @@ let loadAndConvert features filename =
 let trFile = loadAndConvert features TrainingData 
 let teFile = loadAndConvert features TestData
 
-if trFile.IsNone || teFile.IsNone
-    prinfn "An error occurred loading one of the data files, exiting..."
-else 
-    // run the analysis
-    let config =
-            {
-                RunDate runDate
-                TestDataBytes: int64
-                TrainingDataBytes: int64
-                ReportDestination: FileInfo
-                ReportTemplate: FileInfo
-            }
-    RunAnalysis Basic 
+printfn "end: data import..."
 
+if trFile.IsNone || teFile.IsNone then
+    eprintfn "An error occurred loading one of the data files, exiting..."
+    fail()
+else 
+    printfn "start: main analysis..."
+
+    let trData = { trFile.Value with DataSet = DataSet.Training}
+    let teData = { trFile.Value with DataSet = DataSet.Test}
+
+    // run the analysis
+    let config =            {
+                RunDate = runDate;
+                TestDataBytes = (new FileInfo(TestData)).Length;
+                TrainingDataBytes = (new FileInfo(TrainingData)).Length;
+                ReportDestination = reportDest;
+                ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
+            }
+
+    RunAnalysis trData teData Basic config |> ignore
+
+    printfn "end: main analysis..."
+    printfn "Analysis complete!"
+    printf "Open report (y/n)"
+    let openFile = Console.ReadKey(true);
+
+    if Char.ToLower openFile.KeyChar = 'y' then
+        Process.Start(reportDest.FullName) |> ignore
+
+    printfn "Exiting"
     Console.ReadKey(false) |> ignore
 
 
