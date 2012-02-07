@@ -59,6 +59,9 @@
     <Compile Include="ResultsComputation.fs" />
     <Compile Include="RunAnalysis.fs" />
     <None Include="packages.config" />
+    <Content Include="ExcelResultsComputationTemplate.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="EPPlus">
