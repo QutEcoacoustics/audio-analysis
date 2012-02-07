@@ -25,12 +25,11 @@ namespace AnalysisPrograms
     class KiwiRecogniser
     {
         //Following lines are used for the debug command line.
-        //CANETOAD
-        //od  "C:\SensorNetworks\WavFiles\Canetoad\DM420011\DM420011_00m_00s__02m_00s.wav" C:\SensorNetworks\Output\OD_CaneToad2_DM420011_NoFilter\OD_CaneToad2_DM420011_NoFilter_Params.txt events.txt
-        //od  "C:\SensorNetworks\WavFiles\Canetoad\\FromPaulRoe\canetoad_CubberlaCreek_100529.WAV"  C:\SensorNetworks\Output\OD_CaneToad_PRoe\OD_CaneToad_Params.txt events.txt
-        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt" kiwiEvents.txt
-        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-male\TOWER_20091112_072000_25.LSK.M.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt" kiwiEvents.txt
-        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt" kiwiEvents.txt
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-male\TOWER_20091112_072000_25.LSK.M.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
 
 
         
@@ -100,20 +99,17 @@ namespace AnalysisPrograms
 
         public static void Dev(string[] args)
         {
-            string title = "# DETECTING LOW FREQUENCY AMPLITUDE OSCILLATIONS";
+            string title = "# SOFTWARE TO DETECT CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
             string date  = "# DATE AND TIME: " + DateTime.Now;
             Log.WriteLine(title);
             Log.WriteLine(date);
 
+            //GET COMMAND LINE ARGUMENTS
             Log.Verbosity = 1;
             CheckArguments(args);
-
-
             string recordingPath = args[0];
             string iniPath   = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
-            //string opFName   = args[2];
-            //string opPath    = outputDir + opFName;
             Log.WriteIfVerbose("# Output dir: " + outputDir);
                        
 
@@ -126,22 +122,17 @@ namespace AnalysisPrograms
             string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(recordingPath);
             if (kiwiParams.reportFormat.Equals("CSV")) reportfileName += ".csv";
             else reportfileName += ".txt";
-            string line = String.Format("Start{0}Duration{0}#Event{0}Tag{0}EvStart{0}EventDur{0}MinHz{0}MaxHz{0}Score1{0}Score2", reportSeparator);
+            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}Hit%{0}AvOscRate", reportSeparator);
             FileTools.WriteTextFile(reportfileName, line);
-            //6	1m 59.836s	1	Male LSK	40.63	38.5	2200	3400	0.993	0.911
 
 
-
+            // LOOP THROUGh THE FILE
             double startMinutes = 0.0;
             int overlap = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
-
-            //Log.WriteIfVerbose("# START: sampling at {0:f3} minute intervals.", kiwiParams.segmentDuration);
-
             for (int s = 0; s < Int32.MaxValue; s++)
             {
                 Console.WriteLine();
                 Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
-                //if(s % 1 == 0) Console.WriteLine();
 
                 AudioRecording recording = GetSegmentFromAudioRecording(recordingPath, startMinutes, kiwiParams.segmentDuration, overlap, outputDir);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
@@ -156,19 +147,19 @@ namespace AnalysisPrograms
                     break;
                 }
 
-
                 //#############################################################################################################################################
-                //Log.WriteLine("# Looking for kiwi oscillation events.");
                 var results = Execute_KiwiDetect(recording, kiwiParams.minHzMale, kiwiParams.maxHzMale, kiwiParams.minHzFemale, kiwiParams.maxHzFemale,
                                                  kiwiParams.frameLength, kiwiParams.frameOverlap,
                                                  kiwiParams.dctDuration, kiwiParams.dctThreshold, kiwiParams.minPeriodicity, kiwiParams.maxPeriodicity,
                                                  kiwiParams.eventThreshold, kiwiParams.minDuration, kiwiParams.maxDuration);
                 //#############################################################################################################################################
 
+                recording.Dispose();
                 var sonogram = results.Item1;
                 var hits = results.Item2;
                 var scores = results.Item3;
-                var predictedEvents = results.Item4;
+                var oscRates = results.Item4;
+                var predictedEvents = results.Item5;
                 Log.WriteLine("# Event count = " + predictedEvents.Count());
 
                 //write events to results file. 
@@ -188,12 +179,12 @@ namespace AnalysisPrograms
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinutes.ToString() + "min.png";
                 if (kiwiParams.DRAW_SONOGRAMS == 2)
                 {
-                    DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, kiwiParams.eventThreshold);
+                    DrawSonogram(sonogram, imagePath, hits, scores, oscRates, predictedEvents, kiwiParams.eventThreshold);
                 }
                 else
                     if ((kiwiParams.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
                     {
-                        DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, kiwiParams.eventThreshold);
+                        DrawSonogram(sonogram, imagePath, hits, scores, oscRates, predictedEvents, kiwiParams.eventThreshold);
                     }
 
 
@@ -291,27 +282,23 @@ namespace AnalysisPrograms
             return recording;
         }
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>> Execute_KiwiDetect(AudioRecording recording, 
+        public static System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>> Execute_KiwiDetect(AudioRecording recording, 
             int minHzMale, int maxHzMale, int minHzFemale, int maxHzFemale, int frameLength, double frameOverlap, double dctDuration, double dctThreshold,
             double minPeriodicity, double maxPeriodicity, double eventThreshold, double minDuration, double maxDuration)
         {
-            //i: GET RECORDING
-
-
-            //ii: MAKE SONOGRAM
+            //i: MAKE SONOGRAM
             //Log.WriteLine("Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName    = recording.FileName;
             sonoConfig.WindowSize     = frameLength;
             sonoConfig.WindowOverlap  = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            recording.Dispose();
             //Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
             //Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
             //                           sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
             //                          (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
-            int binCount_male   = (int)(maxHzMale / sonogram.FBinWidth) - (int)(minHzMale / sonogram.FBinWidth) + 1;
-            int binCount_female = (int)(maxHzFemale / sonogram.FBinWidth) - (int)(minHzFemale / sonogram.FBinWidth) + 1;
+            //int binCount_male   = (int)(maxHzMale   / sonogram.FBinWidth) - (int)(minHzMale   / sonogram.FBinWidth) + 1;
+            //int binCount_female = (int)(maxHzFemale / sonogram.FBinWidth) - (int)(minHzFemale / sonogram.FBinWidth) + 1;
             //Log.WriteLine("Start oscillation detection");
 
             //iii: DETECT OSCILLATIONS
@@ -319,31 +306,41 @@ namespace AnalysisPrograms
             double minOscilFreq = 1 / maxPeriodicity;  //convert max period (seconds) to oscilation rate (Herz).
             double maxOscilFreq = 1 / minPeriodicity;  //convert min period (seconds) to oscilation rate (Herz).
 
-            //CHECK FOR MALE KIWIS
+            //ii: CHECK FOR MALE KIWIS
             List<AcousticEvent> predictedMaleEvents;  //predefinition of results event list
             Double[,] maleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] maleScores;                      //predefinition of score array
+            double[] maleOscRate;
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
-                                         out maleScores, out predictedMaleEvents, out maleHits);
+                                         out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
             foreach (AcousticEvent ae in predictedMaleEvents) ae.Name = "Male LSK";
-            //CHECK FOR FEMALE KIWIS
+            int gapThreshold = 10;  //merge events that are closer than 10 seconds
+            AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
+
+            //iii: CHECK FOR FEMALE KIWIS
             Double[,] femaleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] femaleScores;                      //predefinition of score array
+            double[] femaleOscRate;
             List<AcousticEvent> predictedFemaleEvents;  //predefinition of results event list
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
-                                         out femaleScores, out predictedFemaleEvents, out femaleHits);
+                                         out femaleScores, out predictedFemaleEvents, out femaleHits, out femaleOscRate);
             foreach (AcousticEvent ae in predictedFemaleEvents) ae.Name = "Female LSK";
+            AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
 
-            //merge the two lists of events
+
+            //iv: MERGE MALE AND FEMALE INFO
             foreach (AcousticEvent ae in predictedFemaleEvents) predictedMaleEvents.Add(ae);
-            //merge the two hit matrices
+            // Merge the male and female hit matrices. Each hit matrix shows where there is an oscillation of sufficient amplitude in the correct range.
+            // Values in the matrix are the oscillation rate. i.e. if OR = 2.0 = 2 oscillations per second. </param>
             Double[,] hits = DataTools.AddMatrices(maleHits, femaleHits);
             //merge the two score arrays
             for (int i = 0; i < maleScores.Length; i++) if (femaleScores[i] > maleScores[i]) maleScores[i] = femaleScores[i];
+            //merge the two oscillation rate arrays
+            //for (int i = 0; i < maleOscRate.Length; i++) if (femaleOscRate[i] > maleOscRate[i]) maleOscRate[i] = femaleOscRate[i];
 
-            return System.Tuple.Create(sonogram, hits, maleScores, predictedMaleEvents);
+            return System.Tuple.Create(sonogram, hits, maleScores, maleOscRate, predictedMaleEvents);
 
         }//end Execute_KiwiDetect()
 
@@ -364,8 +361,8 @@ namespace AnalysisPrograms
                 foreach (AcousticEvent ae in eventList)
                 {
                     string eventStartMin = DataTools.Time_ConvertSecs2Mins(segmentStart + ae.StartTime);
-                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4}{0}{5:f2}{0}{6:f1}{0}{7}{0}{8}{0}{9:f3}{0}{10:f3}",
-                                         separator, segmentStart, duration, eventCount, ae.Name, ae.StartTime, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
+                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5:f1}{0}{6}{0}{7}{0}{8:f3}{0}{9:f3}",
+                                         separator, segmentStart, duration, ae.Name, ae.StartTime, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
                     sb.AppendLine(line);
                 }
             }
@@ -374,7 +371,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores,
+        public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, double[] oscillationRates,
                                         List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             //Log.WriteLine("# Start to draw image of sonogram.");
@@ -388,8 +385,9 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+                //image.AddTrack(Image_Track.GetScoreTrack(oscillationRates, 0.5, 1.5, 1.0));
                 double maxScore = 16.0;
-                image.AddSuperimposedMatrix(hits, maxScore);
+                //image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }
@@ -398,11 +396,11 @@ namespace AnalysisPrograms
 
         public static void CheckArguments(string[] args)
         {
-            if (args.Length != 3)
+            if (args.Length != 2)
             {
                 Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
                 foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 3);
+                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 2);
                 Usage();
             }
             CheckPaths(args);
@@ -440,8 +438,8 @@ namespace AnalysisPrograms
             Console.WriteLine("where:");
             Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
             Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
-            Console.WriteLine("outputFileName:-   (string) The name of the output file.");
-            Console.WriteLine("                            By default, the output dir is that containing the ini file.");
+            Console.WriteLine();
+            Console.WriteLine("NOTE: By default, the output dir is that containing the ini file.");
             Console.WriteLine("");
             Console.WriteLine("\nPress <ENTER> key to exit.");
             Console.ReadLine();
