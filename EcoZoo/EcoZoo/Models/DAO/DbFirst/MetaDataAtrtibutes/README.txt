@@ -1,1 +1,0 @@
-﻿http://stevesmithblog.com/blog/adding-attributes-to-generated-classes/
