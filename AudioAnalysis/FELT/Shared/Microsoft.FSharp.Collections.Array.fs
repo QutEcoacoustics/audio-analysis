@@ -21,6 +21,16 @@
 
         let inline head (arr:'a array) = Seq.head arr
 
+        /// Apply a function to every element of a jagged arrray
+        let mapJagged f = Array.map (Array.map f) 
+
+        let mapJaggedi f input = Array.mapi (fun x -> Array.mapi (f x)) input
+
+        /// Initalises an i x j square jagged array
+        /// i : Rows
+        /// j : Columns
+        let initJagged i j f = Array.init i (fun i -> Array.init j (f i))
+
         let sortWithIndex arr = arr |> Array.mapi (fun x t -> (t,x)) |> Array.sortBy fst 
 
         let pickSafe f (array: _[]) = 

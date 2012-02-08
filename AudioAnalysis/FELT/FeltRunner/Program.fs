@@ -66,7 +66,7 @@ let runDate = DateTime.Now
 
 let resultsDirectory =
     try
-         Directory.CreateDirectory (ResultsDirectory + runDate.ToString("yyyyMMdd_HHmmss\\"))
+         Directory.CreateDirectory (ResultsDirectory + runDate.ToString("yyyyMMdd_HHmmss") + "\\")
     with
         | ex -> 
             eprintfn "%s" ex.Message
@@ -114,7 +114,7 @@ else
                 ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
             }
 
-    RunAnalysis trData teData Basic config |> ignore
+    RunAnalysis trData teData FELT.FindEventsLikeThis.BasicGrouped config |> ignore
 
     printfn "end: main analysis..."
     printfn "Analysis complete!"
