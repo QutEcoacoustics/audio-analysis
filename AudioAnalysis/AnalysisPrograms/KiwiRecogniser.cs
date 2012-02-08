@@ -28,8 +28,9 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-male\TOWER_20091112_072000_25.LSK.M.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
-        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\Kiwi\Results_MixedTest\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
+        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
 
         
@@ -116,13 +117,23 @@ namespace AnalysisPrograms
             //READ PARAMETER VALUES FROM INI FILE
             KiwiParams kiwiParams = ReadIniFile(iniPath);
 
+            // Get the file time duration
+            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
+            var fileInfo = new FileInfo(recordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
+            //var dateInfo = fileInfo.CreationTime;
+            var duration = audioUtility.Duration(fileInfo, mimeType);
+            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(recordingPath));
+            Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fileInfo.CreationTime.ToLongDateString(), fileInfo.CreationTime.ToLongTimeString());
+            Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
+
             //SET UP THE REPORT FILE
             string reportSeparator = "\t";
             if (kiwiParams.reportFormat.Equals("CSV")) reportSeparator = ",";
             string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(recordingPath);
             if (kiwiParams.reportFormat.Equals("CSV")) reportfileName += ".csv";
             else reportfileName += ".txt";
-            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}Hit%{0}AvOscRate", reportSeparator);
+            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}Hit%{0}AvOscRate", reportSeparator);
             FileTools.WriteTextFile(reportfileName, line);
 
 
@@ -315,7 +326,7 @@ namespace AnalysisPrograms
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
             foreach (AcousticEvent ae in predictedMaleEvents) ae.Name = "Male LSK";
-            int gapThreshold = 10;  //merge events that are closer than 10 seconds
+            int gapThreshold = (int)Math.Round(dctDuration);     //merge events that are closer than duration of DCT
             AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
 
             //iii: CHECK FOR FEMALE KIWIS
@@ -360,9 +371,9 @@ namespace AnalysisPrograms
             {
                 foreach (AcousticEvent ae in eventList)
                 {
-                    string eventStartMin = DataTools.Time_ConvertSecs2Mins(segmentStart + ae.StartTime);
-                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5:f1}{0}{6}{0}{7}{0}{8:f3}{0}{9:f3}",
-                                         separator, segmentStart, duration, ae.Name, ae.StartTime, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
+                    int startSec = (int)((segmentStart * 60) + ae.StartTime);
+                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f3}{0}{10:f3}",
+                                         separator, segmentStart, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
                     sb.AppendLine(line);
                 }
             }
@@ -385,9 +396,9 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                //image.AddTrack(Image_Track.GetScoreTrack(oscillationRates, 0.5, 1.5, 1.0));
+                image.AddTrack(Image_Track.GetScoreTrack(oscillationRates, 0.5, 1.5, 1.0));
                 double maxScore = 16.0;
-                //image.AddSuperimposedMatrix(hits, maxScore);
+                image.AddSuperimposedMatrix(hits, maxScore);
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }

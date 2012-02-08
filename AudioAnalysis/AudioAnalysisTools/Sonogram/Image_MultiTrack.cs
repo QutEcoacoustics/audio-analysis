@@ -184,8 +184,10 @@ namespace AudioAnalysisTools
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c+1);
+                    //g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c+1);
+                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r+1, imageHt - c);
                 }
+                c++;
             }
         } //Superimpose()
 
