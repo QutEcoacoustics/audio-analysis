@@ -22,6 +22,43 @@
         | Classifier of ClassifierBase
         | Result of ResultsComputation
 
+    let Basic = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new OneForOneSelector());
+        Trainer(new OneForOneTrainer()); 
+        Classifier(new EuclideanClassifier())
+        ]
+
+    let BasicGrouped = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new OneForOneSelector());
+        Trainer(new GroupTrainer()); 
+        Classifier(new EuclideanClassifier())
+        ]
+
+    let BasicAnti = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new RandomiserSelector());
+        Trainer(new GroupTrainer()); 
+        Classifier(new EuclideanClassifier())
+        ]
+
+    let BasicGroupedAnti = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new RandomiserSelector());
+        Trainer(new GroupTrainer()); 
+        Classifier(new EuclideanClassifier())
+        ]
+
+
+
+        
+
+
     let wfItemCases = FSharpType.GetUnionCases typeof<WorkflowItem>
 
     let GetUnderlyingTypes (du:'d) =
@@ -56,43 +93,16 @@
                     // statefull
                     r.Calculate trData teData results (toString oplst') |> ignore
                     state
-        List.scan f (trainingData, testData, null) operationsList
+        List.scan f (trainingData, testData, null) oplst'
 
-
-    let Basic = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new OneForOneTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-    let BasicGrouped = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-    let BasicAnti = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-    let BasicGroupedAnti = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-
+    
     let RunAnalysis trainingData testData tests  data =
         let result = workflow trainingData testData tests data
         result
+
+    [<EntryPoint>]
+    let Entry args =
+        printfn "This executable is not designed to run on its own yet... exiting"
         
+        // error code (permanent fail)
+        1

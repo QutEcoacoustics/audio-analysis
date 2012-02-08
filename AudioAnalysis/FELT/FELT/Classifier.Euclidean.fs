@@ -11,7 +11,9 @@
             let colsWithNames = Map.toArray m
             let cols = Array.map snd colsWithNames
             // reversing array (i.e. row will be first index)
-            Array2D.init cols.[0].Length m.Count (fun rowIndex colIndex -> cols.[colIndex].[rowIndex])
+            let xDim = cols.[0].Length
+            let yDim = m.Count
+            Array.initJagged xDim yDim  (fun rowIndex colIndex -> cols.[colIndex].[rowIndex]), xDim, yDim
 
         let distance (a: Value[]) (b: Value[]) = 
             match (a, b) with
@@ -29,18 +31,18 @@
                 // measure distance to each vector (s) in training data (sd)
 
             // we dont need column names so much for this
-            let trd = deMap trainingData.Instances
-            let ted = deMap testData.Instances
+            let trd, trdx, trdy = deMap trainingData.Instances
+            let ted, tedx, tedy = deMap testData.Instances
             
+            // WARNING: BIG OP, we need to use jagged arrays here because not enough memory for 2d array
             // distances is an cross-joined array of test and training intances, e.g.:
-            // WARNING: BIG OP
             // [ [ d(t1-s1); d(t1-s2) ]
             //   [ d(t2-s1); d(t2-s2) ] ]
-            let distances = Array2D.init (Array2D.length1 trd) (Array2D.length1 ted) (fun tedIdx trdIdx -> distance (Array2D.getRow tedIdx ted) (Array2D.getRow trdIdx trd))
+            let distances = Array.initJagged tedx trdx (fun tedIdx trdIdx -> distance ted.[tedIdx] trd.[trdIdx])
 
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
-            let sortedDistances = Array.init (Array2D.length1 distances) (fun i -> Array2D.getRow i distances |> Array.sortWithIndex)
+            let sortedDistances = Array.init tedx (fun i -> distances.[i]  |> Array.sortWithIndex)
 
             sortedDistances
 
