@@ -133,7 +133,7 @@ namespace AnalysisPrograms
             string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(recordingPath);
             if (kiwiParams.reportFormat.Equals("CSV")) reportfileName += ".csv";
             else reportfileName += ".txt";
-            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}WtScore{0}AvOscRate", reportSeparator);
+            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}dISD{0}WtScore", reportSeparator);
             FileTools.WriteTextFile(reportfileName, line);
 
 
@@ -169,7 +169,7 @@ namespace AnalysisPrograms
                 var sonogram = results.Item1;
                 var hits = results.Item2;
                 var scores = results.Item3;
-                var oscRates = results.Item4;
+                //var oscRates = results.Item4;
                 var predictedEvents = results.Item5;
                 Log.WriteLine("# Event count = " + predictedEvents.Count());
 
@@ -190,12 +190,12 @@ namespace AnalysisPrograms
                 string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinutes.ToString() + "min.png";
                 if (kiwiParams.DRAW_SONOGRAMS == 2)
                 {
-                    DrawSonogram(sonogram, imagePath, hits, scores, oscRates, predictedEvents, kiwiParams.eventThreshold);
+                    DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, kiwiParams.eventThreshold);
                 }
                 else
                     if ((kiwiParams.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))
                     {
-                        DrawSonogram(sonogram, imagePath, hits, scores, oscRates, predictedEvents, kiwiParams.eventThreshold);
+                        DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, kiwiParams.eventThreshold);
                     }
 
 
@@ -293,7 +293,7 @@ namespace AnalysisPrograms
             return recording;
         }
 
-        public static System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>> Execute_KiwiDetect(AudioRecording recording, 
+        public static System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>> Execute_KiwiDetect(AudioRecording recording,
             int minHzMale, int maxHzMale, int minHzFemale, int maxHzFemale, int frameLength, double frameOverlap, double dctDuration, double dctThreshold,
             double minPeriodicity, double maxPeriodicity, double eventThreshold, double minDuration, double maxDuration)
         {
@@ -312,6 +312,10 @@ namespace AnalysisPrograms
             //int binCount_female = (int)(maxHzFemale / sonogram.FBinWidth) - (int)(minHzFemale / sonogram.FBinWidth) + 1;
             //Log.WriteLine("Start oscillation detection");
 
+            double dB_threshold = 4.0; //threshold for 2D background noise removal
+            var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dB_threshold);
+            double[,] noiseReducedMatrix = tuple.Item1; 
+
             //iii: DETECT OSCILLATIONS
             bool normaliseDCT = true;
             double minOscilFreq = 1 / maxPeriodicity;  //convert max period (seconds) to oscilation rate (Herz).
@@ -325,9 +329,9 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
-            ProcessKiwiEvents(predictedMaleEvents, "Male LSK", maleOscRate, minDuration, maxDuration);
-            //int gapThreshold = (int)Math.Round(dctDuration);     //merge events that are closer than duration of DCT
-            //AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
+            ProcessKiwiEvents(predictedMaleEvents, "Male LSK", maleOscRate, minDuration, maxDuration, noiseReducedMatrix);
+            int gapThreshold = 2;     //merge events that are closer than 2 seconds
+            AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
 
             //iii: CHECK FOR FEMALE KIWIS
             Double[,] femaleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
@@ -337,8 +341,8 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out femaleScores, out predictedFemaleEvents, out femaleHits, out femaleOscRate);
-            ProcessKiwiEvents(predictedFemaleEvents, "Female LSK", femaleOscRate, minDuration, maxDuration);
-            //AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
+            ProcessKiwiEvents(predictedFemaleEvents, "Female LSK", femaleOscRate, minDuration, maxDuration, noiseReducedMatrix);
+            AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
 
 
             //iv: MERGE MALE AND FEMALE INFO
@@ -348,15 +352,13 @@ namespace AnalysisPrograms
             Double[,] hits = DataTools.AddMatrices(maleHits, femaleHits);
             //merge the two score arrays
             for (int i = 0; i < maleScores.Length; i++) if (femaleScores[i] > maleScores[i]) maleScores[i] = femaleScores[i];
-            //merge the two oscillation rate arrays
-            //for (int i = 0; i < maleOscRate.Length; i++) if (femaleOscRate[i] > maleOscRate[i]) maleOscRate[i] = femaleOscRate[i];
+
 
             return System.Tuple.Create(sonogram, hits, maleScores, maleOscRate, predictedMaleEvents);
+        } //end Execute_KiwiDetect()
 
-        }//end Execute_KiwiDetect()
 
-
-        public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration)
+        public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration, double[,] noiseReducedMatrix)
         {
             foreach (AcousticEvent ae in events)
             {
@@ -365,17 +367,17 @@ namespace AnalysisPrograms
                 //int objHt = ae.oblong.RowWidth;
                 //Console.WriteLine("{0}    {1} = {2}-{3}", eventLength, objHt, ae.oblong.r2, ae.oblong.r1);
 
-                //calculate score for duration. Value lies in [0,1]. Shape the ends.
+                //1: calculate score for duration. Value lies in [0,1]. Shape the ends.
                 double durationScore = 1.0;
                 if (ae.Duration < minDuration +  5) durationScore = (ae.Duration - minDuration) / 5;
                 else
                 if (ae.Duration > maxDuration - 10) durationScore = (maxDuration - ae.Duration) / 10;
 
-                // %hit score = ae.
+                //2:  %hit score = ae.
                 double hitScore = ae.Score;
 
 
-                //calculate score for change in oscillation over the event.
+                //3: calculate score for change in inter-syllable distance over the event.
                 int onetenth = eventLength / 10;
                 int onefifth = eventLength / 5; 
                 int sevenTenth = eventLength * 7 / 10;
@@ -388,13 +390,45 @@ namespace AnalysisPrograms
                     startISD += (1/oscRate[startOffset + i]);
                     endISD   += (1/oscRate[endOffset + i]);
                 }
-                double deltaISD = (endISD - startISD) / onefifth; //get average
+                double deltaISD = (endISD - startISD) / onefifth; //get average change in inter-syllable distance
                 double deltaScore = 1.0;
                 if (deltaISD < -0.1) deltaScore = 0.0;
                 else
                 if (deltaISD <  0.2) deltaScore = (3.3333 * deltaISD)+0.3333;  //y=mx+c where c=0.333 and m=3.333
+                ae.Score2Name = "deltaISD";
+                ae.Score2 = deltaISD;
 
-                ae.Score = (durationScore + hitScore + deltaScore) / 3;
+                //4: calculate score for bandwidth of syllables
+                double[] event_dB = new double[eventLength]; //dB profile for event
+                double[] upper_dB = new double[eventLength]; //dB profile for bandwidth above event
+                double[] lower_dB = new double[eventLength]; //dB profile for bandwidth below event
+                int eventHt = ae.oblong.ColWidth;
+                int halfHt = eventHt / 2;
+                for (int r = 0; r < eventLength; r++)
+                {
+                    for (int c = 0; c < eventHt; c++) event_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]; //event dB profile
+                    for (int c = 0; c < halfHt;  c++) upper_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + 10];
+                    for (int c = 0; c < halfHt;  c++) lower_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - 10 + c];
+                }
+                for (int r = 0; r < eventLength; r++) event_dB[r] /= eventHt;
+                for (int r = 0; r < eventLength; r++) upper_dB[r] /= halfHt;
+                for (int r = 0; r < eventLength; r++) lower_dB[r] /= halfHt;
+
+                bool[] peaks = DataTools.GetPeaks(event_dB);
+                //int peakCount = DataTools.CountTrues(peaks);
+                //DataTools.writeBarGraph(event_dB);
+                for (int r = 0; r < eventLength; r++) if (event_dB[r] < 6.0) peaks[r] = false;
+                int peakCount2 = DataTools.CountTrues(peaks);
+                double ratio = 0.0;
+                for (int r = 0; r < eventLength; r++)
+                {
+                    if (peaks[r]) ratio += ((upper_dB[r] + lower_dB[r]) / event_dB[r]);
+                }
+                ratio /= peakCount2;
+                double ratioScore = 1 - ratio;
+
+                //5: COMBINE SCORES
+                ae.Score = (durationScore + hitScore + deltaScore + ratioScore) / 4;
                 ae.ScoreNormalised = ae.Score;
             }
         }
@@ -416,8 +450,8 @@ namespace AnalysisPrograms
                 foreach (AcousticEvent ae in eventList)
                 {
                     int startSec = (int)((segmentStart * 60) + ae.StartTime);
-                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f3}{0}{10:f3}",
-                                         separator, segmentStart, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score, ae.Score2);
+                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f2}{0}{10:f2}",
+                                         separator, segmentStart, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq, ae.Score2, ae.Score);
                     sb.AppendLine(line);
                 }
             }
