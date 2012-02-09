@@ -133,7 +133,7 @@ namespace AnalysisPrograms
             string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(recordingPath);
             if (kiwiParams.reportFormat.Equals("CSV")) reportfileName += ".csv";
             else reportfileName += ".txt";
-            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}Hit%{0}AvOscRate", reportSeparator);
+            string line = String.Format("Start{0}Duration{0}__Label__{0}EvStart{0}EvStart{0}EvDur{0}MinHz{0}MaxHz{0}WtScore{0}AvOscRate", reportSeparator);
             FileTools.WriteTextFile(reportfileName, line);
 
 
@@ -325,9 +325,9 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
-            foreach (AcousticEvent ae in predictedMaleEvents) ae.Name = "Male LSK";
-            int gapThreshold = (int)Math.Round(dctDuration);     //merge events that are closer than duration of DCT
-            AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
+            ProcessKiwiEvents(predictedMaleEvents, "Male LSK", maleOscRate, minDuration, maxDuration);
+            //int gapThreshold = (int)Math.Round(dctDuration);     //merge events that are closer than duration of DCT
+            //AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
 
             //iii: CHECK FOR FEMALE KIWIS
             Double[,] femaleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
@@ -337,8 +337,8 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out femaleScores, out predictedFemaleEvents, out femaleHits, out femaleOscRate);
-            foreach (AcousticEvent ae in predictedFemaleEvents) ae.Name = "Female LSK";
-            AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
+            ProcessKiwiEvents(predictedFemaleEvents, "Female LSK", femaleOscRate, minDuration, maxDuration);
+            //AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
 
 
             //iv: MERGE MALE AND FEMALE INFO
@@ -354,6 +354,50 @@ namespace AnalysisPrograms
             return System.Tuple.Create(sonogram, hits, maleScores, maleOscRate, predictedMaleEvents);
 
         }//end Execute_KiwiDetect()
+
+
+        public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration)
+        {
+            foreach (AcousticEvent ae in events)
+            {
+                ae.Name = tag;
+                int eventLength = (int)(ae.Duration * ae.FramesPerSecond);
+                //int objHt = ae.oblong.RowWidth;
+                //Console.WriteLine("{0}    {1} = {2}-{3}", eventLength, objHt, ae.oblong.r2, ae.oblong.r1);
+
+                //calculate score for duration. Value lies in [0,1]. Shape the ends.
+                double durationScore = 1.0;
+                if (ae.Duration < minDuration +  5) durationScore = (ae.Duration - minDuration) / 5;
+                else
+                if (ae.Duration > maxDuration - 10) durationScore = (maxDuration - ae.Duration) / 10;
+
+                // %hit score = ae.
+                double hitScore = ae.Score;
+
+
+                //calculate score for change in oscillation over the event.
+                int onetenth = eventLength / 10;
+                int onefifth = eventLength / 5; 
+                int sevenTenth = eventLength * 7 / 10;
+                int startOffset = ae.oblong.r1 + onetenth;
+                int endOffset = ae.oblong.r1 + sevenTenth;
+                double startISD = 0; //Inter-Syllable Distance in seconds
+                double endISD   = 0; //Inter-Syllable Distance in seconds
+                for (int i = 0; i < onefifth; i++)
+                {
+                    startISD += (1/oscRate[startOffset + i]);
+                    endISD   += (1/oscRate[endOffset + i]);
+                }
+                double deltaISD = (endISD - startISD) / onefifth; //get average
+                double deltaScore = 1.0;
+                if (deltaISD < -0.1) deltaScore = 0.0;
+                else
+                if (deltaISD <  0.2) deltaScore = (3.3333 * deltaISD)+0.3333;  //y=mx+c where c=0.333 and m=3.333
+
+                ae.Score = (durationScore + hitScore + deltaScore) / 3;
+                ae.ScoreNormalised = ae.Score;
+            }
+        }
 
 
 

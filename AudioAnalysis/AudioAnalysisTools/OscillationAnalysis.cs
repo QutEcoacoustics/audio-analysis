@@ -89,7 +89,7 @@ namespace AudioAnalysisTools
         /// <param name="maxDuration">ignore hits whose duration is longer than this</param>
         /// <param name="scores">return an array of scores over the entire recording</param>
         /// <param name="events">return a list of acoustic events</param>
-        /// <param name="hits">a matrix to be superimposed over the final sonogram which shows where DCY exceed threshold</param>
+        /// <param name="hits">a matrix to be superimposed over the final sonogram which shows where the DCT coefficients exceeded the threshold</param>
         public static void Execute(SpectralSonogram sonogram, int minHz, int maxHz,
                                    double dctDuration, double dctThreshold, bool normaliseDCT, double minOscilFreq, double maxOscilFreq,
                                    double scoreThreshold, double minDuration, double maxDuration,

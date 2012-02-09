@@ -95,7 +95,7 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
 
-                if (this.SuperimposedMatrix != null) Superimpose(g);
+                if (this.SuperimposedMatrix != null) SuperimposeMatrix(g);
                 if (this.EventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
             }
@@ -142,10 +142,10 @@ namespace AudioAnalysisTools
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
-                g.DrawLine(p2, x, y1, x, y2);
+                //g.DrawLine(p2, x, y1, x, y2);
                 g.DrawLine(p2, x + 1, y1, x + 1, y2);
-                //g.DrawLine(p2, x + 2, y1, x + 2, y2);
-                //g.DrawLine(p2, x + 3, y1, x + 3, y2);
+                g.DrawLine(p2, x + 2, y1, x + 2, y2);
+                g.DrawLine(p2, x + 3, y1, x + 3, y2);
                 g.DrawString(e.Name, new Font("Tahoma", 14), Brushes.Black, new PointF(x, y - 1));
             }
         }
@@ -166,8 +166,12 @@ namespace AudioAnalysisTools
             }
         }
 
-
-        void Superimpose(Graphics g)
+        /// <summary>
+        /// superimposes a matrix of scores on top of a sonogram.
+        /// Only draws lines on every second row so that the underling sonogram can be discerned
+        /// </summary>
+        /// <param name="g"></param>
+        void SuperimposeMatrix(Graphics g)
         {
             int paletteSize = 50;
             var pens = ImageTools.GetColorPalette(paletteSize);
@@ -183,11 +187,18 @@ namespace AudioAnalysisTools
                 {
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
 
+                    //Color grey = ((Bitmap)this.SonoImage).GetPixel(r, c);
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    //g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r, imageHt - c+1);
-                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r+1, imageHt - c);
+                    //following code was failed attempt to do a transparent effect!
+                    //Color palletteColor = pens[(int)(paletteSize * normScore)].Color;
+                    //byte red   = (byte)(grey.R + (palletteColor.R / 2));
+                    //byte green = (byte)(grey.G + (palletteColor.G / 2));
+                    //byte blue  = (byte)(grey.B + (palletteColor.B / 2));
+                    //Color newColor = Color.FromArgb(red, green, blue);
+                    //g.DrawLine(new Pen(newColor), r, imageHt - c, r + 1, imageHt - c);
+                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r + 1, imageHt - c);
                 }
-                c++;
+                c++; //only draw on every second row.
             }
         } //Superimpose()
 
