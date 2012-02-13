@@ -102,6 +102,23 @@ namespace TowseyLib
             }
             return sa;
         }
+        public static double[] Subarray(double[] A, int start, int length)
+        {
+            int end = start + length - 1;
+            if (end >= A.Length)
+            {
+                Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                return null;
+            }
+            double[] sa = new double[length];
+
+            for (int i = 0; i < length; i++)
+            {
+                sa[i] = A[start + i];
+            }
+            return sa;
+        }
+
 
 
 

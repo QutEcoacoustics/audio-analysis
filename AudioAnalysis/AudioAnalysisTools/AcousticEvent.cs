@@ -61,6 +61,11 @@ namespace AudioAnalysisTools
         double I3Mean;      // mean intensity of pixels in the event AFTER noise reduciton - USED FOR CLUSTERING
         double I3Var;       // variance of intensity of pixels in the event.
 
+        //Five KIWI SCORES
+        public double kiwi_durationScore, kiwi_hitScore, kiwi_deltaISDScore, kiwi_bandWidthScore, kiwi_entropyScore;
+
+
+
         /// <summary>Use this if want to filter or tag some members of a list for some purpose.</summary>
         public bool Tag { get; set; }
         /// <summary>Assigned value when reading in a list of user identified events. Indicates a user assigned assessment of event intensity</summary>
