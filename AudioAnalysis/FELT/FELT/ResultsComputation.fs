@@ -61,9 +61,8 @@
                         ((Set.difference uniqueTestClasses uniqueAll).Count + (Set.difference uniqueTrainingClasses uniqueAll).Count) ]
                 ]
 
-            let fullResultsTags = Array.map (Array.map (fun y -> trainingData.Classes.[snd y])) classificationResults
-
-            let fullResultsDistances = Array.map (Array.map (fun y -> fst y)) classificationResults 
+            let fullResultsTags = Array.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
+            let fullResultsDistances = Array.mapJagged fst classificationResults
 
             let placeFunc rowNum class' row=
                 match Array.tryFindIndex ((=) class') row with

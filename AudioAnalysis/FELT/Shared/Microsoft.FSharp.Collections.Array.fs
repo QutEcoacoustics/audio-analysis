@@ -59,6 +59,13 @@
                 with get(indexes: list<int>) =
                     List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes |> List.toArray
     
+    
+        module Parallel =
+        
+            let mapJagged f = Array.Parallel.map (Array.Parallel.map f) 
+
+
+
     module Array2D =
         let flatten (A:'a[,]) = A |> Seq.cast<'a>
 
