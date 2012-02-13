@@ -176,11 +176,47 @@ namespace AudioAnalysisTools
                         //accumulate J columns of values
                         int N = 5; //average five rows
                         for (int i = 0; i < dctLength; i++)
-                        { for (int j = 0; j < N; j++) array[i] += sonogram.Data[r + i, c + j]; }
-                        for (int i = 0; i < dctLength; i++) array[i] /= N;
+                        {  for (int j = 0; j < N; j++) array[i] += sonogram.Data[r + i, c + j];
+                           array[i] /= N;
+                        }
 
                         array = DataTools.SubtractMean(array);
                         //     DataTools.writeBarGraph(array);
+
+
+                        //CHECK IF PROPOER OSCILATION
+                        bool[] peaks = DataTools.GetPeaks(array);
+                        int peakCount = DataTools.CountTrues(peaks);
+                        ////set up histogram of peak energies
+                        //double[] histogram = new double[peakCount];
+                        //int count = 0;
+                        //for (int k = 0; k < dctLength; k++)
+                        //{
+                        //    if (peaks[k])
+                        //    {
+                        //        histogram[count] = array[k];
+                        //        count++;
+                        //    }
+                        //}
+                        //histogram = DataTools.normalise(histogram);
+                        //histogram = DataTools.NormaliseProbabilites(histogram);
+                        //double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
+                        //double entropy = DataTools.Entropy(histogram) / normFactor;
+                        //if (entropy < 0.85)
+                        //{
+                        //    r += 6; //skip rows
+                        //    continue;
+                        //}
+                        int expectedPeakCount = 2 * minIndex;
+                        if (peakCount < expectedPeakCount)
+                        {
+                            r += 6; //skip rows
+                            continue;
+                        }
+
+
+
+
 
                         double[] dct = Speech.DCT(array, cosines);
                         for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
@@ -435,15 +471,15 @@ namespace AudioAnalysisTools
 
                         // obtain average score.
                         double av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += scores[n];
-                        av /= (double)(i - startFrame + 1);
+                        for (int n = startFrame+1; n < (i-1); n++) av += scores[n]; //ignore first and last frames
+                        av /= (double)(i - startFrame - 1);
                         ev.SetScores(av, 0.0, 1.0);  // assumes passed score array was normalised.
 
                         //calculate average oscillation freq and assign to ev.Score2 
                         ev.Score2Name = "OscRate"; //score2 name
                         av = 0.0;
-                        for (int n = startFrame; n <= i; n++) av += oscFreq[n];
-                        ev.Score2 = av / (double)(i - startFrame + 1);
+                        for (int n = startFrame + 1; n < (i - 1); n++) av += oscFreq[n];//ignore first and last frames
+                        ev.Score2 = av / (double)(i - startFrame - 1); 
                         events.Add(ev);
                     }
             } // end of pass over all frames
