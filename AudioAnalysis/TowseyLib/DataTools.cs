@@ -607,7 +607,31 @@ namespace TowseyLib
         return A;
     }
 
-//=============================================================================
+    //=============================================================================
+
+    /// <summary>
+    /// Pearsons correlation coefficient.
+    /// Equals the covariance normalised by the sd's.
+    /// </summary>
+    /// <param name="seriesX"></param>
+    /// <param name="seriesY"></param>
+    /// <returns></returns>
+    public static double CorrelationCoefficient(double[] seriesX, double[] seriesY)
+    {
+        double meanX, sdX, meanY, sdY;
+        NormalDist.AverageAndSD(seriesX, out meanX, out sdX);
+        NormalDist.AverageAndSD(seriesX, out meanY, out sdY);
+
+        double covar = 0.0;
+        for (int i = 0; i < seriesX.Length; i++)
+        {
+            covar += ((seriesX[i] - meanX) * (seriesY[i] - meanY));
+        }
+        covar = covar / (sdX * sdX) / (seriesX.Length-1);
+        return covar;
+    }
+    //=============================================================================
+
 
   static public double[] counts2RF(int[] counts)
   { int L = counts.Length;
@@ -2791,6 +2815,35 @@ namespace TowseyLib
       }
       amplitude /= (double)peakCount;
       return System.Tuple.Create(amplitude, peakCount); // amplitude of oscillation i.e. difference between min and max values 
+  }
+
+
+
+  public static System.Tuple<double, double, int> Periodicity_MeanAndSD(double[] values)
+  {
+      int L = values.Length;
+      double[] smooth = DataTools.filterMovingAverage(values, 3);
+      bool[] peaks = DataTools.GetPeaks(smooth);
+      int peakCount = DataTools.CountTrues(peaks);
+
+      int previousPeakLocation = 0;
+      for (int i = 0; i < L; i++)
+      {
+          if(peaks[i]) {previousPeakLocation = i; break;}
+      }
+      //int index = previousPeakLocation;
+      List<int> periods = new List<int>();
+      for (int i = previousPeakLocation+1; i < L; i++)
+      {
+          if(peaks[i]) 
+          {
+              periods.Add(i - previousPeakLocation);
+              previousPeakLocation = i; 
+          }
+      }
+      double mean, sd;
+      NormalDist.AverageAndSD(periods.ToArray(), out mean, out sd);
+      return System.Tuple.Create(mean, sd, peakCount);
   }
 
   //============================================================================================================================
