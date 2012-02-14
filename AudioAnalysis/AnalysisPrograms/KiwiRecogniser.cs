@@ -306,9 +306,10 @@ namespace AnalysisPrograms
             //int binCount_female = (int)(maxHzFemale / sonogram.FBinWidth) - (int)(minHzFemale / sonogram.FBinWidth) + 1;
             //Log.WriteLine("Start oscillation detection");
 
-            double dB_threshold = 4.0; //threshold for 2D background noise removal
-            var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dB_threshold);
-            double[,] noiseReducedMatrix = tuple.Item1; 
+            //double dB_threshold = 4.0; //threshold for 2D background noise removal
+            //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dB_threshold);
+            //double[,] noiseReducedMatrix = tuple.Item1; 
+            double[,] noiseReducedMatrix = sonogram.Data;
 
             //iii: DETECT OSCILLATIONS
             bool normaliseDCT = true;
@@ -376,20 +377,21 @@ namespace AnalysisPrograms
                 ae.Score2Name = "deltaISD";
 
                 //4: calculate score for bandwidth of syllables
-                double peakThreshold = 6.0;
+                double peakThreshold = 6.0; //decibels
                 double bandWidthScore = CalculateKiwiBandWidthScore(ae, noiseReducedMatrix, peakThreshold);
 
                 //5: calculate score for entropy of syllables
-                double entropyScore = CalculateKiwiEntropyScore(ae, noiseReducedMatrix, peakThreshold);
+                //double entropyScore = CalculateKiwiEntropyScore(ae, noiseReducedMatrix, peakThreshold);
+                double peakScore = CalculateKiwiPeakPeriodicityScore(ae, noiseReducedMatrix, peakThreshold);
 
                 //6: COMBINE SCORES
-                ae.Score = (durationScore * 0.0) + (hitScore * 0.1) + (deltaISDScore * 0.4) + (bandWidthScore * 0.3) + (entropyScore * 0.2); //weighted sum
+                ae.Score = (durationScore * 0.0) + (hitScore * 0.1) + (deltaISDScore * 0.2) + (bandWidthScore * 0.5) + (peakScore * 0.2); //weighted sum
                 ae.ScoreNormalised = ae.Score;
                 ae.kiwi_durationScore = durationScore;
                 ae.kiwi_hitScore = hitScore;
                 ae.kiwi_deltaISDScore = deltaISDScore;
                 ae.kiwi_bandWidthScore = bandWidthScore;
-                ae.kiwi_entropyScore = entropyScore;
+                ae.kiwi_entropyScore = peakScore;
             }
         }
 
@@ -418,11 +420,12 @@ namespace AnalysisPrograms
             }
             double deltaISD = (endISD - startISD) / onefifth; //get average change in inter-syllable distance
             double deltaScore = 0.0;
-            if ((deltaISD >= -0.1) && (deltaISD <=  0.2)) deltaScore = (3.3333 * deltaISD)+0.3333;  //y=mx+c where c=0.333 and m=3.333
+            if ((deltaISD >= -0.1) && (deltaISD <=  0.2)) deltaScore = (3.3333 * (deltaISD-0.1))+0.3333;  //y=mx+c where c=0.333 and m=3.333
             else
-            if (deltaISD > 1.0) deltaISD = 1.0;
-            return deltaISD;
+            if (deltaISD > 0.2) deltaScore = 1.0;
+            return deltaScore;
         }
+
 
         public static double CalculateKiwiBandWidthScore(AcousticEvent ae, double[,] noiseReducedMatrix, double peakThreshold)
         {
@@ -431,42 +434,77 @@ namespace AnalysisPrograms
             double[] upper_dB = new double[eventLength]; //dB profile for bandwidth above event
             double[] lower_dB = new double[eventLength]; //dB profile for bandwidth below event
             int eventHt = ae.oblong.ColWidth;
-            //int halfHt = eventHt / 2;
+            int halfHt = eventHt / 2;
+            int buffer = 20; //avoid this margin around the event
             //get acoustic activity within the event bandwidth and above it.
             for (int r = 0; r < eventLength; r++)
             {
                 for (int c = 0; c < eventHt; c++) event_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]; //event dB profile
-                for (int c = 0; c < eventHt; c++) upper_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + 5];
-                //for (int c = 0; c < halfHt;  c++) lower_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - 5 + c];
+                for (int c = 0; c < halfHt; c++) upper_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + c + buffer];
+                for (int c = 0; c < halfHt; c++) lower_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 - halfHt - buffer + c];
                 //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]     = 20.0; //mark matrix
                 //for (int c = 0; c < eventHt; c++) noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c2 + 5 + c] = 40.0; //mark matrix
             }
             for (int r = 0; r < eventLength; r++) event_dB[r] /= eventHt; //calculate average.
-            for (int r = 0; r < eventLength; r++) upper_dB[r] /= eventHt;
-            //for (int r = 0; r < eventLength; r++) lower_dB[r] /= halfHt;
+            for (int r = 0; r < eventLength; r++) upper_dB[r] /= halfHt;
+            for (int r = 0; r < eventLength; r++) lower_dB[r] /= halfHt;
 
-            bool[] peaks = DataTools.GetPeaks(event_dB);
+            //event_dB = DataTools.normalise(event_dB);
+            //upper_dB = DataTools.normalise(upper_dB);
+
+            double upperCC = DataTools.CorrelationCoefficient(event_dB, upper_dB);
+            double lowerCC = DataTools.CorrelationCoefficient(event_dB, lower_dB);
+            if (upperCC < 0.0) upperCC = 0.0;
+            if (lowerCC < 0.0) lowerCC = 0.0;
+            double CCscore = upperCC + lowerCC;
+            if (CCscore > 1.0) CCscore = 1.0;
+            
+
+            //bool[] peaks = DataTools.GetPeaks(event_dB);
             //int peakCount = DataTools.CountTrues(peaks);
             //DataTools.writeBarGraph(event_dB);
+
+            //int indexOfMaxValue_EB  = DataTools.GetMaxIndex(event_dB);
+            //int indexOfMaxValue_LSB = DataTools.GetMaxIndex(lower_dB);
+            //int indexOfMaxValue_USB = DataTools.GetMaxIndex(upper_dB);
+
+            //double maxEventDB = event_dB[indexOfMaxValue] / (double)eventHt;
+            ////now check the side bands
+            //double sideBandDB = 0.0;
+            //for (int c = 0; c < eventHt; c++) sideBandDB += noiseReducedMatrix[ae.oblong.r1 + indexOfMaxValue, ae.oblong.c2 + c + 5]; //sideband dB profile
+            //for (int c = 0; c < halfHt; c++) sideBandDB += noiseReducedMatrix[ae.oblong.r1 + indexOfMaxValue, ae.oblong.c1 + c - 5 - halfHt]; //sideband dB profile
+            //sideBandDB /= (eventHt + halfHt);
+            ////double ratio = sideBandDB / maxEventDB;
+            ////if (ratio > 1.0) ratio = 1.0; else if (ratio < 0.5) ratio = 0.5;
+            ////double ratioScore = 2 * (ratio - 0.5);
+
+            //double diff = maxEventDB - sideBandDB;
+            //double dbThreshold = 10.0;
+            //double ratioScore = 0;
+            //if (diff > dbThreshold) ratioScore = 1.0; else if (diff < 0.0) ratioScore = 0.0; else ratioScore = diff / dbThreshold;
+            //double ratioScore = 2 * (ratio - 0.5);
+            //double score = 0;
+            //if ((indexOfMaxValue_EB != indexOfMaxValue_USB) score += 0.5;
+            //if (indexOfMaxValue_EB != indexOfMaxValue_LSB) score += 0.5;
             
-            for (int r = 0; r < eventLength; r++) if (event_dB[r] < peakThreshold) peaks[r] = false;
-            int peakCount2 = DataTools.CountTrues(peaks);
-            int expectedPeakCount = (int)(ae.Duration * 0.8); //calculate expected number of peaks given event duration
-            double ratio = 0.0;
-            for (int r = 0; r < eventLength; r++)
-            {
-                if (peaks[r]) ratio += (upper_dB[r] / event_dB[r]);
-                //if (peaks[r]) ratio += ((upper_dB[r] + lower_dB[r]) / event_dB[r]);
-            }
-            double ratioScore = 0.0;
-            if (peakCount2 >= expectedPeakCount) ratioScore = 1 - (ratio / peakCount2); //want at least expected count of peaks over 6 dB
-            if (ratioScore > 1.0) ratioScore = 1.0;
+            //for (int r = 0; r < eventLength; r++) if (event_dB[r] < peakThreshold) peaks[r] = false;
+            //int peakCount2 = DataTools.CountTrues(peaks);
+            //int expectedPeakCount = (int)(ae.Duration * 0.8); //calculate expected number of peaks given event duration
+            //double ratio = 0.0;
+            //for (int r = 0; r < eventLength; r++)
+            //{
+            //    if (peaks[r]) ratio += (upper_dB[r] / event_dB[r]);
+            //    //if (peaks[r]) ratio += ((upper_dB[r] + lower_dB[r]) / event_dB[r]);
+            //}
+            //double ratioScore = 0.0;
+            //if (peakCount2 >= expectedPeakCount) ratioScore = 1 - (ratio / peakCount2); //want at least expected count of peaks over 6 dB
+            //if (ratioScore > 1.0) ratioScore = 1.0;
 
             //double[,] m = DataTools.MatrixRotate90Anticlockwise(noiseReducedMatrix);
             //string path = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\noiseReducedSonogram.png";
             //ImageTools.DrawMatrix(m, path, false);
 
-            return ratioScore;
+            return 1 - CCscore;
         }
 
         public static double CalculateKiwiEntropyScore(AcousticEvent ae, double[,] noiseReducedMatrix, double peakThreshold)
@@ -507,6 +545,43 @@ namespace AnalysisPrograms
             double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
             double entropy = DataTools.Entropy(histogram) / normFactor;
             return entropy;
+        }
+
+        public static double CalculateKiwiPeakPeriodicityScore(AcousticEvent ae, double[,] noiseReducedMatrix, double peakThreshold)
+        {
+            int eventLength = (int)Math.Round(ae.Duration * ae.FramesPerSecond);
+            double[] event_dB = new double[eventLength]; //dB profile for event
+            int eventHeight = ae.oblong.ColWidth;
+            //get acoustic activity within the event bandwidth
+            for (int r = 0; r < eventLength; r++)
+            {
+                for (int c = 0; c < eventHeight; c++) event_dB[r] += noiseReducedMatrix[ae.oblong.r1 + r, ae.oblong.c1 + c]; //event dB profile
+            }
+            //for (int r = 0; r < eventLength; r++) event_dB[r] /= eventHeight; //calculate average.
+
+            event_dB = DataTools.filterMovingAverage(event_dB, 3);
+            bool[] peaks = DataTools.GetPeaks(event_dB);
+
+
+            //DataTools.writeBarGraph(event_dB);
+
+            //for (int r = 0; r < eventLength; r++) if (event_dB[r] < peakThreshold) peaks[r] = false;
+            //int peakCount2 = DataTools.CountTrues(peaks);
+            //int expectedPeakCount = (int)ae.Duration;         //calculate expected number of peaks given event duration
+
+            var tuple = DataTools.Periodicity_MeanAndSD(event_dB);
+            double mean = tuple.Item1;
+            double sd   = tuple.Item2;
+            int peakCount = tuple.Item3;
+
+            double score = 0.0;
+            if (peakCount > (int)Math.Round(ae.Duration*1.2)) return score;
+
+            double ratio = sd / mean;
+            if (ratio < 0.333) score = 1.0;
+            else if (ratio > 1.0) score = 0.0;
+            else score = 1 - (ratio - 0.3) / 0.666;
+            return score;
         }
         
         

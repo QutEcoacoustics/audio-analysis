@@ -183,52 +183,35 @@ namespace AudioAnalysisTools
                         array = DataTools.SubtractMean(array);
                         //     DataTools.writeBarGraph(array);
 
-
-                        //CHECK IF PROPOER OSCILATION
-                        bool[] peaks = DataTools.GetPeaks(array);
-                        int peakCount = DataTools.CountTrues(peaks);
-                        ////set up histogram of peak energies
-                        //double[] histogram = new double[peakCount];
-                        //int count = 0;
-                        //for (int k = 0; k < dctLength; k++)
-                        //{
-                        //    if (peaks[k])
-                        //    {
-                        //        histogram[count] = array[k];
-                        //        count++;
-                        //    }
-                        //}
-                        //histogram = DataTools.normalise(histogram);
-                        //histogram = DataTools.NormaliseProbabilites(histogram);
-                        //double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
-                        //double entropy = DataTools.Entropy(histogram) / normFactor;
+                        //double entropy = PeakEntropy(array);
                         //if (entropy < 0.85)
                         //{
                         //    r += 6; //skip rows
                         //    continue;
                         //}
-                        int expectedPeakCount = 2 * minIndex;
-                        if (peakCount < expectedPeakCount)
-                        {
-                            r += 6; //skip rows
-                            continue;
-                        }
-
-
-
-
-
+                        
+                        int lowFreqBuffer = 5;
                         double[] dct = Speech.DCT(array, cosines);
                         for (int i = 0; i < dctLength; i++) dct[i] = Math.Abs(dct[i]);//convert to absolute values
-                        for (int i = 0; i < 5; i++) dct[i] = 0.0;   //remove low freq oscillations from consideration
+                        for (int i = 0; i < lowFreqBuffer; i++) dct[i] = 0.0;         //remove low freq oscillations from consideration
                         if(normaliseDCT) dct = DataTools.normalise2UnitLength(dct);
                         int indexOfMaxValue = DataTools.GetMaxIndex(dct);
                         double oscilFreq = indexOfMaxValue / dctDuration * 0.5; //Times 0.5 because index = Pi and not 2Pi
-                        //      DataTools.writeBarGraph(dct);
-                        //Console.WriteLine("oscilFreq = " + oscilFreq);
+                              //DataTools.writeBarGraph(dct);
+                              //Console.WriteLine("oscilFreq ={0:f2}  (max index={1})  Amp={2:f2}", oscilFreq, indexOfMaxValue, dct[indexOfMaxValue]);
+                              
+                        //calculate specificity i.e. what other oscillations are present.
+                        //double offMaxAmplitude = 0.0;
+                        //for (int i = lowFreqBuffer; i < dctLength; i++) offMaxAmplitude += dct[i];
+                        //offMaxAmplitude -= (dct[indexOfMaxValue-1] + dct[indexOfMaxValue] + dct[indexOfMaxValue+1]);
+                        //offMaxAmplitude /= (dctLength - lowFreqBuffer - 3); //get average
+                        //double specificity = 2 * (0.5 - (offMaxAmplitude / dct[indexOfMaxValue]));
+                        ////Console.WriteLine("avOffAmp={0:f2}   specificity ={1:f2}", offMaxAmplitude, specificity);
+                        //double threshold = dctThreshold + dctThreshold;
 
                         //mark DCT location with oscillation freq, only if oscillation freq is in correct range and amplitude
                         if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && (dct[indexOfMaxValue] > dctThreshold))
+                        //if ((indexOfMaxValue >= minIndex) && (indexOfMaxValue <= maxIndex) && ((dct[indexOfMaxValue] * specificity) > threshold))
                         {
                             for (int i = 0; i < dctLength; i++) hits[r + i, c]   = oscilFreq;
                             for (int i = 0; i < dctLength; i++) hits[r + i, c+1] = oscilFreq; //write alternate column - MUST DO THIS BECAUSE doing alternate columns
@@ -485,6 +468,30 @@ namespace AudioAnalysisTools
             } // end of pass over all frames
             return events;
         } // end method ConvertODScores2Events()
+
+
+        public static double PeakEntropy(double[] array)
+        {
+            bool[] peaks = DataTools.GetPeaks(array);
+            int peakCount = DataTools.CountTrues(peaks);
+            //set up histogram of peak energies
+            double[] histogram = new double[peakCount];
+            int count = 0;
+            for (int k = 0; k < array.Length; k++)
+            {
+                if (peaks[k])
+                {
+                    histogram[count] = array[k];
+                    count++;
+                }
+            }
+            histogram = DataTools.normalise(histogram);
+            histogram = DataTools.NormaliseProbabilites(histogram);
+            double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
+            double entropy = DataTools.Entropy(histogram) / normFactor;
+            return entropy;
+        }
+
 
 
         /// <summary>
