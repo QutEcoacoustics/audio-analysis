@@ -99,46 +99,45 @@ namespace FELT.Tests
         [TestMethod]
         public void CSVToVectors()
         {
-            string csvDemo = @"D:\Work\Sensors\AudioAnalysis\FELT\FELT.Tests\democsv2.csv";
+            // D:\Work\Sensors\AudioAnalysis\FELT\FELT.Tests\
+            string csvDemo = @"democsv2.csv";
 
             var lines = File.ReadAllLines(csvDemo);
 
             Stopwatch st = Stopwatch.StartNew();
 
-            var vectors = CSV.csvToVectors(lines);
+            var data = CSV.csvToData(new List<string> { "Somehting else", "Age", "Coolness", "Date of Birth" }, lines);
 
             st.Stop();
 
             Console.WriteLine("Time taken: " + st.ElapsedMilliseconds);
 
-            string[] headers = vectors.Item1;
-            CollectionAssert.AreEqual(new[]{"Age","Coolness","Date of Birth","Somehting else"}, headers);
+            var headers = data.Headers.Select((x) => x.Key).ToArray();
+            CollectionAssert.AreEqual(new[] { "Age", "Coolness", "Date of Birth" }, headers);
 
-            var numbers = vectors.Item2;
-            Assert.AreEqual(2, numbers.Count);
-            Assert.IsTrue(numbers.ContainsKey("Age"));
-            Assert.IsTrue(numbers.ContainsKey("Coolness"));
-            double[] doubles = numbers["Age"];
-            CollectionAssert.AreEqual(new double[] { 1, 2, 3, 4, 5, 6, 1, 8, 9, 10 }, doubles);
-            CollectionAssert.AreEqual(new double[] { 0.2, 12.05, 15, 30, 0.69, 0.82, 5.73, 1.25, 11.2, 0.2235 }, numbers["Coolness"]);
+            Assert.IsTrue(data.Instances.ContainsKey("Age"));
+            Assert.IsTrue(data.Instances.ContainsKey("Coolness"));
 
-            var strings = vectors.Item3;
-            Assert.AreEqual(1, strings.Count);
-            Assert.IsTrue(strings.ContainsKey("Somehting else"));
-            string[] actual = strings["Somehting else"];
-            CollectionAssert.AreEqual(new string[] { "this", "is ", "a", "99", "string, field", "with a ", "few", "\"si\"mple\"", "tests", "!" }, actual);
+            double[] doubles = data.Instances["Age"].Select((x) => ((Number)x).Value).ToArray();
+            CollectionAssert.AreEqual(new[] { 1.0, 2, 3, 4, 5, 6, 1, 8, 9, 10 }, doubles);
+            double[] doubles2 = data.Instances["Coolness"].Select((x) => ((Number)x).Value).ToArray();
+            CollectionAssert.AreEqual(new[] { 0.2, 12.05, 15, 30, 0.69, 0.82, 5.73, 1.25, 11.2, 0.2235 }, doubles2);
 
-            var dates = vectors.Item4;
-            Assert.IsTrue(dates.ContainsKey("Date of Birth"));
+            Assert.IsTrue(data.ClassHeader == "Somehting else");
+            string[] actual = data.Classes;
+            CollectionAssert.AreEqual(new[] { "this", "is ", "a", "99", "string, field", "with a ", "few", "\"si\"mple\"", "tests", "!" }, actual);
+
+            Assert.IsTrue(data.Instances.ContainsKey("Date of Birth"));
             CollectionAssert.AreEqual(
-                (new string[]
+                (new[]
                     {
                         "01-07-89 00:00:00.00", "02-07-89 12:00:00.00", "03-07-89 10:00:00.00", "04-07-89 00:03:00.00",
                         "05-07-89 00:00:00.00", "06-07-89 00:00:00.00", "07-07-89 00:40:00.00", "08-07-1989 19:53:12.623",
                         "09-07-89 05:00:00.00", "10-07-89 00:00:13.00"
                     }).Select(DateTime.Parse).ToArray(),
-                dates["Date of Birth"]);
+                data.Instances["Date of Birth"].Select((x) => ((Date)x).Value).ToArray());
 
+            Assert.IsFalse(data.Instances.ContainsKey("Ignore"));
 
         }
     }

@@ -118,7 +118,9 @@
       <Link>ExcelResultsComputationTemplate.xlsx</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Include="democsv2.csv" />
+    <None Include="democsv2.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

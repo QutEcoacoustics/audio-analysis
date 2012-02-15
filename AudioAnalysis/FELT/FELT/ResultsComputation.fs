@@ -6,12 +6,15 @@
     open Microsoft.FSharp.Collections
     open System.IO
     open FELT.Classifiers
+    open MQUTeR.FSharp.Shared.IO
 
     type ReportConfig = 
         {
             RunDate : DateTime
             TestDataBytes: int64
             TrainingDataBytes: int64
+            TestOriginalCount: int
+            TrainingOriginalCount: int
             ReportDestination: FileInfo
             ReportTemplate: FileInfo
         }
@@ -40,6 +43,9 @@
 
             // prepare
             
+            Log "Result computation start"
+
+            let opList = List.rev opList
 
             let features = 
                 if testData.Headers = trainingData.Headers then
@@ -50,10 +56,17 @@
             let uniqueTrainingClasses =
                Array.fold (flip Set.add) Set.empty<Class> trainingData.Classes  
             let uniqueTestClasses =
-               Array.fold (flip Set.add) Set.empty<Class> trainingData.Classes  
+               Array.fold (flip Set.add) Set.empty<Class> testData.Classes  
+            
+            Log "uniquness a & b"
+            
             let uniqueAll = Set.union uniqueTrainingClasses uniqueTestClasses
+            
+            Log "uniqueness all"
+
             let tagSummary = 
                 [
+                    [ config.TrainingOriginalCount ; config.TestOriginalCount; config.TrainingOriginalCount + config.TestOriginalCount ];
                     [trainingData.Classes.Length ; testData.Classes.Length ;  trainingData.Classes.Length + testData.Classes.Length ];
                     [uniqueTrainingClasses.Count; uniqueTestClasses.Count; uniqueAll.Count];
                     [   (Set.difference uniqueTrainingClasses uniqueTestClasses).Count;  
@@ -61,25 +74,44 @@
                         ((Set.difference uniqueTestClasses uniqueAll).Count + (Set.difference uniqueTrainingClasses uniqueAll).Count) ]
                 ]
 
-            let fullResultsTags = Array.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
-            let fullResultsDistances = Array.mapJagged fst classificationResults
+            Log "tag summary"
+
+            let fullResultsTags = Array.Parallel.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
+
+            Log "full results tags"
+
+            let fullResultsDistances = Array.Parallel.mapJagged fst classificationResults
+
+            Log "full results distances"
 
             let placeFunc rowNum class' row=
                 match Array.tryFindIndex ((=) class') row with
                     | Some index -> (rowNum, index + 1 )
-                    | None -> (rowNum, 0)
+                    | None -> (rowNum, -1)
             let placing = Array.mapi2 placeFunc testData.Classes fullResultsTags
+            let inline map2i f s1 s2
+        ParallelEnumerable.SelectMany(toP(s1), toP(s2), Func<_,_,_,_>(fun i x y -> f i x y))
+            Log "Placing"
 
             let placeHistogram =  Seq.countBy (fun x -> snd x) placing
+            System.Diagnostics.Debug.Assert(not (Seq.exists (fst >> ((=) 0)) placeHistogram))
+
+            Log "Histogram"
+
             let placeSummary =
                 let places = [1 ; 5; 10; 25; 50 ]
-                List.map (fun place -> [place ; Seq.fold (fun total x -> if place < snd x then total + (snd x) else total) 0 placeHistogram ]) places
+                let withinPlace p = Seq.fold (fun total (key, count) -> if p < key && p > 0 then total + count else total) 0 placeHistogram 
+                List.map (fun place -> [place ; withinPlace place]) places
+
+            Log "pl summary"
+
             let percentileSummary =
                 let percentiles = [0.01; 0.1; 0.2; 0.25; 0.33; 0.5; 0.66; 0.75; 0.9; 1.0]
                 let percentilesAsPlaces = List.map (fun x -> x , int( Math.Round(x * double trainingData.Classes.Length))) percentiles
-                List.map (fun place -> [fst place ; Seq.fold (fun total x -> if snd place < fst x then total + (snd x |> float) else total) 0.0 placeHistogram ]) percentilesAsPlaces
+                let numCoveredByPlace p = Seq.fold (fun total  (key, count) -> if p < key && p > 0 then total + count else total) 0 placeHistogram 
+                List.map (fun (percentile:float,place) -> [percentile; float (numCoveredByPlace place)]) percentilesAsPlaces
                 
-
+            Log "pe summary"
             
             // create excel package
             let report = new ExcelPackage(config.ReportDestination, config.ReportTemplate)
@@ -88,7 +120,9 @@
             let sumResults = workbook.Worksheets.["Summary Results"]
             let fullResults = workbook.Worksheets.["Full Results"]
             let fullResultsDist = workbook.Worksheets.["Full Results Distances"]
-
+            
+            Log "report opened"
+            
             let names = workbook.Names
             let setv (ws:ExcelWorksheet) name value =
                 ws.SetValue(names.[name].Address, value)
@@ -102,11 +136,10 @@
                 let sc = names.[name].Start
                 Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
 
-            
-            
+           
+            Log "log sheet"
 
             // set
-            
             setv logws "RunDate" (config.RunDate.ToString("R"))
 
             setv logws "Version" (version) 
@@ -130,32 +163,55 @@
             names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!C15"
             setSquare logws "PercentileSummary" percentileSummary
 
+            Log "summary results"
+
             // summary results worksheet
             setSquare sumResults "srPlaces" (placeHistogram |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
-            names.["srPlaces"].Offset(0,2, Seq.length placeHistogram, 1).FormulaR1C1 <- "RC[-1]/Log!C15"
-            names.["srPlaces"].Offset(0,3, Seq.length placeHistogram, 1).FormulaR1C1 <- "SUM(R2C3:RC[-1])"
+            names.["srPlaces"].Offset(0,2, Seq.length placeHistogram, 1).FormulaR1C1 <- "RC[-1]/Log!C16"
+            names.["srPlaces"].Offset(1,3, (Seq.length placeHistogram) - 1, 1).FormulaR1C1 <- "SUM(R2C3:RC[-1])"
+
+            Log "Full results"
 
             // full results
             setVert fullResults "frClasses" testData.Classes id
             setv fullResults "frNumbers" 1
-            names.["frNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- "RC[-1] - 1"
-            setSquare fullResults "frData" fullResultsTags
 
+            Log "frn a"
+
+            names.["frNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
+            
+            Log "frn b"
+
+            setSquare fullResults "frData" fullResultsTags
+            Log "frn c"
             let plc = names.["frPlaces"].Offset(0,0, testData.Classes.Length, 1)
+            Log "frn d"
             plc.FormulaR1C1 <- "MATCH(RC[-1],RC[1]:RC[" + trainingData.Classes.Length.ToString() + "],0)"
+
+            Log "full results distances"
 
             // full results (distances)
             setVert fullResultsDist "frdClasses" testData.Classes id
             setv fullResultsDist "frdNumbers" 1
-            names.["frdNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- "RC[-1] + 1"
+            
+            Log "frd a"
+
+            names.["frdNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
+            
+            Log "frd b"
+
             setSquare fullResultsDist "frdData" fullResultsDistances
+
+            Log "write time taken"
 
             setv logws "TimeTaken" ((DateTime.Now - config.RunDate).ToString())
 
-            
+            Log "write file"
 
             report.Save()
             report.Dispose()
+
+            Log "done"
 
             ()
         end

@@ -24,6 +24,7 @@ steps:
 
 
 open MQUTeR.FSharp.Shared
+open MQUTeR.FSharp.Shared.Logger
 open System
 open System.Configuration
 open System.Diagnostics
@@ -41,15 +42,18 @@ let fail() =
     Environment.Exit(1);
 
 let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
-printfn "Welcome to felt version:"
-printfn "%s" version
+
+
+
+Log "Welcome to felt version:"
+Logf "%s" version
 
 #if DEBUG
-printfn "Debug hook...  press any key to continue..."
+Warn "Debug hook...  press any key to continue..."
 Console.ReadKey(false) |> ignore
 #endif
 
-printfn "Start: read configuration settings..."
+Info "Start: read configuration settings..."
 
 let config = ConfigurationManager.AppSettings
 
@@ -72,19 +76,20 @@ let resultsDirectory =
             eprintfn "%s" ex.Message
             fail()
             null
-let reportDest = new  FileInfo(ResultsDirectory.ToString() + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx")
+let reportDest = new  FileInfo(resultsDirectory.FullName + "\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx")
 
+let logger = Logger.create (reportDest.FullName + ".log")
 // load in features
 let features = new ResizeArray<string>(config.["Features"].Split(','))
 
-printfn "end: configuration settings..."
-printfn "Start: data import..."
+Info "end: configuration settings..."
+Info "Start: data import..."
 // load data
 
 let loadAndConvert features filename = 
     let lines = IO.readFileAsString filename
     if lines.IsNone then
-        eprintfn "There are no lines to read in %s" filename
+        Errorf "There are no lines to read in %s" filename
         Option.None
     else
         lines.Value |> CSV.csvToData features |> Option.Some
@@ -94,16 +99,16 @@ let loadAndConvert features filename =
 let trFile = loadAndConvert features TrainingData 
 let teFile = loadAndConvert features TestData
 
-printfn "end: data import..."
+Info "end: data import..."
 
 if trFile.IsNone || teFile.IsNone then
     eprintfn "An error occurred loading one of the data files, exiting..."
     fail()
 else 
-    printfn "start: main analysis..."
+    Info "start: main analysis..."
 
     let trData = { trFile.Value with DataSet = DataSet.Training}
-    let teData = { trFile.Value with DataSet = DataSet.Test}
+    let teData = { teFile.Value with DataSet = DataSet.Test}
 
     // run the analysis
     let config =            {
@@ -112,19 +117,28 @@ else
                 TrainingDataBytes = (new FileInfo(TrainingData)).Length;
                 ReportDestination = reportDest;
                 ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
+                TestOriginalCount = trData.Classes.Length;
+                TrainingOriginalCount = teData.Classes.Length
             }
 
     RunAnalysis trData teData FELT.FindEventsLikeThis.BasicGrouped config |> ignore
 
-    printfn "end: main analysis..."
-    printfn "Analysis complete!"
-    printf "Open report (y/n)"
+    Info "end: main analysis..."
+    Info "Analysis complete!"
+    
+    // clear any keystrokes accumulated by accident
+    while Console.KeyAvailable do Console.ReadKey(false) |> ignore
+    
+    Log "Open report (y/n)"
+    
     let openFile = Console.ReadKey(true);
+    Warnf "Key pressed: %c" openFile.KeyChar
 
     if Char.ToLower openFile.KeyChar = 'y' then
+        Infof "Opening file: %s" reportDest.FullName
         Process.Start(reportDest.FullName) |> ignore
 
-    printfn "Exiting"
+    Info "Exiting"
     Console.ReadKey(false) |> ignore
 
 

@@ -78,11 +78,12 @@
 
     // TODO: pipe/compose
     let workflow trainingData testData  operationsList (data:ReportConfig) = 
-        let oplst' = List.append operationsList [Result(new ResultsComputation(data ))]
+        Info "Started analysis workflow"
 
-        
+        let oplst' = List.append operationsList [Result(new ResultsComputation(data ))]
         
         let f (state: Data * Data * Result[]) (wfItem: WorkflowItem) =
+            Infof "Started workflow item %A" (GetUnderlyingTypes wfItem)
             let trData, teData, results = state
             match wfItem with
                 | Cleaner c -> (c.Clean(trData), c.Clean(teData), results)
