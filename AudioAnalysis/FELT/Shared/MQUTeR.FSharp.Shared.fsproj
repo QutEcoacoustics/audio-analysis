@@ -67,10 +67,10 @@
     <Compile Include="Equality.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
+    <Compile Include="IO.fs" />
     <Compile Include="DataSet.fs" />
     <Compile Include="Math.fs" />
     <Compile Include="CSV.fs" />
-    <Compile Include="IO.fs" />
     <None Include="Script.fsx" />
     <Compile Include="stats.fs" />
   </ItemGroup>

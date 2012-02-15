@@ -62,8 +62,24 @@
     
         module Parallel =
         
-            let mapJagged f = Array.Parallel.map (Array.Parallel.map f) 
+            /// Jagged map with paralellisation on first dimension only
+            let mapJagged f = Array.Parallel.map (Array.map f)
 
+            /// Jagged map with paralellisation on all elements (both dimensions)
+            let mapJagged2P f = Array.Parallel.map (Array.Parallel.map f) 
+
+            /// Initalises an i x j square jagged array
+            /// This routine is parrallised on the row only
+            /// i : Rows
+            /// j : Columns
+            let initJagged i j f = Array.Parallel.init i (fun i -> Array.init j (f i))
+
+            /// Initalises an i x j square jagged array
+            /// This routine is parrallised on both the row and column
+            /// i : Rows
+            /// j : Columns
+            let initJagged2P i j f = Array.Parallel.init i (fun i -> Array.Parallel.init j (f i))
+            
 
 
     module Array2D =
