@@ -468,24 +468,6 @@ namespace TowseyLib
             this.Snr      = results.Item5;   // = max_dB - Q;
         }
 
-        /// <summary>
-        /// subtract background noise to produce a decibels array in which zero dB = modal noise
-        /// DOES NOT TRUNCATE BELOW ZERO VALUES.
-        /// RETURNS: 1) noise reduced decibel array; 2) Q - the modal BG level; 3) min value 4) max value; 5) snr
-        /// </summary>
-        /// <param name="dBarray"></param>
-        /// <returns>System.Tuple.Create(decibels, Q, min_dB, max_dB, snr); System.Tuple(double[], double, double, double, double) 
-        /// </returns>
-        public static System.Tuple<double[], double, double, double, double> SubtractBackgroundNoise_dB(double[] dBarray)
-        {
-            double Q;
-            double min_dB;
-            double max_dB;
-            double[] decibels = SubtractBackgroundNoise(dBarray, out min_dB, out max_dB, out Q);
-            double snr = max_dB - Q;
-            return System.Tuple.Create(decibels, Q, min_dB, max_dB, snr);
-        }
-       
         /// </summary>
         /// <param name="sonogram">sonogram of signal - values in dB</param>
         /// <param name="minHz">min of freq band to sample</param>
@@ -546,21 +528,23 @@ namespace TowseyLib
 
         /// <summary>
         /// Implements the "Adaptive Level Equalisatsion" algorithm of Lamel et al, 1981 - with modifications for our signals.
-        /// This method subtracts the estimated background noise from each frame.
-        /// It has the effect of setting average background noise level = 0 dB.
-        /// Values below zero dB are NOT truncated. 
+        /// Returns the min and max frame dB AND the estimate MODAL or BACKGROUND noise for the signal array
+        /// IF This modal noise is subtracted from each frame dB, the effect is to set set average background noise level = 0 dB.
         /// The algorithm is described in Lamel et al, 1981.
         /// USED TO SEGMENT A RECORDING INTO SILENCE AND VOCALISATION
-        /// NOTE: noiseThreshold is passed as decibels. Algorithm ONLY SEARCHES in range min to 10dB above min.
+        /// NOTE: noiseThreshold is passed as decibels. Original algorithm ONLY SEARCHES in range min to 10dB above min.
         /// Units are assumed to be decibels.
         /// </summary>
-        /// <param name="dBarray">NOTE: the decibel values are assumed to lie between -70 dB and 0 dB</param>
+        /// <param name="dBarray">signal in decibel values</param>
+        /// <param name="minDecibels">ignore signal values less than minDecibels when calculating background noise. Likely to be spurious
+        ///                            This is a safety device because some mobile phone signals had min values.</param>
         /// <param name="noiseThreshold_dB">Sets dB range in which to find value for background noise.</param>
         /// <param name="min_dB"></param>
         /// <param name="max_dB"></param>
-        /// <param name="Q">noise in decibels subtracted from each frame</param>
+        /// <param name="mode_noise">modal or background noise in decibels</param>
+        /// <param name="sd_noise">estimated sd of the noies - assuming noise to be guassian</param>
         /// <returns></returns>
-        public static double[] SubtractBackgroundNoise(double[] dBarray, double noiseThreshold_dB, out double min_dB, out double max_dB, out double Q)
+        public static void CalculateModalNoise(double[] dBarray, double minDecibels, double noiseThreshold_dB, out double min_dB, out double max_dB, out double mode_noise, out double sd_noise)
         {
 
             int L = dBarray.Length;
@@ -574,10 +558,9 @@ namespace TowseyLib
 
             double min = Double.MaxValue;
             double max = -Double.MaxValue;
-            double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10;  // = -70dB
             for (int i = buffer; i < L - buffer; i++)
             {
-                if (dBarray[i] <= minDecibels) continue; //ignore lowest values in establishing noise level
+                if (dBarray[i] <= minDecibels) continue; //ignore lowest values when establishing noise level
                 if (dBarray[i] < min) min = dBarray[i];
                 else
                     if (dBarray[i] > max)
@@ -610,33 +593,44 @@ namespace TowseyLib
 
             // find peak of lowBins histogram
             int peakID = DataTools.GetMaxIndex(smoothHisto);
-            Q = min_dB + ((peakID + 1) * binWidth); //modal noise level
-
-            // subtract noise.
-            double[] dBFrames = new double[L];
-            for (int i = 0; i < L; i++) dBFrames[i] = dBarray[i] - Q;
-            //Console.WriteLine("minDB=" + min_dB + "  max_dB=" + max_dB);
-            //Console.WriteLine("peakID=" + peakID + "  Q=" + Q);
-
-            return dBFrames;
+            mode_noise = min_dB + ((peakID + 1) * binWidth); //modal noise level
+            sd_noise = (mode_noise - min_dB) / 2.5; //assumes one side of Guassian noise to be 2.5 SD's
         }
 
+
+
         /// <summary>
-        /// Implements the "Adaptive Level Equalisatsion" of Lamel et al, 1981.
-        /// Value of 10 dB is a default used by Lamel et al.
+        /// Calls method to implement "Adaptive Level Equalisatsion" (Lamel et al, 1981)
+        /// and then subtracts modal noise from the signal - so now zero dB = modal noise
+        /// Sets default values for min dB value and the noise threshold. 10 dB is a default used by Lamel et al.
+        /// DOES NOT TRUNCATE BELOW ZERO VALUES.
+        /// RETURNS: 1) noise reduced decibel array; 2) Q - the modal BG level; 3) min value 4) max value; 5) snr
         /// </summary>
         /// <param name="dBarray"></param>
-        /// <param name="min_dB"></param>
-        /// <param name="max_dB"></param>
-        /// <param name="Q"></param>
-        /// <returns></returns>
-        public static double[] SubtractBackgroundNoise(double[] dBarray, out double min_dB, out double max_dB, out double Q)
+        /// <returns>System.Tuple.Create(decibels, Q, min_dB, max_dB, snr); System.Tuple(double[], double, double, double, double) 
+        /// </returns>
+        /// 
+        public static System.Tuple<double[], double, double, double, double, double> SubtractBackgroundNoise_dB(double[] dBarray)
         {
             //Following const used to normalise dB values to the background noise. It has the effect of setting background noise level to 0 dB.
             //Value of 10dB is in Lamel et al, 1981. They call it "Adaptive Level Equalisatsion".
             const double noiseThreshold_dB = 10.0; //dB
-            return SubtractBackgroundNoise(dBarray, noiseThreshold_dB, out min_dB, out max_dB, out Q);
+            double minDecibels = (SNR.MinLogEnergyReference - SNR.MaxLogEnergyReference) * 10;  // = -70dB
+
+            double noise_mode, noise_SD;
+            double min_dB;
+            double max_dB;
+
+            CalculateModalNoise(dBarray, minDecibels, noiseThreshold_dB, out min_dB, out max_dB, out noise_mode, out noise_SD); //Implements the algorithm in Lamel et al, 1981.
+            // subtract noise.
+            double[] dBFrames = new double[dBarray.Length];
+            for (int i = 0; i < dBarray.Length; i++) dBFrames[i] = dBarray[i] - noise_mode;
+
+            double snr = max_dB - noise_mode;
+            return System.Tuple.Create(dBFrames, noise_mode, min_dB, max_dB, snr, noise_SD);
         }
+       
+
 
 
         public double FractionHighEnergyFrames(double dbThreshold)

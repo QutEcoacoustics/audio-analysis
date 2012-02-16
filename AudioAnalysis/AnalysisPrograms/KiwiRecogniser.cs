@@ -298,18 +298,9 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize     = frameLength;
             sonoConfig.WindowOverlap  = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //Log.WriteLine("Signal: Duration={0}, Sample Rate={1}", sonogram.Duration, recording.SampleRate);
-            //Log.WriteLine("Frames: Size={0}, Count={1}, Duration={2:f1}ms, Overlap={5:f0}%, Offset={3:f1}ms, Frames/s={4:f1}",
-            //                           sonogram.Configuration.WindowSize, sonogram.FrameCount, (sonogram.FrameDuration * 1000),
-            //                          (sonogram.FrameOffset * 1000), sonogram.FramesPerSecond, frameOverlap);
-            //int binCount_male   = (int)(maxHzMale   / sonogram.FBinWidth) - (int)(minHzMale   / sonogram.FBinWidth) + 1;
-            //int binCount_female = (int)(maxHzFemale / sonogram.FBinWidth) - (int)(minHzFemale / sonogram.FBinWidth) + 1;
-            //Log.WriteLine("Start oscillation detection");
-
             //double dB_threshold = 4.0; //threshold for 2D background noise removal
             //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dB_threshold);
             //double[,] noiseReducedMatrix = tuple.Item1; 
-            double[,] noiseReducedMatrix = sonogram.Data;
 
             //iii: DETECT OSCILLATIONS
             bool normaliseDCT = true;
@@ -317,6 +308,7 @@ namespace AnalysisPrograms
             double maxOscilFreq = 1 / minPeriodicity;  //convert min period (seconds) to oscilation rate (Herz).
 
             //ii: CHECK FOR MALE KIWIS
+            int gapThreshold = 2;                     //merge events that are closer than 2 seconds
             List<AcousticEvent> predictedMaleEvents;  //predefinition of results event list
             Double[,] maleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] maleScores;                      //predefinition of score array
@@ -324,9 +316,11 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzMale, maxHzMale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out maleScores, out predictedMaleEvents, out maleHits, out maleOscRate);
-            ProcessKiwiEvents(predictedMaleEvents, "Male LSK", maleOscRate, minDuration, maxDuration, noiseReducedMatrix);
-            //int gapThreshold = 2;     //merge events that are closer than 2 seconds
-            //AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
+            if (predictedMaleEvents.Count > 0)
+            {
+                ProcessKiwiEvents(predictedMaleEvents, "Male LSK", maleOscRate, minDuration, maxDuration, sonogram.Data);
+                //AcousticEvent.MergeAdjacentEvents(predictedMaleEvents, gapThreshold);
+            }
 
             //iii: CHECK FOR FEMALE KIWIS
             Double[,] femaleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
@@ -336,8 +330,11 @@ namespace AnalysisPrograms
             OscillationAnalysis.Execute((SpectralSonogram)sonogram, minHzFemale, maxHzFemale, dctDuration, dctThreshold, normaliseDCT,
                                          minOscilFreq, maxOscilFreq, eventThreshold, minDuration, maxDuration,
                                          out femaleScores, out predictedFemaleEvents, out femaleHits, out femaleOscRate);
-            ProcessKiwiEvents(predictedFemaleEvents, "Female LSK", femaleOscRate, minDuration, maxDuration, noiseReducedMatrix);
-            //AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
+            if (predictedFemaleEvents.Count > 0)
+            {
+                ProcessKiwiEvents(predictedFemaleEvents, "Female LSK", femaleOscRate, minDuration, maxDuration, sonogram.Data);
+                //AcousticEvent.MergeAdjacentEvents(predictedFemaleEvents, gapThreshold);
+            }
 
 
             //iv: MERGE MALE AND FEMALE INFO
@@ -353,8 +350,23 @@ namespace AnalysisPrograms
         } //end Execute_KiwiDetect()
 
 
-        public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration, double[,] noiseReducedMatrix)
+        public static void ProcessKiwiEvents(List<AcousticEvent> events, string tag, double[] oscRate, double minDuration, double maxDuration, double[,] sonogramMatrix)
         {
+            double[] band_dB = new double[sonogramMatrix.GetLength(0)];
+            int eventCol1   = events[0].oblong.c1; 
+            int eventHeight = events[0].oblong.ColWidth; //assume all events in the list have the same event height
+            for (int r = 0; r < band_dB.Length; r++)
+            {
+                for (int c = 0; c < eventHeight; c++) band_dB[r] += sonogramMatrix[r, eventCol1 + c]; //event dB profile
+            }
+            for (int r = 0; r < band_dB.Length; r++) band_dB[r] /= eventHeight; //calculate average.
+            
+            //calculate background noise and SD for the band
+            double minDecibels = -110; //min dB to consider
+            double noiseThreshold_dB = 20;
+            double min_dB, max_dB, modalNoise, SD_Noise;
+            SNR.CalculateModalNoise(band_dB, minDecibels, noiseThreshold_dB, out min_dB, out max_dB, out modalNoise, out SD_Noise);
+
             foreach (AcousticEvent ae in events)
             {
                 ae.Name = tag;
@@ -372,28 +384,49 @@ namespace AnalysisPrograms
                 double hitScore = ae.Score;
 
                 //3: calculate score for change in inter-syllable distance over the event.
-                double deltaISDScore = CalculateKiwiDeltaISDscore(ae, oscRate);
-                ae.Score2     = deltaISDScore;
-                ae.Score2Name = "deltaISD";
+               // double deltaISDScore = CalculateKiwiDeltaISDscore(ae, oscRate);
+               // ae.Score2     = deltaISDScore;
+               // ae.Score2Name = "deltaISD";
 
                 //4: calculate score for bandwidth of syllables
                 double peakThreshold = 6.0; //decibels
-                double bandWidthScore = CalculateKiwiBandWidthScore(ae, noiseReducedMatrix, peakThreshold);
+                double bandWidthScore = CalculateKiwiBandWidthScore(ae, sonogramMatrix, peakThreshold);
 
-                //5: calculate score for entropy of syllables
-                //double entropyScore = CalculateKiwiEntropyScore(ae, noiseReducedMatrix, peakThreshold);
-                double peakScore = CalculateKiwiPeakPeriodicityScore(ae, noiseReducedMatrix, peakThreshold);
+                //5:   
+                double[] event_dB = new double[eventLength]; //dB profile for event
+                //get acoustic activity within the event 
+                for (int r = 0; r < eventLength; r++) event_dB[r] = band_dB[ae.oblong.r1 + r]; //event dB profile
+                DataTools.writeBarGraph(event_dB);
+               
+                
+                int smoothWindow = (int)Math.Ceiling(ae.FramesPerSecond * 0.25); //smoothing window of 1/4 second
+                if (smoothWindow % 2 == 0) smoothWindow += 1; //make an odd number
+                var tuple = KiwiPeakAnalysis(event_dB, smoothWindow, modalNoise, SD_Noise, ae.FramesPerSecond);
+                double snr_dB        = tuple.Item1;
+                double sdPeakDB_dB   = tuple.Item2;
+                double gapScore      = tuple.Item3;
+                //normalise the scores
+                double snrScore = 0.0;
+                if (snr_dB > 9.0) snrScore = 1.0; else if (snr_dB > 3.0) snrScore = (snr_dB - 3) * 0.1666666; //two thresholds - 3 dB and 9 dB 
+                double sdPeakScore = 1 / sdPeakDB_dB; //set 1 dB as a threshold
+                if (sdPeakScore > 1.0) sdPeakScore = 1.0; 
+                //double gapErrorScore = gapError_secs / 0.4;
+                //if (gapErrorScore > 1.0) gapErrorScore = 1.0;
+                //gapErrorScore = 1 - gapErrorScore;
 
                 //6: COMBINE SCORES
-                ae.Score = (durationScore * 0.0) + (hitScore * 0.1) + (deltaISDScore * 0.2) + (bandWidthScore * 0.5) + (peakScore * 0.2); //weighted sum
-                ae.ScoreNormalised = ae.Score;
-                ae.kiwi_durationScore = durationScore;
-                ae.kiwi_hitScore = hitScore;
-                ae.kiwi_deltaISDScore = deltaISDScore;
+                ae.Score = (hitScore * 0.1) + (snrScore * 0.1) + (sdPeakScore * 0.2) + (gapScore * 0.2) + (bandWidthScore * 0.4); //weighted sum
+                ae.ScoreNormalised     = ae.Score;
+                ae.kiwi_durationScore  = snrScore;
+                ae.kiwi_hitScore       = hitScore;
+                ae.kiwi_deltaISDScore  = sdPeakScore;
+                ae.kiwi_entropyScore   = gapScore;
                 ae.kiwi_bandWidthScore = bandWidthScore;
-                ae.kiwi_entropyScore = peakScore;
-            }
-        }
+            } //foreach (AcousticEvent ae in events)
+        }//end method
+
+
+
 
         /// <summary>
         /// calculates score for change in inter-syllable distance over the KIWI event
@@ -427,6 +460,65 @@ namespace AnalysisPrograms
         }
 
 
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="ae">an acoustic event</param>
+        /// <param name="dbArray">The sequence of frame dB over the event</param>
+        /// <returns></returns>
+        public static System.Tuple<double, double, double> KiwiPeakAnalysis(double[] dbArray, int smoothWindow, double modalNoise, double SD_Noise, double framesPerSecond)
+        {
+            dbArray = DataTools.filterMovingAverage(dbArray, smoothWindow);
+
+            bool[] peaks   = DataTools.GetPeaks(dbArray);
+
+            //remove peaks below the threshold AND make list of peaks > threshold
+            double dBThreshold = modalNoise + (2 * SD_Noise);
+            List<double> peakDB = new List<double>();
+            for (int i = 0; i < dbArray.Length; i++)
+            {
+                if (dbArray[i] < dBThreshold) peaks[i] = false;
+                else if (peaks[i]) peakDB.Add(dbArray[i]);
+            }
+
+            double avPeakDB, sdPeakDB;
+            NormalDist.AverageAndSD(peakDB.ToArray(), out avPeakDB, out sdPeakDB);
+            double snr = avPeakDB - modalNoise;
+
+            List<int> peakGaps = DataTools.GapLengths(peaks);
+            double[] ANDREW_KIWI_GAPS = {0.25,0.27,0.30,0.34,0.38,0.41,0.45,0.47,0.49,0.51,0.54,0.57,0.59,0.62,0.63,0.66,0.68,0.70,0.72,0.75,0.77,0.79,0.79,0.80,0.82,0.83,0.84,0.85};//seconds
+            double[] andrewFrameGaps = new double[ANDREW_KIWI_GAPS.Length];
+            for (int i = 0; i < ANDREW_KIWI_GAPS.Length; i++) andrewFrameGaps[i] = ANDREW_KIWI_GAPS[i] * framesPerSecond;
+            double avAndrewDelta_seconds = 0.0;
+            for (int i = 1; i < ANDREW_KIWI_GAPS.Length; i++) avAndrewDelta_seconds += (ANDREW_KIWI_GAPS[i] - ANDREW_KIWI_GAPS[i - 1]);
+            double avAndrewDelta_Frames = avAndrewDelta_seconds / (ANDREW_KIWI_GAPS.Length-1) * framesPerSecond;
+            int[] observedFrameGaps = peakGaps.ToArray();
+            double gapDelta = 0;
+            double gapPath = 0;
+            for (int i = 1; i < observedFrameGaps.Length; i++)
+            {
+                gapDelta +=         (observedFrameGaps[i] - observedFrameGaps[i-1]);
+                gapPath  += Math.Abs(observedFrameGaps[i] - observedFrameGaps[i-1]);
+            }
+            gapDelta /= (observedFrameGaps.Length - 1);    //convert to average
+            gapPath  /= (observedFrameGaps.Length - 1);    //convert to average
+            double gapScore = gapDelta / gapPath;
+            if (gapDelta <= 0.0) gapScore = 0.0; //gap delta for KIWIs must be positive
+
+            //int count = 0;
+            //for (int i = 0; i < observedFrameGaps.Length; i++)
+            //{
+            //    count ++;
+            //    gapError += Math.Abs(andrewFrameGaps[i] - observedFrameGaps[i]);
+            //    if (i >= andrewFrameGaps.Length - 1) break;                
+            //}
+            //gapError /= (double)count;   //average error
+            //gapError /= framesPerSecond; //convert error to seconds
+
+            return System.Tuple.Create(snr, sdPeakDB, gapScore);
+        }
+
         public static double CalculateKiwiBandWidthScore(AcousticEvent ae, double[,] noiseReducedMatrix, double peakThreshold)
         {
             int eventLength = (int)Math.Round(ae.Duration * ae.FramesPerSecond);
@@ -458,54 +550,9 @@ namespace AnalysisPrograms
             if (lowerCC < 0.0) lowerCC = 0.0;
             double CCscore = upperCC + lowerCC;
             if (CCscore > 1.0) CCscore = 1.0;
-            
-
-            //bool[] peaks = DataTools.GetPeaks(event_dB);
-            //int peakCount = DataTools.CountTrues(peaks);
-            //DataTools.writeBarGraph(event_dB);
-
-            //int indexOfMaxValue_EB  = DataTools.GetMaxIndex(event_dB);
-            //int indexOfMaxValue_LSB = DataTools.GetMaxIndex(lower_dB);
-            //int indexOfMaxValue_USB = DataTools.GetMaxIndex(upper_dB);
-
-            //double maxEventDB = event_dB[indexOfMaxValue] / (double)eventHt;
-            ////now check the side bands
-            //double sideBandDB = 0.0;
-            //for (int c = 0; c < eventHt; c++) sideBandDB += noiseReducedMatrix[ae.oblong.r1 + indexOfMaxValue, ae.oblong.c2 + c + 5]; //sideband dB profile
-            //for (int c = 0; c < halfHt; c++) sideBandDB += noiseReducedMatrix[ae.oblong.r1 + indexOfMaxValue, ae.oblong.c1 + c - 5 - halfHt]; //sideband dB profile
-            //sideBandDB /= (eventHt + halfHt);
-            ////double ratio = sideBandDB / maxEventDB;
-            ////if (ratio > 1.0) ratio = 1.0; else if (ratio < 0.5) ratio = 0.5;
-            ////double ratioScore = 2 * (ratio - 0.5);
-
-            //double diff = maxEventDB - sideBandDB;
-            //double dbThreshold = 10.0;
-            //double ratioScore = 0;
-            //if (diff > dbThreshold) ratioScore = 1.0; else if (diff < 0.0) ratioScore = 0.0; else ratioScore = diff / dbThreshold;
-            //double ratioScore = 2 * (ratio - 0.5);
-            //double score = 0;
-            //if ((indexOfMaxValue_EB != indexOfMaxValue_USB) score += 0.5;
-            //if (indexOfMaxValue_EB != indexOfMaxValue_LSB) score += 0.5;
-            
-            //for (int r = 0; r < eventLength; r++) if (event_dB[r] < peakThreshold) peaks[r] = false;
-            //int peakCount2 = DataTools.CountTrues(peaks);
-            //int expectedPeakCount = (int)(ae.Duration * 0.8); //calculate expected number of peaks given event duration
-            //double ratio = 0.0;
-            //for (int r = 0; r < eventLength; r++)
-            //{
-            //    if (peaks[r]) ratio += (upper_dB[r] / event_dB[r]);
-            //    //if (peaks[r]) ratio += ((upper_dB[r] + lower_dB[r]) / event_dB[r]);
-            //}
-            //double ratioScore = 0.0;
-            //if (peakCount2 >= expectedPeakCount) ratioScore = 1 - (ratio / peakCount2); //want at least expected count of peaks over 6 dB
-            //if (ratioScore > 1.0) ratioScore = 1.0;
-
-            //double[,] m = DataTools.MatrixRotate90Anticlockwise(noiseReducedMatrix);
-            //string path = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\noiseReducedSonogram.png";
-            //ImageTools.DrawMatrix(m, path, false);
-
             return 1 - CCscore;
         }
+
 
         public static double CalculateKiwiEntropyScore(AcousticEvent ae, double[,] noiseReducedMatrix, double peakThreshold)
         {

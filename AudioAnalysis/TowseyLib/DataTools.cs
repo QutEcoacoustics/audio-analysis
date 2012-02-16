@@ -587,6 +587,28 @@ namespace TowseyLib
             }
             return gaps;
         }
+        /// <summary>
+        /// returns a list of gaps between the trues in a boolean array
+        /// </summary>
+        /// <param name="peakLocations">a binary array</param>
+        /// <returns></returns>
+        public static List<int> GapLengths(bool[] binaryArray)
+        {
+            int L = binaryArray.Length;
+            var gaps = new List<int>();
+            int prev = 0;
+
+            for (int i = 1; i < L; i++) // iterate through array
+            {
+                if ((binaryArray[i]) && (prev > 0))
+                {
+                    gaps.Add(i - prev);
+                    prev = i;
+                }
+                else if (binaryArray[i]) prev = i;
+            }
+            return gaps;
+        }
 
 //=============================================================================
 
@@ -2464,6 +2486,20 @@ namespace TowseyLib
             }
             return peaks;
         }
+        static public bool[] GetTroughs(double[] data)
+        {
+            int length = data.Length;
+            bool[] troughs = new bool[length];
+            for (int i = 1; i < data.Length - 1; i++)
+            {
+                double deltaMinus = data[i] - data[i - 1];
+                double deltaPlus  = data[i + 1] - data[i];
+                if ((deltaMinus < 0.0) && (deltaPlus > 0.0)) troughs[i] = true;
+                else troughs[i] = false;
+            }
+            return troughs;
+        }
+
 
 //=============================================================================
 
