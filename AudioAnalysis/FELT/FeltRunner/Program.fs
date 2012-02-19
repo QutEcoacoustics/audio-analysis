@@ -62,6 +62,8 @@ let ResultsDirectory = config.["ResultsDirectory"]
 let WorkingDirectory = config.["WorkingDirectory"]
 let TestData = WorkingDirectory + config.["TestData"]
 let TrainingData = WorkingDirectory + config.["TrainingData"]
+let exportFrn = bool.Parse(config.["ExportFrn"])
+let exportFrd = bool.Parse(config.["ExportFrd"])
 
 let DefaultClassString = "Tag"
 
@@ -117,8 +119,10 @@ else
                 TrainingDataBytes = (new FileInfo(TrainingData)).Length;
                 ReportDestination = reportDest;
                 ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
-                TestOriginalCount = trData.Classes.Length;
-                TrainingOriginalCount = teData.Classes.Length
+                TestOriginalCount = teData.Classes.Length;
+                TrainingOriginalCount = trData.Classes.Length;
+                ExportFrd = exportFrd;
+                ExportFrn = exportFrn
             }
 
     RunAnalysis trData teData FELT.FindEventsLikeThis.BasicGrouped config |> ignore

@@ -17,6 +17,8 @@
             TrainingOriginalCount: int
             ReportDestination: FileInfo
             ReportTemplate: FileInfo
+            ExportFrn : bool
+            ExportFrd : bool
         }
 
     type ResultsComputation(config:ReportConfig) = class
@@ -87,29 +89,28 @@
             let placeFunc rowNum class' row=
                 match Array.tryFindIndex ((=) class') row with
                     | Some index -> (rowNum, index + 1 )
-                    | None -> (rowNum, -1)
-            let placing = Array.mapi2 placeFunc testData.Classes fullResultsTags
-            let inline map2i f s1 s2
-        ParallelEnumerable.SelectMany(toP(s1), toP(s2), Func<_,_,_,_>(fun i x y -> f i x y))
+                    | None -> (rowNum, 0)
+            let placing = Array.Parallel.mapi2 placeFunc testData.Classes fullResultsTags
+            
             Log "Placing"
 
             let placeHistogram =  Seq.countBy (fun x -> snd x) placing
-            System.Diagnostics.Debug.Assert(not (Seq.exists (fst >> ((=) 0)) placeHistogram))
+            //System.Diagnostics.Debug.Assert(not (Seq.exists (fst >> ((=) 0)) placeHistogram))
 
             Log "Histogram"
 
             let placeSummary =
-                let places = [1 ; 5; 10; 25; 50 ]
-                let withinPlace p = Seq.fold (fun total (key, count) -> if p < key && p > 0 then total + count else total) 0 placeHistogram 
-                List.map (fun place -> [place ; withinPlace place]) places
+                let places = [|1 ; 5; 10; 25; 50 |]
+                let withinPlace p = Seq.fold (fun total (key, count) -> if key <= p &&  key > 0 then total + count else total) 0 placeHistogram 
+                Array.map (fun place -> [place ; withinPlace place]) places
 
             Log "pl summary"
 
             let percentileSummary =
-                let percentiles = [0.01; 0.1; 0.2; 0.25; 0.33; 0.5; 0.66; 0.75; 0.9; 1.0]
-                let percentilesAsPlaces = List.map (fun x -> x , int( Math.Round(x * double trainingData.Classes.Length))) percentiles
-                let numCoveredByPlace p = Seq.fold (fun total  (key, count) -> if p < key && p > 0 then total + count else total) 0 placeHistogram 
-                List.map (fun (percentile:float,place) -> [percentile; float (numCoveredByPlace place)]) percentilesAsPlaces
+                let percentiles = [|0.01; 0.1; 0.2; 0.25; 0.33; 0.5; 0.66; 0.75; 0.9; 1.0|]
+                let percentilesAsPlaces = Array.map (fun x -> x , int( Math.Round(x * double trainingData.Classes.Length))) percentiles
+                let numCoveredByPlace p = Seq.fold (fun total  (key, count) -> if key <= p && key > 0 then total + count else total) 0 placeHistogram 
+                Array.map (fun (percentile:float,place) -> [percentile; float (numCoveredByPlace place)]) percentilesAsPlaces
                 
             Log "pe summary"
             
@@ -132,20 +133,26 @@
             let setVert (ws:ExcelWorksheet) name values f =
                 let fdc = names.[name].Start
                 Seq.iteri (fun index op -> ws.SetValue(fdc.Row + index, fdc.Column, f op)) values
-            let setSquare (ws:ExcelWorksheet) name values =
+            let setSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) =
                 let sc = names.[name].Start
+                // race condition when parallelizing, set out bounds first...
+                //ws.Cells.[Seq.length values, Seq.length (Seq.nth 0 values)].Value <- "A value"
+//                let vs = PSeq.map (fun row -> row |> Seq.map (fun z -> box z) |> Array.ofSeq) values
+//                ws.Cells.[sc.Address].LoadFromArrays vs
+                //PSeq.iteri (fun indexi row ->  ws.Cells.[sc.Offset(indexi, 0).Address].LoadFromCollection(row) |> ignore) values
                 Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
+                
 
-           
             Log "log sheet"
 
+
             // set
-            setv logws "RunDate" (config.RunDate.ToString("R"))
+            setv logws "RunDate" (config.RunDate.ToString("dddd, dd MMMM yyyy HH:mm:ss"))
 
             setv logws "Version" (version) 
 
-            setv logws "TrBytes" config.TestDataBytes
-            setv logws "TeBytes" config.TrainingDataBytes
+            setv logws "TrBytes" config.TrainingDataBytes
+            setv logws "TeBytes" config.TestDataBytes
 
             // set op list
             setHorz logws "AlgorithmType" opList fst
@@ -160,49 +167,58 @@
 
             // results summary
             setSquare logws "PlacementSummary" placeSummary
-            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!C15"
+            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
             setSquare logws "PercentileSummary" percentileSummary
+
 
             Log "summary results"
 
             // summary results worksheet
             setSquare sumResults "srPlaces" (placeHistogram |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
-            names.["srPlaces"].Offset(0,2, Seq.length placeHistogram, 1).FormulaR1C1 <- "RC[-1]/Log!C16"
-            names.["srPlaces"].Offset(1,3, (Seq.length placeHistogram) - 1, 1).FormulaR1C1 <- "SUM(R2C3:RC[-1])"
+            names.["srPlaces"].Offset(0,2, Seq.length placeHistogram, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
+            names.["srPlaces"].Offset(1,3, (Seq.length placeHistogram) - 1, 1).FormulaR1C1 <- "SUM(R3C3:RC[-1])"
 
-            Log "Full results"
+            if config.ExportFrn then
+                Log "Full results"
 
-            // full results
-            setVert fullResults "frClasses" testData.Classes id
-            setv fullResults "frNumbers" 1
+                // full results
+                setVert fullResults "frClasses" testData.Classes id
+                setv fullResults "frNumbers" 1
 
-            Log "frn a"
+                Log "frn a"
 
-            names.["frNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
+                names.["frNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
             
-            Log "frn b"
+                Log "frn b"
 
-            setSquare fullResults "frData" fullResultsTags
-            Log "frn c"
-            let plc = names.["frPlaces"].Offset(0,0, testData.Classes.Length, 1)
-            Log "frn d"
-            plc.FormulaR1C1 <- "MATCH(RC[-1],RC[1]:RC[" + trainingData.Classes.Length.ToString() + "],0)"
+                setSquare fullResults "frData" fullResultsTags
+                Log "frn c"
+                let plc = names.["frPlaces"].Offset(0,0, testData.Classes.Length, 1)
+                Log "frn d"
+                plc.FormulaR1C1 <- "MATCH(RC[-1],RC[1]:RC[" + trainingData.Classes.Length.ToString() + "],0)"
+            else
+                Info "Not exporting full results"
 
-            Log "full results distances"
+            if config.ExportFrd then
 
-            // full results (distances)
-            setVert fullResultsDist "frdClasses" testData.Classes id
-            setv fullResultsDist "frdNumbers" 1
+                Log "full results distances"
+
+                // full results (distances)
+                setVert fullResultsDist "frdClasses" testData.Classes id
+                setv fullResultsDist "frdNumbers" 1
             
-            Log "frd a"
+                Log "frd a"
 
-            names.["frdNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
+                names.["frdNumbers"].Offset(0, 1, 1, trainingData.Classes.Length - 1).FormulaR1C1 <- countUpFormula
             
-            Log "frd b"
+                Log "frd b"
 
-            setSquare fullResultsDist "frdData" fullResultsDistances
+                setSquare fullResultsDist "frdData" fullResultsDistances
 
-            Log "write time taken"
+                Log "write time taken"
+            else
+                Info "Not exporting full results distances"
+
 
             setv logws "TimeTaken" ((DateTime.Now - config.RunDate).ToString())
 
