@@ -1,5 +1,7 @@
 ﻿namespace Microsoft.FSharp.Collections
     open System
+    open Microsoft.FSharp.Collections
+    open System.Linq
 
     [<AutoOpen>]
     module Array =
@@ -79,7 +81,10 @@
             /// i : Rows
             /// j : Columns
             let initJagged2P i j f = Array.Parallel.init i (fun i -> Array.Parallel.init j (f i))
-            
+
+            let inline mapi2 f s1 s2 =
+                let zipped = PSeq.zip (s1) (s2)
+                PSeq.mapi (fun i (x, y) -> f i x y) zipped
 
 
     module Array2D =

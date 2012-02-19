@@ -39,7 +39,10 @@ namespace MQUTeR.FSharp.Shared
             if isNull fName then
                 tempMessages.Add(msg)
             else
-                File.AppendAllLines(fName, [msg])
+                try 
+                    File.AppendAllLines(fName, [msg])
+                with
+                    | ex -> Console.WriteLine("ERROR BIG THREADING BOO BOO WRITING: " + msg)
             
             Console.WriteLine(msg)
             #if DEBUG
