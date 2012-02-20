@@ -221,6 +221,7 @@
 
 
             setv logws "TimeTaken" ((DateTime.Now - config.RunDate).ToString())
+            setv logws "MemUsage" Environment.WorkingSet
 
             Log "write file"
 
