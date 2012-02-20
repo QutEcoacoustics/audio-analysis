@@ -75,6 +75,7 @@
     <Compile Include="Selector.OneForOne.fs" />
     <Compile Include="Selector.Randomiser.fs" />
     <Compile Include="Trainer.Group.fs" />
+    <Compile Include="Trainer.GroupWithStats.fs" />
     <Compile Include="Trainer.OneForOne.fs" />
     <Compile Include="Classifier.Euclidean.fs" />
     <Compile Include="Classifier.CosineSimilarity.fs" />

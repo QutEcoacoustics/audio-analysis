@@ -54,7 +54,21 @@
         Classifier(new EuclideanClassifier())
         ]
 
+    let ZScoreGrouped = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new OneForOneSelector());
+        Trainer(new GroupAndKeepStatsTrainer()); 
+        Classifier(new ZScoreClassifier())
+        ]
 
+    let ZScoreAnti = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new RandomiserSelector());
+        Trainer(new GroupAndKeepStatsTrainer()); 
+        Classifier(new ZScoreClassifier())
+        ]
 
         
 
@@ -94,6 +108,7 @@
                     // statefull
                     r.Calculate trData teData results (toString oplst') |> ignore
                     state
+
         List.scan f (trainingData, testData, null) oplst'
 
     

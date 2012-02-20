@@ -62,6 +62,15 @@
             new Number(LanguagePrimitives.GenericZero)
       
         end
+
+    type AveragedNumber(descriptiveStatistics: MathNet.Numerics.Statistics.DescriptiveStatistics ) = class
+        inherit Number(descriptiveStatistics.Mean)
+
+        member this.DescriptiveStatistics 
+            with get() = descriptiveStatistics
+
+
+        end
     
     type Date(d) = class
         inherit BaseValue<DateTime>(d)
@@ -164,6 +173,9 @@
 
         let inline unwrap (input: #BaseValue<'c> array) =
                     Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
+        
+        let value (v:BaseValue<'a>) = v.Value
+        let getRow rowId (d:Data) = Map.map (fun key (element: Value array) -> element.[rowId]) d.Instances
 
         /// Active pattern for the value type
         /// to make pattern matching easier

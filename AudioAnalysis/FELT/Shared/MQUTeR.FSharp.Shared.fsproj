@@ -73,6 +73,7 @@
     <Compile Include="CSV.fs" />
     <None Include="Script.fsx" />
     <Compile Include="stats.fs" />
+    <Compile Include="StringStats.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="FSharp.PowerPack">

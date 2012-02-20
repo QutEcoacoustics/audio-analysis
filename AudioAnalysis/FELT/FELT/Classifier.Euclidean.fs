@@ -43,9 +43,22 @@
             //   [ d(t2-s1); d(t2-s2) ] ]
             let distances = Array.Parallel.initJagged tedx trdx (fun tedIdx trdIdx -> distance ted.[tedIdx] trd.[trdIdx])
 
+            Info "Euclidean Classifier - Distances complete"
+
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
-            let sortedDistances = Array.Parallel.init tedx (fun i -> distances.[i]  |> Array.sortWithIndex)
+            let sortedDistances = Array.Parallel.init tedx (fun i -> 
+                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndex
+                                                                    // an attempt at disposing unecessary data to increace mem performance
+                                                                    distances.[i] <- null
+                                                                    sortedRow)
+            
+            Info "Euclidean Classifier - Sorting complete"
+
+            Warn "Starting Euclidean Classifier garbage collection"
+            //http://blogs.msdn.com/b/ricom/archive/2004/11/29/271829.aspx
+            System.GC.Collect()
+            Info "Finished Euclidean Classifier garbage collection"
 
             sortedDistances
 
