@@ -60,6 +60,13 @@ namespace AnalysisPrograms
 					case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
                         Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;
+                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
+                        KiwiRecogniser.Dev(restOfArgs);
+                        break;
+                    case "sunshinecoast1":  // data from sunshine coast
+                        SunshineCoast1.Dev(restOfArgs);
+                        break;
+
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
                     case "felt":     // find other acoustic events like this
@@ -73,9 +80,6 @@ namespace AnalysisPrograms
                         break;
                     case "frog_ribbit":  // frog calls
                         FrogRibit.Dev(restOfArgs);
-                        break;
-                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        KiwiRecogniser.Dev(restOfArgs);
                         break;
                     case "spt":  // spectral peak tracking
                         SPT.Dev(restOfArgs);

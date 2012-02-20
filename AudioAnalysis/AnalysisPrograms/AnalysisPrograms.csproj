@@ -124,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AED.cs" />
+    <Compile Include="SunshineCoast1.cs" />
     <Compile Include="KiwiRecogniser.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="RichnessIndices2.cs" />

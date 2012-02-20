@@ -21,6 +21,69 @@ namespace AnalysisPrograms
         public const int    DEFAULT_WINDOW_SIZE = 256;
 
 
+
+        //Keys to recognise identifiers in PARAMETERS - INI file. 
+        //public static string key_FILE_EXT        = "FILE_EXT";
+        //public static string key_DO_SEGMENTATION = "DO_SEGMENTATION";
+        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
+        public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
+
+        public static string key_FRAME_LENGTH = "FRAME_LENGTH";
+        public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        public static string key_MIN_HZ_MALE = "MIN_HZ_MALE";
+        public static string key_MAX_HZ_MALE = "MAX_HZ_MALE";
+        public static string key_MIN_HZ_FEMALE = "MIN_HZ_FEMALE";
+        public static string key_MAX_HZ_FEMALE = "MAX_HZ_FEMALE";
+        public static string key_DCT_DURATION = "DCT_DURATION";
+        public static string key_DCT_THRESHOLD = "DCT_THRESHOLD";
+        public static string key_MIN_PERIODICITY = "MIN_PERIODICITY";
+        public static string key_MAX_PERIODICITY = "MAX_PERIODICITY";
+        public static string key_MIN_DURATION = "MIN_DURATION";
+        public static string key_MAX_DURATION = "MAX_DURATION";
+        public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
+        public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+        public static string key_REPORT_FORMAT = "REPORT_FORMAT";
+
+
+        /// <summary>
+        /// a set of parameters derived from ini file
+        /// </summary>
+        public struct Parameters
+        {
+            public int frameLength, minHzMale, maxHzMale, minHzFemale, maxHzFemale;
+            public double segmentDuration, segmentOverlap;
+            public double frameOverlap, dctDuration, dctThreshold, minPeriodicity, maxPeriodicity, minDuration, maxDuration, eventThreshold;
+            public int DRAW_SONOGRAMS;
+            public string reportFormat;
+
+            public Parameters(double _segmentDuration, double _segmentOverlap,
+                              int _minHzMale, int _maxHzMale, int _minHzFemale, int _maxHzFemale, int _frameLength, int _frameOverlap, double _dctDuration, double _dctThreshold,
+                              double _minPeriodicity, double _maxPeriodicity, double _minDuration, double _maxDuration, double _eventThreshold,
+                              int _DRAW_SONOGRAMS, string _fileFormat)
+            {
+                segmentDuration = _segmentDuration;
+                segmentOverlap = _segmentOverlap;
+                minHzMale = _minHzMale;
+                maxHzMale = _maxHzMale;
+                minHzFemale = _minHzFemale;
+                maxHzFemale = _maxHzFemale;
+                frameLength = _frameLength;
+                frameOverlap = _frameOverlap;
+                dctDuration = _dctDuration;
+                dctThreshold = _dctThreshold;
+                minPeriodicity = _minPeriodicity;
+                maxPeriodicity = _maxPeriodicity;
+                minDuration = _minDuration;
+                maxDuration = _maxDuration;
+                eventThreshold = _eventThreshold;
+                DRAW_SONOGRAMS = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
+                reportFormat = _fileFormat;
+            } //Parameters
+        } //struct Parameters
+
+
+
+
         /// <summary>
         /// a set of indices derived from each recording.
         /// </summary>
@@ -48,11 +111,13 @@ namespace AnalysisPrograms
                 clusterCount = _clusterCount;
                 avClusterDuration = _avClusterDuration; //av length of clusters > 1 frame.
             }
-        }
-        private const string _HEADER = "count, minutes, FileName, avAmp-dB, snr-dB, bg-dB, " +
+        } //struct Indices2
+
+
+        public const string _HEADER = "count, minutes, FileName, avAmp-dB, snr-dB, bg-dB, " +
                                        "activity, segCount, avSegDur, spCover, H[ampl], " +
                                        "H[peakFreq], H[avSpectrum], H1[varSpectra], #clusters, avClustDur";
-        private const string _FORMAT_STRING = "{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f2},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14},{15:f2}";
+        public const string _FORMAT_STRING = "{0},{1:f3},{2},{3:f2},{4:f2},{5:f2},{6:f2},{7},{8:f2},{9:f4},{10:f4},{11:f4},{12:f4},{13:f4},{14},{15:f2}";
 
 
         public static void Dev(string[] args)
