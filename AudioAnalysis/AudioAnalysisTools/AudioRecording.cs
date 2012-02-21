@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using AudioTools;
 using AudioTools.AudioUtlity;
+using QutSensors.Shared.LogProviders;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -317,5 +318,85 @@ namespace AudioAnalysisTools
         }
 
         #endregion
+
+
+
+        //########################################################################################################################################################################
+        //########################################################################################################################################################################
+        //##  STATIC METHODS BELOW ###############################################################################################################################################
+        //########################################################################################################################################################################
+        //########################################################################################################################################################################
+
+        /// <summary>
+        /// Returns an instance of the WavAudioUtility class that is required to read audio recordings  
+        /// IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = SAMPLERATE / 2 Hz.
+        /// IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
+        ///                         BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
+        /// </summary>
+        /// <param name="resampleRate"></param>
+        /// <returns></returns>
+        private static SpecificWavAudioUtility GetAudioUtility(int resampleRate)
+        {
+            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
+            audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
+            audioUtility.SoxAudioUtility.TargetSampleRateHz = resampleRate;
+            audioUtility.SoxAudioUtility.ReduceToMono = true;
+            audioUtility.SoxAudioUtility.UseSteepFilter = true;
+            audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
+            return audioUtility;
+        }
+
+        
+        /// <summary>
+        /// returns an audio recording given a file path
+        /// </summary>
+        /// <param name="recordingPath"></param>
+        /// <param name="resampleRate"></param>
+        /// <returns></returns>
+        public static AudioRecording GetAudioRecording(string recordingPath, int resampleRate)
+        {
+            //OLD CODE
+            //AudioRecording recording = new AudioRecording(recordingPath);
+            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+            //MORE OLD CODE
+            //AudioRecording recording = new AudioRecording(recordingPath);
+            //string filterName = "Chebyshev_Lowpass_5000";
+            //recording.Filter_IIR(filterName); //filter audio recording.
+            //recording.ReduceSampleRateByFactor(2);
+
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate);
+            AudioRecording recording = new AudioRecording(recordingPath, audioUtility);
+
+            // WRITE FILTERED SIGNAL IF NEED TO DEBUG
+            //write the signal: IMPORTANT: ENSURE VALUES ARE IN RANGE -32768 to +32768
+            //int bitRate = 16;
+            //WavWriter.WriteWavFile(recording.GetWavReader().Samples, filteredRecording.SampleRate, bitRate, recordingPath + "filtered.wav"); 
+
+            return recording;
+        }
+
+        /// <summary>
+        /// Extracts a segment from a long mp3 recording and returns as an instance of the AudioRecording  class
+        /// </summary>
+        /// <param name="recordingPath"></param>
+        /// <param name="startMilliseconds"></param>
+        /// <param name="endMilliseconds"></param>
+        /// <param name="resampleRate"></param>
+        /// <param name="opDir"></param>
+        /// <returns></returns>
+        public static AudioRecording GetSegmentFromAudioRecording(string recordingPath, int startMilliseconds, int endMilliseconds, int resampleRate, string opDir)
+        {
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate);
+            FileInfo inFile = new FileInfo(recordingPath);
+            //FileInfo outFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Kiwi\Samples\test.wav");
+            FileInfo outFile = new FileInfo(opDir + @"temp.wav");
+            SpecificWavAudioUtility.GetSingleSegment(audioUtility, inFile, outFile, startMilliseconds, endMilliseconds);
+            AudioRecording recording = new AudioRecording(outFile.FullName, audioUtility);
+            return recording;
+        }
+
+
+
+
     }// end class AudioRecording
 }

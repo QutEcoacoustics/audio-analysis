@@ -28,7 +28,7 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-male\TOWER_20091112_072000_25.LSK.M.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_Cropped.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
-        // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\Kiwi\Results_MixedTest\lskiwi_Params.txt"
+        // 8 min test recording  // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\Kiwi\Results_MixedTest\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
@@ -135,13 +135,16 @@ namespace AnalysisPrograms
 
             // LOOP THROUGH THE FILE
             double startMinutes = 0.0;
-            int overlap = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
+            int overlap_ms = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
             for (int s = 0; s < Int32.MaxValue; s++)
             {
                 Console.WriteLine();
                 Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
 
-                AudioRecording recording = GetSegmentFromAudioRecording(recordingPath, startMinutes, kiwiParams.segmentDuration, overlap, outputDir);
+                int resampleRate = 17640;
+                int startMilliseconds = (int)(startMinutes * 60000);
+                int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, resampleRate, outputDir);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
                 //Log.WriteLine("Signal Duration: " + segmentDuration);
                 int sampleCount = recording.GetWavReader().Samples.Length;
@@ -239,49 +242,6 @@ namespace AnalysisPrograms
 
 
 
-        public static AudioRecording GetAudioRecording(string recordingPath)
-        {
-            //OLD CODE
-            //AudioRecording recording = new AudioRecording(recordingPath);
-            //if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
-
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
-            audioUtility.SoxAudioUtility.TargetSampleRateHz = 17640;
-            audioUtility.SoxAudioUtility.ReduceToMono = true;
-            audioUtility.SoxAudioUtility.UseSteepFilter = true;
-            //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = SAMPLERATE / 2 Hz.
-            //##### ######  IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
-            //##### ######                               BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
-            audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
-            AudioRecording recording = new AudioRecording(recordingPath, audioUtility);
-
-            return recording;
-        }
-
-        public static AudioRecording GetSegmentFromAudioRecording(string recordingPath, double startMinutes, double durationMinutes, int overlap, string opDir)
-        {
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
-            audioUtility.SoxAudioUtility.TargetSampleRateHz = 17640;
-            audioUtility.SoxAudioUtility.ReduceToMono = true;
-            audioUtility.SoxAudioUtility.UseSteepFilter = true;
-            //##### ######  IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = SAMPLERATE / 2 Hz.
-            //##### ######  IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
-            //##### ######                               BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
-            audioUtility.LogLevel = LogType.Error;  //Options: None, Fatal, Error, Debug, 
-
-            FileInfo inFile = new FileInfo(recordingPath);
-            //FileInfo outFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Kiwi\Samples\test.wav");
-            FileInfo outFile = new FileInfo(opDir + @"temp.wav");
-            int startMilliseconds = (int)(startMinutes * 60000);
-            int endMilliseconds   = startMilliseconds + (int)(durationMinutes * 60000) + overlap;
-
-            SpecificWavAudioUtility.GetSingleSegment(audioUtility, inFile, outFile, startMilliseconds, endMilliseconds);
-            AudioRecording recording = new AudioRecording(outFile.FullName, audioUtility);
-
-            return recording;
-        }
 
         public static System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>> Execute_KiwiDetect(AudioRecording recording,
             int minHzMale, int maxHzMale, int minHzFemale, int maxHzFemale, int frameLength, double frameOverlap, double dctDuration, double dctThreshold,
