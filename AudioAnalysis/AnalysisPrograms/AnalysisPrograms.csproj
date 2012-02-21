@@ -127,7 +127,7 @@
     <Compile Include="SunshineCoast1.cs" />
     <Compile Include="KiwiRecogniser.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
-    <Compile Include="RichnessIndices2.cs" />
+    <Compile Include="AcousticIndices.cs" />
     <Compile Include="FrogRibit.cs" />
     <Compile Include="EPR.cs" />
     <Compile Include="FeltTemplate_Edit.cs" />
@@ -148,7 +148,6 @@
     <Compile Include="Main_HTKScanDir.cs" />
     <Compile Include="Processing\ProcessingTypes.cs" />
     <Compile Include="Processing\ProcessingUtils.cs" />
-    <Compile Include="RichnessIndices1.cs" />
     <Compile Include="Segment.cs" />
     <Compile Include="SnrAnalysis.cs" />
     <Compile Include="HTKRecogniser.cs" />
