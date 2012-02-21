@@ -32,6 +32,7 @@ open System.IO
 open System.Reflection
 open FELT.FindEventsLikeThis
 open FELT.Results
+open FELT.Runner
 
 let fail() =
     eprintfn "Exiting because of error!"
@@ -64,6 +65,10 @@ let TestData = WorkingDirectory + config.["TestData"]
 let TrainingData = WorkingDirectory + config.["TrainingData"]
 let exportFrn = bool.Parse(config.["ExportFrn"])
 let exportFrd = bool.Parse(config.["ExportFrd"])
+
+let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
+
+let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using)
 
 let DefaultClassString = "Tag"
 
@@ -125,7 +130,7 @@ else
                 ExportFrn = exportFrn
             }
 
-    RunAnalysis trData teData FELT.FindEventsLikeThis.BasicGrouped config |> ignore
+    RunAnalysis trData teData FELT.FindEventsLikeThis.BasicGrouped transforms config |> ignore
 
     Info "end: main analysis..."
     Info "Analysis complete!"

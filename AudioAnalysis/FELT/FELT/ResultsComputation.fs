@@ -21,7 +21,14 @@
             ExportFrd : bool
         }
 
+    type Place = int
+        
+
+    
+
     type ResultsComputation(config:ReportConfig) = class
+        let OnePlace:Place = 1
+        
 
         let countUpFormula = "RC[-1] + 1"
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
@@ -86,31 +93,22 @@
 
             Log "full results distances"
 
-            let placeFunc rowNum class' row=
+            let placeFunc rowNum class' row =
                 match Array.tryFindIndex ((=) class') row with
                     | Some index -> (rowNum, index + 1 )
                     | None -> (rowNum, 0)
             let placing = Array.Parallel.mapi2 placeFunc testData.Classes fullResultsTags
             
             Log "Placing"
-            //(seq { 0..placing.Length})
-            let placeHistogram =  Seq.countBy (fun x -> snd x) placing
-            Se
-            
-
-//            let ph2 = Seq.fold (fun state properIndex -> 
-//                                    match state with 
-//                                    | items when 
-//                                    
-//                                    
-//                                    ) (seq { 0..placing.Length})
-            System.Diagnostics.Debug.Assert(trainingData.Classes.Length + 1 = (Seq.length placeHistogram))
+            let placeHistogram =  Seq.histogramBy (fun x -> snd x) (seq { 0..trainingData.Classes.Length}) placing
+            let numPlaces = Seq.length placeHistogram
+            System.Diagnostics.Debug.Assert(trainingData.Classes.Length + 1 = (numPlaces))
 
             Log "Histogram"
 
             let placeSummary =
                 let places = [|1 ; 5; 10; 25; 50 |]
-                let withinPlace p = Seq.fold (fun total (key, count) -> if key <= p &&  key > 0 then total + count else total) 0 placeHistogram 
+                let withinPlace p = Map.fold (fun total key count -> if key <= p &&  key > 0 then total + count else total) 0 placeHistogram 
                 Array.map (fun place -> [place ; withinPlace place]) places
 
             Log "pl summary"
@@ -118,7 +116,7 @@
             let percentileSummary =
                 let percentiles = [|0.01; 0.1; 0.2; 0.25; 0.33; 0.5; 0.66; 0.75; 0.9; 1.0|]
                 let percentilesAsPlaces = Array.map (fun x -> x , int( Math.Round(x * double trainingData.Classes.Length))) percentiles
-                let numCoveredByPlace p = Seq.fold (fun total  (key, count) -> if key <= p && key > 0 then total + count else total) 0 placeHistogram 
+                let numCoveredByPlace p = Map.fold (fun total key count -> if key <= p && key > 0 then total + count else total) 0 placeHistogram 
                 Array.map (fun (percentile:float,place) -> [percentile; float (numCoveredByPlace place)]) percentilesAsPlaces
                 
             Log "pe summary"
@@ -180,12 +178,13 @@
             setSquare logws "PercentileSummary" percentileSummary
 
 
-            Log "summary results"
+            Log "summary results sheet data"
 
             // summary results worksheet
-            setSquare sumResults "srPlaces" (placeHistogram |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
-            names.["srPlaces"].Offset(0,2, Seq.length placeHistogram, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
-            names.["srPlaces"].Offset(1,3, (Seq.length placeHistogram) - 1, 1).FormulaR1C1 <- "SUM(R3C3:RC[-1])"
+            setSquare sumResults "srPlaces" (placeHistogram |> Map.toSeq |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
+            names.["srPlaces"].Offset(0,2, numPlaces, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
+            names.["srPlaces"].Offset(1,3, (numPlaces) - 1, 1).FormulaR1C1 <- "SUM(R3C3:RC[-1])"
+
 
             if config.ExportFrn then
                 Log "Full results"
