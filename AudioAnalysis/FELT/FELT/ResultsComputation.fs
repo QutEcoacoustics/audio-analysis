@@ -93,9 +93,18 @@
             let placing = Array.Parallel.mapi2 placeFunc testData.Classes fullResultsTags
             
             Log "Placing"
-
+            //(seq { 0..placing.Length})
             let placeHistogram =  Seq.countBy (fun x -> snd x) placing
-            //System.Diagnostics.Debug.Assert(not (Seq.exists (fst >> ((=) 0)) placeHistogram))
+            Se
+            
+
+//            let ph2 = Seq.fold (fun state properIndex -> 
+//                                    match state with 
+//                                    | items when 
+//                                    
+//                                    
+//                                    ) (seq { 0..placing.Length})
+            System.Diagnostics.Debug.Assert(trainingData.Classes.Length + 1 = (Seq.length placeHistogram))
 
             Log "Histogram"
 
