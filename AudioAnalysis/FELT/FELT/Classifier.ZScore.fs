@@ -11,21 +11,18 @@
 
         let zScore sample avg =
             match sample with
-             | Number n ->
-                if (IsNumber avg) then
-
-                else
-                    failwith "avgerage against types 
+             | IsNumber n ->
+                match avg with
+                    | IsAvgNumber avg -> Maths.zscore n.Value avg.DescriptiveStatistics.Mean avg.DescriptiveStatistics.StandardDeviation
+                    | _ -> failwith "avgerage against types "
              | _ -> failwith "other data types not yet supported"
 
         let distance samples avgs =
             // calculate z-score for each feature
-            Array.map2 (fun sample avg ->) samples avgs
+            let zss = Seq.map2 (zScore) samples avgs
 
-            let zsf = Stats.Array.zscore
             // combine score
-
-            0.0
+            Maths.euclideanDist zss
         
         
         override this.Classify (trainingData, testData) =

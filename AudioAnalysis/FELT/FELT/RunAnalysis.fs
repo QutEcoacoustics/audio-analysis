@@ -112,7 +112,14 @@
         List.scan f (trainingData, testData, null) oplst'
 
     
-    let RunAnalysis trainingData testData tests  data =
+    let RunAnalysis trainingData testData tests (transformList: string * string *string) data =
+        
+        // inject transforms after cleaner in workflow
+        let txs = Seq.map (fun (feature, newName, operation) ->
+                                                        
+                                                     ) transformList
+
+
         let result = workflow trainingData testData tests data
         result
 

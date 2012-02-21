@@ -70,6 +70,7 @@
     <Compile Include="Program.fs" />
     <Compile Include="Cleaner.fs" />
     <Compile Include="Selector.Base.fs" />
+    <Compile Include="Transformer.Base.fs" />
     <Compile Include="Trainer.Base.fs" />
     <Compile Include="Classifier.Base.fs" />
     <Compile Include="Selector.OneForOne.fs" />

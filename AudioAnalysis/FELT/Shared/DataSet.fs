@@ -175,7 +175,7 @@
                     Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
         
         let value (v:BaseValue<'a>) = v.Value
-        let getRow rowId (d:Data) = Map.map (fun key (element: Value array) -> element.[rowId]) d.Instances
+        let getRow rowId (d:Data) = d.Instances |> Seq.cast |>  Seq.map (fun key (element: Value array) -> element.[rowId]) 
 
         /// Active pattern for the value type
         /// to make pattern matching easier
@@ -183,6 +183,8 @@
             checkAndCastTo<Text> input
         let (|IsNumber|_|) (input) =
             checkAndCastTo<Number> input
+        let (|IsAvgNumber|_|) (input) =
+            checkAndCastTo<AveragedNumber> input
 
         let (|IsNumbers|_|) (input: #Value array) =
             testAndCastArray<Number> input

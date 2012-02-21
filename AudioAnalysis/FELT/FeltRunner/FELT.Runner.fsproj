@@ -63,6 +63,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <ItemGroup>
+    <Compile Include="CustomConfig.fs" />
     <Compile Include="Program.fs" />
     <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
@@ -95,6 +96,7 @@
       <Project>{73b9c579-f539-426f-9852-1efcba75c0d5}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="System.Xml" />
     <Reference Include="zlib.net">
       <HintPath>..\packages\zlib.net.1.0.3.0\lib\zlib.net.dll</HintPath>
       <Private>True</Private>
