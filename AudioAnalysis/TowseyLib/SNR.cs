@@ -229,6 +229,11 @@ namespace TowseyLib
             return energy;
         }
 
+        public static double Amplitude2Decibels(double value)
+        {
+            return 20 * Math.Log10(value);   //10 times log of amplitude squared
+
+        }
 
         public static double[] Signal2Decibels(double[] signal)
         {

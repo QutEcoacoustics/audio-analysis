@@ -15,8 +15,8 @@ namespace AnalysisPrograms
     {
         // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
         //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
-
-
+        //SCC file site 4  // sunshinecoast1 "Y:\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
+        //SCC file site 4  // sunshinecoast1 "\\hpc-fs.qut.edu.au\staging\availae\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
 
         public static void Dev(string[] args)
         {
@@ -59,16 +59,27 @@ namespace AnalysisPrograms
             // LOOP THROUGH THE FILE
             //initialse counters
             DateTime tStart = DateTime.Now;
+            DateTime tPrevious = tStart;
             Log.WriteLine(tStart);
 
 
             int overlap_ms = (int)Math.Floor(parameters.segmentOverlap * 1000);
             for (int s = 0; s < Int32.MaxValue; s++)
             {
+                DateTime tNow = DateTime.Now;
+                TimeSpan elapsedTime = tNow - tStart;
+                string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
                 double startMinutes = s * parameters.segmentDuration;
+                double avIterTime = elapsedTime.TotalSeconds / s;
+                if (s == 0) avIterTime = 0.0;
 
-                Console.WriteLine("\n\n");
-                Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
+                TimeSpan iterTimeSpan = tNow - tPrevious;
+                double iterTime = iterTimeSpan.TotalSeconds;
+                if (s == 0) iterTime = 0.0;
+                tPrevious = tNow;
+
+                Console.WriteLine("\n");
+                Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
                 AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputDir);
@@ -136,6 +147,24 @@ namespace AnalysisPrograms
         /// <param name="args"></param>
         public static void CheckPaths(string[] args)
         {
+            string dir = Path.GetPathRoot(args[0]);
+            if (!Directory.Exists(dir))
+            {
+                Console.WriteLine("Cannot find root <" + dir + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
+            else Console.WriteLine("Root dir = <" + dir + ">");
+
+            dir = Path.GetDirectoryName(args[0]);
+            if (!Directory.Exists(dir))
+            {
+                Console.WriteLine("Cannot find directory <" + dir + ">");
+                Console.WriteLine("Press <ENTER> key to exit.");
+                Console.ReadLine();
+                System.Environment.Exit(1);
+            }
             if (!File.Exists(args[0]))
             {
                 Console.WriteLine("Cannot find recording file <" + args[0] + ">");
