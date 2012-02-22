@@ -17,8 +17,9 @@
             TrainingOriginalCount: int
             ReportDestination: FileInfo
             ReportTemplate: FileInfo
-            ExportFrn : bool
             ExportFrd : bool
+            ExportFrn : bool
+            
         }
 
     type Place = int

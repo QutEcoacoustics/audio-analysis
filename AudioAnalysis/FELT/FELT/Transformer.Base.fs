@@ -5,7 +5,7 @@
     [<AbstractClass>]
     type TransformerBase() = class
         
-        abstract member Transform : Data -> Data
+        abstract member Transform : Data -> Data -> Data * Data
 
         end
         

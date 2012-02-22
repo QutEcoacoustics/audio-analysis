@@ -50,7 +50,7 @@
             override this.CreateNewElement() = upcast(new TransformElement())
 
             override this.GetElementKey(element:ConfigurationElement) =
-                upcast (element :?> TransformElement).Name
+                upcast (element :?> TransformElement).Feature
 
     //        override this.CollectionType
     //            with get() = ConfigurationElementCollectionType.BasicMap
