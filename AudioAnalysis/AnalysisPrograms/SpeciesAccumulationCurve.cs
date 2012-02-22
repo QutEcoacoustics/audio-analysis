@@ -135,6 +135,52 @@ namespace AnalysisPrograms
                 Environment.Exit(666);
             }
 
+
+            //random sampling OVER FIXED INTERVAL GIVEN START and END
+            if (false)
+            {
+                //int startSample = 270;  // start of morning chorus
+                int startSample = 291;  // 4:51am = civil dawn
+                //int startSample = 315;  // 5:15am = sunrise
+                int trialCount = 5000;
+                int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
+                //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
+                //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours 
+                //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours 
+                //int C = occurenceMatrix.GetLength(1); //total species count
+
+                int[] s25array = new int[trialCount];
+                int[] s50array = new int[trialCount];
+                int[] s75array = new int[trialCount];
+                int[] s100array = new int[trialCount];
+                int[] fixedsampleArray = new int[trialCount];
+
+                for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
+                {
+                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
+                    for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample;
+                    int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
+                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
+                    //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
+                    s25array[i] = results.Item1;
+                    s50array[i] = results.Item2;
+                    s75array[i] = results.Item3;
+                    s100array[i] = results.Item4;
+                    fixedsampleArray[i] = results.Item5;
+                    if (i % 100 == 0) Console.WriteLine("trial " + i);
+                } //over all trials
+                double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
+                NormalDist.AverageAndSD(s25array, out av25, out sd25);
+                NormalDist.AverageAndSD(s50array, out av50, out sd50);
+                NormalDist.AverageAndSD(s75array, out av75, out sd75);
+                NormalDist.AverageAndSD(s100array, out av100, out sd100);
+                NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
+                Console.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
+                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
+            }
+
+
+
             // SMART SAMPLING
             if (true)
             {
@@ -159,48 +205,6 @@ namespace AnalysisPrograms
                 Console.WriteLine("% of total species identified in fixed {0} samples ={1}%", sampleConstant, results.Item5);
             }
 
-            //random sampling OVER FIXED INTERVAL GIVEN START and END
-            if (false)
-            {
-                //int startSample = 270;  // start of morning chorus
-                int startSample = 291;  // 4:51am = civil dawn
-                //int startSample = 315;  // 5:15am = sunrise
-                int trialCount = 5000;
-                int N = 180; //maximum Sample Number i.e. sampling duration in minutes = 3 hours 
-                //int N = 240; //maximum Sample Number i.e. sampling duration in minutes = 4 hours 
-                //int N = 360; //maximum Sample Number i.e. sampling duration in minutes = 6 hours 
-                //int N = 480; //maximum Sample Number i.e. sampling duration in minutes = 8 hours 
-                //int C = occurenceMatrix.GetLength(1); //total species count
-
-                int[] s25array = new int[trialCount];
-                int[] s50array = new int[trialCount];
-                int[] s75array = new int[trialCount];
-                int[] s100array = new int[trialCount];
-                int[] fixedsampleArray = new int[trialCount];
-
-                for (int i = 0; i < trialCount; i++)  //DO REPEATED TRIALS
-                {
-                    int[] randomOrder = RandomNumber.RandomizeNumberOrder(N, seed + i);
-                    for (int r = 0; r < randomOrder.Length; r++) randomOrder[r] += startSample; 
-                    int[] accumulationCurve = GetAccumulationCurve(occurenceMatrix, randomOrder);
-                    System.Tuple<int, int, int, int, int> results = GetAccumulationCurveStatistics(accumulationCurve, speciesList.Count, sampleConstant);
-                    //Console.WriteLine("s25={0}\t s50={1}\t s75={2}", results.Item1, results.Item2, results.Item3);
-                    s25array[i] = results.Item1;
-                    s50array[i] = results.Item2;
-                    s75array[i] = results.Item3;
-                    s100array[i] = results.Item4;
-                    fixedsampleArray[i] = results.Item5;
-                    if (i % 100 == 0) Console.WriteLine("trial " + i);
-                } //over all trials
-                double av25, sd25, av50, sd50, av75, sd75, av100, sd100, avFixedSample, sdFixedSample;
-                NormalDist.AverageAndSD(s25array, out av25, out sd25);
-                NormalDist.AverageAndSD(s50array, out av50, out sd50);
-                NormalDist.AverageAndSD(s75array, out av75, out sd75);
-                NormalDist.AverageAndSD(s100array, out av100, out sd100);
-                NormalDist.AverageAndSD(fixedsampleArray, out avFixedSample, out sdFixedSample);
-                Console.WriteLine("s25={0:f1}+/-{1:f1}\t s50={2:f1}+/-{3:f1}\t s75={4:f1}+/-{5:f1}\t s100={6:f1}+/-{7:f1}", av25, sd25, av50, sd50, av75, sd75, av100, sd100);
-                Console.WriteLine("% of total species identified in fixed {0} samples ={1}+/-{2}", sampleConstant, avFixedSample, sdFixedSample);
-            }
             
             DateTime tEnd = DateTime.Now;
             TimeSpan timeSpan = tEnd - tStart;
