@@ -48,16 +48,19 @@ namespace MQUTeR.FSharp.Shared
             #if DEBUG
             System.Diagnostics.Debug.WriteLine(msg)
             #endif
+            
 
         let Log   = logToFile " " 
         let Info  = logToFile " INFO:  " 
         let Warn  = logToFile " WARN:  " 
         let Error = logToFile " ERROR: "
-            
+        let ErrorFail = logToFile " FATAL ERROR: "            
+
         let Logf   fmt = Printf.ksprintf (logToFile " ") fmt
         let Infof  fmt = Printf.ksprintf (logToFile " INFO:  ") fmt
         let Warnf  fmt = Printf.ksprintf (logToFile " WARN:  ") fmt
         let Errorf fmt = Printf.ksprintf (logToFile " ERROR: ") fmt
+        let ErrorFailf fmt = Printf.ksprintf (logToFile " FATAL ERROR: ") fmt
 
          /// <summary>
         /// TimeSpan pretty printer

@@ -3,6 +3,7 @@
     open Microsoft.FSharp.Collections
     open Microsoft.FSharp.Quotations
     open MQUTeR.FSharp.Shared.Equality
+    open Microsoft.FSharp.Numerics
 
     type DataSet =
         | Training = 0
@@ -69,6 +70,11 @@
         member this.DescriptiveStatistics 
             with get() = descriptiveStatistics
 
+
+        end
+
+    type ModuloHour(z) = class
+        inherit BaseValue<IntegerZ1440>(z)
 
         end
     
@@ -185,6 +191,8 @@
             checkAndCastTo<Number> input
         let (|IsAvgNumber|_|) (input) =
             checkAndCastTo<AveragedNumber> input
+        let (|IsDate|_|) input =
+            checkAndCastTo<Date> input
 
         let (|IsNumbers|_|) (input: #Value array) =
             testAndCastArray<Number> input

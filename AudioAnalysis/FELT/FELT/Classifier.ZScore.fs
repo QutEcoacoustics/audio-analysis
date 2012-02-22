@@ -22,7 +22,7 @@
             let zss = Seq.map2 (zScore) samples avgs
 
             // combine score
-            Maths.euclideanDist zss
+            Maths.euclideanDist zss (Array.create (Seq.length zss) 0.0)
         
         
         override this.Classify (trainingData, testData) =
@@ -51,4 +51,12 @@
 
             let distances = Array.Parallel.initJagged testDataInstanceCount trainingDataInstanceCount (fun tedIdx trdIdx -> distance (getRow tedIdx testData) (getRow trdIdx trainingData) )
 
-            Array.empty<Result>
+            // now, sort the array, row by row
+            // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
+            let sortedDistances = Array.Parallel.init (distances.Length) (fun i -> 
+                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndex
+                                                                    // an attempt at disposing unecessary data to increace mem performance
+                                                                    distances.[i] <- null
+                                                                    sortedRow)
+
+            sortedDistances
