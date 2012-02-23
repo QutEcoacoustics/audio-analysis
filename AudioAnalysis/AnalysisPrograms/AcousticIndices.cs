@@ -670,6 +670,40 @@ namespace AnalysisPrograms
         }
 
 
+        public static void AddColumnOfWeightedIndicesToCSVFile(string csvFileName, string columnHeader, string opFileName)
+        {
+            int offset = 7; //
+            int[] columns = { offset, offset + 6, offset + 7, offset + 8, offset + 9};
+            double wt1 = 0.0;//SegmentCount
+            double wt2 = 0.4;//H[avSpectrum]
+            double wt3 = 0.1;//H[varSpectrum] 
+            double wt4 = 0.4;//number of clusters
+            double wt5 = 0.1;//av cluster duration
+            double[] wts = {wt1, wt2, wt3, wt4, wt5};
+
+            var tuple = FileTools.GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
+            double[] wtIndices = tuple.Item1;
+            List<string> colNames = tuple.Item2;
+
+            //add in weighted bias for chorus and backgorund noise
+            //for (int i = 0; i < wtIndices.Length; i++)
+            //{
+                //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
+                //background noise bias
+                //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
+                //else
+                //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
+            //}
+
+            //Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
+            //                                   header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
+
+            FileTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
+        } //AddColumnOfWeightedIndicesToCSVFile()
+
+
+
+
 
         public static void MASSAGE_CSV_DATA()
         {
@@ -732,7 +766,7 @@ namespace AnalysisPrograms
 
             //CSV COLUMN HEADINGS
             //count	 minutes	hours	 FileName	 snr-dB	 bg-dB	 activity	 avAmp	 %cover	 H[ampl]	 H[peakFreq]	 H[avSpectrum]	 H1[diffSpectra]	 #clusters	 %isolHits	min	time	count	avCount		jitter1	#clust+jitter	jitter2	count+jitter
-            string[] columnHeadings = { "count", "min-start", "duration", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "lfCover", "H[ampl]", "H[peakFreq]", "H[avSpectrum]", "H1[varSpectra]", "#clusters", "avClustDur", "speciesCount" };
+            string[] columnHeadings = { "count", "min-start", "duration", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "lfCover", "H[ampl]", "H[peakFreq]", "H[avSpectrum]", "H1[varSpectra]", "#clusters", "avClustDur", "weight index" };
             //read data into arrays - first set up the arrays
             double[] timeScale     = new double[lines.Count - 2];    //column 3 into time scale
             double[] avAmp_dB      = new double[lines.Count - 2];    //column 7 into 
@@ -772,15 +806,7 @@ namespace AnalysisPrograms
                 H_varSpect[i - 1]  = Double.Parse(words[avAmpRow+11]);
                 clusterCount[i - 1] = (double)Int32.Parse(words[avAmpRow+12]);
                 avClusterDuration[i - 1] = Double.Parse(words[avAmpRow+13]);
-
-                //do a weighted index
-                weightedIndex[i - 1] = (segmentCount[i - 1] * 0.1) + (H_avSpect[i - 1] * 0.2) + (H_varSpect[i - 1] * 0.1) + (clusterCount[i - 1] * 0.3) + (avClusterDuration[i - 1] * 0.3);
-                //if((i>=290) && (i<=470)) weightedIndex[i - 1] *= 1.1;  //morning chorus bias - DO NOT DO
-                //background noise bias
-                if (bg_dB[i - 1] > -35.0) weightedIndex[i - 1] *= 0.8;
-                else
-                if (bg_dB[i - 1] > -30.0) weightedIndex[i - 1] *= 0.6;
-
+                weightedIndex[i - 1] = Double.Parse(words[avAmpRow + 14]);
                 //speciesCount[i - 1] = (double)Int32.Parse(words[avAmpRow+13]);
             }//end 
 

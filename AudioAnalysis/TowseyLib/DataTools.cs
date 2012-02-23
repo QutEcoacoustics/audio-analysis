@@ -365,6 +365,12 @@ namespace TowseyLib
         }
 
 
+        /// <summary>
+        /// sorts an array of doubles.
+        /// returns both the sorted array (Item2) and the array indices in rank order (Item1)
+        /// </summary>
+        /// <param name="array"></param>
+        /// <returns></returns>
         public static System.Tuple<int[], double[]> SortRowIDsByRankOrder(double[] array)
         {
             int[] rankOrder = new int[array.Length];
