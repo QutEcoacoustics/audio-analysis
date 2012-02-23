@@ -264,27 +264,27 @@ namespace AnalysisPrograms
 
         //#########################################################################################################################################################
 
-        /// <summary>
-        /// returns the row indices for a single column of an array, ranked by value.
-        /// Used to order the sampling of an acoustic recording split into one minute chunks.
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="colNumber"></param>
-        /// <returns></returns>
-        public static int[] GetRankOrder(string fileName, int colNumber)
-        {
-            string header1;
-            double[] array = ReadColumnOfCSVFile(fileName, colNumber, out header1);
-            var results2 = DataTools.SortRowIDsByRankOrder(array);
+        ///// <summary>
+        ///// returns the row indices for a single column of an array, ranked by value.
+        ///// Used to order the sampling of an acoustic recording split into one minute chunks.
+        ///// </summary>
+        ///// <param name="fileName"></param>
+        ///// <param name="colNumber"></param>
+        ///// <returns></returns>
+        //public static int[] GetRankOrder(string fileName, int colNumber)
+        //{
+        //    string header1;
+        //    double[] array = FileTools.ReadColumnOfCSVFile(fileName, colNumber, out header1);
+        //    var results2 = DataTools.SortRowIDsByRankOrder(array);
 
-            //double[] sort = results2.Item2;
-            //for (int i = 0; i < array.Length; i++)
-            //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
-            //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
-            //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
+        //    //double[] sort = results2.Item2;
+        //    //for (int i = 0; i < array.Length; i++)
+        //    //    Console.WriteLine("{0}: {1}   {2:f2}", i, rankOrder[i], sort[i]);
+        //    //double[] array2 = ReadColumnOfCSVFile(fileName, 4);
+        //    //Console.WriteLine("rankorder={0}: {1:f2} ", rankOrder[0], array2[rankOrder[0]]);
 
-            return results2.Item1;   
-        }
+        //    return results2.Item1;   
+        //}
 
         public static int[] GetRankOrder(string fileName)
         {
@@ -294,27 +294,27 @@ namespace AnalysisPrograms
             string header1, header2, header3, header4, header5, header6;
 
             int colNumber1 = offset+1;    //background noise
-            double[] array1 = ReadColumnOfCSVFile(fileName, colNumber1, out header1);
+            double[] array1 = FileTools.ReadColumnOfCSVFile(fileName, colNumber1, out header1);
             //array1 = DataTools.NormaliseArea(array1);
 
             int colNumber2 = offset + 3;  //SegmentCount
-            double[] array2 = ReadColumnOfCSVFile(fileName, colNumber2, out header2);
+            double[] array2 = FileTools.ReadColumnOfCSVFile(fileName, colNumber2, out header2);
             array2 = DataTools.NormaliseArea(array2);
 
             int colNumber3 = offset + 8;  //H[avSpectrum]
-            double[] array3 = ReadColumnOfCSVFile(fileName, colNumber3, out header3);
+            double[] array3 = FileTools.ReadColumnOfCSVFile(fileName, colNumber3, out header3);
             array3 = DataTools.NormaliseArea(array3);
 
             int colNumber4 = offset + 9;  //H[varSpectrum] 
-            double[] array4 = ReadColumnOfCSVFile(fileName, colNumber4, out header4);
+            double[] array4 = FileTools.ReadColumnOfCSVFile(fileName, colNumber4, out header4);
             array4 = DataTools.NormaliseArea(array4);
 
             int colNumber5 = offset + 10;  //number of clusters
-            double[] array5 = ReadColumnOfCSVFile(fileName, colNumber5, out header5);
+            double[] array5 = FileTools.ReadColumnOfCSVFile(fileName, colNumber5, out header5);
             array5 = DataTools.NormaliseArea(array5);
 
             int colNumber6 = offset + 11;  //av cluster duration
-            double[] array6 = ReadColumnOfCSVFile(fileName, colNumber6, out header6);
+            double[] array6 = FileTools.ReadColumnOfCSVFile(fileName, colNumber6, out header6);
             array6 = DataTools.NormaliseArea(array6);
 
             //create sampling bias array - ie bias towards the dawn chorus
@@ -369,28 +369,6 @@ namespace AnalysisPrograms
             return rankOrder;
         }
 
-
-        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber, out string header)
-        {                
-            List<string> lines = FileTools.ReadTextFile(fileName);
-            string[] words = lines[0].Split(',');
-            header = words[colNumber];
-
-            Console.WriteLine("READING COLUMN " + header);
-            double[] array = new double[lines.Count - 2];
-            //read csv data into arrays.
-            for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines - first line = header.
-            {
-                words = lines[i].Split(',');
-                array[i - 1] = Double.Parse(words[colNumber]);
-                if (Double.IsNaN(array[i - 1]))
-                {
-                    array[i - 1] = 0.0;
-                    //Console.WriteLine("NAN############");
-                }
-            }//end 
-            return array;
-        }
 
 
         public static double[] CalculateBGNoiseSamplingBias(double[] bgArray, double bgThreshold, double bgVarianceThreshold, double noiseBias)

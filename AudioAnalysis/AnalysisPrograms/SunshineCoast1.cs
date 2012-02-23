@@ -47,13 +47,49 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(recordingPath));
             Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fileInfo.CreationTime.ToLongDateString(), fileInfo.CreationTime.ToLongTimeString());
             Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
+            Log.WriteIfVerbose("# Recording - duration: {0} minutes", duration.TotalMinutes);
+            double minCount = (duration.TotalMinutes); //convert length to minute chunks
+            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
+            Log.WriteIfVerbose("# Recording - minutes: {0:f3}   segments: {1}", minCount, segmentCount);
             Log.WriteIfVerbose("# Output to  directory: " + outputDir);
-
 
             //SET UP THE REPORT FILE
             string reportfileName = outputDir + "AcousticIndices_" + Path.GetFileNameWithoutExtension(recordingPath);
             if (parameters.reportFormat.Equals("CSV")) reportfileName += ".csv";
             else reportfileName += ".txt";
+
+            //info to add in additional column of weighted indices
+            string appendix = "_WeightedIndices";
+            string opFileName = FileTools.AppendToFileName(reportfileName, appendix);
+            string columnHeader = "Wt Indices";
+
+            //READ CSV FILE TO VISUALIZE DATA
+            if (false)
+            {
+                AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
+                AcousticIndices.VISUALIZE_CSV_DATA(opFileName);
+                Console.ReadLine();
+                Environment.Exit(666);
+            }
+            //EXTRACT SEGMENT FROM RECORDING
+            if (true)
+            {
+                int minute = 19*60;
+                double startHr = minute/(double)60;
+                double endHr = startHr + 0.1;
+
+                //double startHr = 2.0;
+                //double endHr   = 2.2;
+                int startMilliseconds = (int)Math.Round(startHr * 60 * 60000);
+                int endMilliseconds   = (int)Math.Round(endHr   * 60 * 60000);
+                Console.WriteLine("\nWAIT - extracting segment!");
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputDir);
+                Console.WriteLine("SAVED FILE: " + recording.FilePath);
+                Console.ReadLine();
+                Environment.Exit(666);
+            }
+
+
             AcousticIndices.WriteHeaderToReportFile(reportfileName, parameters.reportFormat);
 
             // LOOP THROUGH THE FILE
@@ -64,7 +100,7 @@ namespace AnalysisPrograms
 
 
             int overlap_ms = (int)Math.Floor(parameters.segmentOverlap * 1000);
-            for (int s = 0; s < Int32.MaxValue; s++)
+            for (int s = 0; s < segmentCount; s++)
             {
                 DateTime tNow = DateTime.Now;
                 TimeSpan elapsedTime = tNow - tStart;
@@ -83,7 +119,8 @@ namespace AnalysisPrograms
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
                 AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputDir);
-                //string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
+                
+                //double check that recording is over minimum length
                 double segmentDuration = recording.GetWavReader().Time.TotalSeconds;
                 int sampleCount = recording.GetWavReader().Samples.Length; //get recording length to determine if long enough
                 int minLength = 3 * parameters.frameLength; //ignore recordings shorter than three frames
@@ -120,6 +157,7 @@ namespace AnalysisPrograms
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
 
+            AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
             AcousticIndices.VISUALIZE_CSV_DATA(reportfileName);
 
 

@@ -134,6 +134,18 @@ namespace TowseyLib
             return newName;
         }
 
+
+
+        public static string AppendToFileName(string ipPath, string appendix)
+        {   
+            string dir   = Path.GetDirectoryName(ipPath);
+            string fn    = Path.GetFileNameWithoutExtension(ipPath);
+            string fext  = Path.GetExtension(ipPath);
+            string opPath = dir + @"\" + fn + appendix + fext; 
+            return opPath;
+        }
+
+
         public static List<string> ReadTextFile(string fName)
         {
             var lines = new List<string>();
@@ -296,6 +308,80 @@ namespace TowseyLib
 
             return matrix;
         }
+
+        /// <summary>
+        /// Returns the requested column of data from a CSV file and also returns the column header
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <param name="colNumber"></param>
+        /// <param name="header"></param>
+        /// <returns></returns>
+        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber, out string header)
+        {
+            List<string> lines = FileTools.ReadTextFile(fileName);
+            string[] words = lines[0].Split(',');
+            header = words[colNumber];
+
+            double[] array = new double[lines.Count - 1]; //-1 because ignore header
+            //read csv data into arrays.
+            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
+            {
+                words = lines[i].Split(',');
+                array[i - 1] = Double.Parse(words[colNumber]);
+                if (Double.IsNaN(array[i - 1]))
+                {
+                    array[i - 1] = 0.0;
+                }
+            }//end 
+            return array;
+        }
+
+
+
+        public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
+        {
+            List<double[]> arrays = new List<double[]>();
+            List<string> colNames = new List<string>();
+            int arrayLength = 0;
+
+            for (int i = 0; i < columns.Length; i++)
+            {
+                string header;
+                double[] array = FileTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
+                arrays.Add(DataTools.NormaliseArea(array)); //normalize the arrays to get weighted index.
+                colNames.Add(header);
+                arrayLength = array.Length;
+            }
+
+            double[] weightedCombo = new double[arrayLength];
+            for (int i = 0; i < arrayLength; i++)
+            {
+                double combo = 0.0;
+                for (int c = 0; c < columns.Length; c++)
+                {
+                    combo += (wts[c] * arrays[c][i]);
+                }
+                weightedCombo[i] = combo;
+            }
+            return System.Tuple.Create(weightedCombo, colNames);
+        }
+
+
+
+        public static void AddColumnOfValuesToCSVFile(string csvFileName, string header, double[] values, string opFileName)
+        {
+            List<string> lines = FileTools.ReadTextFile(csvFileName);
+            //String.Concat(lines[0], ",", header);
+            lines[0] += ("," + header);
+            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
+            {
+                //String.Concat(lines[i], ",", values[i-1]);
+                lines[i] += ("," + values[i - 1]);
+            }//end 
+
+            FileTools.WriteTextFile(opFileName, lines);
+        }
+
 
         public static void WriteArray2File(double[] array, string fName)
         {
