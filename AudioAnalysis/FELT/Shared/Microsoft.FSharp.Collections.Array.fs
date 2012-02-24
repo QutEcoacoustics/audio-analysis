@@ -35,6 +35,8 @@
 
         let sortWithIndex arr = arr |> Array.mapi (fun x t -> (t,x)) |> Array.sortBy fst 
 
+        let sortWithIndexBy f arr = arr |> Array.mapi (fun x t -> (t,x)) |> Array.sortBy f 
+
         let pickSafe f (array: _[]) = 
             let rec loop i = 
                 if i >= array.Length then 
@@ -82,7 +84,9 @@
             /// j : Columns
             let initJagged2P i j f = Array.Parallel.init i (fun i -> Array.Parallel.init j (f i))
 
-            let inline mapi2 f s1 (s2:'b []) : 'c[] =
+            let inline mapi2 f (s1:'a []) (s2:'b []) : 'c[] =
+                if s1.Length <> s2.Length then
+                    raise (System.ArgumentException "The input arrays differ in length.")
                 Array.Parallel.mapi (fun i x -> let y = s2.[i] in f i x y) s1
 
 

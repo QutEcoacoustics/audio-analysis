@@ -9,20 +9,25 @@
     type ZScoreClassifier() =
         inherit ClassifierBase()
 
-        let zScore sample avg =
-            match sample with
+        let zScore (sample:Value) (avg:Value) =
+            let s = sample
+            let a = avg
+            match s with
              | IsNumber n ->
-                match avg with
-                    | IsAvgNumber avg -> Maths.zscore n.Value avg.DescriptiveStatistics.Mean avg.DescriptiveStatistics.StandardDeviation
+                match a with
+                    | IsAvgNumber aavg -> Maths.zscore n.Value aavg.DescriptiveStatistics.Mean aavg.DescriptiveStatistics.StandardDeviation
                     | _ -> failwith "avgerage against types "
              | _ -> failwith "other data types not yet supported"
 
         let distance samples avgs =
             // calculate z-score for each feature
-            let zss = Seq.map2 (zScore) samples avgs
+            let ss =  Seq.toArray samples
+            let avs = Seq.toArray avgs
+            let zss = Array.map2 (zScore) ss avs
 
             // combine score
-            Maths.euclideanDist zss (Array.create (Seq.length zss) 0.0)
+            let d = Maths.euclideanDist zss (Array.create (Seq.length zss) 0.0)
+            d
         
         
         override this.Classify (trainingData, testData) =
@@ -45,17 +50,17 @@
             Debug.Assert((headersMap = Map.keys testData.Instances))
 
             // we assume our jagged data arrays are square
-            let testDataInstanceCount = (Map.getNthValue trainingData.Instances 0).Length
+            let testDataInstanceCount = (Map.getNthValue testData.Instances 0).Length
             let trainingDataInstanceCount = (Map.getNthValue trainingData.Instances 0).Length
 
 
-            let distances = Array.Parallel.initJagged testDataInstanceCount trainingDataInstanceCount (fun tedIdx trdIdx -> distance (getRow tedIdx testData) (getRow trdIdx trainingData) )
+            let distances = Array.initJagged testDataInstanceCount trainingDataInstanceCount (fun tedIdx trdIdx -> distance (getRow tedIdx testData) (getRow trdIdx trainingData) )
 
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
             let sortedDistances = Array.Parallel.init (distances.Length) (fun i -> 
-                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndex
-                                                                    // an attempt at disposing unecessary data to increace mem performance
+                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndex //By (fun (v, index) -> abs(v))
+                                                                    // an attempt at disposing unecessary data to increace mem overhead
                                                                     distances.[i] <- null
                                                                     sortedRow)
 
