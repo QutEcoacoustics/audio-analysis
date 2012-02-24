@@ -14,5 +14,6 @@ config.AppSettings.Settings.Add("boobs", "donkey")
 
 config.Save()
 
-
-
+// http://stackoverflow.com/questions/3512266/show-a-seq-in-the-watch-window
+// Force System.Core into the process
+let x = typeof<System.Linq.Enumerable>

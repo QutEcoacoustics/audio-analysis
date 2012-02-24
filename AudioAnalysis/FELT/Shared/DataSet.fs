@@ -181,8 +181,8 @@
                     Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
         
         let value (v:BaseValue<'a>) = v.Value
-        let getRow rowId (d:Data) = d.Instances |> Seq.cast |>  Seq.map (fun key (element: Value array) -> element.[rowId]) 
-
+        let getRow rowId (d:Data) = d.Instances |> Seq.cast |> Seq.map (fun (kvp:System.Collections.Generic.KeyValuePair<ColumnHeader, Value array>) -> kvp.Value.[rowId])
+            
         /// Active pattern for the value type
         /// to make pattern matching easier
         let (|IsText|_|) (input) =

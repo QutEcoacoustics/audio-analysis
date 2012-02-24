@@ -114,6 +114,9 @@
                     // statefull
                     r.Calculate trData teData results (toString oplst') |> ignore
                     state
+                | _ -> 
+                    Errorf "Workflow item %A not supported" wfItem
+                    failwith "Workflow error"
 
         List.scan f (trainingData, testData, null) oplst'
 
