@@ -51,6 +51,7 @@
         static member (+) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a + b)
         static member (-) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a - b)
         static member (*) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a * b)
+        static member (/) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a / b)
         static member Zero = Z1440 0
         static member One  = Z1440 1
 
@@ -73,6 +74,7 @@
              member z.Add(a,b) = a + b
              member z.Subtract(a,b) = a - b
              member z.Multiply(a,b) = a * b
+             
              member z.Equals(Z1440 a, Z1440 b) = (a = b)
              member z.Compare(Z1440 a, Z1440 b) = compare a b
              member z.Negate(a) = 0Z - a
