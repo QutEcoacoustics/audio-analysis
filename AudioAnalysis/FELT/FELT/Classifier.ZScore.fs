@@ -15,7 +15,7 @@
             match s with
              | IsNumber n ->
                 match a with
-                    | IsAvgNumber aavg -> Maths.zscore n.Value aavg.DescriptiveStatistics.Mean aavg.DescriptiveStatistics.StandardDeviation
+                    | IsAvgNumber aavg -> Maths.zscore n.Value aavg.DescriptiveStatistics.Mean aavg.FakeStdDev
                     | _ -> failwith "avgerage against types "
              | _ -> failwith "other data types not yet supported"
 
@@ -59,8 +59,8 @@
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.
             let sortedDistances = Array.Parallel.init (distances.Length) (fun i -> 
-                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndex //By (fun (v, index) -> abs(v))
-                                                                    // an attempt at disposing unecessary data to increace mem overhead
+                                                                    let sortedRow = distances.[i]  |> Array.sortWithIndexBy (fun (v, index) -> if System.Double.IsNaN v then System.Double.MaxValue else v)
+                                                                    // an attempt at disposing unecessary data to increase mem overhead
                                                                     distances.[i] <- null
                                                                     sortedRow)
 

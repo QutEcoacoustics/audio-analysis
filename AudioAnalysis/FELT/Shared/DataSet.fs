@@ -64,13 +64,16 @@
       
         end
 
-    type AveragedNumber(descriptiveStatistics: MathNet.Numerics.Statistics.DescriptiveStatistics ) = class
+    type AveragedNumber(descriptiveStatistics: MathNet.Numerics.Statistics.DescriptiveStatistics, ?fakeStandardDeviation:float ) = class
         inherit Number(descriptiveStatistics.Mean)
 
         member this.DescriptiveStatistics 
             with get() = descriptiveStatistics
 
-
+        
+        member this.FakeStdDev 
+            with get() = if fakeStandardDeviation.IsNone then descriptiveStatistics.StandardDeviation else fakeStandardDeviation.Value
+        
         end
 
     type ModuloHour(z) = class

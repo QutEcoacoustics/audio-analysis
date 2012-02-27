@@ -45,6 +45,10 @@
             // we are then left with all the elements for this column
             Map.add columnName values' state
 
+        abstract member PostProcess : Map<ColumnHeader, Value array> -> Map<ColumnHeader, Value array>
+            default this.PostProcess instances = 
+                instances
+
         override this.Train (data: Data) : Data =
             // groups by class
             let c = data.Classes
@@ -52,10 +56,11 @@
             let groupedClasses = Array.foldi grp Map.empty<Class, int list> c
             let agFunc = this.aggregator groupedClasses
 
-            
-
             // then run aggregator function over all other values
             let avgValuesForAllColumns = Map.fold agFunc emptyDT data.Instances
+
+            // optional post-processing step used in sub classes
+            let instances = this.PostProcess avgValuesForAllColumns
             
-            let data' = {data with Classes = (Map.keys groupedClasses); Instances = (avgValuesForAllColumns)}
+            let data' = {data with Classes = (Map.keys groupedClasses); Instances = (instances)}
             data'

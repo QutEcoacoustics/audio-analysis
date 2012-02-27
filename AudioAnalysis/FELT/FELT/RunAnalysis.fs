@@ -61,7 +61,7 @@
         [ 
         Cleaner(new BasicCleaner()); 
         Selection(new OneForOneSelector());
-        Trainer(new GroupAndKeepStatsTrainer()); 
+        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
         Classifier(new ZScoreClassifier())
         ]
 
@@ -69,11 +69,25 @@
         [ 
         Cleaner(new BasicCleaner()); 
         Selection(new RandomiserSelector());
-        Trainer(new GroupAndKeepStatsTrainer()); 
+        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
         Classifier(new ZScoreClassifier())
         ]
 
-        
+    let ZScoreGroupedSingleFix = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new OneForOneSelector());
+        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
+        Classifier(new ZScoreClassifier())
+        ]
+
+    let ZScoreAntiSingleFix = 
+        [ 
+        Cleaner(new BasicCleaner()); 
+        Selection(new RandomiserSelector());
+        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
+        Classifier(new ZScoreClassifier())
+        ]
 
 
     let wfItemCases = FSharpType.GetUnionCases typeof<WorkflowItem>
@@ -134,7 +148,7 @@
                 failwith "Transform error"
 
         let txs = Seq.map tf transformList |> Seq.toList
-        let head : WorkflowItem option= 
+        let head = 
             match tests.Head with 
             | WorkflowItem.Cleaner c -> Some(WorkflowItem.Cleaner(c))
             | _  ->Error "Undefined workflow!!!!!!!!!!!!!!" ; Option.None
