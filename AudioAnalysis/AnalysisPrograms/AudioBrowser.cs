@@ -16,6 +16,9 @@ namespace AnalysisPrograms
         private Panel rightPanel = new Panel();
         private Panel indexPanel = new Panel();
         private Panel sonogramPanel = new Panel();
+        private HScrollBar sonogramPanel_hScrollBar = new HScrollBar();
+        PictureBox sonogramPicture;
+
 
         internal Button Button1;
         internal TextBox timePosition;
@@ -112,9 +115,16 @@ namespace AnalysisPrograms
             sonogramPanel.BackColor = Color.DarkGray;
             sonogramPanel.Location = new Point(0, indexPanelHeight);
             sonogramPanel.Size = new Size(rightPanelWidth, sonogramPanelHeight);
+            sonogramPanel.Controls.Add(this.sonogramPanel_hScrollBar);
+            this.sonogramPanel_hScrollBar.LargeChange = 240;
+            this.sonogramPanel_hScrollBar.Size = new System.Drawing.Size(sonogramPanel.Width, 13);
+            this.sonogramPanel_hScrollBar.ValueChanged += new System.EventHandler(this.sonogramPanel_hScrollBar_ValueChanged);
+            this.sonogramPanel_hScrollBar.Visible = false;
 
-            // That's the point, container controls exposes the Controls
-            // collection that you could use to add controls programatically
+
+
+
+            // That's the point, container controls exposes the Controls collection that you could use to add controls programatically
             this.Controls.Add(leftPanel);
             this.Controls.Add(rightPanel);
             rightPanel.Controls.Add(indexPanel);
@@ -222,8 +232,8 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\SunshineCoast\AcousticIndices_browserTemp.wav";
             string recordingPath = @"Z:\Site 4\DM420062.mp3";
             this.resampleRate = 17640;
-            this.frameLength = 256;
-            this.frameOverlap = 0.0;
+            this.frameLength = 512;
+            this.frameOverlap = 0.5;
             string outputDir = @"C:\SensorNetworks\WavFiles\SunshineCoast\";
             //this.segmentFileName.Text = "WAIT!";
             AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, this.resampleRate, outputDir);
@@ -235,14 +245,25 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize = frameLength;
             sonoConfig.WindowOverlap = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+
+            //prepare the image
             bool doHighlightSubband = false;
             bool add1kHzLines = true;
-            System.Drawing.Image image = sonogram.GetImage(doHighlightSubband, add1kHzLines);
-            PictureBox picture = new PictureBox();
-            picture.Dock = DockStyle.Fill;
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                //add time scale
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+                sonogramPicture = new PictureBox();
+                sonogramPicture.Image = image.GetImage();
+                sonogramPicture.SetBounds(0, 0, sonogramPicture.Image.Width, sonogramPicture.Image.Height);
+                this.sonogramPanel.Controls.Add(sonogramPicture);
+                this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height+15);
+                this.sonogramPanel_hScrollBar.Maximum = img.Width + this.ClientSize.Width;
+                this.sonogramPanel_hScrollBar.Value = 0;
+                this.sonogramPanel_hScrollBar.Visible = true;
 
-            picture.Image = sonogram.GetImage(doHighlightSubband, add1kHzLines); 
-            this.sonogramPanel.Controls.Add(picture);
+            }
 
         }
 
@@ -266,6 +287,19 @@ namespace AnalysisPrograms
             Point pt2 = new Point(this.visualIndex.Left + 100, 100);
             e.Graphics.DrawLine(new Pen(Color.Red, 4.0F), pt1, pt2);
         }
+
+
+        private void sonogramPanel_hScrollBar_ValueChanged(object sender, System.EventArgs e)
+        {
+            //this.sonogramPicture.Left = -this.sonogramPanel_hScrollBar.Value;
+            this.sonogramPicture.Left = -this.sonogramPanel_hScrollBar.Value;
+            //this.sonogramPicture.Left = -5000;
+
+            // Display the current values in the title bar.
+            //this.segmentFileName.Text = "x = " + this.panel1.Location.X + ", y = " + this.panel1.Location.Y;
+            this.segmentFileName.Text = "x = " + this.sonogramPanel_hScrollBar.Value;
+        }
+
 
         public void setUpRadioButtons ()
         {
