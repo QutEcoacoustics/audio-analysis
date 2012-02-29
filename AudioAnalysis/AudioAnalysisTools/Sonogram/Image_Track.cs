@@ -590,6 +590,78 @@ namespace AudioAnalysisTools
             g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth+5, yOffset));
         }
 
+        /// <summary>
+        /// used to draw score track or any array of values 
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="scoreMin"></param>
+        /// <param name="scoreMax"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <returns></returns>
+        public static Bitmap DrawGrayScaleScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        {
+
+            Color[] grayScale = ImageTools.GrayScale();
+            int imageWidth = array.Length;
+            Bitmap bmp = new Bitmap(imageWidth, trackHeight);
+
+
+            double range = maxVal - minVal;
+            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            {
+                // normalise and bound the value - use min bound, max and 255 image intensity range
+                double value = (array[x] - minVal) / range;
+                int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                if (c < threshold) c = 0;
+                else
+                    if (c >= 256) c = 255;
+
+                Color col = grayScale[c];
+                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, y, col);
+                bmp.SetPixel(x, 0, grayScale[0]); //draw upper boundary
+            }//end over all pixels
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth + 5, 0));
+            return bmp;
+        }
+
+        /// <summary>
+        /// used to draw score track or any array of values 
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="scoreMin"></param>
+        /// <param name="scoreMax"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <returns></returns>
+        public static Bitmap DrawBarScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        {
+
+            Color[] grayScale = ImageTools.GrayScale();
+            int imageWidth = array.Length;
+            Bitmap bmp = new Bitmap(imageWidth, trackHeight);
+
+
+            double range = maxVal - minVal;
+            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            {
+                // normalise and bound the value - use min bound, max and 255 image intensity range
+                double value = (array[x] - minVal) / range;
+                int barHeight = (int)Math.Round(value * trackHeight);
+                //int c = 255 - (int)Math.Floor(255.0 * value); //original version
+                //if (c < threshold) c = 0;
+                //else
+                //    if (c >= 256) c = 255;
+
+                //Color col = grayScale[c];
+                for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
+                //bmp.SetPixel(x, 0, grayScale[0]); //draw upper boundary
+            }//end over all pixels
+            Graphics g = Graphics.FromImage(bmp);
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth + 5, 0));
+            return bmp;
+        }
+
+
         public static void DrawScoreTrack(Bitmap bmp, double[] array, int yOffset, int trackHeight, double threshold, string title)
         {
             double minVal;
@@ -598,24 +670,55 @@ namespace AudioAnalysisTools
             DrawScoreTrack(bmp, array, yOffset, trackHeight, minVal, maxVal, threshold, title);
         }
 
-        // mark of time scale according to scale.
-        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+
+        public static Bitmap DrawBarScoreTrack(double[] array, int trackHeight, double threshold, string title)
         {
-            Color[] grayScale = ImageTools.GrayScale();
-            Color col = grayScale[255];
+            double minVal;
+            double maxVal;
+            DataTools.MinMax(array, out minVal, out maxVal);
+            Bitmap bitmap = DrawBarScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            return bitmap;
+        }
+
+        public static Bitmap DrawGrayScaleScoreTrack(double[] array, int trackHeight, double threshold, string title)
+        {
+            double minVal;
+            double maxVal;
+            DataTools.MinMax(array, out minVal, out maxVal);
+            Bitmap bitmap = DrawGrayScaleScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            return bitmap;
+        }
+
+
+        // mark of time scale according to scale.
+        public static Bitmap DrawTimeTrack(int duration, int scale, int trackWidth, int trackHeight, string title)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            
             int hour = 0;
 
             for (int x = 0; x < duration; x++) //for pixels in the line
             {
+                bmp.SetPixel(x, 0, Color.White); //draw upper boundary
                 if (x % scale != 0) continue;
-                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, yOffset + y, col);
-                bmp.SetPixel(x, yOffset, grayScale[0]); //draw upper boundary
-                g.DrawString(hour.ToString(), new Font("Tahoma", 8), Brushes.White, new PointF(x + 2, yOffset)); //draw time
+                for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, y, Color.White);
+                g.DrawString(hour.ToString(), new Font("Tahoma", 8), Brushes.White, new PointF(x + 2, 0)); //draw time
                 hour++;
             }//end over all pixels
-            
-            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(duration + 5, yOffset));
+
+            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(duration + 5, 0));
+            return bmp;
+        }
+
+
+        // mark of time scale according to scale.
+        public static void DrawTimeTrack(Bitmap bmp, int duration, int scale, int yOffset, int trackHeight, string title)
+        {
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, bmp.Width, trackHeight, title);
+            Graphics gr = Graphics.FromImage(bmp);
+            gr.DrawImage(timeBmp, 0, yOffset);
         }
 
     }// end  class Image_Track
