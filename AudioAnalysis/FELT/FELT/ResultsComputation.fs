@@ -4,6 +4,7 @@
     open System
     open MQUTeR.FSharp.Shared
     open Microsoft.FSharp.Collections
+    open Microsoft.FSharp.Core
     open System.IO
     open FELT.Classifiers
     open MQUTeR.FSharp.Shared.IO
@@ -35,7 +36,7 @@
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
 
         // warning this class by default involves a lot of mutation and intrinsically causes side-affects
-        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults: Result[]) opList =
+        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults: Result[]) (opList: (string * string * string) list) =
             
 
             (* have to do lots of stuff in this class.
@@ -163,8 +164,9 @@
             setv logws "TeBytes" config.TestDataBytes
 
             // set op list
-            setHorz logws "AlgorithmType" opList fst
-            setHorz logws "AlgorithmName" opList snd
+            setHorz logws "AlgorithmType" opList fst3
+            setHorz logws "AlgorithmName" opList snd3
+            setHorz logws "AlgorithmDetails" opList third3
             
             // set feature list
             setHorz logws "FeatureDataTypes" features Map.getValue
@@ -175,7 +177,7 @@
 
             // results summary
             setSquare logws "PlacementSummary" placeSummary
-            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
+            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!TestEndInstanceCount"
             setSquare logws "PercentileSummary" percentileSummary
 
 
@@ -183,7 +185,7 @@
 
             // summary results worksheet
             setSquare sumResults "srPlaces" (placeHistogram |> Map.toSeq |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
-            names.["srPlaces"].Offset(0,2, numPlaces, 1).FormulaR1C1 <- "RC[-1]/Log!$C$15"
+            names.["srPlaces"].Offset(0,2, numPlaces, 1).FormulaR1C1 <- "RC[-1]/Log!TestEndInstanceCount"
             names.["srPlaces"].Offset(1,3, (numPlaces) - 1, 1).FormulaR1C1 <- "SUM(R3C3:RC[-1])"
 
 

@@ -84,6 +84,7 @@
     <Compile Include="Classifier.PearsonCorrelationCoefficient.fs" />
     <Compile Include="Classifier.ZScore.fs" />
     <Compile Include="ResultsComputation.fs" />
+    <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
     <None Include="packages.config" />
     <Content Include="ExcelResultsComputationTemplate.xlsx">

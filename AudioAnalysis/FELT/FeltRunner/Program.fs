@@ -29,10 +29,12 @@ open System
 open System.Configuration
 open System.Diagnostics
 open System.IO
+open Linq.QuotationEvaluation
 open System.Reflection
 open FELT.FindEventsLikeThis
 open FELT.Results
 open FELT.Runner
+open FELT.Workflows
 
 let fail() =
     eprintfn "Exiting because of error!"
@@ -66,9 +68,13 @@ let TrainingData = WorkingDirectory + config.["TrainingData"]
 let exportFrn = bool.Parse(config.["ExportFrn"])
 let exportFrd = bool.Parse(config.["ExportFrd"])
 
+(* ANALYSIS RUN SETTING *)
+let analysis = <@ FELT.Workflows.BasicGrouped @>
+
+
 let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
 
-let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using)
+let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using) |> Seq.toList
 
 let DefaultClassString = "Tag"
 
@@ -83,7 +89,8 @@ let resultsDirectory =
             eprintfn "%s" ex.Message
             fail()
             null
-let reportDest = new  FileInfo(resultsDirectory.FullName + "\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx")
+let reportName() = sprintf "%s\\%s %s.xlsx" resultsDirectory.FullName (runDate.ToString "yyyy-MM-dd HH_mm_ss") (Utilities.getNameOfModuleBinding analysis)
+let reportDest = new  FileInfo(reportName())
 
 let logger = Logger.create (reportDest.FullName + ".log")
 // load in features
@@ -131,7 +138,7 @@ else
             }
 
 
-    RunAnalysis trData teData FELT.FindEventsLikeThis.ZScoreGrouped transforms config |> ignore
+    RunAnalysis trData teData (analysis.Eval()) transforms config |> ignore
 
     Info "end: main analysis..."
     Info "Analysis complete!"

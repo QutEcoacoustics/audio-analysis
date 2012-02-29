@@ -16,31 +16,30 @@
 
         end
     and
-        TransformElement() = class
+        TransformElement(feature, newName, using) = class
             inherit ConfigurationElement()
-
-            let mutable featureValue = String.Empty
-            let mutable nameValue = String.Empty
-            let mutable usingValue = String.Empty
-
+            do
+                base.["feature"] <- feature
+                base.["newName"] <- newName
+                base.["using"] <- using
             [<ConfigurationProperty("feature", IsRequired = true)>]
             member this.Feature
-                with get() = featureValue
-                and set(value) = featureValue <- value
+                with get() = base.["feature"] :?> string
+                and set(value : string) = base.["feature"] <- value
 
 
             [<ConfigurationProperty("newName", IsRequired = true)>]
             member this.NewName
-                with get() = nameValue
-                and set(value) = nameValue <- value
+                with get() = base.["newName"] :?> string
+                and set(value : string) = base.["newName"] <- value
 
 
             [<ConfigurationProperty("using", IsRequired = true)>]
             member this.Using
-                with get() = usingValue
-                and set(value) = usingValue <- value
+                with get() = base.["using"] :?> string
+                and set(value : string) = base.["using"] <- value
 
-
+            new () = TransformElement("", "", "")
             end
 
     and

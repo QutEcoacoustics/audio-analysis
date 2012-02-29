@@ -51,6 +51,9 @@
         static member (+) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a + b)
         static member (-) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a - b)
         static member (*) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a * b)
+
+        /// For the moment this is defined as default integer division
+        /// A proper implementation of finite field division is unecessary for our purposes
         static member (/) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a / b)
         static member Zero = Z1440 0
         static member One  = Z1440 1
