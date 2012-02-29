@@ -192,10 +192,15 @@
             checkAndCastTo<Text> input
         let (|IsNumber|_|) (input) =
             checkAndCastTo<Number> input
+        let (|IsModuloHour|_|) (input) =
+            checkAndCastTo<ModuloHour> input
         let (|IsAvgNumber|_|) (input) =
             checkAndCastTo<AveragedNumber> input
         let (|IsDate|_|) input =
             checkAndCastTo<Date> input
+
+
+            
 
         let (|IsNumbers|_|) (input: #Value array) =
             testAndCastArray<Number> input

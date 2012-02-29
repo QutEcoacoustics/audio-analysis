@@ -5,7 +5,7 @@
 
     [<AutoOpen>]
     module Map =
-        let keys map =  Map.toSeq map |> fst |> Seq.toArray
+        let keys map =  Map.toSeq map |> fsts |> Seq.toArray
 
         let getKey (kvp:KeyValuePair<'a, 'b>) = kvp.Key
 

@@ -54,7 +54,7 @@
             let trainingDataInstanceCount = (Map.getNthValue trainingData.Instances 0).Length
 
 
-            let distances = Array.initJagged testDataInstanceCount trainingDataInstanceCount (fun tedIdx trdIdx -> distance (getRow tedIdx testData) (getRow trdIdx trainingData) )
+            let distances = Array.Parallel.initJagged testDataInstanceCount trainingDataInstanceCount (fun tedIdx trdIdx -> distance (getRow tedIdx testData) (getRow trdIdx trainingData) )
 
             // now, sort the array, row by row
             // i.e. for each test instance (a row) have in the first column, the closest matched training instance.

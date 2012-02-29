@@ -7,6 +7,9 @@
 namespace System
 
     open System
+    open Microsoft.FSharp.Reflection
+    open Microsoft.FSharp.Metadata
+    open Microsoft.FSharp.Quotations
 
     type index = int
 
@@ -50,10 +53,13 @@ namespace System
         let transpose (mtx : _ [,]) func = Array2D.init (mtx.GetLength 1) (mtx.GetLength 0) (fun x y -> func(mtx.[y,x]))
 
 
+        let getNameOfModuleBinding (x:Expr<_>) =
+            match x with 
+            | Patterns.PropertyGet (e, pi, _) -> pi.Name 
+            | _ -> failwith "Does not match property get pattern"
+            
+
         type System.Array with
             member this.zeroLength =
                 this.Length - 1
             
-        
-            
-        

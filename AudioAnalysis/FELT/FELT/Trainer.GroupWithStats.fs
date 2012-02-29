@@ -1,4 +1,5 @@
 ﻿namespace FELT.Trainers
+    open FELT
     open FELT.Trainers
     open System
     open Microsoft.FSharp.Collections
@@ -16,6 +17,14 @@
     /// attach more statiscal values used in classifiers like the z-score classifier
     type GroupAndKeepStatsTrainer(singleInstanceBehaviour:SingleInstanceBehaviour) =
         inherit GroupTrainer()
+        interface WorkflowItemDescriptor with
+            member this.Description 
+                with get() =
+                    match singleInstanceBehaviour with
+                    | SingleInstanceBehaviour.Leave -> "Single cases are not modified"
+                    | SingleInstanceBehaviour.Merge -> "Single cases are given modified standard deviations"
+                    | _ -> failwith "Invalid enum"
+
         
         /// given an array of values to average, average them
         /// this implentation overrides the default grouper so it can
@@ -43,28 +52,28 @@
                 // then we "borrow" its deviation, keeping the other values
                 
                 // we assume all columns have same number of values
-                let unwrapped = Map.toArray instances |> Array.map snd
+                let (headers, unwrapped) = Map.toArray instances |> Array.unzip
                 let numGroups = unwrapped |> Seq.nth 1 |> Array.length
 
-                let checkForErrorAndFix vs (v:AveragedNumber) =
+                let checkForErrorAndFix candidates (v:AveragedNumber) : Value =
                     if (v.DescriptiveStatistics.Count = 1) then
                         // fix
-                        let f testIndex (idealIndex, diff) (testVal:AveragedNumber) =
+                        let findBestCandidate testIndex (idealIndex, diff) (testVal:AveragedNumber) =
                             if testVal.DescriptiveStatistics.Count = 1 then
                                 // ignore
                                 (idealIndex, diff)
                             else
-                                let meanDelta = testVal.DescriptiveStatistics.Mean - v.DescriptiveStatistics.Mean
+                                let meanDelta = abs(testVal.DescriptiveStatistics.Mean - v.DescriptiveStatistics.Mean)
                                 if meanDelta < diff then
                                     (testIndex, meanDelta)
                                 else 
                                     (idealIndex, diff)
 
-                        let indexToTake, _ = Array.foldi (f) (-1, System.Double.MaxValue) vs
-                        let newStdDev = vs.[indexToTake].DescriptiveStatistics.StandardDeviation
-                        new AveragedNumber(v.DescriptiveStatistics, newStdDev)
+                        let indexToTake, _ = Array.foldi findBestCandidate (-1, System.Double.MaxValue) candidates
+                        let newStdDev = candidates.[indexToTake].DescriptiveStatistics.StandardDeviation
+                        upcast new AveragedNumber(v.DescriptiveStatistics, newStdDev)
                     else
-                        v
+                        upcast v
                 
                 let fixSingleCases (vs:Value array) =
                     let vs' = (testAndCastArray<AveragedNumber> vs).Value
@@ -74,7 +83,8 @@
                 // since we are not adding or removing rows, we can scan columnwise
                 let corrected = Array.map (fixSingleCases) unwrapped
 
-                instances
+                // create and return new isntance map
+                Seq.fold (fun state (header, col) -> Map.add header col state) Map.empty<ColumnHeader, Value array> (Seq.zip headers corrected)
             | _ -> failwith "not implemented"
             
                               
