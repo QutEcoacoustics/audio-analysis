@@ -111,6 +111,7 @@ namespace AnalysisPrograms
             string recordingPath = args[0];
             string iniPath   = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
+            string segmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
             Log.WriteIfVerbose("# Output dir: " + outputDir);
                        
 
@@ -144,7 +145,7 @@ namespace AnalysisPrograms
                 int resampleRate = 17640;
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, resampleRate, outputDir);
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, resampleRate, segmentPath);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
                 //Log.WriteLine("Signal Duration: " + segmentDuration);
                 int sampleCount = recording.GetWavReader().Samples.Length;

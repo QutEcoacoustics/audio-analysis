@@ -32,6 +32,9 @@ namespace AnalysisPrograms
             string iniPath = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
 
+            string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+
+
 
             //READ PARAMETER VALUES FROM INI FILE
             Log.WriteIfVerbose("  ");
@@ -83,7 +86,7 @@ namespace AnalysisPrograms
                 int startMilliseconds = (int)Math.Round(startHr * 60 * 60000);
                 int endMilliseconds   = (int)Math.Round(endHr   * 60 * 60000);
                 Console.WriteLine("\nWAIT - extracting segment!");
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputDir);
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
                 Console.WriteLine("SAVED FILE: " + recording.FilePath);
                 Console.ReadLine();
                 Environment.Exit(666);
@@ -118,7 +121,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputDir);
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
                 
                 //double check that recording is over minimum length
                 double segmentDuration = recording.GetWavReader().Time.TotalSeconds;

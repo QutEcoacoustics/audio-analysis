@@ -635,11 +635,11 @@ namespace AudioAnalysisTools
         /// <returns></returns>
         public static Bitmap DrawBarScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
-
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;
             Bitmap bmp = new Bitmap(imageWidth, trackHeight);
-
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(grayScale[245]);
 
             double range = maxVal - minVal;
             for (int x = 0; x < imageWidth; x++) //for pixels in the line
@@ -647,17 +647,10 @@ namespace AudioAnalysisTools
                 // normalise and bound the value - use min bound, max and 255 image intensity range
                 double value = (array[x] - minVal) / range;
                 int barHeight = (int)Math.Round(value * trackHeight);
-                //int c = 255 - (int)Math.Floor(255.0 * value); //original version
-                //if (c < threshold) c = 0;
-                //else
-                //    if (c >= 256) c = 255;
-
-                //Color col = grayScale[c];
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
-                //bmp.SetPixel(x, 0, grayScale[0]); //draw upper boundary
+                bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
-            Graphics g = Graphics.FromImage(bmp);
-            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(imageWidth + 5, 0));
+            //g.DrawString(title, new Font("Tahoma", 9), Brushes.Black, new PointF(imageWidth + 5, 0));
             return bmp;
         }
 
