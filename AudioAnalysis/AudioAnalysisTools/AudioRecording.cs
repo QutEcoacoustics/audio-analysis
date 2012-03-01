@@ -378,18 +378,17 @@ namespace AudioAnalysisTools
         /// <summary>
         /// Extracts a segment from a long mp3 recording and returns as an instance of the AudioRecording  class
         /// </summary>
-        /// <param name="recordingPath"></param>
+        /// <param name="recordingPath">the long mp3 recording from which segment is to be extracted</param>
         /// <param name="startMilliseconds"></param>
         /// <param name="endMilliseconds"></param>
         /// <param name="resampleRate"></param>
-        /// <param name="opDir"></param>
+        /// <param name="opSegmentPath">the segment file extracted from long recording</param>
         /// <returns></returns>
-        public static AudioRecording GetSegmentFromAudioRecording(string recordingPath, int startMilliseconds, int endMilliseconds, int resampleRate, string opDir)
+        public static AudioRecording GetSegmentFromAudioRecording(string recordingPath, int startMilliseconds, int endMilliseconds, int resampleRate, string opSegmentPath)
         {
             SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate);
             FileInfo inFile = new FileInfo(recordingPath);
-            //FileInfo outFile = new FileInfo(@"C:\SensorNetworks\WavFiles\Kiwi\Samples\test.wav");
-            FileInfo outFile = new FileInfo(opDir + @"temp.wav");
+            FileInfo outFile = new FileInfo(opSegmentPath);
             SpecificWavAudioUtility.GetSingleSegment(audioUtility, inFile, outFile, startMilliseconds, endMilliseconds);
             AudioRecording recording = new AudioRecording(outFile.FullName, audioUtility);
             return recording;
