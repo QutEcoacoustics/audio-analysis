@@ -58,9 +58,9 @@ namespace AnalysisPrograms
             public int trackHeight, trackCount;
             public string csvPath, recordingPath, outputDir, AudacityPath;
 
-            public Parameters(string dummy)
+            public Parameters(bool _iniFileFound)
             {
-                iniFileFound  = false;
+                iniFileFound  = _iniFileFound;
                 csvPath       = DEFAULT_csvPath;
                 recordingPath = DEFAULT_recordingPath;
                 outputDir     = DEFAULT_outputDir;
@@ -81,7 +81,9 @@ namespace AnalysisPrograms
 
 
         private Panel leftPanel = new Panel();
-        private Panel rightPanel = new Panel();
+        private TabPage rightPanel = new TabPage();
+        private TabPage consolePanel = new TabPage();
+        private TabControl tabControl1 = new TabControl();
         private Panel indexPanel = new Panel();
         private Panel barTrackPanel = new Panel();
         private Panel sonogramPanel = new Panel();
@@ -90,9 +92,14 @@ namespace AnalysisPrograms
         private PictureBox sonogramPicture;
 
         private Image visualIndexTimeScale; //used on index image and reused - hence store.
+        TextWriter _consoleWriter = null;
+        TextBox     consoleTextBox = new TextBox();
 
 
-        internal Button loadIndicesButton;
+        internal Button extractIndicesButton;
+        internal Button loadVisualIndicesButton;
+        internal Button saveIndicesImageButton;
+        //internal Button saveSonogramButton;
         internal Button audacityButton;
         internal TextBox time_TextBox;
         internal TextBox segmentName_TextBox;
@@ -100,7 +107,7 @@ namespace AnalysisPrograms
         internal TextBox recordingFileName_TextBox;
         internal TextBox CSVDir_TextBox;
         internal TextBox outputDir_TextBox;
-        internal TextBox message_TextBox;
+        //internal TextBox message_TextBox;
         internal Label CSVDir_Label;
         internal Label time_Label;
         internal Label segmentName_Label;
@@ -140,24 +147,29 @@ namespace AnalysisPrograms
             if (commandLineArguments.Length == 2) iniPath = commandLineArguments[1]; //arg[0] is the exe file.
             if (!File.Exists(iniPath))
             {
-                string dummy = "";
-                this.parameters = new Parameters(dummy); //default values
+                bool iniFileFound = false;
+                this.parameters = new Parameters(iniFileFound); //init with default values
             }
             else
             {
                 int verbosity = 0;
                 this.parameters = ReadIniFile(iniPath, verbosity);
             }
-            InitaliseLeftPanelControls();
+
             SetUpPanels();
 
-            if (! this.parameters.iniFileFound)
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Console.WriteLine(date);
+
+            //if (false) WriteParameters2Console();
+            if (this.parameters.iniFileFound) WriteParameters2Console();
+            else
             {
-                this.message_TextBox.ForeColor = Color.Red;
-                this.message_TextBox.Text = "FATAL ERROR!   COULD NOT FIND INI FILE <" + iniPath + ">" + Environment.NewLine + Environment.NewLine +
-                    "YOU CANNOT PROCEED." + Environment.NewLine + "";
-                this.loadIndicesButton.Hide();
+                Console.WriteLine("\nFATAL ERROR!   COULD NOT FIND INI FILE AT <" + iniPath + ">\n\nYOU CANNOT PROCEED.");
+                this.tabControl1.SelectTab("Console");
+                this.loadVisualIndicesButton.Hide();
             }
+            
 
 
         } // MainForm
@@ -186,21 +198,24 @@ namespace AnalysisPrograms
             p.trackCount = DEFAULT_trackCount; //pixel height of track in the visual index
             p.sonogram_BackgroundThreshold = DEFAULT_sonogram_BackgroundThreshold;
 
-            //if (verbosity > 0)
-            //{
-            //    Log.WriteLine("# PARAMETER SETTINGS:");
-            //    Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.segmentDuration, paramaters.segmentOverlap);
-            //    Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
-            //    Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
-            //    Log.WriteLine("####################################################################################");
-            //}
+            //if (verbosity > 0) WriteParameters2Console();
             return p;
+        }
+
+
+        public void WriteParameters2Console()
+        {
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            Console.WriteLine("# Parameter Settings:");
+            Console.WriteLine("Segment size: Duration = {0} minutes.", parameters.segmentDuration);
+            Console.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
+            Console.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
+            Console.WriteLine("####################################################################################");
         }
 
 
         public void SetUpPanels()
         {
-
             //this.FlowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             //this.Button1 = new System.Windows.Forms.Button();
             //this.Button2 = new System.Windows.Forms.Button();
@@ -221,91 +236,142 @@ namespace AnalysisPrograms
             int windowWidth     = 1810;
             int windowHeight    = 750;
             int leftPanelWidth  = 210;
-            int leftPanelHeight = windowHeight;
-            int rightPanelWidth = windowWidth - leftPanelWidth;
-            int rightPanelHeight = windowHeight;
+            int leftPanelHeight = windowHeight - this.Margin.Top - this.Margin.Bottom - 33; // -30 for menu bar etc;
+            int rightPanelWidth = windowWidth - leftPanelWidth - (5 * this.DefaultMargin.Left); //
+            int rightPanelHeight = leftPanelHeight;
 
             int indexPanelWidth = rightPanelWidth;
             int indexPanelHeight = visualIndex_ImageHeight;
             int barTrackPanelWidth  = rightPanelWidth;
             int barTrackPanelHeight = visualIndex_TrackHeight;
             int sonogramPanelWidth = rightPanelWidth;
-            int sonogramPanelHeight = windowHeight - indexPanelHeight;
+            int sonogramPanelHeight = windowHeight - indexPanelHeight - barTrackPanelHeight - (4*this.DefaultMargin.Top);
 
-
-            visualIndex.Width = indexPanelWidth;
-            visualIndex.Height = indexPanelHeight;
-
-
-
+            //this.ForeColor = Color.Red;
+            //this.Font = new Font("Times New Roman", 11.0f, FontStyle.Bold);
+            this.Text = "Acoustic environment browser";
             this.Size = new System.Drawing.Size(windowWidth, windowHeight);
             this.SuspendLayout();
 
-            // Set color, location and size of the leftPanel panel
-            this.leftPanel.SuspendLayout();
-            //leftPanel.BackColor = Color.Black;
-            leftPanel.Location = new Point(0, 0);
-            this.leftPanel.Size = new System.Drawing.Size(leftPanelWidth, leftPanelHeight);
-            //Point pt1 = new Point(this.leftPanel.Width-10, 0);
-            //Point pt2 = new Point(this.leftPanel.Size.Width-10, this.leftPanel.Size.Height);
-            //Graphics gr = this.leftPanel.CreateGraphics();
-            //gr.DrawLine(new Pen(Color.Red, 2.0F), pt1, pt2);
+            InitaliseControlPanel(leftPanelWidth, leftPanelHeight);
+            InitaliseConsolePanel(rightPanelWidth, rightPanelHeight);
+            InitaliseVisualIndexPanel(rightPanelWidth, visualIndex_ImageHeight);
+            InitaliseBarTrackPanel(barTrackPanelWidth, barTrackPanelHeight);
+            InitaliseSonogramPanel(sonogramPanelWidth, sonogramPanelHeight);
+            InitaliseRightPanel(rightPanelWidth, rightPanelHeight);
 
-            // Set color, location and size of the leftPanel panel
-            //rightPanel.BackColor = Color.White;
-            rightPanel.Location = new Point(leftPanelWidth+1, 0);
-            rightPanel.Size = new System.Drawing.Size(rightPanelWidth, rightPanelHeight);
-            //rightPanel.Paint += PaintLineOnPanel;
+            this.indexPanel.Location = new Point(0, 0);
+            this.barTrackPanel.Location = new Point(0, indexPanelHeight + 1);
+            this.sonogramPanel.Location = new Point(0, indexPanelHeight + barTrackPanelHeight + 1);
+            this.rightPanel.Location = new Point(leftPanelWidth + 1, 0);
 
+
+            // Container controls exposes the Controls collection that you could use to add controls programatically
+            rightPanel.Controls.Add(indexPanel);
+            rightPanel.Controls.Add(barTrackPanel);
+            rightPanel.Controls.Add(sonogramPanel);
+
+
+            this.tabControl1.Controls.AddRange(new Control[] { this.rightPanel, this.consolePanel });
+            this.tabControl1.Location = new Point(leftPanelWidth + 1, 0);
+            this.tabControl1.Size = new Size(rightPanelWidth, rightPanelHeight);
+
+            //this.ClientSize = new Size(300, 300);
+            //this.Controls.AddRange(new Control[] {this.tabControl1});
+            this.Controls.Add(this.tabControl1 );
+            this.Controls.Add(leftPanel);
+            //this.Controls.Add(rightPanel);
+            this.MaximumSize = new Size(windowWidth, windowHeight);
+        }
+
+        public void InitaliseRightPanel(int panelWidth, int panelHeight)
+        {
+            // Set color, location and size of the rightPanel panel
+            // Invokes the TabPage() constructor to create the tabPage1.
+            this.rightPanel = new System.Windows.Forms.TabPage();
+            this.rightPanel.Size = new System.Drawing.Size(panelWidth, panelHeight);
+            this.rightPanel.SuspendLayout();
+            this.rightPanel.Name = "Display";
+            this.rightPanel.Text = "Display";
+        }
+
+        public void InitaliseVisualIndexPanel(int panelWidth, int panelHeight)
+        {
             // Set color, location and size of the indexPanel panel
             indexPanel.BackColor = Color.Black;
-            indexPanel.Location = new Point(0, 0);
-            indexPanel.Size = new Size(rightPanelWidth, indexPanelHeight);
+            indexPanel.Size = new Size(panelWidth, panelHeight);
 
+            //initialise the PictureBox
+            this.visualIndex.Width = panelWidth;
+            this.visualIndex.Height = panelHeight;
+            this.visualIndex.MouseMove  += new MouseEventHandler(this.image_MouseMove);
+            this.visualIndex.MouseClick += new MouseEventHandler(this.indexImage_MouseClick);
+            this.visualIndex.MouseHover += new System.EventHandler(this.image_MouseHover);
+        }
+
+        public void InitaliseBarTrackPanel(int panelWidth, int panelHeight)
+        {
             // Set color, location and size of the barTrackPanel panel
             barTrackPanel.BackColor = Color.BlanchedAlmond;
-            barTrackPanel.Location = new Point(0, indexPanelHeight+1);
-            barTrackPanel.Size = new Size(barTrackPanelWidth, barTrackPanelHeight);
+            barTrackPanel.Size = new Size(panelWidth, panelHeight);
 
+        }
+
+        public void InitaliseSonogramPanel(int panelWidth, int panelHeight)
+        {
 
             // Set color, location and size of the sonogramPanel panel
             sonogramPanel.BackColor = Color.DarkGray;
-            sonogramPanel.Location = new Point(0, indexPanelHeight + barTrackPanelHeight+1);
-            sonogramPanel.Size = new Size(rightPanelWidth, sonogramPanelHeight);
+            sonogramPanel.Size = new Size(panelWidth, panelHeight);
             sonogramPanel.Controls.Add(this.sonogramPanel_hScrollBar);
             this.sonogramPanel_hScrollBar.LargeChange = 240;
             this.sonogramPanel_hScrollBar.Size = new System.Drawing.Size(sonogramPanel.Width, 13);
             this.sonogramPanel_hScrollBar.ValueChanged += new System.EventHandler(this.sonogramPanel_hScrollBar_ValueChanged);
             this.sonogramPanel_hScrollBar.Visible = false;
+        }
 
+        /// <summary>
+        /// console panel receives a redirection of standard out.
+        /// </summary>
+        /// <param name="panelWidth"></param>
+        /// <param name="panelHeight"></param>
+        public void InitaliseConsolePanel(int panelWidth, int panelHeight)
+        {
+            this.consoleTextBox.BackColor = Color.Black;
+            this.consoleTextBox.Location = new System.Drawing.Point(0, 0);
+            this.consoleTextBox.Size = new Size(panelWidth, panelHeight);
+            this.consoleTextBox.Multiline = true;
+            this.consoleTextBox.WordWrap = true;
+            this.consoleTextBox.ForeColor = Color.Lime;
+            this.consoleTextBox.Font = new Font("Courier New", 11.0f, FontStyle.Bold);
 
+            this.consolePanel.BackColor = Color.Black;
+            this.consolePanel.Name = "Console";
+            this.consolePanel.Text = "Console";
+            this.consolePanel.Controls.Add(consoleTextBox);
 
-
-            // That's the point, container controls exposes the Controls collection that you could use to add controls programatically
-            this.Controls.Add(leftPanel);
-            this.Controls.Add(rightPanel);
-            rightPanel.Controls.Add(indexPanel);
-            rightPanel.Controls.Add(barTrackPanel);
-            rightPanel.Controls.Add(sonogramPanel);
-
-            this.leftPanel.Anchor = (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                | System.Windows.Forms.AnchorStyles.Left)
-                | System.Windows.Forms.AnchorStyles.Right);
-            //this.leftPanel.AutoScroll = true;
-            this.leftPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-
-            this.visualIndex.MouseMove += new MouseEventHandler(this.image_MouseMove);
-            this.visualIndex.MouseClick += new MouseEventHandler(this.image_MouseClick);
-            this.visualIndex.MouseHover += new System.EventHandler(this.image_MouseHover);
-            
+            _consoleWriter = new TextBoxStreamWriter(consoleTextBox);
+            // Redirect the out Console stream
+            Console.SetOut(_consoleWriter);
+            //Console.WriteLine("Now redirecting output to the text box");
         }
 
 
-
-        public void InitaliseLeftPanelControls()
+        public void InitaliseControlPanel(int panelWidth, int panelHeight)
         {
+            // Set color, location and size of the leftPanel panel
+            this.leftPanel.SuspendLayout();
+            leftPanel.Location = new Point(0, 0);
+            this.leftPanel.Size = new System.Drawing.Size(panelWidth, panelHeight);
+            this.leftPanel.Anchor = (((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+                         | System.Windows.Forms.AnchorStyles.Left)
+                         | System.Windows.Forms.AnchorStyles.Right);
+
+            this.leftPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+
             int labelheight = 14;
-            int pixelBuffer = 10;
+            int pixelMargin = 10;
+            int pixelBuffer = 2 * pixelMargin;
             this.CSVDir_Label = new System.Windows.Forms.Label();
             this.CSVDir_Label.Text = "Directory containing CSV file";
             this.CSVDir_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
@@ -332,16 +398,40 @@ namespace AnalysisPrograms
 
             this.message_Label = new System.Windows.Forms.Label();
             this.message_Label.Text = "Messages and warnings!";
-            this.message_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
+            this.message_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelMargin, labelheight);
 
 
-            this.loadIndicesButton = new System.Windows.Forms.Button();
-            this.loadIndicesButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            this.loadIndicesButton.Name = "Load Index File";
-            this.loadIndicesButton.Size = new System.Drawing.Size(120, 24);
-            this.loadIndicesButton.TabIndex = 0;
-            this.loadIndicesButton.Text = "Load Index File";
-            this.loadIndicesButton.Click += new System.EventHandler(this.loadIndicesButton_Click);
+            this.extractIndicesButton = new System.Windows.Forms.Button();
+            this.extractIndicesButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.extractIndicesButton.Name = "Extract Indices";
+            this.extractIndicesButton.Size = new System.Drawing.Size(120, 24);
+            this.extractIndicesButton.TabIndex = 0;
+            this.extractIndicesButton.Text = "Extract Indices";
+            this.extractIndicesButton.Click += new System.EventHandler(this.extractIndicesButton_Click);
+
+            this.loadVisualIndicesButton = new System.Windows.Forms.Button();
+            this.loadVisualIndicesButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.loadVisualIndicesButton.Name = "Load Index File";
+            this.loadVisualIndicesButton.Size = new System.Drawing.Size(120, 24);
+            this.loadVisualIndicesButton.TabIndex = 0;
+            this.loadVisualIndicesButton.Text = "Load Index File";
+            this.loadVisualIndicesButton.Click += new System.EventHandler(this.loadIndicesButton_Click);
+
+            this.saveIndicesImageButton = new System.Windows.Forms.Button();
+            this.saveIndicesImageButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            this.saveIndicesImageButton.Name = "Save Visual Indices";
+            this.saveIndicesImageButton.Size = new System.Drawing.Size(120, 24);
+            this.saveIndicesImageButton.TabIndex = 0;
+            this.saveIndicesImageButton.Text = "Save Visual Indices";
+            this.saveIndicesImageButton.Click += new System.EventHandler(this.saveVisualIndicesButton_Click);
+
+            //this.saveSonogramButton = new System.Windows.Forms.Button();
+            //this.saveSonogramButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
+            //this.saveSonogramButton.Name = "Save Sonogram";
+            //this.saveSonogramButton.Size = new System.Drawing.Size(120, 24);
+            //this.saveSonogramButton.TabIndex = 0;
+            //this.saveSonogramButton.Text = "Save Sonogram";
+            //this.saveSonogramButton.Click += new System.EventHandler(this.saveSonogramButton_Click);
 
             this.audacityButton = new System.Windows.Forms.Button();
             this.audacityButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
@@ -371,58 +461,63 @@ namespace AnalysisPrograms
             this.segmentName_TextBox = new TextBox();
             this.segmentName_TextBox.Width = this.leftPanel.Width - pixelBuffer;
 
-            this.message_TextBox = new TextBox();
-            this.message_TextBox.Width = this.leftPanel.Width - pixelBuffer;
-            this.message_TextBox.Height = 100;
-            this.message_TextBox.Multiline = true;
-            this.message_TextBox.WordWrap = true;
-            //this.message_TextBox.Text = @"ddddddddd ddddddddd ddddddddddd ddddd dddddddd dddddddddd ddddd dddddd ddddddd";
-
+            //this.message_TextBox = new TextBox();
+            //this.message_TextBox.Width = this.leftPanel.Width - pixelBuffer;
+            //this.message_TextBox.Height = 100;
+            //this.message_TextBox.Multiline = true;
+            //this.message_TextBox.WordWrap = true;
 
             //LOCATE ALL CONTROLS IN LEFT PANEL
             int yOffset = 10;
             int yGap    = 10;
-            this.CSVDir_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.CSVDir_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = CSVDir_Label.Bottom + 1;
-            this.CSVDir_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.CSVDir_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = CSVDir_TextBox.Bottom + yGap;
 
-            this.recordingDir_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.recordingDir_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = recordingDir_Label.Bottom + 1;
-            this.recordingDir_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.recordingDir_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = recordingDir_TextBox.Bottom + yGap;
 
-            this.recordingFileName_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.recordingFileName_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = recordingFileName_Label.Bottom + 1;
-            this.recordingFileName_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.recordingFileName_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = recordingFileName_TextBox.Bottom + yGap;
 
-            this.outputDir_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.outputDir_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = outputDir_Label.Bottom + 1;
-            this.outputDir_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.outputDir_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = outputDir_TextBox.Bottom + yGap + yGap;
 
-            this.loadIndicesButton.Location = new System.Drawing.Point(pixelBuffer+ 6, yOffset);
-            yOffset = loadIndicesButton.Bottom + yGap;
+            this.extractIndicesButton.Location = new System.Drawing.Point(pixelMargin+ 6, yOffset);
+            yOffset = extractIndicesButton.Bottom + yGap;
 
-            this.time_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.loadVisualIndicesButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
+            yOffset = loadVisualIndicesButton.Bottom + yGap;
+
+            this.time_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = time_Label.Bottom + 1;
-            this.time_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.time_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = time_TextBox.Bottom + yGap;
 
-            this.segmentName_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.segmentName_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = segmentName_Label.Bottom + 1;
-            this.segmentName_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
+            this.segmentName_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = segmentName_TextBox.Bottom + yGap + yGap;
 
-            this.audacityButton.Location = new System.Drawing.Point(pixelBuffer + 6, yOffset);
+            this.saveIndicesImageButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
+            yOffset = saveIndicesImageButton.Bottom + yGap + yGap + yGap + yGap;
+
+            //this.saveSonogramButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
+            //yOffset = saveSonogramButton.Bottom + yGap + yGap + yGap + yGap;
+            
+            this.audacityButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
             yOffset = audacityButton.Bottom + yGap + yGap + yGap + yGap;
 
-            this.message_Label.Location = new System.Drawing.Point(pixelBuffer, yOffset);
-            yOffset = message_Label.Bottom + 1;
-            this.message_TextBox.Location = new System.Drawing.Point(pixelBuffer, yOffset);
-
-
+            //this.message_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
+            //yOffset = message_Label.Bottom + 1;
+            //this.message_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
 
             //segmentName_TextBox.Top = 200;
             //segmentName_TextBox.Left = 10;
@@ -439,21 +534,24 @@ namespace AnalysisPrograms
                 this.time_TextBox, 
                 this.segmentName_Label, 
                 this.segmentName_TextBox, 
-                this.loadIndicesButton, 
+                this.extractIndicesButton,
+                this.loadVisualIndicesButton, 
+                this.saveIndicesImageButton,
+                //this.saveSonogramButton,
                 this.audacityButton, 
-                this.message_Label,
-                this.message_TextBox,
+                //this.message_Label,
+                //this.message_TextBox,
             });
-
 
             //insert path values into appropriate text boxes. This should be done by dialog boxes if these worked!
             this.CSVDir_TextBox.Text = parameters.csvPath;
             this.recordingDir_TextBox.Text = Path.GetDirectoryName(parameters.recordingPath);
             this.recordingFileName_TextBox.Text = Path.GetFileName(parameters.recordingPath);
             this.outputDir_TextBox.Text = parameters.outputDir;
+
         }
 
-        private void loadIndicesButton_Click(object sender, EventArgs e)
+        private void extractIndicesButton_Click(object sender, EventArgs e)
         {
             // Wrap the creation of the OpenFileDialog instance in a using statement to ensure proper disposal
             //using (OpenFileDialog dlg = new OpenFileDialog())
@@ -472,11 +570,20 @@ namespace AnalysisPrograms
             //        indexPanel.Controls.Add(PictureBox1);
             //    }
             //}
+            this.consoleTextBox.Clear();
+            this.tabControl1.SelectTab("Console");
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Console.WriteLine(date);
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            Console.WriteLine("# Extracting acoustic indices from file: "+ parameters.recordingPath);
+        }//extractIndicesButton_Click
 
+
+
+        private void loadIndicesButton_Click(object sender, EventArgs e)
+        {
             //USE FOLLOWING THREE LINES TO LOAD A PNG IMAGE
             //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
-            //visualIndex.Dock = DockStyle.Fill;
-            //indexPanel.Controls.Add(visualIndex);
 
             //USE FOLLOWING LINES TO LOAD A CSV FILE
             var tuple = FileTools.ReadCSVFile(parameters.csvPath);
@@ -504,25 +611,25 @@ namespace AnalysisPrograms
             int offset = 0;
             Bitmap timeBmp = (Bitmap)DrawVisualIndexTimeScale(duration, imageWidth, trackHeight);
 
-            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt);
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.DrawImage(timeBmp, 0, offset);
-
+            gr.Clear(Color.Black);
+            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+            var font = new Font("Arial", 10.0f, FontStyle.Regular);
+            Bitmap bmp;
 
             offset += trackHeight;
             for (int i = 0; i < displayColumn.Length; i++) //for pixels in the line
             {
                 if (!displayColumn[i]) continue;
                 if(i >= headerCount) break;
-                Bitmap bmp = Image_Track.DrawBarScoreTrack(values[i], trackHeight, threshold, headers[i]);
+                if (i == displayColumn.Length-1) bmp = Image_Track.DrawColourScoreTrack(values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
+                else                             bmp = Image_Track.DrawBarScoreTrack(values[i], trackHeight, threshold, headers[i]);
                 gr.DrawImage(bmp, 0, offset);
-                //var font = new Font("Tahoma", 9);
-                //Font = New Font(Me.Font, FontStyle.Bold);
-                var font = SystemFonts.IconTitleFont;
                 gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
                 offset += trackHeight;
             }
-            gr.DrawImage(timeBmp, 0, offset);
+            gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
             return compositeBmp;
         }
 
@@ -539,6 +646,29 @@ namespace AnalysisPrograms
             return Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
         } //DrawVisualIndexTimeScale()
 
+
+        private void saveVisualIndicesButton_Click(object sender, EventArgs e)
+        {
+            this.consoleTextBox.Clear();
+            this.tabControl1.SelectTab("Console");
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Console.WriteLine(date);
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            if (visualIndex.Image == null)
+            {
+                Console.WriteLine("WARNING! There is no image to save!");
+            }
+            else
+            {
+                string fPath = Path.Combine(parameters.outputDir, (Path.GetFileNameWithoutExtension(parameters.csvPath) + ".png"));
+                visualIndex.Image.Save(fPath);
+                Console.WriteLine("# Saved visual indices to file: " + fPath);
+            }
+        }//saveVisualIndicesButton_Click
+
+        //private void saveSonogramButton_Click(object sender, EventArgs e)
+        //{
+        //}//saveSonogramButton_Click
 
 
 
@@ -562,7 +692,7 @@ namespace AnalysisPrograms
 
         private void image_MouseMove(object sender, EventArgs e)
         {
-            int myX = Form.MousePosition.X - rightPanel.Left - this.Left - 8; //8 = border width - must be better way to do this!!!!!
+            int myX = Form.MousePosition.X - leftPanel.Width - this.Left - (4 * this.Margin.Left) - 1; //why -1?? Good question!
             if (myX > this.minutesDuration) return;
 
             string text = (myX / 60) + "hr:" + (myX % 60) + "min (" + myX + ")"; //assumes scale= 1 pixel / minute
@@ -571,12 +701,12 @@ namespace AnalysisPrograms
             //mark the time scale
             Graphics g = visualIndex.CreateGraphics();
             g.DrawImage(this.visualIndexTimeScale, 0, 0);
-            Point pt1 = new Point(this.visualIndex.Left + myX, 2);
-            Point pt2 = new Point(this.visualIndex.Left + myX, parameters.trackHeight-1);
+            Point pt1 = new Point(myX, 2);
+            Point pt2 = new Point(myX, parameters.trackHeight - 1);
             g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
             g.DrawImage(this.visualIndexTimeScale, 0, this.visualIndex.Height - parameters.trackHeight);
-            pt1 = new Point(this.visualIndex.Left + myX, this.visualIndex.Height - 2);
-            pt2 = new Point(this.visualIndex.Left + myX, this.visualIndex.Height - parameters.trackHeight);
+            pt1 = new Point(myX, this.visualIndex.Height - 2);
+            pt2 = new Point(myX, this.visualIndex.Height - parameters.trackHeight);
             g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
         } //image_MouseMove()
 
@@ -587,10 +717,16 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void image_MouseClick(object sender, MouseEventArgs e)
+        private void indexImage_MouseClick(object sender, MouseEventArgs e)
         {
-            // SHOW MOUSE LOCATION IN INFO BOX
-            //this.segmentName_TextBox.Text = "WAIT!";
+            this.consoleTextBox.Clear();
+            this.tabControl1.SelectTab("Console");
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Console.WriteLine(date);
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+
+
+            // GET MOUSE LOCATION
             int myX = e.X;
             int myY = e.Y;
             Point pt1 = new Point(this.visualIndex.Left + myX, 0);
@@ -608,18 +744,24 @@ namespace AnalysisPrograms
                 endMilliseconds   = (myX + 2) * 60000;
             }
             if (startMilliseconds < 0) startMilliseconds = 0;
+            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX+1));
 
-
+            DateTime time1 = DateTime.Now;
             string fName = Path.GetFileNameWithoutExtension(parameters.recordingPath);
             string segmentName = fName + "_min"+myX.ToString() + ".wav"; //want a wav file
             string outputSegmentPath = Path.Combine(parameters.outputDir, segmentName); //path name of the segment file extracted from long recording
             AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(parameters.recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+            DateTime time2 = DateTime.Now;
+            TimeSpan timeSpan = time2 - time1;
+            Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
 
             //store info
             this.segmentName_TextBox.Text = Path.GetFileName(recording.FilePath);
             this.recordingSegmentPath = recording.FilePath;
 
+
             //make the sonogram
+            Console.WriteLine("\n\tPreparing sonogram of audio segment");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName   = recording.FileName;
             sonoConfig.WindowSize    = parameters.frameLength;
@@ -643,11 +785,17 @@ namespace AnalysisPrograms
                 sonogramPicture.Image = image.GetImage();
                 sonogramPicture.SetBounds(0, 0, sonogramPicture.Image.Width, sonogramPicture.Image.Height);
                 this.sonogramPanel.Controls.Add(sonogramPicture);
-                this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height+15);
-                this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
+                this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height+sonogramPanel_hScrollBar.Height);
+                this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
+                this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
                 this.sonogramPanel_hScrollBar.Value = 0;
                 this.sonogramPanel_hScrollBar.Visible = true;
             }
+
+            string sonogramPath = Path.Combine(parameters.outputDir, (Path.GetFileNameWithoutExtension(segmentName) + ".png"));
+            Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
+            sonogramPicture.Image.Save(sonogramPath);
+            this.tabControl1.SelectTab("Display");           
         } //image_MouseClick()
 
 

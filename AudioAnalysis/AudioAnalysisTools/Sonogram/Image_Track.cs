@@ -654,6 +654,36 @@ namespace AudioAnalysisTools
             return bmp;
         }
 
+        /// <summary>
+        /// used to draw coloured score track or any array of values 
+        /// </summary>
+        /// <param name="scores"></param>
+        /// <param name="scoreMin"></param>
+        /// <param name="scoreMax"></param>
+        /// <param name="scoreThreshold"></param>
+        /// <returns></returns>
+        public static Bitmap DrawColourScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        {
+            Color[] colorScale = { Color.LightGray, Color.Gray, Color.Orange, Color.Red, Color.Purple };
+            int imageWidth = array.Length;
+            Bitmap bmp = new Bitmap(imageWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.FromArgb(245, 245, 245));
+
+            double range = maxVal - minVal;
+            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            {
+                // normalise and bound the value - use min bound, max and 255 image intensity range
+                double value = (array[x] - minVal) / range;
+                int barHeight = (int)Math.Round(value * trackHeight);
+                int colourIndex = (int)Math.Floor(value * colorScale.Length * 0.99);
+                for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, colorScale[colourIndex]);
+                bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
+            }//end over all pixels
+            return bmp;
+        }
+
+
 
         public static void DrawScoreTrack(Bitmap bmp, double[] array, int yOffset, int trackHeight, double threshold, string title)
         {
@@ -670,6 +700,15 @@ namespace AudioAnalysisTools
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
             Bitmap bitmap = DrawBarScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            return bitmap;
+        }
+
+        public static Bitmap DrawColourScoreTrack(double[] array, int trackHeight, double threshold, string title)
+        {
+            double minVal;
+            double maxVal;
+            DataTools.MinMax(array, out minVal, out maxVal);
+            Bitmap bitmap = DrawColourScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
