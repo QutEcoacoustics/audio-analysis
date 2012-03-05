@@ -6,8 +6,7 @@
     open MQUTeR.FSharp.Shared
     open MathNet.Numerics
     open MQUTeR.FSharp.Shared.StringStats
-    
-
+    open Microsoft.FSharp.Numerics
 
     type GroupTrainer() =
         inherit TrainerBase()
@@ -24,13 +23,19 @@
         abstract member AvgValue: Value array -> Value
             default this.AvgValue (xs: Value array) : Value =
                 match xs with
-                | IsNumbers ns -> 
+                | IsNumbersU ns -> 
                 
-                    let n = ( ns |> Array.average )
-                    upcast n
+                    let n = ( ns |> Maths.Array.mean )
+                    upcast new Number(n)
                 | IsTexts ss ->
                     let ss' = averageStrings ss
                     upcast new AverageText(ss' |> head |> fst , ss') 
+                | IsModuloMinutesU ms ->
+                    let avg = Maths.Array.mean ms
+//                    let sum  = Array.fold (+) 0Z ms
+//                    let avg = sum.ToInt32() / ms.Length
+                    //Maths.Array.m
+                    upcast new AveragedModuloMinute(avg, ms.Length)
                 | _ -> failwith "not implemented"
 
         /// this function deals with the data from one column

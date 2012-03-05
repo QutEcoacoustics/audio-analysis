@@ -63,12 +63,14 @@
                 failwith "Transform error"
 
         let txs = List.map tf transformList 
-        let head = 
-            match tests.Head with 
+        let head, rest = 
+            (match tests.Head with 
             | WorkflowItem.Cleaner c -> Some(WorkflowItem.Cleaner(c))
             | _  ->Error "Undefined workflow!!!!!!!!!!!!!!" ; Option.None
+            )
+            ,tests.Tail
 
-        let (_::rest) = tests
+        //let (_::rest) = tests
         let tests' = head.Value :: (List.append txs rest)
 
         let result = workflow trainingData testData tests' data

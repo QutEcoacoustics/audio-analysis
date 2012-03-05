@@ -69,7 +69,7 @@ let exportFrn = bool.Parse(config.["ExportFrn"])
 let exportFrd = bool.Parse(config.["ExportFrd"])
 
 (* ANALYSIS RUN SETTING *)
-let analysis = <@ FELT.Workflows.ZScoreGroupedAnti @>
+let analysis = <@ FELT.Workflows.BasicGrouped @>
 
 
 let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig

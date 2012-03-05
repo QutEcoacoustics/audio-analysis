@@ -155,7 +155,7 @@ namespace FELT.Tests
             var result = ec.Classify(trainingData, testData);
 
             DateTime runDate = DateTime.Now;
-            FileInfo fiReport = new FileInfo("..\\..\\..\\TestResults\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx"); 
+            FileInfo fiReport = new FileInfo("..\\..\\..\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx"); 
             FileInfo fiTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
             
             var config = new ReportConfig(runDate, 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, true, true);

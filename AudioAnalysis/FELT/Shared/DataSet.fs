@@ -64,23 +64,58 @@
       
         end
 
-    type AveragedNumber(descriptiveStatistics: MathNet.Numerics.Statistics.DescriptiveStatistics, ?fakeStandardDeviation:float ) = class
-        inherit Number(descriptiveStatistics.Mean)
+    type AveragedNumber(mean, count:int,  ?standardDeviation:float, ?fakeStandardDeviation:float) = class
+        inherit Number(mean)
 
-        member this.DescriptiveStatistics 
-            with get() = descriptiveStatistics
-
+        member this.Mean 
+            with get() = base.Value 
         
+        member this.Count 
+            with get() = count 
+        
+        member this.StandardDeviation 
+            with get() = standardDeviation 
+
         member this.FakeStdDev 
-            with get() = if fakeStandardDeviation.IsNone then descriptiveStatistics.StandardDeviation else fakeStandardDeviation.Value
+            with get() = 
+                if fakeStandardDeviation.IsNone then 
+                    if standardDeviation.IsSome then 
+                        standardDeviation.Value
+                    else
+                        Double.NaN
+                else 
+                    fakeStandardDeviation.Value
         
         end
 
-    type ModuloHour(z) = class
+    type ModuloMinute(z) = class
         inherit BaseValue<IntegerZ1440>(z)
-
         end
     
+    type AveragedModuloMinute(mean, count:int, ?standardDeviation:IntegerZ1440, ?fakeStandardDeviation:IntegerZ1440 ) = class
+        inherit ModuloMinute(mean)
+
+        member this.Mean 
+            with get() = base.Value 
+        
+        member this.Count 
+            with get() = count 
+
+        member this.StandardDeviation 
+            with get() = standardDeviation 
+
+        member this.FakeStdDev 
+            with get() = 
+                if fakeStandardDeviation.IsNone then 
+                    if standardDeviation.IsSome then 
+                        standardDeviation.Value
+                    else
+                        failwith "No standard deviation has been set and no default return value has been provided"
+                else 
+                    fakeStandardDeviation.Value
+        
+        end
+
     type Date(d) = class
         inherit BaseValue<DateTime>(d)
         end
@@ -170,7 +205,11 @@
         let canCastTo<'T> (x:obj) = x :? 'T
         let checkAndCastTo<'T> (input:obj) = if input :? 'T then Option.Some(input :?> 'T) else Option.None
 
-        let testAndCastArray<'CastTo> (input: 'a array) : Option<'CastTo array> =
+        let inline unwrap (input: #BaseValue<'c> array) =
+                    Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
+        let value (v:BaseValue<'a>) = v.Value
+
+        let testAndCastArray<'CastTo> (input: Value array) : Option<'CastTo array> =
             if input.Length = 0 then
                 Some(Array.empty<'CastTo>)
             else
@@ -180,10 +219,36 @@
                 else
                     Option.None
 
-        let inline unwrap (input: #BaseValue<'c> array) =
-                    Array.map (fun (x: #BaseValue<'c>) -> x.Value) input
+        let testCastAndUnwrapArray<'unwrapTo, 'CastTo when 'CastTo :> BaseValue<'unwrapTo>> (input: Value array) : Option<'unwrapTo array> =
+            if input.Length = 0 then
+                Some(Array.empty<'unwrapTo>)
+            else
+                let h = Array.head input
+                if h.GetType() = typeof<'CastTo> then
+                   Option.Some(Array.map (fun x -> 
+                                                let c = castTo<'CastTo> x
+                                                value c
+                                                
+                                                ) input)
+                else
+                    Option.None
         
-        let value (v:BaseValue<'a>) = v.Value
+        let testCastAndUnwrapNumericArray(input: Value array) : Option<float array> =
+            if input.Length = 0 then
+                Some(Array.empty<float>)
+            else
+                let h (x:Value) =
+                    match x with 
+                    | :? BaseValue<float> as b -> b.Value
+                    | :? BaseValue<IntegerZ1440> as z -> float z.Value
+                    | _ -> failwith "Invalid numeric type found"
+                 
+                Option.Some(Array.map (h) input)                               
+//                if h.GetType() = typeof<'CastTo> then
+//                   
+//                else
+//                    Option.None
+        
         let getRow rowId (d:Data) = d.Instances |> Seq.cast |> Seq.map (fun (kvp:System.Collections.Generic.KeyValuePair<ColumnHeader, Value array>) -> kvp.Value.[rowId])
             
         /// Active pattern for the value type
@@ -192,22 +257,32 @@
             checkAndCastTo<Text> input
         let (|IsNumber|_|) (input) =
             checkAndCastTo<Number> input
-        let (|IsModuloHour|_|) (input) =
-            checkAndCastTo<ModuloHour> input
         let (|IsAvgNumber|_|) (input) =
             checkAndCastTo<AveragedNumber> input
+        let (|IsModuloMinute|_|) (input) =
+            checkAndCastTo<ModuloMinute> input
+        let (|IsAvgModuloMinute|_|) (input) =
+            checkAndCastTo<AveragedModuloMinute> input
         let (|IsDate|_|) input =
             checkAndCastTo<Date> input
 
-
+        let (|IsNumbersU|_|) (input: Value array) =
+            testCastAndUnwrapArray<float, Number> input
+        let (|IsModuloMinutesU|_|) (input: Value array) =
+            testCastAndUnwrapArray<IntegerZ1440, ModuloMinute> input
             
+        let (|IsAnyNumbers|_|) (input: Value array) =
+            testCastAndUnwrapNumericArray input
 
-        let (|IsNumbers|_|) (input: #Value array) =
+        let (|IsNumbers|_|) (input: Value array) =
             testAndCastArray<Number> input
-       
-        let (|IsTexts|_|) (input: #Value array) =
+        let (|IsDates|_|) (input: Value array) =
+            testAndCastArray<Date> input
+        let (|IsModuloMinutes|_|) (input: Value array) =
+                    testAndCastArray<ModuloMinute> input
+        let (|IsTexts|_|) (input: Value array) =
             testAndCastArray<Text> input
-        let (|IsStrings|_|) (input: #Value array) =
+        let (|IsStrings|_|) (input: Value array) =
             testAndCastArray<string> input
 
         

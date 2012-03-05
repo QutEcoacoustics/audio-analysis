@@ -41,12 +41,19 @@
         | Z1440 of int
         member z.ToInt32() =  
           let (Z1440 n) = z in n
+        member z.ToFloat() =  
+          let (Z1440 n) = z in float n
         override z.ToString() = 
           sprintf "%d (mod 1440)" (z.ToInt32())
 
         static member Create(n) = 
           let z1440 = n % 1440
           Z1440(max ((z1440 + 1440) % 1440) z1440)
+
+        static member op_Explicit(Z1440 a) = float a
+        static member op_Explicit(Z1440 a) = int a
+        static member op_Explicit(a:int) = Z1440 a
+        static member op_Explicit(a:float) = Z1440 (round a |> int)
 
         static member (+) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a + b)
         static member (-) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a - b)
@@ -55,8 +62,11 @@
         /// For the moment this is defined as default integer division
         /// A proper implementation of finite field division is unecessary for our purposes
         static member (/) (Z1440 a, Z1440 b) = IntegerZ1440.Create(a / b)
+        static member DivideByInt (Z1440 a, b) = IntegerZ1440.Create(a / b)
         static member Zero = Z1440 0
         static member One  = Z1440 1
+
+        
 
     [<AutoOpen>]
     module IntegerZ1440TopLevelOperations = 
@@ -68,7 +78,7 @@
       let FromInt32 a = IntegerZ1440.Create(a%1440)
       let FromInt64 a = IntegerZ1440.Create(int(a%1440L))
 
-
+    [<AutoOpen>]
     module IntegerZ1440Associations = 
       let IntegerZ1440Numerics = 
         { new INumeric<IntegerZ1440> with 
@@ -89,4 +99,7 @@
                z1440 (System.Int32.Parse(s,numstyle,fmtprovider)) }
 
       let Init() = 
-        GlobalAssociations.RegisterNumericAssociation IntegerZ1440Numerics
+        let assoc : INumeric<IntegerZ1440> option = GlobalAssociations.TryGetNumericAssociation()
+        if assoc.IsNone then
+            GlobalAssociations.RegisterNumericAssociation IntegerZ1440Numerics
+

@@ -7,6 +7,7 @@
     open MQUTeR.FSharp.Shared
     open MathNet.Numerics
     open MQUTeR.FSharp.Shared.StringStats
+    open MQUTeR.FSharp.Shared
 
     type SingleInstanceBehaviour =
         | Leave = 0
@@ -32,10 +33,16 @@
         override this.AvgValue (xs:Value array) : Value =
             
             match xs with
-            | IsNumbers ns -> 
-                let doubles = ns |> Seq.map (MQUTeR.FSharp.Shared.DataHelpers.value)
-                let stats = new Statistics.DescriptiveStatistics(doubles)
-                upcast (new AveragedNumber(stats))
+            | IsNumbersU ns -> 
+                let avg = Maths.Array.mean ns
+                 
+
+                upcast (new AveragedNumber(avg, ns.Length ))
+            | IsModuloMinutesU mms ->
+                //let doubles = mms |> Seq.map (MQUTeR.FSharp.Shared.DataHelpers.value >> float)
+                let avg = Maths.Array.mean mms
+                
+                upcast (new AveragedModuloMinute(avg, mms.Length))
             | IsTexts ss ->
                 failwith "not implemented"
                 let ss' = averageStrings ss
@@ -56,22 +63,22 @@
                 let numGroups = unwrapped |> Seq.nth 1 |> Array.length
 
                 let checkForErrorAndFix candidates (v:AveragedNumber) : Value =
-                    if (v.DescriptiveStatistics.Count = 1) then
+                    if (v.Count = 1) then
                         // fix
                         let findBestCandidate testIndex (idealIndex, diff) (testVal:AveragedNumber) =
-                            if testVal.DescriptiveStatistics.Count = 1 then
+                            if testVal.Count = 1 then
                                 // ignore
                                 (idealIndex, diff)
                             else
-                                let meanDelta = abs(testVal.DescriptiveStatistics.Mean - v.DescriptiveStatistics.Mean)
+                                let meanDelta = abs(testVal.Mean - v.Mean)
                                 if meanDelta < diff then
                                     (testIndex, meanDelta)
                                 else 
                                     (idealIndex, diff)
 
                         let indexToTake, _ = Array.foldi findBestCandidate (-1, System.Double.MaxValue) candidates
-                        let newStdDev = candidates.[indexToTake].DescriptiveStatistics.StandardDeviation
-                        upcast new AveragedNumber(v.DescriptiveStatistics, newStdDev)
+                        let newStdDev = candidates.[indexToTake].StandardDeviation.Value
+                        upcast new AveragedNumber(v.Mean, v.Count,  v.StandardDeviation.Value,  newStdDev)
                     else
                         upcast v
                 

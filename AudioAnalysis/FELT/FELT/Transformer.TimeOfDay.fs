@@ -13,10 +13,10 @@
                 | IsDate d -> 
                     // take only the time component, round, convert to modular number
                     let z = d.Value.TimeOfDay.TotalMinutes |> round |> int |> Z1440 
-                    upcast( new ModuloHour(z))
+                    upcast( new ModuloMinute(z))
                 | _ -> 
                     ErrorFail "Modulo tansformer was given date a date it could not decode! Boo!" |> failwith
-                    upcast (new ModuloHour(0Z))
+                    upcast (new ModuloMinute(0Z))
 
             let remake (instances:Map<ColumnHeader, Value array>) =
                 let old = instances.[feature]
