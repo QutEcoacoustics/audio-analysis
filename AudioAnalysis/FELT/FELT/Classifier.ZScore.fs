@@ -5,19 +5,23 @@
     open MQUTeR.FSharp.Shared
     open MQUTeR.FSharp.Shared.DataHelpers
     open System.Diagnostics
+    open Microsoft.FSharp.Numerics
 
     type ZScoreClassifier() =
         inherit ClassifierBase()
 
         let zScore (sample:Value) (avg:Value) =
-            let s = sample
             let a = avg
-            match s with
-             | IsNumber n ->
-                match a with
-                    | IsAvgNumber aavg -> Maths.zscore n.Value aavg.DescriptiveStatistics.Mean aavg.FakeStdDev
+            match sample with
+                | IsNumber n -> 
+                    match a with
+                    | IsAvgNumber aavg -> Maths.zscore n.Value aavg.Mean aavg.FakeStdDev
                     | _ -> failwith "avgerage against types "
-             | _ -> failwith "other data types not yet supported"
+                | IsModuloMinute mm ->
+                    match a with
+                    | IsAvgModuloMinute aavg -> Maths.zscore mm.Value aavg.Mean aavg.FakeStdDev
+                    | _ -> failwith "avgerage against types "
+                | _ -> failwith "other data types not yet supported"
 
         let distance samples avgs =
             // calculate z-score for each feature

@@ -63,6 +63,7 @@
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
     <Compile Include="Operators.fs" />
+    <Compile Include="NumericLiteralG.fs" />
     <Compile Include="Microsoft.FSharp.Core.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Seq.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
@@ -77,6 +78,22 @@
     <Compile Include="StringStats.fs" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="AForge">
+      <HintPath>..\packages\AForge.2.2.4\lib\AForge.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge.Genetic">
+      <HintPath>..\packages\AForge.Genetic.2.2.4\lib\AForge.Genetic.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge.Math">
+      <HintPath>..\packages\AForge.Math.2.2.4\lib\AForge.Math.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AForge.Neuro">
+      <HintPath>..\packages\AForge.Neuro.2.2.4\lib\AForge.Neuro.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\packages\FSPowerPack.Community.2.1.1.1\Lib\Net40\FSharp.PowerPack.dll</HintPath>
       <Private>True</Private>

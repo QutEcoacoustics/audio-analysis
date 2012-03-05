@@ -19,8 +19,10 @@
 
 
         let distance (a: Value[]) (b: Value[]) = 
+            // collapse non-numeric representations down to floats
+
             match (a, b) with
-                | (IsNumbers nsa, IsNumbers nsb) -> Maths.euclideanDist (unwrap nsa) (unwrap nsb) 
+                | (IsAnyNumbers nsa, IsAnyNumbers nsb) -> Maths.euclideanDist nsa nsb
                 | _ -> failwith "Not implemented for types other than number" 
             
 
