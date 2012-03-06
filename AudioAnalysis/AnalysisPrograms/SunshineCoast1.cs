@@ -28,7 +28,7 @@ namespace AnalysisPrograms
             //GET COMMAND LINE ARGUMENTS
             Log.Verbosity = 1;
             CheckArguments(args);
-            string recordingPath = args[0];
+            string sourceRecordingPath = args[0];
             string iniPath = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
 
@@ -43,125 +43,25 @@ namespace AnalysisPrograms
 
             // Set up the file and get info
             SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            var fileInfo = new FileInfo(recordingPath);
+            var fileInfo = new FileInfo(sourceRecordingPath);
             var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
             //var dateInfo = fileInfo.CreationTime;
             var duration = audioUtility.Duration(fileInfo, mimeType);
-            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(recordingPath));
+            double minCount = (duration.TotalMinutes); //convert length to minute chunks
+            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
+            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(sourceRecordingPath));
             Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fileInfo.CreationTime.ToLongDateString(), fileInfo.CreationTime.ToLongTimeString());
             Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
             Log.WriteIfVerbose("# Recording - duration: {0} minutes", duration.TotalMinutes);
-            double minCount = (duration.TotalMinutes); //convert length to minute chunks
-            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
             Log.WriteIfVerbose("# Recording - minutes: {0:f3}   segments: {1}", minCount, segmentCount);
             Log.WriteIfVerbose("# Output to  directory: " + outputDir);
 
-            //SET UP THE REPORT FILE
-            string reportfileName = outputDir + "AcousticIndices_" + Path.GetFileNameWithoutExtension(recordingPath);
-            if (parameters.reportFormat.Equals("CSV")) reportfileName += ".csv";
-            else reportfileName += ".txt";
+            AcousticIndices.ScanRecording(sourceRecordingPath, outputDir, parameters);
 
-            //info to add in additional column of weighted indices
-            string appendix = "_WeightedIndices";
-            string opFileName = FileTools.AppendToFileName(reportfileName, appendix);
-            string columnHeader = "Wt Indices";
+            Log.WriteLine("# Finished extracting indices from source recording:- " + Path.GetFileName(sourceRecordingPath));
 
-            //READ CSV FILE TO VISUALIZE DATA
-            if (false)
-            {
-                AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
-                AcousticIndices.VISUALIZE_CSV_DATA(opFileName);
-                Console.ReadLine();
-                Environment.Exit(666);
-            }
-            //EXTRACT SEGMENT FROM RECORDING
-            if (true)
-            {
-                int minute = 19*60;
-                double startHr = minute/(double)60;
-                double endHr = startHr + 0.1;
-
-                //double startHr = 2.0;
-                //double endHr   = 2.2;
-                int startMilliseconds = (int)Math.Round(startHr * 60 * 60000);
-                int endMilliseconds   = (int)Math.Round(endHr   * 60 * 60000);
-                Console.WriteLine("\nWAIT - extracting segment!");
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-                Console.WriteLine("SAVED FILE: " + recording.FilePath);
-                Console.ReadLine();
-                Environment.Exit(666);
-            }
-
-
-            AcousticIndices.WriteHeaderToReportFile(reportfileName, parameters.reportFormat);
-
-            // LOOP THROUGH THE FILE
-            //initialse counters
-            DateTime tStart = DateTime.Now;
-            DateTime tPrevious = tStart;
-            Log.WriteLine(tStart);
-
-
-            int overlap_ms = (int)Math.Floor(parameters.segmentOverlap * 1000);
-            for (int s = 0; s < segmentCount; s++)
-            {
-                DateTime tNow = DateTime.Now;
-                TimeSpan elapsedTime = tNow - tStart;
-                string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
-                double startMinutes = s * parameters.segmentDuration;
-                double avIterTime = elapsedTime.TotalSeconds / s;
-                if (s == 0) avIterTime = 0.0;
-
-                TimeSpan iterTimeSpan = tNow - tPrevious;
-                double iterTime = iterTimeSpan.TotalSeconds;
-                if (s == 0) iterTime = 0.0;
-                tPrevious = tNow;
-
-                Console.WriteLine("\n");
-                Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
-                int startMilliseconds = (int)(startMinutes * 60000);
-                int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-                
-                //double check that recording is over minimum length
-                double segmentDuration = recording.GetWavReader().Time.TotalSeconds;
-                int sampleCount = recording.GetWavReader().Samples.Length; //get recording length to determine if long enough
-                int minLength = 3 * parameters.frameLength; //ignore recordings shorter than three frames
-                if (sampleCount <= minLength)
-                {
-                    Log.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
-                    //Console.ReadLine();
-                    //System.Environment.Exit(666);
-                    break;
-                }
-                //Log.WriteLine("Signal Duration: " + segmentDuration + "seconds");
-
-                //#############################################################################################################################################
-                //iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-                //     EXTRACT INDICES   Default windowDuration = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
-                var results = AcousticIndices.ExtractIndices(recording, parameters.frameLength, parameters.lowFreqBound);
-
-                AcousticIndices.Indices2 indices = results.Item1;
-                AcousticIndices.WriteIndicesToReportFile(reportfileName, parameters.reportFormat, s, startMinutes, segmentDuration, indices);
-
-                //#############################################################################################################################################
-
-                recording.Dispose();            
-
-                //draw images of sonograms
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinutes.ToString() + "min.png";
-                if ((parameters.DRAW_SONOGRAMS == 2) || (parameters.DRAW_SONOGRAMS == 1))
-                {
-                    //DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, parameters.eventThreshold);
-                }
-
-                startMinutes += parameters.segmentDuration;
-            } //end of for loop
-
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
-
-            AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
-            AcousticIndices.VISUALIZE_CSV_DATA(reportfileName);
+            //AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
+            //AcousticIndices.VISUALIZE_CSV_DATA(reportfileName);
 
 
             Log.WriteLine("# Finished visualization and  EVERYTHING");

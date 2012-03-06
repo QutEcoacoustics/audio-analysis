@@ -1378,6 +1378,26 @@ namespace TowseyLib
 
 
 
+  public static double[] GetWeightedCombinationOfColumns(List<double[]> arrays, double[] wts)
+  {
+      int arrayLength = arrays[0].Length;
+      double[] weightedCombo = new double[arrayLength];
+
+      for (int i = 0; i < arrayLength; i++)
+      {
+          double combo = 0.0;
+          for (int c = 0; c < arrays.Count; c++)
+          {
+              combo += (wts[c] * arrays[c][i]);
+          }
+          weightedCombo[i] = combo;
+      }
+      return weightedCombo;
+  }
+
+
+
+
         //copy first n values of vector1 into vector 2}
     public static double[] CopyVector(int n, double[] v1)
     {
