@@ -249,6 +249,85 @@ namespace AnalysisPrograms
         } //ScanRecording()
 
 
+
+        public static void ScanRecording(string sourceRecordingPath, string outputDir, AcousticIndices.Parameters parameters)
+        {
+            //SET UP THE REPORT FILE
+            string reportFormat = "CSV";
+            string reportfileName = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv");
+            AcousticIndices.WriteHeaderToReportFile(reportfileName, reportFormat);
+
+            //Log.WriteLine("Signal Duration: " + segmentDuration + "seconds");
+
+            // Set up the file and get info
+            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
+            var fileInfo = new FileInfo(sourceRecordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
+            //var dateInfo = fileInfo.CreationTime;
+            var duration = audioUtility.Duration(fileInfo, mimeType);
+            double minCount = (duration.TotalMinutes); //convert length to minute chunks
+            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
+            string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+
+
+            // LOOP THROUGH THE FILE
+            //initialse counters
+            DateTime tStart = DateTime.Now;
+            DateTime tPrevious = tStart;
+            Log.WriteLine(tStart);
+
+
+
+
+            int overlap_ms = (int)Math.Floor(parameters.segmentOverlap * 1000);
+            for (int s = 0; s < segmentCount; s++)
+            {
+                DateTime tNow = DateTime.Now;
+                TimeSpan elapsedTime = tNow - tStart;
+                string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
+                double startMinutes = s * parameters.segmentDuration;
+                double avIterTime = elapsedTime.TotalSeconds / s;
+                if (s == 0) avIterTime = 0.0;
+
+                TimeSpan iterTimeSpan = tNow - tPrevious;
+                double iterTime = iterTimeSpan.TotalSeconds;
+                if (s == 0) iterTime = 0.0;
+                tPrevious = tNow;
+
+                Console.WriteLine("\n");
+                Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
+                int startMilliseconds = (int)(startMinutes * 60000);
+                int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
+                AudioRecording recordingSegment = AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+                
+                //double check that recording is over minimum length
+                double segmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
+                int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
+                int minLength = 3 * parameters.frameLength; //ignore recordings shorter than three frames
+                if (sampleCount <= minLength)
+                {
+                    Log.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
+                    break;
+                }
+
+                //#############################################################################################################################################
+                //iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
+                //     EXTRACT INDICES   Default windowDuration = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+                var results = AcousticIndices.ExtractIndices(recordingSegment, parameters.frameLength, parameters.lowFreqBound);
+
+                AcousticIndices.Indices2 indices = results.Item1;
+                AcousticIndices.WriteIndicesToReportFile(reportfileName, reportFormat, s, startMinutes, segmentDuration, indices);
+
+                //#############################################################################################################################################
+
+                recordingSegment.Dispose();            
+                startMinutes += parameters.segmentDuration;
+            } //end of for loop
+        }
+
+        ////////////////////////////////////////////////////////////////
+
+
         /// <summary>
         /// </summary>
         /// <param name="recording"></param>
@@ -968,13 +1047,62 @@ namespace AnalysisPrograms
         }
 
 
+        public static Bitmap ConstructIndexImage(List<string> headers, List<double[]> values, int imageWidth, int trackHeight)
+        {
+            int headerCount = headers.Count;
+            double threshold = 0.5;
+
+            int trackCount = values.Count + 3; //+2 for top and bottom time tracks
+            int imageHt = trackHeight * trackCount;
+            int duration = values[0].Length; //time in minutes
+            int offset = 0;
+            Bitmap timeBmp = (Bitmap)AcousticIndices.DrawVisualIndexTimeScale(duration, imageWidth, trackHeight);
+
+            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
+            Graphics gr = Graphics.FromImage(compositeBmp);
+            gr.Clear(Color.Black);
+            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
+            var font = new Font("Arial", 10.0f, FontStyle.Regular);
+            Bitmap bmp;
+
+            offset += trackHeight;
+            for (int i = 0; i < values.Count; i++) //for pixels in the line
+            {
+                if (i >= headerCount) break;
+                if (i == values.Count - 1) bmp = Image_Track.DrawColourScoreTrack(values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
+                else bmp = Image_Track.DrawBarScoreTrack(values[i], trackHeight, threshold, headers[i]);
+                gr.DrawImage(bmp, 0, offset);
+                gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
+                offset += trackHeight;
+            }
+            gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
+            return compositeBmp;
+        }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="duration">length of the time track in pixels - 1 pixel=1minute</param>
+        /// <param name="imageWidth"></param>
+        /// <param name="trackHeight"></param>
+        /// <returns></returns>
+        public static Image DrawVisualIndexTimeScale(int duration, int imageWidth, int trackHeight)
+        {
+            int scale = 60; //put a tik every 60 pixels = 1 hour
+            return Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
+        } //DrawVisualIndexTimeScale()
+
+
+
+
         public static void WriteHeaderToReportFile(string reportfileName, string parmasFile_Separator)
         {
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
             string[] HEADER = {"count", "start-min", "sec-dur", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "lfCover", "H[ampl]", 
-                                      "H[peakFreq]", "H[avSpect]", "H1[varSpectra]", "#clusters", "avClustDur"};
+                                      "H[peakFreq]", "H[avSpect]", "H[varSpectra]", "#clusters", "avClustDur"};
             string FORMAT_STRING = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}";
             string line = String.Format(FORMAT_STRING, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
                                                                         HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16]);
