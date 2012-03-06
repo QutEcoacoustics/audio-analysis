@@ -32,37 +32,17 @@ namespace AnalysisPrograms
             string iniPath = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
 
-            string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
-
-
-
             //READ PARAMETER VALUES FROM INI FILE
             Log.WriteIfVerbose("  ");
             AcousticIndices.Parameters parameters = AcousticIndices.ReadIniFile(iniPath, Log.Verbosity);
             Log.WriteIfVerbose("  ");
 
-            // Set up the file and get info
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            var fileInfo = new FileInfo(sourceRecordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
-            //var dateInfo = fileInfo.CreationTime;
-            var duration = audioUtility.Duration(fileInfo, mimeType);
-            double minCount = (duration.TotalMinutes); //convert length to minute chunks
-            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
-            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(sourceRecordingPath));
-            Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fileInfo.CreationTime.ToLongDateString(), fileInfo.CreationTime.ToLongTimeString());
-            Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
-            Log.WriteIfVerbose("# Recording - duration: {0} minutes", duration.TotalMinutes);
-            Log.WriteIfVerbose("# Recording - minutes: {0:f3}   segments: {1}", minCount, segmentCount);
-            Log.WriteIfVerbose("# Output to  directory: " + outputDir);
-
-            AcousticIndices.ScanRecording(sourceRecordingPath, outputDir, parameters);
+            AcousticIndices.ScanRecording(sourceRecordingPath, outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
 
             Log.WriteLine("# Finished extracting indices from source recording:- " + Path.GetFileName(sourceRecordingPath));
 
             //AcousticIndices.AddColumnOfWeightedIndicesToCSVFile(reportfileName, columnHeader, opFileName);
             //AcousticIndices.VISUALIZE_CSV_DATA(reportfileName);
-
 
             Log.WriteLine("# Finished visualization and  EVERYTHING");
             Console.ReadLine();

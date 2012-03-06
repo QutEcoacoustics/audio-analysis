@@ -250,42 +250,48 @@ namespace AnalysisPrograms
 
 
 
-        public static void ScanRecording(string sourceRecordingPath, string outputDir, AcousticIndices.Parameters parameters)
+        public static void ScanRecording(string sourceRecordingPath, string outputDir, double segmentDuration_mins, int resampleRate, int frameLength, int lowFreqBound)
         {
             //SET UP THE REPORT FILE
             string reportFormat = "CSV";
             string reportfileName = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv");
             AcousticIndices.WriteHeaderToReportFile(reportfileName, reportFormat);
 
-            //Log.WriteLine("Signal Duration: " + segmentDuration + "seconds");
-
             // Set up the file and get info
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            var fileInfo = new FileInfo(sourceRecordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
-            //var dateInfo = fileInfo.CreationTime;
-            var duration = audioUtility.Duration(fileInfo, mimeType);
-            double minCount = (duration.TotalMinutes); //convert length to minute chunks
-            int segmentCount = (int)Math.Round(minCount / parameters.segmentDuration); //convert length to minute chunks
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
+            var sourceFileInfo = new FileInfo(sourceRecordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(sourceFileInfo.Extension);
+            var sourceAudioDuration = audioUtility.Duration(sourceFileInfo, mimeType);
+            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
+
+            //set up the temporary audio segment output file
             string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+            FileInfo outputSegmentFileInfo = new FileInfo(outputSegmentPath);
+
+
+            Log.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
+            Log.WriteLine("# Source audio - datetime: {0}    {1}", sourceFileInfo.CreationTime.ToLongDateString(), sourceFileInfo.CreationTime.ToLongTimeString());
+            Log.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
+            Log.WriteLine("# Source audio - duration: {0} minutes", sourceAudioDuration.TotalMinutes);
+            Log.WriteLine("# Source audio - segments: {0}", segmentCount);
+            Log.WriteLine("# Output to  directory: " + outputDir);
+
+            int segmentDuration_ms = (int)(segmentDuration_mins * 60000);
 
 
             // LOOP THROUGH THE FILE
             //initialse counters
             DateTime tStart = DateTime.Now;
             DateTime tPrevious = tStart;
-            Log.WriteLine(tStart);
 
+            return;
 
-
-
-            int overlap_ms = (int)Math.Floor(parameters.segmentOverlap * 1000);
             for (int s = 0; s < segmentCount; s++)
             {
                 DateTime tNow = DateTime.Now;
                 TimeSpan elapsedTime = tNow - tStart;
                 string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
-                double startMinutes = s * parameters.segmentDuration;
+                double startMinutes = s * segmentDuration_mins;
                 double avIterTime = elapsedTime.TotalSeconds / s;
                 if (s == 0) avIterTime = 0.0;
 
@@ -297,31 +303,33 @@ namespace AnalysisPrograms
                 Console.WriteLine("\n");
                 Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
-                int endMilliseconds = startMilliseconds + (int)(parameters.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recordingSegment = AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-                
+                int endMilliseconds = startMilliseconds + segmentDuration_ms;
+                //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+                SpecificWavAudioUtility.GetSingleSegment(audioUtility, sourceFileInfo, outputSegmentFileInfo, startMilliseconds, endMilliseconds);
+                AudioRecording recordingSegment = new AudioRecording(outputSegmentFileInfo.FullName, audioUtility);
+
                 //double check that recording is over minimum length
                 double segmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
                 int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
-                int minLength = 3 * parameters.frameLength; //ignore recordings shorter than three frames
-                if (sampleCount <= minLength)
+                int minimumLength = 3 * frameLength; //ignore recordings shorter than three frames
+                if (sampleCount <= minimumLength)
                 {
                     Log.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
                     break;
                 }
 
                 //#############################################################################################################################################
-                //iii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-                //     EXTRACT INDICES   Default windowDuration = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
-                var results = AcousticIndices.ExtractIndices(recordingSegment, parameters.frameLength, parameters.lowFreqBound);
+                //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
+                //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+                var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
 
                 AcousticIndices.Indices2 indices = results.Item1;
                 AcousticIndices.WriteIndicesToReportFile(reportfileName, reportFormat, s, startMinutes, segmentDuration, indices);
 
                 //#############################################################################################################################################
 
-                recordingSegment.Dispose();            
-                startMinutes += parameters.segmentDuration;
+                recordingSegment.Dispose();
+                startMinutes += segmentDuration_mins;
             } //end of for loop
         }
 

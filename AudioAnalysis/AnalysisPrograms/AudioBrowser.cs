@@ -32,6 +32,7 @@ namespace AnalysisPrograms
         const int DEFAULT_segmentDuration = 1;
         const int DEFAULT_resampleRate = 17640;
         const int DEFAULT_frameLength = 512;
+        const int DEFAULT_lowFreqBound = 500;
         const double DEFAULT_frameOverlap = 0.0;
         const double DEFAULT_sonogram_BackgroundThreshold = 4.0;  //dB
 
@@ -60,17 +61,17 @@ namespace AnalysisPrograms
         public struct Parameters
         {
             public bool iniFileFound;
-            public int frameLength, resampleRate, segmentDuration;
-            public double frameOverlap, sonogram_BackgroundThreshold;
+            public int frameLength, resampleRate, lowFreqBound;
+            public double segmentDuration, frameOverlap, sonogram_BackgroundThreshold;
             public int trackHeight, trackCount;
-            public string audioFileName, recordingDir, recordingPath, outputDir, csvPath, AudacityPath;
+            public string audioFileName, recordingDir, sourceRecordingPath, outputDir, csvPath, AudacityPath;
 
             public Parameters(bool _iniFileFound)
             {
                 iniFileFound  = _iniFileFound;
                 audioFileName = DEFAULT_audioFileName;
                 recordingDir  = DEFAULT_recordingDir;
-                recordingPath = DEFAULT_recordingPath;
+                sourceRecordingPath = DEFAULT_recordingPath;
                 outputDir     = DEFAULT_outputDir;
                 csvPath       = DEFAULT_outputDir;
                 AudacityPath  = DEFAULT_AudacityPath;
@@ -78,6 +79,7 @@ namespace AnalysisPrograms
                 resampleRate  = DEFAULT_resampleRate; //samples per second
                 frameLength   = DEFAULT_frameLength;
                 frameOverlap  = DEFAULT_frameOverlap;
+                lowFreqBound  = DEFAULT_lowFreqBound;
                 trackHeight   = DEFAULT_trackHeight; //number of tracks to appear in the visual index
                 trackCount    = DEFAULT_trackCount; //pixel height of track in the visual index
                 sonogram_BackgroundThreshold = DEFAULT_sonogram_BackgroundThreshold;  //dB
@@ -203,9 +205,9 @@ namespace AnalysisPrograms
                 this.loadVisualIndicesButton.Enabled = false;
                 return;
             }
-            if (!File.Exists(parameters.recordingPath))
+            if (!File.Exists(parameters.sourceRecordingPath))
             {
-                Console.WriteLine("\nWARNING!   CANNOT FIND AUDIO FILE AT <" + parameters.recordingPath + ">");
+                Console.WriteLine("\nWARNING!   CANNOT FIND AUDIO FILE AT <" + parameters.sourceRecordingPath + ">");
                 Console.WriteLine("To extract indices from an audio recording close application and rectify problem.");
                 this.tabControl1.SelectTab("Console");
                 this.extractIndicesButton.Enabled = false;
@@ -244,13 +246,14 @@ namespace AnalysisPrograms
             p.frameOverlap = Double.Parse(dict[AudioBrowser.key_FRAME_OVERLAP]);
             
             //add in internal parameters
-            p.trackHeight = DEFAULT_trackHeight; //number of tracks to appear in the visual index
-            p.trackCount = DEFAULT_trackCount; //pixel height of track in the visual index
+            p.lowFreqBound = DEFAULT_lowFreqBound; //exclude low frequency band from calculation of indices
+            p.trackHeight  = DEFAULT_trackHeight;  //number of tracks to appear in the visual index
+            p.trackCount   = DEFAULT_trackCount;   //pixel height of track in the visual index
             p.sonogram_BackgroundThreshold = DEFAULT_sonogram_BackgroundThreshold;
 
             //construct other parameters
             p.csvPath = Path.Combine(p.outputDir, Path.GetFileNameWithoutExtension(p.audioFileName)+".csv");
-            p.recordingPath = Path.Combine(p.recordingDir, p.audioFileName);
+            p.sourceRecordingPath = Path.Combine(p.recordingDir, p.audioFileName);
 
             //paramaters.segmentDuration = Double.Parse(dict[AcousticIndices.key_SEGMENT_DURATION]);
             //paramaters.segmentOverlap = Double.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
@@ -270,23 +273,24 @@ namespace AnalysisPrograms
         }
 
 
-        public void WriteDisplayParameters2Console()
-        {
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-            Console.WriteLine("# Parameter Settings for Display of Indices and Sonograms:");
-            Console.WriteLine("Segment size: Duration = {0} minutes.", parameters.segmentDuration);
-            Console.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
-            Console.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
-            Console.WriteLine("####################################################################################");
-        }
         public void WriteExtractionParameters2Console()
         {
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-            Console.WriteLine("# Parameter Settings Extraction of Indices from Audio File:");
-            Console.WriteLine("Segment size: Duration = {0} minutes.", parameters.segmentDuration);
-            Console.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
-            Console.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
+            Console.WriteLine("# Parameter Settings for Extraction of Indices from long Audio File:");
+            Console.WriteLine("\tSegment size: Duration = {0} minutes.", parameters.segmentDuration);
+            Console.WriteLine("\tResample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
+            Console.WriteLine("\tFrame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
+            Console.WriteLine("\tLow frequency Band: 0 Hz - {0} Hz.", parameters.lowFreqBound);
             Console.WriteLine("####################################################################################");
+        }
+
+            public void WriteDisplayParameters2Console()
+        {
+            Console.WriteLine("# Parameter Settings for Display of Indices and Sonograms:");
+            Console.WriteLine("\tSegment size: Duration = {0} minutes.", parameters.segmentDuration);
+            Console.WriteLine("\tResample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
+            Console.WriteLine("\tFrame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
+            Console.WriteLine("####################################################################################");
+        }
 
 
             //Log.WriteLine("# PARAMETER SETTINGS:");
@@ -296,9 +300,6 @@ namespace AnalysisPrograms
             //Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
             //Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
             //Log.WriteLine("####################################################################################");
-
-
-        }
 
 
 
@@ -652,22 +653,23 @@ namespace AnalysisPrograms
         private void extractIndicesButton_Click(object sender, EventArgs e)
         {
             // Wrap the creation of the OpenFileDialog instance in a using statement to ensure proper disposal
-            //using (OpenFileDialog dlg = new OpenFileDialog())
-            //{
-            //    dlg.Title = "Open Visual Index";
-            //    dlg.Filter = "png files (*.png)|*.png";
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Title = "Open Visual Index";
+                dlg.Filter = "csv files (*.csv)|*.csv";
 
-            //    if (dlg.ShowDialog() == DialogResult.OK)
-            //    {
-            //        PictureBox PictureBox1 = new PictureBox();
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    PictureBox PictureBox1 = new PictureBox();
 
-            //        // Create a new Bitmap object from the picture file on disk,
-            //        // and assign that to the PictureBox.Image property
-            //        PictureBox1.Image = new Bitmap(dlg.FileName);
-            //        // Add the new control to its parent's controls collection
-            //        indexPanel.Controls.Add(PictureBox1);
-            //    }
-            //}
+                    // Create a new Bitmap object from the picture file on disk,
+                    // and assign that to the PictureBox.Image property
+                    PictureBox1.Image = new Bitmap(dlg.FileName);
+                    // Add the new control to its parent's controls collection
+                    indexPanel.Controls.Add(PictureBox1);
+                }
+            }
+            return;
             this.consoleTextBox.Clear();
             this.tabControl1.SelectTab("Console");
             string date = "# DATE AND TIME: " + DateTime.Now;
@@ -675,7 +677,7 @@ namespace AnalysisPrograms
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
             Console.WriteLine("# Extracting acoustic indices from file: "+ parameters.audioFileName);
             WriteExtractionParameters2Console();
-
+            AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
 
         }//extractIndicesButton_Click
 
@@ -863,10 +865,10 @@ namespace AnalysisPrograms
             Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX+1));
 
             DateTime time1 = DateTime.Now;
-            string fName = Path.GetFileNameWithoutExtension(parameters.recordingPath);
+            string fName = Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath);
             string segmentName = fName + "_min"+myX.ToString() + ".wav"; //want a wav file
             string outputSegmentPath = Path.Combine(parameters.outputDir, segmentName); //path name of the segment file extracted from long recording
-            AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(parameters.recordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+            AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(parameters.sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
             Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");

@@ -329,13 +329,13 @@ namespace AudioAnalysisTools
 
         /// <summary>
         /// Returns an instance of the WavAudioUtility class that is required to read audio recordings  
-        /// IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = SAMPLERATE / 2 Hz.
+        /// IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = (SAMPLERATE / 2) Hz.
         /// IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
         ///                         BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
         /// </summary>
         /// <param name="resampleRate"></param>
         /// <returns></returns>
-        private static SpecificWavAudioUtility GetAudioUtility(int resampleRate)
+        public static SpecificWavAudioUtility GetAudioUtility(int resampleRate)
         {
             SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
             audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
