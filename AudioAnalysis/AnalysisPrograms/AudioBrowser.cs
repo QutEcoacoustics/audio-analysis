@@ -144,7 +144,7 @@ namespace AnalysisPrograms
         //private RadioButton radSpanish = new RadioButton();
 
 
-
+        [STAThread]
         public static void Main() 
         {
             string[] args = System.Environment.GetCommandLineArgs();
