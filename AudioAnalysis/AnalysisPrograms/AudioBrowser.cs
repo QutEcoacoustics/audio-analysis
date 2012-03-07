@@ -97,6 +97,7 @@ namespace AnalysisPrograms
         private TabPage consolePanel = new TabPage();
         private TabControl tabControl1 = new TabControl();
         private Panel visualIndex_Panel = new Panel();
+        private HScrollBar visualIndex_Panel_hScrollBar = new HScrollBar();
         private Panel barTrackPanel = new Panel();
         private Panel sonogramPanel = new Panel();
         private HScrollBar sonogramPanel_hScrollBar = new HScrollBar();
@@ -373,6 +374,13 @@ namespace AnalysisPrograms
             visualIndex_Panel.BackColor = Color.Black;
             visualIndex_Panel.Size = new Size(panelWidth, panelHeight);
             visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
+
+            visualIndex_Panel.Controls.Add(this.visualIndex_Panel_hScrollBar);
+            this.visualIndex_Panel_hScrollBar.LargeChange = 240;
+            this.visualIndex_Panel_hScrollBar.Size = new System.Drawing.Size(sonogramPanel.Width, 13);
+            this.visualIndex_Panel_hScrollBar.ValueChanged += new System.EventHandler(this.visualIndex_Panel_hScrollBar_ValueChanged);
+            this.visualIndex_Panel_hScrollBar.Visible = false;
+
         }
 
         public void InitaliseBarTrackPanel(int panelWidth, int panelHeight)
@@ -720,6 +728,14 @@ namespace AnalysisPrograms
             //visualIndex_PictureBox.Dock = DockStyle.Fill;
             //visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
 
+            //this.visualIndexPanel.Controls.Add(sonogramPicture);
+            //this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
+            //this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
+            //this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
+            //this.sonogramPanel_hScrollBar.Value = 0;
+            //this.sonogramPanel_hScrollBar.Visible = true;
+
+
             Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
                              comboHeaders[0], AudioBrowser.comboWeights[0], comboHeaders[1], comboWeights[1], comboHeaders[2], comboWeights[2],
                              comboHeaders[3], AudioBrowser.comboWeights[3], comboHeaders[4], comboWeights[4]);
@@ -921,12 +937,14 @@ namespace AnalysisPrograms
         }
 
 
+        private void visualIndex_Panel_hScrollBar_ValueChanged(object sender, System.EventArgs e)
+        {
+            this.sonogramPicture.Left = -this.sonogramPanel_hScrollBar.Value;
+        }
 
         private void sonogramPanel_hScrollBar_ValueChanged(object sender, System.EventArgs e)
         {
             this.sonogramPicture.Left = -this.sonogramPanel_hScrollBar.Value;
-            // Display the current values in the title bar.
-            //this.segmentName_TextBox.Text = "x = " + this.sonogramPanel_hScrollBar.Value;
         }
 
 
