@@ -38,7 +38,7 @@ namespace AnalysisPrograms
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
-        public static string key_FILE_NAME       = "FILE_NAME";
+        //public static string key_FILE_NAME       = "FILE_NAME";
         public static string key_RECORDING_DIR   = "RECORDING_DIR";
         public static string key_OUTPUT_DIR      = "OUTPUT_DIR";
         public static string key_AUDACITY_PATH   = "AUDACITY_PATH";
@@ -49,10 +49,10 @@ namespace AnalysisPrograms
         public static string key_SONOGRAM_BG_THRESHOLD = "SONOGRAM_BG_THRESHOLD";
 
 
-        public static bool[]   displayColumn        = { false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false };
-        public static bool[] weightedIndexColumn = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
-        public static double[] comboWeights     = {0.0, 0.4, 0.1, 0.4, 0.1};  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
-        //              SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
+        public static bool[]   displayColumn        = { false, false, false, true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true, true, true, true, false };
+        public static bool[] weightedIndexColumn    = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
+        public static double[] comboWeights         = {0.0, 0.4, 0.1, 0.4, 0.1};  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
+        //                       SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
 
 
         /// <summary>
@@ -91,15 +91,16 @@ namespace AnalysisPrograms
 
 
 
+        //private System.Windows.Forms.FlowLayoutPanel FlowLayoutPanel1;
         private Panel leftPanel = new Panel();
         private TabPage rightPanel = new TabPage();
         private TabPage consolePanel = new TabPage();
         private TabControl tabControl1 = new TabControl();
-        private Panel indexPanel = new Panel();
+        private Panel visualIndex_Panel = new Panel();
         private Panel barTrackPanel = new Panel();
         private Panel sonogramPanel = new Panel();
         private HScrollBar sonogramPanel_hScrollBar = new HScrollBar();
-        private PictureBox visualIndex = new PictureBox();
+        private PictureBox visualIndex_PictureBox = new PictureBox();
         private PictureBox selectionTrack; //to show where have previously selected a segment
         private PictureBox sonogramPicture;
 
@@ -111,20 +112,18 @@ namespace AnalysisPrograms
         internal Button extractIndicesButton;
         internal Button loadVisualIndicesButton;
         internal Button saveIndicesImageButton;
-        //internal Button saveSonogramButton;
         internal Button audacityButton;
         internal TextBox audioFileName_TextBox;
         internal TextBox outputDir_TextBox;
         internal TextBox time_TextBox;
         internal TextBox cursorValues_TextBox;
         internal TextBox segmentName_TextBox;
+
+        internal Label recordingDir_Label;
         internal TextBox recordingDir_TextBox;
-        internal TextBox recordingFileName_TextBox;
         internal Label audioFileName_Label;
         internal Label time_Label;
         internal Label segmentName_Label;
-        internal Label recordingDir_Label;
-        internal Label recordingFileName_Label;
         internal Label outputDir_Label;
         internal Label cursorValues_Label;
 
@@ -134,14 +133,6 @@ namespace AnalysisPrograms
         private string iniFileName = "AudioBrowser.ini";
         private double[] weightedIndices; 
 
-
-
-
-        //private Panel langPanel = new Panel();
-        //private System.Windows.Forms.FlowLayoutPanel FlowLayoutPanel1;
-        //private RadioButton radBritish = new RadioButton();
-        //private RadioButton radFrench = new RadioButton();
-        //private RadioButton radSpanish = new RadioButton();
 
 
         [STAThread]
@@ -170,12 +161,11 @@ namespace AnalysisPrograms
                 this.parameters = ReadIniFile(iniPath, verbosity);
             }
 
-            SetUpPanels();
+            SetUpPanels(); //MUST CALL THIS METHOD BEFORE PROCEEDING
 
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
 
-            //if (false) WriteParameters2Console();
             if (this.parameters.iniFileFound)
             {
                 WriteDisplayParameters2Console();
@@ -188,7 +178,10 @@ namespace AnalysisPrograms
                 return;
             }
 
-            if (!Directory.Exists(parameters.recordingDir))
+            if (Directory.Exists(parameters.recordingDir))
+            {
+                this.recordingDir_TextBox.Text = parameters.recordingDir;
+            }else
             {
                 Console.WriteLine("\nWARNING!   CANNOT FIND RECORDING DIRECTORY <" + parameters.recordingDir + ">");
                 Console.WriteLine("If you need to access audio recordings, close application and rectify problem.");
@@ -196,33 +189,34 @@ namespace AnalysisPrograms
                 this.extractIndicesButton.Enabled = false;
             }
 
-            if (!Directory.Exists(parameters.outputDir))
+            if (Directory.Exists(parameters.outputDir))
+            {
+                this.outputDir_TextBox.Text = parameters.outputDir;
+            }
+            else
             {
                 Console.WriteLine("\nFATAL ERROR!   CANNOT FIND OUTPUT DIRECTORY <" + parameters.outputDir + ">");
                 Console.WriteLine("Close application and rectify problem.");
                 this.tabControl1.SelectTab("Console");
-                this.extractIndicesButton.Enabled    = false;
+                this.extractIndicesButton.Enabled = false;
                 this.loadVisualIndicesButton.Enabled = false;
                 return;
             }
-            if (!File.Exists(parameters.sourceRecordingPath))
-            {
-                Console.WriteLine("\nWARNING!   CANNOT FIND AUDIO FILE AT <" + parameters.sourceRecordingPath + ">");
-                Console.WriteLine("To extract indices from an audio recording close application and rectify problem.");
-                this.tabControl1.SelectTab("Console");
-                this.extractIndicesButton.Enabled = false;
-            }
+            //if (!File.Exists(parameters.sourceRecordingPath))
+            //{
+            //    Console.WriteLine("\nWARNING!   CANNOT FIND AUDIO FILE AT <" + parameters.sourceRecordingPath + ">");
+            //    Console.WriteLine("To extract indices from an audio recording close application and rectify problem.");
+            //    this.tabControl1.SelectTab("Console");
+            //    this.extractIndicesButton.Enabled = false;
+            //}
 
-            if (!File.Exists(parameters.csvPath))
-            {
-                Console.WriteLine("\nWARNING!   COULD NOT FIND CSV FILE AT <" + parameters.csvPath + ">");
-                Console.WriteLine("To display indices in a CSV file close application and rectify problem.");
-                this.tabControl1.SelectTab("Console");
-                this.loadVisualIndicesButton.Enabled = false;
-            }
-
-            
-
+            //if (!File.Exists(parameters.csvPath))
+            //{
+            //    Console.WriteLine("\nWARNING!   COULD NOT FIND CSV FILE AT <" + parameters.csvPath + ">");
+            //    Console.WriteLine("To display indices in a CSV file close application and rectify problem.");
+            //    this.tabControl1.SelectTab("Console");
+            //    this.loadVisualIndicesButton.Enabled = false;
+            //}
 
         } // MainForm
 
@@ -236,24 +230,26 @@ namespace AnalysisPrograms
 
             AudioBrowser.Parameters p; // st
             p.iniFileFound = true;
-            p.audioFileName = dict[AudioBrowser.key_FILE_NAME];
             p.recordingDir = dict[AudioBrowser.key_RECORDING_DIR];
             p.outputDir = dict[AudioBrowser.key_OUTPUT_DIR];
             p.AudacityPath = dict[AudioBrowser.key_AUDACITY_PATH];
             p.frameLength = Int32.Parse(dict[AudioBrowser.key_FRAME_LENGTH]);
             p.resampleRate = Int32.Parse(dict[AudioBrowser.key_RESAMPLE_RATE]);
             p.segmentDuration = Int32.Parse(dict[AudioBrowser.key_SEGMENT_DURATION]);
-            p.frameOverlap = Double.Parse(dict[AudioBrowser.key_FRAME_OVERLAP]);
+            p.frameOverlap = 0.0; //default value
             
             //add in internal parameters
             p.lowFreqBound = DEFAULT_lowFreqBound; //exclude low frequency band from calculation of indices
             p.trackHeight  = DEFAULT_trackHeight;  //number of tracks to appear in the visual index
             p.trackCount   = DEFAULT_trackCount;   //pixel height of track in the visual index
             p.sonogram_BackgroundThreshold = DEFAULT_sonogram_BackgroundThreshold;
+            p.sourceRecordingPath = DEFAULT_recordingPath;
+            p.audioFileName = DEFAULT_audioFileName;
+            p.csvPath = DEFAULT_outputDir;
 
             //construct other parameters
-            p.csvPath = Path.Combine(p.outputDir, Path.GetFileNameWithoutExtension(p.audioFileName)+".csv");
-            p.sourceRecordingPath = Path.Combine(p.recordingDir, p.audioFileName);
+            //p.csvPath = Path.Combine(p.outputDir, Path.GetFileNameWithoutExtension(p.audioFileName)+".csv");
+            //p.sourceRecordingPath = Path.Combine(p.recordingDir, p.audioFileName);
 
             //paramaters.segmentDuration = Double.Parse(dict[AcousticIndices.key_SEGMENT_DURATION]);
             //paramaters.segmentOverlap = Double.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
@@ -278,7 +274,7 @@ namespace AnalysisPrograms
             Console.WriteLine("# Parameter Settings for Extraction of Indices from long Audio File:");
             Console.WriteLine("\tSegment size: Duration = {0} minutes.", parameters.segmentDuration);
             Console.WriteLine("\tResample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
-            Console.WriteLine("\tFrame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
+            Console.WriteLine("\tFrame Length: {0} samples.", parameters.frameLength);
             Console.WriteLine("\tLow frequency Band: 0 Hz - {0} Hz.", parameters.lowFreqBound);
             Console.WriteLine("####################################################################################");
         }
@@ -286,35 +282,18 @@ namespace AnalysisPrograms
             public void WriteDisplayParameters2Console()
         {
             Console.WriteLine("# Parameter Settings for Display of Indices and Sonograms:");
-            Console.WriteLine("\tSegment size: Duration = {0} minutes.", parameters.segmentDuration);
+            Console.WriteLine("\tSonogram size: Duration = {0} minutes.", parameters.segmentDuration);
             Console.WriteLine("\tResample rate: {0} samples/sec.  Nyquist: {1} Hz.", parameters.resampleRate, (parameters.resampleRate / 2));
             Console.WriteLine("\tFrame Length: {0} samples.  Fractional overlap: {1}.", parameters.frameLength, parameters.frameOverlap);
             Console.WriteLine("####################################################################################");
         }
 
 
-            //Log.WriteLine("# PARAMETER SETTINGS:");
-            //Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.segmentDuration, paramaters.segmentOverlap);
-            //Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
-            //Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
-            //Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
-            //Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
-            //Log.WriteLine("####################################################################################");
-
-
 
         public void SetUpPanels()
         {
             //this.FlowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
-            //this.Button1 = new System.Windows.Forms.Button();
-            //this.Button2 = new System.Windows.Forms.Button();
-            //this.Button3 = new System.Windows.Forms.Button();
-            //this.Button4 = new System.Windows.Forms.Button();
             //this.wrapContentsCheckBox = new System.Windows.Forms.CheckBox();
-           // this.flowTopDownBtn = new System.Windows.Forms.RadioButton();
-           // this.flowBottomUpBtn = new System.Windows.Forms.RadioButton();
-           // this.flowLeftToRight = new System.Windows.Forms.RadioButton();
-           // this.flowRightToLeftBtn = new System.Windows.Forms.RadioButton();
            // this.FlowLayoutPanel1.SuspendLayout();
            // this.SuspendLayout();
 
@@ -326,14 +305,14 @@ namespace AnalysisPrograms
             int windowHeight    = 750;
             int leftPanelWidth  = 210;
             int leftPanelHeight = windowHeight - this.Margin.Top - this.Margin.Bottom - 33; // -30 for menu bar etc;
-            int rightPanelWidth = windowWidth - leftPanelWidth - (5 * this.DefaultMargin.Left); //
+            int rightPanelWidth = windowWidth - leftPanelWidth -(5 * this.DefaultMargin.Left); //
             int rightPanelHeight = leftPanelHeight;
 
-            int indexPanelWidth = rightPanelWidth;
+            int indexPanelWidth  = rightPanelWidth;
             int indexPanelHeight = visualIndex_ImageHeight;
             int barTrackPanelWidth  = rightPanelWidth;
             int barTrackPanelHeight = visualIndex_TrackHeight;
-            int sonogramPanelWidth = rightPanelWidth;
+            int sonogramPanelWidth  = rightPanelWidth;
             int sonogramPanelHeight = windowHeight - indexPanelHeight - barTrackPanelHeight - (4*this.DefaultMargin.Top);
 
             //this.ForeColor = Color.Red;
@@ -349,14 +328,14 @@ namespace AnalysisPrograms
             InitaliseSonogramPanel(sonogramPanelWidth, sonogramPanelHeight);
             InitaliseRightPanel(rightPanelWidth, rightPanelHeight);
 
-            this.indexPanel.Location = new Point(0, 0);
+            this.visualIndex_Panel.Location = new Point(0, 0);
             this.barTrackPanel.Location = new Point(0, indexPanelHeight + 1);
             this.sonogramPanel.Location = new Point(0, indexPanelHeight + barTrackPanelHeight + 1);
             this.rightPanel.Location = new Point(leftPanelWidth + 1, 0);
 
 
             // Container controls exposes the Controls collection that you could use to add controls programatically
-            rightPanel.Controls.Add(indexPanel);
+            rightPanel.Controls.Add(visualIndex_Panel);
             rightPanel.Controls.Add(barTrackPanel);
             rightPanel.Controls.Add(sonogramPanel);
 
@@ -364,12 +343,8 @@ namespace AnalysisPrograms
             this.tabControl1.Controls.AddRange(new Control[] { this.rightPanel, this.consolePanel });
             this.tabControl1.Location = new Point(leftPanelWidth + 1, 0);
             this.tabControl1.Size = new Size(rightPanelWidth, rightPanelHeight);
-
-            //this.ClientSize = new Size(300, 300);
-            //this.Controls.AddRange(new Control[] {this.tabControl1});
             this.Controls.Add(this.tabControl1 );
             this.Controls.Add(leftPanel);
-            //this.Controls.Add(rightPanel);
             this.MaximumSize = new Size(windowWidth, windowHeight);
         }
 
@@ -386,16 +361,18 @@ namespace AnalysisPrograms
 
         public void InitaliseVisualIndexPanel(int panelWidth, int panelHeight)
         {
-            // Set color, location and size of the indexPanel panel
-            indexPanel.BackColor = Color.Black;
-            indexPanel.Size = new Size(panelWidth, panelHeight);
-
             //initialise the PictureBox
-            this.visualIndex.Width = panelWidth;
-            this.visualIndex.Height = panelHeight;
-            this.visualIndex.MouseMove  += new MouseEventHandler(this.image_MouseMove);
-            this.visualIndex.MouseClick += new MouseEventHandler(this.indexImage_MouseClick);
-            this.visualIndex.MouseHover += new System.EventHandler(this.image_MouseHover);
+            this.visualIndex_PictureBox.Dock = DockStyle.Fill;
+            this.visualIndex_PictureBox.Width = panelWidth;
+            this.visualIndex_PictureBox.Height = panelHeight;
+            this.visualIndex_PictureBox.MouseMove  += new MouseEventHandler(this.visualIndex_MouseMove);
+            this.visualIndex_PictureBox.MouseClick += new MouseEventHandler(this.visualIndex_MouseClick);
+            this.visualIndex_PictureBox.MouseHover += new System.EventHandler(this.visualIndex_MouseHover);
+
+            // Set color, location and size of the indexPanel panel
+            visualIndex_Panel.BackColor = Color.Black;
+            visualIndex_Panel.Size = new Size(panelWidth, panelHeight);
+            visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
         }
 
         public void InitaliseBarTrackPanel(int panelWidth, int panelHeight)
@@ -442,8 +419,7 @@ namespace AnalysisPrograms
 
             _consoleWriter = new TextBoxStreamWriter(consoleTextBox);
             // Redirect the out Console stream
-            Console.SetOut(_consoleWriter);
-            //Console.WriteLine("Now redirecting output to the text box");
+            Console.SetOut(_consoleWriter); //This redirects output to the text box
         }
 
 
@@ -470,10 +446,6 @@ namespace AnalysisPrograms
             this.time_Label.Text = "Cursor location";
             this.time_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
 
-            this.recordingFileName_Label = new System.Windows.Forms.Label();
-            this.recordingFileName_Label.Text = "Name of source audio file";
-            this.recordingFileName_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
-
             this.segmentName_Label = new System.Windows.Forms.Label();
             this.segmentName_Label.Text = "Name of extracted audio file";
             this.segmentName_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
@@ -483,7 +455,7 @@ namespace AnalysisPrograms
             this.recordingDir_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
 
             this.outputDir_Label = new System.Windows.Forms.Label();
-            this.outputDir_Label.Text = "Directory for output";
+            this.outputDir_Label.Text = "Directory for csv files and output";
             this.outputDir_Label.Size = new System.Drawing.Size(this.leftPanel.Width - pixelBuffer, labelheight);
 
             this.cursorValues_Label = new System.Windows.Forms.Label();
@@ -517,14 +489,6 @@ namespace AnalysisPrograms
             this.saveIndicesImageButton.Text = "Save Visual Indices";
             this.saveIndicesImageButton.Click += new System.EventHandler(this.saveVisualIndicesButton_Click);
 
-            //this.saveSonogramButton = new System.Windows.Forms.Button();
-            //this.saveSonogramButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
-            //this.saveSonogramButton.Name = "Save Sonogram";
-            //this.saveSonogramButton.Size = new System.Drawing.Size(120, 24);
-            //this.saveSonogramButton.TabIndex = 0;
-            //this.saveSonogramButton.Text = "Save Sonogram";
-            //this.saveSonogramButton.Click += new System.EventHandler(this.saveSonogramButton_Click);
-
             this.audacityButton = new System.Windows.Forms.Button();
             this.audacityButton.FlatStyle = System.Windows.Forms.FlatStyle.System;
             this.audacityButton.Name = "Audacity";
@@ -540,10 +504,6 @@ namespace AnalysisPrograms
             this.recordingDir_TextBox = new TextBox();
             this.recordingDir_TextBox.Width = this.leftPanel.Width - pixelBuffer;
 
-            this.recordingFileName_TextBox = new TextBox();
-            this.recordingFileName_TextBox.Width = this.leftPanel.Width - pixelBuffer;
-
-
             this.outputDir_TextBox = new TextBox();
             this.outputDir_TextBox.Width = this.leftPanel.Width - pixelBuffer;
 
@@ -552,12 +512,6 @@ namespace AnalysisPrograms
 
             this.segmentName_TextBox = new TextBox();
             this.segmentName_TextBox.Width = this.leftPanel.Width - pixelBuffer;
-
-            //this.message_TextBox = new TextBox();
-            //this.message_TextBox.Width = this.leftPanel.Width - pixelBuffer;
-            //this.message_TextBox.Height = 100;
-            //this.message_TextBox.Multiline = true;
-            //this.message_TextBox.WordWrap = true;
 
             //LOCATE ALL CONTROLS IN LEFT PANEL
             int yOffset = 10;
@@ -571,11 +525,6 @@ namespace AnalysisPrograms
             yOffset = recordingDir_Label.Bottom + 1;
             this.recordingDir_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = recordingDir_TextBox.Bottom + yGap;
-
-            this.recordingFileName_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
-            yOffset = recordingFileName_Label.Bottom + 1;
-            this.recordingFileName_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
-            yOffset = recordingFileName_TextBox.Bottom + yGap;
 
             this.outputDir_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
             yOffset = outputDir_Label.Bottom + 1;
@@ -606,25 +555,15 @@ namespace AnalysisPrograms
             this.saveIndicesImageButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
             yOffset = saveIndicesImageButton.Bottom + yGap + yGap + yGap + yGap;
 
-            //this.saveSonogramButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
-            //yOffset = saveSonogramButton.Bottom + yGap + yGap + yGap + yGap;
-            
             this.audacityButton.Location = new System.Drawing.Point(pixelMargin + 6, yOffset);
             yOffset = audacityButton.Bottom + yGap + yGap + yGap + yGap;
 
-            //this.message_Label.Location = new System.Drawing.Point(pixelMargin, yOffset);
-            //yOffset = message_Label.Bottom + 1;
-            //this.message_TextBox.Location = new System.Drawing.Point(pixelMargin, yOffset);
 
-            //segmentName_TextBox.Top = 200;
-            //segmentName_TextBox.Left = 10;
             this.leftPanel.Controls.AddRange(new System.Windows.Forms.Control[] { 
                 this.audioFileName_Label,
                 this.audioFileName_TextBox,
                 this.recordingDir_Label,
                 this.recordingDir_TextBox,
-                this.recordingFileName_Label,
-                this.recordingFileName_TextBox,
                 this.outputDir_Label,
                 this.outputDir_TextBox,
                 this.time_Label, 
@@ -636,17 +575,8 @@ namespace AnalysisPrograms
                 this.extractIndicesButton,
                 this.loadVisualIndicesButton, 
                 this.saveIndicesImageButton,
-                //this.saveSonogramButton,
                 this.audacityButton, 
-                //this.message_Label,
-                //this.message_TextBox,
             });
-
-            //insert path values into appropriate text boxes. This should be done by dialog boxes if these worked!
-            this.audioFileName_TextBox.Text = parameters.audioFileName;
-            this.recordingDir_TextBox.Text = Path.GetDirectoryName(parameters.recordingDir);
-            //this.recordingFileName_TextBox.Text = Path.GetFileName(parameters.recordingPath);
-            this.outputDir_TextBox.Text = parameters.outputDir;
 
         }
 
@@ -655,29 +585,27 @@ namespace AnalysisPrograms
             // Wrap the creation of the OpenFileDialog instance in a using statement to ensure proper disposal
             using (OpenFileDialog dlg = new OpenFileDialog())
             {
-                dlg.Title = "Open Visual Index";
-                dlg.Filter = "csv files (*.csv)|*.csv";
+                dlg.Title = "Open Audio Source Recording";
+                dlg.Filter = "mp3 files (*.mp3)|*.mp3";
+                dlg.InitialDirectory = parameters.recordingDir;
 
                 if (dlg.ShowDialog() == DialogResult.OK)
                 {
-                    PictureBox PictureBox1 = new PictureBox();
+                    parameters.audioFileName = Path.GetFileName(dlg.FileName);
+                    parameters.sourceRecordingPath = Path.Combine(parameters.recordingDir, parameters.audioFileName);
+                    this.audioFileName_TextBox.Text = dlg.FileName;
 
-                    // Create a new Bitmap object from the picture file on disk,
-                    // and assign that to the PictureBox.Image property
-                    PictureBox1.Image = new Bitmap(dlg.FileName);
-                    // Add the new control to its parent's controls collection
-                    indexPanel.Controls.Add(PictureBox1);
+                    //put info in console
+                    this.consoleTextBox.Clear();
+                    this.tabControl1.SelectTab("Console");
+                    string date = "# DATE AND TIME: " + DateTime.Now;
+                    Console.WriteLine(date);
+                    Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+                    Console.WriteLine("# Extracting acoustic indices from file: " + parameters.sourceRecordingPath);
+                    WriteExtractionParameters2Console();
+                    AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
                 }
-            }
-            return;
-            this.consoleTextBox.Clear();
-            this.tabControl1.SelectTab("Console");
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-            Console.WriteLine("# Extracting acoustic indices from file: "+ parameters.audioFileName);
-            WriteExtractionParameters2Console();
-            AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
+            } //OpenFileDialog
 
         }//extractIndicesButton_Click
 
@@ -685,18 +613,71 @@ namespace AnalysisPrograms
 
         private void loadIndicesButton_Click(object sender, EventArgs e)
         {
-            //USE FOLLOWING LINES TO LOAD A PNG IMAGE
-            //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
 
+            // Wrap the creation of the OpenFileDialog instance in a using statement to ensure proper disposal
+            using (OpenFileDialog dlg = new OpenFileDialog())
+            {
+                dlg.Title = "Open CSV File of Indices Extracted from Audio Recording";
+                dlg.Filter = "csv files (*.csv)|*.csv";
+                dlg.InitialDirectory = parameters.outputDir;
+
+                if (dlg.ShowDialog() == DialogResult.OK)
+                {
+                    //USE FOLLOWING LINES TO LOAD A PNG IMAGE
+                    //visualIndex.Image = new Bitmap(parameters.visualIndexPath);
+                 
+                    parameters.csvPath = Path.Combine(parameters.outputDir, dlg.FileName); //construct path of csv file
+                    parameters.audioFileName = Path.GetFileNameWithoutExtension(dlg.FileName)+".mp3";
+                    parameters.sourceRecordingPath = Path.Combine(parameters.recordingDir, parameters.audioFileName);
+                    this.audioFileName_TextBox.Text = parameters.audioFileName;
+
+                    //write info to Console
+                    this.consoleTextBox.Clear();
+                    string date = "# DATE AND TIME: " + DateTime.Now;
+                    Console.WriteLine(date);
+                    Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+                    Console.WriteLine("# Display acoustic indices from audio recording: " + parameters.audioFileName);
+
+                    int status = this.LoadIndicesCSVFile(parameters.csvPath);
+                    if (status != 0)
+                    {
+                        this.tabControl1.SelectTab("Console");
+                        Console.WriteLine("FATAL ERROR: Error opening csv file");
+                        Console.WriteLine("\t\tfile name:" + parameters.csvPath);
+                        if (status == 1) Console.WriteLine("\t\tfile exists but could not extract values.");
+                        if (status == 2) Console.WriteLine("\t\tfile exists but contains no values.");
+                    }
+
+                } // if (dlg.ShowDialog() == DialogResult.OK)
+            } //OpenFileDialog()
+        }//loadIndicesButton_Click
+
+
+
+
+        /// <summary>
+        /// loads a csv file of indices
+        /// returns a status integer. 0= no error
+        /// </summary>
+        /// <param name="csvPath"></param>
+        /// <returns></returns>
+        private int LoadIndicesCSVFile(string csvPath)
+        {
+            int error = 0;
             //USE FOLLOWING LINES TO LOAD A CSV FILE
-            var tuple = FileTools.ReadCSVFile(parameters.csvPath);
+            var tuple = FileTools.ReadCSVFile(csvPath);
             var headers = tuple.Item1;  //List<string>
-            var values  = tuple.Item2;  //List<double[]>> 
+            var values = tuple.Item2;  //List<double[]>> 
+
+            if (values == null) return 1;
+            if (values[0] == null) return 1;
+            if (values.Count == 0) return 1;
+            if (values[0].Length == 0) return 2;
 
             //reconstruct new list of values to display
             var displayValues  = new List<double[]>(); //reconstruct new list of values to display
             var displayHeaders = new List<string>();   //reconstruct new list of headers to display
-            for (int i = 0; i < displayColumn.Length; i++) 
+            for (int i = 0; i < AudioBrowser.displayColumn.Length; i++)
             {
                 if (AudioBrowser.displayColumn[i])
                 {
@@ -708,42 +689,42 @@ namespace AnalysisPrograms
             //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
             var comboHeaders = new List<string>();          //reconstruct new list of headers used to calculate weighted index
             var weightedComboValues = new List<double[]>(); //reconstruct new list of values to calculate weighted combination index
-            for (int i = 0; i < weightedIndexColumn.Length; i++) 
+            for (int i = 0; i < weightedIndexColumn.Length; i++)
             {
                 if (AudioBrowser.weightedIndexColumn[i])
                 {
-                    weightedComboValues.Add(values[i]);
+                    weightedComboValues.Add(DataTools.NormaliseArea(values[i]));
                     comboHeaders.Add(headers[i]);
                 }
             }
             this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(weightedComboValues, AudioBrowser.comboWeights);
+            this.weightedIndices = DataTools.normalise(weightedIndices);
 
-            ////add in weighted bias for chorus and backgorund noise
-            ////for (int i = 0; i < wtIndices.Length; i++)
-            ////{
-            ////if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
-            ////background noise bias
-            ////if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
-            ////else
-            ////if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
-            ////}
+            //add in weighted bias for chorus and backgorund noise
+            //for (int i = 0; i < wtIndices.Length; i++)
+            //{
+            //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
+            //background noise bias
+            //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
+            //else
+            //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
+            //}
 
             displayHeaders.Add("Weighted Index");
             displayValues.Add(weightedIndices);
 
-            visualIndex.Image = AcousticIndices.ConstructIndexImage(displayHeaders, displayValues, indexPanel.Width, parameters.trackHeight);
-            visualIndex.Dock = DockStyle.Fill;
-            indexPanel.Controls.Add(visualIndex);
+            var output = AcousticIndices.ConstructIndexImage(displayHeaders, displayValues, parameters.trackHeight);
+            visualIndex_PictureBox.Image = output.Item1;
+            this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
+
+            //visualIndex_PictureBox.Dock = DockStyle.Fill;
+            //visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
 
             Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
                              comboHeaders[0], AudioBrowser.comboWeights[0], comboHeaders[1], comboWeights[1], comboHeaders[2], comboWeights[2],
                              comboHeaders[3], AudioBrowser.comboWeights[3], comboHeaders[4], comboWeights[4]);
-
-            //store the time scale because want the image later for refreshing purposes
-            this.minutesDuration = values[0].Length; //time in minutes
-            this.visualIndexTimeScale = (Bitmap)AcousticIndices.DrawVisualIndexTimeScale(this.minutesDuration, indexPanel.Width, parameters.trackHeight);
-
-        }//loadIndicesButton_Click
+            return error;
+        }
 
 
         private void saveVisualIndicesButton_Click(object sender, EventArgs e)
@@ -753,14 +734,14 @@ namespace AnalysisPrograms
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-            if (visualIndex.Image == null)
+            if (visualIndex_PictureBox.Image == null)
             {
                 Console.WriteLine("WARNING! There is no image to save!");
             }
             else
             {
                 string fPath = Path.Combine(parameters.outputDir, (Path.GetFileNameWithoutExtension(parameters.csvPath) + ".png"));
-                visualIndex.Image.Save(fPath);
+                visualIndex_PictureBox.Image.Save(fPath);
                 Console.WriteLine("# Saved visual indices to file: " + fPath);
             }
         }//saveVisualIndicesButton_Click
@@ -784,12 +765,12 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void image_MouseHover(object sender, EventArgs e)
+        private void visualIndex_MouseHover(object sender, EventArgs e)
         {
-            visualIndex.Cursor = Cursors.HSplit;
+            visualIndex_PictureBox.Cursor = Cursors.HSplit;
         }
 
-        private void image_MouseMove(object sender, EventArgs e)
+        private void visualIndex_MouseMove(object sender, EventArgs e)
         {
             int myX = Form.MousePosition.X - leftPanel.Width - this.Left - (4 * this.Margin.Left) - 1; //why -1?? Good question!
             if (myX > this.minutesDuration-1) return;
@@ -798,14 +779,14 @@ namespace AnalysisPrograms
             this.time_TextBox.Text = text; // pixel position = minutes
 
             //mark the time scale
-            Graphics g = visualIndex.CreateGraphics();
+            Graphics g = visualIndex_PictureBox.CreateGraphics();
             g.DrawImage(this.visualIndexTimeScale, 0, 0);
             Point pt1 = new Point(myX, 2);
             Point pt2 = new Point(myX, parameters.trackHeight - 1);
             g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
-            g.DrawImage(this.visualIndexTimeScale, 0, this.visualIndex.Height - parameters.trackHeight);
-            pt1 = new Point(myX, this.visualIndex.Height - 2);
-            pt2 = new Point(myX, this.visualIndex.Height - parameters.trackHeight);
+            g.DrawImage(this.visualIndexTimeScale, 0, this.visualIndex_PictureBox.Height - parameters.trackHeight);
+            pt1 = new Point(myX, this.visualIndex_PictureBox.Height - 2);
+            pt2 = new Point(myX, this.visualIndex_PictureBox.Height - parameters.trackHeight);
             g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
 
             //Point point1 = Cursor.Position;
@@ -830,7 +811,7 @@ namespace AnalysisPrograms
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void indexImage_MouseClick(object sender, MouseEventArgs e)
+        private void visualIndex_MouseClick(object sender, MouseEventArgs e)
         {
             this.consoleTextBox.Clear();
             this.tabControl1.SelectTab("Console");
@@ -838,12 +819,19 @@ namespace AnalysisPrograms
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
+            // CHECK AUDIO FILE EXISTS
+            if (!File.Exists(parameters.sourceRecordingPath))
+            {
+                this.tabControl1.SelectTab("Console");
+                Console.WriteLine("\nWARNING! Audio file does not exist: <" + parameters.sourceRecordingPath + ">");
+                return;
+            }
 
             // GET MOUSE LOCATION
             int myX = e.X;
             int myY = e.Y;
-            Point pt1 = new Point(this.visualIndex.Left + myX, 0);
-            Point pt2 = new Point(this.visualIndex.Left + myX, this.barTrackPanel.Height);
+            Point pt1 = new Point(this.visualIndex_PictureBox.Left + myX, 0);
+            Point pt2 = new Point(this.visualIndex_PictureBox.Left + myX, this.barTrackPanel.Height);
 
             //DRAW RED LINE ON BAR TRACK
             Graphics g = selectionTrack.CreateGraphics();
@@ -862,7 +850,7 @@ namespace AnalysisPrograms
                 endMilliseconds   = (myX + 2) * 60000;
             }
             if (startMilliseconds < 0) startMilliseconds = 0;
-            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX+1));
+            Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
 
             DateTime time1 = DateTime.Now;
             string fName = Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath);
