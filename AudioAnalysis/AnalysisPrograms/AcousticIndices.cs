@@ -20,8 +20,6 @@ namespace AnalysisPrograms
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
 
-
-
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string key_SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
@@ -57,9 +55,6 @@ namespace AnalysisPrograms
             } //Parameters
         } //struct Parameters
 
-
-
-
         /// <summary>
         /// a set of indices derived from each recording.
         /// </summary>
@@ -90,6 +85,36 @@ namespace AnalysisPrograms
             }
         } //struct Indices2
 
+        public static AcousticIndices.Parameters ReadIniFile(string iniPath, int verbosity)
+        {
+            var config = new Configuration(iniPath);
+            Dictionary<string, string> dict = config.GetTable();
+            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+
+            AcousticIndices.Parameters paramaters; // st
+            paramaters.segmentDuration = Double.Parse(dict[AcousticIndices.key_SEGMENT_DURATION]);
+            paramaters.segmentOverlap = Double.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
+            paramaters.resampleRate = Int32.Parse(dict[AcousticIndices.key_RESAMPLE_RATE]);
+            paramaters.frameLength = Int32.Parse(dict[AcousticIndices.key_FRAME_LENGTH]);
+            paramaters.frameOverlap = Double.Parse(dict[AcousticIndices.key_FRAME_OVERLAP]);
+            paramaters.lowFreqBound = Int32.Parse(dict[AcousticIndices.key_LOW_FREQ_BOUND]);
+            paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
+            paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
+
+            if (verbosity > 0)
+            {
+                Log.WriteLine("# PARAMETER SETTINGS:");
+                Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.segmentDuration, paramaters.segmentOverlap);
+                Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
+                Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
+                Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
+                Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
+                Log.WriteLine("####################################################################################");
+            }
+            return paramaters;
+        }
+
+
 
 
         public static void Dev(string[] args)
@@ -119,15 +144,10 @@ namespace AnalysisPrograms
                 //string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
                 string csvFileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\SE_5days.csv";
 
-                VISUALIZE_CSV_DATA(csvFileName);
+                //VISUALIZE_CSV_DATA(csvFileName);  //THIS METHOD NOW DELETED
                 Console.ReadLine();
                 Environment.Exit(666);
             }
-
-            //READ PARAMETER VALUES FROM INI FILE
-            //Log.WriteIfVerbose("  ");
-            //AcousticIndices.Parameters parameters = AcousticIndices.ReadIniFile(iniPath, Log.Verbosity);
-            //Log.WriteIfVerbose("  ");
 
 
             //i: Set up the dir and file names
@@ -167,69 +187,29 @@ namespace AnalysisPrograms
             Console.ReadLine();
         } //DEV()
 
-        /// <summary>
-        /// EXECUTABLE - To CALL THIS METHOD MUST EDIT THE MainEntry.cs FILE
-        /// extracts acoustic richness indices from a single recording.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void Executable(string[] args)
-        {
-            DateTime tStart = DateTime.Now;
-            //SET VERBOSITY
-            Log.Verbosity = 0;
-            bool doStoreImages = false;
-            string reportFormat = "CSV";
-
-            CheckArguments(args);
-
-            string recordingPath = args[0];
-            string opPath        = args[1];
-
-            //i: Set up the dir and file names
-            string recordingDir = Path.GetDirectoryName(recordingPath);
-            string outputDir    = Path.GetDirectoryName(opPath);
-
-            //init counters
-            double minStart = 0.0; //elapsed time in minutes
-            int fileCount = 1;
-
-            //write header to results file
-            if (!File.Exists(opPath))
-            {
-                WriteHeaderToReportFile(opPath, reportFormat);
-            }
-            else //calculate file number and total elapsed time so far
-            {
-                List<string> text = FileTools.ReadTextFile(opPath);  //read results file
-                string[] lastLine = text[text.Count - 1].Split(','); // read and split the last line
-                if (!lastLine[0].Equals("count"))   Int32.TryParse(lastLine[0],  out fileCount);
-                fileCount++;
-                //if (!lastLine[1].Equals("minutes")) Double.TryParse(lastLine[1], out elapsedTime);
-            }
-
-            //Console.WriteLine("\n\n");
-            //Log.WriteLine("###### " + fileCount + " #### Process Recording: " + Path.GetFileName(recordingPath) + " ###############################");
-
-            ScanRecording(recordingPath, opPath, fileCount, minStart, doStoreImages, reportFormat);
-
-            DateTime tEnd = DateTime.Now;
-            TimeSpan duration = tEnd - tStart;
-            Log.WriteLine("###### Elapsed Time = " + duration.TotalSeconds + " ######\n");
-        } //EXECUTABLE()
 
 
         //#########################################################################################################################################################
 
+        /// <summary>
+        /// The original ScanRecording() method
+        /// </summary>
+        /// <param name="recordingPath"></param>
+        /// <param name="opPath"></param>
+        /// <param name="fileCount"></param>
+        /// <param name="min_start"></param>
+        /// <param name="doStoreImages"></param>
+        /// <param name="reportFormat"></param>
         public static void ScanRecording(string recordingPath, string opPath, int fileCount, double min_start, bool doStoreImages, string reportFormat)
         {
             //i GET RECORDING
             int resampleRate = 17640;
             AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
+            double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
 
             //ii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050Hz = 5.805ms, @ 11025kHz = 11.61ms.
             var results = ExtractIndices(recording);
 
-            double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
             Indices2 indices = results.Item1;
             AcousticIndices.WriteIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
 
@@ -249,7 +229,15 @@ namespace AnalysisPrograms
         } //ScanRecording()
 
 
-
+        /// <summary>
+        /// ScanRecording() method developed for use in Acoustic Browser.
+        /// </summary>
+        /// <param name="sourceRecordingPath"></param>
+        /// <param name="outputDir"></param>
+        /// <param name="segmentDuration_mins"></param>
+        /// <param name="resampleRate"></param>
+        /// <param name="frameLength"></param>
+        /// <param name="lowFreqBound"></param>
         public static void ScanRecording(string sourceRecordingPath, string outputDir, double segmentDuration_mins, int resampleRate, int frameLength, int lowFreqBound)
         {
             //SET UP THE REPORT FILE
@@ -272,7 +260,7 @@ namespace AnalysisPrograms
             Log.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
             Log.WriteLine("# Source audio - datetime: {0}    {1}", sourceFileInfo.CreationTime.ToLongDateString(), sourceFileInfo.CreationTime.ToLongTimeString());
             Log.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
-            Log.WriteLine("# Source audio - duration: {0} minutes", sourceAudioDuration.TotalMinutes);
+            Log.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
             Log.WriteLine("# Source audio - segments: {0}", segmentCount);
             Log.WriteLine("# Output to  directory: " + outputDir);
 
@@ -333,7 +321,6 @@ namespace AnalysisPrograms
             } //end of for loop
         }
 
-        ////////////////////////////////////////////////////////////////
 
 
         /// <summary>
@@ -345,7 +332,7 @@ namespace AnalysisPrograms
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
         public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]>
-                                                         ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500)
+               ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500)
         {
             Indices2 indices; // struct in which to store all indices
             double windowOverlap = 0.0;
@@ -756,7 +743,14 @@ namespace AnalysisPrograms
             return clusterSpectrogram;
         }
 
+        //########################################################################################################################################################################
 
+        /// <summary>
+        /// The following two methods were used for the first research paper linking indices and bird call richness
+        /// </summary>
+        /// <param name="csvFileName"></param>
+        /// <param name="columnHeader"></param>
+        /// <param name="opFileName"></param>
         public static void AddColumnOfWeightedIndicesToCSVFile(string csvFileName, string columnHeader, string opFileName)
         {
             int offset = 7; //
@@ -768,7 +762,7 @@ namespace AnalysisPrograms
             double wt5 = 0.1;//av cluster duration
             double[] wts = {wt1, wt2, wt3, wt4, wt5};
 
-            var tuple = FileTools.GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
+            var tuple = GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
             double[] wtIndices = tuple.Item1;
             List<string> colNames = tuple.Item2;
 
@@ -788,283 +782,75 @@ namespace AnalysisPrograms
             FileTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
         } //AddColumnOfWeightedIndicesToCSVFile()
 
-
-
-
-
-        public static void MASSAGE_CSV_DATA()
+        public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
         {
-            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor.csv";
-            string opFile = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor_Padded.csv";
-            FileTools.WriteTextFile(opFile, "min,time,count");
-            List<string> lines = FileTools.ReadTextFile(fileName);
-            string line;
-            int minPrev  = 0;
-            int minTotal = 0;
-            int speciesTotal = 0;
-            for (int i = 1; i < lines.Count-1; i++) //ignore last line
-            {
-                string[] words = lines[i].Split(',');
-                int speciesCount = Int32.Parse(words[1]);
-                speciesTotal += speciesCount;
-                string[] splitTime = words[0].Split(':');
-                int hour = Int32.Parse(splitTime[0]);
-                int min  = Int32.Parse(splitTime[1]);
-                minTotal = (hour * 60) + min;
-                if (minTotal > minPrev +1)
-                {
-                    for (int j = minPrev + 1; j < minTotal; j++)
-                    {
-                        line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
-                    Console.WriteLine(line);
-                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
-                    FileTools.Append2TextFile(opFile, line);
-                    }
-                }
+            List<double[]> arrays = new List<double[]>();
+            List<string> colNames = new List<string>();
+            int arrayLength = 0;
 
-                line = String.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
-                Console.WriteLine(line);
-                line = String.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
-                FileTools.Append2TextFile(opFile, line);
-                minPrev = minTotal;
+            for (int i = 0; i < columns.Length; i++)
+            {
+                string header;
+                double[] array = FileTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
+                arrays.Add(DataTools.NormaliseArea(array)); //normalize the arrays to get weighted index.
+                colNames.Add(header);
+                arrayLength = array.Length;
             }
-            //fill in misisng minutes at end.
-            int minsIn24hrs = 24 * 60;
-            if (minsIn24hrs > minPrev + 1)
+
+            double[] weightedCombo = new double[arrayLength];
+            for (int i = 0; i < arrayLength; i++)
             {
-                for (int j = minPrev + 1; j < minsIn24hrs; j++)
+                double combo = 0.0;
+                for (int c = 0; c < columns.Length; c++)
                 {
-                    line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
-                    Console.WriteLine(line);
-                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
-                    FileTools.Append2TextFile(opFile, line);
+                    combo += (wts[c] * arrays[c][i]);
                 }
+                weightedCombo[i] = combo;
             }
-            Console.WriteLine("speciesTotal= " + speciesTotal);
+            return System.Tuple.Create(weightedCombo, colNames);
         }
+        //########################################################################################################################################################################
 
 
-        public static void VISUALIZE_CSV_DATA(string csvFileName)
-        {
-            string dir = Path.GetDirectoryName(csvFileName);
-            string pathSansExtention = Path.GetFileNameWithoutExtension(csvFileName);
-            string opFile   = Path.Combine(dir, pathSansExtention + ".png");
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
 
-            //CSV COLUMN HEADINGS
-            //count	 minutes	hours	 FileName	 snr-dB	 bg-dB	 activity	 avAmp	 %cover	 H[ampl]	 H[peakFreq]	 H[avSpectrum]	 H1[diffSpectra]	 #clusters	 %isolHits	min	time	count	avCount		jitter1	#clust+jitter	jitter2	count+jitter
-            string[] columnHeadings = { "count", "min-start", "duration", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "lfCover", "H[ampl]", "H[peakFreq]", "H[avSpectrum]", "H1[varSpectra]", "#clusters", "avClustDur", "weight index" };
-            //read data into arrays - first set up the arrays
-            double[] timeScale     = new double[lines.Count - 2];    //column 3 into time scale
-            double[] avAmp_dB      = new double[lines.Count - 2];    //column 7 into 
-            double[] bg_dB         = new double[lines.Count - 2];    //column 5 into background noise
-            double[] snr_dB        = new double[lines.Count - 2];    //column 4 into snr
-            double[] activity      = new double[lines.Count - 2];    //column 6 into activity
-            double[] segmentCount  = new double[lines.Count - 2];    //column 8 into 
-            double[] avSegmentDur  = new double[lines.Count - 2];    //column 8 into 
-            double[] spectralCover = new double[lines.Count - 2];    //column 8 into 
-            double[] lowFreqCover  = new double[lines.Count - 2];    //column 9 into 
-            double[] H_ampl        = new double[lines.Count - 2];    //column 10 into 
-            double[] H_PeakFreq    = new double[lines.Count - 2];    //column 11 int0
-            double[] H_avSpect     = new double[lines.Count - 2];    //column 12 into 
-            double[] H_varSpect    = new double[lines.Count - 2];    //column 13 into 
-            double[] clusterCount  = new double[lines.Count - 2];    //column 14 into 
-            double[] avClusterDuration = new double[lines.Count - 2]; //column 15 into 
-            double[] weightedIndex = new double[lines.Count - 2];    //column 16 into 
-            //double[] speciesCount  = new double[lines.Count - 2];    //column 17 into 
-
-            //read csv data into arrays.
-            int avAmpRow = 3;
-            for (int i = 1; i < lines.Count - 1; i++) //ignore first and last lines
-            {
-                string[] words   = lines[i].Split(',');
-                timeScale[i - 1] = Double.Parse(words[1]) / (double)60; //convert minutes to hours
-                avAmp_dB[i - 1] = Double.Parse(words[avAmpRow]);
-                snr_dB[i - 1] = Double.Parse(words[avAmpRow+1]);
-                bg_dB[i - 1] = Double.Parse(words[avAmpRow+2]);
-                activity[i - 1] = Double.Parse(words[avAmpRow+3]);
-                segmentCount[i - 1] = Double.Parse(words[avAmpRow+4]);
-                avSegmentDur[i - 1] = Double.Parse(words[avAmpRow+5]);
-                spectralCover[i - 1] = Double.Parse(words[avAmpRow+6]);
-                lowFreqCover[i - 1] = Double.Parse(words[avAmpRow + 7]);
-                H_ampl[i - 1] = Double.Parse(words[avAmpRow + 8]);
-                H_PeakFreq[i - 1]   = Double.Parse(words[avAmpRow+9]);
-                H_avSpect[i - 1]    = Double.Parse(words[avAmpRow+10]);
-                H_varSpect[i - 1]  = Double.Parse(words[avAmpRow+11]);
-                clusterCount[i - 1] = (double)Int32.Parse(words[avAmpRow+12]);
-                avClusterDuration[i - 1] = Double.Parse(words[avAmpRow+13]);
-                weightedIndex[i - 1] = Double.Parse(words[avAmpRow + 14]);
-                //speciesCount[i - 1] = (double)Int32.Parse(words[avAmpRow+13]);
-            }//end 
-
-            //set up the canvas
-            int imageWidth  = lines.Count - 2; // Number of spectra in sonogram
-            int titleWidth = 100;
-            int totalWidth = imageWidth + titleWidth;
-            int numberOftracks = 17;
-            int trackHeight = 20;   //pixel height of a track
-            int imageHeight = numberOftracks * trackHeight; // image ht
-            //prepare the canvas
-            Bitmap bmp = new Bitmap(totalWidth, imageHeight, PixelFormat.Format24bppRgb);
-            int yOffset = 0;
-
-            //draw TIME track 1
-            string title = "Time (hours)";
-            int duration = imageWidth;
-            int scale = 60;
-            Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
-
-            //draw Amplitude track 2
-            title = "1: av Sig Ampl(dB)";
-            double minDB = -50;
-            double maxDB = -20;
-            double threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, avAmp_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
-
-            //draw background dB track 3
-            title = "2: Background(dB)";
-            minDB = -50;
-            maxDB = -20;
-            threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, bg_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
-
-            //draw snr track 4
-            title = "3: SNR";
-            minDB = 0;
-            maxDB = 30;
-            threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, snr_dB, yOffset, trackHeight, minDB, maxDB, threshold, title);
-
-            //draw activity track 5
-            title = "4: Activity(>3dB)";
-            double min = 0.0;
-            double max = 0.4;
-            threshold = 0.1;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, activity, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw segment count track 6
-            title = "5: # Segments";
-            threshold = 1.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, segmentCount, yOffset, trackHeight, threshold, title);
-
-            //draw avSegment Duration track 7
-            title = "6: Av Seg Duration";
-            min = 0.0;
-            max = 100; //milliseconds
-            threshold = 5.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, avSegmentDur, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw percent spectral Cover track 8
-            title = "7: Spectral cover";
-            min = 0.0;
-            max = 0.5;
-            threshold = 0.05;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, spectralCover, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw percent spectral Cover track 9
-            title = "8: Low freq cover";
-            min = 0.0;
-            max = 1.0;
-            threshold = 0.1;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, lowFreqCover, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw spectral Cover track 10
-            title = "9: H(ampl)";
-            min = 0.95;
-            max = 1.0;
-            threshold = 0.96;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, H_ampl, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw H(PeakFreq) track 11
-            title = "10: H(PeakFreq)";
-            //min = 0.0;
-            //max = 0.05;
-            threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, H_PeakFreq, yOffset, trackHeight, threshold, title);
-
-            //draw H(avSpect) track 12
-            title = "11: H(avSpect)";
-            //min = 0.0;
-            //max = 0.05;
-            threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, H_avSpect, yOffset, trackHeight, threshold, title);
-
-            //draw H(diffSpect) track 13
-            title = "12: H(varSpect)";
-            //min = 0.0;
-            //max = 0.05;
-            threshold = 0.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, H_varSpect, yOffset, trackHeight, threshold, title);
-
-            //draw clusterCount track 14
-            title = "13: ClusterCount";
-            min = 0.0;
-            max = 15.0;
-            threshold = 1.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, clusterCount, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw average Cluster Duration track 15
-            title = "14: Av Cluster Dur";
-            min = 0.0;
-            max = 100.0;
-            threshold = 5.0;
-            yOffset += trackHeight;
-            Image_Track.DrawScoreTrack(bmp, avClusterDuration, yOffset, trackHeight, min, max, threshold, title);
-
-            //draw weightedIndex track 16
-            title = "15: Weighted Index";
-            threshold = 0.5;
-            yOffset += trackHeight;
-            double minVal = 0.0;
-            double maxVal = weightedIndex.Max();
-            Image_Track.DrawScoreTrack(bmp, weightedIndex, yOffset, trackHeight, minVal, maxVal, threshold, title);
-
-            //draw Species Count track
-                //title = "15: Species Count";
-                //threshold = 0.0;
-                //yOffset += trackHeight;
-                //Image_Track.DrawScoreTrack(bmp, speciesCount, yOffset, trackHeight, threshold, title);
-
-            //draw bottom TIME track 17
-            title = "Time (hours)";
-            duration = imageWidth;
-            scale = 60;
-            yOffset += trackHeight;
-            Image_Track.DrawTimeTrack(bmp, duration, scale, yOffset, trackHeight, title);
-
-
-            bmp.Save(opFile, ImageFormat.Png);
-
-
-            Console.WriteLine("finished visualization");
-            Console.ReadLine();
-            Environment.Exit(666);
-        }
-
-
-        public static Bitmap ConstructIndexImage(List<string> headers, List<double[]> values, int imageWidth, int trackHeight)
+        /// <summary>
+        /// following is list of scaling originally applied to the track images
+        /// Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
+        /// Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
+        /// SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
+        /// draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
+        /// Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
+        /// avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
+        /// percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
+        /// percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
+        /// Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
+        /// H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
+        /// H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
+        /// H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
+        /// clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
+        /// av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
+        /// weightedIndex track 16:         title = "15: Weighted Index";  
+        /// </summary>
+        /// <param name="headers"></param>
+        /// <param name="values"></param>
+        /// <param name="imageWidth"></param>
+        /// <param name="trackHeight"></param>
+        /// <returns></returns>
+        public static System.Tuple<Bitmap, Bitmap> ConstructIndexImage(List<string> headers, List<double[]> values, int trackHeight)
         {
             int headerCount = headers.Count;
             double threshold = 0.5;
 
-            int trackCount = values.Count + 3; //+2 for top and bottom time tracks
+            int trackCount = values.Count + 3; //+2 for top and bottom time tracks and +1 for combined index track
             int imageHt = trackHeight * trackCount;
             int duration = values[0].Length; //time in minutes
+            int endPanelwidth = 100;
+
+            int imageWidth = duration + endPanelwidth; 
             int offset = 0;
-            Bitmap timeBmp = (Bitmap)AcousticIndices.DrawVisualIndexTimeScale(duration, imageWidth, trackHeight);
+            int scale = 60; //put a tik every 60 pixels = 1 hour
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
+
 
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
@@ -1078,30 +864,14 @@ namespace AnalysisPrograms
             {
                 if (i >= headerCount) break;
                 if (i == values.Count - 1) bmp = Image_Track.DrawColourScoreTrack(values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
-                else bmp = Image_Track.DrawBarScoreTrack(values[i], trackHeight, threshold, headers[i]);
+                else                       bmp = Image_Track.DrawBarScoreTrack(values[i],    trackHeight, threshold, headers[i]);
                 gr.DrawImage(bmp, 0, offset);
                 gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
                 offset += trackHeight;
             }
             gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
-            return compositeBmp;
+            return System.Tuple.Create(compositeBmp, timeBmp);
         }
-
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="duration">length of the time track in pixels - 1 pixel=1minute</param>
-        /// <param name="imageWidth"></param>
-        /// <param name="trackHeight"></param>
-        /// <returns></returns>
-        public static Image DrawVisualIndexTimeScale(int duration, int imageWidth, int trackHeight)
-        {
-            int scale = 60; //put a tik every 60 pixels = 1 hour
-            return Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
-        } //DrawVisualIndexTimeScale()
-
-
 
 
         public static void WriteHeaderToReportFile(string reportfileName, string parmasFile_Separator)
@@ -1145,36 +915,63 @@ namespace AnalysisPrograms
 
 
 
-        public static AcousticIndices.Parameters ReadIniFile(string iniPath, int verbosity)
+
+
+
+
+        /// <summary>
+        /// this method used to process Jason Wimmer's original xls spreadsheet that did not have a row for silent minutes
+        /// this method added in the silent minutes to construct new csv file.
+        /// </summary>
+        public static void MASSAGE_CSV_DATA()
         {
-            var config = new Configuration(iniPath);
-            Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
-
-            AcousticIndices.Parameters paramaters; // st
-            paramaters.segmentDuration = Double.Parse(dict[AcousticIndices.key_SEGMENT_DURATION]);
-            paramaters.segmentOverlap = Double.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
-            paramaters.resampleRate = Int32.Parse(dict[AcousticIndices.key_RESAMPLE_RATE]);
-            //paramaters.maxHzMale       = Int32.Parse(dict[RichnessIndices2.key_MAX_HZ_MALE]);
-            //paramaters.minHzFemale = Int32.Parse(dict[RichnessIndices2.key_MIN_HZ_FEMALE]);
-            //paramaters.maxHzFemale = Int32.Parse(dict[RichnessIndices2.key_MAX_HZ_FEMALE]);
-            paramaters.frameLength = Int32.Parse(dict[AcousticIndices.key_FRAME_LENGTH]);
-            paramaters.frameOverlap = Double.Parse(dict[AcousticIndices.key_FRAME_OVERLAP]);
-            paramaters.lowFreqBound = Int32.Parse(dict[AcousticIndices.key_LOW_FREQ_BOUND]);
-            paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
-            paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
-
-            if (verbosity > 0)
+            string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor.csv";
+            string opFile = @"C:\SensorNetworks\WavFiles\SpeciesRichness\24hrs_1MinuteChunks\SthEastSensor_Padded.csv";
+            FileTools.WriteTextFile(opFile, "min,time,count");
+            List<string> lines = FileTools.ReadTextFile(fileName);
+            string line;
+            int minPrev = 0;
+            int minTotal = 0;
+            int speciesTotal = 0;
+            for (int i = 1; i < lines.Count - 1; i++) //ignore last line
             {
-                Log.WriteLine("# PARAMETER SETTINGS:");
-                Log.WriteLine("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", paramaters.segmentDuration, paramaters.segmentOverlap);
-                Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
-                Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
-                Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
-                Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
-                Log.WriteLine("####################################################################################");
+                string[] words = lines[i].Split(',');
+                int speciesCount = Int32.Parse(words[1]);
+                speciesTotal += speciesCount;
+                string[] splitTime = words[0].Split(':');
+                int hour = Int32.Parse(splitTime[0]);
+                int min = Int32.Parse(splitTime[1]);
+                minTotal = (hour * 60) + min;
+                if (minTotal > minPrev + 1)
+                {
+                    for (int j = minPrev + 1; j < minTotal; j++)
+                    {
+                        line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                        Console.WriteLine(line);
+                        line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                        FileTools.Append2TextFile(opFile, line);
+                    }
+                }
+
+                line = String.Format("{0}  time={1}:{2}   Count={3}", minTotal, hour, min, speciesCount);
+                Console.WriteLine(line);
+                line = String.Format("{0},{1}:{2},{3}", minTotal, hour, min, speciesCount);
+                FileTools.Append2TextFile(opFile, line);
+                minPrev = minTotal;
             }
-            return paramaters;
+            //fill in misisng minutes at end.
+            int minsIn24hrs = 24 * 60;
+            if (minsIn24hrs > minPrev + 1)
+            {
+                for (int j = minPrev + 1; j < minsIn24hrs; j++)
+                {
+                    line = String.Format("{0}  time={1}:{2}   Count={3}", j, (j / 60), (j % 60), 0);
+                    Console.WriteLine(line);
+                    line = String.Format("{0},{1}:{2},{3}", j, (j / 60), (j % 60), 0);
+                    FileTools.Append2TextFile(opFile, line);
+                }
+            }
+            Console.WriteLine("speciesTotal= " + speciesTotal);
         }
 
 
@@ -1214,8 +1011,6 @@ namespace AnalysisPrograms
                 System.Environment.Exit(1);
             }
         }
-
-
         public static void Usage()
         {
             Console.WriteLine("INCORRECT COMMAND LINE.");

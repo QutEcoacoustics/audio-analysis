@@ -377,35 +377,6 @@ namespace TowseyLib
 
 
 
-        public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
-        {
-            List<double[]> arrays = new List<double[]>();
-            List<string> colNames = new List<string>();
-            int arrayLength = 0;
-
-            for (int i = 0; i < columns.Length; i++)
-            {
-                string header;
-                double[] array = FileTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
-                arrays.Add(DataTools.NormaliseArea(array)); //normalize the arrays to get weighted index.
-                colNames.Add(header);
-                arrayLength = array.Length;
-            }
-
-            double[] weightedCombo = new double[arrayLength];
-            for (int i = 0; i < arrayLength; i++)
-            {
-                double combo = 0.0;
-                for (int c = 0; c < columns.Length; c++)
-                {
-                    combo += (wts[c] * arrays[c][i]);
-                }
-                weightedCombo[i] = combo;
-            }
-            return System.Tuple.Create(weightedCombo, colNames);
-        }
-
-
 
         public static void AddColumnOfValuesToCSVFile(string csvFileName, string header, double[] values, string opFileName)
         {
