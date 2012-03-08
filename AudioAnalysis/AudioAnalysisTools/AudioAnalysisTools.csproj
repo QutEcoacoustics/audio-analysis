@@ -156,6 +156,7 @@
     <Compile Include="AcousticEvent.cs" />
     <Compile Include="Acoustic_Model.cs" />
     <Compile Include="AudioRecording.cs" />
+    <Compile Include="BKGTrainer.cs" />
     <Compile Include="ConfigurationClasses.cs" />
     <Compile Include="FeatureVector\FeatureVector.cs" />
     <Compile Include="FeatureVector\FVConfig.cs" />
@@ -163,13 +164,12 @@
     <Compile Include="FindMatchingEvents.cs" />
     <Compile Include="GUI.cs" />
     <Compile Include="HarmonicAnalysis.cs" />
-    <Compile Include="HTKTools\BKGTrainer.cs" />
-    <Compile Include="HTKTools\Helper.cs" />
-    <Compile Include="HTKTools\HMMSettings.cs" />
-    <Compile Include="HTKTools\HTKConfig.cs" />
-    <Compile Include="HTKTools\HTKHelper.cs" />
     <Compile Include="AudioSegmentation.cs" />
-    <Compile Include="HTKTools\HTKScanRecording.cs" />
+    <Compile Include="Helper.cs" />
+    <Compile Include="HMMSettings.cs" />
+    <Compile Include="HTKConfig.cs" />
+    <Compile Include="HTKHelper.cs" />
+    <Compile Include="HTKScanRecording.cs" />
     <Compile Include="Model\BaseModel.cs" />
     <Compile Include="Model\Model_1PS.cs" />
     <Compile Include="Model\Model_2SP.cs" />
