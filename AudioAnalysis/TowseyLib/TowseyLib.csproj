@@ -238,7 +238,6 @@
     <Compile Include="SNR.cs" />
     <Compile Include="Speech.cs" />
     <Compile Include="Statistics.cs" />
-    <Compile Include="TextBoxStreamWriter.cs" />
     <Compile Include="TextUtilities.cs" />
     <Compile Include="FunctionalTests.cs" />
     <Compile Include="WavInfo.cs" />

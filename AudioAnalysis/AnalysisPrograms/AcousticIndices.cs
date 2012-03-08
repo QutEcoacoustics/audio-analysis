@@ -15,7 +15,7 @@ using NeuralNets;
 
 namespace AnalysisPrograms
 {
-    class AcousticIndices
+    public class AcousticIndices
     {
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
