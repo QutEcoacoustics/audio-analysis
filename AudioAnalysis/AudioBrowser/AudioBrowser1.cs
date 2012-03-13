@@ -363,9 +363,10 @@ namespace AudioBrowser
             this.visualIndex_PictureBox.MouseHover += new System.EventHandler(this.visualIndex_MouseHover);
 
             // Set color, location and size of the indexPanel panel
-            visualIndex_Panel.BackColor = Color.Black;
-            visualIndex_Panel.Size = new Size(panelWidth, panelHeight);
-            visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
+            this.visualIndex_Panel.BackColor = Color.Black;
+            this.visualIndex_Panel.Size = new Size(panelWidth, panelHeight);
+            this.visualIndex_Panel.Controls.Add(visualIndex_PictureBox);
+            //this.visualIndex_Panel.MouseMove += new MouseEventHandler(this.visualIndex_MouseMove);
 
             visualIndex_Panel.Controls.Add(this.visualIndex_Panel_hScrollBar);
             this.visualIndex_Panel_hScrollBar.LargeChange = 240;
@@ -411,6 +412,11 @@ namespace AudioBrowser
             this.consoleTextBox.WordWrap = true;
             this.consoleTextBox.ForeColor = Color.Lime;
             this.consoleTextBox.Font = new Font("Courier New", 11.0f, FontStyle.Bold);
+            this.consoleTextBox.ScrollBars = ScrollBars.Vertical;
+            this.consoleTextBox.ReadOnly = true;
+            // Allow the RETURN & TAB keys to be entered in the TextBox control.
+            //this.consoleTextBox.AcceptsReturn = true;
+            //this.consoleTextBox.AcceptsTab = true;
 
             this.consolePanel.BackColor = Color.Black;
             this.consolePanel.Name = "Console";
@@ -604,6 +610,12 @@ namespace AudioBrowser
                     Console.WriteLine("# Extracting acoustic indices from file: " + parameters.sourceRecordingPath);
                     WriteExtractionParameters2Console();
                     AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
+                    Console.WriteLine("######################### FINISHED ##########################\n\n");
+
+                    string outputCSVPath = Path.Combine(parameters.outputDir, Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath) + ".csv");
+                    string target = outputCSVPath + ".BACKUP";
+                    File.Delete(target);  // Ensure that the target does not exist.
+                    File.Copy(outputCSVPath, target); //copy the file 2 target
                 }
             } //OpenFileDialog
 
@@ -647,6 +659,7 @@ namespace AudioBrowser
                         if (status == 1) Console.WriteLine("\t\tfile exists but could not extract values.");
                         if (status == 2) Console.WriteLine("\t\tfile exists but contains no values.");
                     }
+                    this.tabControl1.SelectTab("Display");
 
                 } // if (dlg.ShowDialog() == DialogResult.OK)
             } //OpenFileDialog()
@@ -693,7 +706,8 @@ namespace AudioBrowser
             {
                 if (AudioBrowser1.weightedIndexColumn[i])
                 {
-                    weightedComboValues.Add(DataTools.NormaliseArea(values[i]));
+                    double[] norm = DataTools.NormaliseArea(values[i]);
+                    weightedComboValues.Add(norm);
                     comboHeaders.Add(headers[i]);
                 }
             }
@@ -914,7 +928,7 @@ namespace AudioBrowser
 
 
         /// <summary>
-        /// Opens Audacity but NOT in separate thread.
+        /// Opens Audacity.
         /// </summary>
         /// <param name="recordingPath"></param>
         private void OpenAudacity(string recordingPath)
