@@ -272,8 +272,8 @@ namespace AnalysisPrograms
             DateTime tStart = DateTime.Now;
             DateTime tPrevious = tStart;
 
-           // segmentCount = 20;
-
+            segmentCount = 20;
+           
             for (int s = 0; s < segmentCount; s++)
             {
                 DateTime tNow = DateTime.Now;

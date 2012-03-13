@@ -175,6 +175,11 @@ var errorData = process.ErrorData;
                                 this.settings.OutputDir.FullName,
                                 Path.GetFileNameWithoutExtension(audioFileName) + ".csv"));
 
+                    settings.fiSourceRecording = sourceRecordingPath;
+
+                    //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
+                    Console.WriteLine("# Extracting acoustic indices from file: " + sourceRecordingPath);
+
                     WriteExtractionParameters2Console(settings);
                     this.ProcessRecording(sourceRecordingPath, outputFilePath);
                 }// if checked
@@ -188,24 +193,13 @@ var errorData = process.ErrorData;
 
         private void ProcessRecording(FileInfo sourceRecordingPath, FileInfo outputFilePath)
         {
-            //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
-
-            Console.WriteLine("# Extracting acoustic indices from file: " + sourceRecordingPath);
-            Console.WriteLine("Processing " + sourceRecordingPath.Name + "...");
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
-            Console.WriteLine("# Extracting acoustic indices from file: " + settings.fiSourceRecording.FullName);
-            //AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, settings.OutputDir.FullName, settings.SegmentDuration, settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
-
-            Console.WriteLine("######################### FINISHED ##########################\n\n");
-
-            string outputCSVPath = Path.Combine(settings.OutputDir.FullName, Path.GetFileNameWithoutExtension(settings.fiSourceRecording.Name), ".csv");
-            string target = outputCSVPath + ".BACKUP";
-            File.Delete(target);  // Ensure that the target does not exist.
-            File.Copy(outputCSVPath, target); //copy the file 2 target
+            AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, settings.OutputDir.FullName, settings.SegmentDuration, settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
+            string target = outputFilePath.FullName + ".BACKUP";
+            File.Delete(target);                        // Ensure that the target does not exist.
+            File.Copy(outputFilePath.FullName, target); //copy the file 2 target
 
             Console.WriteLine("Finished processing " + sourceRecordingPath.Name + ".");
+            Console.WriteLine("###################################################\n\n");
         }
 
         private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
@@ -723,7 +717,7 @@ var errorData = process.ErrorData;
 
         #endregion
 
-        #region dataGridViewFileList source
+        #region dataGridViewSouceFileList source
 
         private void dataGridViewFileListSourceFileList_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
