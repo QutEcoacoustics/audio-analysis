@@ -224,7 +224,7 @@
     <Compile Include="LLR.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="PolarCoordinates.cs" />
-    <Compile Include="ProcessTools.cs" />
+    <Compile Include="ProcessRunner.cs" />
     <Compile Include="RandomVariable.cs" />
     <Compile Include="RandomNumber.cs" />
     <Compile Include="NormalDist.cs" />

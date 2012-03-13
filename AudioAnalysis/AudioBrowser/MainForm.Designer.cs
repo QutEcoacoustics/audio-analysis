@@ -32,38 +32,37 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPageSourceFiles = new System.Windows.Forms.TabPage();
             this.btnExtractIndiciesAllSelected = new System.Windows.Forms.Button();
             this.dataGridViewFileList = new System.Windows.Forms.DataGridView();
             this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageOutputFiles = new System.Windows.Forms.TabPage();
             this.btnLoadVisualIndexAllSelected = new System.Windows.Forms.Button();
             this.dataGridCSVfiles = new System.Windows.Forms.DataGridView();
             this.dataGridViewCheckBoxColumnSelected = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.dataGridViewTextBoxColumnFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.dataGridViewTextBoxColumnFileLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.tabPageDisplay = new System.Windows.Forms.TabPage();
             this.splitContainerDisplay = new System.Windows.Forms.SplitContainer();
             this.panelDisplayControls = new System.Windows.Forms.Panel();
+            this.panelSonogramControls = new System.Windows.Forms.Panel();
+            this.checkBoxSonogramAnnotate = new System.Windows.Forms.CheckBox();
+            this.checkBoxSonnogramNoiseReduce = new System.Windows.Forms.CheckBox();
+            this.labelSonogramFileName = new System.Windows.Forms.Label();
+            this.labelSonogramName = new System.Windows.Forms.Label();
+            this.buttonRefreshSonogram = new System.Windows.Forms.Button();
+            this.buttonAudacityRun = new System.Windows.Forms.Button();
             this.labelCursorValue = new System.Windows.Forms.Label();
             this.textBoxCursorValue = new System.Windows.Forms.TextBox();
             this.labelFileDurationInMinutes = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
             this.textBoxCursorLocation = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
-            this.button1 = new System.Windows.Forms.Button();
             this.panelDisplayVisual = new System.Windows.Forms.Panel();
+            this.pictureBoxBarTrack = new System.Windows.Forms.PictureBox();
             this.pictureBoxSonogram = new System.Windows.Forms.PictureBox();
             this.pictureBoxVisualIndex = new System.Windows.Forms.PictureBox();
             this.tabPageConsole = new System.Windows.Forms.TabPage();
@@ -80,26 +79,34 @@
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
-            this.pictureBoxBarTrack = new System.Windows.Forms.PictureBox();
+            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            this.dataGridViewTextBoxColumnFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.dataGridViewTextBoxColumnFileLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.tabControlMain.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).BeginInit();
             this.tabPageOutputFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridCSVfiles)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).BeginInit();
             this.tabPageDisplay.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainerDisplay)).BeginInit();
             this.splitContainerDisplay.Panel1.SuspendLayout();
             this.splitContainerDisplay.Panel2.SuspendLayout();
             this.splitContainerDisplay.SuspendLayout();
             this.panelDisplayControls.SuspendLayout();
+            this.panelSonogramControls.SuspendLayout();
             this.panelDisplayVisual.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSonogram)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).BeginInit();
             this.tabPageConsole.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControlMain
@@ -147,14 +154,14 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewFileList.AutoGenerateColumns = false;
             this.dataGridViewFileList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dataGridViewFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewFileList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.selectedDataGridViewCheckBoxColumn,
@@ -163,14 +170,14 @@
             this.mediaTypeDataGridViewTextBoxColumn,
             this.fileLengthDataGridViewTextBoxColumn});
             this.dataGridViewFileList.DataSource = this.mediaFileItemBindingSource;
-            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle6;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewFileList.Location = new System.Drawing.Point(3, 35);
             this.dataGridViewFileList.Name = "dataGridViewFileList";
             this.dataGridViewFileList.Size = new System.Drawing.Size(1453, 548);
@@ -187,42 +194,6 @@
             this.selectedDataGridViewCheckBoxColumn.Name = "selectedDataGridViewCheckBoxColumn";
             this.selectedDataGridViewCheckBoxColumn.ReadOnly = true;
             this.selectedDataGridViewCheckBoxColumn.Width = 5;
-            // 
-            // fileNameDataGridViewTextBoxColumn
-            // 
-            this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.HeaderText = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
-            this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileNameDataGridViewTextBoxColumn.Width = 76;
-            // 
-            // durationDataGridViewTextBoxColumn
-            // 
-            this.durationDataGridViewTextBoxColumn.DataPropertyName = "Duration";
-            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration";
-            this.durationDataGridViewTextBoxColumn.Name = "durationDataGridViewTextBoxColumn";
-            this.durationDataGridViewTextBoxColumn.ReadOnly = true;
-            this.durationDataGridViewTextBoxColumn.Width = 72;
-            // 
-            // mediaTypeDataGridViewTextBoxColumn
-            // 
-            this.mediaTypeDataGridViewTextBoxColumn.DataPropertyName = "MediaType";
-            this.mediaTypeDataGridViewTextBoxColumn.HeaderText = "MediaType";
-            this.mediaTypeDataGridViewTextBoxColumn.Name = "mediaTypeDataGridViewTextBoxColumn";
-            this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
-            this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
-            // 
-            // fileLengthDataGridViewTextBoxColumn
-            // 
-            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
-            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "FileLength";
-            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
-            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileLengthDataGridViewTextBoxColumn.Width = 81;
-            // 
-            // mediaFileItemBindingSource
-            // 
-            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
             // 
             // tabPageOutputFiles
             // 
@@ -256,28 +227,28 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridCSVfiles.AutoGenerateColumns = false;
             this.dataGridCSVfiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             this.dataGridCSVfiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridCSVfiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewCheckBoxColumnSelected,
             this.dataGridViewTextBoxColumnFileName,
             this.dataGridViewTextBoxColumnFileLength});
             this.dataGridCSVfiles.DataSource = this.csvFileItemBindingSource;
-            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle8;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridCSVfiles.Location = new System.Drawing.Point(4, 35);
             this.dataGridCSVfiles.Name = "dataGridCSVfiles";
             this.dataGridCSVfiles.Size = new System.Drawing.Size(1474, 544);
@@ -294,26 +265,6 @@
             this.dataGridViewCheckBoxColumnSelected.Name = "dataGridViewCheckBoxColumnSelected";
             this.dataGridViewCheckBoxColumnSelected.ReadOnly = true;
             this.dataGridViewCheckBoxColumnSelected.Width = 5;
-            // 
-            // dataGridViewTextBoxColumnFileName
-            // 
-            this.dataGridViewTextBoxColumnFileName.DataPropertyName = "FileName";
-            this.dataGridViewTextBoxColumnFileName.HeaderText = "FileName";
-            this.dataGridViewTextBoxColumnFileName.Name = "dataGridViewTextBoxColumnFileName";
-            this.dataGridViewTextBoxColumnFileName.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileName.Width = 76;
-            // 
-            // dataGridViewTextBoxColumnFileLength
-            // 
-            this.dataGridViewTextBoxColumnFileLength.DataPropertyName = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.HeaderText = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.Name = "dataGridViewTextBoxColumnFileLength";
-            this.dataGridViewTextBoxColumnFileLength.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileLength.Width = 81;
-            // 
-            // csvFileItemBindingSource
-            // 
-            this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
             // 
             // tabPageDisplay
             // 
@@ -352,18 +303,91 @@
             // 
             this.panelDisplayControls.BackColor = System.Drawing.Color.Transparent;
             this.panelDisplayControls.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelDisplayControls.Controls.Add(this.panelSonogramControls);
             this.panelDisplayControls.Controls.Add(this.labelCursorValue);
             this.panelDisplayControls.Controls.Add(this.textBoxCursorValue);
             this.panelDisplayControls.Controls.Add(this.labelFileDurationInMinutes);
             this.panelDisplayControls.Controls.Add(this.label4);
             this.panelDisplayControls.Controls.Add(this.textBoxCursorLocation);
             this.panelDisplayControls.Controls.Add(this.label3);
-            this.panelDisplayControls.Controls.Add(this.button1);
             this.panelDisplayControls.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDisplayControls.Location = new System.Drawing.Point(0, 0);
             this.panelDisplayControls.Name = "panelDisplayControls";
             this.panelDisplayControls.Size = new System.Drawing.Size(190, 573);
             this.panelDisplayControls.TabIndex = 0;
+            // 
+            // panelSonogramControls
+            // 
+            this.panelSonogramControls.Controls.Add(this.checkBoxSonogramAnnotate);
+            this.panelSonogramControls.Controls.Add(this.checkBoxSonnogramNoiseReduce);
+            this.panelSonogramControls.Controls.Add(this.labelSonogramFileName);
+            this.panelSonogramControls.Controls.Add(this.labelSonogramName);
+            this.panelSonogramControls.Controls.Add(this.buttonRefreshSonogram);
+            this.panelSonogramControls.Controls.Add(this.buttonAudacityRun);
+            this.panelSonogramControls.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panelSonogramControls.Location = new System.Drawing.Point(0, 364);
+            this.panelSonogramControls.Name = "panelSonogramControls";
+            this.panelSonogramControls.Size = new System.Drawing.Size(188, 207);
+            this.panelSonogramControls.TabIndex = 7;
+            // 
+            // checkBoxSonogramAnnotate
+            // 
+            this.checkBoxSonogramAnnotate.AutoSize = true;
+            this.checkBoxSonogramAnnotate.Location = new System.Drawing.Point(28, 89);
+            this.checkBoxSonogramAnnotate.Name = "checkBoxSonogramAnnotate";
+            this.checkBoxSonogramAnnotate.Size = new System.Drawing.Size(118, 17);
+            this.checkBoxSonogramAnnotate.TabIndex = 5;
+            this.checkBoxSonogramAnnotate.Text = "Annotate sonogram";
+            this.checkBoxSonogramAnnotate.UseVisualStyleBackColor = true;
+            // 
+            // checkBoxSonnogramNoiseReduce
+            // 
+            this.checkBoxSonnogramNoiseReduce.AutoSize = true;
+            this.checkBoxSonnogramNoiseReduce.Location = new System.Drawing.Point(28, 65);
+            this.checkBoxSonnogramNoiseReduce.Name = "checkBoxSonnogramNoiseReduce";
+            this.checkBoxSonnogramNoiseReduce.Size = new System.Drawing.Size(138, 17);
+            this.checkBoxSonnogramNoiseReduce.TabIndex = 4;
+            this.checkBoxSonnogramNoiseReduce.Text = "Noise reduce sonogram";
+            this.checkBoxSonnogramNoiseReduce.UseVisualStyleBackColor = true;
+            // 
+            // labelSonogramFileName
+            // 
+            this.labelSonogramFileName.AutoSize = true;
+            this.labelSonogramFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSonogramFileName.Location = new System.Drawing.Point(10, 26);
+            this.labelSonogramFileName.Name = "labelSonogramFileName";
+            this.labelSonogramFileName.Size = new System.Drawing.Size(144, 16);
+            this.labelSonogramFileName.TabIndex = 3;
+            this.labelSonogramFileName.Text = "sonogram file name";
+            // 
+            // labelSonogramName
+            // 
+            this.labelSonogramName.AutoSize = true;
+            this.labelSonogramName.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSonogramName.Location = new System.Drawing.Point(10, 10);
+            this.labelSonogramName.Name = "labelSonogramName";
+            this.labelSonogramName.Size = new System.Drawing.Size(102, 15);
+            this.labelSonogramName.TabIndex = 2;
+            this.labelSonogramName.Text = "Sonogram Name";
+            // 
+            // buttonRefreshSonogram
+            // 
+            this.buttonRefreshSonogram.Location = new System.Drawing.Point(28, 123);
+            this.buttonRefreshSonogram.Name = "buttonRefreshSonogram";
+            this.buttonRefreshSonogram.Size = new System.Drawing.Size(120, 28);
+            this.buttonRefreshSonogram.TabIndex = 1;
+            this.buttonRefreshSonogram.Text = "Refresh Sonogram";
+            this.buttonRefreshSonogram.UseVisualStyleBackColor = true;
+            // 
+            // buttonAudacityRun
+            // 
+            this.buttonAudacityRun.Location = new System.Drawing.Point(28, 174);
+            this.buttonAudacityRun.Name = "buttonAudacityRun";
+            this.buttonAudacityRun.Size = new System.Drawing.Size(120, 28);
+            this.buttonAudacityRun.TabIndex = 0;
+            this.buttonAudacityRun.Text = "Run Audacity";
+            this.buttonAudacityRun.UseVisualStyleBackColor = true;
+            this.buttonAudacityRun.Click += new System.EventHandler(this.buttonRunAudacity_Click);
             // 
             // labelCursorValue
             // 
@@ -416,15 +440,6 @@
             this.label3.TabIndex = 1;
             this.label3.Text = "Cursor Location";
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(30, 422);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(120, 26);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "Run Audacity";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // panelDisplayVisual
             // 
             this.panelDisplayVisual.Controls.Add(this.pictureBoxBarTrack);
@@ -436,6 +451,15 @@
             this.panelDisplayVisual.Size = new System.Drawing.Size(1586, 573);
             this.panelDisplayVisual.TabIndex = 3;
             this.panelDisplayVisual.Paint += new System.Windows.Forms.PaintEventHandler(this.panelDisplayVisual_Paint);
+            // 
+            // pictureBoxBarTrack
+            // 
+            this.pictureBoxBarTrack.BackColor = System.Drawing.Color.BlanchedAlmond;
+            this.pictureBoxBarTrack.Location = new System.Drawing.Point(0, 341);
+            this.pictureBoxBarTrack.Name = "pictureBoxBarTrack";
+            this.pictureBoxBarTrack.Size = new System.Drawing.Size(1583, 24);
+            this.pictureBoxBarTrack.TabIndex = 3;
+            this.pictureBoxBarTrack.TabStop = false;
             // 
             // pictureBoxSonogram
             // 
@@ -593,14 +617,61 @@
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = true;
             this.btnSelectOutputDirectory.Click += new System.EventHandler(this.btnSelectOutputDirectory_Click);
             // 
-            // pictureBoxBarTrack
+            // fileNameDataGridViewTextBoxColumn
             // 
-            this.pictureBoxBarTrack.BackColor = System.Drawing.Color.BlanchedAlmond;
-            this.pictureBoxBarTrack.Location = new System.Drawing.Point(0, 341);
-            this.pictureBoxBarTrack.Name = "pictureBoxBarTrack";
-            this.pictureBoxBarTrack.Size = new System.Drawing.Size(1583, 24);
-            this.pictureBoxBarTrack.TabIndex = 3;
-            this.pictureBoxBarTrack.TabStop = false;
+            this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
+            this.fileNameDataGridViewTextBoxColumn.HeaderText = "FileName";
+            this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
+            this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileNameDataGridViewTextBoxColumn.Width = 76;
+            // 
+            // durationDataGridViewTextBoxColumn
+            // 
+            this.durationDataGridViewTextBoxColumn.DataPropertyName = "Duration";
+            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration";
+            this.durationDataGridViewTextBoxColumn.Name = "durationDataGridViewTextBoxColumn";
+            this.durationDataGridViewTextBoxColumn.ReadOnly = true;
+            this.durationDataGridViewTextBoxColumn.Width = 72;
+            // 
+            // mediaTypeDataGridViewTextBoxColumn
+            // 
+            this.mediaTypeDataGridViewTextBoxColumn.DataPropertyName = "MediaType";
+            this.mediaTypeDataGridViewTextBoxColumn.HeaderText = "MediaType";
+            this.mediaTypeDataGridViewTextBoxColumn.Name = "mediaTypeDataGridViewTextBoxColumn";
+            this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
+            this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // fileLengthDataGridViewTextBoxColumn
+            // 
+            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
+            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "FileLength";
+            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
+            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileLengthDataGridViewTextBoxColumn.Width = 81;
+            // 
+            // mediaFileItemBindingSource
+            // 
+            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
+            // 
+            // dataGridViewTextBoxColumnFileName
+            // 
+            this.dataGridViewTextBoxColumnFileName.DataPropertyName = "FileName";
+            this.dataGridViewTextBoxColumnFileName.HeaderText = "FileName";
+            this.dataGridViewTextBoxColumnFileName.Name = "dataGridViewTextBoxColumnFileName";
+            this.dataGridViewTextBoxColumnFileName.ReadOnly = true;
+            this.dataGridViewTextBoxColumnFileName.Width = 76;
+            // 
+            // dataGridViewTextBoxColumnFileLength
+            // 
+            this.dataGridViewTextBoxColumnFileLength.DataPropertyName = "FileLength";
+            this.dataGridViewTextBoxColumnFileLength.HeaderText = "FileLength";
+            this.dataGridViewTextBoxColumnFileLength.Name = "dataGridViewTextBoxColumnFileLength";
+            this.dataGridViewTextBoxColumnFileLength.ReadOnly = true;
+            this.dataGridViewTextBoxColumnFileLength.Width = 81;
+            // 
+            // csvFileItemBindingSource
+            // 
+            this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
             // 
             // MainForm
             // 
@@ -615,10 +686,8 @@
             this.tabControlMain.ResumeLayout(false);
             this.tabPageSourceFiles.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).EndInit();
             this.tabPageOutputFiles.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridCSVfiles)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).EndInit();
             this.tabPageDisplay.ResumeLayout(false);
             this.splitContainerDisplay.Panel1.ResumeLayout(false);
             this.splitContainerDisplay.Panel2.ResumeLayout(false);
@@ -626,14 +695,18 @@
             this.splitContainerDisplay.ResumeLayout(false);
             this.panelDisplayControls.ResumeLayout(false);
             this.panelDisplayControls.PerformLayout();
+            this.panelSonogramControls.ResumeLayout(false);
+            this.panelSonogramControls.PerformLayout();
             this.panelDisplayVisual.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSonogram)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).EndInit();
             this.tabPageConsole.ResumeLayout(false);
             this.tabPageConsole.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -681,10 +754,16 @@
         private Label label4;
         private TextBox textBoxCursorLocation;
         private Label label3;
-        private Button button1;
+        private Button buttonAudacityRun;
         private Label labelCursorValue;
         private TextBox textBoxCursorValue;
         private PictureBox pictureBoxBarTrack;
+        private Panel panelSonogramControls;
+        private Button buttonRefreshSonogram;
+        private CheckBox checkBoxSonogramAnnotate;
+        private CheckBox checkBoxSonnogramNoiseReduce;
+        private Label labelSonogramFileName;
+        private Label labelSonogramName;
 
 
     }

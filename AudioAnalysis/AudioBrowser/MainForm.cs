@@ -59,6 +59,7 @@ var errorData = process.ErrorData;
         private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = mintes duration of source recording.
         private double[] weightedIndices;
         private Bitmap visualIndexTimeScale;
+        private Bitmap barTrackImage;
 
         public MainForm()
         {
@@ -174,13 +175,10 @@ var errorData = process.ErrorData;
                                 this.settings.OutputDir.FullName,
                                 Path.GetFileNameWithoutExtension(audioFileName) + ".csv"));
 
-                    Console.WriteLine("# Extracting acoustic indices from file: " + sourceRecordingPath);
-
                     WriteExtractionParameters2Console(settings);
-
                     this.ProcessRecording(sourceRecordingPath, outputFilePath);
-                }
-            }
+                }// if checked
+            } //foreach
 
             if (this.dataGridViewFileList.RowCount < 1 || count < 1)
             {
@@ -190,12 +188,22 @@ var errorData = process.ErrorData;
 
         private void ProcessRecording(FileInfo sourceRecordingPath, FileInfo outputFilePath)
         {
-            Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
+            //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
 
+            Console.WriteLine("# Extracting acoustic indices from file: " + sourceRecordingPath);
             Console.WriteLine("Processing " + sourceRecordingPath.Name + "...");
-            AcousticIndices.ScanRecording(
-                sourceRecordingPath.FullName, outputFilePath.FullName, 0, 0, false, "CSV");
+            string date = "# DATE AND TIME: " + DateTime.Now;
+            Console.WriteLine(date);
+            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            Console.WriteLine("# Extracting acoustic indices from file: " + settings.fiSourceRecording.FullName);
+            //AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, settings.OutputDir.FullName, settings.SegmentDuration, settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
 
+            Console.WriteLine("######################### FINISHED ##########################\n\n");
+
+            string outputCSVPath = Path.Combine(settings.OutputDir.FullName, Path.GetFileNameWithoutExtension(settings.fiSourceRecording.Name), ".csv");
+            string target = outputCSVPath + ".BACKUP";
+            File.Delete(target);  // Ensure that the target does not exist.
+            File.Copy(outputCSVPath, target); //copy the file 2 target
 
             Console.WriteLine("Finished processing " + sourceRecordingPath.Name + ".");
         }
@@ -340,6 +348,10 @@ var errorData = process.ErrorData;
             //this.sonogramPanel_hScrollBar.Value = 0;
             //this.sonogramPanel_hScrollBar.Visible = true;
 
+            //if (this.barTrackImage != null) this.barTrackImage.Dispose();
+            this.barTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+            //this.pictureBoxBarTrack.BackColor = Color.White;
+
 
             Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
                              comboHeaders[0], AudioBrowserSettings.comboWeights[0], comboHeaders[1], AudioBrowserSettings.comboWeights[1], comboHeaders[2], AudioBrowserSettings.comboWeights[2],
@@ -354,10 +366,7 @@ var errorData = process.ErrorData;
 
         private void pictureBoxVisualIndex_MouseMove(object sender, MouseEventArgs e)
         {
-            int myX = Form.MousePosition.X - this.Left - this.panelDisplayControls.Width - (6 * this.Margin.Left) - 1;
-            //Point point = this.pictureBoxVisualIndex.Cursor.);
-            //Point point = Mouse.GetPosition(this.pictureBoxVisualIndex);
-            //int myX = point.X;
+            int myX = e.X; //other mouse calls:       Form.MousePosition.X  and  Mouse.GetPosition(this.pictureBoxVisualIndex); and   Cursor.Position;
             if (myX > this.sourceRecording_MinutesDuration - 1) return; //minuteDuration was set during load
 
             this.labelFileDurationInMinutes.Text = "File duration = "+ this.sourceRecording_MinutesDuration + " minutes";
@@ -375,12 +384,6 @@ var errorData = process.ErrorData;
             pt2 = new Point(myX, this.pictureBoxVisualIndex.Height - settings.TrackHeight);
             g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
 
-            //Point point1 = Cursor.Position;
-            //Color color1 = ImageTools.GetPixel(point1);
-            //Point point2 = new Point(point1.X - 1, point1.Y);
-            //Color color2 = ImageTools.GetPixel(point2);
-            //Point point3 = new Point(point1.X + 1, point1.Y);
-            //Color color3 = ImageTools.GetPixel(point3);
             if (myX >= this.sourceRecording_MinutesDuration - 1)
                 this.textBoxCursorValue.Text     = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
             else
@@ -393,28 +396,19 @@ var errorData = process.ErrorData;
         private void pictureBoxVisualIndex_MouseClick(object sender, MouseEventArgs e)
         {
             this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab("tabPageConsole");
+            //     this.tabControlMain.SelectTab("tabPageConsole");
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
-            // CHECK AUDIO FILE EXISTS
-            //if (!File.Exists(settings.sourceRecordingPath))
-            //{
-            //    //this.tabControl1.SelectTab("Console");
-            //    Console.WriteLine("\nWARNING! Audio file does not exist: <" + settings.sourceRecordingPath + ">");
-            //    return;
-            //}
-
             // GET MOUSE LOCATION
             int myX = e.X;
             int myY = e.Y;
-            Point pt1 = new Point(this.pictureBoxVisualIndex.Left + myX, 0);
-            Point pt2 = new Point(this.pictureBoxVisualIndex.Left + myX, this.pictureBoxBarTrack.Height);
 
             //DRAW RED LINE ON BAR TRACK
-            Graphics g = this.pictureBoxBarTrack.CreateGraphics();
-            g.DrawLine(new Pen(Color.Red, 1.0F), pt1, pt2);
+            for (int y = 0; y < barTrackImage.Height; y++)
+                barTrackImage.SetPixel(this.pictureBoxVisualIndex.Left + myX, y, Color.Red);
+            this.pictureBoxBarTrack.Image = barTrackImage;
 
             //EXTRACT RECORDING SEGMENT
             int startMilliseconds = (myX) * 60000;
@@ -433,14 +427,14 @@ var errorData = process.ErrorData;
 
             Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
             Console.WriteLine("\n\tWriting audio segment to dir: " + settings.OutputDir.FullName);
-            Console.WriteLine("\n\t\t\tFile Name: "+ segmentFName);
+            Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
 
             //get segment from source recording
             DateTime time1 = DateTime.Now;
-            AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
-            DateTime time2 = DateTime.Now;
-            TimeSpan timeSpan = time2 - time1;
-            Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
+            //    AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
+            //    DateTime time2 = DateTime.Now;
+            //    TimeSpan timeSpan = time2 - time1;
+            //    Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
 
             //store info
             ////this.segmentName_TextBox.Text = Path.GetFileName(recording.FilePath);
@@ -455,9 +449,13 @@ var errorData = process.ErrorData;
             //sonoConfig.WindowOverlap = parameters.frameOverlap;
             //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
 
-            //// (iii) NOISE REDUCTION
-            //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, parameters.sonogram_BackgroundThreshold);
-            //sonogram.Data = tuple.Item1;   // store data matrix
+            // (iii) NOISE REDUCTION
+            if (this.checkBoxSonnogramNoiseReduce.Checked)
+            {
+                Console.WriteLine("WILL DO NOISE REDUCTION");
+                //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, parameters.sonogram_BackgroundThreshold);
+                //sonogram.Data = tuple.Item1;   // store data matrix
+            }
 
             ////prepare the image
             //bool doHighlightSubband = false;
@@ -468,6 +466,12 @@ var errorData = process.ErrorData;
             //    if (sonogramPicture != null) sonogramPicture.Dispose(); //get rid of previous sonogram
             //    //add time scale
             //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+
+                if (this.checkBoxSonogramAnnotate.Checked) 
+                {
+                      Console.WriteLine("WILL DO ANNOTATE SONOGRAM");
+                }
+
             //    sonogramPicture = new PictureBox();
             //    sonogramPicture.Image = image.GetImage();
             //    sonogramPicture.SetBounds(0, 0, sonogramPicture.Image.Width, sonogramPicture.Image.Height);
@@ -482,10 +486,18 @@ var errorData = process.ErrorData;
             //string sonogramPath = Path.Combine(parameters.outputDir, (Path.GetFileNameWithoutExtension(segmentName) + ".png"));
             //Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
             //sonogramPicture.Image.Save(sonogramPath);
-            //this.tabControlMain.SelectTab("tabPageDisplay");      
+            //this.tabControlMain.SelectTab("tabPageDisplay");   
+            this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
         }
 
-
+        private void buttonRunAudacity_Click(object sender, EventArgs e)
+        {
+            if (settings.fiSourceRecording == null) ProcessRunner.RunAudacity(settings.AudacityExe.FullName, "");
+            else
+            if (! settings.fiSourceRecording.Exists) ProcessRunner.RunAudacity(settings.AudacityExe.FullName, "");
+            else 
+                ProcessRunner.RunAudacity(settings.AudacityExe.FullName, settings.fiSourceRecording.FullName);
+        }
 
 
 
