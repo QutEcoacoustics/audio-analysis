@@ -780,8 +780,6 @@ namespace AudioBrowser
         }//audacityButton_Click()
 
 
-
-
         /// <summary>
         /// Change the cursor image to cross hairs when over the visual index image.
         /// </summary>
@@ -941,7 +939,6 @@ namespace AudioBrowser
             var consoleOutput = process.OutputData;
             var errorData     = process.ErrorData;
         }
-
 
         private void visualIndex_Panel_hScrollBar_ValueChanged(object sender, System.EventArgs e)
         {
