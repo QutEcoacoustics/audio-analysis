@@ -257,12 +257,12 @@ namespace AnalysisPrograms
             FileInfo outputSegmentFileInfo = new FileInfo(outputSegmentPath);
 
 
-            Log.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
-            Log.WriteLine("# Source audio - datetime: {0}    {1}", sourceFileInfo.CreationTime.ToLongDateString(), sourceFileInfo.CreationTime.ToLongTimeString());
-            Log.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
-            Log.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
-            Log.WriteLine("# Source audio - segments: {0}", segmentCount);
-            Log.WriteLine("# Output to  directory: " + outputDir);
+            Console.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
+            Console.WriteLine("# Source audio - datetime: {0}    {1}", sourceFileInfo.CreationTime.ToLongDateString(), sourceFileInfo.CreationTime.ToLongTimeString());
+            Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
+            Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
+            Console.WriteLine("# Source audio - segments: {0}", segmentCount);
+            Console.WriteLine("# Output to  directory: " + outputDir);
 
             int segmentDuration_ms = (int)(segmentDuration_mins * 60000);
 
@@ -272,7 +272,7 @@ namespace AnalysisPrograms
             DateTime tStart = DateTime.Now;
             DateTime tPrevious = tStart;
 
-            return;
+           // segmentCount = 20;
 
             for (int s = 0; s < segmentCount; s++)
             {
@@ -281,7 +281,8 @@ namespace AnalysisPrograms
                 string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
                 double startMinutes = s * segmentDuration_mins;
                 double avIterTime = elapsedTime.TotalSeconds / s;
-                if (s == 0) avIterTime = 0.0;
+                if (s == 0) avIterTime = 0.0; //correct for division by zero
+                double t2End = avIterTime * (segmentCount - s) / (double)60;
 
                 TimeSpan iterTimeSpan = tNow - tPrevious;
                 double iterTime = iterTimeSpan.TotalSeconds;
@@ -289,7 +290,8 @@ namespace AnalysisPrograms
                 tPrevious = tNow;
 
                 Console.WriteLine("\n");
-                Log.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}   Sec/iteration:{3:f2} (av={4:f2})", s, startMinutes, timeDuration, iterTime, avIterTime);
+                Console.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
+                                           s,        startMinutes,     timeDuration,         t2End,            iterTime,           avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + segmentDuration_ms;
                 //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
@@ -302,7 +304,7 @@ namespace AnalysisPrograms
                 int minimumLength = 3 * frameLength; //ignore recordings shorter than three frames
                 if (sampleCount <= minimumLength)
                 {
-                    Log.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
+                    Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
                     break;
                 }
 
@@ -324,6 +326,7 @@ namespace AnalysisPrograms
 
 
         /// <summary>
+        /// Extracts indices from a single  segment of recording
         /// </summary>
         /// <param name="recording"></param>
         /// <param name="int frameSize = 128">number of signal samples in frame. Default = 128</param>
@@ -335,6 +338,9 @@ namespace AnalysisPrograms
                ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500)
         {
             Indices2 indices; // struct in which to store all indices
+            List<double[]> scores = null; //arrays to store scores for debugging
+
+
             double windowOverlap = 0.0;
             int signalLength = recording.GetWavReader().Samples.Length;
             double frameDuration = frameSize * (1 - windowOverlap) / recording.SampleRate;
@@ -351,21 +357,63 @@ namespace AnalysisPrograms
             //ii: FRAME ENERGIES - 
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
-            int activeFrameCount  = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); //count of frames with activity >= threshold dB above background
+
+
+            bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
+            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticIndices.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
+            int activeFrameCount = DataTools.CountTrues(activeFrames);
+            
             indices.activity = activeFrameCount / (double)dBarray.Length;   //fraction of frames having acoustic activity 
             indices.bgNoise  = results3.Item2;                              //bg noise in dB
             indices.snr      = results3.Item5;                              //snr
             indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
 
-            ///iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
-            bool[] activeFrames = new bool[dBarray.Length];
-            for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticIndices.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
-            indices.segmentCount = 0;
-            for (int i = 1; i < dBarray.Length; i++)
+
+            //#V#####################################################################################################################################################
+            //#V#####################################################################################################################################################
+            //FIX UP THIS - Do NOT Do ANLSYES IF NO ACTIVE FRAMES
+
+            //return if activeFrameCount = 0
+            if (activeFrameCount == 0)
             {
-                if (!activeFrames[i] && activeFrames[i - 1]) indices.segmentCount++; //count the ends of active segments
+                indices.segmentCount = 0;
+                indices.avSegmentDuration = 0.0;
+                indices.spectralCover = 0.0;
+                indices.lowFreqCover = 0.0;
+                indices.entropyOfAmpl = 0.0;
+                indices.entropyOfPeakFreqDistr = 0.0;
+                indices.entropyOfAvSpectrum = 0.0;
+                indices.entropyOfVarianceSpectra1 = 0.0;
+                indices.clusterCount = 0;
+                indices.avClusterDuration = 0; //av cluster durtaion in milliseconds
+                scores = null;
+                int[] clusterHits_dummy = null;
+                List<double[]> clusterWts_dummy = null;
+                double[,] clusterSpectrogram_dummy = null;
+                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
             }
-            indices.avSegmentDuration = activeFrameCount / (double)indices.segmentCount * frameDuration * 1000; //av segment duration in milliseconds
+            //#V#####################################################################################################################################################
+
+
+
+
+            ///iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
+            if (activeFrameCount == 0)
+            {
+                indices.avSegmentDuration = 0.0;
+                indices.segmentCount = 0;
+            }
+            else
+            {
+                int count = 0;
+                for (int i = 1; i < dBarray.Length; i++)
+                {
+                    if (!activeFrames[i] && activeFrames[i - 1]) count++; //count the ends of active segments
+                }
+                indices.segmentCount = count;
+                indices.avSegmentDuration = activeFrameCount / (double)count * frameDuration * 1000; //av segment duration in milliseconds
+            }
 
             //iv: ENVELOPE ENTROPY ANALYSIS
             //double[] newArray = { 3.0, 3.0, 3.0, 3.0,  3.0, 3.0, 3.0, 3.0};
@@ -443,7 +491,7 @@ namespace AnalysisPrograms
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
 
             //SET UP ARRAY OF SCORES TO BE RETURNED LATER
-            var scores = new List<double[]>();
+            scores = new List<double[]>();
             scores.Add(freqPeaks); //location of peaks for spectral images
             scores.Add(envelope);
 
@@ -465,6 +513,11 @@ namespace AnalysisPrograms
                         count ++;
                     }
                 }
+                //if (count == 0)
+                //{
+                //    Console.ReadLine();
+                //}
+
 
                 double av, sd;
                 NormalDist.AverageAndSD(acousticFrames, out av, out sd);
@@ -477,6 +530,16 @@ namespace AnalysisPrograms
             indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;       //ENTROPY of spectral averages
             //DataTools.writeBarGraph(avSpectrum);
             //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
+
+            //if (normFactor == 0.0)
+            //{
+            //    Console.ReadLine();
+            //}
+
+            //if (Double.IsNaN(indices.entropyOfAvSpectrum))
+            //{
+            //    Console.ReadLine();
+            //}
 
             pmf3 = DataTools.NormaliseArea(varSpectrum);                              // pmf = probability mass function
             normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                       // normalize for length of the array

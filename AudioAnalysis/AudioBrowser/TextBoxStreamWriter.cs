@@ -1,20 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Windows.Forms;
-
-namespace TowseyLib
+﻿namespace AudioBrowser
 {
+    using System;
+    using System.Text;
+    using System.IO;
+    using System.Windows.Forms;
+
     public class TextBoxStreamWriter : TextWriter
     {
-        TextBox _output = null;
+        readonly TextBox output;
 
         public TextBoxStreamWriter(TextBox output)
         {
-            _output = output;
-        } //TextBoxStreamWriter()
+            this.output = output;
+        }
 
         /// <summary>
         /// Override the Write(char value) method, which is called when character data is written to the stream.
@@ -23,7 +21,18 @@ namespace TowseyLib
         public override void Write(char value)
         {
             base.Write(value);
-            _output.AppendText(value.ToString()); // When character data is written, append it to the text box.
+
+            // When character data is written, append it to the text box.
+            Action append = () => this.output.AppendText(value.ToString());
+            if (this.output.InvokeRequired)
+            {
+                this.output.BeginInvoke(append);
+            }
+            else
+            {
+                append();
+            }
+
         }
 
         /// <summary>
@@ -31,9 +40,7 @@ namespace TowseyLib
         /// </summary>
         public override Encoding Encoding
         {
-            get { return System.Text.Encoding.UTF8; }
+            get { return Encoding.UTF8; }
         }
-
-
-    } //class TextBoxStreamWriter
+    }
 }
