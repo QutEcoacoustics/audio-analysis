@@ -57,8 +57,8 @@
             this.buttonAudacityRun = new System.Windows.Forms.Button();
             this.labelCursorValue = new System.Windows.Forms.Label();
             this.textBoxCursorValue = new System.Windows.Forms.TextBox();
-            this.labelFileDurationInMinutes = new System.Windows.Forms.Label();
-            this.label4 = new System.Windows.Forms.Label();
+            this.labelSourceFileDurationInMinutes = new System.Windows.Forms.Label();
+            this.labelSourceFileName = new System.Windows.Forms.Label();
             this.textBoxCursorLocation = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.panelDisplayVisual = new System.Windows.Forms.Panel();
@@ -116,10 +116,11 @@
             this.tabControlMain.Controls.Add(this.tabPageDisplay);
             this.tabControlMain.Controls.Add(this.tabPageConsole);
             this.tabControlMain.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.tabControlMain.Location = new System.Drawing.Point(0, 107);
+            this.tabControlMain.Location = new System.Drawing.Point(0, 92);
             this.tabControlMain.Name = "tabControlMain";
             this.tabControlMain.SelectedIndex = 0;
-            this.tabControlMain.Size = new System.Drawing.Size(1794, 605);
+            this.tabControlMain.Size = new System.Drawing.Size(1794, 720);
+            this.tabControlMain.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControlMain.TabIndex = 0;
             // 
             // tabPageSourceFiles
@@ -129,7 +130,7 @@
             this.tabPageSourceFiles.Location = new System.Drawing.Point(4, 22);
             this.tabPageSourceFiles.Name = "tabPageSourceFiles";
             this.tabPageSourceFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageSourceFiles.Size = new System.Drawing.Size(1786, 579);
+            this.tabPageSourceFiles.Size = new System.Drawing.Size(1786, 694);
             this.tabPageSourceFiles.TabIndex = 2;
             this.tabPageSourceFiles.Text = "Source Audio Files";
             this.tabPageSourceFiles.UseVisualStyleBackColor = true;
@@ -180,7 +181,7 @@
             this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle2;
             this.dataGridViewFileList.Location = new System.Drawing.Point(3, 35);
             this.dataGridViewFileList.Name = "dataGridViewFileList";
-            this.dataGridViewFileList.Size = new System.Drawing.Size(1453, 548);
+            this.dataGridViewFileList.Size = new System.Drawing.Size(1453, 0);
             this.dataGridViewFileList.TabIndex = 0;
             this.dataGridViewFileList.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellClick);
             this.dataGridViewFileList.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellContentClick);
@@ -202,7 +203,7 @@
             this.tabPageOutputFiles.Location = new System.Drawing.Point(4, 22);
             this.tabPageOutputFiles.Name = "tabPageOutputFiles";
             this.tabPageOutputFiles.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageOutputFiles.Size = new System.Drawing.Size(1786, 579);
+            this.tabPageOutputFiles.Size = new System.Drawing.Size(1786, 694);
             this.tabPageOutputFiles.TabIndex = 3;
             this.tabPageOutputFiles.Text = "Output Files";
             this.tabPageOutputFiles.UseVisualStyleBackColor = true;
@@ -251,7 +252,7 @@
             this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle4;
             this.dataGridCSVfiles.Location = new System.Drawing.Point(4, 35);
             this.dataGridCSVfiles.Name = "dataGridCSVfiles";
-            this.dataGridCSVfiles.Size = new System.Drawing.Size(1474, 544);
+            this.dataGridCSVfiles.Size = new System.Drawing.Size(1474, 0);
             this.dataGridCSVfiles.TabIndex = 1;
             this.dataGridCSVfiles.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellClick);
             this.dataGridCSVfiles.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellContentClick);
@@ -272,7 +273,7 @@
             this.tabPageDisplay.Location = new System.Drawing.Point(4, 22);
             this.tabPageDisplay.Name = "tabPageDisplay";
             this.tabPageDisplay.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageDisplay.Size = new System.Drawing.Size(1786, 579);
+            this.tabPageDisplay.Size = new System.Drawing.Size(1786, 694);
             this.tabPageDisplay.TabIndex = 0;
             this.tabPageDisplay.Text = "Display";
             this.tabPageDisplay.UseVisualStyleBackColor = true;
@@ -295,7 +296,7 @@
             this.splitContainerDisplay.Panel2.BackColor = System.Drawing.Color.Transparent;
             this.splitContainerDisplay.Panel2.Controls.Add(this.panelDisplayVisual);
             this.splitContainerDisplay.Panel2MinSize = 639;
-            this.splitContainerDisplay.Size = new System.Drawing.Size(1780, 573);
+            this.splitContainerDisplay.Size = new System.Drawing.Size(1780, 688);
             this.splitContainerDisplay.SplitterDistance = 190;
             this.splitContainerDisplay.TabIndex = 0;
             // 
@@ -306,14 +307,14 @@
             this.panelDisplayControls.Controls.Add(this.panelSonogramControls);
             this.panelDisplayControls.Controls.Add(this.labelCursorValue);
             this.panelDisplayControls.Controls.Add(this.textBoxCursorValue);
-            this.panelDisplayControls.Controls.Add(this.labelFileDurationInMinutes);
-            this.panelDisplayControls.Controls.Add(this.label4);
+            this.panelDisplayControls.Controls.Add(this.labelSourceFileDurationInMinutes);
+            this.panelDisplayControls.Controls.Add(this.labelSourceFileName);
             this.panelDisplayControls.Controls.Add(this.textBoxCursorLocation);
             this.panelDisplayControls.Controls.Add(this.label3);
             this.panelDisplayControls.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDisplayControls.Location = new System.Drawing.Point(0, 0);
             this.panelDisplayControls.Name = "panelDisplayControls";
-            this.panelDisplayControls.Size = new System.Drawing.Size(190, 573);
+            this.panelDisplayControls.Size = new System.Drawing.Size(190, 688);
             this.panelDisplayControls.TabIndex = 0;
             // 
             // panelSonogramControls
@@ -325,7 +326,7 @@
             this.panelSonogramControls.Controls.Add(this.buttonRefreshSonogram);
             this.panelSonogramControls.Controls.Add(this.buttonAudacityRun);
             this.panelSonogramControls.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelSonogramControls.Location = new System.Drawing.Point(0, 364);
+            this.panelSonogramControls.Location = new System.Drawing.Point(0, 479);
             this.panelSonogramControls.Name = "panelSonogramControls";
             this.panelSonogramControls.Size = new System.Drawing.Size(188, 207);
             this.panelSonogramControls.TabIndex = 7;
@@ -405,24 +406,24 @@
             this.textBoxCursorValue.Size = new System.Drawing.Size(160, 20);
             this.textBoxCursorValue.TabIndex = 5;
             // 
-            // labelFileDurationInMinutes
+            // labelSourceFileDurationInMinutes
             // 
-            this.labelFileDurationInMinutes.AutoSize = true;
-            this.labelFileDurationInMinutes.Location = new System.Drawing.Point(10, 41);
-            this.labelFileDurationInMinutes.Name = "labelFileDurationInMinutes";
-            this.labelFileDurationInMinutes.Size = new System.Drawing.Size(111, 13);
-            this.labelFileDurationInMinutes.TabIndex = 4;
-            this.labelFileDurationInMinutes.Text = "File Duration (minutes)";
+            this.labelSourceFileDurationInMinutes.AutoSize = true;
+            this.labelSourceFileDurationInMinutes.Location = new System.Drawing.Point(10, 41);
+            this.labelSourceFileDurationInMinutes.Name = "labelSourceFileDurationInMinutes";
+            this.labelSourceFileDurationInMinutes.Size = new System.Drawing.Size(111, 13);
+            this.labelSourceFileDurationInMinutes.TabIndex = 4;
+            this.labelSourceFileDurationInMinutes.Text = "File Duration (minutes)";
             // 
-            // label4
+            // labelSourceFileName
             // 
-            this.label4.AutoSize = true;
-            this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label4.Location = new System.Drawing.Point(10, 13);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(80, 17);
-            this.label4.TabIndex = 3;
-            this.label4.Text = "File Name";
+            this.labelSourceFileName.AutoSize = true;
+            this.labelSourceFileName.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.labelSourceFileName.Location = new System.Drawing.Point(10, 13);
+            this.labelSourceFileName.Name = "labelSourceFileName";
+            this.labelSourceFileName.Size = new System.Drawing.Size(136, 17);
+            this.labelSourceFileName.TabIndex = 3;
+            this.labelSourceFileName.Text = "Source File Name";
             // 
             // textBoxCursorLocation
             // 
@@ -448,7 +449,7 @@
             this.panelDisplayVisual.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDisplayVisual.Location = new System.Drawing.Point(0, 0);
             this.panelDisplayVisual.Name = "panelDisplayVisual";
-            this.panelDisplayVisual.Size = new System.Drawing.Size(1586, 573);
+            this.panelDisplayVisual.Size = new System.Drawing.Size(1586, 688);
             this.panelDisplayVisual.TabIndex = 3;
             this.panelDisplayVisual.Paint += new System.Windows.Forms.PaintEventHandler(this.panelDisplayVisual_Paint);
             // 
@@ -465,9 +466,9 @@
             // 
             this.pictureBoxSonogram.BackColor = System.Drawing.Color.DarkGray;
             this.pictureBoxSonogram.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pictureBoxSonogram.Location = new System.Drawing.Point(0, 365);
+            this.pictureBoxSonogram.Location = new System.Drawing.Point(0, 371);
             this.pictureBoxSonogram.Name = "pictureBoxSonogram";
-            this.pictureBoxSonogram.Size = new System.Drawing.Size(1586, 208);
+            this.pictureBoxSonogram.Size = new System.Drawing.Size(1586, 317);
             this.pictureBoxSonogram.TabIndex = 2;
             this.pictureBoxSonogram.TabStop = false;
             // 
@@ -490,7 +491,7 @@
             this.tabPageConsole.Location = new System.Drawing.Point(4, 22);
             this.tabPageConsole.Name = "tabPageConsole";
             this.tabPageConsole.Padding = new System.Windows.Forms.Padding(3);
-            this.tabPageConsole.Size = new System.Drawing.Size(1786, 579);
+            this.tabPageConsole.Size = new System.Drawing.Size(1786, 694);
             this.tabPageConsole.TabIndex = 1;
             this.tabPageConsole.Text = "Console";
             this.tabPageConsole.UseVisualStyleBackColor = true;
@@ -506,7 +507,7 @@
             this.textBoxConsole.Name = "textBoxConsole";
             this.textBoxConsole.ReadOnly = true;
             this.textBoxConsole.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.textBoxConsole.Size = new System.Drawing.Size(1780, 573);
+            this.textBoxConsole.Size = new System.Drawing.Size(1780, 688);
             this.textBoxConsole.TabIndex = 0;
             // 
             // btnUpdateSourceFileList
@@ -677,7 +678,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1794, 712);
+            this.ClientSize = new System.Drawing.Size(1794, 812);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tabControlMain);
             this.Name = "MainForm";
@@ -713,7 +714,6 @@
 
         #endregion
 
-        private TabControl tabControlMain;
         private TabPage tabPageSourceFiles;
         private DataGridView dataGridViewFileList;
         private TabPage tabPageDisplay;
@@ -750,8 +750,8 @@
         private DataGridViewTextBoxColumn durationDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn mediaTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn fileLengthDataGridViewTextBoxColumn;
-        private Label labelFileDurationInMinutes;
-        private Label label4;
+        private Label labelSourceFileDurationInMinutes;
+        private Label labelSourceFileName;
         private TextBox textBoxCursorLocation;
         private Label label3;
         private Button buttonAudacityRun;
@@ -764,6 +764,7 @@
         private CheckBox checkBoxSonnogramNoiseReduce;
         private Label labelSonogramFileName;
         private Label labelSonogramName;
+        public TabControl tabControlMain;
 
 
     }

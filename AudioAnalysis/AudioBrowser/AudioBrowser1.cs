@@ -31,6 +31,7 @@ namespace AudioBrowser
         const int DEFAULT_trackHeight = 20; //number of tracks to appear in the visual index
         const int DEFAULT_trackCount  = 15; //pixel height of track in the visual index
         const int DEFAULT_segmentDuration = 1;
+        const int DEFAULT_segmentOverlap = 0;
         const int DEFAULT_resampleRate = 17640;
         const int DEFAULT_frameLength = 512;
         const int DEFAULT_lowFreqBound = 500;
@@ -40,29 +41,30 @@ namespace AudioBrowser
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         //public static string key_FILE_NAME       = "FILE_NAME";
-        public static string key_RECORDING_DIR   = "RECORDING_DIR";
-        public static string key_OUTPUT_DIR      = "OUTPUT_DIR";
-        public static string key_AUDACITY_PATH   = "AUDACITY_PATH";
-        public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
-        public static string key_RESAMPLE_RATE   = "RESAMPLE_RATE";
-        public static string key_FRAME_LENGTH    = "FRAME_LENGTH";
-        public static string key_FRAME_OVERLAP   = "FRAME_OVERLAP";
-        public static string key_SONOGRAM_BG_THRESHOLD = "SONOGRAM_BG_THRESHOLD";
+        protected static string key_RECORDING_DIR = "RECORDING_DIR";
+        protected static string key_OUTPUT_DIR = "OUTPUT_DIR";
+        protected static string key_AUDACITY_PATH = "AUDACITY_PATH";
+        protected static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
+        protected static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
+        protected static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
+        protected static string key_FRAME_LENGTH = "FRAME_LENGTH";
+        protected static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
+        protected static string key_SONOGRAM_BG_THRESHOLD = "SONOGRAM_BG_THRESHOLD";
 
 
-        public static bool[]   displayColumn        = { false, false, false, true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true, true, true, true, false };
-        public static bool[] weightedIndexColumn    = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
-        public static double[] comboWeights         = {0.0, 0.4, 0.1, 0.4, 0.1};  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
+        protected static bool[]   displayColumn        = { false, false, false, true,  true,  true,  true, true,  true,  true,  true,  true,  true,  true, true, true, true, false };
+        protected static bool[] weightedIndexColumn = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
+        protected static double[] comboWeights = { 0.0, 0.4, 0.1, 0.4, 0.1 };  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
         //                       SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
 
 
         /// <summary>
         /// a set of parameters derived from ini file
         /// </summary>
-        public struct Parameters
+        protected struct Parameters
         {
             public bool iniFileFound;
-            public int frameLength, resampleRate, lowFreqBound;
+            public int segmentOverlap, frameLength, resampleRate, lowFreqBound;
             public double segmentDuration, frameOverlap, sonogram_BackgroundThreshold;
             public int trackHeight, trackCount;
             public string audioFileName, recordingDir, sourceRecordingPath, outputDir, csvPath, AudacityPath;
@@ -76,8 +78,9 @@ namespace AudioBrowser
                 outputDir     = DEFAULT_outputDir;
                 csvPath       = DEFAULT_outputDir;
                 AudacityPath  = DEFAULT_AudacityPath;
-                segmentDuration = DEFAULT_segmentDuration; // in whole minutes
-                resampleRate  = DEFAULT_resampleRate; //samples per second
+                segmentDuration = DEFAULT_segmentDuration; // in minutes
+                segmentOverlap = DEFAULT_segmentOverlap; // in whole seconds
+                resampleRate = DEFAULT_resampleRate; //samples per second
                 frameLength   = DEFAULT_frameLength;
                 frameOverlap  = DEFAULT_frameOverlap;
                 lowFreqBound  = DEFAULT_lowFreqBound;
@@ -215,7 +218,7 @@ namespace AudioBrowser
 
 
 
-        public static AudioBrowser1.Parameters ReadIniFile(string iniPath, int verbosity)
+        protected static AudioBrowser1.Parameters ReadIniFile(string iniPath, int verbosity)
         {
             var config = new Configuration(iniPath);
             Dictionary<string, string> dict = config.GetTable();
@@ -229,6 +232,7 @@ namespace AudioBrowser
             p.frameLength = Int32.Parse(dict[AudioBrowser1.key_FRAME_LENGTH]);
             p.resampleRate = Int32.Parse(dict[AudioBrowser1.key_RESAMPLE_RATE]);
             p.segmentDuration = Int32.Parse(dict[AudioBrowser1.key_SEGMENT_DURATION]);
+            p.segmentOverlap = Int32.Parse(dict[AudioBrowser1.key_SEGMENT_OVERLAP]);
             p.frameOverlap = 0.0; //default value
             
             //add in internal parameters
@@ -609,7 +613,7 @@ namespace AudioBrowser
                     Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
                     Console.WriteLine("# Extracting acoustic indices from file: " + parameters.sourceRecordingPath);
                     WriteExtractionParameters2Console();
-                    AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
+                    AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.segmentOverlap, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
                     Console.WriteLine("######################### FINISHED ##########################\n\n");
 
                     string outputCSVPath = Path.Combine(parameters.outputDir, Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath) + ".csv");

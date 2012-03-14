@@ -177,28 +177,40 @@ var errorData = process.ErrorData;
 
                     settings.fiSourceRecording = sourceRecordingPath;
 
-                    //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
-                    Console.WriteLine("# Extracting acoustic indices from file: " + sourceRecordingPath);
-
-                    WriteExtractionParameters2Console(settings);
                     this.ProcessRecording(sourceRecordingPath, outputFilePath);
                 }// if checked
             } //foreach
 
             if (this.dataGridViewFileList.RowCount < 1 || count < 1)
             {
-                MessageBox.Show("There are no rows or no rows are selected.");
+                MessageBox.Show("No file is selected.");
             }
         }
 
-        private void ProcessRecording(FileInfo sourceRecordingPath, FileInfo outputFilePath)
+        private void ProcessRecording(FileInfo sourceRecordingPath, FileInfo reportfilePath)
         {
-            AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, settings.OutputDir.FullName, settings.SegmentDuration, settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
-            string target = outputFilePath.FullName + ".BACKUP";
+            //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
+            string outputDir = Path.GetDirectoryName(reportfilePath.FullName);
+            Console.WriteLine("# Processing audio file: " + sourceRecordingPath);
+            Console.WriteLine("# Output  to  directory: " + outputDir);
+
+            WriteExtractionParameters2Console(settings);
+
+            var op = AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, outputDir, settings.SegmentDuration, settings.SegmentOverlap,
+                                                   settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
+            List<string> list = op.Item1;
+            string reportSeparator = "CSV";
+            string header = AcousticIndices.FormatHeader(reportSeparator);
+            list.Insert(0, header); //put header at top of list
+            string fName = Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + ".csv";
+            FileTools.WriteTextFile(reportfilePath.FullName, list);
+
+            string target = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + "_BACKUP.csv");
             File.Delete(target);                        // Ensure that the target does not exist.
-            File.Copy(outputFilePath.FullName, target); //copy the file 2 target
+            File.Copy(reportfilePath.FullName, target); //copy the file 2 target
 
             Console.WriteLine("Finished processing " + sourceRecordingPath.Name + ".");
+            Console.WriteLine("CSV ouput file is @ " + reportfilePath.FullName);
             Console.WriteLine("###################################################\n\n");
         }
 
@@ -235,7 +247,7 @@ var errorData = process.ErrorData;
 
                     var sourceFilePath =
                         new FileInfo(
-                            Path.Combine(this.settings.SourceDir.FullName, Path.GetFileNameWithoutExtension(csvFileName) + ".wav"));
+                            Path.Combine(this.settings.SourceDir.FullName, Path.GetFileNameWithoutExtension(csvFileName) + ".mp3"));
                     settings.fiSourceRecording = sourceFilePath;
 
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
@@ -255,6 +267,8 @@ var errorData = process.ErrorData;
                         //int visualIndex_TrackCount = settings.TrackCount + 2; //+ 2 time scale tracks
                         //this.pictureBoxVisualIndex.Height = visualIndex_TrackCount * settings.TrackHeight;
                         //this.panelTrackBar.Location = new Point(0, this.pictureBoxVisualIndex.Height);
+                        this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
+                        this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
                         this.tabControlMain.SelectTab("tabPageDisplay");
                     }
                 } // if (isChecked)
@@ -263,7 +277,7 @@ var errorData = process.ErrorData;
 
             if (this.dataGridCSVfiles.RowCount < 1 || count < 1)
             {
-                MessageBox.Show("There are no rows or no rows are selected.");
+                MessageBox.Show("No CSV file is selected.");
             }
         }
 
@@ -292,9 +306,9 @@ var errorData = process.ErrorData;
             //reconstruct new list of values to display
             var displayValues = new List<double[]>(); //reconstruct new list of values to display
             var displayHeaders = new List<string>();   //reconstruct new list of headers to display
-            for (int i = 0; i < AudioBrowserSettings.displayColumn.Length; i++)
+            for (int i = 0; i < AcousticIndices.displayColumn.Length; i++)
             {
-                if (AudioBrowser1.displayColumn[i])
+                if (AcousticIndices.displayColumn[i])
                 {
                     displayValues.Add(values[i]);
                     displayHeaders.Add(headers[i]);
@@ -304,16 +318,16 @@ var errorData = process.ErrorData;
             //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
             var comboHeaders = new List<string>();          //reconstruct new list of headers used to calculate weighted index
             var weightedComboValues = new List<double[]>(); //reconstruct new list of values to calculate weighted combination index
-            for (int i = 0; i < AudioBrowserSettings.weightedIndexColumn.Length; i++)
+            for (int i = 0; i < AcousticIndices.weightedIndexColumn.Length; i++)
             {
-                if (AudioBrowser1.weightedIndexColumn[i])
+                if (AcousticIndices.weightedIndexColumn[i])
                 {
                     double[] norm = DataTools.NormaliseArea(values[i]);
                     weightedComboValues.Add(norm);
                     comboHeaders.Add(headers[i]);
                 }
             }
-            this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(weightedComboValues, AudioBrowserSettings.comboWeights);
+            this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(weightedComboValues, AcousticIndices.comboWeights);
             this.weightedIndices = DataTools.normalise(weightedIndices);
 
             //add in weighted bias for chorus and backgorund noise
@@ -348,8 +362,8 @@ var errorData = process.ErrorData;
 
 
             Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
-                             comboHeaders[0], AudioBrowserSettings.comboWeights[0], comboHeaders[1], AudioBrowserSettings.comboWeights[1], comboHeaders[2], AudioBrowserSettings.comboWeights[2],
-                             comboHeaders[3], AudioBrowserSettings.comboWeights[3], comboHeaders[4], AudioBrowserSettings.comboWeights[4]);
+                             comboHeaders[0], AcousticIndices.comboWeights[0], comboHeaders[1], AcousticIndices.comboWeights[1], comboHeaders[2], AcousticIndices.comboWeights[2],
+                             comboHeaders[3], AcousticIndices.comboWeights[3], comboHeaders[4], AcousticIndices.comboWeights[4]);
             return error;
         }
 
@@ -363,7 +377,6 @@ var errorData = process.ErrorData;
             int myX = e.X; //other mouse calls:       Form.MousePosition.X  and  Mouse.GetPosition(this.pictureBoxVisualIndex); and   Cursor.Position;
             if (myX > this.sourceRecording_MinutesDuration - 1) return; //minuteDuration was set during load
 
-            this.labelFileDurationInMinutes.Text = "File duration = "+ this.sourceRecording_MinutesDuration + " minutes";
             string text = (myX / 60) + "hr:" + (myX % 60) + "min (" + myX + ")"; //assumes scale= 1 pixel / minute
             this.textBoxCursorLocation.Text = text; // pixel position = minutes
 
@@ -390,7 +403,7 @@ var errorData = process.ErrorData;
         private void pictureBoxVisualIndex_MouseClick(object sender, MouseEventArgs e)
         {
             this.textBoxConsole.Clear();
-            //     this.tabControlMain.SelectTab("tabPageConsole");
+            this.tabControlMain.SelectTab("tabPageConsole");
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
@@ -417,7 +430,11 @@ var errorData = process.ErrorData;
             string sourceFName = Path.GetFileNameWithoutExtension(settings.fiSourceRecording.FullName);
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
 
-            string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
+            //string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
+            string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+
+            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
+
 
             Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
             Console.WriteLine("\n\tWriting audio segment to dir: " + settings.OutputDir.FullName);
@@ -425,62 +442,69 @@ var errorData = process.ErrorData;
 
             //get segment from source recording
             DateTime time1 = DateTime.Now;
-            //    AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
-            //    DateTime time2 = DateTime.Now;
-            //    TimeSpan timeSpan = time2 - time1;
-            //    Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
+            //AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(settings.ResampleRate); //creates AudioUtility and
+            SpecificWavAudioUtility.GetSingleSegment(audioUtility, settings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
+            AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
+
+            DateTime time2 = DateTime.Now;
+            TimeSpan timeSpan = time2 - time1;
+            Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");
 
             //store info
-            ////this.segmentName_TextBox.Text = Path.GetFileName(recording.FilePath);
-            //settings.fiSegmentrecording = recording.FilePath;
+            this.labelSonogramFileName.Text = Path.GetFileName(recordingSegment.FilePath);
+            settings.fiSegmentrecording = new FileInfo(recordingSegment.FilePath);
 
 
-            ////make the sonogram
-            //Console.WriteLine("\n\tPreparing sonogram of audio segment");
-            //SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            //sonoConfig.SourceFName = recording.FileName;
-            //sonoConfig.WindowSize = parameters.frameLength;
-            //sonoConfig.WindowOverlap = parameters.frameOverlap;
-            //BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
+            //make the sonogram
+            Console.WriteLine("\n\tPreparing sonogram of audio segment");
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.SourceFName = recordingSegment.FileName;
+            sonoConfig.WindowSize = settings.FrameLength;
+            sonoConfig.WindowOverlap = settings.FrameOverlap;
+            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recordingSegment.GetWavReader());
 
             // (iii) NOISE REDUCTION
             if (this.checkBoxSonnogramNoiseReduce.Checked)
             {
-                Console.WriteLine("WILL DO NOISE REDUCTION");
-                //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, parameters.sonogram_BackgroundThreshold);
-                //sonogram.Data = tuple.Item1;   // store data matrix
+                Console.WriteLine("NOISE REDUCTION");
+                var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, settings.SonogramBackgroundThreshold);
+                sonogram.Data = tuple.Item1;   // store data matrix
             }
 
-            ////prepare the image
-            //bool doHighlightSubband = false;
-            //bool add1kHzLines = true;
-            //using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            //using (Image_MultiTrack image = new Image_MultiTrack(img))
-            //{
-            //    if (sonogramPicture != null) sonogramPicture.Dispose(); //get rid of previous sonogram
-            //    //add time scale
-            //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            //prepare the image
+            bool doHighlightSubband = false;
+            bool add1kHzLines = true;
+            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            using (Image_MultiTrack image = new Image_MultiTrack(img))
+            {
+                if (pictureBoxSonogram != null) pictureBoxSonogram.Dispose(); //get rid of previous sonogram
+                //add time scale
+                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
                 if (this.checkBoxSonogramAnnotate.Checked) 
                 {
-                      Console.WriteLine("WILL DO ANNOTATE SONOGRAM");
+                      Console.WriteLine("ANNOTATE SONOGRAM");
                 }
 
-            //    sonogramPicture = new PictureBox();
-            //    sonogramPicture.Image = image.GetImage();
-            //    sonogramPicture.SetBounds(0, 0, sonogramPicture.Image.Width, sonogramPicture.Image.Height);
-            //    this.sonogramPanel.Controls.Add(sonogramPicture);
-            //    this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
-            //    this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
-            //    this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
-            //    this.sonogramPanel_hScrollBar.Value = 0;
-            //    this.sonogramPanel_hScrollBar.Visible = true;
-            //}
+                this.pictureBoxSonogram = new PictureBox();
+                pictureBoxSonogram.Image = image.GetImage();
+                pictureBoxSonogram.SetBounds(0, 0, pictureBoxSonogram.Image.Width, pictureBoxSonogram.Image.Height);
+                pictureBoxSonogram.Visible = true;
+                this.panelDisplayVisual.Controls.Add(this.pictureBoxSonogram);
 
-            //string sonogramPath = Path.Combine(parameters.outputDir, (Path.GetFileNameWithoutExtension(segmentName) + ".png"));
-            //Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
-            //sonogramPicture.Image.Save(sonogramPath);
-            //this.tabControlMain.SelectTab("tabPageDisplay");   
+                //this.panelSonogramPanel.Controls.Add(pictureBoxSonogram);
+                //this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
+                //this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
+                //this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
+                //this.sonogramPanel_hScrollBar.Value = 0;
+                //this.sonogramPanel_hScrollBar.Visible = true;
+            }
+
+            string sonogramPath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
+            Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
+            pictureBoxSonogram.Image.Save(sonogramPath);
+            this.tabControlMain.SelectTab("tabPageDisplay");   
             this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
         }
 

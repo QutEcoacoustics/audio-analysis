@@ -50,7 +50,7 @@ namespace MarkovModels
             for (int w = 1; w < probs.Length-1; w++) probs[w] = 0.01; //zero element = zero length, therefore p = 0.0;
             for (int w = 1; w < sequences.Length; w++) probs[sequences[w].Length] += 1.0;
             probs = DataTools.filterMovingAverage(probs, 9);
-            probs = DataTools.NormaliseProbabilites(probs);
+            probs = DataTools.Normalise2Probabilites(probs);
             return probs;
         }
 

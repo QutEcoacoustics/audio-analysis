@@ -1981,18 +1981,37 @@ namespace TowseyLib
         /// </summary>
         /// <param name="v"></param>
         /// <returns></returns>
-        public static double[] NormaliseArea(double[] array)
+        public static double[] NormaliseArea(double[] data)
         {
-            double[] v = DataTools.normalise(array); //ensures all values in 0,1
+            double[] v = DataTools.normalise(data); //ensures all values in 0,1
             double sum = 0.0;
             for (int i = 0; i < v.Length; i++) sum += v[i];
-            if (sum == 0.0) return array;
+            if (sum == 0.0) return data;
 
             double[] ret = new double[v.Length];
             for (int i = 0; i < v.Length; i++) ret[i] = v[i] / sum;
 
             return ret;
         }
+        /// <summary>
+        /// normalises an array of doubles to probabilities that sum to one.
+        /// assumes that values in the data vector are >= zero.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <returns></returns>
+        static public double[] Normalise2Probabilites(double[] data)
+        {
+            int length = data.Length;
+
+            double sum = 0;
+            for (int i = 0; i < length; i++) sum += data[i];
+            double[] probs = new double[length];
+            if (sum == 0.0) return probs;
+            for (int i = 0; i < length; i++) probs[i] = data[i] / sum;
+            
+            return probs;
+        } // end NormaliseProbabilites()
+
 
         /// <summary>
         /// normalises the values in a matrix such that the minimum value
@@ -2125,27 +2144,6 @@ namespace TowseyLib
 
   public const double ln2 = 0.69314718;   //log 2 base e
 
-    /// <summary>
-    /// normalises an array of doubles to probabilities that sum to one.
-    /// </summary>
-    /// <param name="data"></param>
-    /// <returns></returns>
-  static public double[] NormaliseProbabilites(double[] data)
-  {
-      int length = data.Length;
-      double[] probs = new double[length];
-
-      double sum = 0;
-      for (int i = 0; i < length; i++) sum += data[i];
-      if(sum == 0.0) return probs;
-      for (int i = 0; i < length; i++)
-      {
-          probs[i] = data[i] / sum;
-      }
-      return probs;
-  } // end NormaliseProbabilites()
-
-
   /// <summary>
   /// Calculates the entropy of the passed discrete distribution.
   /// 
@@ -2186,8 +2184,25 @@ namespace TowseyLib
       }
       return H / DataTools.ln2;
   }
+
+    /// <summary>
+    /// returns the entropy of a vector of values normalized for vector length
+    /// </summary>
+    /// <param name="distr"></param>
+    /// <returns></returns>
+    public static double Entropy_normalised(double[] v)
+    {
+        double[] pmf2 = DataTools.Normalise2Probabilites(v); //pmf = probability mass funciton
+        double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
+        return DataTools.Entropy(pmf2) / normFactor;
+    }
+    public static double Entropy_normalised(int[] v)
+    {
+        double[] pmf2 = DataTools.NormaliseArea(v); //pmf = probability mass funciton
+        double normFactor = Math.Log(v.Length) / DataTools.ln2; //normalize for length of the array
+        return DataTools.Entropy(pmf2) / normFactor;
+    }
 	
- 	
  	/**
  	 * Calculates the relative entropy of the passed 
  	 * discrete probability distribution.

@@ -73,7 +73,7 @@ namespace MarkovModels
                 sum = stateDurationCounts[i, maxDuration - 2] + stateDurationCounts[i, maxDuration - 1];
                 density[maxDuration - 1] = sum / (double)2;
 
-                density = DataTools.NormaliseProbabilites(density);
+                density = DataTools.Normalise2Probabilites(density);
                 for (int j = 0; j < maxDuration; j++) stateDurationProbs[i, j] = density[j];
             }//end of all states
 

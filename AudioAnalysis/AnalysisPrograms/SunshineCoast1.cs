@@ -37,7 +37,7 @@ namespace AnalysisPrograms
             AcousticIndices.Parameters parameters = AcousticIndices.ReadIniFile(iniPath, Log.Verbosity);
             Log.WriteIfVerbose("  ");
 
-            AcousticIndices.ScanRecording(sourceRecordingPath, outputDir, parameters.segmentDuration, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
+            AcousticIndices.ScanRecording(sourceRecordingPath, outputDir, parameters.segmentDuration, parameters.segmentOverlap, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
 
             Log.WriteLine("# Finished extracting indices from source recording:- " + Path.GetFileName(sourceRecordingPath));
 

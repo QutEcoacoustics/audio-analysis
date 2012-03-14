@@ -19,6 +19,12 @@ namespace AnalysisPrograms
     {
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
+        public static bool[] displayColumn = { false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false };
+        public static bool[] weightedIndexColumn = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
+        public static double[] comboWeights = { 0.0, 0.4, 0.1, 0.4, 0.1 };  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
+        //                       SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
+
+
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
@@ -36,12 +42,12 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Parameters
         {
-            public int frameLength, resampleRate, lowFreqBound;
-            public double segmentDuration, segmentOverlap, frameOverlap;
+            public int frameLength, resampleRate, lowFreqBound, segmentOverlap;
+            public double segmentDuration, frameOverlap;
             public int DRAW_SONOGRAMS;
             public string reportFormat;
 
-            public Parameters(double _segmentDuration, double _segmentOverlap, int _resampleRate,
+            public Parameters(double _segmentDuration, int _segmentOverlap, int _resampleRate,
                               int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
             {
                 segmentDuration = _segmentDuration;
@@ -60,8 +66,8 @@ namespace AnalysisPrograms
         /// </summary>
         public struct Indices2
         {
-            public double snr, bgNoise, activity, avSegmentDuration, avSig_dB, entropyOfAmpl; //amplitude indices
-            public double spectralCover, lowFreqCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectra1, avClusterDuration; //spectral indices
+            public double snr, bgNoise, activity, avSegmentDuration, avSig_dB, entropyOfAmplitude; //amplitude indices
+            public double spectralCover, lowFreqCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum, avClusterDuration; //spectral indices
             public int    segmentCount, clusterCount;
 
             public Indices2(double _snr, double _bgNoise, double _activity, double _avSegmentLength, int _segmentCount, double _avSig_dB,
@@ -74,12 +80,12 @@ namespace AnalysisPrograms
                 segmentCount = _segmentCount;
                 avSegmentDuration = _avSegmentLength;
                 avSig_dB   = _avSig_dB;
-                entropyOfAmpl = _entropyAmp;
+                entropyOfAmplitude = _entropyAmp;
                 spectralCover = _spectralCover;
                 lowFreqCover  = _lowFreqCover;
                 entropyOfPeakFreqDistr = _peakFreqEntropy;
                 entropyOfAvSpectrum   = _entropyOfAvSpectrum;
-                entropyOfVarianceSpectra1 = _entropyOfVarianceSpectrum;
+                entropyOfVarianceSpectrum = _entropyOfVarianceSpectrum;
                 clusterCount = _clusterCount;
                 avClusterDuration = _avClusterDuration; //av length of clusters > 1 frame.
             }
@@ -93,7 +99,7 @@ namespace AnalysisPrograms
 
             AcousticIndices.Parameters paramaters; // st
             paramaters.segmentDuration = Double.Parse(dict[AcousticIndices.key_SEGMENT_DURATION]);
-            paramaters.segmentOverlap = Double.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
+            paramaters.segmentOverlap = Int32.Parse(dict[AcousticIndices.key_SEGMENT_OVERLAP]);
             paramaters.resampleRate = Int32.Parse(dict[AcousticIndices.key_RESAMPLE_RATE]);
             paramaters.frameLength = Int32.Parse(dict[AcousticIndices.key_FRAME_LENGTH]);
             paramaters.frameOverlap = Double.Parse(dict[AcousticIndices.key_FRAME_OVERLAP]);
@@ -211,7 +217,7 @@ namespace AnalysisPrograms
             var results = ExtractIndices(recording);
 
             Indices2 indices = results.Item1;
-            AcousticIndices.WriteIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
+            AcousticIndices.AppendIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
 
             //iii: STORE IMAGES
             if (doStoreImages)
@@ -233,44 +239,43 @@ namespace AnalysisPrograms
         /// ScanRecording() method developed for use in Acoustic Browser.
         /// </summary>
         /// <param name="sourceRecordingPath"></param>
-        /// <param name="outputDir"></param>
-        /// <param name="segmentDuration_mins"></param>
+        /// <param name="outputDir">directory in which to put temp.wav files</param>
+        /// <param name="segmentDuration_mins">segment Duration in minutes</param>
+        /// <param name="segmentOverlap_secs">segment Overlap in seconds</param>
         /// <param name="resampleRate"></param>
         /// <param name="frameLength"></param>
         /// <param name="lowFreqBound"></param>
-        public static void ScanRecording(string sourceRecordingPath, string outputDir, double segmentDuration_mins, int resampleRate, int frameLength, int lowFreqBound)
+        public static System.Tuple<List<string>> ScanRecording(string sourceRecordingPath, string outputDir, double segmentDuration_mins, int segmentOverlap, 
+                                                               int resampleRate, int frameLength, int lowFreqBound)
         {
-            //SET UP THE REPORT FILE
-            string reportFormat = "CSV";
-            string reportfileName = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv");
-            AcousticIndices.WriteHeaderToReportFile(reportfileName, reportFormat);
-
             // Set up the file and get info
             SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
-            var sourceFileInfo = new FileInfo(sourceRecordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(sourceFileInfo.Extension);
-            var sourceAudioDuration = audioUtility.Duration(sourceFileInfo, mimeType);
+            var fiSource = new FileInfo(sourceRecordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSource.Extension);
+            var sourceAudioDuration = audioUtility.Duration(fiSource, mimeType);
             int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
 
             //set up the temporary audio segment output file
             string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
-            FileInfo outputSegmentFileInfo = new FileInfo(outputSegmentPath);
+            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
 
 
             Console.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
-            Console.WriteLine("# Source audio - datetime: {0}    {1}", sourceFileInfo.CreationTime.ToLongDateString(), sourceFileInfo.CreationTime.ToLongTimeString());
+            Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSource.CreationTime.ToLongDateString(), fiSource.CreationTime.ToLongTimeString());
             Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
             Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
             Console.WriteLine("# Source audio - segments: {0}", segmentCount);
-            Console.WriteLine("# Output to  directory: " + outputDir);
 
-            int segmentDuration_ms = (int)(segmentDuration_mins * 60000);
+            int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
+            string reportFormat = "CSV";
 
 
             // LOOP THROUGH THE FILE
             //initialse counters
             DateTime tStart = DateTime.Now;
             DateTime tPrevious = tStart;
+            //init List to store indices
+            var outputData = new List<string>();
 
             segmentCount = 20;
            
@@ -289,17 +294,17 @@ namespace AnalysisPrograms
                 if (s == 0) iterTime = 0.0;
                 tPrevious = tNow;
 
-                Console.WriteLine("\n");
+                //Console.WriteLine("\n");
                 Console.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
                                            s,        startMinutes,     timeDuration,         t2End,            iterTime,           avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + segmentDuration_ms;
                 //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-                SpecificWavAudioUtility.GetSingleSegment(audioUtility, sourceFileInfo, outputSegmentFileInfo, startMilliseconds, endMilliseconds);
-                AudioRecording recordingSegment = new AudioRecording(outputSegmentFileInfo.FullName, audioUtility);
+                SpecificWavAudioUtility.GetSingleSegment(audioUtility, fiSource, fiOutputSegment, startMilliseconds, endMilliseconds);
+                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
 
                 //double check that recording is over minimum length
-                double segmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
+                double wavSegmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
                 int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
                 int minimumLength = 3 * frameLength; //ignore recordings shorter than three frames
                 if (sampleCount <= minimumLength)
@@ -309,18 +314,20 @@ namespace AnalysisPrograms
                 }
 
                 //#############################################################################################################################################
+                //FOLLOWING LINES SPECIFIC TO EXTRACTING ACOUSTIC INDICES
                 //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
                 //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
                 var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
-
                 AcousticIndices.Indices2 indices = results.Item1;
-                AcousticIndices.WriteIndicesToReportFile(reportfileName, reportFormat, s, startMinutes, segmentDuration, indices);
-
+                string line = AcousticIndices.FormatOneLineOfIndices(reportFormat, s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
                 //#############################################################################################################################################
 
+                outputData.Add(line);
                 recordingSegment.Dispose();
                 startMinutes += segmentDuration_mins;
             } //end of for loop
+
+            return System.Tuple.Create(outputData);
         }
 
 
@@ -328,9 +335,9 @@ namespace AnalysisPrograms
         /// <summary>
         /// Extracts indices from a single  segment of recording
         /// </summary>
-        /// <param name="recording"></param>
-        /// <param name="int frameSize = 128">number of signal samples in frame. Default = 128</param>
-        /// <param name="int lowFreqBound = 500">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
+        /// <param name="recording">an audio recording</param>
+        /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
+        /// <param name="int lowFreqBound">Do not include freq bins below this bound in estimation of indices. Default = 500 Herz.
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
@@ -343,7 +350,7 @@ namespace AnalysisPrograms
 
             double windowOverlap = 0.0;
             int signalLength = recording.GetWavReader().Samples.Length;
-            double frameDuration = frameSize * (1 - windowOverlap) / recording.SampleRate;
+            double frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
 
 
             //i: EXTRACT ENVELOPE and FFTs
@@ -372,21 +379,20 @@ namespace AnalysisPrograms
 
             //#V#####################################################################################################################################################
             //#V#####################################################################################################################################################
-            //FIX UP THIS - Do NOT Do ANLSYES IF NO ACTIVE FRAMES
 
             //return if activeFrameCount = 0
-            if (activeFrameCount == 0)
+            if (activeFrameCount <= 10)
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
                 indices.spectralCover = 0.0;
                 indices.lowFreqCover = 0.0;
-                indices.entropyOfAmpl = 0.0;
-                indices.entropyOfPeakFreqDistr = 0.0;
-                indices.entropyOfAvSpectrum = 0.0;
-                indices.entropyOfVarianceSpectra1 = 0.0;
+                indices.entropyOfAmplitude        = 1.0;
+                indices.entropyOfPeakFreqDistr    = 1.0;
+                indices.entropyOfAvSpectrum       = 1.0;
+                indices.entropyOfVarianceSpectrum = 1.0;
                 indices.clusterCount = 0;
-                indices.avClusterDuration = 0; //av cluster durtaion in milliseconds
+                indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
                 scores = null;
                 int[] clusterHits_dummy = null;
                 List<double[]> clusterWts_dummy = null;
@@ -398,97 +404,40 @@ namespace AnalysisPrograms
 
 
 
-            ///iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
-            if (activeFrameCount == 0)
-            {
-                indices.avSegmentDuration = 0.0;
-                indices.segmentCount = 0;
-            }
-            else
-            {
-                int count = 0;
-                for (int i = 1; i < dBarray.Length; i++)
-                {
-                    if (!activeFrames[i] && activeFrames[i - 1]) count++; //count the ends of active segments
-                }
-                indices.segmentCount = count;
-                indices.avSegmentDuration = activeFrameCount / (double)count * frameDuration * 1000; //av segment duration in milliseconds
-            }
+            //iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
+            var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
+            indices.segmentCount = tuple4.Item1;
+            indices.avSegmentDuration = tuple4.Item2; //av segment duration in milliseconds
 
             //iv: ENVELOPE ENTROPY ANALYSIS
-            //double[] newArray = { 3.0, 3.0, 3.0, 3.0,  3.0, 3.0, 3.0, 3.0};
-            double[] pmf2 = DataTools.NormaliseProbabilites(envelope); //pmf = probability mass funciton
-            double normFactor = Math.Log(envelope.Length) / DataTools.ln2; //normalize for length of the array
-            indices.entropyOfAmpl = DataTools.Entropy(pmf2) / normFactor;
-            //Console.WriteLine("H(amplitude)= " + indices.ampl_1minusEntropy);
+            indices.entropyOfAmplitude = DataTools.Entropy_normalised(envelope);
 
-            
-            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER
-            //if (Log.Verbosity > 0) Console.Write("\t# Calculate Spectral Entropies.");
+            //remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;   // SPECTRAL AMPLITUDE THRESHOLD for smoothing backgorund
-
-            // obtain three spectral indices - derived ONLY from frames having acoustic energy.
-            //1) entropy of distribution of spectral peaks
-            //2) entropy of the average spectrum
-            //3) entropy of   variance  spectrum
-
             double[,] spectrogram = results2.Item3; //amplitude spectrogram
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
             double[] smoothedValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, smoothedValues);
             spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
+            //calculate boundary between hi and low frequency spectrum
             int freqBinCount = frameSize / 2; 
             double binWidth = recording.Nyquist / (double)freqBinCount;
             int excludeBins = (int)Math.Ceiling(lowFreqBound / binWidth);
-            // calculate hi and lo freq spectral coverage and then remove low lowFreqBound bins.
-            int hfCoverage = 0;
-            int lfCoverage = 0;
-            int hfCellCount = 0;
-            int lfCellCount = 0;
-            for (int i = 0; i < dBarray.Length; i++) //for all rows of spectrogram
-            {
-                for (int j = 0; j < excludeBins; j++)//set exclusion bands brings to zero
-                {
-                    if (spectrogram[i, j] >= spectralBgThreshold) lfCoverage++;
-                    lfCellCount++;
-                    spectrogram[i, j] = 0.0;
-                }
-                //caluclate coverage
-                for (int j = excludeBins; j < freqBinCount; j++)
-                {
-                    if (spectrogram[i, j] >= spectralBgThreshold) hfCoverage++;
-                    hfCellCount++;
-                }
-            }
-            indices.spectralCover = hfCoverage / (double)hfCellCount;
-            indices.lowFreqCover  = lfCoverage / (double)lfCellCount;
+
+
+            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER
+            var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, excludeBins);
+            indices.spectralCover = tuple3.Item1;
+            indices.lowFreqCover  = tuple3.Item2;
 
 
             //vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
             double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
-
-            double[] freqPeaks = new double[dBarray.Length]; //store frequency of peaks - return later for imaging purposes
-            int[] freqHistogram = new int[freqBinCount];
-            for (int i = 0; i < dBarray.Length; i++)
-            {
-                if (! activeFrames[i]) continue; //select only frames having acoustic energy >= threshold
-             
-                int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i)); //locate maximum peak
-                if (spectrogram[i, j] > peakThreshold) 
-                {
-                    freqHistogram[j-1] ++;  //spectrogram has a DC freq column which want to ignore.           
-                    freqPeaks[i] = recording.Nyquist * j / (double)spectrogram.GetLength(1); //store frequency of peak as double
-                }
-            } // over all frames in dB array
-
-            double[] pmf3;
-            freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
-            pmf3 = DataTools.NormaliseArea(freqHistogram);                         //pmf = probability mass function
-            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                    //normalize for length of the array
-            indices.entropyOfPeakFreqDistr = DataTools.Entropy(pmf3) / normFactor;
-            //DataTools.writeBarGraph(freqHistogram);
+            var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeFrames, peakThreshold, recording.Nyquist);
+            indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
+            double[] freqPeaks = tuple2.Item2;
 
             //SET UP ARRAY OF SCORES TO BE RETURNED LATER
             scores = new List<double[]>();
@@ -497,53 +446,11 @@ namespace AnalysisPrograms
 
 
             //vii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
-            //Entropy of average spectrum of those frames having activity
-            double[] avSpectrum  = new double[freqBinCount - excludeBins];  //for average  of the spectral bins
-            double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
-            for (int j = excludeBins; j < freqBinCount; j++) //for all frequency bins (excluding low freq)
-            {
-                double[] bin = DataTools.GetColumn(spectrogram, j); //get the bin
-                double[] acousticFrames = new double[activeFrameCount];
-                int count = 0;
-                for (int i = 0; i < dBarray.Length; i++)
-                {
-                    if (activeFrames[i]) //select only frames having acoustic energy >= threshold
-                    {
-                        acousticFrames[count] = spectrogram[i, j]; 
-                        count ++;
-                    }
-                }
-                //if (count == 0)
-                //{
-                //    Console.ReadLine();
-                //}
-
-
-                double av, sd;
-                NormalDist.AverageAndSD(acousticFrames, out av, out sd);
-                avSpectrum[j - excludeBins]  = av;      //store average  of the bin
-                varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
-            }
-
-            pmf3 = DataTools.NormaliseArea(avSpectrum);                               //pmf = probability mass function of average spectrum
-            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                       //normalize for length of the array
-            indices.entropyOfAvSpectrum = DataTools.Entropy(pmf3) / normFactor;       //ENTROPY of spectral averages
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeFrames, excludeBins);
+            indices.entropyOfAvSpectrum       = tuple.Item1;
+            indices.entropyOfVarianceSpectrum = tuple.Item2;
             //DataTools.writeBarGraph(avSpectrum);
             //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
-
-            //if (normFactor == 0.0)
-            //{
-            //    Console.ReadLine();
-            //}
-
-            //if (Double.IsNaN(indices.entropyOfAvSpectrum))
-            //{
-            //    Console.ReadLine();
-            //}
-
-            pmf3 = DataTools.NormaliseArea(varSpectrum);                              // pmf = probability mass function
-            normFactor = Math.Log(pmf3.Length) / DataTools.ln2;                       // normalize for length of the array
-            indices.entropyOfVarianceSpectra1 = DataTools.Entropy(pmf3) / normFactor; //ENTROPY of spectral variances
             //DataTools.writeBarGraph(varSpectrum);
             //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
@@ -551,11 +458,159 @@ namespace AnalysisPrograms
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
+            var tuple6 = ClusterAnalysis(spectrogram, activeFrames, excludeBins, binaryThreshold);
+            indices.clusterCount = tuple6.Item1; 
+            indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster durtaion in milliseconds
+            bool[] selectedFrames = tuple6.Item3;
+            List<double[]> clusterWts = tuple6.Item4;
+            int[] clusterHits = tuple6.Item5;
+            double[,] clusterSpectrogram = null;
+            //no need for the following line in normal usage - mostly for debugging
+            //clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins, selectedFrames, binaryThreshold, clusterWts, clusterHits);
+
+            return System.Tuple.Create(indices, scores, clusterHits, clusterWts, clusterSpectrogram);
+        } //ExtractIndices()
+
+
+        /// <summary>
+        /// reutrns the number of acoustic segments and their average duration in milliseconds
+        /// count segments as number of transitions from active to non-active frame
+        /// </summary>
+        /// <param name="activeFrames"></param>
+        /// <param name="frameDuration">frame duration in seconds</param>
+        /// <returns></returns>
+        public static System.Tuple<int, double> CalculateSegmentCount(bool[] activeFrames, double frameDuration)
+        {
+            int activeFrameCount = DataTools.CountTrues(activeFrames);
+            if (activeFrameCount == 0) return System.Tuple.Create(0, 0.0);
+
+            int segmentCount = 0;
+            for (int i = 1; i < activeFrames.Length; i++)
+            {
+                if (!activeFrames[i] && activeFrames[i - 1]) segmentCount++; //count the ends of active segments
+            }
+            double avSegmentDuration =  frameDuration * 1000 * activeFrameCount / (double)segmentCount; //av segment duration in milliseconds
+
+            return System.Tuple.Create(segmentCount, avSegmentDuration);
+        }
+
+        /// <summary>
+        /// returns fraction coverage of the hi and lo frequency parts of the spectrogram
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="bgThreshold"></param>
+        /// <param name="excludeBins"></param>
+        /// <returns></returns>
+        public static System.Tuple<double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int excludeBins)
+        {
+            int length = spectrogram.GetLength(0);
+            int freqBinCount = spectrogram.GetLength(1);
+            int hfCoverage = 0;
+            int lfCoverage = 0;
+            int hfCellCount = 0;
+            int lfCellCount = 0;
+            for (int i = 0; i < length; i++) //for all rows of spectrogram
+            {
+                for (int j = 0; j < excludeBins; j++)//set exclusion bands brings to zero
+                {
+                    if (spectrogram[i, j] >= bgThreshold) lfCoverage++;
+                    lfCellCount++;
+                    spectrogram[i, j] = 0.0;
+                }
+                //caluclate coverage
+                for (int j = excludeBins; j < freqBinCount; j++)
+                {
+                    if (spectrogram[i, j] >= bgThreshold) hfCoverage++;
+                    hfCellCount++;
+                }
+            }
+            double spectralCover = hfCoverage / (double)hfCellCount;
+            double lowFreqCover  = lfCoverage / (double)lfCellCount;
+            return System.Tuple.Create(spectralCover, lowFreqCover);
+        }
+
+        /// <summary>
+        /// returns ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="activeFrames"></param>
+        /// <param name="peakThreshold">required amplitude threshold to qualify as peak</param>
+        /// <param name="nyquistFreq"></param>
+        /// <returns></returns>
+        public static System.Tuple<double, double[]> CalculateEntropyOfPeakLocations(double[,] spectrogram, bool[] activeFrames, double peakThreshold, int nyquistFreq)
+        {
+            int freqBinCount = spectrogram.GetLength(1);
+
+            double[] freqPeaks = new double[activeFrames.Length]; //store frequency of peaks - return later for imaging purposes
+            int[] freqHistogram = new int[freqBinCount];
+            for (int i = 0; i < activeFrames.Length; i++)
+            {
+                if (! activeFrames[i]) continue; //select only frames having acoustic energy >= threshold
+             
+                int j = DataTools.GetMaxIndex(DataTools.GetRow(spectrogram, i)); //locate maximum peak
+                if (spectrogram[i, j] > peakThreshold) 
+                {
+                    freqHistogram[j-1] ++;  //spectrogram has a DC freq column which want to ignore.           
+                    freqPeaks[i] = nyquistFreq * j / (double)spectrogram.GetLength(1); //store frequency of peak as double
+                }
+            } // over all frames in dB array
+
+            //DataTools.writeBarGraph(freqHistogram);
+            freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
+            double entropy = DataTools.Entropy_normalised(freqHistogram);
+            return System.Tuple.Create(entropy, freqPeaks);
+        }
+
+        /// <summary>
+        /// Returns ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
+        /// Entropy of average spectrum of those frames having activity
+        /// </summary>
+        /// <param name="spectrogram"></param>
+        /// <param name="activeFrames"></param>
+        /// <param name="excludeBins"></param>
+        /// <returns></returns>
+        public static System.Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, bool[] activeFrames, int excludeBins)
+        {
+            int freqBinCount = spectrogram.GetLength(1);
+            int activeFrameCount = DataTools.CountTrues(activeFrames);
+            double[] avSpectrum = new double[freqBinCount - excludeBins];  //for average  of the spectral bins
+            double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
+            for (int j = excludeBins; j < freqBinCount; j++) //for all frequency bins (excluding low freq)
+            {
+                double[] bin = DataTools.GetColumn(spectrogram, j); //get the bin
+                double[] acousticFrames = new double[activeFrameCount];
+                int count = 0;
+                for (int i = 0; i < activeFrames.Length; i++)
+                {
+                    if (activeFrames[i]) //select only frames having acoustic energy >= threshold
+                    {
+                        acousticFrames[count] = spectrogram[i, j];
+                        count++;
+                    }
+                }
+                double av, sd;
+                NormalDist.AverageAndSD(acousticFrames, out av, out sd);
+                avSpectrum[j - excludeBins] = av;      //store average  of the bin
+                varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
+            }
+            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);        //ENTROPY of spectral averages
+            double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);      //ENTROPY of spectral variances
+            return System.Tuple.Create(HSpectralAv, HSpectralVar);
+        }
+
+
+
+        public static System.Tuple<int, double, bool[], List<double[]>, int[]> ClusterAnalysis(double[,] spectrogram, bool[] activeFrames, int excludeBins, double binaryThreshold)
+        {
+            //viii: CLUSTERING - to determine spectral diversity and spectral persistence
+            //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             spectrogram = DataTools.Matrix2Binary(spectrogram, binaryThreshold);  // convert to binary 
 
+            int length = spectrogram.GetLength(0);
+
             double[,] subMatrix = DataTools.Submatrix(spectrogram, 0, excludeBins, spectrogram.GetLength(0) - 1, spectrogram.GetLength(1) - 1);
-            bool[] selectedFrames = new bool[spectrogram.GetLength(0)];
-            var trainingData = new List<double[]>();                              //training data will be used for clustering
+            bool[] selectedFrames = new bool[length];
+            var trainingData = new List<double[]>();    //training data that will be used for clustering
 
             int rowSumThreshold = 1;  //ACTIVITY THREHSOLD - require activity in at least N bins to include for training
             int selectedFrameCount = 0;
@@ -571,14 +626,11 @@ namespace AnalysisPrograms
                 }
             }
             //return if no suitable training data for clustering
-            if (trainingData.Count  <= 1)
+            if (trainingData.Count  <= 10)
             {
-                indices.clusterCount = 0;
-                indices.avClusterDuration = 0; //av cluster durtaion in milliseconds
-                int[] clusterHits_dummy = null;
                 List<double[]> clusterWts_dummy = null;
-                double[,] clusterSpectrogram_dummy = null;
-                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+                int[] clusterHits_dummy = null;
+                return System.Tuple.Create(0, 0.0, selectedFrames, clusterWts_dummy, clusterHits_dummy);
             }
 
 
@@ -601,15 +653,16 @@ namespace AnalysisPrograms
             int hitThreshold   = 5;   //used to remove wt vectors which have fewer than the threshold hits
             var output2 = BinaryCluster.PruneClusters(clusterWts, clusterHits1, wtThreshold, hitThreshold);
             List<double[]> prunedClusterWts = output2.Item1;
-            indices.clusterCount = prunedClusterWts.Count;
+            int clusterCount = prunedClusterWts.Count;
+
             if (BinaryCluster.Verbose) BinaryCluster.DisplayClusterWeights(prunedClusterWts, clusterHits1);
-            if (BinaryCluster.Verbose) Console.WriteLine("pruned cluster count = {0}", indices.clusterCount);
+            if (BinaryCluster.Verbose) Console.WriteLine("pruned cluster count = {0}", clusterCount);
             
             //ix: AVERAGE CLUSTER DURATION - to determine spectral persistence
             //  first:  reassemble cluster hits into an array matching the original array of active frames.
             int hitCount = 0;
-            int[] clusterHits2 = new int[dBarray.Length]; 
-            for (int i = 0; i < dBarray.Length; i++)
+            int[] clusterHits2 = new int[length]; 
+            for (int i = 0; i < length; i++)
             {
                 if (selectedFrames[i]) //select only frames having acoustic energy >= threshold
                 {
@@ -634,23 +687,8 @@ namespace AnalysisPrograms
             }
             double av2, sd2;
             NormalDist.AverageAndSD(hitDurations, out av2, out sd2);
-            indices.avClusterDuration = av2 * frameDuration * 1000; //av cluster durtaion in milliseconds
-            //if (false)
-            //{
-            //    sd2 = sd2 * frameDuration * 1000;
-            //    for (int i = 1200; i < 1296 /*clusterHits2.Length*/; i++) Console.WriteLine(i + "   " + clusterHits2[i]);
-            //    Console.WriteLine("Average Cluster Length = {0} +/- {1}", indices.avClusterDuration, sd2);
-            //}
-
-            //xi: ASSEMBLE FEATURES
-            //var scores = new List<double[]>();
-            //scores.Add(freqPeaks); //location of peaks for spectral images
-            //scores.Add(envelope);
-            var clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins,
-                                                                selectedFrames, binaryThreshold, prunedClusterWts, clusterHits2);
-
-            return System.Tuple.Create(indices, scores, clusterHits1, clusterWts, clusterSpectrogram);
-        } //ExtractIndices()
+            return System.Tuple.Create(clusterCount, av2, selectedFrames, prunedClusterWts, clusterHits2);
+        }
 
 
         //#########################################################################################################################################################
@@ -937,7 +975,8 @@ namespace AnalysisPrograms
         }
 
 
-        public static void WriteHeaderToReportFile(string reportfileName, string parmasFile_Separator)
+
+        public static string FormatHeader(string parmasFile_Separator)
         {
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
@@ -947,8 +986,38 @@ namespace AnalysisPrograms
             string FORMAT_STRING = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}";
             string line = String.Format(FORMAT_STRING, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
                                                                         HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16]);
+            return line;
+        }
+
+        public static void WriteHeaderToReportFile(string reportfileName, string parmasFile_Separator)
+        {
+            string line = FormatHeader(parmasFile_Separator);
             FileTools.WriteTextFile(reportfileName, line);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parmasFile_Separator"></param>
+        /// <param name="fileCount"></param>
+        /// <param name="elapsedTime">elapsed time in minutes to end of current segment</param>
+        /// <param name="indices"></param>
+        public static string FormatOneLineOfIndices(string parmasFile_Separator, int count, double startMin, double sec_duration, AcousticIndices.Indices2 indices)
+        {
+            string reportSeparator = "\t";
+            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
+
+            string _FORMAT_STRING = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}";
+
+            //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
+            string line = String.Format(_FORMAT_STRING, reportSeparator,
+                                       count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
+                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.spectralCover, indices.lowFreqCover, indices.entropyOfAmplitude,
+                                       indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
+                                       indices.clusterCount, indices.avClusterDuration);
+            return line;
+        }
+
 
 
         /// <summary>
@@ -959,19 +1028,9 @@ namespace AnalysisPrograms
         /// <param name="fileCount"></param>
         /// <param name="elapsedTime">elapsed time in minutes to end of current segment</param>
         /// <param name="indices"></param>
-        public static void WriteIndicesToReportFile(string opPath, string parmasFile_Separator, int count, double startMin, double sec_duration, AcousticIndices.Indices2 indices)
+        public static void AppendIndicesToReportFile(string opPath, string parmasFile_Separator, int count, double startMin, double sec_duration, AcousticIndices.Indices2 indices)
         {
-            string reportSeparator = "\t";
-            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
-
-            string _FORMAT_STRING = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}";
-
-            //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-            string line = String.Format(_FORMAT_STRING, reportSeparator,
-                                       count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
-                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.spectralCover, indices.lowFreqCover, indices.entropyOfAmpl,
-                                       indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectra1,
-                                       indices.clusterCount, indices.avClusterDuration);
+            string line = FormatOneLineOfIndices(parmasFile_Separator, count, startMin, sec_duration, indices);
             FileTools.Append2TextFile(opPath, line);
         }
 
