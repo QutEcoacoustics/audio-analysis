@@ -23,18 +23,15 @@
     //using System.IO;
 
     using TowseyLib;
+    using QutSensors.Shared;
 
 
-    //CODE FOR RUNNING AUDACITY
-    /*
-string audacityDir = Path.GetDirectoryName(parameters.AudacityPath);
-DirectoryInfo dirInfo = new DirectoryInfo(audacityDir);
-string appName = Path.GetFileName(parameters.AudacityPath);
-ProcessRunner process = new ProcessRunner(dirInfo, appName, recordingPath);
-process.Start();
-var consoleOutput = process.OutputData;
-var errorData = process.ErrorData;
- * */
+
+    // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
+    //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
+    //SCC file site 4  // sunshinecoast1 "Y:\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
+    //SCC file site 4  // sunshinecoast1 "\\hpc-fs.qut.edu.au\staging\availae\Sunshine Coast\Site4\DM420062.mp3" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
+
 
 
     public partial class MainForm : Form
@@ -187,32 +184,122 @@ var errorData = process.ErrorData;
             }
         }
 
-        private void ProcessRecording(FileInfo sourceRecordingPath, FileInfo reportfilePath)
+        private void ProcessRecording(FileInfo fiSourceRecording, FileInfo fiOutputDir)
         {
             //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
-            string outputDir = Path.GetDirectoryName(reportfilePath.FullName);
+
+            string sourceRecordingPath = fiSourceRecording.FullName;
+            string outputDir = Path.GetDirectoryName(fiSourceRecording.FullName);
+            double segmentDuration_mins = settings.SegmentDuration; 
+            int segmentOverlap = settings.SegmentOverlap;
+            int resampleRate = settings.ResampleRate;
+            int frameLength = settings.FrameLength; 
+            int lowFreqBound = settings.LowFreqBound;
+
             Console.WriteLine("# Processing audio file: " + sourceRecordingPath);
             Console.WriteLine("# Output  to  directory: " + outputDir);
 
             WriteExtractionParameters2Console(settings);
 
-            var op = AcousticIndices.ScanRecording(settings.fiSourceRecording.FullName, outputDir, settings.SegmentDuration, settings.SegmentOverlap,
-                                                   settings.ResampleRate, settings.FrameLength, settings.LowFreqBound);
-            List<string> list = op.Item1;
+            // Set up the file and get info
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
+            var fiSource = new FileInfo(sourceRecordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSource.Extension);
+            var sourceAudioDuration = audioUtility.Duration(fiSource, mimeType);
+            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
+
+            //set up the temporary audio segment output file
+            string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
+
+
+            Console.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
+            Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSource.CreationTime.ToLongDateString(), fiSource.CreationTime.ToLongTimeString());
+            Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
+            Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
+            Console.WriteLine("# Source audio - segments: {0}", segmentCount);
+
+            int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
+            string reportFormat = "CSV";
+
+
+            // LOOP THROUGH THE FILE
+            //initialse counters
+            DateTime tStart = DateTime.Now;
+            DateTime tPrevious = tStart;
+            //init List to store indices
+            var outputData = new List<string>();
+
+            segmentCount = 20;
+
+            for (int s = 0; s < segmentCount; s++)
+            {
+                DateTime tNow = DateTime.Now;
+                TimeSpan elapsedTime = tNow - tStart;
+                string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
+                double startMinutes = s * segmentDuration_mins;
+                double avIterTime = elapsedTime.TotalSeconds / s;
+                if (s == 0) avIterTime = 0.0; //correct for division by zero
+                double t2End = avIterTime * (segmentCount - s) / (double)60;
+
+                TimeSpan iterTimeSpan = tNow - tPrevious;
+                double iterTime = iterTimeSpan.TotalSeconds;
+                if (s == 0) iterTime = 0.0;
+                tPrevious = tNow;
+
+                //Console.WriteLine("\n");
+                Console.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
+                                           s, startMinutes, timeDuration, t2End, iterTime, avIterTime);
+                int startMilliseconds = (int)(startMinutes * 60000);
+                int endMilliseconds = startMilliseconds + segmentDuration_ms;
+                //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+                SpecificWavAudioUtility.GetSingleSegment(audioUtility, fiSource, fiOutputSegment, startMilliseconds, endMilliseconds);
+                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
+
+                //double check that recording is over minimum length
+                double wavSegmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
+                int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
+                int minimumLength = 3 * frameLength; //ignore recordings shorter than three frames
+                if (sampleCount <= minimumLength)
+                {
+                    Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
+                    break;
+                }
+
+                //#############################################################################################################################################
+                //FOLLOWING LINES SPECIFIC TO EXTRACTING ACOUSTIC INDICES
+                //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
+                //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+                var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
+                AcousticIndices.Indices2 indices = results.Item1;
+                string line = AcousticIndices.FormatOneLineOfIndices(reportFormat, s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
+                //#############################################################################################################################################
+
+                outputData.Add(line);
+                recordingSegment.Dispose();
+                startMinutes += segmentDuration_mins;
+            } //end of for loop
+
+
+            //List<string> list = op.Item1;
             string reportSeparator = "CSV";
             string header = AcousticIndices.FormatHeader(reportSeparator);
-            list.Insert(0, header); //put header at top of list
-            string fName = Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + ".csv";
-            FileTools.WriteTextFile(reportfilePath.FullName, list);
+            outputData.Insert(0, header); //put header at top of list
+            string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + ".csv";
+          //  string reportfilePath = 
+            //FileTools.WriteTextFile(reportfilePath.FullName, outputData);
 
-            string target = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + "_BACKUP.csv");
-            File.Delete(target);                        // Ensure that the target does not exist.
-            File.Copy(reportfilePath.FullName, target); //copy the file 2 target
+            //string target = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + "_BACKUP.csv");
+           // File.Delete(target);                        // Ensure that the target does not exist.
+            //File.Copy(reportfilePath.FullName, target); //copy the file 2 target
 
-            Console.WriteLine("Finished processing " + sourceRecordingPath.Name + ".");
-            Console.WriteLine("CSV ouput file is @ " + reportfilePath.FullName);
-            Console.WriteLine("###################################################\n\n");
+            //Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+            //Console.WriteLine("CSV ouput file is @ " + reportfilePath.FullName);
+           // Console.WriteLine("###################################################\n\n");
         }
+
+
+
 
         private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
         {
@@ -478,7 +565,7 @@ var errorData = process.ErrorData;
             using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
             using (Image_MultiTrack image = new Image_MultiTrack(img))
             {
-                if (pictureBoxSonogram != null) pictureBoxSonogram.Dispose(); //get rid of previous sonogram
+                if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
                 //add time scale
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
@@ -487,11 +574,12 @@ var errorData = process.ErrorData;
                       Console.WriteLine("ANNOTATE SONOGRAM");
                 }
 
-                this.pictureBoxSonogram = new PictureBox();
-                pictureBoxSonogram.Image = image.GetImage();
-                pictureBoxSonogram.SetBounds(0, 0, pictureBoxSonogram.Image.Width, pictureBoxSonogram.Image.Height);
-                pictureBoxSonogram.Visible = true;
-                this.panelDisplayVisual.Controls.Add(this.pictureBoxSonogram);
+                //this.pictureBoxSonogram = new PictureBox();
+                //this.pictureBoxSonogram.
+                this.pictureBoxSonogram.Image = image.GetImage();
+                //pictureBoxSonogram.SetBounds(0, 0, pictureBoxSonogram.Image.Width, pictureBoxSonogram.Image.Height);
+                //pictureBoxSonogram.Visible = true;
+                //this.panelDisplayVisual.Controls.Add(this.pictureBoxSonogram);
 
                 //this.panelSonogramPanel.Controls.Add(pictureBoxSonogram);
                 //this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
@@ -510,11 +598,11 @@ var errorData = process.ErrorData;
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
-            if (settings.fiSourceRecording == null) ProcessRunner.RunAudacity(settings.AudacityExe.FullName, "");
+            if (settings.fiSourceRecording == null) RunAudacity(settings.AudacityExe.FullName, "");
             else
-            if (! settings.fiSourceRecording.Exists) ProcessRunner.RunAudacity(settings.AudacityExe.FullName, "");
+            if (! settings.fiSourceRecording.Exists) RunAudacity(settings.AudacityExe.FullName, "");
             else 
-                ProcessRunner.RunAudacity(settings.AudacityExe.FullName, settings.fiSourceRecording.FullName);
+                RunAudacity(settings.AudacityExe.FullName, settings.fiSegmentrecording.FullName);
         }
 
 
@@ -1069,6 +1157,15 @@ var errorData = process.ErrorData;
         {
 
         }
+
+        public static void RunAudacity(string audacityPath, string recordingPath)
+        {
+            //string audacityDir = Path.GetDirectoryName(audacityPath);
+            //DirectoryInfo dirInfo = new DirectoryInfo(audacityDir);
+            //string appName = Path.GetFileName(audacityPath);
+            ProcessRunner process = new ProcessRunner(audacityPath);
+            process.Run(recordingPath,Path.GetDirectoryName(recordingPath));
+        } // RunAudacity()
 
     } //class MainForm : Form
 }
