@@ -486,7 +486,7 @@ namespace AudioAnalysisTools
                 }
             }
             histogram = DataTools.normalise(histogram);
-            histogram = DataTools.NormaliseProbabilites(histogram);
+            histogram = DataTools.Normalise2Probabilites(histogram);
             double normFactor = Math.Log(histogram.Length) / DataTools.ln2;  //normalize for length of the array
             double entropy = DataTools.Entropy(histogram) / normFactor;
             return entropy;

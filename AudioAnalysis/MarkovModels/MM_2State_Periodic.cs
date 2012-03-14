@@ -157,7 +157,7 @@ namespace MarkovModels
                 if (duration1 + nh < maxDuration) pdf[duration1 + nh] = (NH - nh) / (double)NH;
             }
             //normalise pdf and transfer to matrix
-            pdf = DataTools.NormaliseProbabilites(pdf);
+            pdf = DataTools.Normalise2Probabilites(pdf);
             for (int j = 0; j < maxDuration; j++) probs[0, j] = pdf[j];
 
             //for state 2
@@ -171,7 +171,7 @@ namespace MarkovModels
                 if (duration2 + nh < maxDuration) pdf[duration2 + nh] = (NH - nh) / (double)NH;
             }
             //normalise pdf and transfer to matrix
-            pdf = DataTools.NormaliseProbabilites(pdf);
+            pdf = DataTools.Normalise2Probabilites(pdf);
             for (int j = 0; j < maxDuration; j++) probs[1, j] = pdf[j];
             
 
