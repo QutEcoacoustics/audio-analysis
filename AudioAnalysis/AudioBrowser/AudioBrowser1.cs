@@ -8,6 +8,7 @@ using System.IO;
 using AudioAnalysisTools;
 using TowseyLib;
 using AnalysisPrograms;
+using QutSensors.Shared;
 
 namespace AudioBrowser
 {
@@ -613,7 +614,8 @@ namespace AudioBrowser
                     Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
                     Console.WriteLine("# Extracting acoustic indices from file: " + parameters.sourceRecordingPath);
                     WriteExtractionParameters2Console();
-                    AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.segmentOverlap, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
+                    //following line commented after shifting ScanRecording to AudioBrowser version 2 of Mark.
+                    //AcousticIndices.ScanRecording(parameters.sourceRecordingPath, parameters.outputDir, parameters.segmentDuration, parameters.segmentOverlap, parameters.resampleRate, parameters.frameLength, parameters.lowFreqBound);
                     Console.WriteLine("######################### FINISHED ##########################\n\n");
 
                     string outputCSVPath = Path.Combine(parameters.outputDir, Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath) + ".csv");
@@ -935,13 +937,13 @@ namespace AudioBrowser
         /// <param name="recordingPath"></param>
         private void OpenAudacity(string recordingPath)
         {
-            string audacityDir = Path.GetDirectoryName(parameters.AudacityPath);
-            DirectoryInfo dirInfo = new DirectoryInfo(audacityDir); 
-            string appName = Path.GetFileName(parameters.AudacityPath);
-            ProcessRunner process = new ProcessRunner(dirInfo, appName, recordingPath);
-            process.Start();
-            var consoleOutput = process.OutputData;
-            var errorData     = process.ErrorData;
+            //string audacityDir = Path.GetDirectoryName(parameters.AudacityPath);
+            //DirectoryInfo dirInfo = new DirectoryInfo(audacityDir); 
+            //string appName = Path.GetFileName(parameters.AudacityPath);
+            //ProcessRunner process = new ProcessRunner(dirInfo, appName, recordingPath);
+            //process.Start();
+            //var consoleOutput = process.OutputData;
+            //var errorData     = process.ErrorData;
         }
 
         private void visualIndex_Panel_hScrollBar_ValueChanged(object sender, System.EventArgs e)

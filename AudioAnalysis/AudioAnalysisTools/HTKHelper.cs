@@ -11,6 +11,7 @@ using TowseyLib;
 namespace AudioAnalysisTools.HTKTools
 {
     using System.Text;
+    using QutSensors.Shared;
 
     /// <summary>
     /// Summary description for Class1
@@ -588,11 +589,11 @@ namespace AudioAnalysisTools.HTKTools
             string error = null;
             // try
             //{
-            var proc = new ProcessRunner { ProgramToRun = new FileInfo(executable), Arguments = commandLineArguments, };
+            //var proc = new ProcessRunner { ProgramToRun = new FileInfo(executable), Arguments = commandLineArguments, };
 
-            proc.Start();
-            output = proc.OutputData;
-            error = proc.ErrorData;
+           // proc.Start();
+            //output = proc.OutputData;
+            //error = proc.ErrorData;
 
             if (!string.IsNullOrEmpty(output))
             {

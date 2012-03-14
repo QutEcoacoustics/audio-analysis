@@ -63,10 +63,6 @@ namespace AnalysisPrograms
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
                         KiwiRecogniser.Dev(restOfArgs);
                         break;
-                    case "sunshinecoast1":  // data from sunshine coast
-                        SunshineCoast1.Dev(restOfArgs);
-                        break;
-
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
                     case "felt":     // find other acoustic events like this
