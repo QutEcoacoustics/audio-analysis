@@ -202,6 +202,8 @@
 
             WriteExtractionParameters2Console(settings);
 
+            // CREATE RUN ANALYSIS CLASS HERE
+
             // Set up the file and get info
             SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
             var fiSource = new FileInfo(sourceRecordingPath);
@@ -1192,6 +1194,7 @@
         /// </summary>
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
+            if ((settings.fiSegmentRecording == null) || (!settings.fiSegmentRecording.Exists)) return;
             SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(settings.ResampleRate); //creates AudioUtility and
             AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName, audioUtility);
             Image_MultiTrack image = MakeSonogram(recordingSegment);
