@@ -57,6 +57,7 @@
         private double[] weightedIndices;
         private Bitmap visualIndexTimeScale;
         private Bitmap barTrackImage;
+        //private FileInfo fiCurrentWaveSegment;
 
         public MainForm()
         {
@@ -210,6 +211,7 @@
 
             //set up the temporary audio segment output file
             string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
 
 
@@ -334,7 +336,7 @@
 
                     var sourceFilePath =
                         new FileInfo(
-                            Path.Combine(this.settings.SourceDir.FullName, Path.GetFileNameWithoutExtension(csvFileName) + ".mp3"));
+                            Path.Combine(this.settings.SourceDir.FullName, Path.GetFileNameWithoutExtension(csvFileName) + settings.SourceFileExt));
                     settings.fiSourceRecording = sourceFilePath;
 
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
@@ -517,8 +519,7 @@
             string sourceFName = Path.GetFileNameWithoutExtension(settings.fiSourceRecording.FullName);
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
 
-            //string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
-            string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, @"temp.wav"); //path name of the temporary segment files extracted from long recording
+            string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
 
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
 
@@ -540,10 +541,29 @@
 
             //store info
             this.labelSonogramFileName.Text = Path.GetFileName(recordingSegment.FilePath);
-            settings.fiSegmentrecording = new FileInfo(recordingSegment.FilePath);
+            settings.fiSegmentRecording = new FileInfo(recordingSegment.FilePath);
 
 
             //make the sonogram
+            Image_MultiTrack image = MakeSonogram(recordingSegment);
+            this.pictureBoxSonogram.Image = image.GetImage();
+
+
+            this.hScrollBarSonogram.Location = new System.Drawing.Point(0, this.pictureBoxSonogram.Image.Height);
+            //this.hScrollBarSonogram.Minimum = 0;
+            this.hScrollBarSonogram.Maximum = pictureBoxSonogram.Width - this.panelSonogram.Width + 280; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+            string sonogramPath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
+            Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
+            pictureBoxSonogram.Image.Save(sonogramPath);
+            this.tabControlMain.SelectTab("tabPageDisplay");   
+            this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
+            
+        }
+
+        private Image_MultiTrack MakeSonogram(AudioRecording recordingSegment)
+        {
+
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recordingSegment.FileName;
@@ -560,53 +580,50 @@
             }
 
             //prepare the image
+            //;
             bool doHighlightSubband = false;
             bool add1kHzLines = true;
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            using (Image_MultiTrack image = new Image_MultiTrack(img))
-            {
-                if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
+            //using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
+            //using (image = new Image_MultiTrack(img))
+            //{
+            //    if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
+            //    //add time scale
+            //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+
+            //    if (this.checkBoxSonogramAnnotate.Checked) 
+            //    {
+            //          Console.WriteLine("ANNOTATE SONOGRAM");
+            //    }
+            //}
+            System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            Image_MultiTrack image = new Image_MultiTrack(img);
+            //{
+               // if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
                 //add time scale
                 image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
 
-                if (this.checkBoxSonogramAnnotate.Checked) 
+                if (this.checkBoxSonogramAnnotate.Checked)
                 {
-                      Console.WriteLine("ANNOTATE SONOGRAM");
+                    Console.WriteLine("ANNOTATION OF SONOGRAMS IS NOT YET IMPLEMENTED.");  //NOT YET IMPLEMENTED!
                 }
+            //}
 
-                //this.pictureBoxSonogram = new PictureBox();
-                //this.pictureBoxSonogram.
-                this.pictureBoxSonogram.Image = image.GetImage();
-                //pictureBoxSonogram.SetBounds(0, 0, pictureBoxSonogram.Image.Width, pictureBoxSonogram.Image.Height);
-                //pictureBoxSonogram.Visible = true;
-                //this.panelDisplayVisual.Controls.Add(this.pictureBoxSonogram);
+            return image;
+        }//MakeSonogram
 
-                //this.panelSonogramPanel.Controls.Add(pictureBoxSonogram);
-                //this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
-                //this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
-                //this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
-                //this.sonogramPanel_hScrollBar.Value = 0;
-                //this.sonogramPanel_hScrollBar.Visible = true;
-            }
-
-            string sonogramPath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
-            Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
-            pictureBoxSonogram.Image.Save(sonogramPath);
-            this.tabControlMain.SelectTab("tabPageDisplay");   
-            this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
-        }
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
-            if (settings.fiSourceRecording == null) RunAudacity(settings.AudacityExe.FullName, "");
+            if ((settings.fiSegmentRecording == null) || (!settings.fiSegmentRecording.Exists))
+            {
+                Console.WriteLine("Audacity cannot open audio segment file: <" + settings.fiSegmentRecording+">");
+                Console.WriteLine("It does not exist!");
+                this.tabControlMain.SelectTab("tabPageConsole");
+                RunAudacity(settings.AudacityExe.FullName, " ", settings.OutputDir.FullName);
+            }
             else
-            if (! settings.fiSourceRecording.Exists) RunAudacity(settings.AudacityExe.FullName, "");
-            else 
-                RunAudacity(settings.AudacityExe.FullName, settings.fiSegmentrecording.FullName);
+                RunAudacity(settings.AudacityExe.FullName, settings.fiSegmentRecording.FullName, settings.OutputDir.FullName);
         }
-
-
-
 
         // here be dragons!
 
@@ -1158,14 +1175,28 @@
 
         }
 
-        public static void RunAudacity(string audacityPath, string recordingPath)
+        public static void RunAudacity(string audacityPath, string recordingPath, string dir)
         {
-            //string audacityDir = Path.GetDirectoryName(audacityPath);
-            //DirectoryInfo dirInfo = new DirectoryInfo(audacityDir);
-            //string appName = Path.GetFileName(audacityPath);
             ProcessRunner process = new ProcessRunner(audacityPath);
-            process.Run(recordingPath,Path.GetDirectoryName(recordingPath));
-        } // RunAudacity()
+            process.Run(recordingPath, dir);
+        }// RunAudacity()
+
+        private void hScrollBarSonogram_ValueChanged(object sender, EventArgs e)
+        {
+            this.pictureBoxSonogram.Left = -this.hScrollBarSonogram.Value;
+        }
+
+        /// <summary>
+        /// handle event when refreshSonogram button is clicked
+        /// redisplay the sonogram but with new Settings
+        /// </summary>
+        private void buttonRefreshSonogram_Click(object sender, EventArgs e)
+        {
+            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(settings.ResampleRate); //creates AudioUtility and
+            AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName, audioUtility);
+            Image_MultiTrack image = MakeSonogram(recordingSegment);
+            this.pictureBoxSonogram.Image = image.GetImage();
+        } 
 
     } //class MainForm : Form
 }
