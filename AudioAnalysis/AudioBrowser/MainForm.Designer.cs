@@ -64,7 +64,6 @@
             this.panelDisplayVisual = new System.Windows.Forms.Panel();
             this.pictureBoxBarTrack = new System.Windows.Forms.PictureBox();
             this.pictureBoxSonogram = new System.Windows.Forms.PictureBox();
-            this.hScrollBar1 = new System.Windows.Forms.HScrollBar();
             this.pictureBoxVisualIndex = new System.Windows.Forms.PictureBox();
             this.tabPageConsole = new System.Windows.Forms.TabPage();
             this.textBoxConsole = new System.Windows.Forms.TextBox();
@@ -80,6 +79,8 @@
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
+            this.panelSonogram = new System.Windows.Forms.Panel();
+            this.hScrollBarSonogram = new System.Windows.Forms.HScrollBar();
             this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -103,10 +104,10 @@
             this.panelDisplayVisual.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSonogram)).BeginInit();
-            this.pictureBoxSonogram.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).BeginInit();
             this.tabPageConsole.SuspendLayout();
             this.groupBox1.SuspendLayout();
+            this.panelSonogram.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).BeginInit();
             this.SuspendLayout();
@@ -328,9 +329,9 @@
             this.panelSonogramControls.Controls.Add(this.buttonRefreshSonogram);
             this.panelSonogramControls.Controls.Add(this.buttonAudacityRun);
             this.panelSonogramControls.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panelSonogramControls.Location = new System.Drawing.Point(0, 370);
+            this.panelSonogramControls.Location = new System.Drawing.Point(0, 364);
             this.panelSonogramControls.Name = "panelSonogramControls";
-            this.panelSonogramControls.Size = new System.Drawing.Size(188, 316);
+            this.panelSonogramControls.Size = new System.Drawing.Size(188, 322);
             this.panelSonogramControls.TabIndex = 7;
             // 
             // checkBoxSonogramAnnotate
@@ -381,6 +382,7 @@
             this.buttonRefreshSonogram.TabIndex = 1;
             this.buttonRefreshSonogram.Text = "Refresh Sonogram";
             this.buttonRefreshSonogram.UseVisualStyleBackColor = true;
+            this.buttonRefreshSonogram.Click += new System.EventHandler(this.buttonRefreshSonogram_Click);
             // 
             // buttonAudacityRun
             // 
@@ -445,8 +447,8 @@
             // 
             // panelDisplayVisual
             // 
+            this.panelDisplayVisual.Controls.Add(this.panelSonogram);
             this.panelDisplayVisual.Controls.Add(this.pictureBoxBarTrack);
-            this.panelDisplayVisual.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplayVisual.Controls.Add(this.pictureBoxVisualIndex);
             this.panelDisplayVisual.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panelDisplayVisual.Location = new System.Drawing.Point(0, 0);
@@ -467,23 +469,12 @@
             // pictureBoxSonogram
             // 
             this.pictureBoxSonogram.BackColor = System.Drawing.Color.DarkGray;
-            this.pictureBoxSonogram.Controls.Add(this.hScrollBar1);
-            this.pictureBoxSonogram.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.pictureBoxSonogram.Location = new System.Drawing.Point(0, 371);
+            this.pictureBoxSonogram.Location = new System.Drawing.Point(0, 0);
             this.pictureBoxSonogram.Name = "pictureBoxSonogram";
-            this.pictureBoxSonogram.Size = new System.Drawing.Size(1586, 317);
+            this.pictureBoxSonogram.Size = new System.Drawing.Size(1584, 270);
             this.pictureBoxSonogram.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBoxSonogram.TabIndex = 2;
             this.pictureBoxSonogram.TabStop = false;
-            // 
-            // hScrollBar1
-            // 
-            this.hScrollBar1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
-            this.hScrollBar1.Location = new System.Drawing.Point(893, 573);
-            this.hScrollBar1.Name = "hScrollBar1";
-            this.hScrollBar1.Size = new System.Drawing.Size(80, 17);
-            this.hScrollBar1.TabIndex = 4;
             // 
             // pictureBoxVisualIndex
             // 
@@ -527,7 +518,7 @@
             // 
             this.btnUpdateSourceFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnUpdateSourceFileList.CausesValidation = false;
-            this.btnUpdateSourceFileList.Location = new System.Drawing.Point(1784, 17);
+            this.btnUpdateSourceFileList.Location = new System.Drawing.Point(1625, 17);
             this.btnUpdateSourceFileList.Name = "btnUpdateSourceFileList";
             this.btnUpdateSourceFileList.Size = new System.Drawing.Size(129, 23);
             this.btnUpdateSourceFileList.TabIndex = 10;
@@ -539,7 +530,7 @@
             // 
             this.btnSelectSourceDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectSourceDirectory.CausesValidation = false;
-            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1659, 17);
+            this.btnSelectSourceDirectory.Location = new System.Drawing.Point(1500, 17);
             this.btnSelectSourceDirectory.Name = "btnSelectSourceDirectory";
             this.btnSelectSourceDirectory.Size = new System.Drawing.Size(125, 23);
             this.btnSelectSourceDirectory.TabIndex = 9;
@@ -553,7 +544,7 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tfSourceDirectory.Location = new System.Drawing.Point(86, 19);
             this.tfSourceDirectory.Name = "tfSourceDirectory";
-            this.tfSourceDirectory.Size = new System.Drawing.Size(1567, 20);
+            this.tfSourceDirectory.Size = new System.Drawing.Size(1408, 20);
             this.tfSourceDirectory.TabIndex = 8;
             // 
             // folderBrowserDialogChooseDir
@@ -575,7 +566,7 @@
             this.groupBox1.Controls.Add(this.btnSelectSourceDirectory);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(1919, 77);
+            this.groupBox1.Size = new System.Drawing.Size(1760, 77);
             this.groupBox1.TabIndex = 11;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Step 1: Select Source and/or CSV Folders";
@@ -584,7 +575,7 @@
             // 
             this.btnUpdateOutputFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnUpdateOutputFileList.CausesValidation = false;
-            this.btnUpdateOutputFileList.Location = new System.Drawing.Point(1784, 43);
+            this.btnUpdateOutputFileList.Location = new System.Drawing.Point(1625, 43);
             this.btnUpdateOutputFileList.Name = "btnUpdateOutputFileList";
             this.btnUpdateOutputFileList.Size = new System.Drawing.Size(129, 23);
             this.btnUpdateOutputFileList.TabIndex = 15;
@@ -616,20 +607,40 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.tfOutputDirectory.Location = new System.Drawing.Point(86, 45);
             this.tfOutputDirectory.Name = "tfOutputDirectory";
-            this.tfOutputDirectory.Size = new System.Drawing.Size(1567, 20);
+            this.tfOutputDirectory.Size = new System.Drawing.Size(1408, 20);
             this.tfOutputDirectory.TabIndex = 11;
             // 
             // btnSelectOutputDirectory
             // 
             this.btnSelectOutputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnSelectOutputDirectory.CausesValidation = false;
-            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1659, 43);
+            this.btnSelectOutputDirectory.Location = new System.Drawing.Point(1500, 43);
             this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
             this.btnSelectOutputDirectory.Size = new System.Drawing.Size(126, 23);
             this.btnSelectOutputDirectory.TabIndex = 12;
             this.btnSelectOutputDirectory.Text = "Select CSV Folder...";
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = true;
             this.btnSelectOutputDirectory.Click += new System.EventHandler(this.btnSelectOutputDirectory_Click);
+            // 
+            // panelSonogram
+            // 
+            this.panelSonogram.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.panelSonogram.Controls.Add(this.hScrollBarSonogram);
+            this.panelSonogram.Controls.Add(this.pictureBoxSonogram);
+            this.panelSonogram.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.panelSonogram.Location = new System.Drawing.Point(0, 365);
+            this.panelSonogram.Name = "panelSonogram";
+            this.panelSonogram.Size = new System.Drawing.Size(1586, 323);
+            this.panelSonogram.TabIndex = 4;
+            // 
+            // hScrollBarSonogram
+            // 
+            this.hScrollBarSonogram.LargeChange = 100;
+            this.hScrollBarSonogram.Location = new System.Drawing.Point(0, 270);
+            this.hScrollBarSonogram.Name = "hScrollBarSonogram";
+            this.hScrollBarSonogram.Size = new System.Drawing.Size(1586, 20);
+            this.hScrollBarSonogram.TabIndex = 3;
+            this.hScrollBarSonogram.ValueChanged += new System.EventHandler(this.hScrollBarSonogram_ValueChanged);
             // 
             // fileNameDataGridViewTextBoxColumn
             // 
@@ -691,9 +702,10 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1943, 827);
+            this.ClientSize = new System.Drawing.Size(1784, 812);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tabControlMain);
+            this.MaximumSize = new System.Drawing.Size(1800, 850);
             this.Name = "MainForm";
             this.Text = "Acoustic Environment Browser";
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -712,15 +724,15 @@
             this.panelSonogramControls.ResumeLayout(false);
             this.panelSonogramControls.PerformLayout();
             this.panelDisplayVisual.ResumeLayout(false);
-            this.panelDisplayVisual.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxBarTrack)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxSonogram)).EndInit();
-            this.pictureBoxSonogram.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBoxVisualIndex)).EndInit();
             this.tabPageConsole.ResumeLayout(false);
             this.tabPageConsole.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            this.panelSonogram.ResumeLayout(false);
+            this.panelSonogram.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.mediaFileItemBindingSource)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.csvFileItemBindingSource)).EndInit();
             this.ResumeLayout(false);
@@ -780,7 +792,8 @@
         private Label labelSonogramFileName;
         private Label labelSonogramName;
         public TabControl tabControlMain;
-        private HScrollBar hScrollBar1;
+        private Panel panelSonogram;
+        private HScrollBar hScrollBarSonogram;
 
 
     }

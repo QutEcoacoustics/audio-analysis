@@ -41,6 +41,7 @@
             this.SonogramBackgroundThreshold = AppConfigHelper.GetDouble("SonogramBackgroundThreshold");
             this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
             this.TrackCount = AppConfigHelper.GetInt("TrackCount");
+            this.SourceFileExt = AppConfigHelper.GetString("SourceFileExt");
         }
 
         public FileInfo AudacityExe { get; private set; }
@@ -53,6 +54,7 @@
         public double SonogramBackgroundThreshold { get; private set; }
         public int TrackHeight { get; private set; }
         public int TrackCount { get; private set; }
+        public string SourceFileExt { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }
         public DirectoryInfo DefaultOutputDir { get; private set; }
@@ -61,7 +63,7 @@
 
         public FileInfo fiSourceRecording { get; set; }
         public FileInfo fiCSVFile { get; set; }
-        public FileInfo fiSegmentrecording { get; set; }
+        public FileInfo fiSegmentRecording { get; set; }
         //public DirectoryInfo InputDir { get; set; }
 
     }
