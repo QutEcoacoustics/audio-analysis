@@ -17,15 +17,10 @@
 
     class AcousticIndicesAudioProcessor : AudioProcessors.AbstractAudioProcessor
     {
-
-
-
-        protected abstract DataTable Analysis(AnalysisPrograms.AudioProcessors.AudioProcessorConfig config, FileInfo segmentAudioFile)
+        protected override DataTable Analysis(AnalysisPrograms.AudioProcessors.AudioProcessorConfig config, FileInfo segmentAudioFile)
         {
             var data = new DataTable();
             return data;
         }
-
-
     }
 }
