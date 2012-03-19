@@ -166,14 +166,32 @@
     <Compile Include="HarmonicAnalysis.cs" />
     <Compile Include="AudioSegmentation.cs" />
     <Compile Include="Helper.cs" />
+    <Compile Include="HMMBuilder\Program.cs" />
+    <Compile Include="HMMBuilder\TestProgram.cs" />
+    <Compile Include="HMMBuilder\ZipStorer.cs" />
+    <Compile Include="HMMBuilder\ZipUnzip.cs" />
     <Compile Include="HMMSettings.cs" />
     <Compile Include="HTKConfig.cs" />
     <Compile Include="HTKHelper.cs" />
     <Compile Include="HTKScanRecording.cs" />
+    <Compile Include="MarkovModels\MMResults.cs" />
+    <Compile Include="MarkovModels\MMTools.cs" />
+    <Compile Include="MarkovModels\MM_2State_Periodic.cs" />
+    <Compile Include="MarkovModels\MM_Base.cs" />
+    <Compile Include="MarkovModels\MM_Ergodic.cs" />
+    <Compile Include="MarkovModels\SequenceInfo.cs" />
+    <Compile Include="MarkovModels\StateDurationTools.cs" />
+    <Compile Include="MarkovModels\TrainingSet.cs" />
     <Compile Include="Model\BaseModel.cs" />
     <Compile Include="Model\Model_1PS.cs" />
     <Compile Include="Model\Model_2SP.cs" />
     <Compile Include="Model\Model_MMErgodic.cs" />
+    <Compile Include="NeuralNets\ART.cs" />
+    <Compile Include="NeuralNets\ART_2A.cs" />
+    <Compile Include="NeuralNets\BinaryCluster.cs" />
+    <Compile Include="NeuralNets\Cluster.cs" />
+    <Compile Include="NeuralNets\FuzzyART.cs" />
+    <Compile Include="NeuralNets\VQ.cs" />
     <Compile Include="OscillationAnalysis.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Recogniser.cs" />
@@ -202,14 +220,6 @@
       <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
       <Name>QutSensors.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\MarkovModels\MarkovModels.csproj">
-      <Project>{D14A7CE5-2ECD-41CB-A64D-0B386ABE7D89}</Project>
-      <Name>MarkovModels</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\NeuralNets\NeuralNets.csproj">
-      <Project>{3453DB43-46DA-45E6-AD22-48BC081BC738}</Project>
-      <Name>NeuralNets</Name>
-    </ProjectReference>
     <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
       <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
       <Name>TowseyLib</Name>
@@ -232,6 +242,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
