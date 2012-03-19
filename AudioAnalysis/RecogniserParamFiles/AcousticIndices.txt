@@ -1,0 +1,20 @@
+##### PARAMETERS FOR EXTRACTION OF ACOUSTIC INDICES FROM LONG AUDIO RECORDINGS
+
+################################################################################
+# default SEGMENT_DURATION=1 minute;   default SEGMENT_OVERLAP=0 seconds
+SEGMENT_DURATION=1
+SEGMENT_OVERLAP=0
+################################################################################
+
+# default RESAMPLE_RATE = 17640
+RESAMPLE_RATE=17640
+################################################################################
+
+# default frame length=512;   default frame overlap = 0.0
+FRAME_LENGTH=512
+FRAME_OVERLAP=0.0
+################################################################################
+
+# default LOWFREQ_BOUND = 500 Hz i.e. separates low freq band from high freq band.
+LOWFREQ_BOUND=500
+################################################################################
