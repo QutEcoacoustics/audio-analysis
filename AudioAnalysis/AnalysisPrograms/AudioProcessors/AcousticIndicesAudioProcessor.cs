@@ -13,11 +13,12 @@
 
     using QutSensors.Shared;
     using QutSensors.Shared.Tools;
+using AnalysisPrograms.AudioProcessors;
 
 
-    class AcousticIndicesAudioProcessor : AudioProcessors.AbstractAudioProcessor
+    class AcousticIndicesAudioProcessor : AbstractAudioProcessor
     {
-        protected override DataTable Analysis(AnalysisPrograms.AudioProcessors.AudioProcessorConfig config, FileInfo segmentAudioFile)
+        protected override DataTable Analysis(AudioProcessorConfig config, FileInfo segmentAudioFile)
         {
             var data = new DataTable();
             return data;

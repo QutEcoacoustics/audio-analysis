@@ -733,7 +733,7 @@ namespace AudioBrowser
             displayHeaders.Add("Weighted Index");
             displayValues.Add(weightedIndices);
 
-            var output = AcousticIndices.ConstructIndexImage(displayHeaders, displayValues, parameters.trackHeight);
+            var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], parameters.trackHeight);
             visualIndex_PictureBox.Image = output.Item1;
             this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
 

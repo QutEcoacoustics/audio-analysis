@@ -145,7 +145,11 @@ namespace TowseyLib
             return opPath;
         }
 
-
+        /// <summary>
+        /// returns a list of the column values in a csv file plus the column headings
+        /// </summary>
+        /// <param name="csvFileName"></param>
+        /// <returns></returns>
         public static System.Tuple<List<string>, List<double[]>> ReadCSVFile(string csvFileName)
         {
             string dir = Path.GetDirectoryName(csvFileName);

@@ -5,6 +5,9 @@
     using System.IO;
     using System.Reflection;
     using System.Threading;
+    using System.Threading.Tasks;
+    //using System.Collections.Concurrent;
+    using System.Diagnostics; //for the StopWatch only
 
     using AnalysisPrograms;
 
@@ -122,7 +125,7 @@
             this.tfOutputDirectory.Text = settings.DefaultOutputDir.FullName;
         }
 
-        public void WriteExtractionParameters2Console(AudioBrowserSettings parameters)
+        public static void WriteExtractionParameters2Console(AudioBrowserSettings parameters)
         {
             Console.WriteLine("# Parameter Settings for Extraction of Indices from long Audio File:");
             Console.WriteLine("\tSegment size: Duration = {0} minutes.", parameters.SegmentDuration);
@@ -166,16 +169,47 @@
                     count++;
 
                     var audioFileName = item.FileName;
-                    var sourceRecordingPath = item.FullName;
-                    var outputFilePath =
-                        new FileInfo(
-                            Path.Combine(
-                                this.settings.OutputDir.FullName,
-                                Path.GetFileNameWithoutExtension(audioFileName) + ".csv"));
+                    var fiSourceRecording = item.FullName;
+                    settings.fiSourceRecording = fiSourceRecording;
+                    Console.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
+                    Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
 
-                    settings.fiSourceRecording = sourceRecordingPath;
+                    WriteExtractionParameters2Console(settings);
 
-                    this.ProcessRecording(sourceRecordingPath, outputFilePath);
+
+                    Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
+                    stopwatch.Start();
+                    //################# PROCESS THE RECORDING #####################################################################################
+                    var outputData = this.ProcessRecording(fiSourceRecording, settings);
+                    //#############################################################################################################################
+
+                    //List<string> list = op.Item1;
+                    string reportFileExt = ".csv";
+                    string reportSeparator = "CSV";
+                    string header = AcousticIndices.FormatHeader(reportSeparator);
+                    outputData.Insert(0, header); //put header at top of list
+
+                    //var fiOutputCSVFile =
+                    //    new FileInfo(
+                    //        Path.Combine(
+                    //            this.settings.OutputDir.FullName,
+                    //            Path.GetFileNameWithoutExtension(audioFileName) + reportFileExt));
+                    string opDir = this.settings.OutputDir.FullName;
+                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + reportFileExt;
+                    string reportfilePath = Path.Combine(opDir, fName);
+                    FileTools.WriteTextFile(reportfilePath, outputData);
+
+                    string target = Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_BACKUP" + reportFileExt);
+                    File.Delete(target);                        // Ensure that the target does not exist.
+                    File.Copy(reportfilePath, target); //copy the file 2 target
+
+                    Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
+                    Console.WriteLine("Output  to  directory: " + opDir);
+                    Console.WriteLine("CSV file is @ " + reportfilePath);
+                    stopwatch.Stop();
+                    Console.WriteLine("Parallel loop time in seconds: {0:f3}", stopwatch.ElapsedMilliseconds / (double)1000);
+                    Console.WriteLine("###################################################\n\n");
+
                 }// if checked
             } //foreach
 
@@ -185,79 +219,71 @@
             }
         }
 
-        private void ProcessRecording(FileInfo fiSourceRecording, FileInfo fiOutputDir)
+        private List<string> ProcessRecording(FileInfo fiSourceRecording, AudioBrowserSettings config)
         {
-            //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
-
             string sourceRecordingPath = fiSourceRecording.FullName;
-            string outputDir = Path.GetDirectoryName(fiSourceRecording.FullName);
-            double segmentDuration_mins = settings.SegmentDuration; 
-            int segmentOverlap = settings.SegmentOverlap;
-            int resampleRate = settings.ResampleRate;
-            int frameLength = settings.FrameLength; 
-            int lowFreqBound = settings.LowFreqBound;
-
-            Console.WriteLine("# Processing audio file: " + sourceRecordingPath);
-            Console.WriteLine("# Output  to  directory: " + outputDir);
-
-            WriteExtractionParameters2Console(settings);
+            string outputDir = config.OutputDir.FullName;
+            double segmentDuration_mins = config.SegmentDuration; 
+            int segmentOverlap = config.SegmentOverlap;
+            int resampleRate = config.ResampleRate;
+            int frameLength = config.FrameLength; 
+            int lowFreqBound = config.LowFreqBound;
 
             // CREATE RUN ANALYSIS CLASS HERE
 
             // Set up the file and get info
             SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
-            var fiSource = new FileInfo(sourceRecordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSource.Extension);
-            var sourceAudioDuration = audioUtility.Duration(fiSource, mimeType);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSourceRecording.Extension);
+            var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
             int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
+            int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
 
-            //set up the temporary audio segment output file
-            string outputSegmentPath = Path.Combine(outputDir, @"temp.wav"); //path name of the temporary segment files extracted from long recording
-
-            FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
-
-
-            Console.WriteLine("# Source audio - filename: " + Path.GetFileName(sourceRecordingPath));
-            Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSource.CreationTime.ToLongDateString(), fiSource.CreationTime.ToLongTimeString());
-            Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
-            Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
+            //Console.WriteLine("# Source audio - duration: {0}hr:{1}min:{2}s:{3}ms", sourceAudioDuration.Hours, sourceAudioDuration.Minutes, sourceAudioDuration.Seconds, sourceAudioDuration.Milliseconds);
+            //Console.WriteLine("# Source audio - duration: {0:f4} minutes", sourceAudioDuration.TotalMinutes);
             Console.WriteLine("# Source audio - segments: {0}", segmentCount);
 
-            int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
-            string reportFormat = "CSV";
-
+            var outputData = new List<string>(); //List to store indices
 
             // LOOP THROUGH THE FILE
-            //initialse counters
-            DateTime tStart = DateTime.Now;
-            DateTime tPrevious = tStart;
-            //init List to store indices
-            var outputData = new List<string>();
+            //initialse timers for diagnostics
+            //DateTime tStart = DateTime.Now;
+            //DateTime tPrevious = tStart;
+            
+            segmentCount = 10;   //for testing and debugging
 
-            segmentCount = 20;
-
-            for (int s = 0; s < segmentCount; s++)
+            //for (int s = 0; s < segmentCount; s++)
+            // Parallelize the loop to partition the source file by segments.
+            Parallel.For(0, segmentCount, s =>
             {
-                DateTime tNow = DateTime.Now;
-                TimeSpan elapsedTime = tNow - tStart;
-                string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
+                //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
                 double startMinutes = s * segmentDuration_mins;
-                double avIterTime = elapsedTime.TotalSeconds / s;
-                if (s == 0) avIterTime = 0.0; //correct for division by zero
-                double t2End = avIterTime * (segmentCount - s) / (double)60;
-
-                TimeSpan iterTimeSpan = tNow - tPrevious;
-                double iterTime = iterTimeSpan.TotalSeconds;
-                if (s == 0) iterTime = 0.0;
-                tPrevious = tNow;
-
-                //Console.WriteLine("\n");
-                Console.WriteLine("## SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
-                                           s, startMinutes, timeDuration, t2End, iterTime, avIterTime);
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + segmentDuration_ms;
+
+                #region time diagnostics - used only in sequential loop - no use for parallel loop
+                //DateTime tNow = DateTime.Now;
+                //TimeSpan elapsedTime = tNow - tStart;
+                //string timeDuration = DataTools.Time_ConvertSecs2Mins(elapsedTime.TotalSeconds);
+                //double avIterTime = elapsedTime.TotalSeconds / s;
+                //if (s == 0) avIterTime = 0.0; //correct for division by zero
+                //double t2End = avIterTime * (segmentCount - s) / (double)60;
+                //TimeSpan iterTimeSpan = tNow - tPrevious;
+                //double iterTime = iterTimeSpan.TotalSeconds;
+                //if (s == 0) iterTime = 0.0;
+                //tPrevious = tNow;
+                //Console.WriteLine("\n");
+                //Console.WriteLine("## SEQUENTIAL SAMPLE {0}:  Starts@{1} min.  Elpased time:{2:f1}    E[t2End]:{3:f1} min.   Sec/iteration:{4:f2} (av={5:f2})",
+                //                           s, startMinutes, timeDuration, t2End, iterTime, avIterTime);
+                #endregion
+
+
                 //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
-                SpecificWavAudioUtility.GetSingleSegment(audioUtility, fiSource, fiOutputSegment, startMilliseconds, endMilliseconds);
+
+                //set up the temporary audio segment output file
+                string tempFname = "temp"+s+".wav";
+                string tempSegmentPath = Path.Combine(outputDir, tempFname); //path name of the temporary segment files extracted from long recording
+                FileInfo fiOutputSegment = new FileInfo(tempSegmentPath);
+                SpecificWavAudioUtility.GetSingleSegment(audioUtility, fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
                 AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
 
                 //double check that recording is over minimum length
@@ -267,39 +293,28 @@
                 if (sampleCount <= minimumLength)
                 {
                     Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
-                    break;
+                    //break;
+                }
+                else
+                {
+                    //#############################################################################################################################################
+                    //EXTRACT ACOUSTIC INDICES
+                    //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
+                    //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
+                    var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
+                    AcousticIndices.Indices2 indices = results.Item1;
+                    string line = AcousticIndices.FormatOneLineOfIndices("CSV", s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
+                    outputData.Add(line);
+                    //#############################################################################################################################################
                 }
 
-                //#############################################################################################################################################
-                //FOLLOWING LINES SPECIFIC TO EXTRACTING ACOUSTIC INDICES
-                //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-                //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
-                var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
-                AcousticIndices.Indices2 indices = results.Item1;
-                string line = AcousticIndices.FormatOneLineOfIndices(reportFormat, s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
-                //#############################################################################################################################################
-
-                outputData.Add(line);
                 recordingSegment.Dispose();
+                File.Delete(tempSegmentPath); //deleted the temp file
                 startMinutes += segmentDuration_mins;
             } //end of for loop
+            ); // Parallel.For
 
-
-            //List<string> list = op.Item1;
-            string reportSeparator = "CSV";
-            string header = AcousticIndices.FormatHeader(reportSeparator);
-            outputData.Insert(0, header); //put header at top of list
-            string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + ".csv";
-          //  string reportfilePath = 
-            //FileTools.WriteTextFile(reportfilePath.FullName, outputData);
-
-            //string target = Path.Combine(outputDir, Path.GetFileNameWithoutExtension(sourceRecordingPath.Name) + "_BACKUP.csv");
-           // File.Delete(target);                        // Ensure that the target does not exist.
-            //File.Copy(reportfilePath.FullName, target); //copy the file 2 target
-
-            //Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
-            //Console.WriteLine("CSV ouput file is @ " + reportfilePath.FullName);
-           // Console.WriteLine("###################################################\n\n");
+            return outputData;
         }
 
 
@@ -344,7 +359,9 @@
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
                     Console.WriteLine("# \t\tExpected source recording: " + sourceFilePath.Name);
 
+                    //##################################################################################################################
                     int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
+                    //##################################################################################################################
                     if (status != 0)
                     {
                         this.tabControlMain.SelectTab("tabPageConsole");
@@ -434,7 +451,7 @@
             displayHeaders.Add("Weighted Index");
             displayValues.Add(weightedIndices);
 
-            var output = AcousticIndices.ConstructIndexImage(displayHeaders, displayValues, settings.TrackHeight);
+            var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], settings.TrackHeight); //values[0] is the order of rows in CSV file
             this.pictureBoxVisualIndex.Image = output.Item1;
             this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
 
