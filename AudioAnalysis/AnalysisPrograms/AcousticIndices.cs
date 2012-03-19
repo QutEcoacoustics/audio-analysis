@@ -841,7 +841,7 @@ namespace AnalysisPrograms
         /// <param name="imageWidth"></param>
         /// <param name="trackHeight"></param>
         /// <returns></returns>
-        public static System.Tuple<Bitmap, Bitmap> ConstructIndexImage(List<string> headers, List<double[]> values, int trackHeight)
+        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(List<string> headers, List<double[]> values, double[] order, int trackHeight)
         {
             int headerCount = headers.Count;
             double threshold = 0.5;
@@ -868,8 +868,8 @@ namespace AnalysisPrograms
             for (int i = 0; i < values.Count; i++) //for pixels in the line
             {
                 if (i >= headerCount) break;
-                if (i == values.Count - 1) bmp = Image_Track.DrawColourScoreTrack(values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
-                else                       bmp = Image_Track.DrawBarScoreTrack(values[i],    trackHeight, threshold, headers[i]);
+                if (i == values.Count - 1) bmp = Image_Track.DrawColourScoreTrack(order, values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
+                else                       bmp = Image_Track.DrawBarScoreTrack(order, values[i],    trackHeight, threshold, headers[i]);
                 gr.DrawImage(bmp, 0, offset);
                 gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
                 offset += trackHeight;

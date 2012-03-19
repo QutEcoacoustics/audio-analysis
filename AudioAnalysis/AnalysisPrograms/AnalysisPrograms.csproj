@@ -125,9 +125,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AcousticIndicesAudioProcessor.cs" />
     <Compile Include="AED.cs" />
     <Compile Include="AudioProcessors\AbstractAudioProcessor.cs" />
+    <Compile Include="AudioProcessors\AcousticIndicesAudioProcessor.cs" />
     <Compile Include="AudioProcessors\AudioProcessorConfig.cs" />
     <Compile Include="HTKRecogniser.cs">
       <SubType>Code</SubType>

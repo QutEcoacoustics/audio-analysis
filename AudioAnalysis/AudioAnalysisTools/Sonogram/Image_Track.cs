@@ -633,7 +633,7 @@ namespace AudioAnalysisTools
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawBarScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
             Color[] grayScale = ImageTools.GrayScale();
             int imageWidth = array.Length;
@@ -642,10 +642,11 @@ namespace AudioAnalysisTools
             g.Clear(grayScale[245]);
 
             double range = maxVal - minVal;
-            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            for (int i = 0; i < imageWidth; i++) //for pixels in the line
             {
+                int x = (int)order[i]; //
                 // normalise and bound the value - use min bound, max and 255 image intensity range
-                double value = (array[x] - minVal) / range;
+                double value = (array[i] - minVal) / range;
                 int barHeight = (int)Math.Round(value * trackHeight);
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
@@ -662,7 +663,7 @@ namespace AudioAnalysisTools
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawColourScoreTrack(double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
             Color[] colorScale = { Color.LightGray, Color.Gray, Color.Orange, Color.Red, Color.Purple };
             int imageWidth = array.Length;
@@ -671,10 +672,11 @@ namespace AudioAnalysisTools
             g.Clear(Color.FromArgb(245, 245, 245));
 
             double range = maxVal - minVal;
-            for (int x = 0; x < imageWidth; x++) //for pixels in the line
+            for (int i = 0; i < imageWidth; i++) //for pixels in the line
             {
+                int x = (int)order[i];
                 // normalise and bound the value - use min bound, max and 255 image intensity range
-                double value = (array[x] - minVal) / range;
+                double value = (array[i] - minVal) / range;
                 int barHeight = (int)Math.Round(value * trackHeight);
                 int colourIndex = (int)Math.Floor(value * colorScale.Length * 0.99);
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, colorScale[colourIndex]);
@@ -694,21 +696,21 @@ namespace AudioAnalysisTools
         }
 
 
-        public static Bitmap DrawBarScoreTrack(double[] array, int trackHeight, double threshold, string title)
+        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackHeight, double threshold, string title)
         {
             double minVal;
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
-            Bitmap bitmap = DrawBarScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            Bitmap bitmap = DrawBarScoreTrack(order, array, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
-        public static Bitmap DrawColourScoreTrack(double[] array, int trackHeight, double threshold, string title)
+        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackHeight, double threshold, string title)
         {
             double minVal;
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
-            Bitmap bitmap = DrawColourScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
+            Bitmap bitmap = DrawColourScoreTrack(order, array, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
