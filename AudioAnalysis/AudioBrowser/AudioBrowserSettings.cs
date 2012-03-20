@@ -27,21 +27,32 @@
 
         public void LoadSettings()
         {
+            LoadBrowserSettings();
+            LoadAnalysisSettings();
+        }
+
+
+        public void LoadBrowserSettings()
+        {
             this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
             this.DefaultOutputDir = AppConfigHelper.GetDir("DefaultOutputDir", true);
             this.SourceDir = this.DefaultSourceDir;
             this.OutputDir = this.DefaultOutputDir;
             this.AudacityExe = AppConfigHelper.GetFile("AudacityExe", false);
-            this.FrameLength = AppConfigHelper.GetInt("FrameLength");
-            this.ResampleRate = AppConfigHelper.GetInt("ResampleRate");
-            this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
-            this.SegmentDuration = AppConfigHelper.GetInt("SegmentDuration");
-            this.SegmentOverlap = AppConfigHelper.GetInt("SegmentOverlap");
-            this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
             this.SonogramBackgroundThreshold = AppConfigHelper.GetDouble("SonogramBackgroundThreshold");
             this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
             this.TrackCount = AppConfigHelper.GetInt("TrackCount");
             this.SourceFileExt = AppConfigHelper.GetString("SourceFileExt");
+        }
+
+        public void LoadAnalysisSettings()
+        {
+            this.ResampleRate = AppConfigHelper.GetInt("ResampleRate");
+            this.SegmentDuration = AppConfigHelper.GetInt("SegmentDuration");
+            this.SegmentOverlap = AppConfigHelper.GetInt("SegmentOverlap");
+            this.FrameLength = AppConfigHelper.GetInt("FrameLength");
+            this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
+            this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
         }
 
         public FileInfo AudacityExe { get; private set; }

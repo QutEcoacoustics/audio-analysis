@@ -1835,6 +1835,19 @@ namespace TowseyLib
         }
 
 
+        
+        public static double[] Order(double[] array, double[] order)
+        {
+            int length = array.Length;
+            double[] orderedArray = new double[length];
+            for (int i = 0; i < length; i++)
+            {
+                int location = (int)order[i];
+                orderedArray[location] = array[i];
+            }
+            return orderedArray;
+        }
+
         /// <summary>
         /// normalises the values in a matrix between the passed min and max.
         /// </summary>
