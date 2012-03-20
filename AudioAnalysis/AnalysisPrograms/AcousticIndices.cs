@@ -285,7 +285,7 @@ namespace AnalysisPrograms
             //#V#####################################################################################################################################################
 
             //return if activeFrameCount = 0
-            if (activeFrameCount <= 10)
+            if (activeFrameCount <= 8)
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
@@ -310,14 +310,15 @@ namespace AnalysisPrograms
 
             //iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
             var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
-            indices.segmentCount = tuple4.Item1;
+            indices.segmentCount = tuple4.Item1;      //number of segments whose duration > one frame
             indices.avSegmentDuration = tuple4.Item2; //av segment duration in milliseconds
+            bool[] activeSegments = tuple4.Item3;     //boolean array that stores location of frames in active segments
 
             //iv: ENVELOPE ENTROPY ANALYSIS
             indices.entropyOfAmplitude = DataTools.Entropy_normalised(envelope);
 
             //remove background noise from the spectrogram
-            double spectralBgThreshold = 0.015;   // SPECTRAL AMPLITUDE THRESHOLD for smoothing backgorund
+            double spectralBgThreshold = 0.015;   // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[,] spectrogram = results2.Item3; //amplitude spectrogram
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
             double[] smoothedValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
@@ -336,9 +337,27 @@ namespace AnalysisPrograms
             indices.lowFreqCover  = tuple3.Item2;
 
 
+            //#V#####################################################################################################################################################
+            if (indices.segmentCount == 0)  //return if segmentCount = 0
+            {
+                indices.avSegmentDuration = 0.0;
+                indices.entropyOfPeakFreqDistr = 1.0;
+                indices.entropyOfAvSpectrum = 1.0;
+                indices.entropyOfVarianceSpectrum = 1.0;
+                indices.clusterCount = 0;
+                indices.avClusterDuration = 0.0; //av cluster duration in milliseconds
+                scores = null;
+                int[] clusterHits_dummy = null;
+                List<double[]> clusterWts_dummy = null;
+                double[,] clusterSpectrogram_dummy = null;
+                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+            }
+            //#V#####################################################################################################################################################
+
+
             //vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
             double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
-            var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeFrames, peakThreshold, recording.Nyquist);
+            var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeSegments, peakThreshold, recording.Nyquist);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
             double[] freqPeaks = tuple2.Item2;
@@ -350,7 +369,7 @@ namespace AnalysisPrograms
 
 
             //vii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeFrames, excludeBins);
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeSegments, excludeBins);
             indices.entropyOfAvSpectrum       = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
             //DataTools.writeBarGraph(avSpectrum);
@@ -362,9 +381,9 @@ namespace AnalysisPrograms
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
-            var tuple6 = ClusterAnalysis(spectrogram, activeFrames, excludeBins, binaryThreshold);
+            var tuple6 = ClusterAnalysis(spectrogram, activeSegments, excludeBins, binaryThreshold);
             indices.clusterCount = tuple6.Item1; 
-            indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster durtaion in milliseconds
+            indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster duration in milliseconds
             bool[] selectedFrames = tuple6.Item3;
             List<double[]> clusterWts = tuple6.Item4;
             int[] clusterHits = tuple6.Item5;
@@ -378,24 +397,37 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// reutrns the number of acoustic segments and their average duration in milliseconds
+        /// only counts a segment if it is LONGER than one frame. 
         /// count segments as number of transitions from active to non-active frame
         /// </summary>
         /// <param name="activeFrames"></param>
         /// <param name="frameDuration">frame duration in seconds</param>
         /// <returns></returns>
-        public static System.Tuple<int, double> CalculateSegmentCount(bool[] activeFrames, double frameDuration)
+        public static System.Tuple<int, double, bool[]> CalculateSegmentCount(bool[] activeFrames, double frameDuration)
         {
+            bool[] segments = activeFrames;
+
             int activeFrameCount = DataTools.CountTrues(activeFrames);
-            if (activeFrameCount == 0) return System.Tuple.Create(0, 0.0);
+            if (activeFrameCount == 0) return System.Tuple.Create(0, 0.0, activeFrames);
 
             int segmentCount = 0;
-            for (int i = 1; i < activeFrames.Length; i++)
+            for (int i = 2; i < activeFrames.Length; i++)
             {
-                if (!activeFrames[i] && activeFrames[i - 1]) segmentCount++; //count the ends of active segments
+                if (!activeFrames[i] && activeFrames[i - 1] && activeFrames[i - 2]) segmentCount++; //count the ends of active segments
             }
-            double avSegmentDuration =  frameDuration * 1000 * activeFrameCount / (double)segmentCount; //av segment duration in milliseconds
 
-            return System.Tuple.Create(segmentCount, avSegmentDuration);
+            // store record of segments longer than one frame
+            for (int i = 1; i < activeFrames.Length-1; i++)
+            {
+                if (!activeFrames[i - 1] && activeFrames[i] && !activeFrames[i + 1]) segments[i] = false; //remove solitary active frames
+            }
+
+            int segmentFrameCount = DataTools.CountTrues(segments);
+            //double avSegmentDuration =  frameDuration * 1000 * activeFrameCount / (double)segmentCount; //av segment duration in milliseconds
+            double avSegmentDuration = 0.0;
+            if (segmentFrameCount > 0) avSegmentDuration = frameDuration * 1000 * segmentFrameCount / (double)segmentCount;   //av segment duration in milliseconds
+
+            return System.Tuple.Create(segmentCount, avSegmentDuration, segments);
         }
 
         /// <summary>
@@ -447,6 +479,7 @@ namespace AnalysisPrograms
 
             double[] freqPeaks = new double[activeFrames.Length]; //store frequency of peaks - return later for imaging purposes
             int[] freqHistogram = new int[freqBinCount];
+            int peakCount = 0;
             for (int i = 0; i < activeFrames.Length; i++)
             {
                 if (! activeFrames[i]) continue; //select only frames having acoustic energy >= threshold
@@ -456,8 +489,10 @@ namespace AnalysisPrograms
                 {
                     freqHistogram[j-1] ++;  //spectrogram has a DC freq column which want to ignore.           
                     freqPeaks[i] = nyquistFreq * j / (double)spectrogram.GetLength(1); //store frequency of peak as double
+                    peakCount++;
                 }
             } // over all frames in dB array
+            if (peakCount <= 5) return System.Tuple.Create(1.0, freqPeaks); //need minimum number of peaks for a useful value 
 
             //DataTools.writeBarGraph(freqHistogram);
             freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
@@ -479,7 +514,7 @@ namespace AnalysisPrograms
             int activeFrameCount = DataTools.CountTrues(activeFrames);
             double[] avSpectrum = new double[freqBinCount - excludeBins];  //for average  of the spectral bins
             double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
-            for (int j = excludeBins; j < freqBinCount; j++) //for all frequency bins (excluding low freq)
+            for (int j = excludeBins; j < freqBinCount; j++)                //for all frequency bins (excluding low freq)
             {
                 double[] bin = DataTools.GetColumn(spectrogram, j); //get the bin
                 double[] acousticFrames = new double[activeFrameCount];
@@ -497,9 +532,18 @@ namespace AnalysisPrograms
                 avSpectrum[j - excludeBins] = av;      //store average  of the bin
                 varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
             }
+            double sumOfAverages = avSpectrum.Sum();
+            if (sumOfAverages < 0.00000001) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
+
             double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);        //ENTROPY of spectral averages
-            double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);      //ENTROPY of spectral variances
-            return System.Tuple.Create(HSpectralAv, HSpectralVar);
+            double sumOfVariances = varSpectrum.Sum();
+            if (sumOfVariances < 0.00000001)
+                return System.Tuple.Create(HSpectralAv, 1.0); //no spectrum worth calculating entropy.
+            else
+            {
+                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);      //ENTROPY of spectral variances
+                return System.Tuple.Create(HSpectralAv, HSpectralVar);
+            }
         }
 
 

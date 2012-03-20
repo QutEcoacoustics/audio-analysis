@@ -249,10 +249,13 @@
             //DateTime tStart = DateTime.Now;
             //DateTime tPrevious = tStart;
             
-            segmentCount = 10;   //for testing and debugging
+            //segmentCount = 30;   //for testing and debugging
 
             //for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.
+            //Parallel.For(0, 571, s =>
+            //Parallel.For(200, 209, s =>
+            //Parallel.For(569, segmentCount, s =>
             Parallel.For(0, segmentCount, s =>
             {
                 //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
@@ -289,7 +292,7 @@
                 //double check that recording is over minimum length
                 double wavSegmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
                 int sampleCount = recordingSegment.GetWavReader().Samples.Length; //get recording length to determine if long enough
-                int minimumLength = 3 * frameLength; //ignore recordings shorter than three frames
+                int minimumLength = 100 * frameLength; //ignore recordings shorter than 100 frames
                 if (sampleCount <= minimumLength)
                 {
                     Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
@@ -351,9 +354,12 @@
                         new FileInfo(
                             Path.Combine(this.settings.OutputDir.FullName, csvFileName));
 
+                    //get source file name = first part of CSV file name
+                    string csvFname = Path.GetFileNameWithoutExtension(csvFileName);
+                    string[] sourceParts = csvFname.Split('_');
                     var sourceFilePath =
                         new FileInfo(
-                            Path.Combine(this.settings.SourceDir.FullName, Path.GetFileNameWithoutExtension(csvFileName) + settings.SourceFileExt));
+                            Path.Combine(this.settings.SourceDir.FullName, sourceParts[0] + settings.SourceFileExt));
                     settings.fiSourceRecording = sourceFilePath;
 
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
@@ -372,9 +378,6 @@
                     }
                     else
                     {
-                        //int visualIndex_TrackCount = settings.TrackCount + 2; //+ 2 time scale tracks
-                        //this.pictureBoxVisualIndex.Height = visualIndex_TrackCount * settings.TrackHeight;
-                        //this.panelTrackBar.Location = new Point(0, this.pictureBoxVisualIndex.Height);
                         this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
                         this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
                         this.tabControlMain.SelectTab("tabPageDisplay");
@@ -436,7 +439,7 @@
                 }
             }
             this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(weightedComboValues, AcousticIndices.comboWeights);
-            this.weightedIndices = DataTools.normalise(weightedIndices);
+            this.weightedIndices = DataTools.normalise(this.weightedIndices);
 
             //add in weighted bias for chorus and backgorund noise
             //for (int i = 0; i < wtIndices.Length; i++)
@@ -454,20 +457,14 @@
             var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], settings.TrackHeight); //values[0] is the order of rows in CSV file
             this.pictureBoxVisualIndex.Image = output.Item1;
             this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
+            this.weightedIndices = DataTools.Order(this.weightedIndices, values[0]); //reorder the weighted indices: 0->N
 
-            //visualIndex_PictureBox.Dock = DockStyle.Fill;
-
-            //this.visualIndexPanel.Controls.Add(sonogramPicture);
-            //this.sonogramPanel_hScrollBar.Location = new System.Drawing.Point(0, img.Height + sonogramPanel_hScrollBar.Height);
-            //this.sonogramPanel_hScrollBar.Width = this.sonogramPanel.Width - this.sonogramPanel.Margin.Right;
-            //this.sonogramPanel_hScrollBar.Maximum = img.Width - this.sonogramPanel.Width + 260 - 10;  // PROBLEM WITH THIS CODE - 260 = FIDDLE FACTOR!!!  ORIGINAL WAS -this.ClientSize.Width;
-            //this.sonogramPanel_hScrollBar.Value = 0;
-            //this.sonogramPanel_hScrollBar.Visible = true;
-
-            //if (this.barTrackImage != null) this.barTrackImage.Dispose();
             this.barTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
-            //this.pictureBoxBarTrack.BackColor = Color.White;
-
+            
+            //SAVE THE IMAGE
+            string imagePath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
+            this.pictureBoxVisualIndex.Image.Save(imagePath);
+            Console.WriteLine("\n\tSaved csv data tracks to image file: " + imagePath);
 
             Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
                              comboHeaders[0], AcousticIndices.comboWeights[0], comboHeaders[1], AcousticIndices.comboWeights[1], comboHeaders[2], AcousticIndices.comboWeights[2],
