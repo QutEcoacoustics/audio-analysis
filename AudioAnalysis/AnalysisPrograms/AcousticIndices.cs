@@ -281,33 +281,6 @@ namespace AnalysisPrograms
             indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
 
 
-            //#V#####################################################################################################################################################
-            //#V#####################################################################################################################################################
-
-            //return if activeFrameCount = 0
-            if (activeFrameCount <= 8)
-            {
-                indices.segmentCount = 0;
-                indices.avSegmentDuration = 0.0;
-                indices.spectralCover = 0.0;
-                indices.lowFreqCover = 0.0;
-                indices.entropyOfAmplitude        = 1.0;
-                indices.entropyOfPeakFreqDistr    = 1.0;
-                indices.entropyOfAvSpectrum       = 1.0;
-                indices.entropyOfVarianceSpectrum = 1.0;
-                indices.clusterCount = 0;
-                indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
-                scores = null;
-                int[] clusterHits_dummy = null;
-                List<double[]> clusterWts_dummy = null;
-                double[,] clusterSpectrogram_dummy = null;
-                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
-            }
-            //#V#####################################################################################################################################################
-
-
-
-
             //iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
             var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
             indices.segmentCount = tuple4.Item1;      //number of segments whose duration > one frame
@@ -335,6 +308,29 @@ namespace AnalysisPrograms
             var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, excludeBins);
             indices.spectralCover = tuple3.Item1;
             indices.lowFreqCover  = tuple3.Item2;
+
+
+            //#V#####################################################################################################################################################
+            //#V#####################################################################################################################################################
+
+            //return if activeFrameCount too small
+            if (activeFrameCount <= 8)
+            {
+                indices.segmentCount = 0;
+                indices.avSegmentDuration = 0.0;
+                indices.entropyOfAmplitude = 1.0;
+                indices.entropyOfPeakFreqDistr = 1.0;
+                indices.entropyOfAvSpectrum = 1.0;
+                indices.entropyOfVarianceSpectrum = 1.0;
+                indices.clusterCount = 0;
+                indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
+                scores = null;
+                int[] clusterHits_dummy = null;
+                List<double[]> clusterWts_dummy = null;
+                double[,] clusterSpectrogram_dummy = null;
+                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+            }
+            //#V#####################################################################################################################################################
 
 
             //#V#####################################################################################################################################################
@@ -532,16 +528,18 @@ namespace AnalysisPrograms
                 avSpectrum[j - excludeBins] = av;      //store average  of the bin
                 varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
             }
-            double sumOfAverages = avSpectrum.Sum();
-            if (sumOfAverages < 0.00000001) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
+            double sum = avSpectrum.Sum();
+            int posCount = avSpectrum.Count(p => p > 0.0);
+            if ((sum < 0.0000001) && (posCount < 3)) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
 
-            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);        //ENTROPY of spectral averages
-            double sumOfVariances = varSpectrum.Sum();
-            if (sumOfVariances < 0.00000001)
-                return System.Tuple.Create(HSpectralAv, 1.0); //no spectrum worth calculating entropy.
+            double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);               //ENTROPY of spectral averages
+            sum = varSpectrum.Sum();
+            posCount = varSpectrum.Count(p => p > 0.0);
+            if ((sum < 0.00000001) && (posCount < 3))
+                return System.Tuple.Create(HSpectralAv, 1.0);                            //no spectrum worth calculating entropy.
             else
             {
-                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);      //ENTROPY of spectral variances
+                double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);         //ENTROPY of spectral variances
                 return System.Tuple.Create(HSpectralAv, HSpectralVar);
             }
         }
@@ -885,7 +883,7 @@ namespace AnalysisPrograms
         /// <param name="imageWidth"></param>
         /// <param name="trackHeight"></param>
         /// <returns></returns>
-        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(List<string> headers, List<double[]> values, double[] order, int trackHeight)
+        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(List<string> headers, List<double[]> values, double[] order, int trackHeight, bool normalisedTrackDisplay)
         {
             int headerCount = headers.Count;
             double threshold = 0.5;
@@ -921,7 +919,6 @@ namespace AnalysisPrograms
             gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
             return System.Tuple.Create(compositeBmp, timeBmp);
         }
-
 
 
         public static string FormatHeader(string parmasFile_Separator)
