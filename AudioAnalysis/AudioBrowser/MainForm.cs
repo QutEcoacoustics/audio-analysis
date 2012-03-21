@@ -173,8 +173,8 @@
                     settings.fiSourceRecording = fiSourceRecording;
                     Console.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
                     Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-
-                    WriteExtractionParameters2Console(settings);
+                    //WriteExtractionParameters2Console(settings);
+                    Console.WriteLine("# Start processing at: {0}",  DateTime.Now.ToLongTimeString());
 
 
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
@@ -194,21 +194,29 @@
                     //        Path.Combine(
                     //            this.settings.OutputDir.FullName,
                     //            Path.GetFileNameWithoutExtension(audioFileName) + reportFileExt));
-                    string opDir = this.settings.OutputDir.FullName;
-                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + reportFileExt;
-                    string reportfilePath = Path.Combine(opDir, fName);
+                    //string opDir = this.settings.OutputDir.FullName;
+                    string opDir = this.tfOutputDirectory.Text;
+                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + settings.AnalysisName;
+                    string reportfilePath = Path.Combine(opDir, fName + reportFileExt);
                     FileTools.WriteTextFile(reportfilePath, outputData);
 
-                    string target = Path.Combine(opDir, Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_BACKUP" + reportFileExt);
+                    string target = Path.Combine(opDir, fName + "_BACKUP" + reportFileExt);
                     File.Delete(target);                        // Ensure that the target does not exist.
                     File.Copy(reportfilePath, target); //copy the file 2 target
 
+                    Console.WriteLine("###################################################");
                     Console.WriteLine("Finished processing " + fiSourceRecording.Name + ".");
                     Console.WriteLine("Output  to  directory: " + opDir);
                     Console.WriteLine("CSV file is @ " + reportfilePath);
                     stopwatch.Stop();
-                    Console.WriteLine("Parallel loop time in seconds: {0:f3}", stopwatch.ElapsedMilliseconds / (double)1000);
-                    Console.WriteLine("###################################################\n\n");
+                    TimeSpan ts = stopwatch.Elapsed;
+                    Console.WriteLine("Parallel loop time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+
+                    //NEXT TWO LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
+                    int iterationCount = 570;
+                    Console.WriteLine(" Average iteration: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)iterationCount));
+
+                    Console.WriteLine("###################################################\n");
 
                 }// if checked
             } //foreach
@@ -222,7 +230,7 @@
         private List<string> ProcessRecording(FileInfo fiSourceRecording, AudioBrowserSettings config)
         {
             string sourceRecordingPath = fiSourceRecording.FullName;
-            string outputDir = config.OutputDir.FullName;
+            string outputDir = config.diOutputDir.FullName;
             double segmentDuration_mins = config.SegmentDuration; 
             int segmentOverlap = config.SegmentOverlap;
             int resampleRate = config.ResampleRate;
@@ -253,10 +261,10 @@
 
             //for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.
-            //Parallel.For(0, 571, s =>
-            //Parallel.For(200, 209, s =>
-            //Parallel.For(569, segmentCount, s =>
-            Parallel.For(0, segmentCount, s =>
+            Parallel.For(0, 570, s =>            //USE FOR FIRST HALF OF RECORDING
+            //Parallel.For(569, segmentCount, s =>   //USE FOR SECOND HALF OF RECORDING
+            //Parallel.For(402, 403, s =>
+            //Parallel.For(0, segmentCount, s =>
             {
                 //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
                 double startMinutes = s * segmentDuration_mins;
@@ -352,14 +360,14 @@
                     var csvFileName = item.FileName;
                     var csvFilePath =
                         new FileInfo(
-                            Path.Combine(this.settings.OutputDir.FullName, csvFileName));
+                            Path.Combine(this.settings.diOutputDir.FullName, csvFileName));
 
                     //get source file name = first part of CSV file name
                     string csvFname = Path.GetFileNameWithoutExtension(csvFileName);
                     string[] sourceParts = csvFname.Split('_');
                     var sourceFilePath =
                         new FileInfo(
-                            Path.Combine(this.settings.SourceDir.FullName, sourceParts[0] + settings.SourceFileExt));
+                            Path.Combine(this.settings.diSourceDir.FullName, sourceParts[0] + settings.SourceFileExt));
                     settings.fiSourceRecording = sourceFilePath;
 
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
@@ -454,7 +462,7 @@
             displayHeaders.Add("Weighted Index");
             displayValues.Add(weightedIndices);
 
-            var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], settings.TrackHeight); //values[0] is the order of rows in CSV file
+            var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], settings.TrackHeight, settings.TrackNormalisedDisplay); //values[0] is the order of rows in CSV file
             this.pictureBoxVisualIndex.Image = output.Item1;
             this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
             this.weightedIndices = DataTools.Order(this.weightedIndices, values[0]); //reorder the weighted indices: 0->N
@@ -462,7 +470,7 @@
             this.barTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
             
             //SAVE THE IMAGE
-            string imagePath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
+            string imagePath = Path.Combine(settings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
             this.pictureBoxVisualIndex.Image.Save(imagePath);
             Console.WriteLine("\n\tSaved csv data tracks to image file: " + imagePath);
 
@@ -535,13 +543,13 @@
             string sourceFName = Path.GetFileNameWithoutExtension(settings.fiSourceRecording.FullName);
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
 
-            string outputSegmentPath = Path.Combine(settings.OutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
+            string outputSegmentPath = Path.Combine(settings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
 
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
 
 
             Console.WriteLine("\n\tExtracting audio segment from source audio: minute " + myX + " to minute " + (myX + 1));
-            Console.WriteLine("\n\tWriting audio segment to dir: " + settings.OutputDir.FullName);
+            Console.WriteLine("\n\tWriting audio segment to dir: " + settings.diOutputDir.FullName);
             Console.WriteLine("\n\t\t\tFile Name: " + segmentFName);
 
             //get segment from source recording
@@ -569,7 +577,7 @@
             //this.hScrollBarSonogram.Minimum = 0;
             this.hScrollBarSonogram.Maximum = pictureBoxSonogram.Width - this.panelSonogram.Width + 280; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            string sonogramPath = Path.Combine(settings.OutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
+            string sonogramPath = Path.Combine(settings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
             Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
             pictureBoxSonogram.Image.Save(sonogramPath);
             this.tabControlMain.SelectTab("tabPageDisplay");   
@@ -635,10 +643,10 @@
                 Console.WriteLine("Audacity cannot open audio segment file: <" + settings.fiSegmentRecording+">");
                 Console.WriteLine("It does not exist!");
                 this.tabControlMain.SelectTab("tabPageConsole");
-                RunAudacity(settings.AudacityExe.FullName, " ", settings.OutputDir.FullName);
+                RunAudacity(settings.AudacityExe.FullName, " ", settings.diOutputDir.FullName);
             }
             else
-                RunAudacity(settings.AudacityExe.FullName, settings.fiSegmentRecording.FullName, settings.OutputDir.FullName);
+                RunAudacity(settings.AudacityExe.FullName, settings.fiSegmentRecording.FullName, settings.diOutputDir.FullName);
         }
 
         // here be dragons!
@@ -662,7 +670,7 @@
             this.totalCheckedCheckBoxesSourceFileList = 0;
 
             // replace existing settings
-            settings.SourceDir = new DirectoryInfo(this.tfSourceDirectory.Text);
+            settings.diSourceDir = new DirectoryInfo(this.tfSourceDirectory.Text);
         }
 
         private void BackgroundWorkerUpdateSourceFileListDoWork(object sender, DoWorkEventArgs e)
@@ -699,7 +707,7 @@
             this.totalCheckedCheckBoxesCSVFileList = 0;
 
             // replace existing settings
-            settings.OutputDir = new DirectoryInfo(tfOutputDirectory.Text);
+            settings.diOutputDir = new DirectoryInfo(tfOutputDirectory.Text);
         }
 
         private void BackgroundWorkerUpdateOutputFileListDoWork(object sender, DoWorkEventArgs e)
@@ -810,6 +818,7 @@
             if (this.folderBrowserDialogChooseDir.ShowDialog() == DialogResult.OK)
             {
                 this.tfSourceDirectory.Text = this.folderBrowserDialogChooseDir.SelectedPath;
+                settings.diSourceDir = new DirectoryInfo(this.tfSourceDirectory.Text);
             }
 
             this.tabControlMain.SelectTab("tabPageSourceFiles");
@@ -827,6 +836,7 @@
             if (this.folderBrowserDialogChooseDir.ShowDialog() == DialogResult.OK)
             {
                 this.tfOutputDirectory.Text = this.folderBrowserDialogChooseDir.SelectedPath;
+                settings.diOutputDir = new DirectoryInfo(this.tfOutputDirectory.Text);
             }
 
             this.tabControlMain.SelectTab("tabPageOutputFiles");
