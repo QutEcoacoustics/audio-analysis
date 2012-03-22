@@ -261,10 +261,10 @@
 
             //for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.
-            Parallel.For(0, 570, s =>            //USE FOR FIRST HALF OF RECORDING
+            //Parallel.For(0, 570, s =>              //USE FOR FIRST HALF OF RECORDING
             //Parallel.For(569, segmentCount, s =>   //USE FOR SECOND HALF OF RECORDING
-            //Parallel.For(402, 403, s =>
-            //Parallel.For(0, segmentCount, s =>
+            //Parallel.For(420, 421, s =>
+            Parallel.For(0, segmentCount, s =>
             {
                 //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
                 double startMinutes = s * segmentDuration_mins;
@@ -309,13 +309,24 @@
                 else
                 {
                     //#############################################################################################################################################
-                    //EXTRACT ACOUSTIC INDICES
-                    //iii: EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
-                    //     EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
-                    var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
-                    AcousticIndices.Indices2 indices = results.Item1;
-                    string line = AcousticIndices.FormatOneLineOfIndices("CSV", s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
-                    outputData.Add(line);
+                    //##### DO THE ANALYSIS ############ 
+                    if (settings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
+                    {
+                        var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
+                        AcousticIndices.Indices2 indices = results.Item1;
+                        string line = AcousticIndices.FormatOneLineOfIndices("CSV", s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
+                        outputData.Add(line);
+                    }
+                    else
+                    if (settings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser
+                    {
+                        //KiwiParams config
+                        //var results = KiwiRecogniser.Analysis(config, recordingSegment);
+                        //KiwiRecogniser.Indices2 indices = results.Item1;
+                        //string line = KiwiRecogniser.FormatOneLineOfIndices("CSV", s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
+                        //outputData.Add(line);
+                    }
+
                     //#############################################################################################################################################
                 }
 
@@ -1223,6 +1234,16 @@
             AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName, audioUtility);
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
+        }
+
+        private void backgroundWorkerUpdateSourceFileList_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+        }
+
+        private void backgroundWorkerUpdateCSVFileList_DoWork(object sender, DoWorkEventArgs e)
+        {
+
         } 
 
     } //class MainForm : Form

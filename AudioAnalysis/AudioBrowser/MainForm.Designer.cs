@@ -43,7 +43,6 @@
             this.tabPageOutputFiles = new System.Windows.Forms.TabPage();
             this.btnLoadVisualIndexAllSelected = new System.Windows.Forms.Button();
             this.dataGridCSVfiles = new System.Windows.Forms.DataGridView();
-            this.dataGridViewCheckBoxColumnSelected = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.tabPageDisplay = new System.Windows.Forms.TabPage();
             this.splitContainerDisplay = new System.Windows.Forms.SplitContainer();
             this.panelDisplayControls = new System.Windows.Forms.Panel();
@@ -80,15 +79,18 @@
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
+            this.dataGridViewCheckBoxColumnSelected = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.CsvFileDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.dataGridViewTextBoxColumnFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumnFileLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fileDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControlMain.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).BeginInit();
@@ -169,9 +171,10 @@
             this.dataGridViewFileList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.selectedDataGridViewCheckBoxColumn,
             this.fileNameDataGridViewTextBoxColumn,
+            this.fileDateDataGridViewTextBoxColumn,
             this.durationDataGridViewTextBoxColumn,
-            this.mediaTypeDataGridViewTextBoxColumn,
-            this.fileLengthDataGridViewTextBoxColumn});
+            this.fileLengthDataGridViewTextBoxColumn,
+            this.mediaTypeDataGridViewTextBoxColumn});
             this.dataGridViewFileList.DataSource = this.mediaFileItemBindingSource;
             dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
@@ -235,6 +238,7 @@
             this.dataGridCSVfiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewCheckBoxColumnSelected,
             this.dataGridViewTextBoxColumnFileName,
+            this.CsvFileDate,
             this.dataGridViewTextBoxColumnFileLength});
             this.dataGridCSVfiles.DataSource = this.csvFileItemBindingSource;
             dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -255,13 +259,6 @@
             this.dataGridCSVfiles.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridViewFileListCSVFileList_CellPainting);
             this.dataGridCSVfiles.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellValueChanged);
             this.dataGridCSVfiles.CurrentCellDirtyStateChanged += new System.EventHandler(this.dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged);
-            // 
-            // dataGridViewCheckBoxColumnSelected
-            // 
-            this.dataGridViewCheckBoxColumnSelected.HeaderText = "";
-            this.dataGridViewCheckBoxColumnSelected.Name = "dataGridViewCheckBoxColumnSelected";
-            this.dataGridViewCheckBoxColumnSelected.ReadOnly = true;
-            this.dataGridViewCheckBoxColumnSelected.Width = 5;
             // 
             // tabPageDisplay
             // 
@@ -635,6 +632,29 @@
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = true;
             this.btnSelectOutputDirectory.Click += new System.EventHandler(this.btnSelectOutputDirectory_Click);
             // 
+            // backgroundWorkerUpdateSourceFileList
+            // 
+            this.backgroundWorkerUpdateSourceFileList.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerUpdateSourceFileList_DoWork);
+            // 
+            // backgroundWorkerUpdateCSVFileList
+            // 
+            this.backgroundWorkerUpdateCSVFileList.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerUpdateCSVFileList_DoWork);
+            // 
+            // dataGridViewCheckBoxColumnSelected
+            // 
+            this.dataGridViewCheckBoxColumnSelected.HeaderText = "";
+            this.dataGridViewCheckBoxColumnSelected.Name = "dataGridViewCheckBoxColumnSelected";
+            this.dataGridViewCheckBoxColumnSelected.ReadOnly = true;
+            this.dataGridViewCheckBoxColumnSelected.Width = 5;
+            // 
+            // CsvFileDate
+            // 
+            this.CsvFileDate.DataPropertyName = "CsvFileDate";
+            this.CsvFileDate.HeaderText = "File Date";
+            this.CsvFileDate.Name = "CsvFileDate";
+            this.CsvFileDate.ReadOnly = true;
+            this.CsvFileDate.Width = 74;
+            // 
             // mediaFileItemBindingSource
             // 
             this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
@@ -669,18 +689,34 @@
             // fileNameDataGridViewTextBoxColumn
             // 
             this.fileNameDataGridViewTextBoxColumn.DataPropertyName = "FileName";
-            this.fileNameDataGridViewTextBoxColumn.HeaderText = "FileName";
+            this.fileNameDataGridViewTextBoxColumn.HeaderText = "File Name";
             this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
             this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileNameDataGridViewTextBoxColumn.Width = 76;
+            this.fileNameDataGridViewTextBoxColumn.Width = 79;
+            // 
+            // fileDateDataGridViewTextBoxColumn
+            // 
+            this.fileDateDataGridViewTextBoxColumn.DataPropertyName = "FileDate";
+            this.fileDateDataGridViewTextBoxColumn.HeaderText = "Date";
+            this.fileDateDataGridViewTextBoxColumn.Name = "fileDateDataGridViewTextBoxColumn";
+            this.fileDateDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileDateDataGridViewTextBoxColumn.Width = 55;
             // 
             // durationDataGridViewTextBoxColumn
             // 
             this.durationDataGridViewTextBoxColumn.DataPropertyName = "Duration";
-            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration (h:m:s)";
+            this.durationDataGridViewTextBoxColumn.HeaderText = "Duration ( h:m:s )";
             this.durationDataGridViewTextBoxColumn.Name = "durationDataGridViewTextBoxColumn";
             this.durationDataGridViewTextBoxColumn.ReadOnly = true;
-            this.durationDataGridViewTextBoxColumn.Width = 97;
+            this.durationDataGridViewTextBoxColumn.Width = 75;
+            // 
+            // fileLengthDataGridViewTextBoxColumn
+            // 
+            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
+            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "File Length";
+            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
+            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileLengthDataGridViewTextBoxColumn.Width = 78;
             // 
             // mediaTypeDataGridViewTextBoxColumn
             // 
@@ -690,14 +726,6 @@
             this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
             this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
             // 
-            // fileLengthDataGridViewTextBoxColumn
-            // 
-            this.fileLengthDataGridViewTextBoxColumn.DataPropertyName = "FileLength";
-            this.fileLengthDataGridViewTextBoxColumn.HeaderText = "FileLength";
-            this.fileLengthDataGridViewTextBoxColumn.Name = "fileLengthDataGridViewTextBoxColumn";
-            this.fileLengthDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileLengthDataGridViewTextBoxColumn.Width = 81;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -705,7 +733,9 @@
             this.ClientSize = new System.Drawing.Size(1784, 812);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.tabControlMain);
+            this.Location = new System.Drawing.Point(90, 90);
             this.MaximumSize = new System.Drawing.Size(1800, 850);
+            this.MinimumSize = new System.Drawing.Size(20, 38);
             this.Name = "MainForm";
             this.Text = "Acoustic Environment Browser";
             this.Load += new System.EventHandler(this.MainForm_Load);
@@ -768,9 +798,6 @@
         private Button btnLoadVisualIndexAllSelected;
         private DataGridView dataGridCSVfiles;
         private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateCSVFileList;
-        private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnSelected;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileName;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileLength;
         private BindingSource csvFileItemBindingSource;
         private Label labelSourceFileDurationInMinutes;
         private Label labelSourceFileName;
@@ -789,11 +816,16 @@
         public TabControl tabControlMain;
         private Panel panelSonogram;
         private HScrollBar hScrollBarSonogram;
+        private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnSelected;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileName;
+        private DataGridViewTextBoxColumn CsvFileDate;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileLength;
         private DataGridViewCheckBoxColumn selectedDataGridViewCheckBoxColumn;
         private DataGridViewTextBoxColumn fileNameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn fileDateDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn durationDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn mediaTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn fileLengthDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn mediaTypeDataGridViewTextBoxColumn;
 
 
     }
