@@ -17,6 +17,7 @@ namespace AnalysisPrograms
 {
     public class AcousticIndices
     {
+        public const string ANALYSIS_NAME = "AcousticIndices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
         public static bool[] displayColumn = { false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false };
@@ -238,6 +239,8 @@ namespace AnalysisPrograms
 
         /// <summary>
         /// Extracts indices from a single  segment of recording
+        /// EXTRACT INDICES   Default frameLength = 128 samples @ 22050 Hz = 5.805ms, @ 11025 Hz = 11.61ms.
+        //  EXTRACT INDICES   Default frameLength = 256 samples @ 22050 Hz = 11.61ms, @ 11025 Hz = 23.22ms, @ 17640 Hz = 18.576ms.
         /// </summary>
         /// <param name="recording">an audio recording</param>
         /// <param name="int frameSize">number of signal samples in frame. Default = 256</param>
@@ -314,14 +317,13 @@ namespace AnalysisPrograms
             //#V#####################################################################################################################################################
 
             //return if activeFrameCount too small
-            if (activeFrameCount <= 8)
+            if (activeFrameCount <= 1)
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfAmplitude = 1.0;
-                indices.entropyOfPeakFreqDistr = 1.0;
-                indices.entropyOfAvSpectrum = 1.0;
-                indices.entropyOfVarianceSpectrum = 1.0;
+                indices.entropyOfPeakFreqDistr = 0.0;
+                indices.entropyOfAvSpectrum = 0.0;
+                indices.entropyOfVarianceSpectrum = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
                 scores = null;
@@ -337,9 +339,9 @@ namespace AnalysisPrograms
             if (indices.segmentCount == 0)  //return if segmentCount = 0
             {
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfPeakFreqDistr = 1.0;
-                indices.entropyOfAvSpectrum = 1.0;
-                indices.entropyOfVarianceSpectrum = 1.0;
+                indices.entropyOfPeakFreqDistr = 0.0;
+                indices.entropyOfAvSpectrum = 0.0;
+                indices.entropyOfVarianceSpectrum = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster duration in milliseconds
                 scores = null;
@@ -488,7 +490,9 @@ namespace AnalysisPrograms
                     peakCount++;
                 }
             } // over all frames in dB array
-            if (peakCount <= 5) return System.Tuple.Create(1.0, freqPeaks); //need minimum number of peaks for a useful value 
+            if (peakCount == 1) return System.Tuple.Create(0.0, freqPeaks); //energy concentrated in one peak i.e low entropy 
+            else
+            if (peakCount == 0) return System.Tuple.Create(0.5, freqPeaks); //do not know distribution 
 
             //DataTools.writeBarGraph(freqHistogram);
             freqHistogram[0] = 0; // remove frames having freq=0 i.e frames with no activity from calculation of entropy.
@@ -528,15 +532,26 @@ namespace AnalysisPrograms
                 avSpectrum[j - excludeBins] = av;      //store average  of the bin
                 varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
             }
-            double sum = avSpectrum.Sum();
+            //double sum = avSpectrum.Sum();
             int posCount = avSpectrum.Count(p => p > 0.0);
-            if ((sum < 0.0000001) && (posCount < 3)) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
+            //if ((sum < 0.0000001) && (posCount < 3)) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
+            if (posCount == 1) return System.Tuple.Create(0.0, 0.0); //energy concentrated in one value - i.e. low entorpy
+            else
+            if (posCount == 0) return System.Tuple.Create(0.5, 0.5); //low energy distributed - do not know entropy - select middle ground!
 
             double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);               //ENTROPY of spectral averages
-            sum = varSpectrum.Sum();
+            //sum = varSpectrum.Sum();
             posCount = varSpectrum.Count(p => p > 0.0);
-            if ((sum < 0.00000001) && (posCount < 3))
-                return System.Tuple.Create(HSpectralAv, 1.0);                            //no spectrum worth calculating entropy.
+            //if ((sum < 0.00000001) && (posCount < 2))
+            if (posCount == 0)
+            {
+                return System.Tuple.Create(HSpectralAv, 0.5);       //flat spectrum - do not know entropy - select middle ground!
+            }
+            else
+            if (posCount == 1)
+            {
+                return System.Tuple.Create(HSpectralAv, 0.0);       //variance concentrated in few values - i.e. low entropy
+            }
             else
             {
                 double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);         //ENTROPY of spectral variances

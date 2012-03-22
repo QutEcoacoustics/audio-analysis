@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -22,7 +23,7 @@ using QutSensors.Shared.LogProviders;
 
 namespace AnalysisPrograms
 {
-    class KiwiRecogniser
+    public class KiwiRecogniser
     {
         //Following lines are used for the debug command line.
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
@@ -33,7 +34,8 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
 
-        
+        public const string ANALYSIS_NAME = "KiwiRecogniser"; 
+
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
         //public static string key_FILE_EXT        = "FILE_EXT";
@@ -108,9 +110,10 @@ namespace AnalysisPrograms
             //GET COMMAND LINE ARGUMENTS
             Log.Verbosity = 1;
             CheckArguments(args);
-            string recordingPath = args[0];
+            string sourceRecordingPath = args[0];
             string iniPath   = args[1];
             string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
+            DirectoryInfo diOutputDir = new DirectoryInfo(outputDir);
             string segmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
             Log.WriteIfVerbose("# Output dir: " + outputDir);
                        
@@ -120,24 +123,28 @@ namespace AnalysisPrograms
 
             // Get the file time duration
             SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            var fileInfo = new FileInfo(recordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fileInfo.Extension);
+            var fiSourceRecording = new FileInfo(sourceRecordingPath);
+            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSourceRecording.Extension);
             //var dateInfo = fileInfo.CreationTime;
-            var duration = audioUtility.Duration(fileInfo, mimeType);
-            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(recordingPath));
-            Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fileInfo.CreationTime.ToLongDateString(), fileInfo.CreationTime.ToLongTimeString());
+            var duration = audioUtility.Duration(fiSourceRecording, mimeType);
+
+            var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
+            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / kiwiParams.segmentDuration); //convert length to minute chunks
+            //int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
+
+
+
+            Log.WriteIfVerbose("# Recording - filename: " + Path.GetFileName(sourceRecordingPath));
+            Log.WriteIfVerbose("# Recording - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
             Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
 
-            //SET UP THE REPORT FILE
-            string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(recordingPath);
-            if (kiwiParams.reportFormat.Equals("CSV")) reportfileName += ".csv";
-            else reportfileName += ".txt";
-            WriteHeaderToFile(reportfileName, kiwiParams.reportFormat);
+            //SET UP THE REPORT DATATABLE
+            var dataTable = new DataTable();
 
             // LOOP THROUGH THE FILE
             double startMinutes = 0.0;
             int overlap_ms = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
-            for (int s = 0; s < Int32.MaxValue; s++)
+            for (int s = 0; s < segmentCount; s++)
             {
                 Console.WriteLine();
                 Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
@@ -145,7 +152,7 @@ namespace AnalysisPrograms
                 int resampleRate = 17640;
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(recordingPath, startMilliseconds, endMilliseconds, resampleRate, segmentPath);
+                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, resampleRate, segmentPath);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
                 //Log.WriteLine("Signal Duration: " + segmentDuration);
                 int sampleCount = recording.GetWavReader().Samples.Length;
@@ -159,44 +166,25 @@ namespace AnalysisPrograms
                 }
 
                 //#############################################################################################################################################
-                var results = Execute_KiwiDetect(recording, kiwiParams.minHzMale, kiwiParams.maxHzMale, kiwiParams.minHzFemale, kiwiParams.maxHzFemale,
-                                                 kiwiParams.frameLength, kiwiParams.frameOverlap,
-                                                 kiwiParams.dctDuration, kiwiParams.dctThreshold, kiwiParams.minPeriodicity, kiwiParams.maxPeriodicity,
-                                                 kiwiParams.eventThreshold, kiwiParams.minDuration, kiwiParams.maxDuration);
+                FileInfo fiSegmentAudioFile = new FileInfo(recording.FilePath);
+                DataTable results = KiwiRecogniser.Analysis(kiwiParams, fiSegmentAudioFile, startMinutes, diOutputDir);
+                recording.Dispose();
                 //#############################################################################################################################################
 
-                recording.Dispose();
-                var sonogram = results.Item1;
-                var hits = results.Item2;
-                var scores = results.Item3;
-                //var oscRates = results.Item4;
-                var predictedEvents = results.Item5;
-                Log.WriteLine("# Event count = " + predictedEvents.Count());
-
-                //write events to results file. 
-                double sigDuration = sonogram.Duration.TotalSeconds;
-                string fname = Path.GetFileName(recordingPath);
-                int count = predictedEvents.Count;
-
-                StringBuilder sb = KiwiRecogniser.WriteEvents(startMinutes, sigDuration, count, predictedEvents, kiwiParams.reportFormat);
-                if (sb.Length > 1)
+                //transfer acoustic event info to data table
+                Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, results.Rows.Count);
+                foreach (var row in results.Rows)
                 {
-                    sb.Remove(sb.Length - 2, 2); //remove the last endLine to prevent line gaps.
-                    FileTools.Append2TextFile(reportfileName, sb.ToString());
-                }
-
-
-                //draw images of sonograms
-                string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinutes.ToString() + "min.png";
-                if ((kiwiParams.DRAW_SONOGRAMS == 2) ||((kiwiParams.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0)))
-                {
-                    DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, kiwiParams.eventThreshold);
+                    dataTable.Rows.Add(row);
                 }
 
                 startMinutes += kiwiParams.segmentDuration;
             } //end of for loop
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
+            WriteHeaderToFile(reportfileName, kiwiParams.reportFormat);
+
+            Log.WriteLine("# Finished recording:- " + Path.GetFileName(sourceRecordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -241,6 +229,54 @@ namespace AnalysisPrograms
             return kiwiParams;
         }
 
+
+        /// <summary>
+        /// A WRAPPER AROUND THE Execute_KiwiDetect() method
+        /// returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="segmentAudioFile"></param>
+        public static DataTable Analysis(KiwiParams config, FileInfo fiSegmentAudioFile, double startMinute, DirectoryInfo diOutputDir)
+        {
+            AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
+            int minHzMale   = config.minHzMale;
+            int maxHzMale   = config.maxHzMale;
+            int minHzFemale = config.minHzFemale;
+            int maxHzFemale = config.maxHzFemale;
+            int frameLength = config.frameLength;
+            double frameOverlap = config.frameOverlap;
+            double dctDuration  = config.dctDuration;
+            double dctThreshold = config.dctThreshold;
+            double minPeriodicity = config.minPeriodicity;
+            double maxPeriodicity = config.maxPeriodicity;
+            double eventThreshold = config.eventThreshold;
+            double minDuration    = config.minDuration;
+            double maxDuration    = config.maxDuration;
+
+
+            var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
+                                                minPeriodicity, maxPeriodicity, eventThreshold, minDuration, maxDuration);
+
+
+            var sonogram = results.Item1;
+            var hits = results.Item2;
+            var scores = results.Item3;
+            //var oscRates = results.Item4;
+            var predictedEvents = results.Item5;
+
+            //draw images of sonograms
+            string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) + ".png");
+            bool saveSonogram = false;
+            if ((config.DRAW_SONOGRAMS == 2) || ((config.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
+            if (saveSonogram)
+            {
+                DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, config.eventThreshold);
+            }
+
+            //write events to a data table to return.
+            DataTable dataTable = WriteEvents2DataTable(startMinute, predictedEvents, sonogram.Duration.TotalSeconds);
+            return dataTable;
+        } //Analysis()
 
 
 
@@ -613,6 +649,54 @@ namespace AnalysisPrograms
         //##################################################################################################################################################
 
 
+        //public static void WriteOutputFromKiwiAnalysis(double startMinute, bool saveSonogram, BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents)
+        //{
+
+
+        //    DataTable results = new DataTable();
+        //    foreach (var row in results.Rows)
+        //    {
+        //        dataTable.Rows.Add(row);
+        //    }
+
+            
+            
+        //    //write events to results file. 
+        //    double sigDuration = sonogram.Duration.TotalSeconds;
+        //    string fname = Path.GetFileName(recordingPath);
+
+        //    StringBuilder sb = KiwiRecogniser.WriteEvents(startMinute, sigDuration, predictedEvents.Count, predictedEvents);
+        //    if (sb.Length > 1)
+        //    {
+        //        sb.Remove(sb.Length - 2, 2); //remove the last endLine to prevent line gaps.
+        //        FileTools.Append2TextFile(reportfileName, sb.ToString());
+        //    }
+
+
+        //    //draw images of sonograms
+        //    string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinute.ToString() + "min.png";
+        //    if(saveSonogram)
+        //    {
+        //        DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, kiwiParams.eventThreshold);
+        //    }
+
+        //}
+
+
+
+        public static DataTable WriteEvents2DataTable(double startMinute, List<AcousticEvent> predictedEvents, double sigDuration)
+        {
+            var dataTable = new DataTable();
+            //StringBuilder sb = KiwiRecogniser.WriteEvents(startMinute, sigDuration, predictedEvents.Count, predictedEvents);
+            //if (sb.Length > 1)
+            //{
+            //    sb.Remove(sb.Length - 2, 2); //remove the last endLine to prevent line gaps.
+            //    FileTools.Append2TextFile(reportfileName, sb.ToString());
+            //}
+            return dataTable;
+        }
+
+
         public static void WriteHeaderToFile(string reportfileName, string parmasFile_Separator)
         {
             string reportSeparator = "\t";
@@ -622,11 +706,10 @@ namespace AnalysisPrograms
         }
 
 
-        public static StringBuilder WriteEvents(double segmentStart, double segmentDuration, int eventCount, List<AcousticEvent> eventList, string parmasFile_Separator)
+        public static StringBuilder WriteEvents(double segmentStart, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
         {
 
-            string reportSeparator = "\t";
-            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
+            string reportSeparator = ","; // for CSV files
 
             string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
             StringBuilder sb = new StringBuilder();
