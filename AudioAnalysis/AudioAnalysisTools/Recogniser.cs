@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioTools;
-using System.IO;
+﻿using System.IO;
 using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-	public class Recogniser
+    using Acoustics.Tools.Wav;
+
+    public class Recogniser
 	{
 
         #region Properties

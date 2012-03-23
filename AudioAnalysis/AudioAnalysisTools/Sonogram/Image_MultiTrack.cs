@@ -8,7 +8,7 @@ using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-    using QutSensors.Shared;
+    using Acoustics.Shared;
 
     public class Image_MultiTrack : IDisposable
     {

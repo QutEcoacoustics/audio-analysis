@@ -14,11 +14,12 @@ namespace AnalysisPrograms.Processing
     using System.Threading;
     using System.Xml.Serialization;
 
+    using Acoustics.Shared;
+
     using AudioAnalysisTools;
     using AudioAnalysisTools.HTKTools;
 
     using QutSensors.AudioAnalysis.AED;
-    using QutSensors.Shared;
 
     using TowseyLib;
 

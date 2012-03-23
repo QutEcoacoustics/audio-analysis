@@ -1,9 +1,8 @@
 ﻿namespace AudioBrowser
 {
-    using System;
     using System.IO;
 
-    using QutSensors.Shared.Tools;
+    using Acoustics.Shared;
 
     public class AudioBrowserSettings
     {

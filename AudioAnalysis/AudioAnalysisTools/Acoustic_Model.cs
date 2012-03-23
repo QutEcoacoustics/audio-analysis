@@ -4,16 +4,11 @@ using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
-using AudioTools;
-using QutSensors;
-using MarkovModels;
-using QutSensors.Shared;
 
+using MarkovModels;
 
 namespace AudioAnalysisTools
 {
-    using QutSensors.Shared;
-
     [Serializable]
     public class Acoustic_Model
     {
@@ -362,11 +357,20 @@ namespace AudioAnalysisTools
 
         public void SaveSymbolSequence(string path, bool includeUserDefinedVocabulary)
         {
-            Validation.Begin()
-                        .IsStateNotNull(SyllSymbols, "SyllSymbols has not been provided. Ensure you have generated the symbol sequence.")
-                        .IsStateNotNull(SyllableIDs, "SyllableIDs has not been provided. Ensure you have generated the symbol sequence.")
-                        .IsNotNull(path, "pathName")
-                        .Check();
+            if(SyllSymbols == null)
+            {
+                throw new InvalidOperationException("SyllSymbols has not been provided. Ensure you have generated the symbol sequence.");
+            }
+
+            if (SyllableIDs == null)
+            {
+                throw new InvalidOperationException("SyllableIDs has not been provided. Ensure you have generated the symbol sequence.");
+            }
+
+            if (path == null)
+            {
+                throw new ArgumentNullException("path", "pathName");
+            }
 
             //SAVE EXISTING SEQUENCES FILE
             if (File.Exists(path)) File.Copy(path, path+"OLD.txt", true);
@@ -384,10 +388,15 @@ namespace AudioAnalysisTools
 
         public string FormatSymbolSequence()
         {
-            Validation.Begin()
-                        .IsStateNotNull(SyllSymbols, "SyllSymbols has not been provided. Ensure you have generated the symbol sequence.")
-                        .IsStateNotNull(SyllableIDs, "SyllableIDs has not been provided. Ensure you have generated the symbol sequence.")
-                        .Check();
+            if (SyllSymbols == null)
+            {
+                throw new InvalidOperationException("SyllSymbols has not been provided. Ensure you have generated the symbol sequence.");
+            }
+
+            if (SyllableIDs == null)
+            {
+                throw new InvalidOperationException("SyllableIDs has not been provided. Ensure you have generated the symbol sequence.");
+            }
 
             StringBuilder sb = new StringBuilder();
 

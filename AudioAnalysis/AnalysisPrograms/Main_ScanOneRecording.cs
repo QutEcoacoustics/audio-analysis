@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AudioTools;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
@@ -10,6 +6,8 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared;
+
     class Main_ScanOneRecording
     {
         public static void Main(string[] args)

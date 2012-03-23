@@ -11,7 +11,6 @@ using TowseyLib;
 namespace AudioAnalysisTools.HTKTools
 {
     using System.Text;
-    using QutSensors.Shared;
 
     /// <summary>
     /// Summary description for Class1

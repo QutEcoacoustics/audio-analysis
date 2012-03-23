@@ -1,19 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
 
 using TowseyLib;
-using AudioTools.AudioUtlity;
-using AudioAnalysisTools;
-using QutSensors.Shared.LogProviders;
-
-
-
-
 
 namespace AnalysisPrograms
 {

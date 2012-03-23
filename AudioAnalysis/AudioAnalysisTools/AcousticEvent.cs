@@ -5,10 +5,11 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using System.Text.RegularExpressions;
-using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {
+    using Acoustics.Shared;
+
     public class AcousticEvent
     {
 

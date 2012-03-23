@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Acoustics.Shared</RootNamespace>
+    <AssemblyName>Acoustics.Shared</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AnalysisWorkItem.cs" />
+    <Compile Include="AppConfigHelper.cs" />
+    <Compile Include="CompareFeatures.cs" />
+    <Compile Include="Enums.cs" />
+    <Compile Include="ExpressionVisitor.cs" />
+    <Compile Include="Extensions\ExtensionsDateTime.cs" />
+    <Compile Include="Extensions\ExtensionsDrawing.cs" />
+    <Compile Include="Extensions\ExtensionsString.cs" />
+    <Compile Include="Extensions\ExtensionsSystem.cs" />
+    <Compile Include="Extensions\ExtensionsIO.cs" />
+    <Compile Include="Extensions\ExtensionsXml.cs" />
+    <Compile Include="FilterResult.cs" />
+    <Compile Include="GraphicsSegmented.cs" />
+    <Compile Include="ImageTooLargeForGraphicsException.cs" />
+    <Compile Include="KeyValueStore.cs" />
+    <Compile Include="MediaTypes.cs" />
+    <Compile Include="NonClosingStreamWrapper.cs" />
+    <Compile Include="ProcessorResultTag.cs" />
+    <Compile Include="ProcessRunner.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Range.cs" />
+    <Compile Include="ReadingsFilter.cs" />
+    <Compile Include="ResultProperty.cs" />
+    <Compile Include="Segmenter.cs" />
+    <Compile Include="SegmentPolicy.cs" />
+    <Compile Include="TempFileHelper.cs" />
+    <Compile Include="Validation.cs" />
+    <Compile Include="ValidationExtensions.cs" />
+    <Compile Include="XmlSerialiseTool.cs" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

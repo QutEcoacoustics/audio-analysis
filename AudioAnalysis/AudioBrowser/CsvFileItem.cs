@@ -4,8 +4,6 @@
     using System.ComponentModel;
     using System.IO;
 
-    using QutSensors.Shared;
-
     public class CsvFileItem : INotifyPropertyChanged
     {
         private FileInfo fullName;

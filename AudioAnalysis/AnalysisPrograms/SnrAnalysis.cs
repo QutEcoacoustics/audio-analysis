@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using AudioTools;
 using System.IO;
 using TowseyLib;
-using System.Reflection;
+
 using AudioAnalysisTools;
 
 namespace AnalysisPrograms

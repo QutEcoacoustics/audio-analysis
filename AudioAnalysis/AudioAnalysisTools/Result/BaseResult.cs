@@ -5,12 +5,12 @@ using System.Text;
 using System.Xml;
 using TowseyLib;
 using MarkovModels;
-using QutSensors.Shared;
-
 
 namespace AudioAnalysisTools
 {
-	[Serializable]
+    using Acoustics.Shared;
+
+    [Serializable]
 	public abstract class BaseResult
     {
         protected const int LLR_VALUE         = 0;

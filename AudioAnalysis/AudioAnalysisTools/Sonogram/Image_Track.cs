@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Drawing;
-using System.Drawing.Imaging;
-using TowseyLib;
-
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
+    using Acoustics.Shared;
+    using System;
+    using System.Drawing;
 
+    using TowseyLib;
 
     public enum TrackType { none, deciBels, waveEnvelope, segmentation, syllables, scoreArray, scoreMatrix, zeroCrossings, hits, timeTics }
 

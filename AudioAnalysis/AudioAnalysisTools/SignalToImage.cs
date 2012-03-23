@@ -5,9 +5,7 @@
     using System.Drawing.Imaging;
     using System.Linq;
 
-    using AudioAnalysisTools;
-
-    using AudioTools.WavAudio;
+    using Acoustics.Tools.Wav;
 
     using MathNet.Numerics.Transformations;
 

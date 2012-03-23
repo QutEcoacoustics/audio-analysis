@@ -8,16 +8,15 @@
     using System.Threading.Tasks;
     //using System.Collections.Concurrent;
     using System.Diagnostics; //for the StopWatch only
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
     using AnalysisPrograms;
 
     using AudioAnalysisTools;
-    using AudioTools.AudioUtlity;
+
 
     using log4net;
-
-    using QutSensors.Shared.LogProviders;
-    using QutSensors.Shared.Tools;
 
     using System;
     using System.Drawing;
@@ -26,9 +25,6 @@
     //using System.IO;
 
     using TowseyLib;
-    using QutSensors.Shared;
-
-
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -41,7 +37,7 @@
     {
         private static readonly ILog log = LogManager.GetLogger(typeof(MainForm));
         private readonly TextWriter consoleWriter;
-        private readonly IAudioUtility audioUtility;
+        private readonly IAudioUtility audioUtilityForDurationColumn;
 
         int totalCheckBoxesCSVFileList = 0;
         int totalCheckedCheckBoxesCSVFileList = 0;
@@ -94,9 +90,8 @@
             this.consoleWriter = new TextBoxStreamWriter(this.textBoxConsole);
             Console.SetOut(this.consoleWriter);
 
-            var audioUtil = SpecificWavAudioUtility.Create(); //use to display file size in file open window
-            audioUtil.LogLevel = LogType.None;
-            this.audioUtility = audioUtil;
+            //use to display file size in file open window
+            this.audioUtilityForDurationColumn  = new MasterAudioUtility();
 
             this.durationDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new TimeSpanFormatter();
             this.durationDataGridViewTextBoxColumn.DefaultCellStyle.Format = "hh\\:mm\\:ss\\.ff";
@@ -240,8 +235,11 @@
             // CREATE RUN ANALYSIS CLASS HERE
 
             // Set up the file and get info
-            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(resampleRate); //creates AudioUtility and
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSourceRecording.Extension);
+
+
+
+            IAudioUtility audioUtility = MasterAudioUtility.Create(resampleRate); //creates AudioUtility and
+            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
             int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
             int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
@@ -294,8 +292,8 @@
                 string tempFname = "temp"+s+".wav";
                 string tempSegmentPath = Path.Combine(outputDir, tempFname); //path name of the temporary segment files extracted from long recording
                 FileInfo fiOutputSegment = new FileInfo(tempSegmentPath);
-                SpecificWavAudioUtility.GetSingleSegment(audioUtility, fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
-                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
+                MasterAudioUtility.Segment(resampleRate, fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
+                AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
 
                 //double check that recording is over minimum length
                 double wavSegmentDuration = recordingSegment.GetWavReader().Time.TotalSeconds;
@@ -566,9 +564,8 @@
             //get segment from source recording
             DateTime time1 = DateTime.Now;
             //AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
-            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(settings.ResampleRate); //creates AudioUtility and
-            SpecificWavAudioUtility.GetSingleSegment(audioUtility, settings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
-            AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName, audioUtility);
+            MasterAudioUtility.Segment(settings.ResampleRate, settings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
+            AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
 
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
@@ -695,7 +692,7 @@
                         f =>
                         {
                             var item = new MediaFileItem(f);
-                            item.Duration = this.audioUtility.Duration(f, item.MediaType);
+                            item.Duration = this.audioUtilityForDurationColumn.Duration(f, item.MediaType);
                             return item;
                         });
             e.Result = files.ToList();
@@ -1230,8 +1227,8 @@
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
             if ((settings.fiSegmentRecording == null) || (!settings.fiSegmentRecording.Exists)) return;
-            SpecificWavAudioUtility audioUtility = AudioRecording.GetAudioUtility(settings.ResampleRate); //creates AudioUtility and
-            AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName, audioUtility);
+            IAudioUtility audioUtility = MasterAudioUtility.Create(settings.ResampleRate); //creates AudioUtility and
+            AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName);
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
         }

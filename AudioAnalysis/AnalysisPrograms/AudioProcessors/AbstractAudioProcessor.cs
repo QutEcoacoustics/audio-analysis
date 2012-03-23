@@ -1,17 +1,12 @@
 ﻿namespace AnalysisPrograms.AudioProcessors
 {
     using System;
-    using System.Collections;
-    using System.Collections.Generic;
     using System.Data;
     using System.IO;
-    using System.Linq;
-    using System.Text;
 
-    using AudioTools.AudioUtlity;
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
-    using QutSensors.Shared;
-    using QutSensors.Shared.Tools;
 
     public abstract class AbstractAudioProcessor
     {
@@ -28,7 +23,7 @@
         /// <returns></returns>
         public DataTable Run(DirectoryInfo analysisWorkingDirectory, AudioProcessorConfig config, FileInfo sourceAudioFile)
         {
-            var audioUtility = Create(config);
+            var audioUtility = new MasterAudioUtility();
             var ext = Path.GetExtension(sourceAudioFile.FullName);
             var mimeType = MediaTypes.GetMediaType(ext);
 
@@ -61,15 +56,5 @@
         }
 
         protected abstract DataTable Analysis(AudioProcessorConfig config, FileInfo segmentAudioFile);
-
-        private IAudioUtility Create(AudioProcessorConfig config)
-        {
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
-            audioUtility.SoxAudioUtility.ResampleQuality = SoxAudioUtility.SoxResampleQuality.VeryHigh; //Options: Low, Medium, High, VeryHigh 
-            //audioUtility.SoxAudioUtility.TargetSampleRateHz = config.GetInt("ResampleRate");
-            audioUtility.SoxAudioUtility.ReduceToMono = true;
-            audioUtility.SoxAudioUtility.UseSteepFilter = true;
-            return audioUtility;
-        }
     }
 }

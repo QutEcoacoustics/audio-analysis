@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using System.Drawing;
-using System.Drawing.Imaging;
-
-using TowseyLib;
-using AudioTools.AudioUtlity;
-using AudioAnalysisTools;
-using QutSensors.Shared.LogProviders;
-using NeuralNets;
-
-
-namespace AnalysisPrograms
+﻿namespace AnalysisPrograms
 {
+    using NeuralNets;
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.IO;
+    using System.Drawing;
+
+    using TowseyLib;
+
+    using AudioAnalysisTools;
+
     public class AcousticIndices
     {
         public const string ANALYSIS_NAME = "AcousticIndices"; 
