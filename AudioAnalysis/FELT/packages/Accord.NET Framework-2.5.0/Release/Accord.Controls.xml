@@ -1,0 +1,949 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Accord.Controls</name>
+    </assembly>
+    <members>
+        <member name="T:Accord.Controls.DecisionTreeView">
+            <summary>
+              Decision Tree (DT) Viewer.
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Controls.DecisionTreeView.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.DecisionTreeView.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:Accord.Controls.DecisionTreeView.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.DecisionTreeView.#ctor">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Controls.DecisionTreeView"/> class.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.DecisionTreeView.TreeSource">
+            <summary>
+              Gets or sets the currently displayed
+              <see cref="T:Accord.MachineLearning.DecisionTrees.DecisionTree">Decision Tree</see>.
+            </summary>
+            
+            <value>The decision tree being displayed.</value>
+            
+        </member>
+        <member name="T:Accord.Controls.RowNamePropertyDescriptor">
+            <summary>
+              Provides an abstraction for array names.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.#ctor(System.String)">
+            <summary>
+              Constructs a new Array Property Descriptor.
+            </summary>
+            
+            <param name="name">A title for the array.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.GetValue(System.Object)">
+            <summary>
+              Gets a value from the array.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.SetValue(System.Object,System.Object)">
+            <summary>
+              Sets a value to the array.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.CanResetValue(System.Object)">
+            <summary>
+              Returns false.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.ResetValue(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RowNamePropertyDescriptor.ShouldSerializeValue(System.Object)">
+            <summary>
+              Returns false.
+            </summary>
+            
+            <param name="component"></param>
+            
+        </member>
+        <member name="P:Accord.Controls.RowNamePropertyDescriptor.DisplayName">
+            <summary>
+              Returns the name of the array.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.RowNamePropertyDescriptor.ComponentType">
+            <summary>
+              Returns the type of ArrayRowView.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.RowNamePropertyDescriptor.IsReadOnly">
+            <summary>
+              Returns false.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.RowNamePropertyDescriptor.PropertyType">
+            <summary>
+              Gets the type of the underlying multidimensional array.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.ArrayDataType">
+            <summary>
+              Array data type (i.e. jagged or multidimensional).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Controls.ArrayDataType.Simple">
+            <summary>
+              Simple array type (i.e. double[]).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Controls.ArrayDataType.Jagged">
+            <summary>
+             Jagged array type (i.e. double[][]).
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Controls.ArrayDataType.Multidimensional">
+            <summary>
+             Multidimensional array type (i.e. double[,])
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.ArrayDataView">
+            <summary>
+            Represents a data bondable, customized view of two dimensional array
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.#ctor(System.Array)">
+            <summary>
+              Initializes a new ArrayDataView from array.
+            </summary>
+            
+            <param name="array">array of data.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.#ctor(System.Array,System.Object[])">
+            <summary>
+              Initializes a new ArrayDataView from array with custom column names.
+            </summary>
+            
+            <param name="array">array of data.</param>
+            <param name="columnNames">collection of column names.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.#ctor(System.Array,System.Object[],System.Object[])">
+            <summary>
+              Initializes a new ArrayDataView from array with custom column names.
+            </summary>
+            
+            <param name="array">Array of data.</param>
+            <param name="columnNames">Collection of column names.</param>
+            <param name="rowNames">Collecion of row names.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Reset">
+            <summary>
+              Resets the data binding.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.AddIndex(System.ComponentModel.PropertyDescriptor)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.ApplySort(System.ComponentModel.PropertyDescriptor,System.ComponentModel.ListSortDirection)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Find(System.ComponentModel.PropertyDescriptor,System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.RemoveSort">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.AddNew">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.RemoveIndex(System.ComponentModel.PropertyDescriptor)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.RemoveAt(System.Int32)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Insert(System.Int32,System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Remove(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Contains(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Clear">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.IndexOf(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.Add(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.CopyTo(System.Array,System.Int32)">
+            <summary>
+              Multidimensional arrays do not support Array copying.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayDataView.GetEnumerator">
+            <summary>
+              Gets the array enumerator.
+            </summary>
+            
+        </member>
+        <member name="E:Accord.Controls.ArrayDataView.ListChanged">
+            <summary> Raised when the list changes. </summary>
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.ColumnNames">
+            <summary>
+              Gets the column names for the array currently bound.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.RowNames">
+            <summary>
+              Gets the row names for the array currently bound.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.ArrayData">
+            <summary>
+              Gets or sets the array currently bound.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.ArrayType">
+            <summary>
+              Gets the type of the array currently bound.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.RowCount">
+            <summary>
+              Gets the number of rows in the data-bound array.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.ColumnsCount">
+            <summary>
+              Gets the number of columns in the data-bound array.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.AllowNew">
+            <summary>
+              Arrays do not allow for member insertion.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SortProperty">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SupportsSorting">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.IsSorted">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.AllowRemove">
+            <summary>
+              Arrays do not allow member removal.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SupportsSearching">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SortDirection">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SupportsChangeNotification">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.AllowEdit">
+            <summary>
+              Gets whether this view allows editing. Always true.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.IsReadOnly">
+            <summary>
+              This view is read only.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.Item(System.Int32)">
+            <summary>
+              Gets a row from this view.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.IsFixedSize">
+            <summary>
+              Arrays are always fixed size.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.IsSynchronized">
+            <summary>
+              Returns false.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.Count">
+            <summary>
+              Gets the length of the array.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayDataView.SyncRoot">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.ScatterplotView">
+            <summary>
+              Scatterplot visualization control.
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Controls.ScatterplotView.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ScatterplotView.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:Accord.Controls.ScatterplotView.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ScatterplotView.#ctor">
+            <summary>
+              Constructs a new instance of the ScatterplotView.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ScatterplotView.UpdateGraph">
+            <summary>
+              Forces a update of the scatter plot.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.Scatterplot">
+            <summary>
+              Gets the underlying scatterplot being shown by this control.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.DataSource">
+            <summary>
+              Gets or sets a data source for this control.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.DataMemberX">
+            <summary>
+              Gets or sets the member of the data source 
+              to be shown, if applicable.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.DataMemberY">
+            <summary>
+              Gets or sets the member of the data source 
+              to be shown, if applicable.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.DataMemberLabels">
+            <summary>
+              Gets or sets the member of the data source 
+              to be shown, if applicable.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ScatterplotView.Graph">
+            <summary>
+              Gets a reference to the underlying ZedGraph
+              control used to draw the histogram.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.ArrayPropertyDescriptor">
+            <summary>
+              Provides an abstraction of array values.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.#ctor(System.String,System.Type,System.Int32)">
+            <summary>
+              Constructs a new Array Property Descriptor.
+            </summary>
+            
+            <param name="name">A title for the array.</param>
+            <param name="type">The type of the property being displayed.</param>
+            <param name="index">The index to display.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.GetValue(System.Object)">
+            <summary>
+              Gets a value from the array.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.SetValue(System.Object,System.Object)">
+            <summary>
+              Sets a value to the array.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.CanResetValue(System.Object)">
+            <summary>
+              Returns false.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.ResetValue(System.Object)">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayPropertyDescriptor.ShouldSerializeValue(System.Object)">
+            <summary>
+              Returns false.
+            </summary>
+            
+            <param name="component"></param>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayPropertyDescriptor.DisplayName">
+            <summary>
+              Returns the name of the array.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayPropertyDescriptor.ComponentType">
+            <summary>
+              Returns the type of ArrayRowView.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayPropertyDescriptor.IsReadOnly">
+            <summary>
+              Returns false.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Controls.ArrayPropertyDescriptor.PropertyType">
+            <summary>
+              Gets the type of the underlying multidimensional array.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.SortableBindingList`1">
+            <summary>
+              Sortable binding list.
+            </summary>
+            <typeparam name="T">The type of the elements in the list.</typeparam>
+            
+        </member>
+        <member name="M:Accord.Controls.SortableBindingList`1.#ctor">
+            <summary>
+              Constructs a new SortableBindingList.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.SortableBindingList`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+              Constructs a new SortableBindingList.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.SortableBindingList`1.ApplySortCore(System.ComponentModel.PropertyDescriptor,System.ComponentModel.ListSortDirection)">
+            <summary>
+              Sorts the items.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.SortableBindingList`1.RemoveSortCore">
+            <summary>
+              Removes any sort applied. 
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.SortableBindingList`1.FindCore(System.ComponentModel.PropertyDescriptor,System.Object)">
+            <summary>
+              Searches for the index of a item with a specific property descriptor and value
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.SortableBindingList`1.SupportsSortingCore">
+            <summary>
+              Returns true.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.SortableBindingList`1.IsSortedCore">
+            <summary>
+              Gets whether this list is sorted.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.SortableBindingList`1.SortPropertyCore">
+            <summary>
+              Gets the current property being sorted.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.SortableBindingList`1.SortDirectionCore">
+            <summary>
+              Gets the sort order direction.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.SortableBindingList`1.SupportsSearchingCore">
+            <summary>
+              Returns true.
+            </summary>
+        </member>
+        <member name="T:Accord.Controls.ColorSequenceCollection">
+             <summary>
+               Colour sequence for displaying categorical images.
+             </summary>
+             
+            <remarks>
+               References:
+               C.A. Glasbey, G.W.A.M. van der Heijden, V.F.K. Toh, A.J. Gray. (2007).
+               Colour displays for categorical images, Color Research and Application, 32, 304-309
+               Available in: http://www.bioss.ac.uk/staff/chris/colorpaper.pdf
+            </remarks>
+            
+        </member>
+        <member name="F:Accord.Controls.ColorSequenceCollection.Colors">
+            <summary>
+              Gets a list of the first 32 perceptually distinct
+              colors as detected in the investivation by [Glabey et al].
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ColorSequenceCollection.#ctor(System.Int32)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Controls.ColorSequenceCollection"/> class.
+            </summary>
+            
+            <param name="number">The number of colors to generate.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ColorSequenceCollection.#ctor(System.Int32,System.Boolean,System.Boolean)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Controls.ColorSequenceCollection"/> class.
+            </summary>
+            <param name="number">The number of colors to generate.</param>
+            <param name="skipWhite">If set to <c>true</c> white color is skipped.</param>
+            <param name="random">If set to <c>true</c> generates a sequence of random colors.</param>
+            
+        </member>
+        <member name="M:Accord.Controls.ColorSequenceCollection.GetColor(System.Int32)">
+            <summary>
+              Gets the <see cref="T:System.Drawing.Color"/> with specified index.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ColorSequenceCollection.GetEnumerator">
+            <summary>
+              Returns an enumerator that iterates through the collor collection.
+            </summary>
+            <returns>
+              An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="M:Accord.Controls.ColorSequenceCollection.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+              Returns an enumerator that iterates through the collor collection.
+            </summary>
+            <returns>
+              An <see cref="T:System.Collections.IEnumerator"/> object that can be used to iterate through the collection.
+            </returns>
+        </member>
+        <member name="P:Accord.Controls.ColorSequenceCollection.Item(System.Int32)">
+            <summary>
+              Gets the <see cref="T:System.Drawing.Color"/> with specified index.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Controls.RangeTypeConverter">
+            <summary>
+              Type converter for <see cref="T:AForge.DoubleRange"/>
+              and <see cref="T:AForge.IntRange"/> objects.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.GetPropertiesSupported(System.ComponentModel.ITypeDescriptorContext)">
+            <summary>
+              Returns whether this object supports properties, using the specified context.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context.</param>
+            <returns>
+              true if <see cref="M:System.ComponentModel.TypeConverter.GetProperties(System.Object)"/> should be called to find the properties of this object; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.GetProperties(System.ComponentModel.ITypeDescriptorContext,System.Object,System.Attribute[])">
+            <summary>
+            Returns a collection of properties for the type of array specified by the value parameter, using the specified context and attributes.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context.</param>
+            <param name="value">An <see cref="T:System.Object"/> that specifies the type of array for which to get properties.</param>
+            <param name="attributes">An array of type <see cref="T:System.Attribute"/> that is used as a filter.</param>
+            <returns>
+            A <see cref="T:System.ComponentModel.PropertyDescriptorCollection"/> with the properties that are exposed for this data type, or null if there are no properties.
+            </returns>
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.CanConvertFrom(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+            Returns whether this converter can convert an object of the given type to the type of this converter, using the specified context.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context.</param>
+            <param name="sourceType">A <see cref="T:System.Type"/> that represents the type you want to convert from.</param>
+            <returns>
+            true if this converter can perform the conversion; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.CanConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Type)">
+            <summary>
+            Returns whether this converter can convert the object to the specified type, using the specified context.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context.</param>
+            <param name="destinationType">A <see cref="T:System.Type"/> that represents the type you want to convert to.</param>
+            <returns>
+            true if this converter can perform the conversion; otherwise, false.
+            </returns>
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.ConvertTo(System.ComponentModel.ITypeDescriptorContext,System.Globalization.CultureInfo,System.Object,System.Type)">
+            <summary>
+            Converts the given value object to the specified type, using the specified context and culture information.
+            </summary>
+            <param name="context">An <see cref="T:System.ComponentModel.ITypeDescriptorContext"/> that provides a format context.</param>
+            <param name="culture">A <see cref="T:System.Globalization.CultureInfo"/>. If null is passed, the current culture is assumed.</param>
+            <param name="value">The <see cref="T:System.Object"/> to convert.</param>
+            <param name="destinationType">The <see cref="T:System.Type"/> to convert the <paramref name="value"/> parameter to.</param>
+            <returns>
+            An <see cref="T:System.Object"/> that represents the converted value.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">
+            The <paramref name="destinationType"/> parameter is null.
+            </exception>
+            <exception cref="T:System.NotSupportedException">
+            The conversion cannot be performed.
+            </exception>
+        </member>
+        <member name="M:Accord.Controls.RangeTypeConverter.Assign">
+            <summary>
+              Assign this converter to the AForge types. This method
+              should be called before an AForge range type can be
+              bound to controls such as the PropertyGrid.
+            </summary>
+        </member>
+        <member name="T:Accord.Controls.ArrayRowView">
+            <summary>
+              Represents a row from array view.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.#ctor(Accord.Controls.ArrayDataView,System.Int32)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Controls.ArrayRowView"/> class.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetColumn(System.Int32)">
+            <summary>
+              Gets the value at the specified position of this row.
+            </summary>
+            <param name="index">The column index of the element to get.</param>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.SetColumnValue(System.Int32,System.Object)">
+            <summary>
+              Sets a value to the element at the specified position of this row.
+            </summary>
+            <param name="index">The index of the element to set.</param>
+            <param name="value">The new value for the specified element.</param>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetConverter">
+            <summary>
+              Returns null.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetEvents(System.Attribute[])">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.System#ComponentModel#ICustomTypeDescriptor#GetEvents">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetComponentName">
+            <summary>
+              Returns null.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetPropertyOwner(System.ComponentModel.PropertyDescriptor)">
+            <summary>
+              Gets the owner ArrayDataView.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetAttributes">
+            <summary>
+              Does nothing.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetProperties(System.Attribute[])">
+            <summary>
+              Gets the values of the multidimensional array as properties.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetEditor(System.Type)">
+            <summary>
+              Returns null.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetDefaultProperty">
+            <summary>
+              Returns null.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetDefaultEvent">
+            <summary>
+              Returns null.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.GetClassName">
+            <summary>
+              Gets the name of this class.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.EndEdit">
+            <summary>
+              Does nothing.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.CancelEdit">
+            <summary>
+              Does nothing.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.ArrayRowView.BeginEdit">
+            <summary>
+              Does nothing.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.ArrayRowView.Item(System.String)">
+            <summary>
+              Gets the error message for the property with the given name.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.ArrayRowView.Error">
+            <summary>
+            Gets an error message indicating what is wrong with this object.
+            </summary>
+            <returns>
+            An error message indicating what is wrong with this object. The default is an empty string ("").
+            </returns>
+        </member>
+        <member name="T:Accord.Controls.HistogramView">
+            <summary>
+              Histogram visualization control.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Controls.HistogramView.#ctor">
+            <summary>
+              Constructs a new instance of the HistogramView.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.HistogramView.UpdateGraph">
+            <summary>
+              Forces a update of the Histogram bins.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.HistogramView.UpdateTrackbar">
+            <summary>
+              Forces the update of the trackbar control.
+            </summary>
+        </member>
+        <member name="F:Accord.Controls.HistogramView.components">
+            <summary> 
+            Required designer variable.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.HistogramView.Dispose(System.Boolean)">
+            <summary> 
+            Clean up any resources being used.
+            </summary>
+            <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:Accord.Controls.HistogramView.InitializeComponent">
+            <summary> 
+            Required method for Designer support - do not modify 
+            the contents of this method with the code editor.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.Graph">
+            <summary>
+              Gets a reference to the underlying ZedGraph
+              control used to draw the histogram.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.TrackBar">
+            <summary>
+              Gets the trackbar which controls 
+              the histogram bins' width.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.Histogram">
+            <summary>
+              Gets the underlying histogram being shown by this control.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.DataSource">
+            <summary>
+              Gets or sets a data source for this control.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.DataMember">
+            <summary>
+              Gets or sets the member of the data source 
+              to be shown, if applicable.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.DisplayMember">
+            <summary>
+              Gets or sets the member of the data source
+              to be displayed, if applicable.
+            </summary>
+        </member>
+        <member name="P:Accord.Controls.HistogramView.Format">
+            <summary>
+              Gets or sets the format used to display
+              the histogram values on screen.
+            </summary>
+        </member>
+        <member name="T:Accord.Controls.PropertyComparer`1">
+            <summary>
+              Property comparer.
+            </summary>
+            <typeparam name="T">The type of the elements to compare.</typeparam>
+        </member>
+        <member name="M:Accord.Controls.PropertyComparer`1.#ctor(System.ComponentModel.PropertyDescriptor,System.ComponentModel.ListSortDirection)">
+            <summary>
+              Constructs a new property comparer.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.PropertyComparer`1.Compare(`0,`0)">
+            <summary>
+              Compares two values.
+            </summary>
+        </member>
+        <member name="M:Accord.Controls.PropertyComparer`1.SetPropertyAndDirection(System.ComponentModel.PropertyDescriptor,System.ComponentModel.ListSortDirection)">
+            <summary>
+              Sets the property being sorted and the sorting direction.
+            </summary>
+        </member>
+    </members>
+</doc>

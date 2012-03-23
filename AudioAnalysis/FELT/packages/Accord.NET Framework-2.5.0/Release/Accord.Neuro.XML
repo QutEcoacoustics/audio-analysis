@@ -1,0 +1,637 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Accord.Neuro</name>
+    </assembly>
+    <members>
+        <member name="T:Accord.Neuro.Learning.ResilientBackpropagationLearning">
+            <summary>
+              Resilient Backpropagation learning algorithm.
+            </summary>
+            
+            <remarks><para>This class implements the resilient backpropagation (RProp)
+            learning algorithm. The RProp learning algorithm is one of the fastest learning
+            algorithms for feed-forward learning networks which use only first-order
+            information.</para>
+            
+            <para>Sample usage (training network to calculate XOR function):</para>
+            <code>
+            // initialize input and output values
+            double[][] input = new double[4][] {
+                new double[] {0, 0}, new double[] {0, 1},
+                new double[] {1, 0}, new double[] {1, 1}
+            };
+            double[][] output = new double[4][] {
+                new double[] {0}, new double[] {1},
+                new double[] {1}, new double[] {0}
+            };
+            // create neural network
+            ActivationNetwork   network = new ActivationNetwork(
+                SigmoidFunction( 2 ),
+                2, // two inputs in the network
+                2, // two neurons in the first layer
+                1 ); // one neuron in the second layer
+            // create teacher
+            ResilientBackpropagationLearning teacher = new ResilientBackpropagationLearning( network );
+            // loop
+            while ( !needToStop )
+            {
+                // run epoch of learning procedure
+                double error = teacher.RunEpoch( input, output );
+                // check error value to see if we need to stop
+                // ...
+            }
+            </code>
+            </remarks>
+            
+            <seealso cref="T:Accord.Neuro.Learning.LevenbergMarquardtLearning"/>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.#ctor(AForge.Neuro.ActivationNetwork)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.Learning.ResilientBackpropagationLearning"/> class.
+            </summary>
+            
+            <param name="network">Network to teach.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Run(System.Double[],System.Double[])">
+             <summary>
+               Runs learning iteration.
+             </summary>
+             
+             <param name="input">Input vector.</param>
+             <param name="output">Desired output vector.</param>
+             
+             <returns>Returns squared error (difference between current network's output and
+             desired output) divided by 2.</returns>
+             
+             <remarks><para>Runs one learning iteration and updates neuron's
+             weights.</para></remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.RunEpoch(System.Double[][],System.Double[][])">
+            <summary>
+              Runs learning epoch.
+            </summary>
+            
+            <param name="input">Array of input vectors.</param>
+            <param name="output">Array of output vectors.</param>
+            
+            <returns>Returns summary learning error for the epoch. See <see cref="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Run(System.Double[],System.Double[])"/>
+            method for details about learning error calculation.</returns>
+            
+            <remarks><para>The method runs one learning epoch, by calling <see cref="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Run(System.Double[],System.Double[])"/> method
+            for each vector provided in the <paramref name="input"/> array.</para></remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.UpdateNetwork">
+            <summary>
+              Update network weights.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.ComputeError(System.Double[][],System.Double[][])">
+            <summary>
+              Compute network error for a given data set.
+            </summary>
+            
+            <param name="input">The input points.</param>
+            <param name="output">The output points.</param>
+            
+            <returns>The sum of squared errors for the data.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Reset(System.Double)">
+            <summary>
+              Resets the current update steps using the given learning rate.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.ResetGradient">
+            <summary>
+              Resets the gradient vector back to zero.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.CalculateError(System.Double[])">
+            <summary>
+              Calculates error values for all neurons of the network.
+            </summary>
+            
+            <param name="desiredOutput">Desired output vector.</param>
+            
+            <returns>Returns summary squared error of the last layer divided by 2.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.CalculateGradient(System.Double[])">
+             <summary>
+               Computes the gradient for a given input.
+             </summary>
+            
+             <param name="input">Network's input vector.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Dispose">
+            <summary>
+              Performs application-defined tasks associated with freeing,
+              releasing, or resetting unmanaged resources.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Finalize">
+            <summary>
+              Releases unmanaged resources and performs other cleanup operations before
+              the <see cref="T:Accord.Neuro.Learning.ResilientBackpropagationLearning"/> is reclaimed by garbage
+              collection.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.ResilientBackpropagationLearning.Dispose(System.Boolean)">
+            <summary>
+              Releases unmanaged and - optionally - managed resources
+            </summary>
+            
+            <param name="disposing"><c>true</c> to release both managed 
+            and unmanaged resources; <c>false</c> to release only unmanaged
+            resources.</param>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.ResilientBackpropagationLearning.UpdateUpperBound">
+            <summary>
+              Gets or sets the maximum possible update step,
+              also referred as delta min. Default is 50.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.ResilientBackpropagationLearning.UpdateLowerBound">
+            <summary>
+              Gets or sets the minimum possible update step,
+              also referred as delta max. Default is 1e-6.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.ResilientBackpropagationLearning.DecreaseFactor">
+            <summary>
+              Gets the decrease parameter, also 
+              referred as eta minus. Default is 0.5.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.ResilientBackpropagationLearning.IncreaseFactor">
+            <summary>
+              Gets the increase parameter, also
+              referred as eta plus. Default is 1.2.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Neuro.Learning.JacobianMethod">
+            <summary>
+              The Jacobian computation method used by the Levenberg-Marquardt.
+            </summary>
+        </member>
+        <member name="F:Accord.Neuro.Learning.JacobianMethod.ByFiniteDifferences">
+            <summary>
+              Computes the Jacobian using approximation by finite differences. This
+              method is slow in comparison with back-propagation and should be used
+              only for debugging or comparison purposes.
+            </summary>
+            
+        </member>
+        <member name="F:Accord.Neuro.Learning.JacobianMethod.ByBackpropagation">
+            <summary>
+              Computes the Jacobian using back-propagation for the chain rule of
+              calculus. This is the preferred way of computing the Jacobian.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Neuro.Learning.LevenbergMarquardtLearning">
+            <summary>
+              Levenberg-Marquardt Learning Algorithm with optional Bayesian Regularization.
+            </summary>
+            
+            <remarks>
+            <para>This class implements the Levenberg-Marquardt learning algorithm,
+            which treats the neural network learning as a function optimization
+            problem. The Levenberg-Marquardt is one of the fastest and accurate
+            learning algorithms for small to medium sized networks.</para>
+            
+            <para>However, in general, the standard LM algorithm does not perform as well
+            on pattern recognition problems as it does on function approximation problems.
+            The LM algorithm is designed for least squares problems that are approximately
+            linear. Because the output neurons in pattern recognition problems are generally
+            saturated, it will not be operating in the linear region.</para>
+            
+            <para>The advantages of the LM algorithm decreases as the number of network
+            parameters increases. </para>
+            
+            <para>Sample usage (training network to calculate XOR function):</para>
+              <code>
+              // initialize input and output values
+              double[][] input =
+              {
+                  new double[] {0, 0}, new double[] {0, 1},
+                  new double[] {1, 0}, new double[] {1, 1}
+              };
+            
+              double[][] output = 
+              {
+                  new double[] {0}, new double[] {1},
+                  new double[] {1}, new double[] {0}
+              };
+              
+              // create neural network
+              ActivationNetwork   network = new ActivationNetwork(
+                  SigmoidFunction( 2 ),
+                  2, // two inputs in the network
+                  2, // two neurons in the first layer
+                  1 ); // one neuron in the second layer
+                
+              // create teacher
+              LevenbergMarquardtLearning teacher = new LevenbergMarquardtLearning( network );
+              
+              // loop
+              while ( !needToStop )
+              {
+                  // run epoch of learning procedure
+                  double error = teacher.RunEpoch( input, output );
+                  
+                  // check error value to see if we need to stop
+                  // ...
+              }
+            </code>
+            
+            <para>
+              References:
+              <list type="bullet">
+                <item><description><a href="http://www.cs.nyu.edu/~roweis/notes/lm.pdf">
+                  Sam Roweis. Levenberg-Marquardt Optimization.</a></description></item>
+                <item><description><a href="http://www-alg.ist.hokudai.ac.jp/~jan/alpha.pdf">
+                  Jan Poland. (2001). On the Robustness of Update Strategies for the Bayesian
+                  Hyperparameter alpha. Available on: http://www-alg.ist.hokudai.ac.jp/~jan/alpha.pdf </a></description></item>
+                <item><description><a href="http://cs.olemiss.edu/~ychen/publications/conference/chen_ijcnn99.pdf">
+                  B. Wilamowski, Y. Chen. (1999). Efficient Algorithm for Training Neural Networks 
+                  with one Hidden Layer. Available on: http://cs.olemiss.edu/~ychen/publications/conference/chen_ijcnn99.pdf </a></description></item>
+                <item><description><a href="http://www.inference.phy.cam.ac.uk/mackay/Bayes_FAQ.html">
+                  David MacKay. (2004). Bayesian methods for neural networks - FAQ. Available on:
+                  http://www.inference.phy.cam.ac.uk/mackay/Bayes_FAQ.html </a></description></item>
+              </list>
+            </para>   
+            </remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.#ctor(AForge.Neuro.ActivationNetwork)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.Learning.LevenbergMarquardtLearning"/> class.
+            </summary>
+            
+            <param name="network">Network to teach.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.#ctor(AForge.Neuro.ActivationNetwork,System.Boolean)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.Learning.LevenbergMarquardtLearning"/> class.
+            </summary>
+            
+            <param name="network">Network to teach.</param>
+            <param name="useRegularization">True to use bayesian regularization, false otherwise.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.#ctor(AForge.Neuro.ActivationNetwork,System.Boolean,Accord.Neuro.Learning.JacobianMethod)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.Learning.LevenbergMarquardtLearning"/> class.
+            </summary>
+            
+            <param name="network">Network to teach.</param>
+            <param name="useRegularization">True to use bayesian regularization, false otherwise.</param>
+            <param name="method">The method by which the Jacobian matrix will be calculated.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.Run(System.Double[],System.Double[])">
+             <summary>
+              This method should not be called. Use <see cref="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.RunEpoch(System.Double[][],System.Double[][])"/> instead.
+             </summary>
+             
+             <param name="input">Array of input vectors.</param>
+             <param name="output">Array of output vectors.</param>
+             
+             <returns>Nothing.</returns>
+             
+             <remarks><para>Online learning mode is not supported by the
+             Levenberg Marquardt. Use batch learning mode instead.</para></remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.RunEpoch(System.Double[][],System.Double[][])">
+             <summary>
+               Runs a single learning epoch.
+             </summary>
+             
+             <param name="input">Array of input vectors.</param>
+             <param name="output">Array of output vectors.</param>
+             
+             <returns>Returns summary learning error for the epoch.</returns>
+             
+             <remarks><para>The method runs one learning epoch, by calling running necessary
+             iterations of the Levenberg Marquardt to achieve an error decrease.</para></remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.ComputeError(System.Double[][],System.Double[][])">
+            <summary>
+              Compute network error for a given data set.
+            </summary>
+            
+            <param name="input">The input points.</param>
+            <param name="output">The output points.</param>
+            
+            <returns>The sum of squared errors for the data.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.loadArrayIntoNetwork">
+            <summary>
+             Update network's weights.
+            </summary>
+            
+            <returns>The sum of squared weights divided by 2.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.saveNetworkToArray">
+            <summary>
+              Creates the initial weight vector w
+            </summary>
+            
+            <returns>The sum of squared weights divided by 2.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.getNumberOfParameters(AForge.Neuro.ActivationNetwork)">
+            <summary>
+              Gets the number of parameters in a network.
+            </summary>
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.JacobianByChainRule(System.Double[][],System.Double[][])">
+            <summary>
+              Calculates the Jacobian matrix by using the chain rule.
+            </summary>
+            <param name="input">The input vectors.</param>
+            <param name="output">The desired output vectors.</param>
+            <returns>The sum of squared errors for the last error divided by 2.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.CalculateDerivatives(System.Double[],System.Double[],System.Int32)">
+            <summary>
+              Calculates partial derivatives for all weights of the network.
+            </summary>
+            
+            <param name="input">The input vector.</param>
+            <param name="desiredOutput">Desired output vector.</param>
+            <param name="outputIndex">The current output location (index) in the desired output vector.</param>
+            
+            <returns>Returns summary squared error of the last layer.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.JacobianByFiniteDifference(System.Double[][],System.Double[][])">
+            <summary>
+              Calculates the Jacobian Matrix using Finite Differences
+            </summary>
+            
+            <returns>Returns the sum of squared errors of the network divided by 2.</returns>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.createCoefficients(System.Int32)">
+            <summary>
+              Creates the coefficients to be used when calculating
+              the approximate Jacobian by using finite differences.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.Learning.LevenbergMarquardtLearning.ComputeDerivative(System.Double[],System.Int32,System.Int32,System.Int32,System.Double@,System.Double,System.Int32)">
+            <summary>
+              Computes the derivative of the network in 
+              respect to the weight passed as parameter.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.LearningRate">
+             <summary>
+               Levenberg's damping factor, also known as lambda.
+             </summary>
+             
+             <remarks><para>The value determines speed of learning.</para>
+             
+             <para>Default value is <b>0.1</b>.</para>
+             </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.Adjustment">
+             <summary>
+               Learning rate adjustment. 
+             </summary>
+             
+             <remarks><para>The value by which the learning rate
+             is adjusted when searching for the minimum cost surface.</para>
+             
+             <para>Default value is <b>10</b>.</para>
+             </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.NumberOfParameters">
+            <summary>
+              Gets the total number of parameters
+              in the network being trained.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.EffectiveParameters">
+            <summary>
+              Gets the number of effective parameters being used
+              by the network as determined by the bayesian regularization.
+            </summary>
+            <remarks>
+              If no regularization is being used, the value will be 0.
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.Alpha">
+            <summary>
+              Gets or sets the importance of the squared sum of network
+              weights in the cost function. Used by the regularization.
+            </summary>
+            <remarks>
+              This is the first bayesian hyperparameter. The default
+              value is 0.
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.Beta">
+            <summary>
+              Gets or sets the importance of the squared sum of network
+              errors in the cost function. Used by the regularization.
+            </summary>
+            <remarks>
+              This is the second bayesian hyperparameter. The default
+              value is 1.
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.UseRegularization">
+            <summary>
+              Gets or sets whether to use Bayesian Regularization.
+            </summary>
+            
+        </member>
+        <member name="P:Accord.Neuro.Learning.LevenbergMarquardtLearning.Blocks">
+            <summary>
+              Gets or sets the number of blocks to divide the 
+              Jacobian matrix in the Hessian calculation to
+              preserve memory. Default is 1.
+            </summary>
+            
+        </member>
+        <member name="T:Accord.Neuro.LinearFunction">
+             <summary>
+               Linear activation function.
+             </summary>
+            
+             <remarks>
+               <para>This class implements a linear activation function bounded
+               in the interval (a,b), as given by the piecewise formula:
+             
+               <code lang="none">
+               f(x) = alpha*x, if a > x*alpha > b
+               f(x) = a,       if a > x*alpha;
+               f(x) = b,       if     x*alpha > b;
+               </code>
+             
+               In which, by default, a = -1 and b = +1.</para>
+             
+             <para>
+               This function is continuous only in the interval (a/alpha, b/alpha). This is similar
+               to the threshold function but with a linear growth component. If alpha is set to a 
+               very high value (such as infinity), the function behaves as a threshold function.
+             </para>
+             
+             <para>The output range of the function can be set to an arbitrary
+             value. The default output range is <b>[-1, +1]</b>.</para>
+             
+             </remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.#ctor(System.Double)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.LinearFunction"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.#ctor(AForge.DoubleRange)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.LinearFunction"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.#ctor(System.Double,AForge.DoubleRange)">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.LinearFunction"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.#ctor">
+            <summary>
+              Initializes a new instance of the <see cref="T:Accord.Neuro.LinearFunction"/> class.
+            </summary>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.Function(System.Double)">
+             <summary>
+               Calculates function value.
+             </summary>
+            
+             <param name="x">Function input value.</param>
+             
+             <returns>Function output value, <i>f(x)</i>.</returns>
+            
+             <remarks>The method calculates function value at point <paramref name="x"/>.</remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.Derivative(System.Double)">
+             <summary>
+               Calculates function derivative.
+             </summary>
+             
+             <param name="x">Function input value.</param>
+             
+             <returns>Function derivative, <i>f'(x)</i>.</returns>
+             
+             <remarks>The method calculates function derivative at point <paramref name="x"/>.</remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.LinearFunction.Derivative2(System.Double)">
+            <summary>
+            Calculates function derivative.
+            </summary>
+            
+            <param name="y">Function output value - the value, which was obtained
+            with the help of <see cref="M:Accord.Neuro.LinearFunction.Function(System.Double)"/> method.</param>
+            
+            <returns>Function derivative, <i>f'(x)</i>.</returns>
+            
+            <remarks><para>The method calculates the same derivative value as the
+            <see cref="M:Accord.Neuro.LinearFunction.Derivative(System.Double)"/> method, but it takes not the input <b>x</b> value
+            itself, but the function value, which was calculated previously with
+            the help of <see cref="M:Accord.Neuro.LinearFunction.Function(System.Double)"/> method.</para>
+            
+            <para><note>Some applications require as function value, as derivative value,
+            so they can save the amount of calculations using this method to calculate derivative.</note></para>
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.LinearFunction.Alpha">
+            <summary>
+            Linear slope value.
+            </summary>
+            
+            <remarks>
+              <para>Default value is set to <b>1</b>.</para>
+            </remarks>
+            
+        </member>
+        <member name="P:Accord.Neuro.LinearFunction.Range">
+             <summary>
+               Function output range.
+             </summary>
+            
+             <remarks>
+               <para>Default value is set to [-1;+1]</para>
+             </remarks>
+            
+        </member>
+        <member name="T:Accord.Neuro.NguyenWidrow">
+            <summary>
+             Nguyen-Widrow weight initializer
+            </summary>
+            
+            <remarks>
+            <para>The Nguyen-Widrow initialization algorithm chooses values in
+            order to distribute the active region of each neuron in the layer
+            approximately evenly across the layers' input space.</para>
+            
+            <para>The values contain a degree of randomness, so they are not the
+            same each time this function is called.</para> 
+            </remarks>
+            
+        </member>
+        <member name="M:Accord.Neuro.NguyenWidrow.#ctor(AForge.Neuro.ActivationNetwork)">
+            <summary>
+              Constructs a new Nguyen-Widrow Weight Initializer.
+            </summary>
+            
+            <param name="network">The activation network whose weights will be initialized.</param>
+            
+        </member>
+        <member name="M:Accord.Neuro.NguyenWidrow.Randomize">
+            <summary>
+              Randomizes (initializes) the weights of
+              the network using Nguyen-Widrow method's.
+            </summary>
+            
+        </member>
+    </members>
+</doc>
