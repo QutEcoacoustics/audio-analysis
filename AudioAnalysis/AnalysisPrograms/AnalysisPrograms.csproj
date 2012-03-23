@@ -161,13 +161,13 @@
     <Compile Include="SPT.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\AudioTools\AudioTools.csproj">
-      <Project>{6A03A803-AD91-4E12-967E-39DCDB2BB030}</Project>
-      <Name>AudioTools</Name>
+    <ProjectReference Include="..\..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj">
+      <Project>{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}</Project>
+      <Name>Acoustics.Shared</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\QutSensors.Shared\QutSensors.Shared.csproj">
-      <Project>{13547AB0-068A-4EDD-A2DD-A9644F982E59}</Project>
-      <Name>QutSensors.Shared</Name>
+    <ProjectReference Include="..\..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj">
+      <Project>{0338570E-5A77-4A2E-8E17-7955C36AE1F7}</Project>
+      <Name>Acoustics.Tools</Name>
     </ProjectReference>
     <ProjectReference Include="..\AED\AED\AED.fsproj">
       <Project>{993980A0-8D06-4635-8296-40E9FFF9C301}</Project>

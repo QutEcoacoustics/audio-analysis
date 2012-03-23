@@ -1,0 +1,39 @@
+1998:   
+20 Jan: mp3check started and first header seek check (v0.0)   
+21 Jan: v0.1 colorization, error and anomaly check implen, crc started
+23 Jan: v0.2 advanced formatting
+24 Jan: v0.3 disable errors/anomalies
+27 Jan: v0.3a -c only first frame bug fixed, --dump-header added
+27 Jan: v0.3b starting mpeg 2.0 support, cut-junk-start added
+28 Jan: v0.3c added some data for mpeg 2.0
+09 Jul: v0.3e mpeg2.5 does not work :(
+18 Sep: 0.3.1 prepare for sunsite
+22 Oct: 0.4.1 prepare for use with printcdcover (raw output format)
+
+1999:    
+25 Aug:      0.4.2 cerr changed to cerror (conflict with c++ libs with gcc2.95.1)
+15 Sep 19:21 0.4.3 cut-junk-end added (thanks to Pollyanna Lindgren <jtlindgr@cs.helsinki.fi>)
+19 Sep 18:13 0.4.4 fix-headers added (no succes on trying to fix madonna-mix)
+
+2000:
+31 May 20:00 0.5.0 avoid creating temporary file on cut-junk-start/end (thanks to Michael Stefaniuc <mstefani@redhat.de>)
+                   no color by default, spurious color on no color removed, --cut-junk-end will not touch files with TAG trailers (thanks to Chris Pimlott <pimlottc@null.net>)
+                   avoid endless loop on dummy+cut-junk-end
+       21:35       max-errors added (thanks to Preston.F.Crow.Adv94@Alum.Dartmouth.ORG (Preston F. Crow Adv94))
+                   padding/framelength for layer 1+2 fixed (thanks to Dieter Baron <dillo@danbala.ifoer.tuwien.ac.at>)
+18 Jun 15:30 0.5.1 crc check for mpg1.0/layer1 added, untested. frame length padding fixed for layer 1
+10 Jul 01:00 0.5.2 tappframe simplified
+13 Jul 22:00 0.5.2 --fix-crc added, endian support
+
+2001:
+26 Feb 00:00 0.6.0 Khalis (Jean Delvare) big patch applied. Lots of new features and options.
+26 Feb 00:00 0.6.1 experimental big-endian support added (has to be tested)
+27 Feb 00:00 0.6.2 big-endian works, --no-summary option added for batch processing, testsuite started, --show-valid files added
+28 Feb 00:00 0.6.3 first frame not checked error fixed, --fix-header improved, --edit-frame-b added
+19 Mar 00:15 0.6.4 applied Khalis 'cygwin' patch, runtime endianess checking removed
+25 Jun 21:55 0.6.5 applied Khalis 'epmtyfiles' patch
+07 Nov 20:00 0.6.6 applied Fredrik Roubert 64-bit patch
+13 Nov 22:30 0.7.0 --recursive, --accept, --reject, --xdev, --only-mp3, --filelist, --print-files added, --ascii-only added
+19 Nov 00:30 0.7.1 cleaner code for filename filtering, avoid use of values.h and MAXDOUBLE (thanks to Khali for both fixes)
+19 Nov 23:00 0.7.2 -c fixed: hide unprintable chars in name
+22 Nov 23:00 0.7.3 --xdev fixed by Khali (recursion under Win32 was broken)

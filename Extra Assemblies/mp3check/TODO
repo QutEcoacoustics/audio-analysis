@@ -1,0 +1,4 @@
+- mpeg1.0 layer 2 and mpeg2.0 layer 1 and 2: add crc check support
+- add mpeg 2.5 support
+- improve manpage
+

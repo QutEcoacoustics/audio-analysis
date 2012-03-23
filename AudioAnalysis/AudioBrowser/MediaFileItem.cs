@@ -4,7 +4,8 @@
     using System.ComponentModel;
     using System.IO;
 
-    using QutSensors.Shared;
+    using Acoustics.Shared;
+
 
     public class MediaFileItem : INotifyPropertyChanged
     {

@@ -1,17 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
-using AudioTools.AudioUtlity;
-using QutSensors.Shared.LogProviders;
-
-
-
 
 //Here is link to wiki page containing info about how to write Analysis techniques
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
@@ -23,6 +16,9 @@ using QutSensors.Shared.LogProviders;
 
 namespace AnalysisPrograms
 {
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
+
     public class KiwiRecogniser
     {
         //Following lines are used for the debug command line.
@@ -122,9 +118,9 @@ namespace AnalysisPrograms
             KiwiParams kiwiParams = ReadIniFile(iniPath);
 
             // Get the file time duration
-            SpecificWavAudioUtility audioUtility = SpecificWavAudioUtility.Create();
+            IAudioUtility audioUtility = new MasterAudioUtility();
             var fiSourceRecording = new FileInfo(sourceRecordingPath);
-            var mimeType = QutSensors.Shared.MediaTypes.GetMediaType(fiSourceRecording.Extension);
+            var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             //var dateInfo = fileInfo.CreationTime;
             var duration = audioUtility.Duration(fiSourceRecording, mimeType);
 
@@ -152,7 +148,8 @@ namespace AnalysisPrograms
                 int resampleRate = 17640;
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
-                AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, resampleRate, segmentPath);
+                MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(segmentPath), startMilliseconds, endMilliseconds);
+                AudioRecording recording = new AudioRecording(segmentPath);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
                 //Log.WriteLine("Signal Duration: " + segmentDuration);
                 int sampleCount = recording.GetWavReader().Samples.Length;

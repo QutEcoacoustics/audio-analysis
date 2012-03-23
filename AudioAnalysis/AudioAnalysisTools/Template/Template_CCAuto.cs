@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+
 using TowseyLib;
-using MarkovModels;
+
 using System.IO;
-using AudioTools;
 
 namespace AudioAnalysisTools
 {
+    using Acoustics.Tools.Wav;
+
     [Serializable]
     public class Template_CCAuto : BaseTemplate
     {

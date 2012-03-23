@@ -5,8 +5,6 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
-using QutSensors.Shared;
-
 
 //HERE ARE THE FOUR (4) COMMAND LINE ARGUMENTS TO PLACE IN START OPTIONS - PROPERTIES PAGE,  debug command line
 //USED TO CREATE A MFCC-OD TEMPLATE for LEWIN's RAIL

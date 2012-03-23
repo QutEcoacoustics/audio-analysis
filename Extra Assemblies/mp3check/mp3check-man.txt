@@ -1,0 +1,261 @@
+MP3CHECK(1)                                           MP3CHECK(1)
+
+
+
+NNAAMMEE
+       mp3check - check mp3 files for consistency
+
+SSYYNNOOPPSSIISS
+       mmpp33cchheecckk           [-03ABCEFGIKLMNPRSTWYZabcdefghlmopqrst]
+       [--accept=LIST]      [--alt-color]       [--anomaly-check]
+       [--anomaly-check]        [--any-bitrate]       [--any-crc]
+       [--any-emphasis]  [--any-layer]  [--any-mode]  [--any-sam-
+       pling]  [--any-version]  [--ascii-only]  [--color] [--com-
+       pact-list] [--cut-junk-end] [--cut-junk-start] [--cut-tag-
+       end]  [--dummy]  [--dump-tag] [--dump-header] [--dump-tag]
+       [--edit-frame-byte=P]   [--error-check]    [--error-check]
+       [--filelist=FILE]   [--fix-crc]  [--fix-headers]  [--help]
+       [--ign-bitrate-sw]  [--ign-constant-sw]  [--ign-crc-error]
+       [--ign-junk-end]    [--ign-junk-start]   [--ign-non-ampeg]
+       [--ign-resync] [--ign-tag128]  [--ign-truncated]  [--list]
+       [--log-file=FILE]      [--max-errors=NUM]     [--only-mp3]
+       [--print-files]           [--progress]           [--quiet]
+       [--raw-elem-sep=NUM]   [--raw-line-sep=NUM]   [--raw-list]
+       [--recursive]  [--reject=LIST]  [--show-valid]  [--single-
+       line] [--version] [--xdev] [--] [FILES...]
+
+DDEESSCCRRIIPPTTIIOONN
+       This  manual  page documents briefly the mmpp33cchheecckk command.
+       This manual page was written for the Debian GNU/Linux dis-
+       tribution  because  the  original  program does not have a
+       manual page.
+
+       mmpp33cchheecckk is a program that checks mp3  files  for  consis-
+       tency  and  prints  several  errors and warnings. It lists
+       stream attributes (color).  Layer 1,2,3,  mpeg1.0+2.0  are
+       currently  supported.  CRC check for layer 3.  mmpp33cchheecckk is
+       very useful for incomplete mp3 detection as it can be used
+       to scan through your mp3 collection and find all mp3s that
+       aren't perfect. Good for use with Napster and  other  bulk
+       downloading of mp3s.
+
+OOPPTTIIOONNSS
+       These  programs  follow the usual GNU command line syntax,
+       with long options starting with two dashes (`-').  Options
+       can be specified in any order and mixed with files. Option
+       scanning stops after a double dash  (--)  to  allow  files
+       beginning  with  a dash.  A summary of options is included
+       below.
+
+       mmooddee::
+
+       --ll ----lliisstt
+              list parameters by examining the first valid header
+              and size
+
+       --cc ----ccoommppaacctt--lliisstt
+              list parameters of one file per line in a very com-
+              pact format: version (l=1.0,  L=2.0),  layer,  sam-
+              pling  frequency [kHz] (44=44.1), bitrate [kBit/s],
+              mode (js=joint stereo, st=stereo,  sc=single  chan-
+              nel,  dc=dual  channel),  emphasis (n=none, 5=50/15
+              usecs, J=CCITT J.17), COY (has  [C]rc,  [O]riginal,
+              cop[Y]right),  length  [min:sec],  filename  (poss.
+              truncated)
+
+       --ee ----eerrrroorr--cchheecckk
+              check crc and headers  for  consistency  and  print
+              several error messages
+
+       --mm ----mmaaxx--eerrrroorrss==<<iinntt>>
+              with  -e: set maximum number of errors to print per
+              file (0==infinity) (range=[0..])
+
+       --aa ----aannoommaallyy--cchheecckk
+              report all differences from these parameters: layer
+              3, 44.1kHz, 112kB or 128kB, joint stereo, no empha-
+              sis, has crc
+
+       --dd ----dduummpp--hheeaaddeerr
+              dump all possible header with sync=0xfff
+
+       --tt ----dduummpp--ttaagg
+              dump all possible tags of known version
+
+       ----rraaww--lliisstt
+              list parameters in raw output format for  use  with
+              external programs
+
+       ----rraaww--eelleemm--sseepp==NNUUMM
+              separate  elements in one line by char NUM (numeri-
+              cal ASCII code) (default="0x09")
+
+       ----rraaww--lliinnee--sseepp==NNUUMM
+              separate lines by char NUM (numerical  ASCII  code)
+              (default="0x0a")
+
+       ----eeddiitt--ffrraammee--bbyyttee==PP
+              modify  a single byte of a specific frame at a spe-
+              cific offset; B has the format  'frame,offset,byte-
+              val',  (use 0xff for hex or 255 for dec or 0377 for
+              octal); this mode operates on all given  files  and
+              is  useful  for  your  own  experiment  with broken
+              streams or while testing this toll ;-)
+
+       ffiixx eerrrroorrss::
+
+       ----ccuutt--jjuunnkk--ssttaarrtt
+              remove junk before first frame
+
+       ----ccuutt--jjuunnkk--eenndd
+              remove junk after last frame
+
+       ----ffiixx--hheeaaddeerrss
+              fix invalid  headers  (prevent  constant  parameter
+              switching), implies -e, use with care
+
+       ----ffiixx--ccrrcc
+              fix  crc  (set  crc to the calculated one), implies
+              -e, use with care (note: it is not possible to  add
+              crc to files which have been created without crc)
+
+       ddiissaabbllee eerrrroorr mmeessssaaggeess ffoorr --ee ----eerrrroorr--cchheecckk::
+
+       --GG ----iiggnn--ttaagg112288
+              ignore  128  byte  TAG  after  last frame --RR ----iiggnn--
+              rreessyynncc ignore invalid frame header
+
+       --EE ----iiggnn--jjuunnkk--eenndd
+              ignore junk after last frame
+
+       --ZZ ----iiggnn--ccrrcc--eerrrroorr
+              ignore crc errors
+
+       --NN ----iiggnn--nnoonn--aammppeegg
+              ignore non audio mpeg streams
+
+       --TT ----iiggnn--ttrruunnccaatteedd
+              ignore truncated last frames
+
+       --SS ----iiggnn--jjuunnkk--ssttaarrtt
+              ignore junk before first frame
+
+       --BB ----iiggnn--bbiittrraattee--ssww
+              ignore bitrate switching
+
+       --WW ----iiggnn--ccoonnssttaanntt--ssww
+              ignore switching of constant  parameters,  such  as
+              sampling frequency
+
+       ----sshhooww--vvaalliidd
+              print the message 'valid audio mpeg stream' for all
+              files which error free (after ignoring errors)
+
+       ddiissaabbllee aannoommaallyy mmeessssaaggeess ffoorr --aa ----aannoommaallyy--cchheecckk::
+
+       --CC ----aannyy--ccrrcc
+              ignore crc anomalies
+
+       --MM ----aannyy--mmooddee
+              ignore mode anomalies
+
+       --LL ----aannyy--llaayyeerr
+              ignore layer anomalies
+
+       --KK ----aannyy--bbiittrraattee
+              ignore bitrate anomalies
+
+       --II ----aannyy--vveerrssiioonn
+              ignore version anomalies
+
+       --FF ----aannyy--ssaammpplliinngg
+              ignore sampling frequency anomalies
+
+       --PP ----aannyy--eemmpphhaassiiss
+              ignore emphasis anomalies
+
+       ffiillee ooppttiioonnss::
+
+       --rr ----rreeccuurrssiivvee
+              process  any  given  directories  recursively  (the
+              default  is  to ignore all directories specified on
+              the command line)
+
+       --ff ----ffiilleelliisstt==FFIILLEE
+              process all files specified in FILE  (one  filename
+              per line) in addition to the command line
+
+       --AA ----aacccceepptt==LLIISSTT
+              process  only files with filename extensions speci-
+              fied by comma separated LIST
+
+       --RR ----rreejjeecctt==LLIISSTT
+              do not process  files  with  a  filename  extension
+              specified by comma separated LIST
+
+       --33 ----oonnllyy--mmpp33
+              same as ----aacccceepptt mmpp33,,MMPP33
+
+       ----xxddeevv do  not descend into other filesystems when recurs-
+              ing directories (doesn't work  in  Cygwin  environ-
+              ment)
+
+       ----pprriinntt--ffiilleess
+              just  print  all filenames without processing them,
+              then exit
+
+       oouuttppuutt ooppttiioonnss::
+
+       --ss ----ssiinnggllee--lliinnee
+              print one line per  file  and  message  instead  of
+              splitting into several lines
+
+       ----nnoo--ssuummmmaarryy
+              suppress  the summary printed below all messages if
+              multiple files are given
+
+       --gg ----lloogg--ffiillee==FFIILLEE
+              print names of erroneous files  to  FILE,  one  per
+              line
+
+       --qq ----qquuiieett
+              quiet  mode,  hide messages about directories, non-
+              regular or non-existing files
+
+       --oo ----ccoolloorr
+              colorize output with ANSI sequences
+
+       --bb ----aalltt--ccoolloorr
+              colorize: do not use bold ANSI sequences
+
+       ----aasscciiii--oonnllyy
+              generally all unpritable  characters  in  filenames
+              etc are replaced by '!' (ASCII 0-31) and '?' (ASCII
+              127-159), with this option present the range  ASCII
+              160-255 (which is usually printable: e.g. ISO-8859)
+              is also printed as '?'
+
+       --pp ----pprrooggrreessss
+              show progress information on stderr
+
+       ccoommmmoonn ooppttiioonnss::
+
+       --00 ----dduummmmyy
+              do not write/modify anything other than the logfile
+
+       --hh ----hheellpp
+              print this help message, then exit successfully
+
+       ----vveerrssiioonn
+              print version, then exit successfully
+
+AAUUTTHHOORR
+       This  original  manual  page  was written by Klaus Kettner
+       <kk@debian.org>, for the Debian GNU/Linux system. The cur-
+       rent  version  of  this  manpage is maintained by Johannes
+       Overmann <overmann@iname.com>, the author of mp3check.
+
+
+
+
+                          March  1, 2001              MP3CHECK(1)

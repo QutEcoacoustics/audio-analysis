@@ -2,16 +2,14 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
-using ICSharpCode.SharpZipLib.Zip;
+
 using TowseyLib;
 using AudioAnalysisTools;
 using AudioAnalysisTools.HTKTools;
-using AudioTools;
-
 
 namespace AnalysisPrograms
 {
-    using AudioTools.AudioUtlity;
+    using Acoustics.Tools.Audio;
 
     //INFORMATION FOR MARK
     //The CURRAWONG template under version control is located on my machine at:
@@ -85,7 +83,8 @@ namespace AnalysisPrograms
             var destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
 
             Log.WriteLine("Checking to see if conversion necessary...");
-            if (SpecificWavAudioUtility.ConvertToWav(recordingPath, destinationAudioFile))
+            MasterAudioUtility.ConvertToWav(null, new FileInfo(recordingPath), new FileInfo(destinationAudioFile));
+            if (File.Exists(destinationAudioFile))
             {
                 Log.WriteLine("Wav pcm file created.");
             }

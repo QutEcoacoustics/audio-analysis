@@ -1,0 +1,42 @@
+1.30
+  clipping bug of noise shaper is fixed
+  bug of gaussian pdf is fixed
+  buffer initialization bug is fixed
+
+1.29
+  Improved accuracy by substituting calulation method of Bessel function (Takehiro Tominaga)
+  windows binary of high precision version(ssrc_hp.exe) is now included
+  fast mode(--profile fast) is added
+  --att can be now used with --normalize and --twopass
+  probability distributing function of noise can be now specified
+  windows binary is now compiled with MSVC6
+  no more Japanese support
+
+1.28
+  Improved dither
+  Fixed some minor bugs
+
+1.27
+  Improved dither
+  Added normalization option
+  Fixed some minor bugs
+
+1.26
+  Support reading of 32bit wav file
+  Fixed some bugs
+
+1.25
+  Added ETA display
+  Fixed some bugs
+
+1.24
+  Fixed clipping handling
+  Fixed some bugs
+
+1.23
+  Added progress display
+  Added two other dither types
+  Fixed some bugs
+
+1.22
+  First public release

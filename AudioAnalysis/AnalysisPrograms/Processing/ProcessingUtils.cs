@@ -12,9 +12,9 @@ namespace AnalysisPrograms.Processing
     using System.Linq;
     using System.Text;
 
-    using AudioAnalysisTools;
+    using Acoustics.Shared;
 
-    using QutSensors.Shared;
+    using AudioAnalysisTools;
 
     /// <summary>
     /// The processing utils.

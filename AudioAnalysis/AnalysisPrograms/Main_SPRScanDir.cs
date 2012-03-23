@@ -1,13 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
 using AudioAnalysisTools.HTKTools;
-using AudioTools;
-
 
 namespace AnalysisPrograms
 {

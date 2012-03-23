@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using TowseyLib;
 using MarkovModels;
-using QutSensors.Shared;
 
 namespace AudioAnalysisTools
 {
+    using Acoustics.Shared;
+
     public class Result_1PS : BaseResult
     {
 		#region Properties

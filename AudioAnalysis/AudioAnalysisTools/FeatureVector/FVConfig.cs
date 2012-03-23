@@ -1,21 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
-using AudioTools;
-using TowseyLib;
-using QutSensors;
-using QutSensors.Shared;
 
+using TowseyLib;
 
 namespace AudioAnalysisTools
 {
-    using QutSensors.Shared;
+    using Acoustics.Tools.Wav;
 
     public enum FV_Source { SELECTED_FRAMES, FIXED_INTERVALS }
 
-	[Serializable]
+    [Serializable]
     public class FVConfig
     {
 
@@ -23,7 +17,7 @@ namespace AudioAnalysisTools
         #region Properties
         public int CallID { get; set; } //required for constructing FV file names
 
-        public double StartTime{ get; set; }
+        public double StartTime { get; set; }
         public double EndTime { get; set; }
         public ConfigKeys.Feature_Type FeatureExtractionType { get; set; }
         public int FVCount { get; set; }
@@ -36,7 +30,7 @@ namespace AudioAnalysisTools
 
         public string OPDir { get; set; }
         public string[] FVfNames { get; set; }
-        public string   FVSourceDir { get; set; }    //used when in AUTO mode
+        public string FVSourceDir { get; set; }    //used when in AUTO mode
         public string[] FVSourceFiles { get; set; }  //used when in manual mode
         public string FV_DefaultNoisePath { get; set; }
         public FeatureVector DefaultNoiseFV { get; set; } //default noise FV used if cannot construct one from recording to be scanned
@@ -69,14 +63,14 @@ namespace AudioAnalysisTools
         public FVConfig(Configuration config)
         {
             //FEATURE VECTORS
-            var  featureExtractionName = config.GetString(ConfigKeys.Template.Key_FVType);
+            var featureExtractionName = config.GetString(ConfigKeys.Template.Key_FVType);
             this.FeatureExtractionType = (ConfigKeys.Feature_Type)Enum.Parse(typeof(ConfigKeys.Feature_Type), featureExtractionName);
 
             CallID = config.GetInt("TEMPLATE_ID");
             FV_DefaultNoisePath = config.GetPath(ConfigKeys.Template.Key_FVDefaultNoiseFile);
 
 
-            if (! File.Exists(FV_DefaultNoisePath))
+            if (!File.Exists(FV_DefaultNoisePath))
             {
                 Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig: Default noise file does not exist: <" + FV_DefaultNoisePath + ">");
                 throw new Exception("Fatal Error");
@@ -89,7 +83,7 @@ namespace AudioAnalysisTools
             this.DefaultModalNoiseProfile = s.SnrFullband.ModalNoiseProfile;
             DefaultNoiseFV = Acoustic_Model.GetNoiseFeatureVector(s.Data, s.DecibelsNormalised, s.Max_dBReference);
 
-            if(DefaultNoiseFV == null)
+            if (DefaultNoiseFV == null)
             {
                 Log.WriteLine("WARNING!! CONSTRUCTOR FVConfig: File exists but cannot extract noise FV: <" + FV_DefaultNoisePath + ">");
                 Log.WriteLine("WARNING!! Check that recording has anough low energy content for noise estimation.");
@@ -106,7 +100,7 @@ namespace AudioAnalysisTools
                     //Log.WriteIfVerbose("\tSelected frames=" + frames);
                     for (int i = 0; i < FVCount; i++)
                     {
-                        FVIniData[i] = config.GetString("FV"+(i+1)+"_FILE");
+                        FVIniData[i] = config.GetString("FV" + (i + 1) + "_FILE");
                     }
                     break;
                 case ConfigKeys.Feature_Type.CC_AUTO:
@@ -118,7 +112,7 @@ namespace AudioAnalysisTools
                     break;
                 case ConfigKeys.Feature_Type.DCT_2D:
                     this.StartTime = config.GetDouble(ConfigKeys.Mfcc.Key_StartTime);
-                    this.EndTime   = config.GetDouble(ConfigKeys.Mfcc.Key_EndTime);
+                    this.EndTime = config.GetDouble(ConfigKeys.Mfcc.Key_EndTime);
                     break;
             }
         }//end Constructor()
@@ -202,22 +196,27 @@ namespace AudioAnalysisTools
             Save(writer, opDir);  //######### MUST DO THIS FIRST
 
             var fName = FVArray[0].name; //check that first FV has a destination path and assume all do!
-        
+
             // Ensure to save feature vectors first so paths are correctly set.
             //SaveFeatureVectors(Path.GetDirectoryName(templateFilePath), templateName + "_FV{0}.txt");
 
-            Validation.Begin()
-                        .IsNotNull(opDir, "Target folder must be supplied")
-                        .IsNotNull(fName, "A pattern for feature vector filenames must be provided")
-                        .Check();
+            if (opDir == null)
+            {
+                throw new ArgumentNullException("Target folder must be supplied", "opDir");
+            }
+
+            if (opDir == null)
+            {
+                throw new ArgumentNullException("A pattern for feature vector filenames must be provided", "fName");
+            }
 
             FVfNames = new string[FVArray.Length];
 
             for (int i = 0; i < FVArray.Length; i++)
             {
                 fName = FVArray[i].name;
-                var path = Path.Combine(opDir, string.Format(fName, i)+".txt");
-                Log.WriteIfVerbose("\tSaving FV file to:  "+path);
+                var path = Path.Combine(opDir, string.Format(fName, i) + ".txt");
+                Log.WriteIfVerbose("\tSaving FV file to:  " + path);
 
                 FVArray[i].SaveDataAndImageToFile(path, t);
                 FVfNames[i] = path;
@@ -225,7 +224,7 @@ namespace AudioAnalysisTools
 
                 if (BaseTemplate.InTestMode)
                 {
-                    Log.WriteLine("COMPARE FEATURE VECTOR FILES "+i);
+                    Log.WriteLine("COMPARE FEATURE VECTOR FILES " + i);
                     FunctionalTests.AssertAreEqual(new FileInfo(path),
                                              new FileInfo(path + "OLD.txt"), true);
                 }
@@ -275,7 +274,7 @@ namespace AudioAnalysisTools
             {
                 string[] parts = FVIniData[i].Split('\t');
                 Log.WriteIfVerbose("\tInit FeatureVector[" + (i + 1) + "] from file <" + parts[0] + ">, frames " + parts[1]);
-                string fvPath = Path.Combine(templateDir, parts[0]+".txt");
+                string fvPath = Path.Combine(templateDir, parts[0] + ".txt");
                 //Log.WriteIfVerbose("   Reading FV file " + fvPath);
                 this.FVArray[i] = new FeatureVector(fvPath);
             }

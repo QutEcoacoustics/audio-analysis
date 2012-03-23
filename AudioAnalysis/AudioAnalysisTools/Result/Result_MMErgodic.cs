@@ -5,12 +5,12 @@ using System.Text;
 using TowseyLib;
 using MarkovModels;
 using System.IO;
-using QutSensors.Shared;
-
 
 namespace AudioAnalysisTools
 {
-	public class Result_MMErgodic : BaseResult
+    using Acoustics.Shared;
+
+    public class Result_MMErgodic : BaseResult
 	{
 		#region Properties
         public double? LLRThreshold { get; set; } // significance threshold for display of LLR scores

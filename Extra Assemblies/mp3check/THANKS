@@ -1,0 +1,48 @@
+=========================================================================
+Thanks go to the following people who contributed directly to this source
+code: (in chronological order)
+(If you are missing in this list please let me know!)
+=========================================================================
+
+Pollyanna Lindgren <jtlindgr@cs.helsinki.fi>
+(0.4.3 cut-junk-end added)
+
+Michael Stefaniuc <mstefani@redhat.de>
+(0.5.0 avoid creating tempoary file on cut-junk-start/end)
+(0.5.3 --fix-crc added)
+
+Dieter Baron <dillo@danbala.ifoer.tuwien.ac.at>
+(0.5.0 padding/framelength for layer 1+2 fixed)
+
+Jean 'Khali' Delvare <delvare@ensicaen.ismra.fr>
+(0.6.0 Fixed lots of bugs, added lots of features, big patch (1113 lines)
+       many thanks for all the work Khali!)
+(0.6.4 CygWin patch to make mp3check work under Win32 environments)
+(0.6.5 Correct handling of empty files)
+(0.7.1 CygWin again, cleaner code for filename filtering, lot of testing)
+(0.7.2 -c fixed)
+(0.7.3 --xdev fixed)
+
+Jeff Squyres <jsquyres@lsc.nd.edu>
+(0.5.0-0.6.0 Great help in improving portability.)
+
+Michael Uemminghaus <uemmingh@mail.rmc.de>
+(<future> cut truncated frames)
+
+Fredrik Roubert <roubert@df.lth.se>
+(0.6.6 64-bit fixes, testing on DEC Alpha)
+
+
+------------------------------------------------------------------
+Thanks also go to the following people who contributed indirectly:
+------------------------------------------------------------------
+
+Chris Pimlott <pimlottc@null.net>
+(0.5.0 useful commentes and bug reports)
+
+Preston F. Crow <Adv94Preston.F.Crow.Adv94@Alum.Dartmouth.org>
+(0.5.0 suggested max-errors)
+
+Honza Fikar <jan.fikar@epfl.ch>
+(0.6.2 testing on big endian (PPC) and i386)
+

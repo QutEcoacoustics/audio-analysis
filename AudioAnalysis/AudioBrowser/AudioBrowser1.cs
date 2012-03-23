@@ -8,10 +8,10 @@ using System.IO;
 using AudioAnalysisTools;
 using TowseyLib;
 using AnalysisPrograms;
-using QutSensors.Shared;
 
 namespace AudioBrowser
 {
+    using Acoustics.Tools.Audio;
 
     //default browser ini path - USE AS COMMAND LINE ARGUMENT
     //@"C:\SensorNetworks\WavFiles\SunshineCoast\AudioBrowser.ini"
@@ -883,7 +883,14 @@ namespace AudioBrowser
             string fName = Path.GetFileNameWithoutExtension(parameters.sourceRecordingPath);
             string segmentName = fName + "_min"+myX.ToString() + ".wav"; //want a wav file
             string outputSegmentPath = Path.Combine(parameters.outputDir, segmentName); //path name of the segment file extracted from long recording
-            AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(parameters.sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
+
+            MasterAudioUtility.SegmentToWav(
+                parameters.resampleRate,
+                new FileInfo(parameters.sourceRecordingPath), 
+                new FileInfo(outputSegmentPath), 
+                startMilliseconds,
+                endMilliseconds);
+            AudioRecording recording = new AudioRecording(outputSegmentPath);
             DateTime time2 = DateTime.Now;
             TimeSpan timeSpan = time2 - time1;
             Console.WriteLine("\n\t\t\tExtraction time: " + timeSpan.TotalSeconds + " seconds");

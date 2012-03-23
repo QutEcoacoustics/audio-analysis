@@ -1,0 +1,35 @@
+* Extended support for id3 tags 1.0 and 1.1
+  - Can now find more than one trailing tag.
+  - Tag detector in start and end junk.
+  - Possibility to remove the end junk without removing the trailing tag.
+  - Possibility to remove the trailing tag.
+  - Declares the tag and its version in -c and -l if width allows it.
+  - Tag dumper, displaying the tag contents and some useful information
+    (version, conformance to the specification).
+
+* Minor improvements or changes
+  - VERSION defined by default to "undefined :(" to prevent compilation
+    failure when compiling "by hand".
+  - Columns count detection, to adapt the display to the terminal width.
+  - Separation of code and headers in crc16.h (thus creating a new file,
+    crc16.cc).
+  - "single ligne" fix for errors (such as "not a mpeg 1.0/2.0") in -l and
+    -c modes.
+  - Count of checked files fixed (was too high due to multiple pass on
+    cut-junk-end, cut-junk-start and now cut-tag-end.
+  - Considered 128kbps as the only normal bitrate (112kbps streams are
+    quite rare nowadays).
+  - Considered the copyright bit being set as normal, since having
+    copyrighted files may be legal if it's your own work or if you
+    own the original copy.
+  - Added a Makefile.BSD for building with non-GNU make.
+  - Now never says "1 bytes".
+
+* Planed but not yet implemented
+  - Filenames filtering.
+  - Rewriting of the retrying mecanism, to avoid doing the same test many
+    times.
+  - Tag fixer.
+  - Last frame completion.
+
+

@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+
 using TowseyLib;
-using AudioTools;
 
 namespace AudioAnalysisTools
 {
-	public class GUI
+    using Acoustics.Tools.Wav;
+
+    public class GUI
     {
 
         //can reset output directory from default

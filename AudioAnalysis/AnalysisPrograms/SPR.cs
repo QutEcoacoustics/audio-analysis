@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 
-using QutSensors.AudioAnalysis.AED;
 using AudioAnalysisTools;
 using TowseyLib;
-using AudioTools;
-
-
 
 namespace AnalysisPrograms
 {   

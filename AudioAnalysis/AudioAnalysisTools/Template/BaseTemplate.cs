@@ -1,12 +1,13 @@
 ﻿using System;
 using TowseyLib;
 using System.IO;
-using AudioTools;
-//using System.Collections;
+
 using System.Collections.Generic;
 
 namespace AudioAnalysisTools
 {
+    using Acoustics.Tools.Wav;
+
     public enum Mode { UNDEFINED, CREATE_NEW_TEMPLATE, READ_EXISTING_TEMPLATE }
 
 	[Serializable]

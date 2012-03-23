@@ -1,0 +1,78 @@
+==============================================================================
+Q: Can mp3check scan whole directories for mp3 files and check/list/correct 
+   them?
+------------------------------------------------------------------------------
+A: Of course. This is what I use most of the time:
+   mp3check -re3GTo /space/mp3
+   This will check all files with extension 'mp3' or 'MP3' (-3) recursively 
+   under directory '/space/mp3' for errors. The output will be colorized and
+   ID3 tags and truncated last frames are ignored.
+   
+==============================================================================
+Q: Can you add a feature to mp3check to add CRC to mp3 files which don not 
+   have a CRC?
+------------------------------------------------------------------------------
+A: That's not possible, sorry. The CRC takes two bytes of extra space in every
+   frame. One would have to re-encode each frame to make room for those two 
+   bytes which would result in loss of quality of course. But this is not what
+   you want.
+
+==============================================================================
+Q: I have an mp3 file which makes certain mp3 players (like xmms) crash, but 
+   mp3check does not find any errors in this file. Why is that?
+------------------------------------------------------------------------------
+A: mp3check does only check the 'frame header' of each frame in the mp3 file
+   for consistency. Additionally is checks the CRC checksum over the side 
+   information of each frame (which is only a small but important part of each
+   frame). All other data is ignored, although also this data has an inner
+   structure which can be corrupted in which case some mp3 players crash 
+   (although there is no excuse for such a behavior ;-) )
+
+==============================================================================
+Q: Why can't mp3check fix all those errors in my mp3 files? 
+------------------------------------------------------------------------------
+A: mp3check was never meant to fix anything. All those fixing options are 
+   useful by-products and are becoming more and more powerful, but mp3check is
+   not meant as a tool to fix errors in mp3 in the first line, but to _check_ 
+   for errors.
+   
+==============================================================================
+Q: Could you add feature X and option Y to mp3check? It would be so useful!
+------------------------------------------------------------------------------
+A: I am very busy and mp3check is only one of the tools I am maintaining. If 
+   you can report a bug, I would be happy to fix it. If is is a small, well 
+   defined feature you're requesting I will be happy to implement it. But I
+   am even happier if you can send me a patch. ;-)
+   
+==============================================================================
+Q: I am disappointed: About 0.1% to 10% of all mp3 files I downloaded from the
+   internet had at least minor errors. How can this be?
+------------------------------------------------------------------------------
+A: Ask me an easier question, please. It seems that hundreds of copying 
+   generations of a file through UDP connections (FTP), hard disks and local
+   Ethernet cables leave their traces on the mp3 files. ;-)   Use mp3check to 
+   filter the bad ones out and only use the good ones. That way we might get 
+   rid of the problem.
+
+==============================================================================
+Q: I have files with the .wav filename extension but mp3checks claims they are
+   mp3 files. And I have files with the .mp3 filename extension but mp3check
+   claims that no mp3 streams. How can that be?
+------------------------------------------------------------------------------
+A: A filename extension has not necessarily something to do with it contents.
+   mp3check totally ignores the filename extension. I have seen mp3 streams
+   encapsulated in a wav file and I have seen mp3 files containing a RealAudio
+   stream. This shouldn't be a problem for the tools dealing with such files.
+
+==============================================================================
+Q: Can you send me a list of mp3 servers?
+------------------------------------------------------------------------------
+A: What is that? I use mp3check only for my own recordings. ;-)
+
+==============================================================================
+Q: I looked at the source and it seems that tstring.* and tappconfig.* are 
+   pure overhead and that all the functionality of mp3check is implemented in
+   mp3check.cc.
+------------------------------------------------------------------------------
+A: You are right.
+
