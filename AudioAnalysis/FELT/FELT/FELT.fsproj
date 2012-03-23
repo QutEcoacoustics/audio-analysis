@@ -65,7 +65,6 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(MSBuildExtensionsPath)\MSBuildCommunityTasks\MSBuild.Community.Tasks.Targets" />
   <ItemGroup>
-    <None Include="App.config" />
     <Compile Include="AssemblyInfo.fs" />
     <Compile Include="Program.fs" />
     <Compile Include="Cleaner.fs" />
@@ -87,11 +86,17 @@
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
     <None Include="packages.config" />
+    <Content Include="ExcelResultsSummationTemplate.xlsx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="ExcelResultsComputationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Accord.Statistics">
+      <HintPath>..\packages\Accord.NET Framework-2.5.0\Release\Accord.Statistics.dll</HintPath>
+    </Reference>
     <Reference Include="AForge">
       <HintPath>..\packages\AForge.2.2.4\lib\AForge.dll</HintPath>
       <Private>True</Private>

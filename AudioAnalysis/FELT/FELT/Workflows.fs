@@ -18,69 +18,86 @@
         | Classifier of ClassifierBase
         | Result of ResultsComputation
 
-    let Basic = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new OneForOneTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
+    let Analyses = 
+        new Map<string, WorkflowItem list>(
+            [
+            (
+                "Basic",
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Trainer(new OneForOneTrainer()); 
+                Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
+                "BasicGrouped", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Trainer(new GroupTrainer()); 
+                Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
+                "BasicAnti", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new RandomiserSelector());
+                Trainer(new GroupTrainer()); 
+                Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
+                "BasicGroupedAnti", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new RandomiserSelector());
+                Trainer(new GroupTrainer()); 
+                Classifier(new EuclideanClassifier())
+                ]
+            );
+            (
+                "ZScoreGrouped", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
+                Classifier(new ZScoreClassifier())
+                ]
+            );
+            (
+                "ZScoreGroupedAnti", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new RandomiserSelector());
+                Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
+                Classifier(new ZScoreClassifier())
+                ]
+            );
+            (
+                "ZScoreGroupedSingleFix", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new OneForOneSelector());
+                Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
+                Classifier(new ZScoreClassifier())
+                ]
+            );
+            (
+                "ZScoreGroupedAntiSingleFix", 
+                [ 
+                Cleaner(new BasicCleaner()); 
+                Selection(new RandomiserSelector());
+                Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
+                Classifier(new ZScoreClassifier())
+                ]
+            );
 
-    let BasicGrouped = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
+            // end declaration
+            ])
+    
 
-    let BasicAnti = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-    let BasicGroupedAnti = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupTrainer()); 
-        Classifier(new EuclideanClassifier())
-        ]
-
-    let ZScoreGrouped = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
-        Classifier(new ZScoreClassifier())
-        ]
-
-    let ZScoreGroupedAnti = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Leave)); 
-        Classifier(new ZScoreClassifier())
-        ]
-
-    let ZScoreGroupedSingleFix = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new OneForOneSelector());
-        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
-        Classifier(new ZScoreClassifier())
-        ]
-
-    let ZScoreGroupedAntiSingleFix = 
-        [ 
-        Cleaner(new BasicCleaner()); 
-        Selection(new RandomiserSelector());
-        Trainer(new GroupAndKeepStatsTrainer(SingleInstanceBehaviour.Merge)); 
-        Classifier(new ZScoreClassifier())
-        ]
 
 
     let wfItemCases = FSharpType.GetUnionCases typeof<WorkflowItem>

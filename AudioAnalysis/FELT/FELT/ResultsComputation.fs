@@ -3,6 +3,7 @@
     open OfficeOpenXml
     open System
     open MQUTeR.FSharp.Shared
+    open MQUTeR.FSharp.Shared.Maths
     open Microsoft.FSharp.Collections
     open Microsoft.FSharp.Core
     open System.IO
@@ -35,24 +36,22 @@
         let countUpFormula = "RC[-1] + 1"
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
 
-        // warning this class by default involves a lot of mutation and intrinsically causes side-affects
+
+        let notInfinity (x:obj) = 
+            if x :? double then
+                let y = x :?> double
+                if System.Double.IsPositiveInfinity(y) then
+                    box("Infinity")
+                elif System.Double.IsNegativeInfinity(y) then 
+                    box("-Infinity")
+                else
+                    x
+            else
+                x
+        let noInfinities = Seq.map notInfinity
+
+        /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
         member this.Calculate (trainingData:Data) (testData:Data) (classificationResults: Result[]) (opList: (string * string * string) list) =
-            
-
-            (* have to do lots of stuff in this class.
-                - ✔ ensure output directory exists
-                
-                - output excel file
-                    - ✔ results summary
-                        - 
-                    - ✔ major results (CSV files) as work sheets
-                    - Graphs
-                        - positional summary pie chart
-                        - distributions graph
-                        - species composition
-            *)
-
-            // prepare
             
             Log "Result computation start"
 
@@ -75,13 +74,14 @@
             
             Log "uniqueness all"
 
+            let tagsThatOnlyOccurInTestData = (Set.difference uniqueTestClasses uniqueTrainingClasses)
             let tagSummary = 
                 [
                     [ config.TrainingOriginalCount ; config.TestOriginalCount; config.TrainingOriginalCount + config.TestOriginalCount ];
                     [trainingData.Classes.Length ; testData.Classes.Length ;  trainingData.Classes.Length + testData.Classes.Length ];
                     [uniqueTrainingClasses.Count; uniqueTestClasses.Count; uniqueAll.Count];
                     [   (Set.difference uniqueTrainingClasses uniqueTestClasses).Count;  
-                        (Set.difference uniqueTestClasses uniqueTrainingClasses).Count; 
+                         tagsThatOnlyOccurInTestData.Count;
                         ((Set.difference uniqueTestClasses uniqueAll).Count + (Set.difference uniqueTrainingClasses uniqueAll).Count) ]
                 ]
 
@@ -99,7 +99,7 @@
                 match Array.tryFindIndex ((=) class') row with
                     | Some index -> (rowNum, index + 1 )
                     | None -> (rowNum, 0)
-            let placing = Array.Parallel.mapi2 placeFunc testData.Classes fullResultsTags
+            let placing : (RowNumber * Place) array = Array.Parallel.mapi2 placeFunc testData.Classes fullResultsTags
             
             Log "Placing"
             let placeHistogram =  Seq.histogramBy (fun x -> snd x) (seq { 0..trainingData.Classes.Length}) placing
@@ -107,6 +107,32 @@
             System.Diagnostics.Debug.Assert(trainingData.Classes.Length + 1 = (numPlaces))
 
             Log "Histogram"
+
+
+
+            let rocCurve = 
+                // measurements are what we expect, i.e. the "Gold standard". i.e. 100% accuracy.
+                // for the library we have to provides hits and misses as numbers
+                let rocMeasurements = Array.Parallel.map (fun c -> if tagsThatOnlyOccurInTestData.Contains c then 0.0 else 1.0) testData.Classes 
+                //let rocMeasurements = Array.Parallel.map (fun c -> 1.0) testData.Classes 
+            
+                // predictions are quantised values of places from the results.
+                // i.e. for class A, if it's corresponding hit is in the 4th of 10 places, it's prediction result is 0.6 (closer to a hit)
+                // anything that is placed as zero (i.e. not found) should be transformed to zero... i.e. a true negative
+                let numPoss = float (numPlaces)
+                let increment = (numPoss - 1.0)
+                let rocPredictions = 
+                    Array.Parallel.map (
+                        fun (_, place) -> 
+                            if place = 0 then 
+                                0.0 
+                            else 
+                               (numPoss - (float place)) / increment
+                        ) placing
+
+                Maths.RocCurve.RocScore rocMeasurements rocPredictions numPlaces
+
+            Log "ROC Curve calculated"
 
             let placeSummary =
                 let places = [|1 ; 5; 10; 25; 50 |]
@@ -128,6 +154,7 @@
             let workbook = report.Workbook
             let logws =  workbook.Worksheets.["Log"]
             let sumResults = workbook.Worksheets.["Summary Results"]
+            let rocData = workbook.Worksheets.["ROCData"]
             let fullResults = workbook.Worksheets.["Full Results"]
             let fullResultsDist = workbook.Worksheets.["Full Results Distances"]
             
@@ -150,9 +177,11 @@
 //                ws.Cells.[sc.Address].LoadFromArrays vs
                 //PSeq.iteri (fun indexi row ->  ws.Cells.[sc.Offset(indexi, 0).Address].LoadFromCollection(row) |> ignore) values
                 Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
-                
+//            let setSquare2 (ws:ExcelWorksheet) address (values: seq<#seq<'d>>) =
+//                let sc = ws.Cells.[address].Start
+//                Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values  
 
-            Log "log sheet"
+            Log "start log sheet"
 
 
             // set
@@ -177,17 +206,30 @@
 
             // results summary
             setSquare logws "PlacementSummary" placeSummary
-            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!TestEndInstanceCount"
+            names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!Positives"
             setSquare logws "PercentileSummary" percentileSummary
 
+            Log "end log sheet"
 
-            Log "summary results sheet data"
+
+
+            Log "start summary results sheet data"
 
             // summary results worksheet
             setSquare sumResults "srPlaces" (placeHistogram |> Map.toSeq |> Seq.map (fun x -> [fst x ; snd x]) |> Seq.sort)
             names.["srPlaces"].Offset(0,2, numPlaces, 1).FormulaR1C1 <- "RC[-1]/Log!TestEndInstanceCount"
             names.["srPlaces"].Offset(1,3, (numPlaces) - 1, 1).FormulaR1C1 <- "SUM(R3C3:RC[-1])"
 
+            Log "end summary results sheet data"
+
+            Log "start roc Data"
+
+
+            setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.Error;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
+           // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
+            setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> noInfinities) (Seq.sortBy (fun x -> x.Cutoff) rocCurve.Points))
+
+            Log "end roc data "
 
             if config.ExportFrn then
                 Log "Full results"

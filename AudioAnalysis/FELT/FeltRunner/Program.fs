@@ -1,162 +1,201 @@
-﻿(*
+﻿namespace FELT.Runner
 
-a executable designed to run a FELT comparison
+    module Main =
+        (*
 
-settings are defined in app.config
+        a executable designed to run a FELT comparison
 
-steps:
+        settings are defined in app.config
 
-1) load data
+        steps:
 
-2) format data
+        1) load data
 
-3) pre-processors
+        2) format data
 
-4) run classifiers
+        3) pre-processors
 
-5) print results
-     results = pre-processors * classifiers
+        4) run classifiers
 
-     file format: 
-     folder: appSettingsResultsFolder\runStartDate\
+        5) print results
+             results = pre-processors * classifiers
 
-*)
+             file format: 
+             folder: appSettingsResultsFolder\runStartDate\
 
-
-open MQUTeR.FSharp.Shared
-open MQUTeR.FSharp.Shared.Logger
-open System
-open System.Configuration
-open System.Diagnostics
-open System.IO
-open Linq.QuotationEvaluation
-open System.Reflection
-open FELT.FindEventsLikeThis
-open FELT.Results
-open FELT.Runner
-open FELT.Workflows
-
-let fail() =
-    eprintfn "Exiting because of error!"
-    #if DEBUG
-    printfn "Debug hook...  press any key to continue..."
-    Console.ReadKey(false) |> ignore
-    #endif
-    Environment.Exit(1);
-
-let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
+        *)
 
 
+        open MQUTeR.FSharp.Shared
+        open MQUTeR.FSharp.Shared.Logger
+        open System
+        open System.Configuration
+        open System.Diagnostics
+        open System.IO
+        open Linq.QuotationEvaluation
+        open System.Reflection
+        open FELT.FindEventsLikeThis
+        open FELT.Results
+        open FELT.Workflows
+        
 
-Log "Welcome to felt version:"
-Logf "%s" version
+        let fail() =
+            eprintfn "Exiting because of error!"
+            #if DEBUG
+            printfn "Debug hook...  press any key to continue..."
+            Console.ReadKey(false) |> ignore
+            #endif
+            Environment.Exit(1);
 
-#if DEBUG
-Warn "Debug hook...  press any key to continue..."
-Console.ReadKey(false) |> ignore
-#endif
-
-Info "Start: read configuration settings..."
-
-let config = ConfigurationManager.AppSettings
-
-// settings
-let ResultsDirectory = config.["ResultsDirectory"]
-let WorkingDirectory = config.["WorkingDirectory"]
-let TestData = WorkingDirectory + config.["TestData"]
-let TrainingData = WorkingDirectory + config.["TrainingData"]
-let exportFrn = bool.Parse(config.["ExportFrn"])
-let exportFrd = bool.Parse(config.["ExportFrd"])
-
-(* ANALYSIS RUN SETTING *)
-let analysis = <@ FELT.Workflows.BasicGrouped @>
+        let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
 
 
-let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
 
-let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using) |> Seq.toList
+        Log "Welcome to felt version:"
+        Logf "%s" version
 
-let DefaultClassString = "Tag"
+        #if DEBUG
+        Warn "Debug hook...  press any key to continue..."
+        Console.ReadKey(false) |> ignore
+        #endif
 
-// set up run
-let runDate = DateTime.Now
+        Info "Start: read configuration settings..."
 
-let resultsDirectory =
-    try
-         Directory.CreateDirectory (ResultsDirectory + runDate.ToString("yyyyMMdd_HHmmss") + "\\")
-    with
-        | ex -> 
-            eprintfn "%s" ex.Message
+        let config = ConfigurationManager.AppSettings
+
+        // settings
+        let ResultsDirectory = config.["ResultsDirectory"]
+        let WorkingDirectory = config.["WorkingDirectory"]
+        let TestData = WorkingDirectory + config.["TestData"]
+        let TrainingData = WorkingDirectory + config.["TrainingData"]
+        let exportFrn = bool.Parse(config.["ExportFrn"])
+        let exportFrd = bool.Parse(config.["ExportFrd"])
+
+        // ANALYSIS RUN SETTINGS
+        let allKnownAnalyses = FELT.Workflows.Analyses
+        let analysesConfig = ConfigurationManager.GetSection("analyses") :?> FELT.Runner.AnalysesConfig
+        let analyses = analysesConfig.Analyses |> Seq.cast |> Seq.map (fun (ae:FELT.Runner.Analysis) -> ae.Name, allKnownAnalyses.TryFind(ae.Name) ) |> Seq.toList
+
+        if (analyses.Length = 0) then
+            Error "No analysis set in configuration"
             fail()
-            null
-let reportName() = sprintf "%s\\%s %s.xlsx" resultsDirectory.FullName (runDate.ToString "yyyy-MM-dd HH_mm_ss") (Utilities.getNameOfModuleBinding analysis)
-let reportDest = new  FileInfo(reportName())
 
-let logger = Logger.create (reportDest.FullName + ".log")
-// load in features
-let features = new ResizeArray<string>(config.["Features"].Split(','))
+        Infof "Analyses sheduled to run: %s" (Seq.fold (fun s (a, _) -> s + a + ", "  ) "" analyses)
 
-Info "end: configuration settings..."
-Info "Start: data import..."
-// load data
+        if not (Seq.forall (snd >> Option.isSome) analyses) then
+            Error "Invalid analysis found, or name count not be found"
+            fail()
 
-let loadAndConvert features filename = 
-    let lines = IO.readFileAsString filename
-    if lines.IsNone then
-        Errorf "There are no lines to read in %s" filename
-        Option.None
-    else
-        lines.Value |> CSV.csvToData features |> Option.Some
+        // Transforms settings
+        let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
+        let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using) |> Seq.toList
 
 
-// create data
-let trFile = loadAndConvert features TrainingData 
-let teFile = loadAndConvert features TestData
+        // set up run
+        let batchRunDate = DateTime.Now
 
-Info "end: data import..."
+        let resultsDirectory =
+            try
+                 Directory.CreateDirectory (ResultsDirectory + batchRunDate.ToString("yyyyMMdd_HHmmss") + "\\")
+            with
+                | ex -> 
+                    eprintfn "%s" ex.Message
+                    fail()
+                    null
 
-if trFile.IsNone || teFile.IsNone then
-    eprintfn "An error occurred loading one of the data files, exiting..."
-    fail()
-else 
-    Info "start: main analysis..."
+        let reportDateName (dt: DateTime) analysis = 
+            dt, sprintf "%s\\%s %s.xlsx" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis
 
-    let trData = { trFile.Value with DataSet = DataSet.Training}
-    let teData = { teFile.Value with DataSet = DataSet.Test}
+        let logger = Logger.create ((String.Empty |> reportDateName batchRunDate |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
 
-    // run the analysis
-    let config =            {
-                RunDate = runDate;
-                TestDataBytes = (new FileInfo(TestData)).Length;
-                TrainingDataBytes = (new FileInfo(TrainingData)).Length;
-                ReportDestination = reportDest;
-                ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
-                TestOriginalCount = teData.Classes.Length;
-                TrainingOriginalCount = trData.Classes.Length;
-                ExportFrd = exportFrd;
-                ExportFrn = exportFrn
-            }
+        let reportName analysis = reportDateName DateTime.Now analysis
+
+        // load in features
+        let features = new ResizeArray<string>(config.["Features"].Split(','))
+
+        Info "end: configuration settings..."
+        Info "Start: data import..."
+        // load data
+
+        let loadAndConvert features filename = 
+            let lines = IO.readFileAsString filename
+            if lines.IsNone then
+                Errorf "There are no lines to read in %s" filename
+                Option.None
+            else
+                lines.Value |> CSV.csvToData features |> Option.Some
 
 
-    RunAnalysis trData teData (analysis.Eval()) transforms config |> ignore
+        // create data
+        let trFile = loadAndConvert features TrainingData 
+        let teFile = loadAndConvert features TestData
 
-    Info "end: main analysis..."
-    Info "Analysis complete!"
+        Info "end: data import..."
+
+        if trFile.IsNone || teFile.IsNone then
+            eprintfn "An error occurred loading one of the data files, exiting..."
+            fail()
+        else 
+            Info "start: main analysis..."
+
+            let trData = { trFile.Value with DataSet = DataSet.Training}
+            let teData = { teFile.Value with DataSet = DataSet.Test}
+
+            // run the analyses
+
+            let run (ano: string * (WorkflowItem list) Option) =
+                let analysis, ops = ano
+                let dt, dest = reportName analysis 
+                let config =
+                    {
+                        RunDate = dt;
+                        TestDataBytes = (new FileInfo(TestData)).Length;
+                        TrainingDataBytes = (new FileInfo(TrainingData)).Length;
+                        ReportDestination = (new FileInfo(dest));
+                        ReportTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
+                        TestOriginalCount = teData.Classes.Length;
+                        TrainingOriginalCount = trData.Classes.Length;
+                        ExportFrd = exportFrd;
+                        ExportFrn = exportFrn
+                    }
+
+                Infof "Starting analysis: %s" analysis
+                RunAnalysis trData teData (ops.Value) transforms config |> ignore
+                Infof "Analysis %s completed" analysis
+                Warn "Starting post analysis garbage collection"
+                //http://blogs.msdn.com/b/ricom/archive/2004/11/29/271829.aspx
+                System.GC.Collect()
+                Info "Finished post analysis  garbage collection"
+                config
+
+            // actually run them
+            let configs = List.map run analyses
+
+            Info "end: main analysis..."
+
+            if config.Count > 1 then
+                Log "Creating summary report"
+                
+                Log "Finished summary report"    
+
+
+
+            Info "Analysis complete!"
     
-    // clear any keystrokes accumulated by accident
-    while Console.KeyAvailable do Console.ReadKey(false) |> ignore
+            // clear any keystrokes accumulated by accident
+            while Console.KeyAvailable do Console.ReadKey(false) |> ignore
     
-    Log "Open report (y/n)"
+            Logf "Open %s (y/n)" (if config.Count > 1 then "summary report" else "report")
     
-    let openFile = Console.ReadKey(true);
-    Warnf "Key pressed: %c" openFile.KeyChar
+            let openFile = Console.ReadKey(true);
+            Warnf "Key pressed: %c" openFile.KeyChar
 
-    if Char.ToLower openFile.KeyChar = 'y' then
-        Infof "Opening file: %s" reportDest.FullName
-        Process.Start(reportDest.FullName) |> ignore
+            if Char.ToLower openFile.KeyChar = 'y' then
+                Infof "Opening file: %s" reportDest
+                Process.Start(reportDest.FullName) |> ignore
 
-    Info "Exiting"
-    Console.ReadKey(false) |> ignore
+            Info "Exiting"
+            Console.ReadKey(false) |> ignore
 
 
 

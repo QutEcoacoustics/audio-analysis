@@ -63,13 +63,15 @@
   <Import Project="$(MSBuildExtensionsPath32)\..\Microsoft F#\v4.0\Microsoft.FSharp.Targets" Condition=" Exists('$(MSBuildBinPath)\Microsoft.Build.Tasks.v4.0.dll')" />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
   <ItemGroup>
-    <Compile Include="CustomConfig.fs" />
-    <Compile Include="Program.fs" />
     <Content Include="App_Readme\MathNet.Numerics.readme.txt" />
     <Content Include="App_Readme\MathNet.Numerics.authors.txt" />
     <Content Include="App_Readme\MathNet.Numerics.copyright.txt" />
     <None Include="App.config" />
     <None Include="packages.config" />
+    <Compile Include="CustomConfigAnalyses.fs" />
+    <Compile Include="CustomConfig.fs" />
+    <Compile Include="SummationReport.fs" />
+    <Compile Include="Program.fs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Shared\MQUTeR.FSharp.Shared.fsproj">
@@ -77,6 +79,9 @@
       <Project>{9a0fbe53-07fd-4dcf-97ec-7812badd89d4}</Project>
       <Private>True</Private>
     </ProjectReference>
+    <Reference Include="EPPlus">
+      <HintPath>..\..\..\Extra Assemblies\EPPlus 3.0\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="FSharp.PowerPack">
       <HintPath>..\packages\FSPowerPack.Community.2.1.1.1\Lib\Net40\FSharp.PowerPack.dll</HintPath>
       <Private>True</Private>

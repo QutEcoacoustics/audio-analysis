@@ -1,5 +1,9 @@
 ﻿namespace MQUTeR.FSharp.Shared
+
+
+    open Accord.Statistics
     open System
+    open System.Reflection
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Numerics
 
@@ -107,3 +111,30 @@
 
             let correlation xs ys =
                 covariance xs ys / (mean xs * mean ys)
+
+
+        module AnalysticalStats =
+            let ConfusionMatrix =
+                //let cm = new Analysis.ConfusionMatrix()
+                raise (new NotImplementedException())
+                //cm
+                3
+
+        module RocCurve =
+        
+        
+
+            let RocScore measurements predictions (numberOfIncrements:int) =
+                if Array.length measurements  <> Array.length predictions then
+                    raise (new System.ArgumentOutOfRangeException())
+
+                let roc = new Accord.Statistics.Analysis.ReceiverOperatingCharacteristic(measurements, predictions)
+                // Compute a points for every place                
+                roc.Compute(numberOfIncrements)
+
+                roc
+
+            let PrintRocCurvePoint (p:Accord.Statistics.Analysis.ReceiverOperatingCharacteristicPoint) = 
+                let _, props = ReflectionHelpers.iterateProperties p (fun name value -> name, value)
+                Array.unzip props
+

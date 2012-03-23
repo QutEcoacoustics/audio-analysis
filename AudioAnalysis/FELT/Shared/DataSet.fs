@@ -144,12 +144,6 @@
             end
         end    
     
-    module tt =
-        let t =
-            let n = new Number(6.0)
-            let s = new Text("abc")
-            
-            3
 
 //    type Values =
 //        | Numbers of float array
@@ -172,7 +166,7 @@
 
     type ColumnHeader = string
     type Class = string
-
+    type RowNumber = int
     
 
     type Data =
