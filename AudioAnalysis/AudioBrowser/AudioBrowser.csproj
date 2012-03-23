@@ -124,7 +124,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy "$(ProjectDir)..\..\AudioTools\Executables" "$(TargetDir)Executables\" /S /Y</PostBuildEvent>
+    <PostBuildEvent>xcopy "$(ProjectDir)..\..\Extra Assemblies\ffmpeg" "$(TargetDir)audio-utils\ffmpeg\" /S /Y
+xcopy "$(ProjectDir)..\..\Extra Assemblies\mp3splt" "$(TargetDir)audio-utils\mp3splt\" /S /Y
+xcopy "$(ProjectDir)..\..\Extra Assemblies\sox" "$(TargetDir)audio-utils\sox\" /S /Y
+xcopy "$(ProjectDir)..\..\Extra Assemblies\wavpack" "$(TargetDir)audio-utils\wavpack\" /S /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
