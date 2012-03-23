@@ -93,9 +93,23 @@
             //use to display file size in file open window
             this.audioUtilityForDurationColumn  = new MasterAudioUtility();
 
-            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new TimeSpanFormatter();
-            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.Format = "hh\\:mm\\:ss\\.ff";
+            // column formatting for output datagridview
+            this.CsvFileDate.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
+            this.CsvFileDate.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
 
+            this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
+            this.dataGridViewTextBoxColumnFileLength.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
+
+            this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new ByteCountFormatter();
+            this.fileLengthDataGridViewTextBoxColumn.DefaultCellStyle.Format = ByteCountFormatter.FormatString;
+
+            this.fileDateDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
+            this.fileDateDataGridViewTextBoxColumn.DefaultCellStyle.Format = DateTimeFormatter.FormatString;
+
+            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new TimeSpanFormatter();
+            this.durationDataGridViewTextBoxColumn.DefaultCellStyle.Format = TimeSpanFormatter.FormatString;
+            
+            // background workers setup
             this.backgroundWorkerUpdateSourceFileList.DoWork += this.BackgroundWorkerUpdateSourceFileListDoWork;
             this.backgroundWorkerUpdateSourceFileList.RunWorkerCompleted +=
                 (sender, e) =>
@@ -1240,6 +1254,28 @@
 
         private void backgroundWorkerUpdateCSVFileList_DoWork(object sender, DoWorkEventArgs e)
         {
+
+        }
+
+        private void dataGridViewFileList_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var formatter = e.CellStyle.FormatProvider as ICustomFormatter;
+            if (formatter != null)
+            {
+                e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
+                e.FormattingApplied = true;
+            }
+
+        }
+
+        private void dataGridCSVfiles_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            var formatter = e.CellStyle.FormatProvider as ICustomFormatter;
+            if (formatter != null)
+            {
+                e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
+                e.FormattingApplied = true;
+            }
 
         } 
 

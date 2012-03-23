@@ -9,6 +9,7 @@
         private FileInfo fullName;
         private string fileName;
         private long fileLength;
+        private DateTime lastModified;
 
         public CsvFileItem()
         {
@@ -20,6 +21,7 @@
             this.FullName = file;
             this.FileName = file.Name;
             this.FileLength = file.Length;
+            this.LastModified = file.LastWriteTime;
         }
 
         public FileInfo FullName
@@ -54,7 +56,21 @@
             }
         }
 
-
+        public DateTime LastModified
+        {
+            get
+            {
+                return this.lastModified;
+            }
+            set
+            {
+                if (value != this.lastModified)
+                {
+                    this.lastModified = value;
+                    OnPropertyChanged("lastModified");
+                }
+            }
+        }
 
         public long FileLength
         {

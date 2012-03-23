@@ -78,6 +78,9 @@
             mp3SpltProcess.Run(args, output.DirectoryName);
 
             log.Debug(this.BuildLogOutput(mp3SpltProcess, args));
+
+            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
         }
 
         /// <summary>

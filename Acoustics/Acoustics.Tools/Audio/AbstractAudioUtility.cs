@@ -174,11 +174,6 @@
             const string ValidFormatsAre = " Valid formats are: {0}.";
             const string InvalidFormatsAre = " Invalid formats are: {0}.";
 
-            if (!File.Exists(file.FullName))
-            {
-                throw new FileNotFoundException("Could not find file to process: " + file.FullName);
-            }
-
             var sbFormats = new StringBuilder();
 
             if (validMediaTypes != null && validMediaTypes.Count() > 0)
@@ -348,6 +343,26 @@
             else
             {
                 sb.AppendLine("args: " + args);
+            }
+
+            return sb.ToString();
+        }
+
+        protected string BuildFileDebuggingOutput(FileInfo file)
+        {
+            var sb = new StringBuilder();
+
+            if (file == null)
+            {
+                sb.Append("File not supplied. ");
+            }
+            else if (File.Exists(file.FullName))
+            {
+                sb.AppendFormat("File exists ({0}): {1}", file.Length.ToByteDisplay(), file.FullName);
+            }
+            else
+            {
+                sb.AppendFormat("File not found: {0}", file.FullName);
             }
 
             return sb.ToString();

@@ -79,18 +79,18 @@
             this.btnSelectOutputDirectory = new System.Windows.Forms.Button();
             this.backgroundWorkerUpdateSourceFileList = new System.ComponentModel.BackgroundWorker();
             this.backgroundWorkerUpdateCSVFileList = new System.ComponentModel.BackgroundWorker();
+            this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.fileDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewCheckBoxColumnSelected = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.CsvFileDate = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.mediaFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
             this.dataGridViewTextBoxColumnFileName = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.dataGridViewTextBoxColumnFileLength = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.csvFileItemBindingSource = new System.Windows.Forms.BindingSource(this.components);
-            this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.fileNameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fileDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.durationDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.fileLengthDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.mediaTypeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.tabControlMain.SuspendLayout();
             this.tabPageSourceFiles.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewFileList)).BeginInit();
@@ -154,9 +154,9 @@
             this.dataGridViewFileList.AllowUserToAddRows = false;
             this.dataGridViewFileList.AllowUserToDeleteRows = false;
             this.dataGridViewFileList.AllowUserToResizeRows = false;
-            this.dataGridViewFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridViewFileList.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewFileList.AutoGenerateColumns = false;
             this.dataGridViewFileList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
             dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -190,6 +190,7 @@
             this.dataGridViewFileList.TabIndex = 0;
             this.dataGridViewFileList.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellClick);
             this.dataGridViewFileList.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellContentClick);
+            this.dataGridViewFileList.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridViewFileList_CellFormatting);
             this.dataGridViewFileList.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridViewFileListSourceFileList_CellPainting);
             this.dataGridViewFileList.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListSourceFileList_CellValueChanged);
             this.dataGridViewFileList.CurrentCellDirtyStateChanged += new System.EventHandler(this.dataGridViewFileListSourceFileList_CurrentCellDirtyStateChanged);
@@ -221,9 +222,9 @@
             this.dataGridCSVfiles.AllowUserToAddRows = false;
             this.dataGridCSVfiles.AllowUserToDeleteRows = false;
             this.dataGridCSVfiles.AllowUserToResizeRows = false;
-            this.dataGridCSVfiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
-                        | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataGridCSVfiles.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridCSVfiles.AutoGenerateColumns = false;
             this.dataGridCSVfiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
             dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
@@ -256,6 +257,7 @@
             this.dataGridCSVfiles.TabIndex = 1;
             this.dataGridCSVfiles.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellClick);
             this.dataGridCSVfiles.CellContentClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellContentClick);
+            this.dataGridCSVfiles.CellFormatting += new System.Windows.Forms.DataGridViewCellFormattingEventHandler(this.dataGridCSVfiles_CellFormatting);
             this.dataGridCSVfiles.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dataGridViewFileListCSVFileList_CellPainting);
             this.dataGridCSVfiles.CellValueChanged += new System.Windows.Forms.DataGridViewCellEventHandler(this.dataGridViewFileListCSVFileList_CellValueChanged);
             this.dataGridCSVfiles.CurrentCellDirtyStateChanged += new System.EventHandler(this.dataGridViewFileListCSVFileList_CurrentCellDirtyStateChanged);
@@ -550,8 +552,8 @@
             // 
             // tfSourceDirectory
             // 
-            this.tfSourceDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tfSourceDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tfSourceDirectory.Location = new System.Drawing.Point(86, 19);
             this.tfSourceDirectory.Name = "tfSourceDirectory";
             this.tfSourceDirectory.Size = new System.Drawing.Size(1408, 20);
@@ -564,8 +566,8 @@
             // 
             // groupBox1
             // 
-            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.groupBox1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.groupBox1.Controls.Add(this.btnUpdateOutputFileList);
             this.groupBox1.Controls.Add(this.label2);
             this.groupBox1.Controls.Add(this.label1);
@@ -613,8 +615,8 @@
             // 
             // tfOutputDirectory
             // 
-            this.tfOutputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
-                        | System.Windows.Forms.AnchorStyles.Right)));
+            this.tfOutputDirectory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.tfOutputDirectory.Location = new System.Drawing.Point(86, 45);
             this.tfOutputDirectory.Name = "tfOutputDirectory";
             this.tfOutputDirectory.Size = new System.Drawing.Size(1408, 20);
@@ -640,6 +642,21 @@
             // 
             this.backgroundWorkerUpdateCSVFileList.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorkerUpdateCSVFileList_DoWork);
             // 
+            // selectedDataGridViewCheckBoxColumn
+            // 
+            this.selectedDataGridViewCheckBoxColumn.HeaderText = "";
+            this.selectedDataGridViewCheckBoxColumn.Name = "selectedDataGridViewCheckBoxColumn";
+            this.selectedDataGridViewCheckBoxColumn.ReadOnly = true;
+            this.selectedDataGridViewCheckBoxColumn.Width = 5;
+            // 
+            // fileDateDataGridViewTextBoxColumn
+            // 
+            this.fileDateDataGridViewTextBoxColumn.DataPropertyName = "LastModified";
+            this.fileDateDataGridViewTextBoxColumn.HeaderText = "Last Modified";
+            this.fileDateDataGridViewTextBoxColumn.Name = "fileDateDataGridViewTextBoxColumn";
+            this.fileDateDataGridViewTextBoxColumn.ReadOnly = true;
+            this.fileDateDataGridViewTextBoxColumn.Width = 88;
+            // 
             // dataGridViewCheckBoxColumnSelected
             // 
             this.dataGridViewCheckBoxColumnSelected.HeaderText = "";
@@ -649,42 +666,11 @@
             // 
             // CsvFileDate
             // 
-            this.CsvFileDate.DataPropertyName = "CsvFileDate";
-            this.CsvFileDate.HeaderText = "File Date";
+            this.CsvFileDate.DataPropertyName = "LastModified";
+            this.CsvFileDate.HeaderText = "Last Modified";
             this.CsvFileDate.Name = "CsvFileDate";
             this.CsvFileDate.ReadOnly = true;
-            this.CsvFileDate.Width = 74;
-            // 
-            // mediaFileItemBindingSource
-            // 
-            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
-            // 
-            // dataGridViewTextBoxColumnFileName
-            // 
-            this.dataGridViewTextBoxColumnFileName.DataPropertyName = "FileName";
-            this.dataGridViewTextBoxColumnFileName.HeaderText = "FileName";
-            this.dataGridViewTextBoxColumnFileName.Name = "dataGridViewTextBoxColumnFileName";
-            this.dataGridViewTextBoxColumnFileName.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileName.Width = 76;
-            // 
-            // dataGridViewTextBoxColumnFileLength
-            // 
-            this.dataGridViewTextBoxColumnFileLength.DataPropertyName = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.HeaderText = "FileLength";
-            this.dataGridViewTextBoxColumnFileLength.Name = "dataGridViewTextBoxColumnFileLength";
-            this.dataGridViewTextBoxColumnFileLength.ReadOnly = true;
-            this.dataGridViewTextBoxColumnFileLength.Width = 81;
-            // 
-            // csvFileItemBindingSource
-            // 
-            this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
-            // 
-            // selectedDataGridViewCheckBoxColumn
-            // 
-            this.selectedDataGridViewCheckBoxColumn.HeaderText = "";
-            this.selectedDataGridViewCheckBoxColumn.Name = "selectedDataGridViewCheckBoxColumn";
-            this.selectedDataGridViewCheckBoxColumn.ReadOnly = true;
-            this.selectedDataGridViewCheckBoxColumn.Width = 5;
+            this.CsvFileDate.Width = 95;
             // 
             // fileNameDataGridViewTextBoxColumn
             // 
@@ -692,15 +678,7 @@
             this.fileNameDataGridViewTextBoxColumn.HeaderText = "File Name";
             this.fileNameDataGridViewTextBoxColumn.Name = "fileNameDataGridViewTextBoxColumn";
             this.fileNameDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileNameDataGridViewTextBoxColumn.Width = 79;
-            // 
-            // fileDateDataGridViewTextBoxColumn
-            // 
-            this.fileDateDataGridViewTextBoxColumn.DataPropertyName = "FileDate";
-            this.fileDateDataGridViewTextBoxColumn.HeaderText = "Date";
-            this.fileDateDataGridViewTextBoxColumn.Name = "fileDateDataGridViewTextBoxColumn";
-            this.fileDateDataGridViewTextBoxColumn.ReadOnly = true;
-            this.fileDateDataGridViewTextBoxColumn.Width = 55;
+            this.fileNameDataGridViewTextBoxColumn.Width = 73;
             // 
             // durationDataGridViewTextBoxColumn
             // 
@@ -725,6 +703,30 @@
             this.mediaTypeDataGridViewTextBoxColumn.Name = "mediaTypeDataGridViewTextBoxColumn";
             this.mediaTypeDataGridViewTextBoxColumn.ReadOnly = true;
             this.mediaTypeDataGridViewTextBoxColumn.Width = 85;
+            // 
+            // mediaFileItemBindingSource
+            // 
+            this.mediaFileItemBindingSource.DataSource = typeof(AudioBrowser.MediaFileItem);
+            // 
+            // dataGridViewTextBoxColumnFileName
+            // 
+            this.dataGridViewTextBoxColumnFileName.DataPropertyName = "FileName";
+            this.dataGridViewTextBoxColumnFileName.HeaderText = "FileName";
+            this.dataGridViewTextBoxColumnFileName.Name = "dataGridViewTextBoxColumnFileName";
+            this.dataGridViewTextBoxColumnFileName.ReadOnly = true;
+            this.dataGridViewTextBoxColumnFileName.Width = 76;
+            // 
+            // dataGridViewTextBoxColumnFileLength
+            // 
+            this.dataGridViewTextBoxColumnFileLength.DataPropertyName = "FileLength";
+            this.dataGridViewTextBoxColumnFileLength.HeaderText = "FileLength";
+            this.dataGridViewTextBoxColumnFileLength.Name = "dataGridViewTextBoxColumnFileLength";
+            this.dataGridViewTextBoxColumnFileLength.ReadOnly = true;
+            this.dataGridViewTextBoxColumnFileLength.Width = 81;
+            // 
+            // csvFileItemBindingSource
+            // 
+            this.csvFileItemBindingSource.DataSource = typeof(AudioBrowser.CsvFileItem);
             // 
             // MainForm
             // 
@@ -816,16 +818,16 @@
         public TabControl tabControlMain;
         private Panel panelSonogram;
         private HScrollBar hScrollBarSonogram;
-        private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnSelected;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileName;
-        private DataGridViewTextBoxColumn CsvFileDate;
-        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileLength;
         private DataGridViewCheckBoxColumn selectedDataGridViewCheckBoxColumn;
         private DataGridViewTextBoxColumn fileNameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn fileDateDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn durationDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn fileLengthDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn mediaTypeDataGridViewTextBoxColumn;
+        private DataGridViewCheckBoxColumn dataGridViewCheckBoxColumnSelected;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileName;
+        private DataGridViewTextBoxColumn CsvFileDate;
+        private DataGridViewTextBoxColumn dataGridViewTextBoxColumnFileLength;
 
 
     }

@@ -111,6 +111,9 @@
             ffmpegProcess.Run(args, output.DirectoryName);
 
             log.Debug(this.BuildLogOutput(ffmpegProcess, args));
+
+            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
         }
 
         /// <summary>
@@ -144,6 +147,9 @@
             ffmpegProcess.Run(args, output.DirectoryName);
 
             log.Debug(this.BuildLogOutput(ffmpegProcess, args));
+
+            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
         }
 
         /// <summary>
@@ -193,7 +199,7 @@
                 var process = new ProcessRunner(this.ffprobeExe.FullName);
                 const string argsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
                 var args = string.Format(argsFormat, source.FullName);
-                
+
                 process.Run(args, source.DirectoryName);
 
                 // parse output

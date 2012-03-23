@@ -17,10 +17,15 @@
 
                 if (string.IsNullOrEmpty(tempDir))
                 {
-                    tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+                    tempDir = Path.GetTempPath();
                 }
 
-                return Directory.CreateDirectory(tempDir);
+                if (!Directory.Exists(tempDir))
+                {
+                    Directory.CreateDirectory(tempDir);
+                }
+
+                return new DirectoryInfo(tempDir);
             }
         }
 
@@ -58,8 +63,9 @@
             }
 
             // get a new temp file name, and remove the extension and dot.
-            var tempFile = NewTempFile.FullName;
-            var toremove = NewTempFile.Extension.Length + 1; // also remove dot.
+            var currentTempFile = NewTempFile;
+            var tempFile = currentTempFile.FullName;
+            var toremove = currentTempFile.Extension.Length + 1; // also remove dot.
             var tokeep = tempFile.Length - toremove;
 
             tempFile = tempFile.Substring(0, tokeep);

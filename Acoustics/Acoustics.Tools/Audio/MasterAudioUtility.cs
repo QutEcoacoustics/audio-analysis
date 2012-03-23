@@ -84,7 +84,7 @@
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
-                log.Info("Segmenting .wv file using wvunpack.");
+                log.Debug("Segmenting .wv file using wvunpack.");
 
                 // use a temp file for wvunpack.
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -123,7 +123,7 @@
             }
             else if (sourceMimeType == MediaTypes.MediaTypeMp3)
             {
-                log.Info("Segmenting .mp3 file using mp3splt.");
+                log.Debug("Segmenting .mp3 file using mp3splt.");
 
                 // use a temp file to segment.
                 var mp3SpltTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
@@ -164,9 +164,35 @@
             }
             else
             {
-                log.Info("Segmenting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
+                log.Debug("Segmenting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
 
-                this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, start, end);
+                if (this.soxUtility != null)
+                {
+                    // use a temp file to segment.
+                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
+
+                    // use ffmpeg to segment.
+                    this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, start, end);
+
+                    // use a temp file to run sox.
+                    var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+
+                    // run sox
+                    this.soxUtility.Convert(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+
+                    // convert to output format
+                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+
+                    // delete temp files
+                    ffmpegTempFile.SafeDeleteFile();
+                    soxtempfile.SafeDeleteFile();
+                }
+                else
+                {
+                    // use ffmpeg to segment and convert.
+                    this.ffmpegUtility.Segment(source, sourceMimeType, output, outputMimeType, start, end);
+                }
+
             }
         }
 
@@ -196,7 +222,7 @@
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
-                log.Info("Converting .wv file using wvunpack.");
+                log.Debug("Converting .wv file using wvunpack.");
 
                 // use a temp file for wvunpack.
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -235,9 +261,34 @@
             }
             else
             {
-                log.Info("Converting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
+                log.Debug("Converting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
 
-                this.ffmpegUtility.Convert(source, sourceMimeType, output, outputMimeType);
+                if (this.soxUtility != null)
+                {
+                    // use a temp file to convert to wav.
+                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
+
+                    // use ffmpeg to convert.
+                    this.ffmpegUtility.Convert(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav);
+
+                    // use a temp file to run sox.
+                    var soxtempfile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
+
+                    // run sox
+                    this.soxUtility.Convert(ffmpegTempFile, MediaTypes.MediaTypeWav, soxtempfile, MediaTypes.MediaTypeWav);
+
+                    // convert to output format
+                    this.ffmpegUtility.Convert(soxtempfile, MediaTypes.MediaTypeWav, output, outputMimeType);
+
+                    // delete temp files
+                    ffmpegTempFile.SafeDeleteFile();
+                    soxtempfile.SafeDeleteFile();
+                }
+                else
+                {
+                    // use ffmpeg to convert.
+                    this.ffmpegUtility.Convert(source, sourceMimeType, output, outputMimeType);
+                }
             }
         }
 

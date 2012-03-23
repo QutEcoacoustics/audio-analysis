@@ -18,8 +18,6 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "AEDTest", "AED\Test\AEDTest
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AudioBrowser", "AudioBrowser\AudioBrowser.csproj", "{8CF8E5E5-E6B5-4E33-BA48-03F4B25EB6DB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RikMigrations", "..\RikMigrations\RikMigrations.csproj", "{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acoustics.Tools", "..\Acoustics\Acoustics.Tools\Acoustics.Tools.csproj", "{0338570E-5A77-4A2E-8E17-7955C36AE1F7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acoustics.Shared", "..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj", "{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}"
@@ -161,26 +159,6 @@ Global
 		{8CF8E5E5-E6B5-4E33-BA48-03F4B25EB6DB}.SilverlightOnly|Mixed Platforms.Build.0 = Release|x86
 		{8CF8E5E5-E6B5-4E33-BA48-03F4B25EB6DB}.SilverlightOnly|x86.ActiveCfg = Release|x86
 		{8CF8E5E5-E6B5-4E33-BA48-03F4B25EB6DB}.SilverlightOnly|x86.Build.0 = Release|x86
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Core|Any CPU.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Core|Any CPU.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Core|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Core|Mixed Platforms.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Core|x86.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.Release|x86.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.SilverlightOnly|Any CPU.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.SilverlightOnly|Any CPU.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.SilverlightOnly|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.SilverlightOnly|Mixed Platforms.Build.0 = Release|Any CPU
-		{7CCB17AC-087A-4D8B-B782-B3CD51E36FD9}.SilverlightOnly|x86.ActiveCfg = Release|Any CPU
 		{0338570E-5A77-4A2E-8E17-7955C36AE1F7}.Core|Any CPU.ActiveCfg = Release|Any CPU
 		{0338570E-5A77-4A2E-8E17-7955C36AE1F7}.Core|Any CPU.Build.0 = Release|Any CPU
 		{0338570E-5A77-4A2E-8E17-7955C36AE1F7}.Core|Mixed Platforms.ActiveCfg = Release|Any CPU
