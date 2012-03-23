@@ -13,6 +13,7 @@
         private string fileName;
         private TimeSpan duration;
         private string mediaType;
+        private DateTime lastModified;
         private long fileLength;
 
         public MediaFileItem()
@@ -25,6 +26,7 @@
             this.FullName = file;
             this.FileName = file.Name;
             this.FileLength = file.Length;
+            this.LastModified = file.LastWriteTime;
 
             this.MediaType = MediaTypes.GetMediaType(file.Extension);
         }
@@ -61,7 +63,21 @@
             }
         }
 
-
+        public DateTime LastModified
+        {
+            get
+            {
+                return this.lastModified;
+            }
+            set
+            {
+                if (value != this.lastModified)
+                {
+                    this.lastModified = value;
+                    OnPropertyChanged("lastModified");
+                }
+            }
+        }
 
         public TimeSpan Duration
         {
@@ -78,8 +94,6 @@
                 }
             }
         }
-
-
 
         public string MediaType
         {
@@ -128,141 +142,5 @@
                 handler(this, new PropertyChangedEventArgs(name));
             }
         }
-    }
-
-    /// <summary>
-    /// See: http://stackoverflow.com/questions/3627922/format-timespan-in-datagridview-column
-    /// </summary>
-    public class TimeSpanFormatter : IFormatProvider, ICustomFormatter
-    {
-        #region IFormatProvider Members
-
-        public object GetFormat(Type formatType)
-        {
-            if (typeof(ICustomFormatter).Equals(formatType))
-            {
-                return this;
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region ICustomFormatter Members
-
-        public string Format(string format, object arg, IFormatProvider formatProvider)
-        {
-            if (arg is TimeSpan)
-            {
-                var timeSpan = (TimeSpan)arg;
-                return timeSpan.ToString(format);
-            }
-
-            var formattable = arg as IFormattable;
-            if (formattable != null)
-            {
-                return formattable.ToString(format, formatProvider);
-            }
-
-            return arg != null ? arg.ToString() : string.Empty;
-        }
-
-        #endregion
-
-
-
-
-    }
-
-    /// <summary>
-    /// See: http://stackoverflow.com/questions/3627922/format-timespan-in-datagridview-column
-    /// </summary>
-    public class DateTimeFormatter : IFormatProvider, ICustomFormatter
-    {
-        #region IFormatProvider Members
-
-        public object GetFormat(Type formatType)
-        {
-            if (typeof(ICustomFormatter).Equals(formatType))
-            {
-                return this;
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region ICustomFormatter Members
-
-        public string Format(string format, object arg, IFormatProvider formatProvider)
-        {
-            if (arg is DateTime)
-            {
-                var dateTime = (DateTime)arg;
-                return dateTime.ToString(format);
-            }
-            else
-            {
-                var formattable = arg as IFormattable;
-                if (formattable != null)
-                {
-                    return formattable.ToString(format, formatProvider);
-                }
-
-                return arg != null ? arg.ToString() : string.Empty;
-            }
-        }
-
-        #endregion
-
-
-    }
-
-
-    /// <summary>
-    /// See: http://stackoverflow.com/questions/3627922/format-timespan-in-datagridview-column
-    /// </summary>
-    public class ByteCountFormatter : IFormatProvider, ICustomFormatter
-    {
-        #region IFormatProvider Members
-
-        public object GetFormat(Type formatType)
-        {
-            if (typeof(ICustomFormatter).Equals(formatType))
-            {
-                return this;
-            }
-
-            return null;
-        }
-
-        #endregion
-
-        #region ICustomFormatter Members
-
-        public string Format(string format, object arg, IFormatProvider formatProvider)
-        {
-            if (arg is DateTime)
-            {
-                var dateTime = (DateTime)arg;
-                return dateTime.ToString(format);
-            }
-            else
-            {
-                var formattable = arg as IFormattable;
-                if (formattable != null)
-                {
-                    return formattable.ToString(format, formatProvider);
-                }
-
-                return arg != null ? arg.ToString() : string.Empty;
-            }
-        }
-
-        #endregion
-
-
     }
 }
