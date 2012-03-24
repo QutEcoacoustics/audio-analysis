@@ -83,7 +83,7 @@ namespace AnalysisPrograms
             var destinationAudioFile = Path.Combine(sourceDir, Path.GetFileNameWithoutExtension(recordingPath) + ".wav");
 
             Log.WriteLine("Checking to see if conversion necessary...");
-            MasterAudioUtility.ConvertToWav(null, new FileInfo(recordingPath), new FileInfo(destinationAudioFile));
+            MasterAudioUtility.ConvertToWav(22050, new FileInfo(recordingPath), new FileInfo(destinationAudioFile));
             if (File.Exists(destinationAudioFile))
             {
                 Log.WriteLine("Wav pcm file created.");

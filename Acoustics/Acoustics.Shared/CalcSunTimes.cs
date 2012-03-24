@@ -17,7 +17,7 @@
 // </summary>
 // --------------------------------------------------------------------------------------------------------------------
 
-namespace QutSensors.Shared.Tools
+namespace Acoustics.Shared
 {
     using System;
     using System.Diagnostics;

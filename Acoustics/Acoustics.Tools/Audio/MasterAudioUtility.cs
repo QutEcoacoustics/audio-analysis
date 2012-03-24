@@ -22,17 +22,34 @@
         private readonly SoxAudioUtility soxUtility;
 
         /// <summary>
-        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
-        /// Sox sample rate and quality will not be set.
+        /// Creates a new audio utility that can be used to convert and segment audio, 
+        /// and to get information about audio.
+        /// Will use 22050 hz and Medium quality for sox.
         /// </summary>
         public MasterAudioUtility()
+            : this(22050, SoxAudioUtility.SoxResampleQuality.VeryHigh)
+        { }
+
+        /// <summary>
+        /// Creates a new audio utility that can be used to convert and segment audio, 
+        /// and to get information about audio.
+        /// Will use Medium quality for sox.
+        /// </summary>
+        public MasterAudioUtility(int targetSampleRate)
+            : this(targetSampleRate, SoxAudioUtility.SoxResampleQuality.Medium)
+        { }
+
+        /// <summary>
+        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
+        /// </summary>
+        public MasterAudioUtility(int targetSampleRate, SoxAudioUtility.SoxResampleQuality resampleQuality)
         {
             var assemblyDir = AppConfigHelper.AssemblyDir;
 
             this.wvunpackUtility = InitWavUnpack(assemblyDir);
             this.mp3SpltUtility = InitMp3Splt(assemblyDir);
             this.ffmpegUtility = InitFfmpeg(assemblyDir);
-            this.soxUtility = InitSox(assemblyDir, null, null);
+            this.soxUtility = InitSox(assemblyDir, targetSampleRate, resampleQuality);
         }
 
         /// <summary>
@@ -169,7 +186,7 @@
                 if (this.soxUtility != null)
                 {
                     // use a temp file to segment.
-                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
+                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // use ffmpeg to segment.
                     this.ffmpegUtility.Segment(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav, start, end);
@@ -358,41 +375,9 @@
 
         }
 
-        /// <summary>
-        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
-        /// </summary>
-        /// <param name="targetSampleRate"></param>
-        /// <param name="resampleQuality"></param>
-        /// <returns></returns>
-        /// <remarks>
-        /// IMPORTANT NOTE 1 :: THE EFFECT OF THE ABOVE RESAMPLING PARAMETERS IS TO SET NYQUIST = (SAMPLERATE / 2) Hz.
-        /// IMPORTANT NOTE 2 :: THE RESULTING SIGNAL ARRAY VARIES SLIGHTLY FOR EVERY LOADING - NOT SURE WHY? A STOCHASTOIC COMPONENT TO FILTER? 
-        ///                         BUT IT HAS THE EFFECT THAT STATISTICS VARY SLIGHTLY FOR EACH RUN OVER THE SAME FILE.
-        /// </remarks>
-        public static MasterAudioUtility Create(int? targetSampleRate, SoxAudioUtility.SoxResampleQuality? resampleQuality)
+        public static void Segment(int targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
         {
-            var assemblyDir = AppConfigHelper.AssemblyDir;
-
-            return new MasterAudioUtility(
-                InitFfmpeg(assemblyDir),
-                InitMp3Splt(assemblyDir),
-                InitWavUnpack(assemblyDir),
-                InitSox(assemblyDir, targetSampleRate, resampleQuality));
-        }
-
-        /// <summary>
-        /// Creates a new audio utility that can be used to convert and segment audio, and to get information about audio.
-        /// </summary>
-        /// <param name="targetSampleRate"></param>
-        /// <returns></returns>
-        public static MasterAudioUtility Create(int? targetSampleRate)
-        {
-            return Create(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
-        }
-
-        public static void Segment(int? targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
-        {
-            var audioUtility = Create(targetSampleRate);
+            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
             audioUtility.Segment(
                 source,
                 MediaTypes.GetMediaType(source.Extension),
@@ -415,9 +400,9 @@
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void Convert(int? targetSampleRate, FileInfo source, FileInfo output)
+        public static void Convert(int targetSampleRate, FileInfo source, FileInfo output)
         {
-            var audioUtility = Create(targetSampleRate);
+            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
 
             audioUtility.Convert(
                 source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.GetMediaType(output.Extension));
@@ -436,9 +421,9 @@
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void ConvertToWav(int? targetSampleRate, FileInfo source, FileInfo output)
+        public static void ConvertToWav(int targetSampleRate, FileInfo source, FileInfo output)
         {
-            var audioUtility = Create(targetSampleRate);
+            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
 
             audioUtility.Convert(
                 source, MediaTypes.GetMediaType(source.Extension), output, MediaTypes.MediaTypeWav);
@@ -459,9 +444,9 @@
         /// <returns>
         /// True if converted file was created.
         /// </returns>
-        public static void SegmentToWav(int? targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
+        public static void SegmentToWav(int targetSampleRate, FileInfo source, FileInfo output, int startMilliseconds, int endMilliseconds)
         {
-            var audioUtility = Create(targetSampleRate);
+            var audioUtility = new MasterAudioUtility(targetSampleRate, SoxAudioUtility.SoxResampleQuality.VeryHigh);
 
             audioUtility.Segment(
                 source,

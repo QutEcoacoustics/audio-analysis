@@ -73,7 +73,6 @@
                 MessageBox.Show(ex.ToString());
             }
 
-
             //Add the CheckBox into the source file list datagridview
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
             this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
@@ -128,10 +127,26 @@
                     sender,
                     e);
 
+            // if input and output dirs exist, populate datagrids
+            if (settings.DefaultSourceDir != null)
+            {
+                 this.tfSourceDirectory.Text = settings.DefaultSourceDir.FullName;
 
-            // only for debugging
-            this.tfSourceDirectory.Text = settings.DefaultSourceDir.FullName;
-            this.tfOutputDirectory.Text = settings.DefaultOutputDir.FullName;
+                 if(Directory.Exists(settings.DefaultSourceDir.FullName))
+                 {
+                     this.UpdateSourceFileList();
+                 }
+            }
+
+            if (settings.DefaultOutputDir != null)
+            {
+                this.tfOutputDirectory.Text = settings.DefaultOutputDir.FullName;
+
+                if (Directory.Exists(settings.DefaultOutputDir.FullName))
+                {
+                    this.UpdateOutputFileList();
+                }
+            }
         }
 
         public static void WriteExtractionParameters2Console(AudioBrowserSettings parameters)
@@ -252,7 +267,7 @@
 
 
 
-            IAudioUtility audioUtility = MasterAudioUtility.Create(resampleRate); //creates AudioUtility and
+            IAudioUtility audioUtility = new MasterAudioUtility(resampleRate); //creates AudioUtility and
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
             var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
             int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration_mins); //convert length to minute chunks
@@ -595,9 +610,9 @@
             this.pictureBoxSonogram.Image = image.GetImage();
 
 
-            this.hScrollBarSonogram.Location = new System.Drawing.Point(0, this.pictureBoxSonogram.Image.Height);
+            //this.hScrollBarSonogram.Location = new System.Drawing.Point(0, this.pictureBoxSonogram.Image.Height);
             //this.hScrollBarSonogram.Minimum = 0;
-            this.hScrollBarSonogram.Maximum = pictureBoxSonogram.Width - this.panelSonogram.Width + 280; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //this.hScrollBarSonogram.Maximum = pictureBoxSonogram.Width - this.panelSonogram.Width + 280; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
             string sonogramPath = Path.Combine(settings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
             Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
@@ -772,6 +787,11 @@
 
             this.tabControlMain.SelectTab("tabPageSourceFiles");
 
+            UpdateSourceFileList();
+        }
+
+        private void UpdateSourceFileList()
+        {
             if (string.IsNullOrWhiteSpace(this.tfSourceDirectory.Text))
             {
                 MessageBox.Show("Source directory path was not given.", "Error", MessageBoxButtons.OK);
@@ -799,9 +819,13 @@
         private void btnUpdateCSVFileList_Click(object sender, EventArgs e)
         {
             this.Validate();
-
             this.tabControlMain.SelectTab("tabPageOutputFiles");
+            UpdateOutputFileList();
 
+        }
+
+        private void UpdateOutputFileList()
+        {
             if (string.IsNullOrWhiteSpace(this.tfOutputDirectory.Text))
             {
                 MessageBox.Show("Output directory path was not given.", "Error", MessageBoxButtons.OK);
@@ -824,8 +848,6 @@
             {
                 MessageBox.Show("Already updating the CSV file list. Please wait until the current update is complete.");
             }
-
-
         }
 
         private void btnSelectSourceDirectory_Click(object sender, EventArgs e)
@@ -1231,7 +1253,7 @@
 
         private void hScrollBarSonogram_ValueChanged(object sender, EventArgs e)
         {
-            this.pictureBoxSonogram.Left = -this.hScrollBarSonogram.Value;
+            //this.pictureBoxSonogram.Left = -this.hScrollBarSonogram.Value;
         }
 
         /// <summary>
@@ -1241,7 +1263,7 @@
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
             if ((settings.fiSegmentRecording == null) || (!settings.fiSegmentRecording.Exists)) return;
-            IAudioUtility audioUtility = MasterAudioUtility.Create(settings.ResampleRate); //creates AudioUtility and
+            IAudioUtility audioUtility = new MasterAudioUtility(settings.ResampleRate); //creates AudioUtility and
             AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName);
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
