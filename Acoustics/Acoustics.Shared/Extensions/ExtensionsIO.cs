@@ -6,6 +6,7 @@
     {
         /// <summary>
         /// Copy from <paramref name="source"/> Stream to <paramref name="destination"/> Stream.
+        /// Only needed before .Net 4.0.
         /// </summary>
         /// <param name="source">
         /// The source.

@@ -47,6 +47,9 @@
   <ItemGroup>
     <Compile Include="AnalysisWorkItem.cs" />
     <Compile Include="AppConfigHelper.cs" />
+    <Compile Include="AudioCoordinates.cs" />
+    <Compile Include="AudioUploadInfo.cs" />
+    <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
@@ -62,6 +65,7 @@
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
     <Compile Include="KeyValueStore.cs" />
     <Compile Include="MediaTypes.cs" />
+    <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
     <Compile Include="ProcessorResultTag.cs" />
     <Compile Include="ProcessRunner.cs" />
