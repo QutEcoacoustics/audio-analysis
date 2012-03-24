@@ -366,21 +366,6 @@ namespace System
         }
 
         /// <summary>
-        /// Copy from one stream to another stream. only needed before .Net 4.0 (use .CopyTo).
-        /// </summary>
-        /// <param name="input">Source Stream.</param>
-        /// <param name="output">Destination Stream.</param>
-        public static void CopyToStream(this Stream input, Stream output)
-        {
-            int num;
-            byte[] buffer = new byte[4096];
-            while ((num = input.Read(buffer, 0, buffer.Length)) != 0)
-            {
-                output.Write(buffer, 0, num);
-            }
-        }
-
-        /// <summary>
         /// Get querystring representation of dictionary.
         /// Keys will be lower case.
         /// </summary>
