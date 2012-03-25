@@ -54,12 +54,14 @@
             this.FrameLength = AppConfigHelper.GetInt("FrameLength");
             this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
             this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
+            this.MidFreqBound = AppConfigHelper.GetInt("MidFreqBound");
         }
 
         public FileInfo AudacityExe { get; private set; }
         public int FrameLength { get; private set; }
         public int ResampleRate{ get; private set; }
         public int LowFreqBound { get; private set; }
+        public int MidFreqBound { get; private set; }
         public double SegmentDuration { get; private set; }  //measured in minutes
         public int SegmentOverlap { get; private set; }   //measured in seconds
         public double FrameOverlap { get; private set; }

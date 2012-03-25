@@ -274,6 +274,7 @@
             int resampleRate = config.ResampleRate;
             int frameLength = config.FrameLength; 
             int lowFreqBound = config.LowFreqBound;
+            int midFreqBound = config.MidFreqBound;
 
             // CREATE RUN ANALYSIS CLASS HERE
 
@@ -353,7 +354,7 @@
                     //##### DO THE ANALYSIS ############ 
                     if (settings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
                     {
-                        var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound);
+                        var results = AcousticIndices.ExtractIndices(recordingSegment, frameLength, lowFreqBound, midFreqBound);
                         AcousticIndices.Indices2 indices = results.Item1;
                         string line = AcousticIndices.FormatOneLineOfIndices("CSV", s, startMinutes, wavSegmentDuration, indices); //Store indices in CSV FORMAAT
                         outputData.Add(line);
