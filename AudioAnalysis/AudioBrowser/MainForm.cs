@@ -62,6 +62,7 @@
         {
             // must be here, must be first
             InitializeComponent();
+
             //initialize instance of AudioBrowserSettings clsas
             settings = new AudioBrowserSettings();
             try
@@ -73,7 +74,20 @@
                 MessageBox.Show(ex.ToString());
             }
 
-            //Add the CheckBox into the source file list datagridview
+            /* // Just testing
+            var master = new MasterAudioUtility();
+            var file = @"I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\A French Fiddle Speaks.mp3";
+            //var result = master.Info(new FileInfo(file));
+
+
+            var spectrogramUtil = new CustomSpectrogramUtility(master);
+            var fileImg = @"I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\A French Fiddle Speaks.jpg";
+
+            spectrogramUtil.Create(
+                new FileInfo(file), MediaTypes.MediaTypeMp3, new FileInfo(fileImg), MediaTypes.MediaTypeJpeg); 
+            */
+
+            //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
             this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
             this.headerCheckBoxSourceFileList.KeyUp += this.HeaderCheckBoxSourceFileList_KeyUp;

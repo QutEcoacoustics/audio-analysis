@@ -104,13 +104,13 @@
 
             CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
 
-            var ffmpegProcess = new ProcessRunner(this.ffmpegExe.FullName);
+            var process = new ProcessRunner(this.ffmpegExe.FullName);
 
             string args = ConstructArgs(source, output, start, end);
 
-            ffmpegProcess.Run(args, output.DirectoryName);
+            process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(ffmpegProcess, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));
@@ -140,13 +140,13 @@
 
             CanProcess(output, null, new[] { MediaTypes.MediaTypeWavpack });
 
-            var ffmpegProcess = new ProcessRunner(this.ffmpegExe.FullName);
+            var process = new ProcessRunner(this.ffmpegExe.FullName);
 
             string args = ConstructArgs(source, output, null, null);
 
-            ffmpegProcess.Run(args, output.DirectoryName);
+            process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(ffmpegProcess, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));
@@ -170,20 +170,20 @@
             ValidateMimeTypeExtension(source, sourceMimeType);
             CanProcess(source, null, new[] { MediaTypes.MediaTypeWavpack });
 
-            var ffmpegProcess = new ProcessRunner(this.ffmpegExe.FullName);
+            var process = new ProcessRunner(this.ffmpegExe.FullName);
             string args = string.Format(ArgsOverwriteSource, source.FullName);
-            ffmpegProcess.Run(args, source.DirectoryName);
+            process.Run(args, source.DirectoryName);
 
-            var output = this.BuildLogOutput(ffmpegProcess, args);
+            var output = process.BuildLogOutput();
             log.Debug(output);
 
-            if (OutputContains(ffmpegProcess, "No such file or directory"))
+            if (OutputContains(process, "No such file or directory"))
             {
                 throw new ArgumentException(
                     "Ffmpeg could not find input file: " + source.FullName + ". Output: " + output);
             }
 
-            Match match = Regex.Match(ffmpegProcess.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            Match match = Regex.Match(process.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);
             return Parse(match.Groups[1].Value);
         }
 
@@ -194,6 +194,8 @@
         /// <returns>A dictionary containing metadata for the given file.</returns>
         public Dictionary<string, string> Info(FileInfo source)
         {
+            var results = new Dictionary<string, string>();
+
             if (this.ffprobeExe != null)
             {
                 var process = new ProcessRunner(this.ffprobeExe.FullName);
@@ -203,15 +205,34 @@
                 process.Run(args, source.DirectoryName);
 
                 // parse output
-                var err = process.ErrorOutput;
+                //var err = process.ErrorOutput;
                 var std = process.StandardOutput;
-            }
-            else
-            {
+                string currentBlockName = string.Empty;
+                foreach (var line in std.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    if (line.StartsWith("[\\") && line.EndsWith("]"))
+                    {
+                        // end of a block
+                    }
 
+                    else if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        // start of a block
+                        currentBlockName = line.Trim('[', ']');
+                    }
+                    else
+                    {
+                        // key=value
+                        var key = currentBlockName + " " + line.Substring(0, line.IndexOf('='));
+                        var value = line.Substring(line.IndexOf('=') + 1);
+                        results.Add(key.Trim(), value.Trim());
+                    }
+
+
+                }
             }
 
-            return new Dictionary<string, string>();
+            return results;
         }
 
         #endregion
