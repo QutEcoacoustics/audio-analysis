@@ -71,13 +71,13 @@
 
             CanProcess(output, new[] { MediaTypes.MediaTypeMp3 }, null);
 
-            var mp3SpltProcess = new ProcessRunner(this.mp3SpltExe.FullName);
+            var process = new ProcessRunner(this.mp3SpltExe.FullName);
 
             string args = CreateSingleSegmentArguments(source, output, start, end);
 
-            mp3SpltProcess.Run(args, output.DirectoryName);
+            process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(mp3SpltProcess, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));

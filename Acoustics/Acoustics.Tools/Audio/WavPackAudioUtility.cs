@@ -99,7 +99,7 @@
 
             CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
 
-            var wvunpackProcess = new ProcessRunner(this.wavUnpack.FullName);
+            var process = new ProcessRunner(this.wavUnpack.FullName);
 
             var sb = new StringBuilder(ArgsDefault);
 
@@ -125,9 +125,9 @@
 
             string args = sb.ToString();
 
-            wvunpackProcess.Run(args, output.DirectoryName);
+            process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(wvunpackProcess, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));
@@ -157,13 +157,13 @@
 
             CanProcess(output, new[] { MediaTypes.MediaTypeWav }, null);
 
-            var wvunpackProcess = new ProcessRunner(this.wavUnpack.FullName);
+            var process = new ProcessRunner(this.wavUnpack.FullName);
 
             string args = string.Format(" -y -m -q -w \"{0}\" \"{1}\" ", source.FullName, output.FullName);
 
-            wvunpackProcess.Run(args, output.DirectoryName);
+            process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(wvunpackProcess, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));
@@ -188,15 +188,15 @@
 
             CanProcess(source, new[] { MediaTypes.MediaTypeWavpack }, null);
 
-            var wvunpackProcess = new ProcessRunner(this.wavUnpack.FullName);
+            var process = new ProcessRunner(this.wavUnpack.FullName);
 
             string args = string.Format(" -s \"{0}\" ", source.FullName);
 
-            wvunpackProcess.Run(args, source.DirectoryName);
+            process.Run(args, source.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(wvunpackProcess, args));
+            log.Debug(process.BuildLogOutput());
 
-            string output = wvunpackProcess.ErrorOutput + Environment.NewLine + wvunpackProcess.StandardOutput;
+            string output = process.ErrorOutput + Environment.NewLine + process.StandardOutput;
 
             Match match = Regex.Match(
                 output,

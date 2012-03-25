@@ -319,35 +319,6 @@
             }
         }
 
-        protected string BuildLogOutput(ProcessRunner runner, string args)
-        {
-            var sb = new StringBuilder();
-
-            if (runner != null)
-            {
-                sb.AppendLine("Process runner output for " + runner.ExecutableFile.Name + ":");
-                sb.AppendLine("args: " + args);
-
-                if (!string.IsNullOrEmpty(runner.ErrorOutput))
-                {
-                    sb.AppendLine("Error output: " + runner.ErrorOutput);
-                    sb.AppendLine();
-                }
-
-                if (!string.IsNullOrEmpty(runner.StandardOutput))
-                {
-                    sb.AppendLine("Standard output: " + runner.StandardOutput);
-                    sb.AppendLine();
-                }
-            }
-            else
-            {
-                sb.AppendLine("args: " + args);
-            }
-
-            return sb.ToString();
-        }
-
         protected string BuildFileDebuggingOutput(FileInfo file)
         {
             var sb = new StringBuilder();

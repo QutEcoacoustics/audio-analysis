@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Text.RegularExpressions;
 
     using Acoustics.Shared;
@@ -185,7 +186,7 @@
 
             process.Run(args, output.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(process, args));
+            log.Debug(process.BuildLogOutput());
 
             log.Debug("Source " + this.BuildFileDebuggingOutput(source));
             log.Debug("Output " + this.BuildFileDebuggingOutput(output));
@@ -215,7 +216,7 @@
 
             process.Run(args, source.DirectoryName);
 
-            log.Debug(this.BuildLogOutput(process, args));
+            log.Debug(process.BuildLogOutput());
 
             // Duration       : 10:23:15.51 = 1649142153 samples = 2.80466e+006 CDDA sectors
             Match match = Regex.Match(process.ErrorOutput, "Duration[ ]+: ([0-9]+:[0-9]+:[0-9]+.[0-9]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -230,7 +231,101 @@
         /// <returns>A dictionary containing metadata for the given file.</returns>
         public Dictionary<string, string> Info(FileInfo source)
         {
-            return new Dictionary<string, string>();
+            /*
+             * −w name 
+             * Window: Hann (default), Hamming, Bartlett, Rectangular or Kaiser
+             * 
+             * 
+            sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n 
+             * stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o 
+             * "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" 
+             * stats stat
+             * 
+             * sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n stat stats trim 0 60 spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.png" stats stat
+
+sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" -n trim 0 10 noiseprof | sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8.wav" "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" noisered
+
+sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.wav" -n spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\GParrots_JB2_20090607-173000.wav_minute_8-reduced.png" stats stat
+
+I:\Projects\QUT\QutSensors\sensors-trunk\Extra Assemblies\sox>sox "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoala MaleKoala.wav" -n trim 0 60  spectrogram -m -r -l -w Bartlett -X 45 -y 257 -o "I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\FemaleKoal
+a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
+             * 
+             * Could also do this for every minute of recording, using trim <start seconds> <end seconds> and looping.
+            */
+
+            CanProcess(source, null, null);
+
+            var process = new ProcessRunner(this.soxExe.FullName);
+
+            string args = "\"" + source.FullName + "\" -n stat stats";
+
+            process.Run(args, source.DirectoryName);
+
+            log.Debug(process.BuildLogOutput());
+
+            // first 15 are split by colon (:)
+
+            IEnumerable<string> lines = process.ErrorOutput.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var statOutputRaw = lines.Take(15).Select(l => l.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Select(i => i.Trim()));
+            var statOutput = statOutputRaw.Select(i => new KeyValuePair<string, string>(i.First(), i.Skip(1).First()));
+
+            var results = statOutput.ToDictionary(item => item.Key, item => item.Value);
+
+            lines = lines.Skip(15);
+
+            // if there is a line that starts with 'Overall' (after being trimed), then count the number of words.
+            // next 11 may have 1 value, may have more than one
+            var isMoreThanOneChannel = lines.First().Trim().Contains("Overall");
+
+            if (isMoreThanOneChannel)
+            {
+                var header = lines.First();
+                var headerNames = header.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                var numValues = headerNames.Count();
+
+                lines = lines.Skip(1);
+
+                string[] currentLine;
+                string keyName;
+
+                for (var index = 0; index < 11; index++)
+                {
+                    currentLine = lines.First().Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+
+                    keyName = lines.First();
+                    var tempHeaderCount = numValues;
+
+                    while (tempHeaderCount > 0)
+                    {
+                        keyName = keyName.Substring(0, keyName.LastIndexOf(' ')).Trim();
+                        tempHeaderCount--;
+                    }
+
+                    for (var headerIndex = 0; headerIndex < numValues; headerIndex++)
+                    {
+                        var value = currentLine[currentLine.Length - 1 - headerIndex];
+                        var channelName = headerNames[numValues - 1 - headerIndex];
+                        results.Add(keyName + " " + channelName, value);
+                    }
+
+                    lines = lines.Skip(1);
+                }
+
+            }
+
+            // next 4 always 1 value
+
+            foreach (var line in lines)
+            {
+                var index = line.Trim().LastIndexOf(' ');
+                var keyName = line.Substring(0, index).Trim();
+                var value = line.Substring(index).Trim();
+
+                results.Add(keyName, value);
+            }
+
+            return results;
         }
 
         #endregion

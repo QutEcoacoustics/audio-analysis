@@ -101,6 +101,11 @@
                 throw new DirectoryNotFoundException(workingDirectory);
             }
 
+            if (this.process != null)
+            {
+                this.process.Dispose();
+            }
+
             this.process = new Process
             {
                 StartInfo = new ProcessStartInfo
@@ -142,6 +147,51 @@
             process.BeginOutputReadLine();
 
             process.WaitForExit();
+        }
+
+        public string BuildLogOutput()
+        {
+            var sb = new StringBuilder();
+
+            if (this.ExecutableFile != null)
+            {
+                sb.AppendLine("Process runner output for " + this.ExecutableFile.Name + ":");
+            }
+            else
+            {
+                sb.AppendLine("Executable file not available");
+            }
+
+            if (this.process != null)
+            {
+                sb.AppendLine("Arguments: " + this.process.StartInfo.Arguments);
+            }
+            else
+            {
+                sb.AppendLine("Arguments not available");
+            }
+
+            if (!string.IsNullOrEmpty(this.ErrorOutput))
+            {
+                sb.AppendLine("Error output: " + this.ErrorOutput);
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("No error output");
+            }
+
+            if (!string.IsNullOrEmpty(this.StandardOutput))
+            {
+                sb.AppendLine("Standard output: " + this.StandardOutput);
+                sb.AppendLine();
+            }
+            else
+            {
+                sb.AppendLine("No standard output");
+            }
+
+            return sb.ToString();
         }
     }
 }

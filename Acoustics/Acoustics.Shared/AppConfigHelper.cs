@@ -5,6 +5,9 @@
     using System.Configuration;
     using System.IO;
     using System.Linq;
+    using System.Reflection;
+    using System.Web;
+    using System.Web.Hosting;
 
     public static class AppConfigHelper
     {
@@ -205,7 +208,57 @@
             }
         }
 
+        public static bool IsAspNet
+        {
+            get
+            {
+                try
+                {
+                    var appDomainPath = HttpRuntime.AppDomainAppVirtualPath;
+                    var processName = System.Diagnostics.Process.GetCurrentProcess().ProcessName;
+                    var interactive = Environment.UserInteractive;
+                    var entryAssembly = Assembly.GetEntryAssembly();
+                    var currentContext = System.Web.HttpContext.Current;
 
+                    // process name might be one of these
+                    if (processName == "w3wp"
+                        || processName == "iisexpress"
+                        || processName == "aspnet_wp"
+                        || processName.StartsWith("WebDev.WebServer"))
+                    {
+                        return true;
+                    }
+
+                    // app virtual path should not be null and current context usually not null
+                    if (!string.IsNullOrEmpty(appDomainPath) || currentContext != null)
+                    {
+                        return true;
+                    }
+
+                    // might not be interactive, and have a null entry asebmly
+                    if (!interactive && entryAssembly == null)
+                    {
+                        return true;
+                    }
+                }
+                catch
+                {
+                    return false;
+                }
+
+                return false;
+            }
+        }
+
+        public static string WebsiteBasePath
+        {
+            get
+            {
+                var appDomainPath = HttpRuntime.AppDomainAppPath;
+                var basePath = HostingEnvironment.MapPath("/");
+                return basePath;
+            }
+        }
 
         public static string WebsitePath { get; set; }
 
@@ -344,12 +397,12 @@
                 "Key " + key + " exists but could not be converted to a long: " + value);
         }
 
-        public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory,string key, bool checkExists, params string[] separators)
+        public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory, string key, bool checkExists, params string[] separators)
         {
             CheckWebSiteRootPathSet();
 
             var value = GetString(key);
-            
+
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
             var dirs = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new DirectoryInfo(webConfigRealDirectory + v));

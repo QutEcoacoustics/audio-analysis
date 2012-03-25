@@ -44,7 +44,9 @@
         /// </summary>
         public MasterAudioUtility(int targetSampleRate, SoxAudioUtility.SoxResampleQuality resampleQuality)
         {
-            var assemblyDir = AppConfigHelper.AssemblyDir;
+            DirectoryInfo assemblyDir = AppConfigHelper.IsAspNet
+                                            ? new DirectoryInfo(AppConfigHelper.WebsiteBasePath)
+                                            : AppConfigHelper.AssemblyDir;
 
             this.wvunpackUtility = InitWavUnpack(assemblyDir);
             this.mp3SpltUtility = InitMp3Splt(assemblyDir);
@@ -283,7 +285,7 @@
                 if (this.soxUtility != null)
                 {
                     // use a temp file to convert to wav.
-                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
+                    var ffmpegTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
 
                     // use ffmpeg to convert.
                     this.ffmpegUtility.Convert(source, sourceMimeType, ffmpegTempFile, MediaTypes.MediaTypeWav);
