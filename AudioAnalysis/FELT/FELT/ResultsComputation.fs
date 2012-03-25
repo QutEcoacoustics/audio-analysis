@@ -13,6 +13,7 @@
     type ReportConfig = 
         {
             RunDate : DateTime
+            AnalysisType : string
             TestDataBytes: int64
             TrainingDataBytes: int64
             TestOriginalCount: int
@@ -26,17 +27,8 @@
 
     type Place = int
         
-
-    
-
-    type ResultsComputation(config:ReportConfig) = class
-        let OnePlace:Place = 1
-        
-
-        let countUpFormula = "RC[-1] + 1"
-        let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
-
-
+    [<AutoOpen>]
+    module EpPlusHelpers = 
         let notInfinity (x:obj) = 
             if x :? double then
                 let y = x :?> double
@@ -49,6 +41,56 @@
             else
                 x
         let noInfinities = Seq.map notInfinity
+        
+        let setv (ws:ExcelWorksheet) name value =
+                ws.SetValue(ws.Workbook.Names.[name].Address, value)
+
+        let setvh (ws:ExcelWorksheet) name value hyperlink = 
+            let addr = ws.Workbook.Names.[name].Address
+            ws.Cells.[addr].Hyperlink <- hyperlink
+            ws.SetValue(addr, value)
+
+        let setHorz (ws:ExcelWorksheet) name values f =
+            let fdc = ws.Workbook.Names.[name].Start
+            Seq.iteri (fun index op -> ws.SetValue(fdc.Row, fdc.Column + index, f op)) values
+
+        let setVert (ws:ExcelWorksheet) name values f =
+            let fdc = ws.Workbook.Names.[name].Start
+            Seq.iteri (fun index op -> ws.SetValue(fdc.Row + index, fdc.Column, f op)) values
+
+        let setCellHorz (ws:ExcelWorksheet) name values f =
+            let fdc = ws.Workbook.Names.[name].Start
+            Seq.iteri (fun index op -> f ws.Cells.[fdc.Row, fdc.Column + index]  op) values
+
+        let setCellVert (ws:ExcelWorksheet) name values f =
+            let fdc = ws.Workbook.Names.[name].Start
+            Seq.iteri (fun index op ->f ws.Cells.[fdc.Row + index, fdc.Column] op) values
+
+        let setSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) =
+            let sc = ws.Workbook.Names.[name].Start
+            // race condition when parallelizing, set out bounds first...
+            //ws.Cells.[Seq.length values, Seq.length (Seq.nth 0 values)].Value <- "A value"
+//                let vs = PSeq.map (fun row -> row |> Seq.map (fun z -> box z) |> Array.ofSeq) values
+//                ws.Cells.[sc.Address].LoadFromArrays vs
+            //PSeq.iteri (fun indexi row ->  ws.Cells.[sc.Offset(indexi, 0).Address].LoadFromCollection(row) |> ignore) values
+            Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
+//            let setSquare2 (ws:ExcelWorksheet) address (values: seq<#seq<'d>>) =
+//                let sc = ws.Cells.[address].Start
+//                Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values  
+
+        let setCellSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) (f: ExcelRange -> 'd -> unit) =
+            let sc = ws.Workbook.Names.[name].Start
+            Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> f ws.Cells.[sc.Row + indexi, sc.Column + indexj] value)) values
+
+    type ResultsComputation(config:ReportConfig) = class
+        let OnePlace:Place = 1
+        
+
+        let countUpFormula = "RC[-1] + 1"
+        let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
+
+
+        
 
         /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
         member this.Calculate (trainingData:Data) (testData:Data) (classificationResults: Result[]) (opList: (string * string * string) list) =
@@ -148,7 +190,7 @@
                 Array.map (fun (percentile:float,place) -> [percentile; float (numCoveredByPlace place)]) percentilesAsPlaces
                 
             Log "pe summary"
-            
+            Log "report creating"
             // create excel package
             let report = new ExcelPackage(config.ReportDestination, config.ReportTemplate)
             let workbook = report.Workbook
@@ -158,29 +200,10 @@
             let fullResults = workbook.Worksheets.["Full Results"]
             let fullResultsDist = workbook.Worksheets.["Full Results Distances"]
             
-            Log "report opened"
+            
             
             let names = workbook.Names
-            let setv (ws:ExcelWorksheet) name value =
-                ws.SetValue(names.[name].Address, value)
-            let setHorz (ws:ExcelWorksheet) name values f =
-                let fdc = names.[name].Start
-                Seq.iteri (fun index op -> ws.SetValue(fdc.Row, fdc.Column + index, f op)) values
-            let setVert (ws:ExcelWorksheet) name values f =
-                let fdc = names.[name].Start
-                Seq.iteri (fun index op -> ws.SetValue(fdc.Row + index, fdc.Column, f op)) values
-            let setSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) =
-                let sc = names.[name].Start
-                // race condition when parallelizing, set out bounds first...
-                //ws.Cells.[Seq.length values, Seq.length (Seq.nth 0 values)].Value <- "A value"
-//                let vs = PSeq.map (fun row -> row |> Seq.map (fun z -> box z) |> Array.ofSeq) values
-//                ws.Cells.[sc.Address].LoadFromArrays vs
-                //PSeq.iteri (fun indexi row ->  ws.Cells.[sc.Offset(indexi, 0).Address].LoadFromCollection(row) |> ignore) values
-                Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
-//            let setSquare2 (ws:ExcelWorksheet) address (values: seq<#seq<'d>>) =
-//                let sc = ws.Cells.[address].Start
-//                Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values  
-
+           
             Log "start log sheet"
 
 
@@ -227,7 +250,7 @@
 
             setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.Error;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
            // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
-            setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> noInfinities) (Seq.sortBy (fun x -> x.Cutoff) rocCurve.Points))
+            setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> EpPlusHelpers.noInfinities) (Seq.sortBy (fun x -> x.Cutoff) rocCurve.Points))
 
             Log "end roc data "
 
