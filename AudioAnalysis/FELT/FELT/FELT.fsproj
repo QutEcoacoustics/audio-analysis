@@ -86,9 +86,6 @@
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />
     <None Include="packages.config" />
-    <Content Include="ExcelResultsSummationTemplate.xlsx">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="ExcelResultsComputationTemplate.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

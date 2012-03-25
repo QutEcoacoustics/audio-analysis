@@ -158,7 +158,7 @@ namespace FELT.Tests
             FileInfo fiReport = new FileInfo("..\\..\\..\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx"); 
             FileInfo fiTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
             
-            var config = new ReportConfig(runDate, 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, true, true);
+            var config = new ReportConfig(runDate, "Test analysis", 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, true, true);
             
             ResultsComputation target = new ResultsComputation(config);
 
