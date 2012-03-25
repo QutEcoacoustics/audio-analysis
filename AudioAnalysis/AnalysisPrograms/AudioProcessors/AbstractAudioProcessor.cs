@@ -16,7 +16,7 @@
         }
 
         /// <summary>
-        /// Run the analysis.
+        /// Run the analysis by looping over all source file segments.
         /// </summary>
         /// <param name="config">Configuration for this run of the analysis.</param>
         /// <param name="sourceAudioFile">The raw, original</param>

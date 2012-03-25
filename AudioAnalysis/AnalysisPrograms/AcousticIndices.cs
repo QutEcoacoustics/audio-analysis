@@ -64,11 +64,11 @@
         public struct Indices2
         {
             public double snr, bgNoise, activity, avSegmentDuration, avSig_dB, entropyOfAmplitude; //amplitude indices
-            public double spectralCover, lowFreqCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum, avClusterDuration; //spectral indices
+            public double lowFreqCover, midFreqCover, hiFreqCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum, avClusterDuration; //spectral indices
             public int    segmentCount, clusterCount;
 
             public Indices2(double _snr, double _bgNoise, double _activity, double _avSegmentLength, int _segmentCount, double _avSig_dB,
-                            double _entropyAmp, double _spectralCover, double _lowFreqCover,
+                            double _entropyAmp, double _hiFreqCover, double _midFreqCover, double _lowFreqCover,
                             double _peakFreqEntropy, double _entropyOfAvSpectrum, double _entropyOfVarianceSpectrum, int _clusterCount, int _avClusterDuration)
             {
                 snr        = _snr;
@@ -78,7 +78,8 @@
                 avSegmentDuration = _avSegmentLength;
                 avSig_dB   = _avSig_dB;
                 entropyOfAmplitude = _entropyAmp;
-                spectralCover = _spectralCover;
+                hiFreqCover   = _hiFreqCover;
+                midFreqCover  = _midFreqCover;
                 lowFreqCover  = _lowFreqCover;
                 entropyOfPeakFreqDistr = _peakFreqEntropy;
                 entropyOfAvSpectrum   = _entropyOfAvSpectrum;
@@ -245,7 +246,7 @@
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
         public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]>
-               ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500)
+               ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500, int midFreqBound=3500)
         {
             Indices2 indices; // struct in which to store all indices
             List<double[]> scores = null; //arrays to store scores for debugging
@@ -297,16 +298,11 @@
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, smoothedValues);
             spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            //calculate boundary between hi and low frequency spectrum
-            int freqBinCount = frameSize / 2; 
-            double binWidth = recording.Nyquist / (double)freqBinCount;
-            int excludeBins = (int)Math.Ceiling(lowFreqBound / binWidth);
-
-
             //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER
-            var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, excludeBins);
-            indices.spectralCover = tuple3.Item1;
-            indices.lowFreqCover  = tuple3.Item2;
+            var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
+            indices.lowFreqCover = tuple3.Item1;
+            indices.midFreqCover = tuple3.Item2;
+            indices.hiFreqCover  = tuple3.Item3;
 
 
             //#V#####################################################################################################################################################
@@ -317,9 +313,9 @@
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfPeakFreqDistr = 0.0;
                 indices.entropyOfAvSpectrum = 0.0;
                 indices.entropyOfVarianceSpectrum = 0.0;
+                indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
                 scores = null;
@@ -335,9 +331,9 @@
             if (indices.segmentCount == 0)  //return if segmentCount = 0
             {
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfPeakFreqDistr = 0.0;
                 indices.entropyOfAvSpectrum = 0.0;
                 indices.entropyOfVarianceSpectrum = 0.0;
+                indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster duration in milliseconds
                 scores = null;
@@ -349,7 +345,21 @@
             //#V#####################################################################################################################################################
 
 
-            //vi: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
+            //calculate boundary between hi and low frequency spectrum
+            double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
+            int excludeBins = (int)Math.Ceiling(lowFreqBound / binWidth);
+
+            //vi: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeSegments, excludeBins);
+            indices.entropyOfAvSpectrum = tuple.Item1;
+            indices.entropyOfVarianceSpectrum = tuple.Item2;
+            //DataTools.writeBarGraph(avSpectrum);
+            //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
+            //DataTools.writeBarGraph(varSpectrum);
+            //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
+
+
+            //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
             double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
             var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeSegments, peakThreshold, recording.Nyquist);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
@@ -360,16 +370,6 @@
             scores = new List<double[]>();
             scores.Add(freqPeaks); //location of peaks for spectral images
             scores.Add(envelope);
-
-
-            //vii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeSegments, excludeBins);
-            indices.entropyOfAvSpectrum       = tuple.Item1;
-            indices.entropyOfVarianceSpectrum = tuple.Item2;
-            //DataTools.writeBarGraph(avSpectrum);
-            //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
-            //DataTools.writeBarGraph(varSpectrum);
-            //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
 
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
@@ -431,32 +431,45 @@
         /// <param name="bgThreshold"></param>
         /// <param name="excludeBins"></param>
         /// <returns></returns>
-        public static System.Tuple<double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int excludeBins)
+        public static System.Tuple<double, double, double> CalculateSpectralCoverage(double[,] spectrogram, double bgThreshold, int lowFreqBound, int midFreqBound, int Nyquist)
         {
-            int length = spectrogram.GetLength(0);
+            //calculate boundary between hi, mid and low frequency spectrum
             int freqBinCount = spectrogram.GetLength(1);
+            double binWidth = Nyquist / (double)freqBinCount;
+            int lowFreqBinCount = (int)Math.Ceiling(lowFreqBound / binWidth);
+            int midFreqBinCount = (int)Math.Ceiling(midFreqBound / binWidth);
+
+
+
             int hfCoverage = 0;
+            int mfCoverage = 0;
             int lfCoverage = 0;
             int hfCellCount = 0;
+            int mfCellCount = 0;
             int lfCellCount = 0;
-            for (int i = 0; i < length; i++) //for all rows of spectrogram
+            for (int i = 0; i < spectrogram.GetLength(0); i++) //for all rows of spectrogram
             {
-                for (int j = 0; j < excludeBins; j++)//set exclusion bands brings to zero
+                for (int j = 0; j < lowFreqBinCount; j++) //caluclate coverage for low freq band
                 {
                     if (spectrogram[i, j] >= bgThreshold) lfCoverage++;
                     lfCellCount++;
                     spectrogram[i, j] = 0.0;
                 }
-                //caluclate coverage
-                for (int j = excludeBins; j < freqBinCount; j++)
+                for (int j = lowFreqBinCount; j < midFreqBinCount; j++) //caluclate coverage for mid freq band
+                {
+                    if (spectrogram[i, j] >= bgThreshold) mfCoverage++;
+                    mfCellCount++;
+                }
+                for (int j = midFreqBinCount; j < freqBinCount; j++) //caluclate coverage for high freq band
                 {
                     if (spectrogram[i, j] >= bgThreshold) hfCoverage++;
                     hfCellCount++;
                 }
             }
-            double spectralCover = hfCoverage / (double)hfCellCount;
-            double lowFreqCover  = lfCoverage / (double)lfCellCount;
-            return System.Tuple.Create(spectralCover, lowFreqCover);
+            double hiFreqCover  = hfCoverage / (double)hfCellCount;
+            double midFreqCover = mfCoverage / (double)mfCellCount;
+            double lowFreqCover = lfCoverage / (double)lfCellCount;
+            return System.Tuple.Create(lowFreqCover, midFreqCover, hiFreqCover);
         }
 
         /// <summary>
@@ -968,7 +981,7 @@
             //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
             string line = String.Format(_FORMAT_STRING, reportSeparator,
                                        count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
-                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.spectralCover, indices.lowFreqCover, indices.entropyOfAmplitude,
+                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.lowFreqCover, indices.entropyOfAmplitude,
                                        indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
                                        indices.clusterCount, indices.avClusterDuration);
             return line;
