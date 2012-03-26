@@ -151,27 +151,46 @@
             Log "Histogram"
 
 
-
+            let rocBinaryClassifierPlaceLimit = 5
             let rocCurve = 
                 // measurements are what we expect, i.e. the "Gold standard". i.e. 100% accuracy.
                 // for the library we have to provides hits and misses as numbers
-                let rocMeasurements = Array.Parallel.map (fun c -> if tagsThatOnlyOccurInTestData.Contains c then 0.0 else 1.0) testData.Classes 
-                //let rocMeasurements = Array.Parallel.map (fun c -> 1.0) testData.Classes 
+                // IMPORTANT: ROC_Threshold != PLACING. Therefore we have to conduct a ROC curve at each cummlative place we are interested in.
+                // AND we have top collapse the cummlative places down to the first place.
+                // e.g. rocBinaryClassifierPlaceLimit = 2 -> a | b a c -> 1, a | a b c -> 1, a | c b a -> 0, d | a b c -> 0
+//                let rocMeasurements = 
+//                    Array.Parallel.mapi (
+//                            fun testIndex c -> 
+//                                if tagsThatOnlyOccurInTestData.Contains c 
+//                                    || then 
+//                                    0.0 
+//                                else 
+//                                    1.0
+//                        ) testData.Classes 
+
             
                 // predictions are quantised values of places from the results.
                 // i.e. for class A, if it's corresponding hit is in the 4th of 10 places, it's prediction result is 0.6 (closer to a hit)
                 // anything that is placed as zero (i.e. not found) should be transformed to zero... i.e. a true negative
                 let numPoss = float (numPlaces)
                 let increment = (numPoss - 1.0)
-                let rocPredictions = 
-                    Array.Parallel.map (
-                        fun (_, place) -> 
+                let rocPredictions, rocMeasurements = 
+                    let pm (testIndex, place) =
+                        let p = 
+                            if tagsThatOnlyOccurInTestData.Contains testData.Classes.[testIndex] 
+                                then//|| place > rocBinaryClassifierPlaceLimit then 
+                                0.0 
+                            else 
+                                1.0
+                        let m =  
                             if place = 0 then 
                                 0.0 
                             else 
-                               (numPoss - (float place)) / increment
-                        ) placing
-
+                                (numPoss - (float place)) / increment
+                        p,m
+                        
+                    placing |> Array.Parallel.map pm |> Array.unzip
+                //File.WriteAllLines("C:\\Temp\\numbers.csv", Seq.map2 (fun a b -> a.ToString() + "," + b.ToString()) rocPredictions rocMeasurements) |> ignore
                 Maths.RocCurve.RocScore rocMeasurements rocPredictions numPlaces
 
             Log "ROC Curve calculated"
@@ -247,7 +266,7 @@
 
             Log "start roc Data"
 
-
+            setv rocData "RocPlaces" rocBinaryClassifierPlaceLimit
             setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.Error;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
            // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
             setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> EpPlusHelpers.noInfinities) (Seq.sortBy (fun x -> x.Cutoff) rocCurve.Points))

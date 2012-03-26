@@ -149,6 +149,7 @@
                 let config =
                     {
                         RunDate = dt;
+                        AnalysisType = analysis;
                         TestDataBytes = (new FileInfo(TestData)).Length;
                         TrainingDataBytes = (new FileInfo(TrainingData)).Length;
                         ReportDestination = (new FileInfo(dest));
@@ -173,11 +174,14 @@
 
             Info "end: main analysis..."
 
-            if config.Count > 1 then
-                Log "Creating summary report"
-                
-                Log "Finished summary report"    
-
+            let sumReport = 
+                if configs.Length > 1 then
+                    Log "Creating summary report"
+                    let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "Summary" |> snd)) (new FileInfo("ExcelResultsComputationTemplate.xlsx")) configs
+                    Log "Finished summary report"    
+                    Some(dest)
+                else
+                    None
 
 
             Info "Analysis complete!"
@@ -185,14 +189,15 @@
             // clear any keystrokes accumulated by accident
             while Console.KeyAvailable do Console.ReadKey(false) |> ignore
     
-            Logf "Open %s (y/n)" (if config.Count > 1 then "summary report" else "report")
+            Logf "Open %s (y/n)" (if sumReport.IsSome then "summary report" else "report")
     
             let openFile = Console.ReadKey(true);
             Warnf "Key pressed: %c" openFile.KeyChar
 
             if Char.ToLower openFile.KeyChar = 'y' then
-                Infof "Opening file: %s" reportDest
-                Process.Start(reportDest.FullName) |> ignore
+                let f = if sumReport.IsSome then sumReport.Value else configs.Head.ReportDestination
+                Infof "Opening file: %s" f.FullName
+                Process.Start(f.FullName) |> ignore
 
             Info "Exiting"
             Console.ReadKey(false) |> ignore
