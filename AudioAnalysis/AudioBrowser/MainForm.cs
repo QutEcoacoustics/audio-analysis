@@ -395,7 +395,7 @@
 
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
+            Console.WriteLine("# ACOUSTIC FILE BROWSER");
 
             foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
             {
@@ -488,18 +488,24 @@
             }
 
             //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
-            var comboHeaders = new List<string>();          //reconstruct new list of headers used to calculate weighted index
-            var weightedComboValues = new List<double[]>(); //reconstruct new list of values to calculate weighted combination index
-            for (int i = 0; i < AcousticIndices.weightedIndexColumn.Length; i++)
+            Console.Write("Index weights: ");
+            var comboHeaders = new List<string>();          //reconstruct new list of column headers from those columns used to calculate weighted index
+            var comboWeights = new List<double>();          //reconstruct new list of column weights from those columns used to calculate weighted index
+            var comboColumns = new List<double[]>();        //reconstruct new list of columns to calculate weighted combination index
+            for (int i = 0; i < AcousticIndices.comboWeights.Length; i++)
             {
-                if (AcousticIndices.weightedIndexColumn[i])
+                if (AcousticIndices.comboWeights[i] > 0.0)
                 {
                     double[] norm = DataTools.NormaliseArea(values[i]);
-                    weightedComboValues.Add(norm);
+                    comboColumns.Add(norm);
+                    comboWeights.Add(AcousticIndices.comboWeights[i]);
                     comboHeaders.Add(headers[i]);
+                    Console.Write("Index weights:   {0} = {1}\n\t\t ", headers[i], AcousticIndices.comboWeights[i]);
                 }
             }
-            this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(weightedComboValues, AcousticIndices.comboWeights);
+            Console.WriteLine();
+
+            this.weightedIndices = DataTools.GetWeightedCombinationOfColumns(comboColumns, comboWeights.ToArray());
             this.weightedIndices = DataTools.normalise(this.weightedIndices);
 
             //add in weighted bias for chorus and backgorund noise
@@ -516,7 +522,13 @@
             displayValues.Add(weightedIndices);
 
             var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], settings.TrackHeight, settings.TrackNormalisedDisplay); //values[0] is the order of rows in CSV file
+            
+            //###################### MAKE ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+            this.pictureBoxVisualIndex.Height = output.Item1.Height;
             this.pictureBoxVisualIndex.Image = output.Item1;
+            this.pictureBoxBarTrack.Location = new Point(0, output.Item1.Height + 1);
+            //this.pictureBoxSonogram.Location = new Point(0, pictureBoxBarTrack.Bottom + 1);
+
             this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
             this.weightedIndices = DataTools.Order(this.weightedIndices, values[0]); //reorder the weighted indices: 0->N
 
@@ -527,9 +539,6 @@
             this.pictureBoxVisualIndex.Image.Save(imagePath);
             Console.WriteLine("\n\tSaved csv data tracks to image file: " + imagePath);
 
-            Console.WriteLine("Index weights:   {0} = {1}\n\t\t {2} = {3}\n\t\t {4} = {5}\n\t\t {6} = {7}\n\t\t {8} = {9}",
-                             comboHeaders[0], AcousticIndices.comboWeights[0], comboHeaders[1], AcousticIndices.comboWeights[1], comboHeaders[2], AcousticIndices.comboWeights[2],
-                             comboHeaders[3], AcousticIndices.comboWeights[3], comboHeaders[4], AcousticIndices.comboWeights[4]);
             return error;
         }
 
