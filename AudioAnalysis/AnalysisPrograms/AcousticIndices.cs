@@ -16,11 +16,9 @@
         public const string ANALYSIS_NAME = "AcousticIndices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
-        public static bool[] displayColumn = { false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false };
-        public static bool[] weightedIndexColumn = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
-        public static double[] comboWeights = { 0.0, 0.4, 0.1, 0.4, 0.1 };  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
-        //                       SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
-
+        public static string[] HEADER      = { "count","start-min","sec-dur","avAmp-dB","snr-dB","bg-dB","activity","segCount","avSegDur","hfCover","mfCover","lfCover","H[ampl]","H[peakFreq]", "H[avSpectrum]", "H[varSpectrum]", "#clusters", "avClustDur", "Weighted index" };
+        public static bool[] displayColumn = { false,  false,       false,    true,      true,    true,    true,      true,      true,      true,     true,     true,     true,      false,          true,           false,           true,         true,         false};
+        public static double[] comboWeights= { 0.0,    0.0,         0.0,      0.0,       0.0,      0.0,    0.0,       0.0,       0.0,       0.0,      0.0,      0.0,      0.0,       0.0,            0.4,             0.1,              0.4,        0.1,           0.0  };
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -909,34 +907,38 @@
         /// <returns></returns>
         public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(List<string> headers, List<double[]> values, double[] order, int trackHeight, bool normalisedTrackDisplay)
         {
-            int headerCount = headers.Count;
-            double threshold = 0.5;
+            //int headerCount = headers.Count;
 
-            int trackCount = values.Count + 3; //+2 for top and bottom time tracks and +1 for combined index track
+            // accumulate the indivudal tracks
+            var bitmaps = new List<Bitmap>();
+            double threshold = 0.0;
+            for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
+            {
+                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], trackHeight, threshold, headers[i]));
+            }
+            int x = values.Count -1;
+            bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], trackHeight, threshold, headers[x])); //assumed to be weighted index
+
+            //set up the composite image parameters
+            int trackCount = values.Count + 2; //+2 for top and bottom time tracks
             int imageHt = trackHeight * trackCount;
             int duration = values[0].Length; //time in minutes
             int endPanelwidth = 100;
-
-            int imageWidth = duration + endPanelwidth; 
+            int imageWidth = duration + endPanelwidth;
             int offset = 0;
             int scale = 60; //put a tik every 60 pixels = 1 hour
             Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
 
-
+            //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
             gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
             var font = new Font("Arial", 10.0f, FontStyle.Regular);
-            Bitmap bmp;
-
             offset += trackHeight;
             for (int i = 0; i < values.Count; i++) //for pixels in the line
             {
-                if (i >= headerCount) break;
-                if (i == values.Count - 1) bmp = Image_Track.DrawColourScoreTrack(order, values[i], trackHeight, threshold, headers[i]); //assumed to be weighted index
-                else                       bmp = Image_Track.DrawBarScoreTrack(order, values[i],    trackHeight, threshold, headers[i]);
-                gr.DrawImage(bmp, 0, offset);
+                gr.DrawImage(bitmaps[i], 0, offset);
                 gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
                 offset += trackHeight;
             }
@@ -950,8 +952,6 @@
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string[] HEADER = {"count", "start-min", "sec-dur", "avAmp-dB", "snr-dB", "bg-dB", "activity", "segCount", "avSegDur", "spCover", "lfCover", "H[ampl]", 
-                                      "H[peakFreq]", "H[avSpect]", "H[varSpectra]", "#clusters", "avClustDur"};
             string FORMAT_STRING = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}";
             string line = String.Format(FORMAT_STRING, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
                                                                         HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16]);
