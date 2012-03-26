@@ -30,7 +30,14 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
 
-        public const string ANALYSIS_NAME = "KiwiRecogniser"; 
+        public const string ANALYSIS_NAME = "KiwiRecogniser";
+        public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
+        public const int DEFAULT_WINDOW_SIZE = 256;
+        public static string[] HEADER = { "count", "start-min", "sec-dur", "Density", "Label", "EvStart", "EvStSeconds", "EvDur", "MinHz", "MaxHz", "Hit%", "AvOscRate", "your tag", "status"};
+                                         //count	Start	    Duration	Density	 __Label__	EvStart	  EvStSeconds	  EvDur	   MinHz	MaxHz	Hit%	AvOscRate	  your tag	  status	reason
+        public static bool[] displayColumn = { false, false,     false,     true,      false,  false,      false,         false,   false,   false,  true,    true,         false,     false };
+        public static double[] comboWeights = null;
+
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 

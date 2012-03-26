@@ -1287,7 +1287,7 @@
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
             if ((settings.fiSegmentRecording == null) || (!settings.fiSegmentRecording.Exists)) return;
-            IAudioUtility audioUtility = new MasterAudioUtility(settings.ResampleRate); //creates AudioUtility and
+            //IAudioUtility audioUtility = new MasterAudioUtility(settings.ResampleRate); //creates AudioUtility and
             AudioRecording recordingSegment = new AudioRecording(settings.fiSegmentRecording.FullName);
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
