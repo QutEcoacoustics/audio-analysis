@@ -61,7 +61,7 @@
         /// </summary>
         public struct Indices2
         {
-            public double snr, bgNoise, activity, avSegmentDuration, avSig_dB, entropyOfAmplitude; //amplitude indices
+            public double snr, bgNoise, activity, avSegmentDuration, avSig_dB, temporalEntropy; //amplitude indices
             public double lowFreqCover, midFreqCover, hiFreqCover, entropyOfPeakFreqDistr, entropyOfAvSpectrum, entropyOfVarianceSpectrum, avClusterDuration; //spectral indices
             public int    segmentCount, clusterCount;
 
@@ -75,7 +75,7 @@
                 segmentCount = _segmentCount;
                 avSegmentDuration = _avSegmentLength;
                 avSig_dB   = _avSig_dB;
-                entropyOfAmplitude = _entropyAmp;
+                temporalEntropy = _entropyAmp;
                 hiFreqCover   = _hiFreqCover;
                 midFreqCover  = _midFreqCover;
                 lowFreqCover  = _lowFreqCover;
@@ -260,9 +260,9 @@
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             double[] envelope   = results2.Item2;
+            double[,] spectrogram = results2.Item3;  //amplitude spectrogram
 
 
-            //if (Log.Verbosity > 0) Console.Write("\t# Calculate Frame Energies.");
             //ii: FRAME ENERGIES - 
             var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
             var dBarray  = SNR.TruncateNegativeValues2Zero(results3.Item1);
@@ -277,26 +277,31 @@
             indices.bgNoise  = results3.Item2;                              //bg noise in dB
             indices.snr      = results3.Item5;                              //snr
             indices.avSig_dB = 20 * Math.Log10(envelope.Average());         //10 times log of amplitude squared 
+            indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
 
+            //calculate boundary between hi and low frequency spectrum
+            double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
+            int excludeLoFreqBins = (int)Math.Ceiling(lowFreqBound / binWidth);
 
-            //iii: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
+            //iii: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM - at this point the spectrogram is still an amplitude spectrogram
+            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, excludeLoFreqBins);
+            indices.entropyOfAvSpectrum = tuple.Item1;
+            indices.entropyOfVarianceSpectrum = tuple.Item2;
+
+            //iv: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
             var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
             indices.segmentCount = tuple4.Item1;      //number of segments whose duration > one frame
             indices.avSegmentDuration = tuple4.Item2; //av segment duration in milliseconds
             bool[] activeSegments = tuple4.Item3;     //boolean array that stores location of frames in active segments
 
-            //iv: ENVELOPE ENTROPY ANALYSIS
-            indices.entropyOfAmplitude = DataTools.Entropy_normalised(envelope);
-
-            //remove background noise from the spectrogram
-            double spectralBgThreshold = 0.015;   // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
-            double[,] spectrogram = results2.Item3; //amplitude spectrogram
+            //v: remove background noise from the spectrogram
+            double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
-            double[] smoothedValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
-            spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, smoothedValues);
+            modalValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+            spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
             spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER
+            //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER
             var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
@@ -311,8 +316,6 @@
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfAvSpectrum = 0.0;
-                indices.entropyOfVarianceSpectrum = 0.0;
                 indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
@@ -343,18 +346,7 @@
             //#V#####################################################################################################################################################
 
 
-            //calculate boundary between hi and low frequency spectrum
-            double binWidth = recording.Nyquist / (double)spectrogram.GetLength(1);
-            int excludeBins = (int)Math.Ceiling(lowFreqBound / binWidth);
 
-            //vi: ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
-            var tuple = CalculateEntropyOfSpectralAvAndVariance(spectrogram, activeSegments, excludeBins);
-            indices.entropyOfAvSpectrum = tuple.Item1;
-            indices.entropyOfVarianceSpectrum = tuple.Item2;
-            //DataTools.writeBarGraph(avSpectrum);
-            //Log.WriteLine("H(Spectral averages) =" + indices.entropyOfAvSpectrum);
-            //DataTools.writeBarGraph(varSpectrum);
-            //Log.WriteLine("H(Spectral Variance) =" + indices.entropyOfDiffSpectra1);
 
 
             //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
@@ -373,7 +365,7 @@
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
             //first convert spectrogram to Binary using threshold. An amp threshold of 0.03 = -30 dB.   An amp threhold of 0.05 = -26dB.
             double binaryThreshold = 0.03;                                        // for deriving binary spectrogram
-            var tuple6 = ClusterAnalysis(spectrogram, activeSegments, excludeBins, binaryThreshold);
+            var tuple6 = ClusterAnalysis(spectrogram, activeSegments, excludeLoFreqBins, binaryThreshold);
             indices.clusterCount = tuple6.Item1; 
             indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster duration in milliseconds
             bool[] selectedFrames = tuple6.Item3;
@@ -509,59 +501,51 @@
 
         /// <summary>
         /// Returns ENTROPY OF AVERAGE SPECTRUM and VARIANCE SPECTRUM
-        /// Entropy of average spectrum of those frames having activity
+        /// Have been passed the amplitude spectrum but square amplitude values to get power or energy.
+        /// Entropy is a measure of ENERGY dispersal.
         /// </summary>
-        /// <param name="spectrogram"></param>
-        /// <param name="activeFrames"></param>
+        /// <param name="spectrogram">this is an amplitude spectrum. Must square values to get power</param>
         /// <param name="excludeBins"></param>
         /// <returns></returns>
-        public static System.Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, bool[] activeFrames, int excludeBins)
+        public static System.Tuple<double, double> CalculateEntropyOfSpectralAvAndVariance(double[,] spectrogram, int excludeBins)
         {
             int freqBinCount = spectrogram.GetLength(1);
-            int activeFrameCount = DataTools.CountTrues(activeFrames);
-            double[] avSpectrum = new double[freqBinCount - excludeBins];  //for average  of the spectral bins
+            double[] avSpectrum = new double[freqBinCount - excludeBins];   //for average  of the spectral bins
             double[] varSpectrum = new double[freqBinCount - excludeBins];  //for variance of the spectral bins
             for (int j = excludeBins; j < freqBinCount; j++)                //for all frequency bins (excluding low freq)
             {
-                double[] bin = DataTools.GetColumn(spectrogram, j); //get the bin
-                double[] acousticFrames = new double[activeFrameCount];
-                int count = 0;
-                for (int i = 0; i < activeFrames.Length; i++)
+                var bin = new double[spectrogram.GetLength(0)];      //set up a bin to take freq power
+                for (int i = 0; i < spectrogram.GetLength(0); i++)
                 {
-                    if (activeFrames[i]) //select only frames having acoustic energy >= threshold
-                    {
-                        acousticFrames[count] = spectrogram[i, j];
-                        count++;
-                    }
+                    bin[i] = spectrogram[i, j] * spectrogram[i, j];  //convert amplitude to energy or power.
                 }
                 double av, sd;
-                NormalDist.AverageAndSD(acousticFrames, out av, out sd);
+                NormalDist.AverageAndSD(bin, out av, out sd);
                 avSpectrum[j - excludeBins] = av;      //store average  of the bin
                 varSpectrum[j - excludeBins] = sd * sd; //store variance of the bin
             }
-            //double sum = avSpectrum.Sum();
+
+            //set up some safety checks but unlikely to happen
             int posCount = avSpectrum.Count(p => p > 0.0);
-            //if ((sum < 0.0000001) && (posCount < 3)) return System.Tuple.Create(1.0, 1.0); //no spectrum worth calculating entropy.
             if (posCount == 1) return System.Tuple.Create(0.0, 0.0); //energy concentrated in one value - i.e. low entorpy
             else
             if (posCount == 0) return System.Tuple.Create(0.5, 0.5); //low energy distributed - do not know entropy - select middle ground!
 
             double HSpectralAv = DataTools.Entropy_normalised(avSpectrum);               //ENTROPY of spectral averages
+            //DataTools.writeBarGraph(avSpectrum);
+            //Log.WriteLine("H(Spectral averages) =" + HSpectralAv);
+
             //sum = varSpectrum.Sum();
             posCount = varSpectrum.Count(p => p > 0.0);
             //if ((sum < 0.00000001) && (posCount < 2))
-            if (posCount == 0)
-            {
-                return System.Tuple.Create(HSpectralAv, 0.5);       //flat spectrum - do not know entropy - select middle ground!
-            }
+            if (posCount == 0) return System.Tuple.Create(HSpectralAv, 0.5);       //flat spectrum - do not know entropy - select middle ground!
             else
-            if (posCount == 1)
-            {
-                return System.Tuple.Create(HSpectralAv, 0.0);       //variance concentrated in few values - i.e. low entropy
-            }
+            if (posCount == 1) return System.Tuple.Create(HSpectralAv, 0.0);       //variance concentrated in few values - i.e. low entropy
             else
             {
                 double HSpectralVar = DataTools.Entropy_normalised(varSpectrum);         //ENTROPY of spectral variances
+                //DataTools.writeBarGraph(varSpectrum);
+                //Log.WriteLine("H(Spectral Variance) =" + HSpectralVar);
                 return System.Tuple.Create(HSpectralAv, HSpectralVar);
             }
         }
@@ -981,7 +965,7 @@
             //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
             string line = String.Format(_FORMAT_STRING, reportSeparator,
                                        count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
-                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.lowFreqCover, indices.entropyOfAmplitude,
+                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.lowFreqCover, indices.temporalEntropy,
                                        indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
                                        indices.clusterCount, indices.avClusterDuration);
             return line;

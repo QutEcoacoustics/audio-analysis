@@ -2151,6 +2151,13 @@ namespace TowseyLib
       return sum;
   }
 
+  public static double[] SquareValues(double[] data)
+  {
+      if (data == null) return null;
+      var squaredArray = new double[data.Length];
+      for (int i = 0; i < data.Length; i++) squaredArray[i] = data[i] * data[i];
+      return squaredArray;
+  }
 
 
 //***************************************************************************************************************************************

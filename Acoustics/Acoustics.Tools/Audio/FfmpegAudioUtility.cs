@@ -26,7 +26,7 @@
         // -ar Set the audio sampling frequency (default = 44100 Hz).
         // -ab Set the audio bitrate in bit/s (default = 64k).
         // " -ar 22050 -ab 128k "
-        private const string ArgsSamplebitRate = " -ar 22050 -ab 128k ";
+        //private const string ArgsSamplebitRate = " -ar 22050 -ab 128k ";
 
         // -t Restrict the transcoded/captured video sequence to the duration specified in seconds. hh:mm:ss[.xxx] syntax is also supported.
         private const string ArgsDuration = "-t {0} ";
@@ -280,8 +280,9 @@
             }
 
             var args = new StringBuilder()
-                .AppendFormat(ArgsOverwriteSource, source.FullName)
-                .Append(ArgsSamplebitRate);
+                .AppendFormat(ArgsOverwriteSource, source.FullName);
+            // now using sox instead of ffmpeg to resample
+                //.Append(ArgsSamplebitRate);
 
             if (start.HasValue && start.Value > TimeSpan.Zero)
             {

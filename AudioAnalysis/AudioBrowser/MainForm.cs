@@ -299,7 +299,7 @@
             //DateTime tStart = DateTime.Now;
             //DateTime tPrevious = tStart;
             
-            //segmentCount = 30;   //for testing and debugging
+            segmentCount = 30;   //for testing and debugging
 
             //for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.

@@ -24,21 +24,34 @@
         #endregion
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// Wrapper for the wav reader. 
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
         /// </summary>
-        /// <param name="bytes"></param>
         public AudioRecording(byte[] bytes)
         {
             this.FilePath = "UNKNOWN";
             this.Bytes = bytes;
             if (Bytes != null) this.wavReader = new WavReader(bytes);
         }
+
+        /// <summary>
+        /// Wrapper for the wav reader. 
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
         public AudioRecording(string path)
         {
             this.FilePath  = path;
             this.FileName  = Path.GetFileNameWithoutExtension(path);
             this.wavReader = new WavReader(path);
         }
+
+        /// <summary>
+        /// Wrapper for the wav reader. 
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
         public AudioRecording(byte[] bytes, string name)
         {
             this.FilePath = name;
@@ -48,11 +61,21 @@
                 this.wavReader = new WavReader(bytes);
         }
 
+        /// <summary>
+        /// Wrapper for the wav reader. 
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
         public AudioRecording(WavReader wavReader)
         {
             this.wavReader = wavReader;
         }
-              
+
+        /// <summary>
+        /// Wrapper for the wav reader. 
+        /// Audio must be in wav format.
+        /// Use MasterAudioUtility to convert or segment the audio first.
+        /// </summary>
 		public WavReader GetWavReader()
 		{
             return wavReader;
