@@ -214,6 +214,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CsvTools.cs" />
     <Compile Include="DSP_IIRFilter.cs" />
     <Compile Include="DSP_Filters.cs" />
     <Compile Include="Distribution.cs" />
