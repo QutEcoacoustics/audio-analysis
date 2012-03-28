@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-
-using TowseyLib;
-
-using System.IO;
-
-namespace AudioAnalysisTools
+﻿namespace AudioAnalysisTools
 {
     using Acoustics.Tools.Wav;
+    using System;
+    using System.Collections.Generic;
+
+    using TowseyLib;
+
+    using System.IO;
 
     [Serializable]
 	public class Template_CC : BaseTemplate
