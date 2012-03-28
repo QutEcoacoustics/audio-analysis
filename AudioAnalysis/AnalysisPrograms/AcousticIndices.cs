@@ -19,6 +19,9 @@
         public static string[] HEADER      = { "count","start-min","sec-dur","avAmp-dB","snr-dB","bg-dB","activity","segCount","avSegDur","hfCover","mfCover","lfCover","H[ampl]","H[peakFreq]", "H[avSpectrum]", "H[varSpectrum]", "#clusters", "avClustDur", "Weighted index" };
         public static bool[] displayColumn = { false,  false,       false,    true,      true,    true,    true,      true,      true,      true,     true,     true,     true,      false,          true,           false,           true,         true,         false};
         public static double[] comboWeights= { 0.0,    0.0,         0.0,      0.0,       0.0,      0.0,    0.0,       0.0,       0.0,       0.0,      0.0,      0.0,      0.0,       0.0,            0.4,             0.1,              0.4,        0.1,           0.0  };
+        public static string FORMAT_STRING_HEADER = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
+        public static string FORMAT_STRING_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
+
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -288,56 +291,55 @@
             indices.entropyOfAvSpectrum = tuple.Item1;
             indices.entropyOfVarianceSpectrum = tuple.Item2;
 
-            //iv: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
-            var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
-            indices.segmentCount = tuple4.Item1;      //number of segments whose duration > one frame
-            indices.avSegmentDuration = tuple4.Item2; //av segment duration in milliseconds
-            bool[] activeSegments = tuple4.Item3;     //boolean array that stores location of frames in active segments
-
-            //v: remove background noise from the spectrogram
+            //iv: remove background noise from the spectrogram
             double spectralBgThreshold = 0.015;      // SPECTRAL AMPLITUDE THRESHOLD for smoothing background
             double[] modalValues = SNR.CalculateModalValues(spectrogram); //calculate modal value for each freq bin.
-            modalValues = DataTools.filterMovingAverage(modalValues, 7); //smooth the modal profile
+            modalValues = DataTools.filterMovingAverage(modalValues, 7);  //smooth the modal profile
             spectrogram = SNR.SubtractBgNoiseFromSpectrogramAndTruncate(spectrogram, modalValues);
             spectrogram = SNR.RemoveNeighbourhoodBackgroundNoise(spectrogram, spectralBgThreshold);
 
-            //vi: SPECTROGRAM ANALYSIS - SPECTRAL COVER
+            //v: SPECTROGRAM ANALYSIS - SPECTRAL COVER. NOTE: spectrogram is still a noise reduced amplitude spectrogram
             var tuple3 = CalculateSpectralCoverage(spectrogram, spectralBgThreshold, lowFreqBound, midFreqBound, recording.Nyquist);
             indices.lowFreqCover = tuple3.Item1;
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
 
+            //SET UP A LIST OF SCORE ARRAYS TO BE RETURNED
+            scores = new List<double[]>();
+            scores.Add(envelope);
+
 
             //#V#####################################################################################################################################################
             //#V#####################################################################################################################################################
 
-            //return if activeFrameCount too small
-            if (activeFrameCount <= 1)
+            if (activeFrameCount <= 2)   //return if activeFrameCount too small
             {
                 indices.segmentCount = 0;
                 indices.avSegmentDuration = 0.0;
                 indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
-                scores = null;
                 int[] clusterHits_dummy = null;
                 List<double[]> clusterWts_dummy = null;
                 double[,] clusterSpectrogram_dummy = null;
                 return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
             }
             //#V#####################################################################################################################################################
+
+            //vi: SEGMENT STATISTICS: COUNT and AVERAGE LENGTH
+            var tuple4 = CalculateSegmentCount(activeFrames, frameDuration);
+            indices.segmentCount = tuple4.Item1;      //number of segments whose duration > one frame
+            indices.avSegmentDuration = tuple4.Item2; //av segment duration in milliseconds
+            bool[] activeSegments = tuple4.Item3;     //boolean array that stores location of frames in active segments
 
 
             //#V#####################################################################################################################################################
             if (indices.segmentCount == 0)  //return if segmentCount = 0
             {
                 indices.avSegmentDuration = 0.0;
-                indices.entropyOfAvSpectrum = 0.0;
-                indices.entropyOfVarianceSpectrum = 0.0;
                 indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster duration in milliseconds
-                scores = null;
                 int[] clusterHits_dummy = null;
                 List<double[]> clusterWts_dummy = null;
                 double[,] clusterSpectrogram_dummy = null;
@@ -346,20 +348,13 @@
             //#V#####################################################################################################################################################
 
 
-
-
-
-            //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS 
+            //vii: ENTROPY OF DISTRIBUTION of maximum SPECTRAL PEAKS.   NOTE: spectrogram is still a noise reduced amplitude spectrogram 
             double peakThreshold = spectralBgThreshold * 3;  // THRESHOLD    for selecting spectral peaks
             var tuple2 = CalculateEntropyOfPeakLocations(spectrogram, activeSegments, peakThreshold, recording.Nyquist);
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
             double[] freqPeaks = tuple2.Item2;
-
-            //SET UP ARRAY OF SCORES TO BE RETURNED LATER
-            scores = new List<double[]>();
             scores.Add(freqPeaks); //location of peaks for spectral images
-            scores.Add(envelope);
 
 
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
@@ -936,9 +931,8 @@
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string FORMAT_STRING = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}";
-            string line = String.Format(FORMAT_STRING, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
-                                                                        HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16]);
+            string line = String.Format(FORMAT_STRING_HEADER, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
+                                                                        HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16],HEADER[17], HEADER[18]);
             return line;
         }
 
@@ -960,12 +954,11 @@
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string _FORMAT_STRING = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}";
 
             //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-            string line = String.Format(_FORMAT_STRING, reportSeparator,
+            string line = String.Format(FORMAT_STRING_DATA, reportSeparator,
                                        count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
-                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.lowFreqCover, indices.temporalEntropy,
+                                       indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, indices.temporalEntropy,
                                        indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
                                        indices.clusterCount, indices.avClusterDuration);
             return line;
