@@ -52,6 +52,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="TowseyLib">
+      <HintPath>..\TowseyLib\bin\x86\Debug\TowseyLib.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioBrowser1.cs">
@@ -116,10 +119,6 @@
     <ProjectReference Include="..\AudioAnalysisTools\AudioAnalysisTools.csproj">
       <Project>{86855CBC-7243-492A-A500-2DE36CC7C825}</Project>
       <Name>AudioAnalysisTools</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TowseyLib\TowseyLib.csproj">
-      <Project>{7E0D2209-A416-4784-B350-83778D20A64B}</Project>
-      <Name>TowseyLib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
