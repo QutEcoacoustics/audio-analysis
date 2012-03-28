@@ -53,7 +53,7 @@
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="TowseyLib">
-      <HintPath>..\TowseyLib\bin\x86\Debug\TowseyLib.dll</HintPath>
+      <HintPath>..\TowseyLib\bin\Debug\TowseyLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

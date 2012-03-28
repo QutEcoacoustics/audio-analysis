@@ -126,7 +126,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="TowseyLib, Version=1.0.0.0, Culture=neutral, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\TowseyLib\bin\x86\Debug\TowseyLib.dll</HintPath>
+      <HintPath>..\TowseyLib\bin\Debug\TowseyLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
