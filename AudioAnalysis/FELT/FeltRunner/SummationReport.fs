@@ -45,7 +45,19 @@
 
 
             Log "end summary sheet"
+            Log "performances sheet"
 
+            // This sheet is automatic, the only thing to do is fill down all the formulas
+            let width = performancews.Dimension.End.Column
+            let startRow = workbook.Names.["DataStartRow"]
+            
+            let templateRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
+            
+            let fillRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
+
+            let a = new OfficeOpenXml.ExcelAddress(startRow.Start.Row,startRow.Start.Column, startRow.Start.Row, width)
+
+            Log "end performances sheet"
             // save file
             Log "write file"
 
