@@ -158,15 +158,6 @@
                 // IMPORTANT: ROC_Threshold != PLACING. Therefore we have to conduct a ROC curve at each cummlative place we are interested in.
                 // AND we have top collapse the cummlative places down to the first place.
                 // e.g. rocBinaryClassifierPlaceLimit = 2 -> a | b a c -> 1, a | a b c -> 1, a | c b a -> 0, d | a b c -> 0
-//                let rocMeasurements = 
-//                    Array.Parallel.mapi (
-//                            fun testIndex c -> 
-//                                if tagsThatOnlyOccurInTestData.Contains c 
-//                                    || then 
-//                                    0.0 
-//                                else 
-//                                    1.0
-//                        ) testData.Classes 
 
             
                 // predictions are quantised values of places from the results.
@@ -175,10 +166,10 @@
                 let numPoss = float (numPlaces)
                 let increment = (numPoss - 1.0)
                 let rocPredictions, rocMeasurements = 
-                    let pm (testIndex, place) =
+                    let pm input =
+                        let testIndex, place = input
                         let p = 
-                            if tagsThatOnlyOccurInTestData.Contains testData.Classes.[testIndex] 
-                                then//|| place > rocBinaryClassifierPlaceLimit then 
+                            if tagsThatOnlyOccurInTestData.Contains testData.Classes.[testIndex] then//|| place > rocBinaryClassifierPlaceLimit then 
                                 0.0 
                             else 
                                 1.0
@@ -187,10 +178,11 @@
                                 0.0 
                             else 
                                 (numPoss - (float place)) / increment
+
                         p,m
                         
                     placing |> Array.Parallel.map pm |> Array.unzip
-                //File.WriteAllLines("C:\\Temp\\numbers.csv", Seq.map2 (fun a b -> a.ToString() + "," + b.ToString()) rocPredictions rocMeasurements) |> ignore
+                File.WriteAllLines("C:\\Temp\\numbers.csv", Seq.map2 (fun a b -> a.ToString() + "," + b.ToString()) rocPredictions rocMeasurements) |> ignore
                 Maths.RocCurve.RocScore rocMeasurements rocPredictions numPlaces
 
             Log "ROC Curve calculated"
@@ -249,6 +241,7 @@
             // results summary
             setSquare logws "PlacementSummary" placeSummary
             names.["PlacementSummary"].Offset(0,2, placeSummary.Length, 1).FormulaR1C1 <- "RC[-1]/Log!Positives"
+            names.["PlacementSummary"].Offset(0,3, placeSummary.Length, 1).FormulaR1C1 <- "RC[-2]/(Positives+Negatives)"
             setSquare logws "PercentileSummary" percentileSummary
 
             Log "end log sheet"
