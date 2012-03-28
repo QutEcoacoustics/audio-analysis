@@ -38,6 +38,9 @@ namespace AnalysisPrograms
         public static bool[] displayColumn = { false, false,     false,     true,      false,  false,      false,         false,   false,   false,  true,    true,         false,     false };
         public static double[] comboWeights = null;
 
+        public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
+        public const string WORKING_DIRECTORY     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\";
+        public const string CONFIG_PATH           = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt";
 
 
         //Keys to recognise identifiers in PARAMETERS - INI file. 
@@ -103,7 +106,7 @@ namespace AnalysisPrograms
 
 
 
-        public static void Dev(string[] args)
+        public static void Dev()
         {
             string title = "# SOFTWARE TO DETECT CALLS OF THE LITTLE SPOTTED KIWI (Apteryx owenii)";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -112,12 +115,15 @@ namespace AnalysisPrograms
 
             //GET COMMAND LINE ARGUMENTS
             Log.Verbosity = 1;
-            CheckArguments(args);
-            string sourceRecordingPath = args[0];
-            string iniPath   = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\"; //output directory is the one in which ini file is located.
-            DirectoryInfo diOutputDir = new DirectoryInfo(outputDir);
-            string segmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
+            string sourceRecordingPath = SOURCE_RECORDING_PATH;
+            string iniPath             = CONFIG_PATH;
+            string outputDir           = WORKING_DIRECTORY;
+            DirectoryInfo diOutputDir  = new DirectoryInfo(outputDir);
+            string tempSegmentPath     = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
+
+            var fiSourceRecording = new FileInfo(sourceRecordingPath);
+            var fiTempSegmentFile = new FileInfo(tempSegmentPath);
+
             Log.WriteIfVerbose("# Output dir: " + outputDir);
                        
 
@@ -126,9 +132,7 @@ namespace AnalysisPrograms
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
-            var fiSourceRecording = new FileInfo(sourceRecordingPath);
             var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-            //var dateInfo = fileInfo.CreationTime;
             var duration = audioUtility.Duration(fiSourceRecording, mimeType);
 
             var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
@@ -155,8 +159,8 @@ namespace AnalysisPrograms
                 int resampleRate = 17640;
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
-                MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(segmentPath), startMilliseconds, endMilliseconds);
-                AudioRecording recording = new AudioRecording(segmentPath);
+                MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
+                AudioRecording recording = new AudioRecording(tempSegmentPath);
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
                 //Log.WriteLine("Signal Duration: " + segmentDuration);
                 int sampleCount = recording.GetWavReader().Samples.Length;

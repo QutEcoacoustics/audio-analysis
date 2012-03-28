@@ -299,13 +299,13 @@
             //DateTime tStart = DateTime.Now;
             //DateTime tPrevious = tStart;
             
-            segmentCount = 30;   //for testing and debugging
+            //segmentCount = 30;   //for testing and debugging
 
             //for (int s = 0; s < segmentCount; s++)
             // Parallelize the loop to partition the source file by segments.
             //Parallel.For(0, 570, s =>              //USE FOR FIRST HALF OF RECORDING
             //Parallel.For(569, segmentCount, s =>   //USE FOR SECOND HALF OF RECORDING
-            //Parallel.For(420, 421, s =>
+            //Parallel.For(847, 848, s =>
             Parallel.For(0, segmentCount, s =>
             {
                 //Console.WriteLine(string.Format("Worker threads in use: {0}", GetThreadsInUse()));
@@ -478,13 +478,14 @@
             //reconstruct new list of values to display
             var displayValues = new List<double[]>(); //reconstruct new list of values to display
             var displayHeaders = new List<string>();   //reconstruct new list of headers to display
-            for (int i = 0; i < AcousticIndices.displayColumn.Length; i++)
+            //for (int i = 0; i < AcousticIndices.displayColumn.Length; i++)
+            for (int i = 0; i < values.Count; i++)
             {
-                if (AcousticIndices.displayColumn[i])
-                {
-                    displayValues.Add(values[i]);
-                    displayHeaders.Add(headers[i]);
-                }
+            if (AcousticIndices.displayColumn[i])
+            {
+                displayValues.Add(values[i]);
+                displayHeaders.Add(headers[i]);
+            }
             }
 
             //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
