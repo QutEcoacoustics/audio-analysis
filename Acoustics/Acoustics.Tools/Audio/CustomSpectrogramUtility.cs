@@ -73,38 +73,38 @@
 
             ImageFormat format;
 
-            switch(MediaTypes.CanonicaliseExtension(outputMimeType))
+            switch (MediaTypes.GetExtension(outputMimeType))
             {
-                    //case MediaTypes.ExtBmp:
-                    //    format = ImageFormat.Bmp;
-                    //    break;
-                    //case MediaTypes.ExtEmf:
-                    //    format = ImageFormat.Emf;
-                    //    break;
-                    //case MediaTypes.ExtExif:
-                    //    format = ImageFormat.Exif;
-                    //    break;
-                    //case MediaTypes.ExtGif:
-                    //    format = ImageFormat.Gif;
-                    //    break;
+                //case MediaTypes.ExtBmp:
+                //    format = ImageFormat.Bmp;
+                //    break;
+                //case MediaTypes.ExtEmf:
+                //    format = ImageFormat.Emf;
+                //    break;
+                //case MediaTypes.ExtExif:
+                //    format = ImageFormat.Exif;
+                //    break;
+                //case MediaTypes.ExtGif:
+                //    format = ImageFormat.Gif;
+                //    break;
                 case MediaTypes.ExtIco:
                     format = ImageFormat.Icon;
                     break;
                 case MediaTypes.ExtJpeg:
                     format = ImageFormat.Jpeg;
                     break;
-                    //case MediaTypes.ExtBmp:
-                    //    format = ImageFormat.MemoryBmp;
-                    //    break;
+                //case MediaTypes.ExtBmp:
+                //    format = ImageFormat.MemoryBmp;
+                //    break;
                 case MediaTypes.ExtPng:
                     format = ImageFormat.Png;
                     break;
                 case MediaTypes.ExtTiff:
                     format = ImageFormat.Tiff;
                     break;
-                    //case MediaTypes.ExtWmf:
-                    //    format = ImageFormat.Wmf;
-                    //    break;
+                //case MediaTypes.ExtWmf:
+                //    format = ImageFormat.Wmf;
+                //    break;
                 default:
                     format = ImageFormat.Jpeg;
                     break;
