@@ -212,6 +212,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConfigDict.cs" />
     <Compile Include="CsvTools.cs" />
     <Compile Include="DataTableTools.cs" />
     <Compile Include="DSP_IIRFilter.cs" />

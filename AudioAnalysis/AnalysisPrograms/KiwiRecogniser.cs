@@ -5,6 +5,9 @@ using System.Text;
 using System.IO;
 using TowseyLib;
 using AudioAnalysisTools;
+using System.Threading;
+//using System.Threading;
+
 
 //Here is link to wiki page containing info about how to write Analysis techniques
 //https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
@@ -33,9 +36,10 @@ namespace AnalysisPrograms
         public const string ANALYSIS_NAME = "KiwiRecogniser";
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int DEFAULT_WINDOW_SIZE = 256;
-        public static string[] HEADER = { "count", "start-min", "sec-dur", "Density", "Label", "EvStart", "EvStSeconds", "EvDur", "MinHz", "MaxHz", "Hit%", "AvOscRate", "your tag", "status"};
-                                         //count	Start	    Duration	Density	 __Label__	EvStart	  EvStSeconds	  EvDur	   MinHz	MaxHz	Hit%	AvOscRate	  your tag	  status	reason
-        public static bool[] displayColumn = { false, false,     false,     true,      false,  false,      false,         false,   false,   false,  true,    true,         false,     false };
+        public static Type[] COL_TYPES = { typeof(int), typeof(string), typeof(string),  typeof(int), typeof(string), typeof(double), typeof(int),  typeof(int), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(string), typeof(string) };
+        public static string[] HEADERS = { "count",     "start-min",     "segmentDur",  "Density",      "Label",     "EvStartOffset", "EvStartAbs", "MinHz",     "MaxHz",     "EventDur",     "DurScore",     "HitSCore",     "SnrScore",      "sdScore",     "GapScore",     "BWScore",      "WtScore",       "your tag",     "status" };
+                                          //count	      Start	          Duration	     Density	   __Label__	  EvStartOffset	   EvStartAbs	 MinHz	      MaxHz	       eventDuration   DurScore        HitScore        SnrScore	        sdScore        Gapscore        BWScore         WtScore          your tag	    status	
+        public static bool[] displayColumn={ false,       false,          false,          true,          false,       false,           false,        false,       false,       false,          true,           true,           true,            true,          true,           true,           true,            false,          false };
         public static double[] comboWeights = null;
 
         public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
@@ -146,53 +150,60 @@ namespace AnalysisPrograms
             Log.WriteIfVerbose("# Recording - duration: {0}hr:{1}min:{2}s:{3}ms", duration.Hours, duration.Minutes, duration.Seconds, duration.Milliseconds);
 
             //SET UP THE REPORT DATATABLE
-            var dataTable = new DataTable();
+            var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);
 
             // LOOP THROUGH THE FILE
+            int resampleRate = 17640;
             double startMinutes = 0.0;
             int overlap_ms = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
+
+
+            //segmentCount = 2; //FOR DEBUGGING
+            // Parallelize the loop to partition the source file by segments.
+            //Parallel.For(0, segmentCount, s =>
             for (int s = 0; s < segmentCount; s++)
             {
                 Console.WriteLine();
                 Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
 
-                int resampleRate = 17640;
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
                 MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
-                AudioRecording recording = new AudioRecording(tempSegmentPath);
-                string segmentDuration = DataTools.Time_ConvertSecs2Mins(recording.GetWavReader().Time.TotalSeconds);
-                //Log.WriteLine("Signal Duration: " + segmentDuration);
-                int sampleCount = recording.GetWavReader().Samples.Length;
-                int minLength = 3 * kiwiParams.frameLength;
-                if (sampleCount <= minLength)
+                AudioRecording recordingSegment = new AudioRecording(tempSegmentPath);
+                FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
+                TimeSpan ts = recordingSegment.Duration();
+
+                if (ts.TotalSeconds <= 30)
                 {
-                    Log.WriteLine("# WARNING: Recording is less than {0} samples (three frames) long. Will ignore.", sampleCount);
-                    //Console.ReadLine();
-                    //System.Environment.Exit(666);
+                    Log.WriteLine("# WARNING: Recording is less than {0} seconds long. Will ignore.", 30);
                     break;
                 }
-
-                //#############################################################################################################################################
-                FileInfo fiSegmentAudioFile = new FileInfo(recording.FilePath);
-                DataTable results = KiwiRecogniser.Analysis(kiwiParams, fiSegmentAudioFile, startMinutes, diOutputDir);
-                recording.Dispose();
-                //#############################################################################################################################################
-
-                //transfer acoustic event info to data table
-                Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, results.Rows.Count);
-                foreach (var row in results.Rows)
+                else //do analysis
                 {
-                    dataTable.Rows.Add(row);
+                    //#############################################################################################################################################
+                    DataTable results = KiwiRecogniser.Analysis(s, kiwiParams, fiSegmentAudioFile, diOutputDir);
+                    //#############################################################################################################################################
+
+                    //transfer acoustic event info to data table
+                    Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, results.Rows.Count);
+                    if (results != null) 
+                    {
+                        string sortString = "EvStartAbs ASC";   //SORT EVENTS BY THEIR START TIME
+                        DataRow[] rows = DataTableTools.SortTable(results, sortString);
+                        foreach (DataRow row in rows) dataTable.ImportRow(row);
+                    }
                 }
 
+                recordingSegment.Dispose();
                 startMinutes += kiwiParams.segmentDuration;
             } //end of for loop
+            //); // Parallel.For()
 
             string reportfileName = outputDir + "LSKReport_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
-            WriteHeaderToFile(reportfileName, kiwiParams.reportFormat);
+            CsvTools.DataTable2CSV(dataTable, reportfileName);
 
             Log.WriteLine("# Finished recording:- " + Path.GetFileName(sourceRecordingPath));
+            Log.WriteLine("# Output CSV at:-      " + reportfileName);
             Console.ReadLine();
         } //Dev()
 
@@ -242,11 +253,13 @@ namespace AnalysisPrograms
         /// A WRAPPER AROUND THE Execute_KiwiDetect() method
         /// returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
         /// </summary>
+        /// <param name="iter"></param>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static DataTable Analysis(KiwiParams config, FileInfo fiSegmentAudioFile, double startMinute, DirectoryInfo diOutputDir)
+        public static DataTable Analysis(int iter, KiwiParams config, FileInfo fiSegmentAudioFile, DirectoryInfo diOutputDir)
         {
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
+
             int minHzMale   = config.minHzMale;
             int maxHzMale   = config.maxHzMale;
             int minHzFemale = config.minHzFemale;
@@ -260,10 +273,10 @@ namespace AnalysisPrograms
             double eventThreshold = config.eventThreshold;
             double minDuration    = config.minDuration;
             double maxDuration    = config.maxDuration;
-
+            double segmentStartMinute = config.segmentDuration * iter;
 
             var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
-                                                minPeriodicity, maxPeriodicity, eventThreshold, minDuration, maxDuration);
+                                                            minPeriodicity, maxPeriodicity, eventThreshold, minDuration, maxDuration);
 
 
             var sonogram = results.Item1;
@@ -273,16 +286,17 @@ namespace AnalysisPrograms
             var predictedEvents = results.Item5;
 
             //draw images of sonograms
-            string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) + ".png");
             bool saveSonogram = false;
             if ((config.DRAW_SONOGRAMS == 2) || ((config.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
             if (saveSonogram)
             {
+                string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) +"_"+ (int)segmentStartMinute+ "min.png");
                 DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, config.eventThreshold);
             }
 
             //write events to a data table to return.
-            DataTable dataTable = WriteEvents2DataTable(startMinute, predictedEvents, sonogram.Duration.TotalSeconds);
+            TimeSpan tsSegmentDuration = recordingSegment.Duration();
+            DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, tsSegmentDuration, predictedEvents);
             return dataTable;
         } //Analysis()
 
@@ -292,6 +306,28 @@ namespace AnalysisPrograms
             int minHzMale, int maxHzMale, int minHzFemale, int maxHzFemale, int frameLength, double frameOverlap, double dctDuration, double dctThreshold,
             double minPeriodicity, double maxPeriodicity, double eventThreshold, double minDuration, double maxDuration)
         {
+
+            //i: EXTRACT ENVELOPE and FFTs
+            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameLength, frameOverlap);
+            //double[] envelope = results2.Item2;
+            //double[,] spectrogram = results2.Item3;  //amplitude spectrogram
+
+            ////ii: FRAME ENERGIES - 
+            //var results3 = SNR.SubtractBackgroundNoise_dB(SNR.Signal2Decibels(envelope));//use Lamel et al. Only search in range 10dB above min dB.
+            //var dBarray = SNR.TruncateNegativeValues2Zero(results3.Item1);
+
+            //bool[] activeFrames = new bool[dBarray.Length]; //record frames with activity >= threshold dB above background and count
+            //for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticIndices.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
+            ////int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
+            //int activeFrameCount = DataTools.CountTrues(activeFrames);
+
+            //indices.activity = activeFrameCount / (double)dBarray.Length;  //fraction of frames having acoustic activity 
+            //indices.bgNoise = results3.Item2;                              //bg noise in dB
+            //indices.snr = results3.Item5;                                  //snr
+            //indices.avSig_dB = 20 * Math.Log10(envelope.Average());        //10 times log of amplitude squared 
+            //indices.temporalEntropy = DataTools.Entropy_normalised(DataTools.SquareValues(envelope)); //ENTROPY of ENERGY ENVELOPE
+
+
             //i: MAKE SONOGRAM
             //Log.WriteLine("Make sonogram.");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -299,9 +335,7 @@ namespace AnalysisPrograms
             sonoConfig.WindowSize     = frameLength;
             sonoConfig.WindowOverlap  = frameOverlap;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            //double dB_threshold = 4.0; //threshold for 2D background noise removal
-            //var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, dB_threshold);
-            //double[,] noiseReducedMatrix = tuple.Item1; 
+            //DO NOT DO NOISE REMOVAL BECAUSE CAN LOSE SOME KIWI INFO
 
             //iii: DETECT OSCILLATIONS
             bool normaliseDCT = true;
@@ -309,7 +343,7 @@ namespace AnalysisPrograms
             double maxOscilFreq = 1 / minPeriodicity;  //convert min period (seconds) to oscilation rate (Herz).
 
             //ii: CHECK FOR MALE KIWIS
-            int gapThreshold = 2;                     //merge events that are closer than 2 seconds
+            //int gapThreshold = 2;                     //merge events that are closer than 2 seconds
             List<AcousticEvent> predictedMaleEvents;  //predefinition of results event list
             Double[,] maleHits;                       //predefinition of hits matrix - to superimpose on sonogram image
             double[] maleScores;                      //predefinition of score array
@@ -691,16 +725,44 @@ namespace AnalysisPrograms
         //}
 
 
+        //public static Type[] COL_TYPES = { typeof(int), typeof(string), typeof(string), typeof(int), typeof(string), typeof(double), typeof(int), typeof(int), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(string), typeof(string) };
+        //public static string[] HEADERS = { "count",     "start-min",    "segmentDur",   "Density",    "Label",       "EvStartMin", "EvStartSecs", "MinHz",     "MaxHz",     "EventDur",      "DurScore",    "HitScore",     "SnrScore",      "sdScore",     "GapScore",     "BWScore",      "WtScore",       "your tag",     "status" };
+        //                                    count	       Start	       segDuration	   Density	   __Label__	    EvStartMin	  EvStartSecs	 MinHz	      MaxHz	       eventDuration    DurScore       HitScore        SnrScore	        sdScore        Gapscore        BWScore         WtScore          your tag	    status	
 
-        public static DataTable WriteEvents2DataTable(double startMinute, List<AcousticEvent> predictedEvents, double sigDuration)
+        public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
         {
-            var dataTable = new DataTable();
-            //StringBuilder sb = KiwiRecogniser.WriteEvents(startMinute, sigDuration, predictedEvents.Count, predictedEvents);
-            //if (sb.Length > 1)
-            //{
-            //    sb.Remove(sb.Length - 2, 2); //remove the last endLine to prevent line gaps.
-            //    FileTools.Append2TextFile(reportfileName, sb.ToString());
-            //}
+            if (predictedEvents == null) return null;
+            var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);
+            if (predictedEvents.Count == 0) return dataTable;
+            foreach (var kiwiEvent in predictedEvents)
+            {
+                int segmentStartSec = (int)(segmentStartMinute * 60);
+                int eventStartAbsoluteSec   = (int)(segmentStartSec + kiwiEvent.StartTime);
+                //string duration     = DataTools.Time_ConvertSecs2Mins(segmentDuration);
+                string duration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
+
+                DataRow row = dataTable.NewRow();
+                row[HEADERS[0]] = count;                   //count
+                row[HEADERS[1]] = segmentStartMinute;      //start-min
+                row[HEADERS[2]] = duration;                //segmentDur
+                row[HEADERS[3]] = predictedEvents.Count;   //Density
+                row[HEADERS[4]] = kiwiEvent.Name;          //Label
+                row[HEADERS[5]] = kiwiEvent.StartTime;     //EvStartOffset
+                row[HEADERS[6]] = eventStartAbsoluteSec;   //EvStartSecs - from start of source ifle
+                row[HEADERS[7]] = kiwiEvent.MinFreq;       //MinHz
+                row[HEADERS[8]] = kiwiEvent.MaxFreq;       //MaxHz
+                row[HEADERS[9]] = kiwiEvent.Duration;      //EventDur
+                row[HEADERS[10]] = kiwiEvent.kiwi_durationScore;   //DurScore
+                row[HEADERS[11]] = kiwiEvent.kiwi_hitScore;        //HitScore
+                row[HEADERS[12]] = kiwiEvent.kiwi_snrScore;        //SnrScore
+                row[HEADERS[13]] = kiwiEvent.kiwi_sdPeakScore;     //sdScore
+                row[HEADERS[14]] = kiwiEvent.kiwi_gapScore;        //GapScore
+                row[HEADERS[15]] = kiwiEvent.kiwi_bandWidthScore;  //BWScore
+                row[HEADERS[16]] = kiwiEvent.ScoreNormalised;      //WtScore
+                dataTable.Rows.Add(row);
+                //Console.WriteLine(CsvTools.WriteDataTableRow(row, ","));
+            }
+
             return dataTable;
         }
 
@@ -708,13 +770,14 @@ namespace AnalysisPrograms
         public static void WriteHeaderToFile(string reportfileName, string parmasFile_Separator)
         {
             string reportSeparator = "\t";
-            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";        
-            string line = String.Format("Start{0}Duration{0}__Label__{0}StartMin{0}StartSec{0}DurSec{0}MinHz{0}MaxHz{0}durSc{0}hitSc{0}snrSc{0}sdSc{0}gapSc{0}BWSc{0}WtScore", reportSeparator);
+            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
+            string line = String.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}", reportSeparator, HEADERS); 
+            //reportSeparator, HEADERS[0],HEADERS[1],HEADERS[2],HEADERS[3],HEADERS[4],HEADERS[5],HEADERS[6],HEADERS[7],HEADERS[8],HEADERS[9],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[17],);
             FileTools.WriteTextFile(reportfileName, line);
         }
 
 
-        public static StringBuilder WriteEvents(double segmentStart, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
+        public static StringBuilder WriteEvents(double segmentStartMinute, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
         {
 
             string reportSeparator = ","; // for CSV files
@@ -731,9 +794,9 @@ namespace AnalysisPrograms
             {
                 foreach (AcousticEvent ae in eventList)
                 {
-                    int startSec = (int)((segmentStart * 60) + ae.StartTime);
+                    int startSec = (int)((segmentStartMinute * 60) + ae.StartTime);
                     string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13:f2}{0}{14:f2}{0}{15:f2}",
-                                         reportSeparator, segmentStart, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq,
+                                         reportSeparator, segmentStartMinute, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq,
                                          ae.kiwi_durationScore, ae.kiwi_hitScore, ae.kiwi_snrScore, ae.kiwi_sdPeakScore, ae.kiwi_gapScore, ae.kiwi_bandWidthScore, ae.ScoreNormalised);
                     sb.AppendLine(line);
                 }
@@ -763,59 +826,6 @@ namespace AnalysisPrograms
                 image.AddEvents(predictedEvents);
                 image.Save(path);
             }
-        }
-
-
-        public static void CheckArguments(string[] args)
-        {
-            if (args.Length != 2)
-            {
-                Log.WriteLine("NUMBER OF COMMAND LINE ARGUMENTS = {0}", args.Length);
-                foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", 2);
-                Usage();
-            }
-            CheckPaths(args);
-        }
-
-        /// <summary>
-        /// this method checks for the existence of the two files whose paths are expected as first two arguments of the command line.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            if (!File.Exists(args[0]))
-            {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
-            if (!File.Exists(args[1]))
-            {
-                Console.WriteLine("Cannot find initialisation file: <" + args[1] + ">");
-                Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
-        }
-
-
-        public static void Usage()
-        {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("KiwiDetect.exe recordingPath iniPath outputFileName");
-            Console.WriteLine("where:");
-            Console.WriteLine("recordingFileName:-(string) The path of the audio file to be processed.");
-            Console.WriteLine("iniPath:-          (string) The path of the ini file containing all required parameters.");
-            Console.WriteLine();
-            Console.WriteLine("NOTE: By default, the output dir is that containing the ini file.");
-            Console.WriteLine("");
-            Console.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
-            System.Environment.Exit(1);
         }
 
     } //end class

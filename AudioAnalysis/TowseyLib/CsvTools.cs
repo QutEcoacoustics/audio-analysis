@@ -145,5 +145,21 @@ namespace TowseyLib
             }
         } // DataTable2CSV()
 
+
+        public static string WriteDataTableRow(DataRow row, string seperateChar)
+        {
+            string seperator = "";
+            StringBuilder builder = new StringBuilder();
+            foreach (object item in row.ItemArray)
+            {
+                builder.Append(seperator).Append(item);
+                seperator = seperateChar;
+            }
+            return builder.ToString();
+        } // WriteDataTableRow()
+
+
+
+
     } //class
 }//namespace

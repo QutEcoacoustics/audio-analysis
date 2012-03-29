@@ -17,6 +17,8 @@
         public WavReader(string path)
         {
             ParseData(File.ReadAllBytes(path));
+            long ticks = (long)(this.Samples.Length / (double)this.SampleRate * 10000000);
+            this.Time = new TimeSpan(ticks);
         }
 
         /// <summary>
@@ -28,6 +30,8 @@
         public WavReader(byte[] wavData)
         {
             ParseData(wavData);
+            long ticks = (long)(this.Samples.Length / (double)this.SampleRate * 10000000);
+            this.Time = new TimeSpan(ticks);
         }
 
         /// <summary>

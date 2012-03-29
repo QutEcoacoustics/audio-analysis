@@ -106,7 +106,7 @@ namespace AudioAnalysisTools
             hits = RemoveIsolatedOscillations(hits);
 
             //EXTRACT SCORES AND ACOUSTIC EVENTS
-            scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);
+            scores = GetOscillationScores(hits, minHz, maxHz, sonogram.FBinWidth);//scores = fraction of BW bins in each row that have an oscilation hit.
             scores = DataTools.filterMovingAverage(scores, 3);
             oscFreq = GetOscillationFrequency(hits, minHz, maxHz, sonogram.FBinWidth);
             events = ConvertODScores2Events(scores, oscFreq, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, sonogram.Configuration.FreqBinCount, scoreThreshold,
