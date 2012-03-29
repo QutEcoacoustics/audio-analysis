@@ -106,6 +106,15 @@
         }
 
         /// <summary>
+        /// returns Time Span of the recording
+        /// </summary>
+        /// <returns></returns>
+        public TimeSpan Duration()
+        {
+            return GetWavReader().Time;
+        }
+
+        /// <summary>
         /// Reduces the signal sample rate by a factor of N if sample rate. 
         /// Requires the existing signal to be either 44100Hz or 88200 Hz.
         /// </summary>

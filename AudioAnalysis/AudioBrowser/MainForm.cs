@@ -6,7 +6,6 @@
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    //using System.Collections.Concurrent;
     using System.Diagnostics; //for the StopWatch only
     using Acoustics.Shared;
     using Acoustics.Tools.Audio;
@@ -345,10 +344,10 @@
                 int minimumLength = 100 * frameLength; //ignore recordings shorter than 100 frames
                 if (sampleCount <= minimumLength)
                 {
-                    Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than three frames). Will ignore.", sampleCount);
+                    Console.WriteLine("# WARNING: Recording is only {0} samples long (i.e. less than 100 frames). Will ignore.", sampleCount);
                     //break;
                 }
-                else
+                else //do analysis
                 {
                     //#############################################################################################################################################
                     //##### DO THE ANALYSIS ############ 

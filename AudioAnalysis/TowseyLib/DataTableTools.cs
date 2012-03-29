@@ -10,7 +10,7 @@ namespace TowseyLib
     {
 
 
-    static DataTable CreateTable(string[] headers, Type[] types)
+    public static DataTable CreateTable(string[] headers, Type[] types)
     {
         if (headers.Length != types.Length) return null;
         DataTable table = new DataTable();
@@ -38,7 +38,7 @@ namespace TowseyLib
         return table;
     }
 
-    static DataTable CreateTable(string[] headers, string[] types)
+    public static DataTable CreateTable(string[] headers, string[] types)
     {
         Type[] typeOfs = new Type[types.Length];
         for (int i = 0; i < headers.Length; i++)
@@ -148,6 +148,23 @@ namespace TowseyLib
         string expression = "Date > #1/1/00#";
         DataRow[] foundRows = dt.Select(expression);
     }
+ */
+
+        /// <summary>
+        /// sorts all the rows in a table without filtering
+        /// The empty string is the filtering term.
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="sortString"></param>
+        /// <returns></returns>
+    public static DataRow[] SortTable(DataTable dt, string sortString)
+    {
+        DataRow[] rows = dt.Select(string.Empty, sortString);
+        return rows;
+    }
+
+
+ /*
 
     #######################################################################################
     SORTING A TABLE
