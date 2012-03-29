@@ -186,6 +186,12 @@ namespace Acoustics.Shared
         public const string MediaTypeVcard = "text/vcard"; //: vCard (contact information); Defined in RFC 6350
         public const string MediaTypeXml = "text/xml"; //: Extensible Markup Language; Defined in RFC 3023
 
+        public const string MediaTypeJson = "application/json";
+        public const string MediaTypeJson1 = "application/x-javascript";
+        public const string MediaTypeJson2= "text/javascript";
+        public const string MediaTypeJson3 = "text/x-javascript";
+        public const string MediaTypeJson4 = "text/x-json";
+
         public const string ExtCmd = "cmd";
         public const string ExtCmd1 = "bat";
 
@@ -201,6 +207,8 @@ namespace Acoustics.Shared
         public const string ExtVcard = "vcard";
 
         public const string ExtXml = "xml";
+
+        public const string ExtJson = "json";
 
 
         #endregion
