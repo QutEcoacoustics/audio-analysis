@@ -262,17 +262,23 @@
         {
             // only supports converting to .wav and .mp3
             string codec;
+            var ext = MediaTypes.CanonicaliseExtension(output.Extension);
 
-            switch (output.Extension.ToUpperInvariant().Trim('.'))
+            switch (ext)
             {
-                case "WAV":
+                case MediaTypes.ExtWav:
                     codec = "pcm_s16le"; // pcm signed 16-bit little endian - compatible with CDDA
                     break;
-                case "MP3":
+                case MediaTypes.ExtMp3:
                     codec = "libmp3lame";
                     break;
-                case "OGG":
+                case MediaTypes.ExtOgg:
+                case MediaTypes.ExtOggAudio:
                     codec = "libvorbis -aq 60"; // ogg container vorbis encoder at quality level of 60
+                    break;
+                case MediaTypes.ExtWebm:
+                case MediaTypes.ExtWebmAudio:
+                    codec = "libvorbis -aq 60"; // webm container vorbis encoder at quality level of 60
                     break;
                 default:
                     codec = "copy";

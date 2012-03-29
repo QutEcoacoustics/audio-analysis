@@ -1,6 +1,7 @@
 namespace Acoustics.Shared
 {
     using System.Collections.Generic;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Linq;
 
@@ -97,6 +98,8 @@ namespace Acoustics.Shared
 
         public const string ExtOgg = "ogg";
 
+        public const string ExtOggAudio = "oga";
+
         public const string ExtWavpack = "wv";
 
         public const string ExtMp3 = "mp3";
@@ -104,6 +107,8 @@ namespace Acoustics.Shared
         public const string ExtWav = "wav";
 
         public const string ExtWebm = "webm";
+
+        public const string ExtWebmAudio = "webma";
 
         public const string ExtRa = "ra";
 
@@ -188,7 +193,7 @@ namespace Acoustics.Shared
 
         public const string MediaTypeJson = "application/json";
         public const string MediaTypeJson1 = "application/x-javascript";
-        public const string MediaTypeJson2= "text/javascript";
+        public const string MediaTypeJson2 = "text/javascript";
         public const string MediaTypeJson3 = "text/x-javascript";
         public const string MediaTypeJson4 = "text/x-json";
 
@@ -223,6 +228,7 @@ namespace Acoustics.Shared
                 new MediaTypeExtGroup{ MediaType = MediaTypeMp3, Extension = ExtMp3, Group = MediaTypeGroup.Audio}, //: MP3 or other MPEG audio; Defined in RFC 3003
                 new MediaTypeExtGroup{ MediaType = MediaTypeMp31, Extension = ExtMp3, Group = MediaTypeGroup.Audio}, 
                 new MediaTypeExtGroup{ MediaType = MediaTypeOggAudio, Extension = ExtOgg, Group = MediaTypeGroup.Audio}, //: Ogg Vorbis, Speex, Flac and other audio; Defined in RFC 5334
+                new MediaTypeExtGroup{ MediaType = MediaTypeOggAudio, Extension = ExtOggAudio, Group = MediaTypeGroup.Audio},
                 new MediaTypeExtGroup{ MediaType = MediaTypeVorbis, Extension = ExtOgg, Group = MediaTypeGroup.Audio},  //: Vorbis encoded audio; Defined in RFC 5215
                 new MediaTypeExtGroup{ MediaType = MediaTypeWma, Extension = ExtWma, Group = MediaTypeGroup.Audio},  //: Windows Media Audio; Documented in Microsoft KB 288102
                 new MediaTypeExtGroup{ MediaType = MediaTypeReal, Extension = ExtRa, Group = MediaTypeGroup.Audio},  //: RealAudio; Documented in RealPlayer Customer Support Answer 2559
@@ -231,6 +237,7 @@ namespace Acoustics.Shared
                 new MediaTypeExtGroup{ MediaType = MediaTypeWav1, Extension = ExtWav, Group = MediaTypeGroup.Audio}, 
                 new MediaTypeExtGroup{ MediaType = MediaTypeWav2 , Extension = ExtWav, Group = MediaTypeGroup.Audio}, //: WAV audio; Defined in RFC 2361
                 new MediaTypeExtGroup{ MediaType = MediaTypeWebMAudio , Extension = ExtWebm, Group = MediaTypeGroup.Audio},  //: WebM open media format
+                new MediaTypeExtGroup{ MediaType = MediaTypeWebMAudio , Extension = ExtWebmAudio, Group = MediaTypeGroup.Audio},  //: WebM open media format
                 new MediaTypeExtGroup{ MediaType = MediaTypeAsf2 , Extension = ExtAsf, Group = MediaTypeGroup.Audio}, 
                 new MediaTypeExtGroup{ MediaType = MediaTypeWavpack , Extension = ExtWavpack, Group = MediaTypeGroup.Audio}, 
                 new MediaTypeExtGroup{ MediaType = MediaTypePcm , Extension = ExtWav, Group = MediaTypeGroup.Audio}, 
@@ -505,6 +512,50 @@ namespace Acoustics.Shared
         {
             var mediaType = GetMediaType(extension, mediaTypeGroup);
             return mediaType != MediaTypeBin;
+        }
+
+        public static ImageFormat GetImageFormat(string extension)
+        {
+            ImageFormat format;
+
+            switch (MediaTypes.CanonicaliseExtension(extension))
+            {
+                //case MediaTypes.ExtBmp:
+                //    format = ImageFormat.Bmp;
+                //    break;
+                //case MediaTypes.ExtEmf:
+                //    format = ImageFormat.Emf;
+                //    break;
+                //case MediaTypes.ExtExif:
+                //    format = ImageFormat.Exif;
+                //    break;
+                //case MediaTypes.ExtGif:
+                //    format = ImageFormat.Gif;
+                //    break;
+                case MediaTypes.ExtIco:
+                    format = ImageFormat.Icon;
+                    break;
+                case MediaTypes.ExtJpeg:
+                    format = ImageFormat.Jpeg;
+                    break;
+                //case MediaTypes.ExtBmp:
+                //    format = ImageFormat.MemoryBmp;
+                //    break;
+                case MediaTypes.ExtPng:
+                    format = ImageFormat.Png;
+                    break;
+                case MediaTypes.ExtTiff:
+                    format = ImageFormat.Tiff;
+                    break;
+                //case MediaTypes.ExtWmf:
+                //    format = ImageFormat.Wmf;
+                //    break;
+                default:
+                    format = ImageFormat.Jpeg;
+                    break;
+            }
+
+            return format;
         }
     }
 
