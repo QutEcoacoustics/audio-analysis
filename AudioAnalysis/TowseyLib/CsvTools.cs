@@ -28,6 +28,29 @@ namespace TowseyLib
            }
 
 
+         public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader, Type[] types)
+         {
+             string[] csvRows = System.IO.File.ReadAllLines(filePath);
+             var dt = new DataTable();
+             if (isFirstRowHeader)
+             {
+                 string[] headers = csvRows[0].Split(',');
+                 for (int i = 0; i < headers.Length; i++) dt.Columns.Add(headers[i], types[i]);
+                 csvRows[0] = null; //remove header row
+             }
+
+             string[] fields = null;
+             foreach (string csvRow in csvRows)
+             {
+                 if (csvRow == null) continue; //skip header row
+                 fields = csvRow.Split(',');
+                 DataRow row = dt.NewRow();
+                 row.ItemArray = fields;
+                 dt.Rows.Add(row);
+             }
+             return dt;
+         }
+
 
         //#######################################################################################
         //READING A TABLE FROM A CSV FILE
