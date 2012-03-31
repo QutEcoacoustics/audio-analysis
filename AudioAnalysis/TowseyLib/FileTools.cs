@@ -145,48 +145,6 @@ namespace TowseyLib
             return opPath;
         }
 
-        /// <summary>
-        /// returns a list of the column values in a csv file plus the column headings
-        /// </summary>
-        /// <param name="csvFileName"></param>
-        /// <returns></returns>
-        public static System.Tuple<List<string>, List<double[]>> ReadCSVFile(string csvFileName)
-        {
-            string dir = Path.GetDirectoryName(csvFileName);
-            string pathSansExtention = Path.GetFileNameWithoutExtension(csvFileName);
-            //string opFile = Path.Combine(dir, pathSansExtention + ".png");
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
-
-            int lineCount  = lines.Count;
-            string[] words = lines[0].Split(',');
-            int columnCount = words.Length;
-
-            //GET the CSV COLUMN HEADINGS
-            List<string> headers = new List<string>();
-            for (int c = 0; c < columnCount; c++) headers.Add(words[c]);
-
-            //GET the CSV COLUMN HEADINGS
-            //set up the matrix as List of arrays
-            List<double[]> values = new List<double[]>();
-            for (int c = 0; c < columnCount; c++)
-            {
-                double[] array = new double[lineCount-1];
-                values.Add(array);
-            }
-
-            //fill the arrays
-            for (int r = 1; r < lineCount; r++)
-            {
-                words = lines[r].Split(',');
-                for (int c = 0; c < columnCount; c++)
-                {
-                    values[c][r-1] = Double.Parse(words[c]);
-                }
-           }
-
-            return System.Tuple.Create(headers, values);
-        }
-
 
 
         public static List<string> ReadTextFile(string fName)
@@ -350,50 +308,6 @@ namespace TowseyLib
             }
 
             return matrix;
-        }
-
-        /// <summary>
-        /// Returns the requested column of data from a CSV file and also returns the column header
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <param name="colNumber"></param>
-        /// <param name="header"></param>
-        /// <returns></returns>
-        public static double[] ReadColumnOfCSVFile(string fileName, int colNumber, out string header)
-        {
-            List<string> lines = FileTools.ReadTextFile(fileName);
-            string[] words = lines[0].Split(',');
-            header = words[colNumber];
-
-            double[] array = new double[lines.Count - 1]; //-1 because ignore header
-            //read csv data into arrays.
-            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
-            {
-                words = lines[i].Split(',');
-                array[i - 1] = Double.Parse(words[colNumber]);
-                if (Double.IsNaN(array[i - 1]))
-                {
-                    array[i - 1] = 0.0;
-                }
-            }//end 
-            return array;
-        }
-
-
-
-
-        public static void AddColumnOfValuesToCSVFile(string csvFileName, string header, double[] values, string opFileName)
-        {
-            List<string> lines = FileTools.ReadTextFile(csvFileName);
-            //String.Concat(lines[0], ",", header);
-            lines[0] += ("," + header);
-            for (int i = 1; i < lines.Count; i++) //ignore first line = header.
-            {
-                //String.Concat(lines[i], ",", values[i-1]);
-                lines[i] += ("," + values[i - 1]);
-            }//end 
-
-            FileTools.WriteTextFile(opFileName, lines);
         }
 
 

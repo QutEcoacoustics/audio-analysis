@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.ComponentModel;
+    using System.Data;
     using System.IO;
     using System.Reflection;
     using System.Threading;
@@ -57,6 +58,10 @@
         private Bitmap barTrackImage;
         //private FileInfo fiCurrentWaveSegment;
 
+
+        /// <summary>
+        /// jjj
+        /// </summary>
         public MainForm()
         {
             // must be here, must be first
@@ -462,7 +467,9 @@
         {
             int error = 0;
             //USE FOLLOWING LINES TO LOAD A CSV FILE
-            var tuple = FileTools.ReadCSVFile(csvPath);
+            DataTable dt = CsvTools.ReadCSVToTable(csvPath, true, null);
+
+            var tuple = CsvTools.ReadCSVFile(csvPath);
             var headers = tuple.Item1;  //List<string>
             var values = tuple.Item2;  //List<double[]>> 
 
@@ -583,6 +590,15 @@
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
+            if (! settings.fiSourceRecording.Exists)
+            {
+                Console.WriteLine("    The source file does not exist: <{0}>", settings.fiSourceRecording.FullName);
+                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
+                return;
+            }
+
+
+
             // GET MOUSE LOCATION
             int myX = e.X;
             int myY = e.Y;
@@ -606,7 +622,6 @@
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
 
             string outputSegmentPath = Path.Combine(settings.diOutputDir.FullName, segmentFName); //path name of the segment file extracted from long recording
-
             FileInfo fiOutputSegment = new FileInfo(outputSegmentPath);
 
 

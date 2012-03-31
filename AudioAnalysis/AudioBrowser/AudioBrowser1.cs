@@ -684,7 +684,7 @@ namespace AudioBrowser
         {
             int error = 0;
             //USE FOLLOWING LINES TO LOAD A CSV FILE
-            var tuple = FileTools.ReadCSVFile(csvPath);
+            var tuple = CsvTools.ReadCSVFile(csvPath);
             var headers = tuple.Item1;  //List<string>
             var values = tuple.Item2;  //List<double[]>> 
 

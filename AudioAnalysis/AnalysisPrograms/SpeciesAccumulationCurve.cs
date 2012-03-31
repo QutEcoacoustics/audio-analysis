@@ -284,27 +284,27 @@ namespace AnalysisPrograms
             string header1, header2, header3, header4, header5, header6;
 
             int colNumber1 = offset+1;    //background noise
-            double[] array1 = FileTools.ReadColumnOfCSVFile(fileName, colNumber1, out header1);
+            double[] array1 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber1, out header1);
             //array1 = DataTools.NormaliseArea(array1);
 
             int colNumber2 = offset + 3;  //SegmentCount
-            double[] array2 = FileTools.ReadColumnOfCSVFile(fileName, colNumber2, out header2);
+            double[] array2 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber2, out header2);
             array2 = DataTools.NormaliseArea(array2);
 
             int colNumber3 = offset + 8;  //H[avSpectrum]
-            double[] array3 = FileTools.ReadColumnOfCSVFile(fileName, colNumber3, out header3);
+            double[] array3 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber3, out header3);
             array3 = DataTools.NormaliseArea(array3);
 
             int colNumber4 = offset + 9;  //H[varSpectrum] 
-            double[] array4 = FileTools.ReadColumnOfCSVFile(fileName, colNumber4, out header4);
+            double[] array4 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber4, out header4);
             array4 = DataTools.NormaliseArea(array4);
 
             int colNumber5 = offset + 10;  //number of clusters
-            double[] array5 = FileTools.ReadColumnOfCSVFile(fileName, colNumber5, out header5);
+            double[] array5 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber5, out header5);
             array5 = DataTools.NormaliseArea(array5);
 
             int colNumber6 = offset + 11;  //av cluster duration
-            double[] array6 = FileTools.ReadColumnOfCSVFile(fileName, colNumber6, out header6);
+            double[] array6 = CsvTools.ReadColumnOfCSVFile(fileName, colNumber6, out header6);
             array6 = DataTools.NormaliseArea(array6);
 
             //create sampling bias array - ie bias towards the dawn chorus
