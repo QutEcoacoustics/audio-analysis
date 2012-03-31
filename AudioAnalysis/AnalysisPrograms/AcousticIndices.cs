@@ -827,8 +827,9 @@
             //Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
             //                                   header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
 
-            FileTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
+            CsvTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
         } //AddColumnOfWeightedIndicesToCSVFile()
+
 
         public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
         {
@@ -839,7 +840,7 @@
             for (int i = 0; i < columns.Length; i++)
             {
                 string header;
-                double[] array = FileTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
+                double[] array = CsvTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
                 arrays.Add(DataTools.NormaliseArea(array)); //normalize the arrays to get weighted index.
                 colNames.Add(header);
                 arrayLength = array.Length;
@@ -1040,57 +1041,6 @@
                 }
             }
             Console.WriteLine("speciesTotal= " + speciesTotal);
-        }
-
-
-        public static void CheckArguments(string[] args)
-        {
-            int argumentCount = 2;
-            if (args.Length != argumentCount)
-            {
-                Log.WriteLine("THE COMMAND LINE HAS {0} ARGUMENTS", args.Length);
-                foreach (string arg in args) Log.WriteLine(arg + "  ");
-                Log.WriteLine("YOU REQUIRE {0} COMMAND LINE ARGUMENTS\n", argumentCount);
-                Usage();
-            }
-            CheckPaths(args);
-        }
-
-        /// <summary>
-        /// this method checks for the existence of a file and directory expected as two arguments of the command line.
-        /// </summary>
-        /// <param name="args"></param>
-        public static void CheckPaths(string[] args)
-        {
-            if (!File.Exists(args[0]))
-            {
-                Console.WriteLine("Cannot find recording file <" + args[0] + ">");
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
-            string opDir = Path.GetDirectoryName(args[1]);
-            if (!Directory.Exists(opDir))
-            {
-                Console.WriteLine("Cannot find output directory: <" + opDir + ">");
-                Usage();
-                Console.WriteLine("Press <ENTER> key to exit.");
-                Console.ReadLine();
-                System.Environment.Exit(1);
-            }
-        }
-        public static void Usage()
-        {
-            Console.WriteLine("INCORRECT COMMAND LINE.");
-            Console.WriteLine("USAGE:");
-            Console.WriteLine("RichnessIndices.exe recordingPath outputFilePath");
-            Console.WriteLine("where:");
-            Console.WriteLine("recordingFileName:-(string) Path of the audio file to be processed.");
-            Console.WriteLine("outputFileName:-   (string) Path of the output file to store results.");
-            Console.WriteLine("");
-            Console.WriteLine("\nPress <ENTER> key to exit.");
-            Console.ReadLine();
-            System.Environment.Exit(1);
         }
 
 

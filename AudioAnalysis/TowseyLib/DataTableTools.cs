@@ -38,6 +38,7 @@ namespace TowseyLib
         return table;
     }
 
+
     public static DataTable CreateTable(string[] headers, string[] types)
     {
         Type[] typeOfs = new Type[types.Length];
@@ -56,6 +57,28 @@ namespace TowseyLib
         return CreateTable(headers, typeOfs);
     }
 
+    /// <summary>
+    /// setup skeleton of new table with same headers and column types as passed tabloel
+    /// </summary>
+    /// <param name="dt"></param>
+    /// <returns></returns>
+    public static DataTable CreateTable(DataTable dt)
+    {
+        var headers = new List<string>();
+        var typeOfs = new List<Type>();
+
+        
+        //DataColumn[] cols = dt.Columns;
+        foreach (DataColumn col in dt.Columns)
+        {
+            headers.Add(col.ColumnName);
+            typeOfs.Add(col.DataType);
+        }
+        return CreateTable(headers.ToArray(), typeOfs.ToArray());
+    }
+        
+        
+        
 //#######################################################################################
 /*    Program that uses DataTable with DataGridView [C#]
 
@@ -149,6 +172,20 @@ namespace TowseyLib
         DataRow[] foundRows = dt.Select(expression);
     }
  */
+        /// <summary>
+        /// NOT DEBUGGED!!!!!
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="colName"></param>
+        /// <param name="value"></param>
+    public static void DeleteRows(DataTable dt, string colName, string value)
+    {
+        var rows = dt.Select(colName+ " != "+value);
+        foreach (var row in rows)
+            row.Delete();
+    }
+
+
 
         /// <summary>
         /// sorts all the rows in a table without filtering
@@ -157,12 +194,30 @@ namespace TowseyLib
         /// <param name="dt"></param>
         /// <param name="sortString"></param>
         /// <returns></returns>
-    public static DataRow[] SortTable(DataTable dt, string sortString)
+    public static DataRow[] SortRows(DataTable dt, string sortString)
     {
         DataRow[] rows = dt.Select(string.Empty, sortString);
         return rows;
     }
 
+    /// <summary>
+    /// sorts all the rows in a table without filtering
+    /// The empty string is the filtering term.
+    /// </summary>
+    /// <param name="dt"></param>
+    /// <param name="sortString"></param>
+    /// <returns></returns>
+    public static DataTable SortTable(DataTable dt, string sortString)
+    {
+        DataRow[] rows = SortRows(dt, sortString);
+        //DataTable opDataTable = new DataTable();
+        DataTable opDataTable = CreateTable(dt);
+        foreach (DataRow row in rows)
+        {
+            opDataTable.ImportRow(row);
+        }
+        return opDataTable;
+    }
 
  /*
 
