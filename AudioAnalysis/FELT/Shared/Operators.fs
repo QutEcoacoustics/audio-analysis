@@ -37,6 +37,7 @@ namespace System
 
         let inline flip f a b = f b a
         let inline (><) f a b = f b a
+        let inline ifelse a b condition = if condition then a else b
 
         // http://stackoverflow.com/a/3928197/224512
         let inline isNull o = System.Object.ReferenceEquals(o, null)
@@ -51,7 +52,12 @@ namespace System
         let transpose (mtx : _ [,]) func = Array2D.init (mtx.GetLength 1) (mtx.GetLength 0) (fun x y -> func(mtx.[y,x]))
 
 
-
+        let rec whilerec state (condition: 'a -> bool) (action: 'a -> 'a) = 
+            if condition state then
+                let state' = action state
+                whilerec state' condition action
+            else 
+                state
             
 
         type System.Array with

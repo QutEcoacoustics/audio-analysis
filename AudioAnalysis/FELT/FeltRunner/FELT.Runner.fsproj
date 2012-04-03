@@ -72,7 +72,7 @@
     <Compile Include="CustomConfig.fs" />
     <Compile Include="SummationReport.fs" />
     <Compile Include="Program.fs" />
-    <Content Include="ExcelResultsSummationTemplate.xlsx">
+    <Content Include="ExcelResultsSummationTemplate.xlsm">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
