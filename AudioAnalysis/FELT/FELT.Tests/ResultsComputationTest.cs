@@ -164,8 +164,8 @@ namespace FELT.Tests
 
             var ops = new[]
                 {
-                    new Tuple<string, string, string>("abc", "123", ""), new Tuple<string, string, string>("bca", "456", "test info"),
-                    new Tuple<string, string, string>("cab", "789", "")
+                    new Tuple<string, string, string>("abc", "123", string.Empty), new Tuple<string, string, string>("bca", "456", "test info"),
+                    new Tuple<string, string, string>("cab", "789", string.Empty)
                 };
 
             target.Calculate(trainingData, testData, result, ListModule.OfArray(ops));

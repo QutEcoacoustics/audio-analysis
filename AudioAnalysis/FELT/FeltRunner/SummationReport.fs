@@ -14,17 +14,63 @@
         open FELT.Results
         open FELT.Results.EpPlusHelpers
 
+        type info =
+            {
+                features : seq<string>
+                sensitivities : seq<string>
+                accuracies: seq<string>
+                roc : string
+                time : string
+                memory : string
+            }
         
 
         /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
         let Write (dest: FileInfo) (template: FileInfo) (configs: seq<ReportConfig>) =
             
             // set up results
+            let numRows = Seq.length configs
             let fileNames = Seq.map (fun c -> c.ReportDestination) configs
             let analyses =  Seq.map (fun c -> c.AnalysisType) configs
 
-            let allKnownFeatureNames = [""]
+            let gatherInfo (file:FileInfo) : info =
+                use file = new ExcelPackage(file)
+                let wb = file.Workbook
+                let logws = wb.Worksheets.["Log"]
+                let namesStart = wb.Names.["FeatureNames"]                
+                let placesStart = wb.Names.["PlacementSummary"] 
 
+                let fn  = 
+                    let initial = namesStart.Start.Column, []
+                    let test (x,_) = 
+                        let v = logws.Cells.[namesStart.Start.Row, x].Value
+                        if isNull v then
+                            false
+                        else
+                            v.ToString() |> String.IsNullOrWhiteSpace |> not
+                    
+                    let action (col, list) = col + 1 , (logws.Cells.[namesStart.Start.Row, col].Value.ToString()) :: list
+                    whilerec initial test action |> snd
+                let ss, ass =
+                    let initial = placesStart.Start.Row, []
+                    let test (x,_) = 
+                        let v = logws.Cells.[x, placesStart.Start.Column].Value
+                        if isNull v then
+                            false
+                        else
+                            v.ToString() |> String.IsNullOrWhiteSpace |> not
+                    
+                    let action (row, list) = 
+                        let items = Array2D.flatten <| unbox (logws.Cells.[row, placesStart.Start.Column, row, placesStart.Start.Column + 4]).Value 
+                        row + 1 , items :: list
+                    let r = whilerec initial test action |> snd
+                    Seq.map (third >> string) r, Seq.map (fourth >> string) r
+                let roc, timeTaken, memory =
+                    wb.Names.["RocScore"].Value |> nullToString, wb.Names.["TimeTaken"].Value.ToString() |> nullToString, wb.Names.["MemUsage"].Value.ToString() |> nullToString
+                {features = fn; sensitivities = ss; accuracies = ass; roc = roc; time = timeTaken; memory = memory}
+
+            let allKnownInformation = Seq.map gatherInfo fileNames
+            let allKnownFeatures =  allKnownInformation |> Seq.map (fun x -> x.features) |>Seq.concat |> Set.ofSeq
 
             // open file
             Log "Report creation"
@@ -34,28 +80,38 @@
             let summaryws =  workbook.Worksheets.["Summary"]
             let performancews = workbook.Worksheets.["Performance"]
 
-
             // write data
             Log "summary sheet"
             setCellVert summaryws "Filenames" fileNames (fun cell fn -> cell.Hyperlink <- new Uri(fn.FullName); cell.Value <- fn.Name)
 
             setVert summaryws "AnalysisNames" analyses id
+            setVert summaryws "Filenames" fileNames (fun fi -> fi.Name)
 
-            setHorz summaryws "Features" allKnownFeatureNames id
+            setHorz summaryws "Features" allKnownInformation id
 
+//            // fill feature matrix formulas down
+//            let featureCell = workbook.Names.["SummaryGrid"]
+//            let featureRow = summaryws.Cells.[featureCell.Start.Row, featureCell.Start.Column, featureCell.Start.Row, featureCell.Start.Column + (Seq.length allKnownFeatureNames)]
+//            fillDown summaryws featureRow (numRows - 1)
+
+
+            let matchFeatures =  (=) >> Seq.tryFind >< allKnownFeatures >> Option.isSome >> ifelse 1 0
+            setSquare summaryws "SummaryGrid" <| Seq.map (fun info -> Seq.map matchFeatures info.features) allKnownInformation 
 
             Log "end summary sheet"
             Log "performances sheet"
 
-            // This sheet is automatic, the only thing to do is fill down all the formulas
-            let width = performancews.Dimension.End.Column
+            // This sheet partly automatic, so fill down formulas in those columns
+            let width = 3 // performancews.Dimension.End.Column
             let startRow = workbook.Names.["DataStartRow"]
             
             let templateRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
-            
-            let fillRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
+            fillDown performancews templateRange (numRows - 1)
 
-            let a = new OfficeOpenXml.ExcelAddress(startRow.Start.Row,startRow.Start.Column, startRow.Start.Row, width)
+            // now set values
+            let vs =
+                Seq.map (fun info -> info.roc .+ info.accuracies ++ info.sensitivities +. "" +. info.time +. info.memory) allKnownInformation
+            setSquare performancews "ResultsTable" vs
 
             Log "end performances sheet"
             // save file

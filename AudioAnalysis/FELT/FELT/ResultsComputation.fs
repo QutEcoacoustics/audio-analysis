@@ -42,6 +42,12 @@
                 x
         let noInfinities = Seq.map notInfinity
         
+        let nullToString (s:obj) =
+            if isNull s || String.IsNullOrWhiteSpace(unbox s) then
+                ""
+            else
+                s.ToString()
+
         let setv (ws:ExcelWorksheet) name value =
                 ws.SetValue(ws.Workbook.Names.[name].Address, value)
 
@@ -81,6 +87,19 @@
         let setCellSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) (f: ExcelRange -> 'd -> unit) =
             let sc = ws.Workbook.Names.[name].Start
             Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> f ws.Cells.[sc.Row + indexi, sc.Column + indexj] value)) values
+        
+        let fillDown (ws:ExcelWorksheet) (startingRange:ExcelRangeBase) numRows =
+            let srCell col = ws.Cells.[startingRange.Start.Row, col]
+            let fillRange = startingRange.Offset(1, 0, numRows, startingRange.End.Column - startingRange.Start.Column)
+            for col in fillRange.Start.Column..fillRange.End.Column do
+                let address = new ExcelAddress(fillRange.Start.Row, col, fillRange.End.Row, col)    
+                let src = (srCell col)
+                if src.IsArrayFormula then
+                    ws.Cells.[address.Address].CreateArrayFormula(src.Formula)
+                else
+                    ws.Cells.[address.Address].Formula <- src.Formula
+                    
+
 
     type ResultsComputation(config:ReportConfig) = class
         let OnePlace:Place = 1

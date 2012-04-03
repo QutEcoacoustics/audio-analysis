@@ -5,12 +5,28 @@
 
     [<AutoOpen>]
     module Seq =
+            
+
+            let inline (++) x y = Seq.append x y
+            let inline (+.) x y = Seq.append x [|y|]
+            let inline (.+) x y = Seq.append [|x|] y
+            let inline (.+.) x y = [| x; y |] :> seq<_>
 
             let tupleWith y xs =
                 Seq.map (fun x -> (x, y)) xs
 
             type Count = int
             let ZeroCount:Count = 0
+
+            let first xs = Seq.nth 1 xs
+            let second xs = Seq.nth 2 xs
+            let third xs = Seq.nth 3 xs
+            let fourth xs = Seq.nth 4 xs
+            let fifth xs = Seq.nth 5 xs
+
+            let mapJagged f = Seq.map (Seq.map f)
+
+            
 
             let histogramBy f bins collection =
                 let m = bins |> tupleWith 0 |>  Map.ofSeq

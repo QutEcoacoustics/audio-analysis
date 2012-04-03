@@ -37,6 +37,7 @@
         open FELT.FindEventsLikeThis
         open FELT.Results
         open FELT.Workflows
+        open Microsoft.FSharp.Collections
         
 
         let fail() =
@@ -103,12 +104,12 @@
                     fail()
                     null
 
-        let reportDateName (dt: DateTime) analysis = 
-            dt, sprintf "%s\\%s %s.xlsx" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis
+        let reportDateName (dt: DateTime) e analysis = 
+            dt, sprintf "%s\\%s %s.xls%s" resultsDirectory.FullName (dt.ToString "yyyy-MM-dd HH_mm_ss") analysis e
 
-        let logger = Logger.create ((String.Empty |> reportDateName batchRunDate |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
+        let logger = Logger.create ((String.Empty |> reportDateName batchRunDate "x" |> snd |> fun x -> new FileInfo(x)).FullName + ".log")
 
-        let reportName analysis = reportDateName DateTime.Now analysis
+        let reportName analysis = reportDateName DateTime.Now "x" analysis 
 
         // load in features
         let features = new ResizeArray<string>(config.["Features"].Split(','))
@@ -175,9 +176,9 @@
             Info "end: main analysis..."
 
             let sumReport = 
-                if configs.Length > 1 then
+                if configs |> Seq.length > 1 then
                     Log "Creating summary report"
-                    let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "Summary" |> snd)) (new FileInfo("ExcelResultsComputationTemplate.xlsx")) configs
+                    let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "m" "Summary" |> snd)) (new FileInfo("ExcelResultsSummationTemplate.xlsm")) configs
                     Log "Finished summary report"    
                     Some(dest)
                 else
@@ -195,7 +196,7 @@
             Warnf "Key pressed: %c" openFile.KeyChar
 
             if Char.ToLower openFile.KeyChar = 'y' then
-                let f = if sumReport.IsSome then sumReport.Value else configs.Head.ReportDestination
+                let f = if sumReport.IsSome then sumReport.Value else (Seq.first configs).ReportDestination
                 Infof "Opening file: %s" f.FullName
                 Process.Start(f.FullName) |> ignore
 
