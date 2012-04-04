@@ -47,7 +47,11 @@
                 ""
             else
                 s.ToString()
-
+        let nullToFloat (f:obj) =
+            if isNull f || (not (f :? float)) then
+                0.0
+            else
+                f :?> float
         let setv (ws:ExcelWorksheet) name value =
                 ws.SetValue(ws.Workbook.Names.[name].Address, value)
 
@@ -90,14 +94,14 @@
         
         let fillDown (ws:ExcelWorksheet) (startingRange:ExcelRangeBase) numRows =
             let srCell col = ws.Cells.[startingRange.Start.Row, col]
-            let fillRange = startingRange.Offset(1, 0, numRows, startingRange.End.Column - startingRange.Start.Column)
+            let fillRange = startingRange.Offset(1, 0, numRows, startingRange.End.Column - startingRange.Start.Column + 1)
             for col in fillRange.Start.Column..fillRange.End.Column do
                 let address = new ExcelAddress(fillRange.Start.Row, col, fillRange.End.Row, col)    
                 let src = (srCell col)
                 if src.IsArrayFormula then
-                    ws.Cells.[address.Address].CreateArrayFormula(src.Formula)
+                    ws.Cells.[address.Address].CreateArrayFormula(src.FormulaR1C1)
                 else
-                    ws.Cells.[address.Address].Formula <- src.Formula
+                    ws.Cells.[address.Address].FormulaR1C1 <- src.FormulaR1C1
                     
 
 
@@ -187,12 +191,12 @@
                 let rocPredictions, rocMeasurements = 
                     let pm input =
                         let testIndex, place = input
-                        let p = 
+                        let m = 
                             if tagsThatOnlyOccurInTestData.Contains testData.Classes.[testIndex] then//|| place > rocBinaryClassifierPlaceLimit then 
                                 0.0 
                             else 
                                 1.0
-                        let m =  
+                        let p =  
                             if place = 0 then 
                                 0.0 
                             else 

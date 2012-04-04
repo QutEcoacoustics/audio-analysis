@@ -17,11 +17,11 @@
         type info =
             {
                 features : seq<string>
-                sensitivities : seq<string>
-                accuracies: seq<string>
-                roc : string
-                time : string
-                memory : string
+                sensitivities : seq<obj>
+                accuracies: seq<obj>
+                roc : obj
+                time : obj
+                memory : obj
             }
         
 
@@ -51,8 +51,10 @@
                     
                     let action (col, list) = col + 1 , (logws.Cells.[namesStart.Start.Row, col].Value.ToString()) :: list
                     whilerec initial test action |> snd
+                let positives, negatives =
+                    wb.Names.["RocPositives"].Value |> nullToFloat, wb.Names.["RocNegatives"].Value.ToString() |> nullToFloat |> float
                 let ss, ass =
-                    let initial = placesStart.Start.Row, []
+                    let initial = placesStart.Start.Row, Seq.empty<Count>
                     let test (x,_) = 
                         let v = logws.Cells.[x, placesStart.Start.Column].Value
                         if isNull v then
@@ -61,16 +63,23 @@
                             v.ToString() |> String.IsNullOrWhiteSpace |> not
                     
                     let action (row, list) = 
-                        let items = Array2D.flatten <| unbox (logws.Cells.[row, placesStart.Start.Column, row, placesStart.Start.Column + 4]).Value 
-                        row + 1 , items :: list
+                        let v = int << nullToFloat <| (logws.Cells.[row, placesStart.Start.Column + 1]).Value  
+                        row + 1 , v .+ list
                     let r = whilerec initial test action |> snd
-                    Seq.map (third >> string) r, Seq.map (fourth >> string) r
+                    Logf "%A" r
+                    Seq.map (fun  c -> box <| float c / (positives)) r, Seq.map (fun  c -> box <| float c / (positives + negatives)) r
                 let roc, timeTaken, memory =
-                    wb.Names.["RocScore"].Value |> nullToString, wb.Names.["TimeTaken"].Value.ToString() |> nullToString, wb.Names.["MemUsage"].Value.ToString() |> nullToString
+                    wb.Names.["RocSummary"].Value |> nullToFloat, wb.Names.["TimeTaken"].Value.ToString() |> nullToString, wb.Names.["MemUsage"].Value.ToString() |> nullToFloat |> float
                 {features = fn; sensitivities = ss; accuracies = ass; roc = roc; time = timeTaken; memory = memory}
 
             let allKnownInformation = Seq.map gatherInfo fileNames
-            let allKnownFeatures =  allKnownInformation |> Seq.map (fun x -> x.features) |>Seq.concat |> Set.ofSeq
+            let allKnownFeatures =  
+                    allKnownInformation  
+                    |> Seq.map (fun x -> x.features) 
+                    |> Seq.concat 
+                    |> Set.ofSeq
+                
+                
 
             // open file
             Log "Report creation"
@@ -87,7 +96,7 @@
             setVert summaryws "AnalysisNames" analyses id
             setVert summaryws "Filenames" fileNames (fun fi -> fi.Name)
 
-            setHorz summaryws "Features" allKnownInformation id
+            setHorz summaryws "Features" allKnownFeatures id
 
 //            // fill feature matrix formulas down
 //            let featureCell = workbook.Names.["SummaryGrid"]
@@ -110,7 +119,7 @@
 
             // now set values
             let vs =
-                Seq.map (fun info -> info.roc .+ info.accuracies ++ info.sensitivities +. "" +. info.time +. info.memory) allKnownInformation
+                Seq.map (fun info -> info.roc .+ info.accuracies ++ info.sensitivities +. info.time +. info.memory) allKnownInformation
             setSquare performancews "ResultsTable" vs
 
             Log "end performances sheet"
