@@ -127,5 +127,65 @@ namespace Acoustics.Shared
         {
             return this.Minimum + " - " + this.Maximum;
         }
+
+        /// <summary>
+        /// Get count number of randoms ranges of rangeAmount between rangeOverMin and rangeOverMax.
+        /// </summary>
+        /// <param name="rangeOverMin">
+        /// The range over min.
+        /// </param>
+        /// <param name="rangeOverMax">
+        /// The range over max.
+        /// </param>
+        /// <param name="rangeAmount">
+        /// The range amount.
+        /// </param>
+        /// <param name="count">
+        /// The number of ranges.
+        /// </param>
+        /// <returns>
+        /// Enumerable of ranges.
+        /// </returns>
+        /// <exception cref="ArgumentException">
+        /// The rangeOverMin must be less than rangeOverMax.
+        /// </exception>
+        /// <exception cref="ArgumentException">
+        /// The rangeAmount must be larger than the difference between rangeOverMin and rangeOverMax.
+        /// </exception>
+        public static IEnumerable<Range<int>> GetRandomRanges(int rangeOverMin, int rangeOverMax, int rangeAmount, int count)
+        {
+            if (rangeOverMin >= rangeOverMax)
+            {
+                throw new ArgumentException("The rangeOverMin must be less than rangeOverMax.", "rangeOverMin");
+            }
+
+            if (rangeAmount >= rangeOverMax - rangeOverMin)
+            {
+                throw new ArgumentException("The rangeAmount must be less than the difference between rangeOverMin and rangeOverMax.", "rangeAmount");
+            }
+
+            var random = new Random();
+
+            for (var index = 0; index < count; index++)
+            {
+                var randomPoint = random.Next(rangeOverMin, rangeOverMax);
+                var lowerRange = randomPoint - rangeAmount;
+
+                if (lowerRange < 0)
+                {
+                    lowerRange = 0;
+                }
+
+                var upperRange = lowerRange + rangeAmount;
+
+                if (upperRange > rangeOverMax)
+                {
+                    upperRange = rangeOverMax;
+                    lowerRange = rangeOverMax - rangeAmount;
+                }
+
+                yield return new Range<int> { Minimum = lowerRange, Maximum = upperRange };
+            }
+        }
     }
 }
