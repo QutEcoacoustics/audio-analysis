@@ -69,6 +69,7 @@
     <Compile Include="MediaTypes.cs" />
     <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
+    <Compile Include="Orderer.cs" />
     <Compile Include="ProcessorResultTag.cs" />
     <Compile Include="ProcessRunner.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
