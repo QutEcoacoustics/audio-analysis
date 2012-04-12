@@ -571,6 +571,11 @@ namespace Acoustics.Shared
                 // : vCard (contact information); Defined in RFC 6350
                 new MediaTypeExtGroup { MediaType = MediaTypeXmlText, Extension = ExtXml, Group = MediaTypeGroup.Text }, 
                 // : Extensible Markup Language; Defined in RFC 3023
+                new MediaTypeExtGroup { MediaType = MediaTypeJson, Extension = ExtJson, Group = MediaTypeGroup.Text }, 
+                new MediaTypeExtGroup { MediaType = MediaTypeJson1, Extension = ExtJson, Group = MediaTypeGroup.Text }, 
+                new MediaTypeExtGroup { MediaType = MediaTypeJson2, Extension = ExtJson, Group = MediaTypeGroup.Text }, 
+                new MediaTypeExtGroup { MediaType = MediaTypeJson3, Extension = ExtJson, Group = MediaTypeGroup.Text }, 
+                new MediaTypeExtGroup { MediaType = MediaTypeJson4, Extension = ExtJson, Group = MediaTypeGroup.Text }, 
             };
 
         #endregion
