@@ -61,7 +61,7 @@ namespace AnalysisPrograms
         public static Type[] COL_TYPES      = new Type[COL_NUMBER];
         public static string[] HEADERS      = new string[COL_NUMBER]; 
         public static bool[] displayColumn  = new bool[COL_NUMBER]; 
-        //public static double[] comboWeights = null;
+        //public static double[] comboWeights = null; 
 
         private static void InitTableColumns()
         {
@@ -189,6 +189,7 @@ namespace AnalysisPrograms
 
             //READ PARAMETER VALUES FROM INI FILE
             KiwiParams kiwiParams = ReadIniFile(iniPath);
+            WriteParameters(kiwiParams);
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
@@ -275,13 +276,14 @@ namespace AnalysisPrograms
 
         public static KiwiParams ReadIniFile(string iniPath)
         {
-            var config = new Configuration(iniPath);
-            Dictionary<string, string> dict = config.GetTable();
-            Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            //var config = new Configuration(iniPath);
+            //Dictionary<string, string> dict = config.GetTable();
+            //Dictionary<string, string>.KeyCollection keys = dict.Keys;
+            Dictionary<string, string> dict = TowseyLib.Configuration.ReadKVPFile2Dictionary(iniPath);
 
             KiwiParams kiwiParams; // st
             kiwiParams.segmentDuration = Double.Parse(dict[key_SEGMENT_DURATION]);
-            kiwiParams.segmentOverlap  = Double.Parse(dict[key_SEGMENT_OVERLAP]);
+            kiwiParams.segmentOverlap = Double.Parse(dict[key_SEGMENT_OVERLAP]);
             kiwiParams.minHzMale = Int32.Parse(dict[key_MIN_HZ_MALE]);
             kiwiParams.maxHzMale = Int32.Parse(dict[key_MAX_HZ_MALE]);
             kiwiParams.minHzFemale = Int32.Parse(dict[key_MIN_HZ_FEMALE]);
@@ -296,8 +298,12 @@ namespace AnalysisPrograms
             kiwiParams.maxDuration = Double.Parse(dict[key_MAX_DURATION]);        //max duration of event in seconds 
             kiwiParams.eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
             kiwiParams.DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
-            kiwiParams.reportFormat   = dict[key_REPORT_FORMAT];                  //options are TAB or COMMA separator 
+            kiwiParams.reportFormat = dict[key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
+            return kiwiParams;
+        }
 
+        public static void WriteParameters(KiwiParams kiwiParams)
+        {
             Log.WriteIfVerbose("# PARAMETER SETTINGS:");
             Log.WriteIfVerbose("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", kiwiParams.segmentDuration, kiwiParams.segmentOverlap);
             Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzMale, kiwiParams.maxHzMale);
@@ -310,7 +316,6 @@ namespace AnalysisPrograms
             //Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzFemale, maxHzFemale, binCount_female);
             //Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
             //Log.WriteIfVerbose("Score threshold for oscil events=" + eventThreshold);
-            return kiwiParams;
         }
 
 
