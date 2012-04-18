@@ -32,17 +32,6 @@ namespace AnalysisPrograms
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\KAPITI2_20100219_202900.wav"   "C:\SensorNetworks\WavFiles\Kiwi\Results\lskiwi_Params.txt"
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt"
 
-
-        public const string ANALYSIS_NAME = "KiwiRecogniser";
-        public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
-        public const int DEFAULT_WINDOW_SIZE = 256;
-        public static Type[] COL_TYPES = { typeof(int), typeof(string), typeof(string),  typeof(int), typeof(string), typeof(double), typeof(int),  typeof(int), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double) };
-        public static string[] HEADERS = { "count",     "start-min",     "segmentDur",  "Density",      "Label",     "EvStartOffset", "EvStartAbs", "MinHz",     "MaxHz",     "EventDur",     "DurScore",     "HitSCore",     "SnrScore",      "sdScore",     "GapScore",     "BWScore",      "WtScore"};
-                                          //count	      Start	          Duration	     Density	   __Label__	  EvStartOffset	   EvStartAbs	 MinHz	      MaxHz	       eventDuration   DurScore        HitScore        SnrScore	        sdScore        Gapscore        BWScore         WtScore 	
-        public static bool[] displayColumn={ false,       false,          false,          true,          false,       false,           false,        false,       false,       false,          true,           true,           true,            true,          true,           true,           true};
-        public static double[] comboWeights = null;
-
-
         //public const string SOURCE_RECORDING_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav";
         //public const string WORKING_DIRECTORY     = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\";
         //public const string CONFIG_PATH           = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\lskiwi_Params.txt";
@@ -62,6 +51,39 @@ namespace AnalysisPrograms
         public const string WORKING_DIRECTORY = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\";
         public const string CONFIG_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\lskiwi_Params.txt";
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
+
+
+        public const string ANALYSIS_NAME = "KiwiRecogniser";
+        public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
+        public const int DEFAULT_WINDOW_SIZE = 256;
+
+        public const int COL_NUMBER = 17;
+        public static Type[] COL_TYPES      = new Type[COL_NUMBER];
+        public static string[] HEADERS      = new string[COL_NUMBER]; 
+        public static bool[] displayColumn  = new bool[COL_NUMBER]; 
+        //public static double[] comboWeights = null;
+
+        private static void InitTableColumns()
+        {
+            HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     displayColumn[0] = false;
+            HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  displayColumn[1] = false;
+            HEADERS[2] = "segmentDur";      COL_TYPES[2] = typeof(string);  displayColumn[2] = false;
+            HEADERS[3] = "Density";         COL_TYPES[3] = typeof(int);     displayColumn[3] = true;
+            HEADERS[4] = "Label";           COL_TYPES[4] = typeof(string);  displayColumn[4] = false;
+            HEADERS[5] = "EvStartOffset";   COL_TYPES[5] = typeof(double);  displayColumn[5] = false;
+            HEADERS[6] = "EvStartAbs";      COL_TYPES[6] = typeof(int);     displayColumn[6] = false;
+            HEADERS[7] = "MinHz";           COL_TYPES[7] = typeof(int);     displayColumn[7] = false;
+            HEADERS[8] = "MaxHz";           COL_TYPES[8] = typeof(int);     displayColumn[8] = false;
+            HEADERS[9] = "EventDur";        COL_TYPES[9] = typeof(double);  displayColumn[9] = false;
+            HEADERS[10] = "DurScore";       COL_TYPES[10] = typeof(double); displayColumn[10] = true;
+            HEADERS[11] = "HitSCore";       COL_TYPES[11] = typeof(double); displayColumn[11] = true;
+            HEADERS[12] = "SnrScore";       COL_TYPES[12] = typeof(double); displayColumn[12] = true;
+            HEADERS[13] = "sdScore";        COL_TYPES[13] = typeof(double); displayColumn[13] = true;
+            HEADERS[14] = "GapScore";       COL_TYPES[14] = typeof(double); displayColumn[14] = true;
+            HEADERS[15] = "BWScore";        COL_TYPES[15] = typeof(double); displayColumn[15] = true;
+            HEADERS[16] = "WtScore";        COL_TYPES[16] = typeof(double); displayColumn[16] = true;
+        }
+        
 
 
 
@@ -150,6 +172,8 @@ namespace AnalysisPrograms
 
             string myResultsPath = outputDir + "LSKCallScores_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
             string reportROCPath = outputDir + "LSKRoc_Report_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
+
+            InitTableColumns();
 
             // method to calculate ROC curve results
             if (false)
