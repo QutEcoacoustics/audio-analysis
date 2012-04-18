@@ -25,7 +25,9 @@
 
         let oplst' = List.append operationsList [Result(new ResultsComputation(data ))]
         
-        let f (state: Data * Data * Result[]) (wfItem: WorkflowItem) =
+
+
+        let f (state: Data * Data * ClassifierResult) (wfItem: WorkflowItem) =
             Infof "Started workflow item %A" (GetUnderlyingTypes wfItem)
             let trData, teData, results = state
             match wfItem with
@@ -39,12 +41,13 @@
                 | Result r -> 
                     // statefull
                     r.Calculate trData teData results (toString oplst') |> ignore
-                    state
+                    
+                    (trData, teData, ClassifierResult.Nothing)
                 | _ -> 
                     Errorf "Workflow item %A not supported" wfItem
                     failwith "Workflow error"
-
-        List.scan f (trainingData, testData, null) oplst'
+        
+        List.scan f (trainingData, testData, ClassifierResult.Nothing) oplst' |> ignore
 
     
     let RunAnalysis (trainingData:Data) (testData:Data) (tests: WorkflowItem list) (transformList: List<string * string *string>) data =
@@ -76,9 +79,9 @@
         let result = workflow trainingData testData tests' data
         result
 
-    [<EntryPoint>]
-    let Entry args =
-        printfn "This executable is not designed to run on its own yet... exiting"
-        
-        // error code (permanent fail)
-        1
+//    [<EntryPoint>]
+//    let Entry args =
+//        printfn "This executable is not designed to run on its own yet... exiting"
+//        
+//        // error code (permanent fail)
+//        1

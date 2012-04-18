@@ -35,13 +35,16 @@
             match xs with
             | IsNumbersU ns -> 
                 let avg = Maths.Array.mean ns
-                 
 
-                upcast (new AveragedNumber(avg, ns.Length ))
+                let stdd = Maths.Array.stdDeviation ns
+
+                upcast (new AveragedNumber(avg, ns.Length, stdd))
             | IsModuloMinutesU mms ->
                 //let doubles = mms |> Seq.map (MQUTeR.FSharp.Shared.DataHelpers.value >> float)
                 let avg = Maths.Array.mean mms
-                
+                let variance = Maths.Array.variance mms
+                let stdd = variance |> float |> sqrt
+
                 upcast (new AveragedModuloMinute(avg, mms.Length))
             | IsTexts ss ->
                 failwith "not implemented"

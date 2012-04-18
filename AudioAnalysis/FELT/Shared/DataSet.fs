@@ -82,7 +82,7 @@
                     if standardDeviation.IsSome then 
                         standardDeviation.Value
                     else
-                        Double.NaN
+                       failwith "No standard deviation has been set and no default return value has been provided"
                 else 
                     fakeStandardDeviation.Value
         
@@ -92,7 +92,7 @@
         inherit BaseValue<IntegerZ1440>(z)
         end
     
-    type AveragedModuloMinute(mean, count:int, ?standardDeviation:IntegerZ1440, ?fakeStandardDeviation:IntegerZ1440 ) = class
+    type AveragedModuloMinute(mean, count:int, ?standardDeviation:float, ?fakeStandardDeviation:float ) = class
         inherit ModuloMinute(mean)
 
         member this.Mean 

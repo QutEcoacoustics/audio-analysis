@@ -1,4 +1,5 @@
 ﻿namespace FELT.Results
+
     open System.Reflection
     open OfficeOpenXml
     open System
@@ -52,6 +53,29 @@
                 0.0
             else
                 f :?> float
+
+        let checkLength (values: seq<_>) =
+            let l = Seq.length values
+            let m = ExcelPackage.MaxRows - 1000
+            if l > m then
+                Warnf "Input sequence for writing to spreadsheet is too long, truncating output from %i to %i" l m
+                Seq.take m values
+            else
+                values
+
+        let checkColumns (values: seq<'d>) =
+            let l = Seq.length values
+            let m = ExcelPackage.MaxColumns - 100
+            if l > m then
+                Warnf "Input sequence for writing to spreadsheet is too long, truncating output from %i to %i" l m
+                Seq.take m values
+            else
+                values
+
+        let checkColumnUpper j =
+            j <= (ExcelPackage.MaxColumns - 100)
+
+
         let setv (ws:ExcelWorksheet) name value =
                 ws.SetValue(ws.Workbook.Names.[name].Address, value)
 
@@ -62,28 +86,44 @@
 
         let setHorz (ws:ExcelWorksheet) name values f =
             let fdc = ws.Workbook.Names.[name].Start
-            Seq.iteri (fun index op -> ws.SetValue(fdc.Row, fdc.Column + index, f op)) values
+            values |>
+            checkColumns |>
+            Seq.iteri (fun index op -> ws.SetValue(fdc.Row, fdc.Column + index, f op))
 
         let setVert (ws:ExcelWorksheet) name values f =
             let fdc = ws.Workbook.Names.[name].Start
-            Seq.iteri (fun index op -> ws.SetValue(fdc.Row + index, fdc.Column, f op)) values
+            values |>
+            checkLength |>
+            Seq.iteri (fun index op -> ws.SetValue(fdc.Row + index, fdc.Column, f op))
 
         let setCellHorz (ws:ExcelWorksheet) name values f =
             let fdc = ws.Workbook.Names.[name].Start
-            Seq.iteri (fun index op -> f ws.Cells.[fdc.Row, fdc.Column + index]  op) values
+            values |>
+            checkColumns |>
+            Seq.iteri (fun index op -> f ws.Cells.[fdc.Row, fdc.Column + index]  op) 
 
         let setCellVert (ws:ExcelWorksheet) name values f =
             let fdc = ws.Workbook.Names.[name].Start
-            Seq.iteri (fun index op ->f ws.Cells.[fdc.Row + index, fdc.Column] op) values
+            values |>
+            checkLength |>
+            Seq.iteri (fun index op ->f ws.Cells.[fdc.Row + index, fdc.Column] op)
 
         let setSquare (ws:ExcelWorksheet) name (values: seq<#seq<'d>>) =
             let sc = ws.Workbook.Names.[name].Start
+            let colMutex = new MutexSwitch(false)
             // race condition when parallelizing, set out bounds first...
             //ws.Cells.[Seq.length values, Seq.length (Seq.nth 0 values)].Value <- "A value"
 //                let vs = PSeq.map (fun row -> row |> Seq.map (fun z -> box z) |> Array.ofSeq) values
 //                ws.Cells.[sc.Address].LoadFromArrays vs
             //PSeq.iteri (fun indexi row ->  ws.Cells.[sc.Offset(indexi, 0).Address].LoadFromCollection(row) |> ignore) values
-            Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values
+            values |>
+            checkLength |>
+            Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value ->if checkColumnUpper indexj then ws.SetValue(sc.Row + indexi, sc.Column + indexj, value) else colMutex.Flip() ))
+            
+            if colMutex.IsFlipped then
+                Warnf "The sequence columns exceeded the maximum excel can handle, some columns have been truncated!" 
+
+
 //            let setSquare2 (ws:ExcelWorksheet) address (values: seq<#seq<'d>>) =
 //                let sc = ws.Cells.[address].Start
 //                Seq.iteri (fun indexi -> Seq.iteri (fun  indexj value -> ws.SetValue(sc.Row + indexi, sc.Column + indexj, value))) values  
@@ -98,11 +138,14 @@
             for col in fillRange.Start.Column..fillRange.End.Column do
                 let address = new ExcelAddress(fillRange.Start.Row, col, fillRange.End.Row, col)    
                 let src = (srCell col)
-                if src.IsArrayFormula then
-                    ws.Cells.[address.Address].CreateArrayFormula(src.FormulaR1C1)
-                else
-                    ws.Cells.[address.Address].FormulaR1C1 <- src.FormulaR1C1
-                    
+                ws.Cells.[address.Address].FormulaR1C1 <- src.FormulaR1C1
+              
+        let makeEachRowAnArrayFromula (ws:ExcelWorksheet) (fillRange:ExcelRangeBase) =
+            for col in fillRange.Start.Column..fillRange.End.Column do
+                for row in fillRange.Start.Row..fillRange.End.Row do
+                    let address = new ExcelAddress(row, fillRange.Start.Column, row, fillRange.End.Column)    
+                    ws.Cells.[row,col].CreateArrayFormula(ws.Cells.[row,col].FormulaR1C1)
+     
 
 
     type ResultsComputation(config:ReportConfig) = class
@@ -116,9 +159,49 @@
         
 
         /// warning this class by default involves a lot of mutation and intrinsically causes side-affects
-        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults: Result[]) (opList: (string * string * string) list) =
+        member this.Calculate (trainingData:Data) (testData:Data) (classificationResults:ClassifierResult) (opList: (string * string * string) list) =
             
             Log "Result computation start"
+            
+            //let fullResultsTags = Array.Parallel.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
+//
+//            Log "full results tags"
+//
+//            let fullResultsDistances = Array.Parallel.mapJagged fst classificationResults
+
+            let fullResultsTags, fullResultsDistances =
+                let getClass y = trainingData.Classes.[snd y]
+                match classificationResults with
+                    | ClassifierResult.Function f ->
+                        let g r = (getClass r, fst r)   
+                        let h = f >> Array.mapUnzip g
+                        Array.Parallel.init2 testData.Classes.Length h
+
+                    | ClassifierResult.ResultArray a ->
+                        Array.Parallel.mapJagged getClass a,
+                        Array.Parallel.mapJagged fst a
+                    | ClassifierResult.ResultSeq s ->
+                        let frt : Class[][] = Array.createEmpty testData.Classes.Length
+                        let frd : Distance[][] = Array.createEmpty testData.Classes.Length
+                        // mutation of above arrays follows
+                        s |>
+                        PSeq.iteri
+                            (fun i row ->
+                                let tr, dr  = 
+                                    Array.init2 row.Length (fun index -> 
+                                                            let cell = row.[index]
+                                                            trainingData.Classes.[snd cell],
+                                                            fst cell)
+                                frt.[int i] <- tr
+                                frd.[int i] <- dr
+                            )
+                        frt, frd
+                    | _ -> failwith "Unknown classification result format"
+
+
+            Log "full results distances and tags completed"
+
+            Log "results cleaned up"
 
             let opList = List.rev opList
 
@@ -126,7 +209,7 @@
                 if testData.Headers = trainingData.Headers then
                     testData.Headers
                 else
-                    failwith "The headers in the test and trainng data are the same. This report format does not support different headers for each data set"
+                    failwith "The headers in the test and training data are not the same. This report format does not support different headers for each data set"
 
             let uniqueTrainingClasses =
                Array.fold (flip Set.add) Set.empty<Class> trainingData.Classes  
@@ -150,15 +233,9 @@
                         ((Set.difference uniqueTestClasses uniqueAll).Count + (Set.difference uniqueTrainingClasses uniqueAll).Count) ]
                 ]
 
-            Log "tag summary"
+            Log "tag summary done"
 
-            let fullResultsTags = Array.Parallel.mapJagged (fun y -> trainingData.Classes.[snd y]) classificationResults
 
-            Log "full results tags"
-
-            let fullResultsDistances = Array.Parallel.mapJagged fst classificationResults
-
-            Log "full results distances"
 
             let placeFunc rowNum class' row =
                 match Array.tryFindIndex ((=) class') row with
@@ -174,8 +251,8 @@
             Log "Histogram"
 
 
-            let rocBinaryClassifierPlaceLimit = 5
-            let rocCurve = 
+            //let rocBinaryClassifierPlaceLimit = 5
+            let rocCurve, modifiedAUC, modifiedCutoffs, sortedRocPoints = 
                 // measurements are what we expect, i.e. the "Gold standard". i.e. 100% accuracy.
                 // for the library we have to provides hits and misses as numbers
                 // IMPORTANT: ROC_Threshold != PLACING. Therefore we have to conduct a ROC curve at each cummlative place we are interested in.
@@ -205,8 +282,10 @@
                         p,m
                         
                     placing |> Array.Parallel.map pm |> Array.unzip
-                File.WriteAllLines("C:\\Temp\\numbers.csv", Seq.map2 (fun a b -> a.ToString() + "," + b.ToString()) rocPredictions rocMeasurements) |> ignore
-                Maths.RocCurve.RocScore rocMeasurements rocPredictions numPlaces
+                //File.WriteAllLines("C:\\Temp\\numbers.csv", Seq.map2 (fun a b -> a.ToString() + "," + b.ToString()) rocPredictions rocMeasurements) |> ignore
+                let roc = Maths.RocCurve.RocScore rocMeasurements rocPredictions (if numPlaces > 500 then 500 else numPlaces)
+                let a, cutoffs, points = Maths.RocCurve.rocCurveToPlacingAUC roc
+                roc, a, cutoffs, points
 
             Log "ROC Curve calculated"
 
@@ -282,10 +361,13 @@
 
             Log "start roc Data"
 
-            setv rocData "RocPlaces" rocBinaryClassifierPlaceLimit
+            //setv rocData "RocPlaces" rocBinaryClassifierPlaceLimit
             setHorz rocData "RocSummary" [rocCurve.Area; rocCurve.Error;  float rocCurve.Positives; float rocCurve.Negatives; float rocCurve.Observations] id
-           // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
-            setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> EpPlusHelpers.noInfinities) (Seq.sortBy (fun x -> x.Cutoff) rocCurve.Points))
+            // setHorz rocData "RocCurveDataHeaders" (RocCurve.PrintRocCurvePoint rocCurve.Points.[0] |> fst) id
+            setv rocData "ModifiedAUC" modifiedAUC
+            //let sortedRocPoints = (rocCurve.Points |> Seq.zip modifiedCutoffs |> Seq.sortBy (fun x -> (snd x).Cutoff) )
+            setVert rocData "ModifiedCutoffs" modifiedCutoffs id
+            setSquare rocData "RocCurveData" (Seq.map (RocCurve.PrintRocCurvePoint >> snd >> EpPlusHelpers.noInfinities) sortedRocPoints)
 
             Log "end roc data "
 
@@ -332,7 +414,7 @@
 
 
             setv logws "TimeTaken" ((DateTime.Now - config.RunDate).ToString())
-            setv logws "MemUsage" Environment.WorkingSet
+            setHorz logws "MemUsage" [ System.Diagnostics.Process.GetCurrentProcess().PeakWorkingSet64; Environment.WorkingSet; System.Diagnostics.Process.GetCurrentProcess().WorkingSet64] id
 
             Log "write file"
 

@@ -13,6 +13,8 @@ namespace FELT.Tests
 
     using MQUTeR.FSharp.Shared;
 
+    using Microsoft.FSharp.Core;
+
     /// <summary>
     ///This is a test class for ResultsComputationTest and is intended
     ///to contain all ResultsComputationTest Unit Tests

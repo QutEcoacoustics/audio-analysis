@@ -68,4 +68,4 @@
                                                                     distances.[i] <- null
                                                                     sortedRow)
 
-            sortedDistances
+            ClassifierResult.ResultArray sortedDistances
