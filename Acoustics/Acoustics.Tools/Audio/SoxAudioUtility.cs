@@ -182,14 +182,15 @@
 
             var process = new ProcessRunner(this.soxExe.FullName);
 
-            string args = ConstructResamplingArgs(source, output);
+            string args = this.ConstructResamplingArgs(source, output);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>
@@ -214,9 +215,12 @@
 
             string args = source.FullName;
 
-            process.Run(args, source.DirectoryName);
+            this.RunExe(process, args, source.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            }
 
             // Duration       : 10:23:15.51 = 1649142153 samples = 2.80466e+006 CDDA sectors
             Match match = Regex.Match(process.ErrorOutput, "Duration[ ]+: ([0-9]+:[0-9]+:[0-9]+.[0-9]+)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -259,9 +263,12 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
             string args = "\"" + source.FullName + "\" -n stat stats";
 
-            process.Run(args, source.DirectoryName);
+            this.RunExe(process, args, source.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            }
 
             // first 15 are split by colon (:)
 

@@ -126,7 +126,7 @@
                 EnableRaisingEvents = true,
             };
 
-            process.ErrorDataReceived += (sender, e) =>
+            this.process.ErrorDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
@@ -134,7 +134,7 @@
                 }
             };
 
-            process.OutputDataReceived += (sender, e) =>
+            this.process.OutputDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
@@ -142,11 +142,11 @@
                 }
             };
 
-            process.Start();
-            process.BeginErrorReadLine();
-            process.BeginOutputReadLine();
+            this.process.Start();
+            this.process.BeginErrorReadLine();
+            this.process.BeginOutputReadLine();
 
-            process.WaitForExit();
+            this.process.WaitForExit();
         }
 
         public string BuildLogOutput()

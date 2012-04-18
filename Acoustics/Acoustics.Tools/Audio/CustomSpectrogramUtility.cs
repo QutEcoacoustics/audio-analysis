@@ -1,6 +1,7 @@
 ﻿namespace Acoustics.Tools.Audio
 {
     using System;
+    using System.Diagnostics;
     using System.Drawing;
     using System.Drawing.Imaging;
     using System.IO;
@@ -14,7 +15,7 @@
     /// <summary>
     /// Signal to Image used by web site.
     /// </summary>
-    public class CustomSpectrogramUtility : ISpectrogramUtility
+    public class CustomSpectrogramUtility : AbstractSpectrogramUtility, ISpectrogramUtility
     {
         private const double WaveFormDbMin = -20.0;
 
@@ -69,7 +70,29 @@
 
             this.audioUtility.Convert(source, sourceMimeType, tempFile, MediaTypes.MediaTypeWav);
 
-            var image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
+            Bitmap image;
+
+            if (this.Log.IsDebugEnabled)
+            {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
+
+                stopwatch.Stop();
+
+                this.Log.DebugFormat(
+                    "Generated spectrogram for {0}. Took {1} ({2}ms).",
+                    source.Name,
+                    stopwatch.Elapsed.ToReadableString(),
+                    stopwatch.Elapsed.TotalMilliseconds);
+
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            }
+            else
+            {
+                image = Spectrogram(File.ReadAllBytes(tempFile.FullName));
+            }
 
             ImageFormat format;
 
@@ -84,9 +107,9 @@
                 //case MediaTypes.ExtExif:
                 //    format = ImageFormat.Exif;
                 //    break;
-                //case MediaTypes.ExtGif:
-                //    format = ImageFormat.Gif;
-                //    break;
+                case MediaTypes.ExtGif:
+                    format = ImageFormat.Gif;
+                    break;
                 case MediaTypes.ExtIco:
                     format = ImageFormat.Icon;
                     break;
@@ -110,7 +133,28 @@
                     break;
             }
 
-            image.Save(output.FullName, format);
+            if (this.Log.IsDebugEnabled)
+            {
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+
+                image.Save(output.FullName, format);
+
+                stopwatch.Stop();
+
+                this.Log.DebugFormat(
+                    "Saved spectrogram for {0} to {1}. Took {2} ({3}ms).",
+                    source.Name,
+                    output.Name,
+                    stopwatch.Elapsed.ToReadableString(),
+                    stopwatch.Elapsed.TotalMilliseconds);
+
+                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
+            else
+            {
+                image.Save(output.FullName, format);
+            }
 
             tempFile.SafeDeleteFile();
         }

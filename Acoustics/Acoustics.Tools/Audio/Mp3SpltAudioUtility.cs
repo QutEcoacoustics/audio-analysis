@@ -75,12 +75,13 @@
 
             string args = CreateSingleSegmentArguments(source, output, start, end);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>

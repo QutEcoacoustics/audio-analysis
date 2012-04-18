@@ -194,7 +194,7 @@ namespace System
 
             if (ts.Milliseconds > 0)
             {
-                readable.Add(ts.Seconds + " ms");
+                readable.Add(ts.Milliseconds + " ms");
                 if (readable.Count >= MaxItems) return readable;
             }
 

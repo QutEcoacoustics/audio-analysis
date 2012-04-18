@@ -1,16 +1,16 @@
 ﻿namespace Acoustics.Tools.Audio
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
+    using System.Text;
 
     using Acoustics.Shared;
 
     using log4net;
 
-    public class SoxSpectrogramUtility : ISpectrogramUtility
+    public class SoxSpectrogramUtility : AbstractSpectrogramUtility,ISpectrogramUtility
     {
-        protected static readonly ILog log = LogManager.GetLogger(typeof(SoxSpectrogramUtility));
-
         private readonly FileInfo soxExe;
 
         public SoxSpectrogramUtility(FileInfo soxExe)
@@ -53,34 +53,12 @@ a MaleKoala.png" -z 180 -q 100 stats stat noiseprof
 
             string args = string.Empty;//ConstructResamplingArgs(source, output);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-        }
-
-        /// <exception cref="ArgumentNullException"><paramref name="file" /> is <c>null</c>.</exception>
-        /// <exception cref="FileNotFoundException">Could not find exe.</exception>
-        /// <exception cref="ArgumentException">file</exception>
-        protected void CheckExe(FileInfo file, string expectedFileName)
-        {
-            if (string.IsNullOrEmpty(expectedFileName))
+            if (Log.IsDebugEnabled)
             {
-                throw new ArgumentNullException("expectedFileName");
-            }
-
-            if (file == null)
-            {
-                throw new ArgumentNullException("file");
-            }
-
-            if (!File.Exists(file.FullName))
-            {
-                throw new FileNotFoundException("Could not find exe: " + file.FullName, file.FullName);
-            }
-
-            if (file.Name != expectedFileName)
-            {
-                throw new ArgumentException("Expected file name to be " + expectedFileName + ", but was: " + file.Name, "file");
+                Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
             }
         }
     }
