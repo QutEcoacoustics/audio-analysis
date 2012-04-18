@@ -12,6 +12,7 @@ namespace TowseyLib
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
 
     /// <summary>
     /// Configuration files.
@@ -114,99 +115,157 @@ namespace TowseyLib
 
         public int GetInt(string key)
         {
-            if (!table.ContainsKey(key))
-                return -Int32.MaxValue;
-
-            string value = this.table[key].ToString();
-            if (value == null)
-                return -Int32.MaxValue;
-
-            int int32;
-            if (int.TryParse(value, out int32))
-                return int32;
-
-            Log.WriteLine("Configuration.GetInt(): ERROR READING PROPERTIES FILE");
-            Log.WriteLine("INVALID VALUE=" + value);
-            return -Int32.MaxValue;
+            return GetInt(key, this.table);
         }
 
-        public int? GetIntNullable(string key)
+        public int? GetIntNullable(string key)  
         {
-            if (!table.ContainsKey(key))
-            {
-                //Log.WriteIfVerbose("Configuration.GetIntNullable(): ERROR READING PROPERTIES FILE\n\t" + key + "=value NOT FOUND");
-                return null;
-            }
-
-            string value = this.table[key].ToString();
-            if (value == null)
-                return null;
-
-            int int32;
-            if (int.TryParse(value, out int32))
-                return int32;
-
-            Log.WriteLine("ERROR READING PROPERTIES FILE");
-            Log.WriteLine("INVALID VALUE=" + value);
-            return null;
+            return GetIntNullable(key, this.table);
         }
 
         public double GetDouble(string key)
         {
-            if (!table.ContainsKey(key))
-                return -Double.MaxValue;
-
-            string value = table[key].ToString();
-            if (value == null)
-                return -Double.MaxValue;
-
-            double d;
-            if (double.TryParse(value, out d))
-                return d;
-
-            Log.WriteLine("ERROR READING PROPERTIES FILE");
-            Log.WriteLine("INVALID VALUE=" + value);
-            return -Double.MaxValue;
+            return GetDouble(key, this.table);
         }
 
         public double? GetDoubleNullable(string key)
         {
-            if (!table.ContainsKey(key))
-                return null;
-
-            string value = table[key].ToString();
-            if (value == null)
-                return null;
-
-            double d;
-            if (double.TryParse(value, out d))
-                return d;
-
-            System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-            System.Console.WriteLine("INVALID VALUE=" + value);
-            return null;
+            return GetDoubleNullable(key, this.table);
         }
 
         public bool GetBoolean(string key)
         {
-            bool keyExists = this.table.ContainsKey(key);
-            if (!keyExists) return false;
-            bool b = false;
-            string value = this.table[key].ToString();
-            if (value == null) return b;
+            return GetBoolean(key, this.table);
+        } //end getBoolean
+
+
+
+
+        //#####################################################################################################################################
+        //STATIC methods for configuration using Dictionary class.
+
+        public static Dictionary<string, string> ReadKVPFile2Dictionary(string path)
+        {
+            Dictionary<string, string> dict = File.ReadAllLines(path).ToList().Select(s => s.Split('=')).ToDictionary(k => k[0], v => v[1]);
+            return dict;
+        } // end ReadKVPFile2Dictionary()
+
+
+
+        public static bool GetBoolean(string key, Dictionary<string, string> dict)
+        {
+            if (! dict.ContainsKey(key)) return false;
+            string value = dict[key].ToString();
             try
             {
-                b = Boolean.Parse(value);
+                if (value == null) return false;
+                else
+                return Boolean.Parse(value);
             }
             catch (System.FormatException ex)
             {
                 System.Console.WriteLine("ERROR READING PROPERTIES FILE");
-                System.Console.WriteLine("INVALID VALUE=" + value);
+                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
                 System.Console.WriteLine(ex);
                 return false;
             }
-            return b;
-        } //end getBoolean
+        } //end getBoolean()
+
+        public static double GetDouble(string key, Dictionary<string, string> dict)
+        {
+
+            //if (Double.TryParse(str, out d))     dic.Add(key, str); // if done, then is a number
+            
+            if (! dict.ContainsKey(key)) return -Double.NaN;
+            string value = dict[key].ToString();
+            if (value == null) return -Double.NaN;
+            try
+            {
+                double d;
+                Double.TryParse(value, out d);
+                return  d;
+            }
+            catch
+            {
+                Log.WriteLine("ERROR READING PROPERTIES FILE");
+                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return -Double.NaN;
+            }
+        }
+
+        public static double? GetDoubleNullable(string key, Dictionary<string, string> dict)
+        {
+            if (!dict.ContainsKey(key)) return null;
+            string value = dict[key].ToString();
+            if (value == null) return null;
+            try
+            {
+                double d;
+                Double.TryParse(value, out d);
+                return d;
+            }
+            catch
+            {
+                Log.WriteLine("ERROR READING PROPERTIES FILE");
+                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return null;
+            }
+        }
+
+        public static int GetInt(string key, Dictionary<string, string> dict)
+        {
+            string value = dict.TryGetValue(key, out value) ? value : null;
+
+            //if (!table.ContainsKey(key)) return -Int32.MaxValue;
+
+            //string value = this.table[key].ToString();
+            if (value == null) return -Int32.MaxValue;
+
+            try
+            {
+                int int32;
+                if (int.TryParse(value, out int32)) return int32;
+            }
+            catch
+            {
+                Log.WriteLine("ERROR READING PROPERTIES FILE");
+                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return Int32.MaxValue;
+            }
+            return Int32.MaxValue;
+        }
+
+        public static int? GetIntNullable(string key, Dictionary<string, string> dict)
+        {
+            if (!dict.ContainsKey(key)) return null;
+
+            string value = dict[key].ToString();
+            if (value == null) return null;
+
+            try
+            {
+                int int32;
+                if (int.TryParse(value, out int32)) return int32;
+            }
+            catch
+            {
+                Log.WriteLine("ERROR READING PROPERTIES FILE");
+                System.Console.WriteLine("INVALID KVP: key={0}, value={1}", key, value);
+                return null;
+            }
+            return null;
+        }
+
+
+
+
+
+        //#####################################################################################################################################
+
+
+
+
+
     } // end of class Configuration
 
     //#####################################################################################################################################
@@ -327,5 +386,7 @@ namespace TowseyLib
             return string.Join(Path.DirectorySeparatorChar.ToString(), relativePath.ToArray());
         } //end of method RelativePathTo(string fromDirectory, string toPath)
 
+
     } //end of static class ConfigurationExtensions
+
 }
