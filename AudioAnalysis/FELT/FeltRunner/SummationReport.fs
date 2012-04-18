@@ -64,12 +64,11 @@
                     
                     let action (row, list) = 
                         let v = int << nullToFloat <| (logws.Cells.[row, placesStart.Start.Column + 1]).Value  
-                        row + 1 , v .+ list
+                        row + 1 , list +. v
                     let r = whilerec initial test action |> snd
-                    Logf "%A" r
                     Seq.map (fun  c -> box <| float c / (positives)) r, Seq.map (fun  c -> box <| float c / (positives + negatives)) r
                 let roc, timeTaken, memory =
-                    wb.Names.["RocSummary"].Value |> nullToFloat, wb.Names.["TimeTaken"].Value.ToString() |> nullToString, wb.Names.["MemUsage"].Value.ToString() |> nullToFloat |> float
+                    wb.Names.["ModifiedAUC"].Value |> nullToFloat, wb.Names.["TimeTaken"].Value |> nullToString, wb.Names.["MemUsage"].Value |> nullToFloat
                 {features = fn; sensitivities = ss; accuracies = ass; roc = roc; time = timeTaken; memory = memory}
 
             let allKnownInformation = Seq.map gatherInfo fileNames
@@ -111,11 +110,13 @@
             Log "performances sheet"
 
             // This sheet partly automatic, so fill down formulas in those columns
-            let width = 3 // performancews.Dimension.End.Column
-            let startRow = workbook.Names.["DataStartRow"]
-            
-            let templateRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
-            fillDown performancews templateRange (numRows - 1)
+////            let width = 22 // performancews.Dimension.End.Column
+////            let startRow = workbook.Names.["DataStartRow"]
+////            
+////            let templateRange = performancews.Cells.[startRow.Start.Row, startRow.Start.Column, startRow.Start.Row, width]
+////            let templateRangeArray = performancews.Cells.[startRow.Start.Row, startRow.Start.Column + width - 1, startRow.Start.Row + numRows, width + 1]
+////            fillDown performancews templateRange (numRows - 1)
+////            
 
             // now set values
             let vs =

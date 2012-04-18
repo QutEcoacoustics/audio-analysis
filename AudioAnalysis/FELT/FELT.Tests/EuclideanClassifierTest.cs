@@ -5,6 +5,8 @@ using MQUTeR.FSharp.Shared;
 
 namespace FELT.Tests
 {
+    using System.Collections.Generic;
+
     using Microsoft.FSharp.Collections;
 
     /// <summary>
@@ -149,15 +151,21 @@ namespace FELT.Tests
             EuclideanClassifier classifier = new EuclideanClassifier();
 
             var actual = classifier.Classify(trainingData, testData);
+            var actualEnumerator = ((ClassifierResult.ResultSeq)actual).Item.GetEnumerator();
 
             for (int i = 0; i < expected.Length; i++)
             {
-                var row = expected[i];
-                for (int j = 0; j < row.Length; j++)
+                var erow = expected[i];
+
+                actualEnumerator.MoveNext();
+                var arow = actualEnumerator.Current;
+
+                for (int j = 0; j < erow.Length; j++)
                 {
-                    var cell = row[j];
-                    Assert.AreEqual(cell.Item2, actual[i][j].Item2); 
-                    Assert.AreEqual(cell.Item1, actual[i][j].Item1,  0.000000005);
+                    var ecell = erow[j];
+                    var acell = arow[j];
+                    Assert.AreEqual(ecell.Item2, acell.Item2); 
+                    Assert.AreEqual(ecell.Item1, acell.Item1,  0.000000005);
                 }
             }
 

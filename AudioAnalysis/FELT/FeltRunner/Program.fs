@@ -41,7 +41,7 @@
         
 
         let fail() =
-            eprintfn "Exiting because of error!"
+            Error "Exiting because of error!"
             #if DEBUG
             printfn "Debug hook...  press any key to continue..."
             Console.ReadKey(false) |> ignore
@@ -49,7 +49,9 @@
             Environment.Exit(1);
 
         let version = Assembly.GetAssembly(typeof<ResultsComputation>).GetName() |> (fun x -> sprintf "%s, %s, %s" x.Name (x.Version.ToString()) x.CodeBase)
-
+        
+        let ad = AppDomain.CurrentDomain in
+            ad.UnhandledException.Add (fun (args:UnhandledExceptionEventArgs) -> Errorf "Unhandled exception:\n%A" args.ExceptionObject)
 
 
         Log "Welcome to felt version:"
@@ -178,7 +180,7 @@
             let sumReport = 
                 if configs |> Seq.length > 1 then
                     Log "Creating summary report"
-                    let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "m" "Summary" |> snd)) (new FileInfo("ExcelResultsSummationTemplate.xlsm")) configs
+                    let dest = SummationReport.Write (new FileInfo(reportDateName batchRunDate "x" "Summary" |> snd)) (new FileInfo("ExcelResultsSummationTemplate.xlsx")) configs
                     Log "Finished summary report"    
                     Some(dest)
                 else

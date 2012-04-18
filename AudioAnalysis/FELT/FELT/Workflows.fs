@@ -44,7 +44,7 @@
                 [ 
                 Cleaner(new BasicCleaner()); 
                 Selection(new RandomiserSelector());
-                Trainer(new GroupTrainer()); 
+                Trainer(new OneForOneTrainer()); 
                 Classifier(new EuclideanClassifier())
                 ]
             );

@@ -78,6 +78,7 @@
     <Compile Include="CSV.fs" />
     <None Include="Script.fsx" />
     <Compile Include="StringStats.fs" />
+    <Compile Include="Mutex.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord.Statistics">
