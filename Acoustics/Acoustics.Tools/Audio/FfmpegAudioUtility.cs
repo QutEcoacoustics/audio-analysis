@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Diagnostics;
     using System.IO;
     using System.Text;
     using System.Text.RegularExpressions;
@@ -108,12 +109,13 @@
 
             string args = ConstructArgs(source, output, start, end);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>
@@ -144,12 +146,13 @@
 
             string args = ConstructArgs(source, output, null, null);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (this.Log.IsDebugEnabled)
+            {
+                this.Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                this.Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>
@@ -172,15 +175,12 @@
 
             var process = new ProcessRunner(this.ffmpegExe.FullName);
             string args = string.Format(ArgsOverwriteSource, source.FullName);
-            process.Run(args, source.DirectoryName);
 
-            var output = process.BuildLogOutput();
-            log.Debug(output);
+            this.RunExe(process, args, source.DirectoryName);
 
             if (OutputContains(process, "No such file or directory"))
             {
-                throw new ArgumentException(
-                    "Ffmpeg could not find input file: " + source.FullName + ". Output: " + output);
+                throw new ArgumentException("Ffmpeg could not find input file: " + source.FullName);
             }
 
             Match match = Regex.Match(process.ErrorOutput, "Duration: ([0-9]+:[0-9]+:[0-9]+.[0-9]+), ", RegexOptions.Compiled | RegexOptions.CultureInvariant);
@@ -199,10 +199,10 @@
             if (this.ffprobeExe != null)
             {
                 var process = new ProcessRunner(this.ffprobeExe.FullName);
-                const string argsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
-                var args = string.Format(argsFormat, source.FullName);
+                const string ArgsFormat = " -sexagesimal -print_format default -show_error -show_streams -show_format \"{0}\"";
+                var args = string.Format(ArgsFormat, source.FullName);
 
-                process.Run(args, source.DirectoryName);
+                this.RunExe(process, args, source.DirectoryName);
 
                 // parse output
                 //var err = process.ErrorOutput;
@@ -227,8 +227,6 @@
                         var value = line.Substring(line.IndexOf('=') + 1);
                         results.Add(key.Trim(), value.Trim());
                     }
-
-
                 }
             }
 
@@ -288,7 +286,7 @@
             var args = new StringBuilder()
                 .AppendFormat(ArgsOverwriteSource, source.FullName);
             // now using sox instead of ffmpeg to resample
-                //.Append(ArgsSamplebitRate);
+            //.Append(ArgsSamplebitRate);
 
             if (start.HasValue && start.Value > TimeSpan.Zero)
             {

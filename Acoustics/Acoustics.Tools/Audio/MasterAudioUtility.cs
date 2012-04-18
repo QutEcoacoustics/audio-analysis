@@ -103,7 +103,7 @@
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
-                log.Debug("Segmenting .wv file using wvunpack.");
+                this.Log.Debug("Segmenting .wv file using wvunpack.");
 
                 // use a temp file for wvunpack.
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -142,7 +142,7 @@
             }
             else if (sourceMimeType == MediaTypes.MediaTypeMp3)
             {
-                log.Debug("Segmenting .mp3 file using mp3splt.");
+                this.Log.Debug("Segmenting .mp3 file using mp3splt.");
 
                 // use a temp file to segment.
                 var mp3SpltTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeMp3));
@@ -183,7 +183,7 @@
             }
             else
             {
-                log.Debug("Segmenting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
+                this.Log.Debug("Segmenting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
 
                 if (this.soxUtility != null)
                 {
@@ -241,7 +241,7 @@
 
             if (sourceMimeType == MediaTypes.MediaTypeWavpack)
             {
-                log.Debug("Converting .wv file using wvunpack.");
+                this.Log.Debug("Converting .wv file using wvunpack.");
 
                 // use a temp file for wvunpack.
                 var wavunpackTempFile = TempFileHelper.NewTempFileWithExt(MediaTypes.GetExtension(MediaTypes.MediaTypeWav));
@@ -280,7 +280,7 @@
             }
             else
             {
-                log.Debug("Converting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
+                this.Log.Debug("Converting ." + MediaTypes.GetExtension(sourceMimeType) + " file to ." + MediaTypes.GetExtension(outputMimeType) + " using ffmpeg.");
 
                 if (this.soxUtility != null)
                 {

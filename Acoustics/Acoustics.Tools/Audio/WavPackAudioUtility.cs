@@ -125,12 +125,13 @@
 
             string args = sb.ToString();
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (Log.IsDebugEnabled)
+            {
+                Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>
@@ -161,12 +162,13 @@
 
             string args = string.Format(" -y -m -q -w \"{0}\" \"{1}\" ", source.FullName, output.FullName);
 
-            process.Run(args, output.DirectoryName);
+            this.RunExe(process, args, output.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
-
-            log.Debug("Source " + this.BuildFileDebuggingOutput(source));
-            log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            if (Log.IsDebugEnabled)
+            {
+                Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+                Log.Debug("Output " + this.BuildFileDebuggingOutput(output));
+            }
         }
 
         /// <summary>
@@ -192,9 +194,12 @@
 
             string args = string.Format(" -s \"{0}\" ", source.FullName);
 
-            process.Run(args, source.DirectoryName);
+            this.RunExe(process, args, source.DirectoryName);
 
-            log.Debug(process.BuildLogOutput());
+            if (Log.IsDebugEnabled)
+            {
+                Log.Debug("Source " + this.BuildFileDebuggingOutput(source));
+            }
 
             string output = process.ErrorOutput + Environment.NewLine + process.StandardOutput;
 

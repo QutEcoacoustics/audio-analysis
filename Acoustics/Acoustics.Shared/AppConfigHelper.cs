@@ -397,6 +397,27 @@
                 "Key " + key + " exists but could not be converted to a long: " + value);
         }
 
+        /// <summary>
+        /// Get the cleaned path for a directory.
+        /// </summary>
+        /// <param name="webConfigRealDirectory">
+        /// The web config real directory.
+        /// </param>
+        /// <param name="key">
+        /// The key.
+        /// </param>
+        /// <param name="checkExists">
+        /// The check exists.
+        /// </param>
+        /// <param name="separators">
+        /// The separators.
+        /// </param>
+        /// <returns>
+        /// Enumerable of directories.
+        /// </returns>
+        /// <exception cref="FileNotFoundException">
+        /// Directory was not found.
+        /// </exception>
         public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory, string key, bool checkExists, params string[] separators)
         {
             CheckWebSiteRootPathSet();
@@ -405,7 +426,10 @@
 
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-            var dirs = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new DirectoryInfo(webConfigRealDirectory + v));
+            var dirs =
+                values.Where(v => !string.IsNullOrEmpty(v)).Select(
+                    v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v)).
+                    ToList();
 
             if (checkExists && dirs.Any(d => !Directory.Exists(d.FullName)))
             {
