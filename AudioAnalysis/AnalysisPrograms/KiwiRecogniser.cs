@@ -63,7 +63,7 @@ namespace AnalysisPrograms
         public static bool[] displayColumn  = new bool[COL_NUMBER]; 
         //public static double[] comboWeights = null; 
 
-        private static void InitTableColumns()
+        public static void InitOutputTableColumns()
         {
             HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     displayColumn[0] = false;
             HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  displayColumn[1] = false;
@@ -113,38 +113,38 @@ namespace AnalysisPrograms
         /// <summary>
         /// a set of parameters derived from ini file
         /// </summary>
-        public struct KiwiParams
-        {
-            public int frameLength, minHzMale, maxHzMale, minHzFemale, maxHzFemale;
-            public double segmentDuration, segmentOverlap; 
-            public double frameOverlap, dctDuration, dctThreshold, minPeriodicity, maxPeriodicity, minDuration, maxDuration, eventThreshold;
-            public int DRAW_SONOGRAMS;
-            public string reportFormat;
+        //public struct KiwiParams
+        //{
+        //    public int frameLength, minHzMale, maxHzMale, minHzFemale, maxHzFemale;
+        //    public double segmentDuration, segmentOverlap; 
+        //    public double frameOverlap, dctDuration, dctThreshold, minPeriodicity, maxPeriodicity, minDuration, maxDuration, eventThreshold;
+        //    public int DRAW_SONOGRAMS;
+        //    public string reportFormat;
 
-            public KiwiParams(double _segmentDuration, double _segmentOverlap, 
-                              int _minHzMale, int _maxHzMale, int _minHzFemale, int _maxHzFemale, int _frameLength, int _frameOverlap, double _dctDuration, double _dctThreshold,
-                              double _minPeriodicity, double _maxPeriodicity, double _minDuration, double _maxDuration, double _eventThreshold, 
-                              int _DRAW_SONOGRAMS, string _fileFormat)
-            {
-                segmentDuration = _segmentDuration;
-                segmentOverlap  = _segmentOverlap;
-                minHzMale = _minHzMale;
-                maxHzMale = _maxHzMale;
-                minHzFemale = _minHzFemale;
-                maxHzFemale = _maxHzFemale;
-                frameLength = _frameLength;
-                frameOverlap = _frameOverlap;
-                dctDuration = _dctDuration;
-                dctThreshold = _dctThreshold;
-                minPeriodicity = _minPeriodicity;
-                maxPeriodicity = _maxPeriodicity;
-                minDuration    = _minDuration;
-                maxDuration    = _maxDuration;
-                eventThreshold = _eventThreshold;
-                DRAW_SONOGRAMS = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
-                reportFormat   = _fileFormat;
-            }
-        }
+        //    public KiwiParams(double _segmentDuration, double _segmentOverlap, 
+        //                      int _minHzMale, int _maxHzMale, int _minHzFemale, int _maxHzFemale, int _frameLength, int _frameOverlap, double _dctDuration, double _dctThreshold,
+        //                      double _minPeriodicity, double _maxPeriodicity, double _minDuration, double _maxDuration, double _eventThreshold, 
+        //                      int _DRAW_SONOGRAMS, string _fileFormat)
+        //    {
+        //        segmentDuration = _segmentDuration;
+        //        segmentOverlap  = _segmentOverlap;
+        //        minHzMale = _minHzMale;
+        //        maxHzMale = _maxHzMale;
+        //        minHzFemale = _minHzFemale;
+        //        maxHzFemale = _maxHzFemale;
+        //        frameLength = _frameLength;
+        //        frameOverlap = _frameOverlap;
+        //        dctDuration = _dctDuration;
+        //        dctThreshold = _dctThreshold;
+        //        minPeriodicity = _minPeriodicity;
+        //        maxPeriodicity = _maxPeriodicity;
+        //        minDuration    = _minDuration;
+        //        maxDuration    = _maxDuration;
+        //        eventThreshold = _eventThreshold;
+        //        DRAW_SONOGRAMS = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
+        //        reportFormat   = _fileFormat;
+        //    }
+        //}
 
 
 
@@ -173,7 +173,7 @@ namespace AnalysisPrograms
             string myResultsPath = outputDir + "LSKCallScores_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
             string reportROCPath = outputDir + "LSKRoc_Report_" + Path.GetFileNameWithoutExtension(sourceRecordingPath) + ".csv";
 
-            InitTableColumns();
+            InitOutputTableColumns();
 
             // method to calculate ROC curve results
             if (false)
@@ -188,8 +188,11 @@ namespace AnalysisPrograms
             }
 
             //READ PARAMETER VALUES FROM INI FILE
-            KiwiParams kiwiParams = ReadIniFile(iniPath);
-            WriteParameters(kiwiParams);
+            //KiwiParams kiwiParams = ReadIniFile(iniPath);
+            //WriteParameters(kiwiParams);
+            Dictionary<string, string> kiwiCfg = FileTools.ReadPropertiesFile(iniPath);
+            double segmentDuration = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, kiwiCfg);
+            double segmentOverlap  = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_OVERLAP, kiwiCfg); 
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
@@ -197,7 +200,7 @@ namespace AnalysisPrograms
             var duration = audioUtility.Duration(fiSourceRecording, mimeType);
 
             var sourceAudioDuration = audioUtility.Duration(fiSourceRecording, mimeType);
-            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / kiwiParams.segmentDuration); //convert length to minute chunks
+            int segmentCount = (int)Math.Round(sourceAudioDuration.TotalMinutes / segmentDuration); //convert length to minute chunks
             //int segmentDuration_ms = (int)(segmentDuration_mins * 60000) + (segmentOverlap * 1000);
 
 
@@ -212,7 +215,7 @@ namespace AnalysisPrograms
             // LOOP THROUGH THE FILE
             int resampleRate = 17640;
             double startMinutes = 0.0;
-            int overlap_ms = (int)Math.Floor(kiwiParams.segmentOverlap * 1000);
+            int overlap_ms = (int)Math.Floor(segmentOverlap * 1000);
 
 
             //segmentCount = 2; //FOR DEBUGGING
@@ -224,7 +227,7 @@ namespace AnalysisPrograms
                 Log.WriteLine("## SAMPLE {0}:-   starts@ {1} minutes", s, startMinutes);
 
                 int startMilliseconds = (int)(startMinutes * 60000);
-                int endMilliseconds = startMilliseconds + (int)(kiwiParams.segmentDuration * 60000) + overlap_ms;
+                int endMilliseconds = startMilliseconds + (int)(segmentDuration * 60000) + overlap_ms;
                 MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
                 AudioRecording recordingSegment = new AudioRecording(tempSegmentPath);
                 FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
@@ -238,7 +241,7 @@ namespace AnalysisPrograms
                 else //do analysis
                 {
                     //#############################################################################################################################################
-                    DataTable results = KiwiRecogniser.Analysis(s, kiwiParams, fiSegmentAudioFile, diOutputDir);
+                    DataTable results = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, kiwiCfg, diOutputDir);
                     //#############################################################################################################################################
 
                     //transfer acoustic event info to data table
@@ -252,7 +255,7 @@ namespace AnalysisPrograms
                 }
 
                 recordingSegment.Dispose();
-                startMinutes += kiwiParams.segmentDuration;
+                startMinutes += segmentDuration;
             } //end of for loop
             //); // Parallel.For()
 
@@ -274,76 +277,79 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        public static KiwiParams ReadIniFile(string iniPath)
-        {
-            //var config = new Configuration(iniPath);
-            //Dictionary<string, string> dict = config.GetTable();
-            //Dictionary<string, string>.KeyCollection keys = dict.Keys;
-            Dictionary<string, string> dict = TowseyLib.Configuration.ReadKVPFile2Dictionary(iniPath);
+        //public static KiwiParams ReadIniFile(string iniPath)
+        //{
+        //    //var config = new Configuration(iniPath);
+        //    //Dictionary<string, string> dict = config.GetTable();
+        //    //Dictionary<string, string>.KeyCollection keys = dict.Keys;
+        //    Dictionary<string, string> dict = TowseyLib.Configuration.ReadKVPFile2Dictionary(iniPath);
 
-            KiwiParams kiwiParams; // st
-            kiwiParams.segmentDuration = Double.Parse(dict[key_SEGMENT_DURATION]);
-            kiwiParams.segmentOverlap = Double.Parse(dict[key_SEGMENT_OVERLAP]);
-            kiwiParams.minHzMale = Int32.Parse(dict[key_MIN_HZ_MALE]);
-            kiwiParams.maxHzMale = Int32.Parse(dict[key_MAX_HZ_MALE]);
-            kiwiParams.minHzFemale = Int32.Parse(dict[key_MIN_HZ_FEMALE]);
-            kiwiParams.maxHzFemale = Int32.Parse(dict[key_MAX_HZ_FEMALE]);
-            kiwiParams.frameLength = Int32.Parse(dict[key_FRAME_LENGTH]);
-            kiwiParams.frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-            kiwiParams.dctDuration = Double.Parse(dict[key_DCT_DURATION]);        //duration of DCT in seconds 
-            kiwiParams.dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-            kiwiParams.minPeriodicity = Double.Parse(dict[key_MIN_PERIODICITY]);  //ignore oscillations with period below this threshold
-            kiwiParams.maxPeriodicity = Double.Parse(dict[key_MAX_PERIODICITY]);  //ignore oscillations with period above this threshold
-            kiwiParams.minDuration = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
-            kiwiParams.maxDuration = Double.Parse(dict[key_MAX_DURATION]);        //max duration of event in seconds 
-            kiwiParams.eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
-            kiwiParams.DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
-            kiwiParams.reportFormat = dict[key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
-            return kiwiParams;
-        }
+        //    KiwiParams kiwiParams; // st
+        //    kiwiParams.segmentDuration = Double.Parse(dict[key_SEGMENT_DURATION]);
+        //    kiwiParams.segmentOverlap = Double.Parse(dict[key_SEGMENT_OVERLAP]);
+        //    kiwiParams.minHzMale = Int32.Parse(dict[key_MIN_HZ_MALE]);
+        //    kiwiParams.maxHzMale = Int32.Parse(dict[key_MAX_HZ_MALE]);
+        //    kiwiParams.minHzFemale = Int32.Parse(dict[key_MIN_HZ_FEMALE]);
+        //    kiwiParams.maxHzFemale = Int32.Parse(dict[key_MAX_HZ_FEMALE]);
+        //    kiwiParams.frameLength = Int32.Parse(dict[key_FRAME_LENGTH]);
+        //    kiwiParams.frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
+        //    kiwiParams.dctDuration = Double.Parse(dict[key_DCT_DURATION]);        //duration of DCT in seconds 
+        //    kiwiParams.dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
+        //    kiwiParams.minPeriodicity = Double.Parse(dict[key_MIN_PERIODICITY]);  //ignore oscillations with period below this threshold
+        //    kiwiParams.maxPeriodicity = Double.Parse(dict[key_MAX_PERIODICITY]);  //ignore oscillations with period above this threshold
+        //    kiwiParams.minDuration = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
+        //    kiwiParams.maxDuration = Double.Parse(dict[key_MAX_DURATION]);        //max duration of event in seconds 
+        //    kiwiParams.eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
+        //    kiwiParams.DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
+        //    kiwiParams.reportFormat = dict[key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
+        //    return kiwiParams;
+        //}
 
-        public static void WriteParameters(KiwiParams kiwiParams)
-        {
-            Log.WriteIfVerbose("# PARAMETER SETTINGS:");
-            Log.WriteIfVerbose("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", kiwiParams.segmentDuration, kiwiParams.segmentOverlap);
-            Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzMale, kiwiParams.maxHzMale);
-            Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzFemale, kiwiParams.maxHzFemale);
-            Log.WriteIfVerbose("Periodicity bounds: {0:f1}sec - {1:f1}sec", kiwiParams.minPeriodicity, kiwiParams.maxPeriodicity);
-            Log.WriteIfVerbose("minAmplitude = " + kiwiParams.dctThreshold);
-            Log.WriteIfVerbose("Duration bounds: " + kiwiParams.minDuration + " - " + kiwiParams.maxDuration + " seconds");
-            Log.WriteIfVerbose("####################################################################################");
-            //Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzMale, maxHzMale, binCount_male);
-            //Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzFemale, maxHzFemale, binCount_female);
-            //Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
-            //Log.WriteIfVerbose("Score threshold for oscil events=" + eventThreshold);
-        }
+        //public static void WriteParameters(KiwiParams kiwiParams)
+        //{
+        //    Log.WriteIfVerbose("# PARAMETER SETTINGS:");
+        //    Log.WriteIfVerbose("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", kiwiParams.segmentDuration, kiwiParams.segmentOverlap);
+        //    Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzMale, kiwiParams.maxHzMale);
+        //    Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzFemale, kiwiParams.maxHzFemale);
+        //    Log.WriteIfVerbose("Periodicity bounds: {0:f1}sec - {1:f1}sec", kiwiParams.minPeriodicity, kiwiParams.maxPeriodicity);
+        //    Log.WriteIfVerbose("minAmplitude = " + kiwiParams.dctThreshold);
+        //    Log.WriteIfVerbose("Duration bounds: " + kiwiParams.minDuration + " - " + kiwiParams.maxDuration + " seconds");
+        //    Log.WriteIfVerbose("####################################################################################");
+        //    //Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzMale, maxHzMale, binCount_male);
+        //    //Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzFemale, maxHzFemale, binCount_female);
+        //    //Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
+        //    //Log.WriteIfVerbose("Score threshold for oscil events=" + eventThreshold);
+        //}
 
 
         /// <summary>
         /// A WRAPPER AROUND THE Execute_KiwiDetect() method
-        /// returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
+        /// Returns a DataTable
+        /// The Execute_KiwiDetect() method returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
         /// </summary>
         /// <param name="iter"></param>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
-        public static DataTable Analysis(int iter, KiwiParams config, FileInfo fiSegmentAudioFile, DirectoryInfo diOutputDir)
+        public static DataTable Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> config, DirectoryInfo diOutputDir)
         {
-            AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
+            int minHzMale       = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_MALE, config);
+            int maxHzMale       = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_MALE, config);
+            int minHzFemale     = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale     = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_FEMALE, config);
+            int frameLength     = Configuration.GetInt(KiwiRecogniser.key_FRAME_LENGTH, config);
+            double frameOverlap = Configuration.GetDouble(KiwiRecogniser.key_FRAME_OVERLAP, config);
+            double dctDuration  = Configuration.GetDouble(KiwiRecogniser.key_DCT_DURATION, config);
+            double dctThreshold = Configuration.GetDouble(KiwiRecogniser.key_DCT_THRESHOLD, config);
+            double minPeriodicity  = Configuration.GetInt(KiwiRecogniser.key_MIN_PERIODICITY, config);
+            double maxPeriodicity  = Configuration.GetInt(KiwiRecogniser.key_MAX_PERIODICITY, config);
+            double eventThreshold  = Configuration.GetDouble(KiwiRecogniser.key_EVENT_THRESHOLD, config);
+            double minDuration     = Configuration.GetDouble(KiwiRecogniser.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration     = Configuration.GetDouble(KiwiRecogniser.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            double drawSonograms   = Configuration.GetInt(KiwiRecogniser.key_DRAW_SONOGRAMS, config);
+            double segmentDuration = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, config); 
+            double segmentStartMinute = segmentDuration * iter;
 
-            int minHzMale   = config.minHzMale;
-            int maxHzMale   = config.maxHzMale;
-            int minHzFemale = config.minHzFemale;
-            int maxHzFemale = config.maxHzFemale;
-            int frameLength = config.frameLength;
-            double frameOverlap = config.frameOverlap;
-            double dctDuration  = config.dctDuration;
-            double dctThreshold = config.dctThreshold;
-            double minPeriodicity = config.minPeriodicity;
-            double maxPeriodicity = config.maxPeriodicity;
-            double eventThreshold = config.eventThreshold;
-            double minDuration    = config.minDuration;
-            double maxDuration    = config.maxDuration;
-            double segmentStartMinute = config.segmentDuration * iter;
+            AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
             var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
                                                             minPeriodicity, maxPeriodicity, eventThreshold, minDuration, maxDuration);
@@ -357,11 +363,11 @@ namespace AnalysisPrograms
 
             //draw images of sonograms
             bool saveSonogram = false;
-            if ((config.DRAW_SONOGRAMS == 2) || ((config.DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
+            if ((drawSonograms == 2) || ((drawSonograms == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
             if (saveSonogram)
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) +"_"+ (int)segmentStartMinute+ "min.png");
-                DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, config.eventThreshold);
+                DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, eventThreshold);
             }
 
             //write events to a data table to return.
