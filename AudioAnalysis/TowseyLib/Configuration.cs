@@ -144,6 +144,13 @@ namespace TowseyLib
         //#####################################################################################################################################
         //STATIC methods for configuration using Dictionary class.
 
+        /// <summary>
+        /// THIS ONLY WORKS IF ONLY HAVE KV PAIRS IN CONFIG FILE.
+        /// IF HAVE COMMENTS ETC USE
+        /// Dictionary<string,string> dict = FileTools.ReadPropertiesFile(file))
+        /// </summary>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public static Dictionary<string, string> ReadKVPFile2Dictionary(string path)
         {
             Dictionary<string, string> dict = File.ReadAllLines(path).ToList().Select(s => s.Split('=')).ToDictionary(k => k[0], v => v[1]);
