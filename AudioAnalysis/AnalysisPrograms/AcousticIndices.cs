@@ -16,23 +16,51 @@
         public const string ANALYSIS_NAME = "AcousticIndices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
-        public static string[] HEADER      = { "count","start-min","sec-dur","avAmp-dB","snr-dB","bg-dB","activity","segCount","avSegDur","hfCover","mfCover","lfCover","H[ampl]","H[peakFreq]", "H[avSpectrum]", "H[varSpectrum]", "#clusters", "avClustDur", "Weighted index" };
-        public static bool[] displayColumn = { false,  false,       false,    true,      true,    true,    true,      true,      true,      true,     true,     true,     true,      false,          true,           false,           true,         true,         false};
-        public static double[] comboWeights= { 0.0,    0.0,         0.0,      0.0,       0.0,      0.0,    0.0,       0.0,       0.0,       0.0,      0.0,      0.0,      0.0,       0.0,            0.4,             0.1,              0.4,        0.1,           0.0  };
-        public static string FORMAT_STRING_HEADER = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
-        public static string FORMAT_STRING_DATA = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
+        public const int    COL_NUMBER = 19;
+        public static Type[]      COL_TYPES = new Type[COL_NUMBER];
+        public static string[]      HEADERS = new string[COL_NUMBER];
+        public static bool[]  displayColumn = new bool[COL_NUMBER];
+        public static double[] comboWeights = new double[COL_NUMBER];
 
 
+        public static void InitOutputTableColumns()
+        {
+            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     displayColumn[0] = false;     comboWeights[0] = 0.0;
+            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  displayColumn[1] = false;     comboWeights[1] = 0.0;
+            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  displayColumn[2] = false;     comboWeights[2] = 0.0;
+            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  displayColumn[3] = true;      comboWeights[3] = 0.0;
+            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  displayColumn[4] = true;      comboWeights[4] = 0.0;
+            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  displayColumn[5] = true;      comboWeights[5] = 0.0;
+            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  displayColumn[6] = true;      comboWeights[6] = 0.0;
+            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     displayColumn[7] = true;      comboWeights[7] = 0.0;
+            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  displayColumn[8] = true;      comboWeights[8] = 0.0;
+            HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  displayColumn[9] = true;      comboWeights[9] = 0.0;
+            HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); displayColumn[10] = true;     comboWeights[10] = 0.0;
+            HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); displayColumn[11] = true;     comboWeights[11] = 0.0;
+            HEADERS[12] = "H[ampl]";     COL_TYPES[12] = typeof(double); displayColumn[12] = true;     comboWeights[12] = 0.0;
+            HEADERS[13] = "H[peakFreq]"; COL_TYPES[13] = typeof(double); displayColumn[13] = true;     comboWeights[13] = 0.0;
+            HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); displayColumn[14] = true;   comboWeights[14] = 0.4;
+            HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); displayColumn[15] = false; comboWeights[15] = 0.1;
+            HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    displayColumn[16] = true;     comboWeights[16] = 0.4;
+            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); displayColumn[17] = true;     comboWeights[17] = 0.1;
+            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); displayColumn[18] = false; comboWeights[18] = 0.0;
+        }
+        
+        public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
+        public static string FORMAT_STR_DATA    = "{1}{0}{2:f1}{0}{3:f3}{0}{4:f2}{0}{5:f2}{0}{6:f2}{0}{7:f2}{0}{8}{0}{9:f2}{0}{10:f4}{0}{11:f4}{0}{12:f4}{0}{13:f4}{0}{14:f4}{0}{15:f4}{0}{16}{0}{17}{0}{18}";
 
-        //Keys to recognise identifiers in PARAMETERS - INI file. 
+
+        //Keys to recognise identifiers in ANALYSIS CONFIG file. 
+        public static string key_ANALYSIS_NAME    = "ANALYSIS_NAME";
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string key_SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
         public static string key_RESAMPLE_RATE    = "RESAMPLE_RATE";
         public static string key_FRAME_LENGTH     = "FRAME_LENGTH";
         public static string key_FRAME_OVERLAP    = "FRAME_OVERLAP";
         public static string key_LOW_FREQ_BOUND   = "LOW_FREQ_BOUND";
-        public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
-        public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
+        public static string key_MID_FREQ_BOUND   = "MID_FREQ_BOUND";
+        //public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
+        //public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
 
 
         /// <summary>
@@ -42,8 +70,8 @@
         {
             public int frameLength, resampleRate, lowFreqBound, segmentOverlap;
             public double segmentDuration, frameOverlap;
-            public int DRAW_SONOGRAMS;
-            public string reportFormat;
+            //public int DRAW_SONOGRAMS;
+            //public string reportFormat;
 
             public Parameters(double _segmentDuration, int _segmentOverlap, int _resampleRate,
                               int _frameLength, int _frameOverlap, int _lowFreqBound, int _DRAW_SONOGRAMS, string _fileFormat)
@@ -54,8 +82,8 @@
                 frameLength     = _frameLength;
                 frameOverlap    = _frameOverlap;
                 lowFreqBound    = _lowFreqBound;
-                DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
-                reportFormat    = _fileFormat;
+                //DRAW_SONOGRAMS  = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
+                //reportFormat    = _fileFormat;
             } //Parameters
         } //struct Parameters
 
@@ -103,8 +131,8 @@
             paramaters.frameLength = Int32.Parse(dict[AcousticIndices.key_FRAME_LENGTH]);
             paramaters.frameOverlap = Double.Parse(dict[AcousticIndices.key_FRAME_OVERLAP]);
             paramaters.lowFreqBound = Int32.Parse(dict[AcousticIndices.key_LOW_FREQ_BOUND]);
-            paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
-            paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
+            //paramaters.DRAW_SONOGRAMS = Int32.Parse(dict[AcousticIndices.key_DRAW_SONOGRAMS]);    //options to draw sonogram
+            //paramaters.reportFormat = dict[AcousticIndices.key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
 
             if (verbosity > 0)
             {
@@ -113,7 +141,7 @@
                 Log.WriteLine("Resample rate: {0} samples/sec.  Nyquist: {1} Hz.", paramaters.resampleRate, (paramaters.resampleRate / 2));
                 Log.WriteLine("Frame Length: {0} samples.  Fractional overlap: {1}.", paramaters.frameLength, paramaters.frameOverlap);
                 Log.WriteLine("Low Freq Bound: {0} Hz.", paramaters.lowFreqBound);
-                Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
+                //Log.WriteLine("Report format: {0}     Draw sonograms: {1}", paramaters.reportFormat, paramaters.DRAW_SONOGRAMS);
                 Log.WriteLine("####################################################################################");
             }
             return paramaters;
@@ -149,6 +177,7 @@
                 //string fileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp4\Oct13_Results.csv";
                 string csvFileName = @"C:\SensorNetworks\WavFiles\SpeciesRichness\SE_5days.csv";
 
+
                 //VISUALIZE_CSV_DATA(csvFileName);  //THIS METHOD NOW DELETED
                 Console.ReadLine();
                 Environment.Exit(666);
@@ -157,6 +186,8 @@
 
             //i: Set up the dir and file names
             string recordingDir  = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Exp1\";
+            string imagePath     = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
+
             var fileList         = Directory.GetFiles(recordingDir, "*.wav");
             string recordingPath = fileList[0]; //get just one from list
             string fileName      = Path.GetFileName(recordingPath);
@@ -175,19 +206,36 @@
                 WriteHeaderToReportFile(opPath, reportFormat);
             }
 
-            //init counters
-            int fileCount = 0;
-            double elapsedTime = fileCount;
-            DateTime tStart = DateTime.Now;
 
-            Console.WriteLine("\n\n");
-            Log.WriteLine("###### " + (++fileCount) + " #### Process Recording: " + fileName + " ###############################");
+            //i GET RECORDING
+            //int resampleRate = 17640;
+            //AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
+            //double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
 
-            ScanRecording(recordingPath, opPath, fileCount, elapsedTime, doStoreImages, reportFormat); //this does all the work.
+            //ii: EXTRACT INDICES 
+            Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
+            dict.Add(key_FRAME_LENGTH, AcousticIndices.DEFAULT_WINDOW_SIZE.ToString());
+            dict.Add(key_LOW_FREQ_BOUND, "500");
+            dict.Add(key_LOW_FREQ_BOUND, "3500");
+            //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
+            int iterationNumber = 1;
+            var fiRecording = new FileInfo(recordingPath);
+            var results = Analysis(iterationNumber, fiRecording, dict);
 
-            DateTime tEnd = DateTime.Now;
-            TimeSpan duration = tEnd - tStart;
-            Log.WriteLine("# Elapsed Time = " + duration.TotalSeconds);
+            Indices2 indices = results.Item1;
+            //AcousticIndices.AppendIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
+
+            //iii: STORE IMAGES
+            if (doStoreImages)
+            {
+                var scores = results.Item2;
+                var clusterIDs = results.Item3;
+                var clusterWts = results.Item4;
+                var clusterSpectrogram = results.Item5;
+                //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
+                //MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
+            }
+
             Log.WriteLine("# Finished everything!");
             Console.ReadLine();
         } //DEV()
@@ -195,43 +243,6 @@
 
 
         //#########################################################################################################################################################
-
-        /// <summary>
-        /// The original ScanRecording() method
-        /// </summary>
-        /// <param name="recordingPath"></param>
-        /// <param name="opPath"></param>
-        /// <param name="fileCount"></param>
-        /// <param name="min_start"></param>
-        /// <param name="doStoreImages"></param>
-        /// <param name="reportFormat"></param>
-        public static void ScanRecording(string recordingPath, string opPath, int fileCount, double min_start, bool doStoreImages, string reportFormat)
-        {
-            //i GET RECORDING
-            int resampleRate = 17640;
-            AudioRecording recording = AudioRecording.GetAudioRecording(recordingPath, resampleRate);
-            double recordingDuration = recording.GetWavReader().Time.TotalSeconds;
-
-            //ii: EXTRACT INDICES   Default windowDuration = 128 samples @ 22050Hz = 5.805ms, @ 11025kHz = 11.61ms.
-            var results = ExtractIndices(recording);
-
-            Indices2 indices = results.Item1;
-            AcousticIndices.AppendIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
-
-            //iii: STORE IMAGES
-            if (doStoreImages)
-            {
-                var scores = results.Item2;
-                //var clusterIDs = results.Item3;
-                //var clusterWts = results.Item4;
-                var clusterSpectrogram = results.Item5;
-                //string imagePath = @"C:\SensorNetworks\WavFiles\SpeciesRichness\Dev1\wtsmatrix.png";
-                //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
-                string recordingDir = Path.GetDirectoryName(recordingPath) + "\\";
-                MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
-            }
-            recording.Dispose(); // DISPOSE FILTERED SIGNAL
-        } //ScanRecording()
 
 
 
@@ -247,13 +258,22 @@
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
         public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]>
-               ExtractIndices(AudioRecording recording, int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE, int lowFreqBound = 500, int midFreqBound=3500)
+                                                                       Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> dict)
         {
+            int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE;
+            if (dict.ContainsKey(key_FRAME_LENGTH))      frameSize = Configuration.GetInt(key_FRAME_LENGTH, dict); 
+            int lowFreqBound = 500; //default value
+            if (dict.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = Configuration.GetInt(key_LOW_FREQ_BOUND, dict); 
+            int midFreqBound = 3500;
+            if (dict.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = Configuration.GetInt(key_MID_FREQ_BOUND, dict); 
+
+
             Indices2 indices; // struct in which to store all indices
             List<double[]> scores = null; //arrays to store scores for debugging
 
 
-            double windowOverlap = 0.0;
+            double windowOverlap = Configuration.GetDouble(AcousticIndices.key_FRAME_OVERLAP, dict);
+            AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
             int signalLength = recording.GetWavReader().Samples.Length;
             double frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
 
@@ -642,6 +662,58 @@
         //  OTHER METHODS
 
 
+
+        public static System.Tuple<double[], List<string>, List<double>> ConstructWeightedIndex(bool WriteToConsole, List<double[]> values)
+        {
+            //reconstruct new list of values to display
+            var displayValues = new List<double[]>(); //reconstruct new list of values to display
+            var displayHeaders = new List<string>();   //reconstruct new list of headers to display
+            //for (int i = 0; i < AcousticIndices.displayColumn.Length; i++)
+            for (int i = 0; i < values.Count; i++)
+            {
+            if (AcousticIndices.displayColumn[i])
+            {
+                displayValues.Add(values[i]);
+                displayHeaders.Add(headers[i]);
+            }
+            }
+
+            //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
+            if (WriteToConsole) Console.WriteLine("Index weights: ");
+            var comboHeaders = new List<string>();          //reconstruct new list of column headers from those columns used to calculate weighted index
+            var comboWeights = new List<double>();          //reconstruct new list of column weights from those columns used to calculate weighted index
+            var comboColumns = new List<double[]>();        //reconstruct new list of columns to calculate weighted combination index
+            for (int i = 0; i < AcousticIndices.comboWeights.Length; i++)
+            {
+                if (AcousticIndices.comboWeights[i] > 0.0)
+                {
+                    double[] norm = DataTools.NormaliseArea(values[i]);
+                    comboColumns.Add(norm);
+                    comboWeights.Add(AcousticIndices.comboWeights[i]);
+                    comboHeaders.Add(headers[i]);
+                    if (WriteToConsole) Console.WriteLine("\t{0} = {1}", headers[i], AcousticIndices.comboWeights[i]);
+                }
+            }
+
+                        //add in weighted bias for chorus and backgorund noise
+            //for (int i = 0; i < wtIndices.Length; i++)
+            //{
+            //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
+            //background noise bias
+            //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
+            //else
+            //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
+            //}
+
+            double[] weightedIndices = DataTools.GetWeightedCombinationOfColumns(comboColumns, comboWeights.ToArray());
+            weightedIndices = DataTools.normalise(weightedIndices);
+            displayHeaders.Add("Weighted Index");
+            displayValues.Add(weightedIndices);
+
+            return System.Tuple.Create(weightedIndices, displayHeaders, displayValues);
+        }
+
+
         public static void MakeAndDrawSonogram(AudioRecording recording, string dir, List<double[]> scores, double[,]clusterMatrix)
         {
             //i: MAKE SONOGRAM
@@ -932,8 +1004,8 @@
             string reportSeparator = "\t";
             if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
 
-            string line = String.Format(FORMAT_STRING_HEADER, reportSeparator, HEADER[0], HEADER[1], HEADER[2], HEADER[3], HEADER[4], HEADER[5], HEADER[6], HEADER[7],
-                                                                        HEADER[8], HEADER[9], HEADER[10], HEADER[11], HEADER[12], HEADER[13], HEADER[14], HEADER[15], HEADER[16],HEADER[17], HEADER[18]);
+            string line = String.Format(FORMAT_STR_HEADERS, reportSeparator, HEADERS[0], HEADERS[1], HEADERS[2], HEADERS[3], HEADERS[4], HEADERS[5], HEADERS[6], HEADERS[7],
+                                                                        HEADERS[8], HEADERS[9], HEADERS[10], HEADERS[11], HEADERS[12], HEADERS[13], HEADERS[14], HEADERS[15], HEADERS[16],HEADERS[17], HEADERS[18]);
             return line;
         }
 
@@ -957,7 +1029,7 @@
 
 
             //string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-            string line = String.Format(FORMAT_STRING_DATA, reportSeparator,
+            string line = String.Format(FORMAT_STR_DATA, reportSeparator,
                                        count, startMin, sec_duration, indices.avSig_dB, indices.snr, indices.bgNoise,
                                        indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover, indices.midFreqCover, indices.lowFreqCover, indices.temporalEntropy,
                                        indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum, indices.entropyOfVarianceSpectrum,
