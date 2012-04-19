@@ -6,6 +6,14 @@
 
     public class AudioBrowserSettings
     {
+        //OBLIGATORY KEYS REQUIRED FOR ALL ANALYSES - these are used by the browser to run an analysis
+        public const string key_SEGMENT_DURATION = "SEGMENT_DURATION";
+        public const string key_SEGMENT_OVERLAP  = "SEGMENT_OVERLAP";
+        public const string key_FRAME_LENGTH     = "FRAME_LENGTH";
+        public const string key_FRAME_OVERLAP    = "FRAME_OVERLAP";
+        public const string key_RESAMPLE_RATE    = "RESAMPLE_RATE";
+
+
         /*
         private const int DefaultTrackHeight = 20; //number of tracks to appear in the visual index
         private const int DefaultTrackCount = 15; //pixel height of track in the visual index
@@ -27,12 +35,13 @@
         public void LoadSettings()
         {
             LoadBrowserSettings();
-            LoadAnalysisSettings();
+            //LoadAnalysisSettings();
         }
 
 
         public void LoadBrowserSettings()
         {
+            this.fiAnalysisConfig = AppConfigHelper.GetFile("DefaultConfigFile", true);
             this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
             this.DefaultOutputDir = AppConfigHelper.GetDir("DefaultOutputDir", true);
             this.diSourceDir = this.DefaultSourceDir;
@@ -46,25 +55,27 @@
             this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
         }
 
-        public void LoadAnalysisSettings()
-        {
-            this.ResampleRate = AppConfigHelper.GetInt("ResampleRate");
-            this.SegmentDuration = AppConfigHelper.GetInt("SegmentDuration");
-            this.SegmentOverlap = AppConfigHelper.GetInt("SegmentOverlap");
-            this.FrameLength = AppConfigHelper.GetInt("FrameLength");
-            this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
-            this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
-            this.MidFreqBound = AppConfigHelper.GetInt("MidFreqBound");
-        }
+        //public void LoadAnalysisSettings()
+        //{
+        //    this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
+        //    this.ResampleRate = AppConfigHelper.GetInt("ResampleRate");
+        //    this.SegmentDuration = AppConfigHelper.GetInt("SegmentDuration");
+        //    this.SegmentOverlap = AppConfigHelper.GetInt("SegmentOverlap");
+        //    this.FrameLength = AppConfigHelper.GetInt("FrameLength");
+        //    this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
+        //    this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
+        //    this.MidFreqBound = AppConfigHelper.GetInt("MidFreqBound");
+        //}
 
         public FileInfo AudacityExe { get; private set; }
-        public int FrameLength { get; private set; }
-        public int ResampleRate{ get; private set; }
-        public int LowFreqBound { get; private set; }
-        public int MidFreqBound { get; private set; }
-        public double SegmentDuration { get; private set; }  //measured in minutes
-        public int SegmentOverlap { get; private set; }   //measured in seconds
-        public double FrameOverlap { get; private set; }
+        //public string AnalysisName { get; private set; }
+        //public int FrameLength { get; private set; }
+        //public int ResampleRate{ get; private set; }
+        //public int LowFreqBound { get; private set; }
+        //public int MidFreqBound { get; private set; }
+        //public double SegmentDuration { get; private set; }  //measured in minutes
+        //public int SegmentOverlap { get; private set; }   //measured in seconds
+        //public double FrameOverlap { get; private set; }
         public double SonogramBackgroundThreshold { get; private set; }
         public int TrackHeight { get; private set; }
         public int TrackCount { get; private set; }
@@ -77,6 +88,7 @@
         public DirectoryInfo diOutputDir { get; set; }
         public DirectoryInfo diSourceDir { get; set; }
 
+        public FileInfo fiAnalysisConfig { get; set; }
         public FileInfo fiSourceRecording { get; set; }
         public FileInfo fiCSVFile { get; set; }
         public FileInfo fiSegmentRecording { get; set; }
