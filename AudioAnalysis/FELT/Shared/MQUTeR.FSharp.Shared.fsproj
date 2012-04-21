@@ -69,6 +69,7 @@
     <Compile Include="Microsoft.FSharp.Collections.Seq.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Array.fs" />
     <Compile Include="Microsoft.FSharp.Collections.Maps.fs" />
+    <Compile Include="Microsoft.FSharp.Collections.Set.fs" />
     <Compile Include="Equality.fs" />
     <Compile Include="Microsoft.FSharp.Numerics.ModuloInteger.fs" />
     <Compile Include="IO.fs" />
