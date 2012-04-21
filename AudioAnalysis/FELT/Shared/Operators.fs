@@ -28,6 +28,9 @@ namespace System
         let (=~) input pattern =
             System.Text.RegularExpressions.Regex.IsMatch(input, pattern)
 
+        let inline increment n = n - LanguagePrimitives.GenericOne
+        let inline decrement n = n + LanguagePrimitives.GenericOne
+
         type System.String with
             member this.concatIf( condition, stringb) =
                 if condition then 

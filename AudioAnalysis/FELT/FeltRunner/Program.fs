@@ -73,6 +73,8 @@
         let TrainingData = WorkingDirectory + config.["TrainingData"]
         let exportFrn = bool.Parse(config.["ExportFrn"])
         let exportFrd = bool.Parse(config.["ExportFrd"])
+        let allAnalyses = bool.Parse(config.["CrossAnalyseAllFeatures"])
+
 
         // ANALYSIS RUN SETTINGS
         let allKnownAnalyses = FELT.Workflows.Analyses
@@ -144,6 +146,19 @@
             let trData = { trFile.Value with DataSet = DataSet.Training}
             let teData = { teFile.Value with DataSet = DataSet.Test}
 
+            let analyses' = 
+                if (allAnalyses) then
+                    // set up the feature combinations
+                    let keys = Map.keys trData.Instances |> Set.ofArray
+                    // fst element of powerset is empty... skip
+                    let powerset = Set.powerset keys |> Seq.skip 1 |> Seq.toArray |> Array.rev
+                    // map every subset to every analysis
+                    powerset |> Array.collect (fun 
+
+                else 
+                    analyses
+            
+
             // run the analyses
 
             let run (ano: string * (WorkflowItem list) Option) =
@@ -196,7 +211,7 @@
     
             let openFile = Console.ReadKey(true);
             Warnf "Key pressed: %c" openFile.KeyChar
-
+ 
             if Char.ToLower openFile.KeyChar = 'y' then
                 let f = if sumReport.IsSome then sumReport.Value else (Seq.first configs).ReportDestination
                 Infof "Opening file: %s" f.FullName
