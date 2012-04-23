@@ -79,7 +79,7 @@
         // ANALYSIS RUN SETTINGS
         let allKnownAnalyses = FELT.Workflows.Analyses
         let analysesConfig = ConfigurationManager.GetSection("analyses") :?> FELT.Runner.AnalysesConfig
-        let analyses = analysesConfig.Analyses |> Seq.cast |> Seq.map (fun (ae:FELT.Runner.Analysis) -> ae.Name, allKnownAnalyses.TryFind(ae.Name) ) |> Seq.toList
+        let analyses = analysesConfig.Analyses |> Seq.cast |> Seq.map (fun (ae:FELT.Runner.Analysis) -> ae.Name, allKnownAnalyses.TryFind(ae.Name) ) |> Seq.toArray
 
         if (analyses.Length = 0) then
             Error "No analysis set in configuration"
@@ -146,23 +146,28 @@
             let trData = { trFile.Value with DataSet = DataSet.Training}
             let teData = { teFile.Value with DataSet = DataSet.Test}
 
-            let analyses' = 
-                if (allAnalyses) then
-                    // set up the feature combinations
-                    let keys = Map.keys trData.Instances |> Set.ofArray
-                    // fst element of powerset is empty... skip
-                    let powerset = Set.powerset keys |> Seq.skip 1 |> Seq.toArray |> Array.rev
-                    // map every subset to every analysis
-                    powerset |> Array.collect (fun 
+            let analyses', combinations = 
+                // set up the feature combinations
+                let keys = Map.keys trData.Instances |> Set.ofArray
+                let powerset = 
+                    if (allAnalyses) then
+                        // fst element of powerset is empty... skip
+                        Set.powerset keys |> Seq.skip 1 |> Seq.toArray |> Array.rev
+                     else
+                        [| keys |]
 
-                else 
-                    analyses
-            
+                // map every subset to every analysis
+                powerset |> Array.collect (fun s -> Array.map (fun (x,y) -> (x,y,s)) analyses), powerset.Length
 
+            if allAnalyses then
+                Warnf "All selected analyses will be run with EVERY combination of features! %i features, %i combinations, %i analyses, %i runs." trData.Instances .Count combinations analyses.Length analyses'.Length
+            else
+                Infof "All selected analyses will be run with all features! %i features, %i analyses, %i runs." trData.Instances.Count combinations analyses'.Length
+                
             // run the analyses
 
-            let run (ano: string * (WorkflowItem list) Option) =
-                let analysis, ops = ano
+            let run (ano: string * (WorkflowItem list) Option * Set<ColumnHeader>) =
+                let analysis, ops, columnsToUse = ano
                 let dt, dest = reportName analysis 
                 let config =
                     {
@@ -178,8 +183,12 @@
                         ExportFrn = exportFrn
                     }
 
+                // re-construct data sets 
+                let trainingData = {trData with Headers = Map.keepThese trData.Headers columnsToUse; Instances = Map.keepThese trData.Instances columnsToUse}
+                let testData     = {teData with Headers = Map.keepThese teData.Headers columnsToUse; Instances = Map.keepThese teData.Instances columnsToUse}
+
                 Infof "Starting analysis: %s" analysis
-                RunAnalysis trData teData (ops.Value) transforms config |> ignore
+                RunAnalysis trainingData testData (ops.Value) transforms config |> ignore
                 Infof "Analysis %s completed" analysis
                 Warn "Starting post analysis garbage collection"
                 //http://blogs.msdn.com/b/ricom/archive/2004/11/29/271829.aspx
@@ -188,7 +197,7 @@
                 config
 
             // actually run them
-            let configs = List.map run analyses
+            let configs = Array.map run analyses'
 
             Info "end: main analysis..."
 
