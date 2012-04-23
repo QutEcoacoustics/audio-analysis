@@ -6,9 +6,9 @@
     using System.Linq;
     using System.IO;
     using System.Drawing;
+    using System.Data;
 
     using TowseyLib;
-
     using AudioAnalysisTools;
 
     public class AcousticIndices
@@ -19,31 +19,31 @@
         public const int    COL_NUMBER = 19;
         public static Type[]      COL_TYPES = new Type[COL_NUMBER];
         public static string[]      HEADERS = new string[COL_NUMBER];
-        public static bool[]  displayColumn = new bool[COL_NUMBER];
+        public static bool[]  DISPLAY_COLUMN = new bool[COL_NUMBER];
         public static double[] comboWeights = new double[COL_NUMBER];
 
 
         public static void InitOutputTableColumns()
         {
-            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     displayColumn[0] = false;     comboWeights[0] = 0.0;
-            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  displayColumn[1] = false;     comboWeights[1] = 0.0;
-            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  displayColumn[2] = false;     comboWeights[2] = 0.0;
-            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  displayColumn[3] = true;      comboWeights[3] = 0.0;
-            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  displayColumn[4] = true;      comboWeights[4] = 0.0;
-            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  displayColumn[5] = true;      comboWeights[5] = 0.0;
-            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  displayColumn[6] = true;      comboWeights[6] = 0.0;
-            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     displayColumn[7] = true;      comboWeights[7] = 0.0;
-            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  displayColumn[8] = true;      comboWeights[8] = 0.0;
-            HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  displayColumn[9] = true;      comboWeights[9] = 0.0;
-            HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); displayColumn[10] = true;     comboWeights[10] = 0.0;
-            HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); displayColumn[11] = true;     comboWeights[11] = 0.0;
-            HEADERS[12] = "H[ampl]";     COL_TYPES[12] = typeof(double); displayColumn[12] = true;     comboWeights[12] = 0.0;
-            HEADERS[13] = "H[peakFreq]"; COL_TYPES[13] = typeof(double); displayColumn[13] = true;     comboWeights[13] = 0.0;
-            HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); displayColumn[14] = true;   comboWeights[14] = 0.4;
-            HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); displayColumn[15] = false; comboWeights[15] = 0.1;
-            HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    displayColumn[16] = true;     comboWeights[16] = 0.4;
-            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); displayColumn[17] = true;     comboWeights[17] = 0.1;
-            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); displayColumn[18] = false; comboWeights[18] = 0.0;
+            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;     comboWeights[0] = 0.0;
+            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  DISPLAY_COLUMN[1] = false;     comboWeights[1] = 0.0;
+            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  DISPLAY_COLUMN[2] = false;     comboWeights[2] = 0.0;
+            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = true;      comboWeights[3] = 0.0;
+            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  DISPLAY_COLUMN[4] = true;      comboWeights[4] = 0.0;
+            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = true;      comboWeights[5] = 0.0;
+            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;      comboWeights[6] = 0.0;
+            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = true;      comboWeights[7] = 0.0;
+            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;      comboWeights[8] = 0.0;
+            HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;      comboWeights[9] = 0.0;
+            HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;     comboWeights[10] = 0.0;
+            HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;     comboWeights[11] = 0.0;
+            HEADERS[12] = "H[ampl]";     COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;     comboWeights[12] = 0.0;
+            HEADERS[13] = "H[peakFreq]"; COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = false;    comboWeights[13] = 0.0;
+            HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;   comboWeights[14] = 0.4;
+            HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; comboWeights[15] = 0.1;
+            HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     comboWeights[16] = 0.4;
+            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     comboWeights[17] = 0.1;
+            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; comboWeights[18] = 0.0;
         }
         
         public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
@@ -663,39 +663,112 @@
 
 
 
-        public static System.Tuple<double[], List<string>, List<double>> ConstructWeightedIndex(bool WriteToConsole, List<double[]> values)
+        public static DataTable ConstructTableOfDisplayValues(bool WriteToConsole, DataTable dt)
         {
-            //reconstruct new list of values to display
-            var displayValues = new List<double[]>(); //reconstruct new list of values to display
-            var displayHeaders = new List<string>();   //reconstruct new list of headers to display
-            //for (int i = 0; i < AcousticIndices.displayColumn.Length; i++)
-            for (int i = 0; i < values.Count; i++)
-            {
-            if (AcousticIndices.displayColumn[i])
-            {
-                displayValues.Add(values[i]);
-                displayHeaders.Add(headers[i]);
-            }
-            }
+            DataTableTools.RemoveTableColumns(dt, AcousticIndices.DISPLAY_COLUMN);
 
-            //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
-            if (WriteToConsole) Console.WriteLine("Index weights: ");
-            var comboHeaders = new List<string>();          //reconstruct new list of column headers from those columns used to calculate weighted index
-            var comboWeights = new List<double>();          //reconstruct new list of column weights from those columns used to calculate weighted index
-            var comboColumns = new List<double[]>();        //reconstruct new list of columns to calculate weighted combination index
-            for (int i = 0; i < AcousticIndices.comboWeights.Length; i++)
+            var displayHeaders = new List<string>();          //reconstruct new list of column headers of those columns used to display
+            var displayTypes   = new List<Type>();            //reconstruct new list of column types 
+            var data = new List<double[]>();
+            double[] norm; 
+
+            for (int i = 0; i < AcousticIndices.DISPLAY_COLUMN.Length; i++)
             {
-                if (AcousticIndices.comboWeights[i] > 0.0)
+                if (AcousticIndices.DISPLAY_COLUMN[i])
                 {
-                    double[] norm = DataTools.NormaliseArea(values[i]);
-                    comboColumns.Add(norm);
-                    comboWeights.Add(AcousticIndices.comboWeights[i]);
-                    comboHeaders.Add(headers[i]);
-                    if (WriteToConsole) Console.WriteLine("\t{0} = {1}", headers[i], AcousticIndices.comboWeights[i]);
+                    Type type =  dt.Columns[i].DataType;
+                    displayTypes.Add(type);
+                    displayHeaders.Add(dt.Columns[i].ColumnName);
+                    if (type == typeof(int))
+                    {
+                        int[] intArray = DataTableTools.Column2ListOfInt(dt, dt.Columns[i].ColumnName).ToArray();
+                        norm = DataTools.NormaliseArea(intArray);
+                    }
+                    else
+                    {
+                        double[] dbleArray = DataTableTools.Column2ListOfDouble(dt, dt.Columns[i].ColumnName).ToArray();
+                        norm = DataTools.NormaliseArea(dbleArray);
+                    }
+                    data.Add(norm);
                 }
             }
 
-                        //add in weighted bias for chorus and backgorund noise
+            // set up a new display datatable 
+            var displayTable = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes.ToArray());
+
+            var numItemsInArrayInDoubleData = data[0].Length;
+            var numArraysInDoubleData = data.Count;
+
+            for (int r = 0; r < numItemsInArrayInDoubleData; r++)
+            {
+                DataRow newRow = displayTable.NewRow();
+
+                for (int c = 0; c < numArraysInDoubleData; c++)
+                {
+                    newRow[c] = data[c][r];
+                }
+
+                displayTable.Rows.Add(newRow);
+            }
+            return displayTable;
+        }
+
+
+
+        public static void GetListOfWeightedIndices(bool WriteToConsole, DataTable dt)
+        {
+            var displayHeaders = new List<string>();        //reconstruct new list of column headers of those columns used to display
+            var displayTypes = new List<Type>();            //reconstruct new list of column types   
+            for (int i = 0; i < AcousticIndices.DISPLAY_COLUMN.Length; i++)
+            {
+                if (AcousticIndices.DISPLAY_COLUMN[i])
+                {
+                    displayHeaders.Add(dt.Columns[i].ColumnName);
+                    displayTypes.Add(dt.Columns[i].DataType);
+                }
+            }
+
+            //set up an array of values normalised by column
+            var data = new List<double[]>();
+            foreach (DataColumn col in dt.Columns)
+            {
+                int[] array = DataTableTools.Column2ListOfInt(dt, col.ColumnName).ToArray();
+                double[] norm = DataTools.NormaliseArea(array);
+                data.Add(norm);
+            }
+
+            // set up a new display datatable 
+            var displayTable = DataTableTools.CreateTable(displayHeaders.ToArray(), displayTypes.ToArray());
+            for (int r = 0; r < data[0].Length; r++)
+            {
+                DataRow newRow = displayTable.NewRow();
+                for (int c = 0; c < data.Count; c++) newRow[c] = data[r][c];
+                displayTable.Rows.Add(newRow);
+            }
+
+
+
+            //append new column to existing table and return
+
+            //RECONSTRUCT NEW LIST OF VALUES to CALCULATE WEIGHTED COMBINATION INDEX
+            //var comboWeights = new List<double>();          //reconstruct new list of column weights from those columns used to calculate weighted index
+            //var comboColumns = new List<double[]>();        //reconstruct new list of columns to calculate weighted combination index
+
+            //if (WriteToConsole) Console.WriteLine(comboHeader);
+            //for (int i = 0; i < AcousticIndices.comboWeights.Length; i++)
+            //{
+            //    if (AcousticIndices.comboWeights[i] > 0.0)
+            //    {
+            ////        double[] norm = DataTools.NormaliseArea(values[i]);
+            ////        comboColumns.Add(norm);
+            ////        comboWeights.Add(AcousticIndices.comboWeights[i]);
+            ////        comboHeaders.Add(headers[i]);
+            //        if (WriteToConsole) Console.WriteLine("\t{0} = {1}", AcousticIndices.HEADERS[i], AcousticIndices.comboWeights[i]);
+            //    }
+            //}
+
+
+            //add in weighted bias for chorus and backgorund noise
             //for (int i = 0; i < wtIndices.Length; i++)
             //{
             //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
@@ -705,12 +778,10 @@
             //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
             //}
 
-            double[] weightedIndices = DataTools.GetWeightedCombinationOfColumns(comboColumns, comboWeights.ToArray());
-            weightedIndices = DataTools.normalise(weightedIndices);
-            displayHeaders.Add("Weighted Index");
-            displayValues.Add(weightedIndices);
-
-            return System.Tuple.Create(weightedIndices, displayHeaders, displayValues);
+            //double[] weightedIndices = DataTools.GetWeightedCombinationOfColumns(comboColumns, comboWeights.ToArray());
+            //weightedIndices = DataTools.normalise(weightedIndices);
+            //displayValues.Add(weightedIndices);
+            //}
         }
 
 
@@ -957,9 +1028,10 @@
         /// <param name="imageWidth"></param>
         /// <param name="trackHeight"></param>
         /// <returns></returns>
-        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(List<string> headers, List<double[]> values, double[] order, int trackHeight, bool normalisedTrackDisplay)
+        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay)
         {
-            //int headerCount = headers.Count;
+            List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
+            List<double[]> values = DataTableTools.ListOfColumnValues(dt); 
 
             // accumulate the indivudal tracks
             var bitmaps = new List<Bitmap>();

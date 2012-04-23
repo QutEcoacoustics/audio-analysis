@@ -465,11 +465,19 @@
                         new FileInfo(
                             Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
+                    Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
                     //Infer source file name from CSV file name
                     FileInfo inferredSourceFile = InferSourceFileFromCSVFileName(csvFileName);
-                    if (inferredSourceFile != null) browserSettings.fiSourceRecording = inferredSourceFile;
-                    Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
-                    Console.WriteLine("# \t\tExpected source recording: " + inferredSourceFile.Name);
+                    if (inferredSourceFile == null)
+                    {
+                        browserSettings.fiSourceRecording = null;
+                        Console.WriteLine("# \tWARNING: Cannot find mp3 or wav source recording with name: " + Path.GetFileNameWithoutExtension(csvFileName));
+                    }
+                    else
+                    {
+                        browserSettings.fiSourceRecording = inferredSourceFile;
+                        Console.WriteLine("# \t\tExpected source recording: " + inferredSourceFile.Name);
+                    }
 
                     //##################################################################################################################
                     int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
@@ -522,42 +530,58 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
+            bool ToConsole        = true;
+            DataTable dt          = null;
+            Bitmap timeScaleImage = null;
+            Bitmap tracksImage    = null;
+            //########################
 
-            int error = 0;
-            //USE FOLLOWING LINES TO LOAD A CSV FILE
-            DataTable dt = CsvTools.ReadCSVToTable(csvPath, true, null);
+            if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME))
+            {
+                AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
+                dt = CsvTools.ReadCSVToTable(csvPath, true, AcousticIndices.COL_TYPES);//LOAD CSV FILE
+                if ((dt == null) || (dt.Rows.Count == 0)) return 1;
 
-            var tuple = CsvTools.ReadCSVFile(csvPath);
-            var headers = tuple.Item1;  //List<string>
-            var values  = tuple.Item2;  //List<double[]>> 
+                double[] order = DataTableTools.Column2ListOfDouble(dt, AcousticIndices.HEADERS[0]).ToArray();
+                //double[] array = AcousticIndices.GetWeightedCombinationOfIndicesFromCSVFile(dt);
+                double[] array = new double[order.Length];
+                string comboHeader = "Weighted Index";
+                DataTableTools.AddColumn2Table(dt, comboHeader, array);
+                DataTableTools.RemoveTableColumns(dt, AcousticIndices.DISPLAY_COLUMN);
+                var images = AcousticIndices.ConstructVisualIndexImage(dt, order, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
+                tracksImage = images.Item1;
+                timeScaleImage = images.Item1;
+            }
+            else
+            if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME))
+            {
+                AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
+                dt = CsvTools.ReadCSVToTable(csvPath, true, null);//LOAD CSV FILE
+                if ((dt == null) || (dt.Rows.Count == 0)) return 1;
 
-            if (values == null) return 1;
-            if (values[0] == null) return 1;
-            if (values.Count == 0) return 1;
-            if (values[0].Length == 0) return 2;
+                var displayTable = AcousticIndices.ConstructTableOfDisplayValues(ToConsole, dt); //reconstruct new Table of values to display
+                //var images = AcousticIndices.ConstructVisualIndexImage(displayTable, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
+                //tracksImage = images.Item1;
+                //timeScaleImage = images.Item1;
+            }
+            else
+            {
+                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
+                Console.WriteLine("\t Browser analysis name not reconized: " + browserSettings.AnalysisName);
+                return 3;
+            }
 
+            //########################
             //set global variable !!!!
-            this.sourceRecording_MinutesDuration = values[0].Length; //CAUTION: assume one value per minute
+            this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute
 
-            //reconstruct new list of values to display
-            bool ToConsole = true;
-            var results = AcousticIndices.ConstructWeightedIndex(ToConsole, values);
-            this.weightedIndices = results.Item1;
-            var displayHeaders   = results.Item2;
-            var displayValues    = results.Item3;
-
-            var output = AcousticIndices.ConstructVisualIndexImage(displayHeaders, displayValues, values[0], browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay); //values[0] is the order of rows in CSV file
-            
-            //###################### MAKE ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-            this.pictureBoxVisualIndex.Height = output.Item1.Height;
-            this.pictureBoxVisualIndex.Image = output.Item1;
-            this.pictureBoxBarTrack.Location = new Point(0, output.Item1.Height + 1);
+            //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+            this.pictureBoxVisualIndex.Height = tracksImage.Height;
+            this.pictureBoxVisualIndex.Image = tracksImage;
+            this.pictureBoxBarTrack.Location = new Point(0, tracksImage.Height + 1);
             //this.pictureBoxSonogram.Location = new Point(0, pictureBoxBarTrack.Bottom + 1);
 
-            this.visualIndexTimeScale = output.Item2;//store the time scale because want the image later for refreshing purposes
-            this.weightedIndices = DataTools.Order(this.weightedIndices, values[0]); //reorder the weighted indices: 0->N
-
+            this.visualIndexTimeScale = timeScaleImage;//store the time scale because want the image later for refreshing purposes
             this.barTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
             
             //SAVE THE IMAGE
@@ -565,6 +589,7 @@
             this.pictureBoxVisualIndex.Image.Save(imagePath);
             Console.WriteLine("\n\tSaved csv data tracks to image file: " + imagePath);
 
+            int error = 0;
             return error;
         }
 
