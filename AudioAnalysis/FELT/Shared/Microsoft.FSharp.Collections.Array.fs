@@ -97,6 +97,13 @@
             else
                 loop 0 
 
+
+        let tupleWith y xs =
+                Array.map (fun x -> (x, y)) xs
+
+
+            
+
         type ``[]``<'T> with
             member this.zeroLength =
                 this.Length - 1

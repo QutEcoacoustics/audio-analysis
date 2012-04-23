@@ -14,3 +14,6 @@
         let getFirstValue (map:Map<_,_>) = (Seq.nth 1 map).Value
 
         let getNthValue (map:Map<_,_>) index = (Seq.nth index map).Value
+
+        let keepThese map keys =
+            Map.fold (fun m key value -> if Set.contains key keys then Map.add key value m else m) Map.empty map

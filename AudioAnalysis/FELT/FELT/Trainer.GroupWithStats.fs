@@ -63,7 +63,7 @@
                 
                 // we assume all columns have same number of values
                 let (headers, unwrapped) = Map.toArray instances |> Array.unzip
-                let numGroups = unwrapped |> Seq.nth 1 |> Array.length
+                let numGroups = unwrapped |> Seq.nth 0 |> Array.length
 
                 let checkForErrorAndFix candidates (v:AveragedNumber) : Value =
                     if (v.Count = 1) then

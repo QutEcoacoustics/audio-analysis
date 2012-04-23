@@ -95,6 +95,8 @@
             setVert summaryws "AnalysisNames" analyses id
             setVert summaryws "Filenames" fileNames (fun fi -> fi.Name)
 
+
+
             setHorz summaryws "Features" allKnownFeatures id
 
 //            // fill feature matrix formulas down
@@ -103,8 +105,11 @@
 //            fillDown summaryws featureRow (numRows - 1)
 
 
-            let matchFeatures =  (=) >> Seq.tryFind >< allKnownFeatures >> Option.isSome >> ifelse 1 0
-            setSquare summaryws "SummaryGrid" <| Seq.map (fun info -> Seq.map matchFeatures info.features) allKnownInformation 
+            let matchFeatures features knownFeature =  
+                let f =  (=) >> Seq.tryFind >< features >> Option.isSome >> ifelse 1 0
+                f knownFeature
+            let featureGrid = Seq.map (fun info -> Seq.map (matchFeatures info.features) allKnownFeatures |> Seq.toArray) allKnownInformation |> Seq.toArray
+            setSquare summaryws "SummaryGrid" featureGrid
 
             Log "end summary sheet"
             Log "performances sheet"
