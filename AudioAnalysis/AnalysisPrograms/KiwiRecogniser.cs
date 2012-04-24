@@ -58,30 +58,30 @@ namespace AnalysisPrograms
         public const int DEFAULT_WINDOW_SIZE = 256;
 
         public const int COL_NUMBER = 17;
-        public static Type[] COL_TYPES      = new Type[COL_NUMBER];
-        public static string[] HEADERS      = new string[COL_NUMBER]; 
-        public static bool[] displayColumn  = new bool[COL_NUMBER]; 
-        //public static double[] comboWeights = null; 
+        public static Type[] COL_TYPES       = new Type[COL_NUMBER];
+        public static string[] HEADERS       = new string[COL_NUMBER]; 
+        public static bool[] DISPLAY_COLUMN  = new bool[COL_NUMBER];
+        public static double[] COMBO_WEIGHTS = new double[COL_NUMBER]; 
 
         public static void InitOutputTableColumns()
         {
-            HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     displayColumn[0] = false;
-            HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  displayColumn[1] = false;
-            HEADERS[2] = "segmentDur";      COL_TYPES[2] = typeof(string);  displayColumn[2] = false;
-            HEADERS[3] = "Density";         COL_TYPES[3] = typeof(int);     displayColumn[3] = true;
-            HEADERS[4] = "Label";           COL_TYPES[4] = typeof(string);  displayColumn[4] = false;
-            HEADERS[5] = "EvStartOffset";   COL_TYPES[5] = typeof(double);  displayColumn[5] = false;
-            HEADERS[6] = "EvStartAbs";      COL_TYPES[6] = typeof(int);     displayColumn[6] = false;
-            HEADERS[7] = "MinHz";           COL_TYPES[7] = typeof(int);     displayColumn[7] = false;
-            HEADERS[8] = "MaxHz";           COL_TYPES[8] = typeof(int);     displayColumn[8] = false;
-            HEADERS[9] = "EventDur";        COL_TYPES[9] = typeof(double);  displayColumn[9] = false;
-            HEADERS[10] = "DurScore";       COL_TYPES[10] = typeof(double); displayColumn[10] = true;
-            HEADERS[11] = "HitSCore";       COL_TYPES[11] = typeof(double); displayColumn[11] = true;
-            HEADERS[12] = "SnrScore";       COL_TYPES[12] = typeof(double); displayColumn[12] = true;
-            HEADERS[13] = "sdScore";        COL_TYPES[13] = typeof(double); displayColumn[13] = true;
-            HEADERS[14] = "GapScore";       COL_TYPES[14] = typeof(double); displayColumn[14] = true;
-            HEADERS[15] = "BWScore";        COL_TYPES[15] = typeof(double); displayColumn[15] = true;
-            HEADERS[16] = "WtScore";        COL_TYPES[16] = typeof(double); displayColumn[16] = true;
+            HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
+            HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  DISPLAY_COLUMN[1] = false;
+            HEADERS[2] = "segmentDur";      COL_TYPES[2] = typeof(string);  DISPLAY_COLUMN[2] = false;
+            HEADERS[3] = "Density";         COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = true;
+            HEADERS[4] = "Label";           COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
+            HEADERS[5] = "EvStartOffset";   COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = false;
+            HEADERS[6] = "EvStartAbs";      COL_TYPES[6] = typeof(int);     DISPLAY_COLUMN[6] = false;
+            HEADERS[7] = "MinHz";           COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = false;
+            HEADERS[8] = "MaxHz";           COL_TYPES[8] = typeof(int);     DISPLAY_COLUMN[8] = false;
+            HEADERS[9] = "EventDur";        COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = false;
+            HEADERS[10] = "DurScore";       COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;
+            HEADERS[11] = "HitSCore";       COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;
+            HEADERS[12] = "SnrScore";       COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;
+            HEADERS[13] = "sdScore";        COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
+            HEADERS[14] = "GapScore";       COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
+            HEADERS[15] = "BWScore";        COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = true;
+            HEADERS[16] = "WtScore";        COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = true;
         }
         
 

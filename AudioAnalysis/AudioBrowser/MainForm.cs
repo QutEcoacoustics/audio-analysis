@@ -53,15 +53,13 @@
         private Dictionary<string, string> analysisParams;
 
         // for calculating a visual index image
-        private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = mintes duration of source recording.
+        private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = minutes duration of source recording.
         private double[] weightedIndices;
-        private Bitmap visualIndexTimeScale;
-        private Bitmap barTrackImage;
-        //private FileInfo fiCurrentWaveSegment;
+        private Bitmap selectionTrackImage;
 
 
         /// <summary>
-        /// jjj
+        /// 
         /// </summary>
         public MainForm()
         {
@@ -72,7 +70,6 @@
             browserSettings = new AudioBrowserSettings();
             try
             {
-                //browserSettings.LoadSettings();
                 browserSettings.LoadBrowserSettings();
             }
             catch (Exception ex)
@@ -530,9 +527,7 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            bool ToConsole        = true;
             DataTable dt          = null;
-            Bitmap timeScaleImage = null;
             Bitmap tracksImage    = null;
             //########################
 
@@ -542,27 +537,31 @@
                 dt = CsvTools.ReadCSVToTable(csvPath, true, AcousticIndices.COL_TYPES);//LOAD CSV FILE
                 if ((dt == null) || (dt.Rows.Count == 0)) return 1;
 
-                double[] order = DataTableTools.Column2ListOfDouble(dt, AcousticIndices.HEADERS[0]).ToArray();
-                //double[] array = AcousticIndices.GetWeightedCombinationOfIndicesFromCSVFile(dt);
-                double[] array = new double[order.Length];
-                string comboHeader = "Weighted Index";
-                DataTableTools.AddColumn2Table(dt, comboHeader, array);
+                dt = DataTableTools.SortTable(dt, "count ASC"); 
+                this.weightedIndices = AcousticIndices.GetArrayOfWeightedIndices(dt, AcousticIndices.COMBO_WEIGHTS);
                 DataTableTools.RemoveTableColumns(dt, AcousticIndices.DISPLAY_COLUMN);
-                var images = AcousticIndices.ConstructVisualIndexImage(dt, order, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
+                string colName = AcousticIndices.HEADERS[AcousticIndices.HEADERS.Length-1];
+                DataTableTools.AddColumn2Table(dt, colName, this.weightedIndices);
+                var images = AcousticIndices.ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
                 tracksImage = images.Item1;
-                timeScaleImage = images.Item1;
+                this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             }
             else
             if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME))
             {
-                AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
-                dt = CsvTools.ReadCSVToTable(csvPath, true, null);//LOAD CSV FILE
+                KiwiRecogniser.InitOutputTableColumns(); //initialise just in case have not been before now.
+                dt = CsvTools.ReadCSVToTable(csvPath, true, KiwiRecogniser.COL_TYPES);//LOAD CSV FILE
                 if ((dt == null) || (dt.Rows.Count == 0)) return 1;
 
-                var displayTable = AcousticIndices.ConstructTableOfDisplayValues(ToConsole, dt); //reconstruct new Table of values to display
-                //var images = AcousticIndices.ConstructVisualIndexImage(displayTable, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
-                //tracksImage = images.Item1;
-                //timeScaleImage = images.Item1;
+                dt = DataTableTools.SortTable(dt, "EvStartAbs ASC");
+                //this.weightedIndices = AcousticIndices.GetArrayOfWeightedIndices(dt, KiwiRecogniser.COMBO_WEIGHTS);
+                this.weightedIndices = DataTableTools.Column2ListOfDouble(dt, "WtScore").ToArray(); //get last array
+                DataTableTools.RemoveTableColumns(dt, KiwiRecogniser.DISPLAY_COLUMN);
+                string colName = KiwiRecogniser.HEADERS[KiwiRecogniser.HEADERS.Length - 1];
+                //DataTableTools.AddColumn2Table(dt, colName, this.weightedIndices);
+                var images = AcousticIndices.ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
+                tracksImage = images.Item1;
+                this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             }
             else
             {
@@ -571,18 +570,11 @@
                 return 3;
             }
 
-            //########################
-            //set global variable !!!!
-            this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute
-
             //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
             this.pictureBoxVisualIndex.Height = tracksImage.Height;
             this.pictureBoxVisualIndex.Image = tracksImage;
             this.pictureBoxBarTrack.Location = new Point(0, tracksImage.Height + 1);
-            //this.pictureBoxSonogram.Location = new Point(0, pictureBoxBarTrack.Bottom + 1);
-
-            this.visualIndexTimeScale = timeScaleImage;//store the time scale because want the image later for refreshing purposes
-            this.barTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+            this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
             
             //SAVE THE IMAGE
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
@@ -608,17 +600,16 @@
 
             //mark the time scale
             Graphics g = this.pictureBoxVisualIndex.CreateGraphics();
-            g.DrawImage(this.visualIndexTimeScale, 0, 0);
+            g.DrawImage(this.pictureBoxVisualIndex.Image, 0, 0);
             Point pt1 = new Point(myX, 2);
-            Point pt2 = new Point(myX, browserSettings.TrackHeight - 1);
-            g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
-            g.DrawImage(this.visualIndexTimeScale, 0, this.pictureBoxVisualIndex.Height - browserSettings.TrackHeight);
-            pt1 = new Point(myX, this.pictureBoxVisualIndex.Height - 2);
-            pt2 = new Point(myX, this.pictureBoxVisualIndex.Height - browserSettings.TrackHeight);
-            g.DrawLine(new Pen(Color.Yellow, 1.0F), pt1, pt2);
+            Point pt2 = new Point(myX, this.pictureBoxVisualIndex.Height - browserSettings.TrackHeight);
+            float[] dashValues = { 2, 2, 2, 2 };
+            Pen pen = new Pen(Color.Green, 1.0F);
+            pen.DashPattern = dashValues;
+            g.DrawLine(pen, pt1, pt2);
 
             if (myX >= this.sourceRecording_MinutesDuration - 1)
-                this.textBoxCursorValue.Text     = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
+                this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
             else
                 if (myX <= 0)
                     this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", "START", this.weightedIndices[myX], this.weightedIndices[myX + 1]);
@@ -634,6 +625,12 @@
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
+            if (browserSettings.fiSourceRecording == null)
+            {
+                Console.WriteLine("    The source file has not been set.");
+                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
+                return;
+            }
             if (! browserSettings.fiSourceRecording.Exists)
             {
                 Console.WriteLine("    The source file does not exist: <{0}>", browserSettings.fiSourceRecording.FullName);
@@ -648,9 +645,9 @@
             int myY = e.Y;
 
             //DRAW RED LINE ON BAR TRACK
-            for (int y = 0; y < barTrackImage.Height; y++)
-                barTrackImage.SetPixel(this.pictureBoxVisualIndex.Left + myX, y, Color.Red);
-            this.pictureBoxBarTrack.Image = barTrackImage;
+            for (int y = 0; y < selectionTrackImage.Height; y++)
+                selectionTrackImage.SetPixel(this.pictureBoxVisualIndex.Left + myX, y, Color.Red);
+            this.pictureBoxBarTrack.Image = selectionTrackImage;
 
             //EXTRACT RECORDING SEGMENT
             double segmentDuration = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
@@ -771,7 +768,6 @@
         }
 
         // here be dragons!
-
         #region background workers for grid view lists
 
         private void BackgroundWorkerUpdateSourceFileListRunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
