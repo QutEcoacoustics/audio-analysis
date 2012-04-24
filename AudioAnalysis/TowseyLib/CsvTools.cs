@@ -56,11 +56,38 @@ namespace TowseyLib
                  if (csvRow == null) continue; //skip header row
                  fields = csvRow.Split(',');
                  DataRow row = dt.NewRow();
-                 row.ItemArray = fields;
+                 //row.ItemArray = fields;
+                 row.ItemArray = MakeItemArray(fields, types);
                  dt.Rows.Add(row);
              }
              return dt;
          }
+
+        public static Object[] MakeItemArray(string[] fields, Type[] types)
+        {
+            int length = fields.Length;
+            Object[] output = new Object[length];
+            for (int i = 0; i < length; i++)
+            {
+                if (types[i] == typeof(int))
+                {
+                    output[i] = Int32.Parse(fields[i]);
+                }
+                else
+                    if (types[i] == typeof(double))
+                    {
+                        output[i] = Double.Parse(fields[i]);
+                    }
+                    else
+                        if (types[i] == typeof(bool))
+                        {
+                            output[i] = Boolean.Parse(fields[i]);
+                        }
+                        else
+                            output[i] = fields[i];
+            }
+            return output;
+        }
 
 
         //#######################################################################################

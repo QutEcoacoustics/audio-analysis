@@ -20,30 +20,30 @@
         public static Type[]      COL_TYPES = new Type[COL_NUMBER];
         public static string[]      HEADERS = new string[COL_NUMBER];
         public static bool[]  DISPLAY_COLUMN = new bool[COL_NUMBER];
-        public static double[] comboWeights = new double[COL_NUMBER];
+        public static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
 
         public static void InitOutputTableColumns()
         {
-            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;     comboWeights[0] = 0.0;
-            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  DISPLAY_COLUMN[1] = false;     comboWeights[1] = 0.0;
-            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  DISPLAY_COLUMN[2] = false;     comboWeights[2] = 0.0;
-            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = true;      comboWeights[3] = 0.0;
-            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  DISPLAY_COLUMN[4] = true;      comboWeights[4] = 0.0;
-            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = true;      comboWeights[5] = 0.0;
-            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;      comboWeights[6] = 0.0;
-            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = true;      comboWeights[7] = 0.0;
-            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;      comboWeights[8] = 0.0;
-            HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;      comboWeights[9] = 0.0;
-            HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;     comboWeights[10] = 0.0;
-            HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;     comboWeights[11] = 0.0;
-            HEADERS[12] = "H[ampl]";     COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;     comboWeights[12] = 0.0;
-            HEADERS[13] = "H[peakFreq]"; COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = false;    comboWeights[13] = 0.0;
-            HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;   comboWeights[14] = 0.4;
-            HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; comboWeights[15] = 0.1;
-            HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     comboWeights[16] = 0.4;
-            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     comboWeights[17] = 0.1;
-            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; comboWeights[18] = 0.0;
+            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;     COMBO_WEIGHTS[0] = 0.0;
+            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  DISPLAY_COLUMN[1] = false;     COMBO_WEIGHTS[1] = 0.0;
+            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  DISPLAY_COLUMN[2] = false;     COMBO_WEIGHTS[2] = 0.0;
+            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = true;      COMBO_WEIGHTS[3] = 0.0;
+            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  DISPLAY_COLUMN[4] = true;      COMBO_WEIGHTS[4] = 0.0;
+            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = true;      COMBO_WEIGHTS[5] = 0.0;
+            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;      COMBO_WEIGHTS[6] = 0.0;
+            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = true;      COMBO_WEIGHTS[7] = 0.0;
+            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;      COMBO_WEIGHTS[8] = 0.0;
+            HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;      COMBO_WEIGHTS[9] = 0.0;
+            HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;     COMBO_WEIGHTS[10] = 0.0;
+            HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;     COMBO_WEIGHTS[11] = 0.0;
+            HEADERS[12] = "H[ampl]";     COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;     COMBO_WEIGHTS[12] = 0.0;
+            HEADERS[13] = "H[peakFreq]"; COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = false;    COMBO_WEIGHTS[13] = 0.0;
+            HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;   COMBO_WEIGHTS[14] = 0.4;
+            HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; COMBO_WEIGHTS[15] = 0.1;
+            HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     COMBO_WEIGHTS[16] = 0.4;
+            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     COMBO_WEIGHTS[17] = 0.1;
+            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
         }
         
         public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
@@ -936,42 +936,85 @@
 
         //########################################################################################################################################################################
 
+
+         public static double[] GetArrayOfWeightedIndices(DataTable dt, double[] weightArray)
+         {
+             List<double[]> columns = new List<double[]>();
+             List<double> weights = new List<double>();
+             for (int i = 0; i < weightArray.Length; i++)
+             {
+                 if (weightArray[i] != 0.0)
+                 {
+                     weights.Add(weightArray[i]);
+                     string colName = dt.Columns[i].ColumnName;
+                     double[] array = DataTableTools.Column2ListOfDouble(dt, colName).ToArray();
+                     columns.Add(DataTools.NormaliseArea(array)); //normalize the arrays prior to obtaining weighted index.
+                 }
+             } //for
+
+            int arrayLength = columns[0].Length; //assume all columns are of same length 
+            double[] weightedIndices = new double[arrayLength];
+            for (int i = 0; i < arrayLength; i++)
+            {
+                double combo = 0.0;
+                for (int c = 0; c < columns.Count; c++)
+                {
+                    combo += (weights[c] * columns[c][i]);
+                }
+                weightedIndices[i] = combo;
+            }
+
+            //Add in weighted bias for chorus and backgorund noise
+            //IMPORTANT: this only works if DataTable is ordered correctly before this point.
+            //for (int i = 0; i < wtIndices.Length; i++)
+            //{
+            //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
+            //background noise bias
+            //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
+            //else
+            //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
+            //}
+
+            weightedIndices = DataTools.normalise(weightedIndices); //normalise final array in [0,1]
+            return weightedIndices;
+        }
+
         /// <summary>
         /// The following two methods were used for the first research paper linking indices and bird call richness
         /// </summary>
         /// <param name="csvFileName"></param>
         /// <param name="columnHeader"></param>
         /// <param name="opFileName"></param>
-        public static void AddColumnOfWeightedIndicesToCSVFile(string csvFileName, string columnHeader, string opFileName)
-        {
-            int offset = 7; //
-            int[] columns = { offset, offset + 6, offset + 7, offset + 8, offset + 9};
-            double wt1 = 0.0;//SegmentCount
-            double wt2 = 0.4;//H[avSpectrum]
-            double wt3 = 0.1;//H[varSpectrum] 
-            double wt4 = 0.4;//number of clusters
-            double wt5 = 0.1;//av cluster duration
-            double[] wts = {wt1, wt2, wt3, wt4, wt5};
+        //public static void AddColumnOfWeightedIndicesToCSVFile(string csvFileName, string columnHeader, string opFileName)
+        //{
+        //    int offset = 7; //
+        //    int[] columns = { offset, offset + 6, offset + 7, offset + 8, offset + 9};
+        //    double wt1 = 0.0;//SegmentCount
+        //    double wt2 = 0.4;//H[avSpectrum]
+        //    double wt3 = 0.1;//H[varSpectrum] 
+        //    double wt4 = 0.4;//number of clusters
+        //    double wt5 = 0.1;//av cluster duration
+        //    double[] wts = {wt1, wt2, wt3, wt4, wt5};
 
-            var tuple = GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
-            double[] wtIndices = tuple.Item1;
-            List<string> colNames = tuple.Item2;
+        //    var tuple = GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
+        //    double[] wtIndices = tuple.Item1;
+        //    List<string> colNames = tuple.Item2;
 
-            //add in weighted bias for chorus and backgorund noise
-            //for (int i = 0; i < wtIndices.Length; i++)
-            //{
-                //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
-                //background noise bias
-                //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
-                //else
-                //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
-            //}
+        //    //add in weighted bias for chorus and backgorund noise
+        //    //for (int i = 0; i < wtIndices.Length; i++)
+        //    //{
+        //        //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
+        //        //background noise bias
+        //        //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
+        //        //else
+        //        //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
+        //    //}
 
-            //Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
-            //                                   header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
+        //    //Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
+        //    //                                   header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
 
-            CsvTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
-        } //AddColumnOfWeightedIndicesToCSVFile()
+        //    CsvTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
+        //} //AddColumnOfWeightedIndicesToCSVFile()
 
 
         public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
@@ -1068,6 +1111,20 @@
             }
             gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
             return System.Tuple.Create(compositeBmp, timeBmp);
+        }
+        /// <summary>
+        /// assumes the passed data arrays are in correct order for visualization
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="trackHeight"></param>
+        /// <param name="normalisedTrackDisplay"></param>
+        /// <returns></returns>
+        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(DataTable dt, int trackHeight, bool normalisedTrackDisplay)
+        {
+            int length = dt.Rows.Count;
+            double[] order = new double[length];
+            for(int i = 0; i < length; i++) order[i] = i;
+            return ConstructVisualIndexImage(dt, order, trackHeight, normalisedTrackDisplay);
         }
 
 
