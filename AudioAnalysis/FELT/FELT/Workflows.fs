@@ -10,7 +10,7 @@
     open Microsoft.FSharp.Reflection
     
     type WorkflowItem =
-        | Dummy of obj
+        | Dummy
         | Cleaner of BasicCleaner
         | Transformer of TransformerBase
         | Selection of SelectorBase
@@ -106,8 +106,10 @@
         let info = FSharpValue.GetUnionFields(du, typeof<'d>, System.Reflection.BindingFlags.Public)
         
         let types = Array.map (fun (x:obj) -> (x.GetType().Name, if x :? FELT.WorkflowItemDescriptor then (x:?>WorkflowItemDescriptor).Description else "")) (snd info)
-        System.Diagnostics.Debug.Assert(types.Length = 1)
-        ((fst info).Name, fst types.[0], snd types.[0])
+        if types.Length = 0 then
+            ((fst info).Name, "[NO_UNDERLYING_TYPE]", "")
+        else
+            ((fst info).Name, fst types.[0], snd types.[0])
 
     let toString opList =
         let rec f ops bld = 

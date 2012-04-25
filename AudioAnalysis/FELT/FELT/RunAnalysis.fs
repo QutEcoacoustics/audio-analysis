@@ -43,6 +43,9 @@
                     r.Calculate trData teData results (toString oplst') |> ignore
                     
                     (trData, teData, ClassifierResult.Nothing)
+                | Dummy ->
+                    // noop
+                    state
                 | _ -> 
                     Errorf "Workflow item %A not supported" wfItem
                     failwith "Workflow error"
@@ -60,10 +63,10 @@
             if (trainingData.Headers.ContainsKey(feature) && testData.Headers.ContainsKey(feature)) then
                 match operation.Trim() with
                     | "ModuloTime" -> WorkflowItem.Transformer (new Transformers.TimeOfDayTransformer(feature, newName)) 
-                    | _ -> ErrorFailf "No transform is known by the name %s" operation |> failwith; WorkflowItem.Dummy(null)
+                    | _ -> ErrorFailf "No transform is known by the name %s" operation |> failwith; WorkflowItem.Dummy
             else
                 Error "A transform was included for a feature not available in the data sets!"
-                failwith "Transform error"
+                WorkflowItem.Dummy
 
         let txs = List.map tf transformList 
         let head, rest = 
