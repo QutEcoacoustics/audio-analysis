@@ -116,12 +116,12 @@
                 covariance xs ys / (mean xs * mean ys)
 
 
-        module AnalysticalStats =
-            let ConfusionMatrix =
-                //let cm = new Analysis.ConfusionMatrix()
-                raise (new NotImplementedException())
-                //cm
-                3
+       // module AnalysticalStats =
+//            let ConfusionMatrix =
+//                //let cm = new Analysis.ConfusionMatrix()
+//                raise (new NotImplementedException())
+//                //cm
+//                3
 
         module RocCurve =
             open Accord.Statistics.Analysis
@@ -133,11 +133,17 @@
                 if Array.length measurements  <> Array.length predictions then
                     raise (new System.ArgumentOutOfRangeException())
 
-                let roc = new ReceiverOperatingCharacteristic(measurements, predictions)
-                // Compute a points for every place                
-                roc.Compute(numberOfIncrements)
+                // do check for all same elements
+                let first = measurements.[0]
+                if Array.exists ((<>) first) measurements then
 
-                roc
+                    let roc = new ReceiverOperatingCharacteristic(measurements, predictions)
+                    // Compute a points for every place                
+                    roc.Compute(numberOfIncrements)
+
+                    roc
+                else
+                    failwith "All measurements same value.. function cannot cope"
 
             // using trapezium method
             let AreaUnderCurve xs ys =
