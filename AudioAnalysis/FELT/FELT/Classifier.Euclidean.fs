@@ -4,10 +4,15 @@
     open Microsoft.FSharp.Collections
     open MQUTeR.FSharp.Shared
     open System.Diagnostics
+    open System
     
 
-    type EuclideanClassifier() = class
+    type EuclideanClassifier(?lazyExecute:bool) = class
         inherit ClassifierBase()
+
+        // turn on lazy by default
+        let lazilyCalculate = ifelse lazyExecute.Value true lazyExecute.IsSome
+
 
         let deMap (m: Map<ColumnHeader, Value[]>) = 
             let colsWithNames = Map.toArray m
@@ -78,6 +83,7 @@
 
             ClassifierResult.Function results
             
+        
 
         override this.Classify (trainingData, testData) =
 
@@ -92,7 +98,7 @@
             let trd, trdx, trdy = deMap trainingData.Instances
             let ted, tedx, tedy = deMap testData.Instances
 
-            let lazilyCalculate = true
+            
 
 
             if lazilyCalculate then
@@ -101,4 +107,5 @@
                 bruteForceEuclidean trd trdx trdy ted tedx tedy
 
 
+        new() = EuclideanClassifier(true)
         end

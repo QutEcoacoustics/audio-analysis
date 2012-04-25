@@ -60,5 +60,8 @@ namespace FELT.Tests
             Assert.AreEqual(20, z9.ToInt32());
 
         }
+
+        [TestMethod]
+        public void StandardDeviationTest
     }
 }

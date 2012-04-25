@@ -100,6 +100,8 @@ namespace FELT.Tests
                 "skill", new Value[] { new Number(8.0), new Number(1.0), new Number(6.75) });
 
 
+
+
             var instances = new FSharpMap<string, Value[]>(new[] { col1, col2, col3 });
 
             var trainingData = new Data(DataSet.Training, hdrs, instances, "Profession", new[] { "Electrician", "Athlete", "Smoker" });
@@ -118,18 +120,18 @@ namespace FELT.Tests
                         });
 
             var col12 = new Tuple<string, Value[]>(
-                "health", new Value[] { new Number(0.9), new Number(0.3), new Number(0.6) });
+                "health", new Value[] { new Number(0.9), new Number(0.3), new Number(0.6), new Number(-0.1) });
 
             var col22 = new Tuple<string, Value[]>(
-                "age", new Value[] { new Number(3), new Number(4.6), new Number(2.5) });
+                "age", new Value[] { new Number(3), new Number(4.6), new Number(2.5), new Number(-0.1) });
 
             var col32 = new Tuple<string, Value[]>(
-                "skill", new Value[] { new Number(0.5), new Number(4.0), new Number(9.0) });
+                "skill", new Value[] { new Number(0.5), new Number(4.0), new Number(9.0), new Number(-0.1) });
 
 
             var instances2 = new FSharpMap<string, Value[]>(new[] { col12, col22, col32 });
 
-            var testData = new Data(DataSet.Test, hdrs2, instances2, "Profession", new[] { "Athlete", "Smoker", "Electrician" });
+            var testData = new Data(DataSet.Test, hdrs2, instances2, "Profession", new[] { "Athlete", "Smoker", "Electrician", "No-one (i.e. no match)" });
 
 
             Tuple<double, int>[][] expected = new[]
@@ -160,7 +162,7 @@ namespace FELT.Tests
             FileInfo fiReport = new FileInfo("..\\..\\..\\" + runDate.ToString("yyyy-MM-dd HH_mm_ss") + ".xlsx"); 
             FileInfo fiTemplate = new FileInfo("ExcelResultsComputationTemplate.xlsx");
             
-            var config = new ReportConfig(runDate, "Test analysis", 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, true, true);
+            var config = new ReportConfig(runDate, "Test analysis", 69, 69, testData.Classes.Length, trainingData.Classes.Length,  fiReport, fiTemplate, false, false);
             
             ResultsComputation target = new ResultsComputation(config);
 
@@ -176,7 +178,7 @@ namespace FELT.Tests
 
             Assert.IsTrue(fiReport.Exists);
 
-            Process.Start(fiReport.FullName);
+            ////Process.Start(fiReport.FullName);
         }
 
         public static string GetCurrentExecutingDirectory()
