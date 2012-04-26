@@ -53,17 +53,17 @@ namespace AnalysisPrograms
         public const string ANDREWS_SELECTION_PATH = @"C:\SensorNetworks\WavFiles\Kiwi\Results_TUITCE_20091215_210000\TUITCE_20091215_210000_ANDREWS_SELECTIONS.csv";
 
 
-        public const string ANALYSIS_NAME = "KiwiRecogniser";
+        public const string ANALYSIS_NAME = "LSKiwi";
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int DEFAULT_WINDOW_SIZE = 256;
 
-        public const int COL_NUMBER = 17;
-        public static Type[] COL_TYPES       = new Type[COL_NUMBER];
-        public static string[] HEADERS       = new string[COL_NUMBER]; 
-        public static bool[] DISPLAY_COLUMN  = new bool[COL_NUMBER];
-        public static double[] COMBO_WEIGHTS = new double[COL_NUMBER]; 
+        private const int COL_NUMBER = 17;
+        private static Type[] COL_TYPES       = new Type[COL_NUMBER];
+        private static string[] HEADERS       = new string[COL_NUMBER]; 
+        private static bool[] DISPLAY_COLUMN  = new bool[COL_NUMBER];
+        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER]; 
 
-        public static void InitOutputTableColumns()
+        public static System.Tuple<string[],Type[], bool[]> InitOutputTableColumns()
         {
             HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
             HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  DISPLAY_COLUMN[1] = false;
@@ -81,7 +81,8 @@ namespace AnalysisPrograms
             HEADERS[13] = "sdScore";        COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
             HEADERS[14] = "GapScore";       COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
             HEADERS[15] = "BWScore";        COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = true;
-            HEADERS[16] = "WtScore";        COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = true;
+            HEADERS[16] = "KiwiScore";      COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = true;
+            return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
         
 
@@ -373,7 +374,8 @@ namespace AnalysisPrograms
             //write events to a data table to return.
             TimeSpan tsSegmentDuration = recordingSegment.Duration();
             DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, tsSegmentDuration, predictedEvents);
-            return dataTable;
+            string sortString = "EvStartAbs ASC";
+            return DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
         } //Analysis()
 
 
@@ -874,6 +876,78 @@ namespace AnalysisPrograms
             return sb;
         }
 
+
+        //##################################################################################################################################################
+
+        public static Tuple<DataTable, double[]> ProcessCsvFile(FileInfo fiCsvFile)
+        {
+            KiwiRecogniser.InitOutputTableColumns(); //initialise just in case have not been before now.
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true, COL_TYPES);//LOAD CSV FILE
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+
+            //dt = ConvertListOfKiwiEvents2TemporalList(dt);
+
+            bool[] columns2Display = {false, false, true, true, true };
+            DataTableTools.RemoveTableColumns(dt, columns2Display);
+            //DataTableTools.RemoveTableColumns(dt, DISPLAY_COLUMN);
+
+            //return last column as the one for color display
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            double[] array = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray(); 
+            return System.Tuple.Create(dt, array);
+        }
+
+
+        /// <summary>
+        /// Converts a DataTable of Kiwi events into a datatable where one row = one minute of events
+        /// WARNING: TODO: This method needs to be checked! Maybe putting events into the wrong minute.
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable ConvertListOfKiwiEvents2TemporalList(DataTable dt)
+        {
+            dt = DataTableTools.SortTable(dt, "EvStartAbs ASC"); //must ensure a sort
+
+            double scoreThreshold = 0.25;
+            int timeScale = 60; //i.e. 60 seconds per output row.
+            string[] headers = { "count", "minute", "# Events", ("#Ev>" + scoreThreshold), "KiwiScore" };
+            Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(double) };
+            var newtable = DataTableTools.CreateTable(headers, types);
+
+            int prevMinuteStart = 0;
+            int minuteStart = 0;
+            int eventcount = 0;
+            int eventCountThresholded = 0;
+            double kiwiScore = 0.0;
+            foreach (DataRow kiwievent in dt.Rows)
+            {
+                int eventStart        = (int)kiwievent["EvStartAbs"];
+                double eventKiwiScore = (double)kiwievent["KiwiScore"];
+                if (eventKiwiScore > kiwiScore) kiwiScore = eventKiwiScore;
+                minuteStart = eventStart / timeScale;
+                
+                if (minuteStart > prevMinuteStart)
+                {
+                    // fill in missing minutes
+                    for (int i = prevMinuteStart + 1; i < minuteStart; i++ ) 
+                        newtable.Rows.Add(i, i, 0, 0, 0.0);
+                    newtable.Rows.Add(minuteStart, minuteStart, eventcount, eventCountThresholded, kiwiScore);
+                    prevMinuteStart = minuteStart;
+                    eventcount = 1;
+                    if (eventKiwiScore > scoreThreshold) eventCountThresholded = 1;
+                    else                                 eventCountThresholded = 0;
+                    kiwiScore = 0.0;
+                }
+                else
+                {
+                    eventcount++;
+                    if (eventKiwiScore > scoreThreshold) eventCountThresholded++;
+                }
+            }
+            newtable.Rows.Add(minuteStart, minuteStart, eventcount, eventCountThresholded, kiwiScore); //add in last minute
+            CsvTools.DataTable2CSV(newtable, @"C:\SensorNetworks\WavFiles\Kiwi\Results_TOWER_20100208_204500\DELETE_ME.csv");
+            return newtable;
+        }
 
 
         public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, double[] oscillationRates,

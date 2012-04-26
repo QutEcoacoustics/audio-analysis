@@ -308,7 +308,7 @@ namespace TowseyLib
             return list;
         }
 
-        public static string[] GetTableColumnNames(DataTable dt)
+        public static string[] GetColumnNames(DataTable dt)
         {
             var names = new List<string>();
             foreach (DataColumn col in dt.Columns) names.Add(col.ColumnName);
@@ -318,7 +318,7 @@ namespace TowseyLib
         public static void RemoveTableColumns(DataTable dt, bool[] retainColumn)
         {
             int colCount = dt.Columns.Count;
-            string[] names = GetTableColumnNames(dt);
+            string[] names = GetColumnNames(dt);
             for (int i = 0; i < colCount; i++)
             {
                 if (! retainColumn[i])
