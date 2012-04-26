@@ -26,18 +26,6 @@
         AUDACITY_PATH=C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe
         */
 
-        //public static bool[] displayColumn = { false, false, false, true, true, true, true, true, true, true, true, true, true, true, true, true, true, false };
-        //public static bool[] weightedIndexColumn = { false, false, false, false, false, false, true, false, false, false, false, false, false, true, true, true, true, false };
-        //public static double[] comboWeights = { 0.0, 0.4, 0.1, 0.4, 0.1 };  //IMPORTANT THIS ARRAY SIZE MUST EQUAL TRUE COUNT IN weightedIndexColumn
-        //                       SegmentCount = 0.0;   H[avSpectrum] = 0.4;   H[varSpectrum] = 0.1;  NumberOfClusters = 0.4; avClusterDuration = 0.1;
-
-
-        public void LoadSettings()
-        {
-            LoadBrowserSettings();
-            //LoadAnalysisSettings();
-        }
-
 
         public void LoadBrowserSettings()
         {
@@ -53,6 +41,7 @@
             this.TrackNormalisedDisplay = AppConfigHelper.GetBool("TrackNormalisedDisplay");
             this.SourceFileExt = AppConfigHelper.GetString("SourceFileExt");
             this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
+            this.AnalysisList = AppConfigHelper.GetStrings("AnalysisList", ',');
         }
 
         //public void LoadAnalysisSettings()
@@ -82,6 +71,7 @@
         public bool TrackNormalisedDisplay { get; private set; }
         public string SourceFileExt { get; private set; }
         public string AnalysisName { get; private set; }
+        public string[] AnalysisList { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }
         public DirectoryInfo DefaultOutputDir { get; private set; }

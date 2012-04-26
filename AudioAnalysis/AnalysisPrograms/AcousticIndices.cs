@@ -16,14 +16,14 @@
         public const string ANALYSIS_NAME = "AcousticIndices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
-        public const int    COL_NUMBER = 19;
-        public static Type[]      COL_TYPES = new Type[COL_NUMBER];
-        public static string[]      HEADERS = new string[COL_NUMBER];
-        public static bool[]  DISPLAY_COLUMN = new bool[COL_NUMBER];
-        public static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
+        private const int    COL_NUMBER = 19;
+        private static Type[] COL_TYPES = new Type[COL_NUMBER];
+        private static string[] HEADERS = new string[COL_NUMBER];
+        private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
+        private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
 
-        public static void InitOutputTableColumns()
+        public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
             HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;     COMBO_WEIGHTS[0] = 0.0;
             HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  DISPLAY_COLUMN[1] = false;     COMBO_WEIGHTS[1] = 0.0;
@@ -44,6 +44,7 @@
             HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     COMBO_WEIGHTS[16] = 0.4;
             HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     COMBO_WEIGHTS[17] = 0.1;
             HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
+            return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
         
         public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
@@ -61,6 +62,29 @@
         public static string key_MID_FREQ_BOUND   = "MID_FREQ_BOUND";
         //public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
         //public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
+        public static string key_STORE_INTERMEDATE_RESULTS = "STORE_INTERMEDATE_RESULTS";
+
+
+        /// Following is list of scaling originally applied to the Acoustic Indices Tracks
+        /// Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
+        /// Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
+        /// SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
+        /// draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
+        /// Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
+        /// avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
+        /// percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
+        /// percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
+        /// Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
+        /// H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
+        /// H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
+        /// H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
+        /// clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
+        /// av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
+        /// weightedIndex track 16:         title = "15: Weighted Index";  
+
+
+
+
 
 
         /// <summary>
@@ -220,21 +244,8 @@
             //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
             int iterationNumber = 1;
             var fiRecording = new FileInfo(recordingPath);
+            dict.Add(key_STORE_INTERMEDATE_RESULTS, "false");
             var results = Analysis(iterationNumber, fiRecording, dict);
-
-            Indices2 indices = results.Item1;
-            //AcousticIndices.AppendIndicesToReportFile(opPath, reportFormat, fileCount, min_start, recordingDuration, indices);
-
-            //iii: STORE IMAGES
-            if (doStoreImages)
-            {
-                var scores = results.Item2;
-                var clusterIDs = results.Item3;
-                var clusterWts = results.Item4;
-                var clusterSpectrogram = results.Item5;
-                //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
-                //MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
-            }
 
             Log.WriteLine("# Finished everything!");
             Console.ReadLine();
@@ -257,29 +268,27 @@
         ///                                      This is to exclude machine noise, traffic etc which can dominate the spectrum.</param>
         /// <param name="frameSize">samples per frame</param>
         /// <returns></returns>
-        public static System.Tuple<Indices2, List<double[]>, int[], List<double[]>, double[,]>
-                                                                       Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> dict)
+        public static DataTable Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
         {
+            //get parameters for the analysis
             int frameSize = AcousticIndices.DEFAULT_WINDOW_SIZE;
-            if (dict.ContainsKey(key_FRAME_LENGTH))      frameSize = Configuration.GetInt(key_FRAME_LENGTH, dict); 
+            if (config.ContainsKey(key_FRAME_LENGTH)) frameSize      = Configuration.GetInt(key_FRAME_LENGTH, config); 
             int lowFreqBound = 500; //default value
-            if (dict.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = Configuration.GetInt(key_LOW_FREQ_BOUND, dict); 
+            if (config.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = Configuration.GetInt(key_LOW_FREQ_BOUND, config); 
             int midFreqBound = 3500;
-            if (dict.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = Configuration.GetInt(key_MID_FREQ_BOUND, dict); 
+            if (config.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = Configuration.GetInt(key_MID_FREQ_BOUND, config);
+            double segmentDuration                                   = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, config);
+            double segmentStartMinute = segmentDuration * iter;
+            double windowOverlap                                     = Configuration.GetDouble(AcousticIndices.key_FRAME_OVERLAP, config);
 
-
-            Indices2 indices; // struct in which to store all indices
-            List<double[]> scores = null; //arrays to store scores for debugging
-
-
-            double windowOverlap = Configuration.GetDouble(AcousticIndices.key_FRAME_OVERLAP, dict);
+            //get recording segment
             AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
-            int signalLength = recording.GetWavReader().Samples.Length;
-            double frameDuration = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
+            int signalLength                  = recording.GetWavReader().Samples.Length;
+            double wavSegmentDuration_seconds = recording.GetWavReader().Time.TotalSeconds;
+            double frameDuration              = frameSize * (1 - windowOverlap) / (double)recording.SampleRate;
 
 
             //i: EXTRACT ENVELOPE and FFTs
-            //if (Log.Verbosity > 0) Console.Write("\t\t# Extract Envelope and FFTs.");
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
             //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             double[] envelope   = results2.Item2;
@@ -295,7 +304,8 @@
             for (int i = 0; i < dBarray.Length; i++) if (dBarray[i] >= AcousticIndices.DEFAULT_activityThreshold_dB) activeFrames[i] = true;
             //int activeFrameCount = dBarray.Count((x) => (x >= AcousticIndices.DEFAULT_activityThreshold_dB)); 
             int activeFrameCount = DataTools.CountTrues(activeFrames);
-            
+
+            Indices2 indices; // struct in which to store all indices
             indices.activity = activeFrameCount / (double)dBarray.Length;   //fraction of frames having acoustic activity 
             indices.bgNoise  = results3.Item2;                              //bg noise in dB
             indices.snr      = results3.Item5;                              //snr
@@ -324,10 +334,6 @@
             indices.midFreqCover = tuple3.Item2;
             indices.hiFreqCover  = tuple3.Item3;
 
-            //SET UP A LIST OF SCORE ARRAYS TO BE RETURNED
-            scores = new List<double[]>();
-            scores.Add(envelope);
-
 
             //#V#####################################################################################################################################################
             //#V#####################################################################################################################################################
@@ -339,10 +345,8 @@
                 indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster durtaion in milliseconds
-                int[] clusterHits_dummy = null;
-                List<double[]> clusterWts_dummy = null;
-                double[,] clusterSpectrogram_dummy = null;
-                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+
+                return Indices2DataTable(iter, segmentStartMinute, wavSegmentDuration_seconds, indices);
             }
             //#V#####################################################################################################################################################
 
@@ -360,10 +364,7 @@
                 indices.entropyOfPeakFreqDistr = 0.0;
                 indices.clusterCount = 0;
                 indices.avClusterDuration = 0.0; //av cluster duration in milliseconds
-                int[] clusterHits_dummy = null;
-                List<double[]> clusterWts_dummy = null;
-                double[,] clusterSpectrogram_dummy = null;
-                return System.Tuple.Create(indices, scores, clusterHits_dummy, clusterWts_dummy, clusterSpectrogram_dummy);
+                return Indices2DataTable(iter, segmentStartMinute, wavSegmentDuration_seconds, indices);
             }
             //#V#####################################################################################################################################################
 
@@ -374,7 +375,6 @@
             indices.entropyOfPeakFreqDistr = tuple2.Item1;
             //Log.WriteLine("H(Spectral peaks) =" + indices.entropyOfPeakFreqDistr);
             double[] freqPeaks = tuple2.Item2;
-            scores.Add(freqPeaks); //location of peaks for spectral images
 
 
             //viii: CLUSTERING - to determine spectral diversity and spectral persistence
@@ -383,14 +383,35 @@
             var tuple6 = ClusterAnalysis(spectrogram, activeSegments, excludeLoFreqBins, binaryThreshold);
             indices.clusterCount = tuple6.Item1; 
             indices.avClusterDuration = tuple6.Item2 * frameDuration * 1000; //av cluster duration in milliseconds
-            bool[] selectedFrames = tuple6.Item3;
-            List<double[]> clusterWts = tuple6.Item4;
-            int[] clusterHits = tuple6.Item5;
-            double[,] clusterSpectrogram = null;
-            //no need for the following line in normal usage - mostly for debugging
-            //clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins, selectedFrames, binaryThreshold, clusterWts, clusterHits);
 
-            return System.Tuple.Create(indices, scores, clusterHits, clusterWts, clusterSpectrogram);
+
+            //iii: STORE IMAGES
+            bool doStoreImages = Configuration.GetBoolean(key_STORE_INTERMEDATE_RESULTS, config); 
+            if (doStoreImages)
+            {
+                //SET UP A LIST OF SCORE ARRAYS TO BE RETURNED
+                //List<double[]> scores = null; //arrays to store scores for debugging
+                //scores = new List<double[]>();
+                //scores.Add(envelope);
+                //scores.Add(freqPeaks); //location of peaks for spectral images
+
+                //bool[] selectedFrames = tuple6.Item3;
+                //List<double[]> clusterWts = tuple6.Item4;
+                //int[] clusterHits = tuple6.Item5;
+
+                //return System.Tuple.Create(Indices2 indices, List<double[]> scores, int[] clusterHits, List<double[]> clusterWts, double[,] clusterSpectrogram);
+                //
+                //var scores = results.Item2;
+                //var clusterIDs = results.Item3;
+                //var clusterWts = results.Item4;
+                //var clusterSpectrogram = results.Item5;
+                //OutputClusterAndWeightInfo(clusterIDs, clusterWts, imagePath);
+                //no need for the following line in normal usage - mostly for debugging
+                //double[,] clusterSpectrogram = AssembleClusterSpectrogram(signalLength, spectrogram, excludeBins, selectedFrames, binaryThreshold, clusterWts, clusterHits);
+                //MakeAndDrawSonogram(recording, recordingDir, scores, clusterSpectrogram);
+            }
+
+            return Indices2DataTable(iter, segmentStartMinute, wavSegmentDuration_seconds, indices);
         } //ExtractIndices()
 
 
@@ -937,7 +958,7 @@
         //########################################################################################################################################################################
 
 
-         public static double[] GetArrayOfWeightedIndices(DataTable dt, double[] weightArray)
+         public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
          {
              List<double[]> columns = new List<double[]>();
              List<double> weights = new List<double>();
@@ -979,152 +1000,24 @@
             return weightedIndices;
         }
 
-        /// <summary>
-        /// The following two methods were used for the first research paper linking indices and bird call richness
-        /// </summary>
-        /// <param name="csvFileName"></param>
-        /// <param name="columnHeader"></param>
-        /// <param name="opFileName"></param>
-        //public static void AddColumnOfWeightedIndicesToCSVFile(string csvFileName, string columnHeader, string opFileName)
-        //{
-        //    int offset = 7; //
-        //    int[] columns = { offset, offset + 6, offset + 7, offset + 8, offset + 9};
-        //    double wt1 = 0.0;//SegmentCount
-        //    double wt2 = 0.4;//H[avSpectrum]
-        //    double wt3 = 0.1;//H[varSpectrum] 
-        //    double wt4 = 0.4;//number of clusters
-        //    double wt5 = 0.1;//av cluster duration
-        //    double[] wts = {wt1, wt2, wt3, wt4, wt5};
 
-        //    var tuple = GetWeightedCombinationOfIndicesFromCSVFile(csvFileName, columns, wts);
-        //    double[] wtIndices = tuple.Item1;
-        //    List<string> colNames = tuple.Item2;
-
-        //    //add in weighted bias for chorus and backgorund noise
-        //    //for (int i = 0; i < wtIndices.Length; i++)
-        //    //{
-        //        //if((i>=290) && (i<=470)) wtIndices[i] *= 1.1;  //morning chorus bias
-        //        //background noise bias
-        //        //if (bg_dB[i - 1] > -35.0) wtIndices[i] *= 0.8;
-        //        //else
-        //        //if (bg_dB[i - 1] > -30.0) wtIndices[i] *= 0.6;
-        //    //}
-
-        //    //Console.WriteLine("Index weights:  {0}={1}; {2}={3}; {4}={5}; {6}={7}; {8}={9}; {10}={11}",
-        //    //                                   header1, wt1, header2, wt2, header3, wt3, header4, wt4, header5, wt5, header6, wt6);
-
-        //    CsvTools.AddColumnOfValuesToCSVFile(csvFileName, columnHeader, wtIndices, opFileName);
-        //} //AddColumnOfWeightedIndicesToCSVFile()
-
-
-        public static System.Tuple<double[], List<string>> GetWeightedCombinationOfIndicesFromCSVFile(string csvFileName, int[] columns, double[] wts)
+        public static Tuple<DataTable, double[]> ProcessCsvFile(FileInfo fiCsvFile)
         {
-            List<double[]> arrays = new List<double[]>();
-            List<string> colNames = new List<string>();
-            int arrayLength = 0;
+            bool addColumnOfweightedIndices = true;
+            double[] weightedIndices = null;
+            AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true, AcousticIndices.COL_TYPES);//LOAD CSV FILE
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
-            for (int i = 0; i < columns.Length; i++)
+            dt = DataTableTools.SortTable(dt, "count ASC");
+            if (addColumnOfweightedIndices) weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+            DataTableTools.RemoveTableColumns(dt, AcousticIndices.DISPLAY_COLUMN);
+            if (addColumnOfweightedIndices)
             {
-                string header;
-                double[] array = CsvTools.ReadColumnOfCSVFile(csvFileName, columns[i], out header);
-                arrays.Add(DataTools.NormaliseArea(array)); //normalize the arrays to get weighted index.
-                colNames.Add(header);
-                arrayLength = array.Length;
+                string colName = AcousticIndices.HEADERS[AcousticIndices.HEADERS.Length - 1];
+                DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
             }
-
-            double[] weightedCombo = new double[arrayLength];
-            for (int i = 0; i < arrayLength; i++)
-            {
-                double combo = 0.0;
-                for (int c = 0; c < columns.Length; c++)
-                {
-                    combo += (wts[c] * arrays[c][i]);
-                }
-                weightedCombo[i] = combo;
-            }
-            return System.Tuple.Create(weightedCombo, colNames);
-        }
-        //########################################################################################################################################################################
-
-
-
-        /// <summary>
-        /// following is list of scaling originally applied to the track images
-        /// Amplitude track 2:              title = "1: av Sig Ampl(dB)" minDB = -50; maxDB = -20; 
-        /// Background dB track 3:          title = "2: Background(dB)"  minDB = -50; maxDB = -20;
-        /// SNR track 4:                    title = "3: SNR"             minDB = 0;   maxDB = 30;
-        /// draw activity track 5:          title = "4: Activity(>3dB)"; min = 0.0;   max = 0.4;
-        /// Segment count track 6:          title = "5: # Segments";     threshold = 1.0;
-        /// avSegment Duration track 7:     title = "6: Av Seg Duration"; min = 0.0; max = 100; //milliseconds
-        /// percent spectral Cover track 8: title = "7: Spectral cover"; min = 0.0;  max = 0.5; threshold = 0.05;
-        /// percent spectral Cover track 9: title = "8: Low freq cover"; min = 0.0;  max = 1.0; threshold = 0.1;
-        /// Spectral Cover track 10:        title = "9: H(ampl)";        min = 0.95; max = 1.0; threshold = 0.96;
-        /// H(PeakFreq) track 11:           title = "10: H(PeakFreq)";   min & max = min and max
-        /// H(avSpect) track 12             title = "11: H(avSpect)";    min & max = min and max
-        /// H(diffSpect) track 13:          title = "12: H(varSpect)";   min & max = min and max
-        /// clusterCount track 14:          title = "13: ClusterCount";  min = 0.0;  max = 15.0;  threshold = 1.0;
-        /// av Cluster Duration track 15:   title = "14: Av Cluster Dur";  min = 0.0;  max = 100.0;  threshold = 5.0;
-        /// weightedIndex track 16:         title = "15: Weighted Index";  
-        /// </summary>
-        /// <param name="headers"></param>
-        /// <param name="values"></param>
-        /// <param name="imageWidth"></param>
-        /// <param name="trackHeight"></param>
-        /// <returns></returns>
-        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay)
-        {
-            List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
-            List<double[]> values = DataTableTools.ListOfColumnValues(dt); 
-
-            // accumulate the indivudal tracks
-            var bitmaps = new List<Bitmap>();
-            double threshold = 0.0;
-            for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
-            {
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], trackHeight, threshold, headers[i]));
-            }
-            int x = values.Count -1;
-            bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], trackHeight, threshold, headers[x])); //assumed to be weighted index
-
-            //set up the composite image parameters
-            int trackCount = values.Count + 2; //+2 for top and bottom time tracks
-            int imageHt = trackHeight * trackCount;
-            int duration = values[0].Length; //time in minutes
-            int endPanelwidth = 100;
-            int imageWidth = duration + endPanelwidth;
-            int offset = 0;
-            int scale = 60; //put a tik every 60 pixels = 1 hour
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
-
-            //draw the composite bitmap
-            Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
-            Graphics gr = Graphics.FromImage(compositeBmp);
-            gr.Clear(Color.Black);
-            gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            var font = new Font("Arial", 10.0f, FontStyle.Regular);
-            offset += trackHeight;
-            for (int i = 0; i < values.Count; i++) //for pixels in the line
-            {
-                gr.DrawImage(bitmaps[i], 0, offset);
-                gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
-                offset += trackHeight;
-            }
-            gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
-            return System.Tuple.Create(compositeBmp, timeBmp);
-        }
-        /// <summary>
-        /// assumes the passed data arrays are in correct order for visualization
-        /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="trackHeight"></param>
-        /// <param name="normalisedTrackDisplay"></param>
-        /// <returns></returns>
-        public static System.Tuple<Bitmap, Bitmap> ConstructVisualIndexImage(DataTable dt, int trackHeight, bool normalisedTrackDisplay)
-        {
-            int length = dt.Rows.Count;
-            double[] order = new double[length];
-            for(int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, order, trackHeight, normalisedTrackDisplay);
+            return System.Tuple.Create(dt, weightedIndices);
         }
 
 
@@ -1143,6 +1036,20 @@
             string line = FormatHeader(parmasFile_Separator);
             FileTools.WriteTextFile(reportfileName, line);
         }
+
+        public static DataTable Indices2DataTable(int count, double startMin, double sec_duration, AcousticIndices.Indices2 indices)
+        {
+            var parameters = InitOutputTableColumns();
+            var headers = parameters.Item1;
+            var types   = parameters.Item2;
+            var dt = DataTableTools.CreateTable(headers, types);
+            dt.Rows.Add(count, startMin, sec_duration, indices.avSig_dB, indices.snr, 
+                        indices.bgNoise, indices.activity, indices.segmentCount, indices.avSegmentDuration, indices.hiFreqCover,
+                        indices.midFreqCover, indices.lowFreqCover, indices.temporalEntropy, indices.entropyOfPeakFreqDistr, indices.entropyOfAvSpectrum,
+                        indices.entropyOfVarianceSpectrum, indices.clusterCount, indices.avClusterDuration);
+            return dt;
+        }
+
 
         /// <summary>
         /// 

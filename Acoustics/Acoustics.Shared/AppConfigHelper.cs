@@ -285,7 +285,8 @@
             return ConfigurationManager.AppSettings.AllKeys.Any(k => k == key);
         }
 
-        public static IEnumerable<string> GetStrings(string key, params string[] separators)
+//        public static IEnumerable<string> GetStrings(string key, params char[] separators)
+        public static string[] GetStrings(string key, params char[] separators)
         {
             var value = GetString(key);
             var values = value
@@ -298,7 +299,7 @@
                 throw new ConfigurationErrorsException("Key " + key + " exists but does not have a value");
             }
 
-            return values;
+            return values.ToArray();
         }
 
         public static bool GetBool(string key)
