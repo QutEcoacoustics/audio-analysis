@@ -37,7 +37,7 @@
 //        let FromInt64 a = IntegerZ5.Create(int(a%5L))
 
  
-    type IntegerZ1440 = 
+    type IntegerZ1440= 
         | Z1440 of int
         member z.ToInt32() =  
           let (Z1440 n) = z in n
@@ -47,6 +47,7 @@
           sprintf "%d (mod 1440)" (z.ToInt32())
 
         static member Create(n) = 
+          failwith "NOT Properly implemented, dangerous to use"
           let z1440 = n % 1440
           Z1440(max ((z1440 + 1440) % 1440) z1440)
 
