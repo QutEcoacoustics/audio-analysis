@@ -62,6 +62,35 @@ namespace FELT.Tests
         }
 
         [TestMethod]
-        public void StandardDeviationTest
+        public void StandardDeviationTest()
+        {
+            // standard deviation tests
+            var a = new[] { 700, 704, 708, 712, 735 };
+            var b = new[] { 1400, 1420, 1440, 20, 40 };
+
+            var az = a.Select(IntegerZ1440.Create).ToArray();
+            var bz = b.Select(IntegerZ1440.Create).ToArray();
+
+            // test summation
+            var suma = Maths.Array.sum<IntegerZ1440, IntegerZ1440>(az);
+            var sumb = Maths.Array.sum<IntegerZ1440, IntegerZ1440>(bz);
+
+            Assert.AreEqual(IntegerZ1440.Create(679), suma);
+            Assert.AreEqual(IntegerZ1440.Create(0), sumb);
+
+            // test mean
+            var meana = Maths.Array.meanZ1440(az);
+            var meanb = Maths.Array.meanZ1440(bz);
+
+            Assert.AreEqual(711.8, meana);
+            Assert.AreEqual(40.0, meanb);
+
+            // test standard deviation
+            var stda = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(az);
+            var stdb = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(bz);
+                             
+            Assert.AreEqual(13.7186005117140, stda, MathTest.minDeltaForDoubleTests);
+            Assert.AreEqual(31.6227766016838, stdb, MathTest.minDeltaForDoubleTests);
+        }
     }
 }

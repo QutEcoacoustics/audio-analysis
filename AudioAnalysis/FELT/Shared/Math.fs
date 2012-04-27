@@ -3,6 +3,7 @@
 
     open Accord.Statistics
     open System
+    open System.Diagnostics
     open System.Reflection
     open Microsoft.FSharp.Core
     open Microsoft.FSharp.Numerics
@@ -70,6 +71,8 @@
             let inline variance xs = let m = mean xs in mean_by (fun x -> let e = (x - m) in e * e) xs
 
             let inline stdDeviation xs = sqrt (variance xs)
+
+
 
             let inline skewness xs =
                 let n = double(Array.length xs)
