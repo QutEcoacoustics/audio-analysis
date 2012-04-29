@@ -2,7 +2,7 @@
     
     open FELT.Cleaners
     open FELT.Classifiers
-    open FELT.Tranformers
+    open FELT.Transformers
     open FELT.Selectors
     open FELT.Trainers
     open FELT.Results

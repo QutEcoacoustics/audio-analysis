@@ -58,7 +58,6 @@ namespace FELT.Tests
             Assert.AreEqual(0, z4.ToInt32());
             Assert.AreEqual(1, (int)(z2 / z1));
             Assert.AreEqual(20, z9.ToInt32());
-
         }
 
         [TestMethod]
@@ -78,19 +77,19 @@ namespace FELT.Tests
             Assert.AreEqual(IntegerZ1440.Create(679), suma);
             Assert.AreEqual(IntegerZ1440.Create(0), sumb);
 
-            // test mean
-            var meana = Maths.Array.meanZ1440(az);
-            var meanb = Maths.Array.meanZ1440(bz);
+            ////// test mean
+            ////var meana = Maths.Array.meanZ1440(az);
+            ////var meanb = Maths.Array.meanZ1440(bz);
 
-            Assert.AreEqual(711.8, meana);
-            Assert.AreEqual(40.0, meanb);
+            ////Assert.AreEqual(711.8, meana);
+            ////Assert.AreEqual(40.0, meanb);
 
-            // test standard deviation
-            var stda = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(az);
-            var stdb = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(bz);
+            ////// test standard deviation
+            ////var stda = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(az);
+            ////var stdb = Maths.Array.stdDeviation<IntegerZ1440, IntegerZ1440, IntegerZ1440, IntegerZ1440, float>(bz);
                              
-            Assert.AreEqual(13.7186005117140, stda, MathTest.minDeltaForDoubleTests);
-            Assert.AreEqual(31.6227766016838, stdb, MathTest.minDeltaForDoubleTests);
+            ////Assert.AreEqual(13.7186005117140, stda, MathTest.minDeltaForDoubleTests);
+            ////Assert.AreEqual(31.6227766016838, stdb, MathTest.minDeltaForDoubleTests);
         }
     }
 }

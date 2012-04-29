@@ -1,4 +1,4 @@
-﻿namespace FELT.Tranformers
+﻿namespace FELT.Transformers
     open MQUTeR.FSharp.Shared
 
     

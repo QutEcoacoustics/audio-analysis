@@ -107,6 +107,13 @@
         type ``[]``<'T> with
             member this.zeroLength =
                 this.Length - 1
+
+            member this.first =
+                this.[0]
+
+            member this.last = 
+                this.[this.zeroLength]
+
             member this.getValues
                 with get(indexes: array<int>) =
                     Array.init (Array.length indexes) (fun index -> this.[indexes.[index]]) 
