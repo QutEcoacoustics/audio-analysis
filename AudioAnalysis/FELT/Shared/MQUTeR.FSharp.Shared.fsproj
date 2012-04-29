@@ -74,12 +74,14 @@
     <Compile Include="Microsoft.FSharp.Numerics.ModuloInteger.fs" />
     <Compile Include="IO.fs" />
     <Compile Include="Math.fs" />
+    <Compile Include="Interval.fs" />
     <Compile Include="MoreStats.fs" />
     <Compile Include="DataSet.fs" />
     <Compile Include="CSV.fs" />
     <None Include="Script.fsx" />
     <Compile Include="StringStats.fs" />
     <Compile Include="Mutex.fs" />
+    <Compile Include="suncalc.fs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Accord.Statistics">
