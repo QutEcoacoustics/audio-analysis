@@ -53,6 +53,7 @@
     <Compile Include="AudioUploadInfo.cs" />
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
+    <Compile Include="Coordinate.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="ExpressionVisitor.cs" />
     <Compile Include="Extensions\ExtensionsDateTime.cs" />
