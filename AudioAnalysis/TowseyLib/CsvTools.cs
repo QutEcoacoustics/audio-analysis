@@ -63,28 +63,51 @@ namespace TowseyLib
              return dt;
          }
 
+         public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader)
+         {
+             Type[] types = GetColumnTypes(filePath);
+             return ReadCSVToTable(filePath, isFirstRowHeader, types);
+         }
+
+         public static Type[] GetColumnTypes(string filePath)
+         {
+             string[] csvRows = System.IO.File.ReadAllLines(filePath);
+             int count = 10;
+             if(csvRows.Length < count) count = csvRows.Length -1;
+
+             //get number of items in row
+             string[] fields = csvRows[0].Split(',');
+
+             Type[] types = new Type[fields.Length];
+
+             //foreach(
+             return types;
+         }
+
         public static Object[] MakeItemArray(string[] fields, Type[] types)
         {
             int length = fields.Length;
             Object[] output = new Object[length];
             for (int i = 0; i < length; i++)
             {
+                if ((fields[i] == null) || (fields[i] == "")) output[i] = null;
+                else
                 if (types[i] == typeof(int))
                 {
                     output[i] = Int32.Parse(fields[i]);
                 }
                 else
-                    if (types[i] == typeof(double))
-                    {
-                        output[i] = Double.Parse(fields[i]);
-                    }
-                    else
-                        if (types[i] == typeof(bool))
-                        {
-                            output[i] = Boolean.Parse(fields[i]);
-                        }
-                        else
-                            output[i] = fields[i];
+                if (types[i] == typeof(double))
+                {
+                    output[i] = Double.Parse(fields[i]);
+                }
+                else
+                if (types[i] == typeof(bool))
+                {
+                    output[i] = Boolean.Parse(fields[i]);
+                }
+                else
+                output[i] = fields[i];
             }
             return output;
         }

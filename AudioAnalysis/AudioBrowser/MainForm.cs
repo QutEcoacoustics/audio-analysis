@@ -74,6 +74,7 @@
             }
             catch (Exception ex)
             {
+                MessageBox.Show("WARNING: CANNOT LOCATE BROWSER CONFIG FILE! ");
                 MessageBox.Show(ex.ToString());
             }
 
@@ -84,6 +85,7 @@
             }
             catch (Exception ex)
             {
+                MessageBox.Show("WARNING: CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
                 MessageBox.Show(ex.ToString());
             }
 
@@ -265,7 +267,7 @@
                     string reportfilePath = null;
 
                     //unfortunately different things happen depending on the analysis!
-                    if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //KiwiRecogniser
+                    if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //AcousticIndices
                     {
                         //the output from ACOUSTIC analysis is rows of one minute indices                        
                         reportfilePath = Path.Combine(opDir, fName + reportFileExt);
@@ -274,6 +276,9 @@
                     else
                     if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser - save two files
                     {
+                        string sortString = "EvStartAbs ASC";
+                        outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
+
                         //the output from KIWI analysis is rows of kiwi events - must save two files
                         reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
@@ -297,7 +302,10 @@
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
                     TimeSpan ts = stopwatch.Elapsed;
                     Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)",    (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
-                    Console.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputData.Rows.Count));
+                    int outputCount = outputData.Rows.Count;
+                    Console.WriteLine("Number of units of output: {0}", outputCount);
+                    if (outputCount == 0) outputCount = 1;
+                    Console.WriteLine("Average time per unit of output: {0:f3} seconds.", (stopwatch.ElapsedMilliseconds / (double)1000 / (double)outputCount));
 
                     Console.WriteLine("###################################################\n");
 
@@ -351,7 +359,8 @@
                 }
                 else
                 {
-                    return null;
+                   Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", browserSettings.AnalysisName);
+                   return null;
                 }
 
 
@@ -424,14 +433,14 @@
                     if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
                     {
                         dt = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                        Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dt.Rows.Count);
+                        //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dt.Rows.Count);
                     }
+                    //#############################################################################################################################################
 
                     if (dt != null)
                     {
                         foreach (DataRow row in dt.Rows) outputDataTable.ImportRow(row);
                     }
-                    //#############################################################################################################################################
                 }
 
                 recordingSegment.Dispose();
@@ -590,10 +599,10 @@
 
         /// <summary>
         /// </summary>
-        /// <param name="headers"></param>
-        /// <param name="values"></param>
-        /// <param name="imageWidth"></param>
+        /// <param name="dt"></param>
+        /// <param name="order"></param>
         /// <param name="trackHeight"></param>
+        /// <param name="normalisedTrackDisplay"></param>
         /// <returns></returns>
         public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay)
         {
@@ -605,10 +614,12 @@
             double threshold = 0.0;
             for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
             {
+                if (values[i].Length == 0) continue;
                 bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], trackHeight, threshold, headers[i]));
             }
             int x = values.Count - 1;
-            bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], trackHeight, threshold, headers[x])); //assumed to be weighted index
+            if (values[x].Length > 0) 
+                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
             int trackCount = values.Count + 2; //+2 for top and bottom time tracks
@@ -627,7 +638,7 @@
             gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
             var font = new Font("Arial", 10.0f, FontStyle.Regular);
             offset += trackHeight;
-            for (int i = 0; i < values.Count; i++) //for pixels in the line
+            for (int i = 0; i < bitmaps.Count; i++) 
             {
                 gr.DrawImage(bitmaps[i], 0, offset);
                 gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
@@ -669,12 +680,13 @@
             Graphics g = this.pictureBoxVisualIndex.CreateGraphics();
             g.DrawImage(this.pictureBoxVisualIndex.Image, 0, 0);
             Point pt1 = new Point(myX, 2);
-            Point pt2 = new Point(myX, this.pictureBoxVisualIndex.Height - browserSettings.TrackHeight);
+            Point pt2 = new Point(myX, this.pictureBoxVisualIndex.Height);
             float[] dashValues = { 2, 2, 2, 2 };
-            Pen pen = new Pen(Color.Green, 1.0F);
+            Pen pen = new Pen(Color.Red, 1.0F);
             pen.DashPattern = dashValues;
             g.DrawLine(pen, pt1, pt2);
 
+            if (weightedIndices.Length < 2) return;
             if (myX >= this.sourceRecording_MinutesDuration - 1)
                 this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
             else
@@ -694,7 +706,7 @@
 
             if (browserSettings.fiSourceRecording == null)
             {
-                Console.WriteLine("    The source file has not been set.");
+                Console.WriteLine("    The source audiofile cannot be found.");
                 Console.WriteLine("    Cannot proceed with display of segment sonogram.");
                 return;
             }
@@ -1445,6 +1457,11 @@
                 e.Value = formatter.Format(e.CellStyle.Format, e.Value, e.CellStyle.FormatProvider);
                 e.FormattingApplied = true;
             }
+
+        }
+
+        private void labelSourceFileName_Click(object sender, EventArgs e)
+        {
 
         } 
 
