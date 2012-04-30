@@ -57,7 +57,7 @@ namespace AnalysisPrograms
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int DEFAULT_WINDOW_SIZE = 256;
 
-        private const int COL_NUMBER = 17;
+        private const int COL_NUMBER = 15;
         private static Type[] COL_TYPES       = new Type[COL_NUMBER];
         private static string[] HEADERS       = new string[COL_NUMBER]; 
         private static bool[] DISPLAY_COLUMN  = new bool[COL_NUMBER];
@@ -66,22 +66,20 @@ namespace AnalysisPrograms
         public static System.Tuple<string[],Type[], bool[]> InitOutputTableColumns()
         {
             HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
-            HEADERS[1] = "start-min";       COL_TYPES[1] = typeof(string);  DISPLAY_COLUMN[1] = false;
-            HEADERS[2] = "segmentDur";      COL_TYPES[2] = typeof(string);  DISPLAY_COLUMN[2] = false;
-            HEADERS[3] = "Density";         COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = true;
-            HEADERS[4] = "Label";           COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
-            HEADERS[5] = "EvStartOffset";   COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = false;
-            HEADERS[6] = "EvStartAbs";      COL_TYPES[6] = typeof(int);     DISPLAY_COLUMN[6] = false;
-            HEADERS[7] = "MinHz";           COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = false;
-            HEADERS[8] = "MaxHz";           COL_TYPES[8] = typeof(int);     DISPLAY_COLUMN[8] = false;
-            HEADERS[9] = "EventDur";        COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = false;
-            HEADERS[10] = "DurScore";       COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;
-            HEADERS[11] = "HitSCore";       COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;
-            HEADERS[12] = "SnrScore";       COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;
-            HEADERS[13] = "sdScore";        COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
-            HEADERS[14] = "GapScore";       COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
-            HEADERS[15] = "BWScore";        COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = true;
-            HEADERS[16] = "KiwiScore";      COL_TYPES[16] = typeof(double); DISPLAY_COLUMN[16] = true;
+            HEADERS[1] = "EvStartAbs";      COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
+            HEADERS[2] = "EvStartMin";      COL_TYPES[2] = typeof(string);  DISPLAY_COLUMN[2] = false;
+            HEADERS[3] = "EvStartSec";      COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = false;
+            HEADERS[4] = "SegmentDur";      COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
+            HEADERS[5] = "Density";         COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
+            HEADERS[6] = "Label";           COL_TYPES[6] = typeof(string);  DISPLAY_COLUMN[6] = false;
+            HEADERS[7] = "EventDur";        COL_TYPES[7] = typeof(double);  DISPLAY_COLUMN[7] = false;
+            HEADERS[8] = "DurScore";        COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;
+            HEADERS[9] = "HitSCore";        COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;
+            HEADERS[10] = "SnrScore";       COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;
+            HEADERS[11] = "sdScore";        COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;
+            HEADERS[12] = "GapScore";       COL_TYPES[12] = typeof(double); DISPLAY_COLUMN[12] = true;
+            HEADERS[13] = "BWScore";        COL_TYPES[13] = typeof(double); DISPLAY_COLUMN[13] = true;
+            HEADERS[14] = "KiwiScore";      COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
         
@@ -102,8 +100,8 @@ namespace AnalysisPrograms
         public static string key_MAX_HZ_FEMALE   = "MAX_HZ_FEMALE";
         public static string key_DCT_DURATION    = "DCT_DURATION";
         public static string key_DCT_THRESHOLD   = "DCT_THRESHOLD";
-        public static string key_MIN_PERIODICITY = "MIN_PERIODICITY";
-        public static string key_MAX_PERIODICITY = "MAX_PERIODICITY";
+        public static string key_MIN_PERIODICITY = "MIN_PERIOD";
+        public static string key_MAX_PERIODICITY = "MAX_PERIOD";
         public static string key_MIN_DURATION    = "MIN_DURATION";
         public static string key_MAX_DURATION    = "MAX_DURATION";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
@@ -278,50 +276,6 @@ namespace AnalysisPrograms
         } //Dev()
 
 
-        //public static KiwiParams ReadIniFile(string iniPath)
-        //{
-        //    //var config = new Configuration(iniPath);
-        //    //Dictionary<string, string> dict = config.GetTable();
-        //    //Dictionary<string, string>.KeyCollection keys = dict.Keys;
-        //    Dictionary<string, string> dict = TowseyLib.Configuration.ReadKVPFile2Dictionary(iniPath);
-
-        //    KiwiParams kiwiParams; // st
-        //    kiwiParams.segmentDuration = Double.Parse(dict[key_SEGMENT_DURATION]);
-        //    kiwiParams.segmentOverlap = Double.Parse(dict[key_SEGMENT_OVERLAP]);
-        //    kiwiParams.minHzMale = Int32.Parse(dict[key_MIN_HZ_MALE]);
-        //    kiwiParams.maxHzMale = Int32.Parse(dict[key_MAX_HZ_MALE]);
-        //    kiwiParams.minHzFemale = Int32.Parse(dict[key_MIN_HZ_FEMALE]);
-        //    kiwiParams.maxHzFemale = Int32.Parse(dict[key_MAX_HZ_FEMALE]);
-        //    kiwiParams.frameLength = Int32.Parse(dict[key_FRAME_LENGTH]);
-        //    kiwiParams.frameOverlap = Double.Parse(dict[key_FRAME_OVERLAP]);
-        //    kiwiParams.dctDuration = Double.Parse(dict[key_DCT_DURATION]);        //duration of DCT in seconds 
-        //    kiwiParams.dctThreshold = Double.Parse(dict[key_DCT_THRESHOLD]);      //minimum acceptable value of a DCT coefficient
-        //    kiwiParams.minPeriodicity = Double.Parse(dict[key_MIN_PERIODICITY]);  //ignore oscillations with period below this threshold
-        //    kiwiParams.maxPeriodicity = Double.Parse(dict[key_MAX_PERIODICITY]);  //ignore oscillations with period above this threshold
-        //    kiwiParams.minDuration = Double.Parse(dict[key_MIN_DURATION]);        //min duration of event in seconds 
-        //    kiwiParams.maxDuration = Double.Parse(dict[key_MAX_DURATION]);        //max duration of event in seconds 
-        //    kiwiParams.eventThreshold = Double.Parse(dict[key_EVENT_THRESHOLD]);  //min score for an acceptable event
-        //    kiwiParams.DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);    //options to draw sonogram
-        //    kiwiParams.reportFormat = dict[key_REPORT_FORMAT];                    //options are TAB or COMMA separator 
-        //    return kiwiParams;
-        //}
-
-        //public static void WriteParameters(KiwiParams kiwiParams)
-        //{
-        //    Log.WriteIfVerbose("# PARAMETER SETTINGS:");
-        //    Log.WriteIfVerbose("Segment size: Duration = {0} minutes;  Overlap = {1} seconds.", kiwiParams.segmentDuration, kiwiParams.segmentOverlap);
-        //    Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzMale, kiwiParams.maxHzMale);
-        //    Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz.)", kiwiParams.minHzFemale, kiwiParams.maxHzFemale);
-        //    Log.WriteIfVerbose("Periodicity bounds: {0:f1}sec - {1:f1}sec", kiwiParams.minPeriodicity, kiwiParams.maxPeriodicity);
-        //    Log.WriteIfVerbose("minAmplitude = " + kiwiParams.dctThreshold);
-        //    Log.WriteIfVerbose("Duration bounds: " + kiwiParams.minDuration + " - " + kiwiParams.maxDuration + " seconds");
-        //    Log.WriteIfVerbose("####################################################################################");
-        //    //Log.WriteIfVerbose("Male   Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzMale, maxHzMale, binCount_male);
-        //    //Log.WriteIfVerbose("Female Freq band: {0} Hz - {1} Hz. (Freq bin count = {2})", minHzFemale, maxHzFemale, binCount_female);
-        //    //Log.WriteIfVerbose("DctDuration=" + dctDuration + "sec.  (# frames=" + (int)Math.Round(dctDuration * sonogram.FramesPerSecond) + ")");
-        //    //Log.WriteIfVerbose("Score threshold for oscil events=" + eventThreshold);
-        //}
-
 
         /// <summary>
         /// A WRAPPER AROUND THE Execute_KiwiDetect() method
@@ -341,8 +295,8 @@ namespace AnalysisPrograms
             double frameOverlap = Configuration.GetDouble(KiwiRecogniser.key_FRAME_OVERLAP, config);
             double dctDuration  = Configuration.GetDouble(KiwiRecogniser.key_DCT_DURATION, config);
             double dctThreshold = Configuration.GetDouble(KiwiRecogniser.key_DCT_THRESHOLD, config);
-            double minPeriodicity  = Configuration.GetInt(KiwiRecogniser.key_MIN_PERIODICITY, config);
-            double maxPeriodicity  = Configuration.GetInt(KiwiRecogniser.key_MAX_PERIODICITY, config);
+            double minPeriod    = Configuration.GetDouble(KiwiRecogniser.key_MIN_PERIODICITY, config);
+            double maxPeriod    = Configuration.GetDouble(KiwiRecogniser.key_MAX_PERIODICITY, config);
             double eventThreshold  = Configuration.GetDouble(KiwiRecogniser.key_EVENT_THRESHOLD, config);
             double minDuration     = Configuration.GetDouble(KiwiRecogniser.key_MIN_DURATION, config); //minimum event duration to qualify as species call
             double maxDuration     = Configuration.GetDouble(KiwiRecogniser.key_MAX_DURATION, config); //maximum event duration to qualify as species call
@@ -353,7 +307,7 @@ namespace AnalysisPrograms
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
             var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
-                                                            minPeriodicity, maxPeriodicity, eventThreshold, minDuration, maxDuration);
+                                                            minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
 
 
             var sonogram = results.Item1;
@@ -764,43 +718,6 @@ namespace AnalysisPrograms
         //##################################################################################################################################################
 
 
-        //public static void WriteOutputFromKiwiAnalysis(double startMinute, bool saveSonogram, BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents)
-        //{
-
-
-        //    DataTable results = new DataTable();
-        //    foreach (var row in results.Rows)
-        //    {
-        //        dataTable.Rows.Add(row);
-        //    }
-
-            
-            
-        //    //write events to results file. 
-        //    double sigDuration = sonogram.Duration.TotalSeconds;
-        //    string fname = Path.GetFileName(recordingPath);
-
-        //    StringBuilder sb = KiwiRecogniser.WriteEvents(startMinute, sigDuration, predictedEvents.Count, predictedEvents);
-        //    if (sb.Length > 1)
-        //    {
-        //        sb.Remove(sb.Length - 2, 2); //remove the last endLine to prevent line gaps.
-        //        FileTools.Append2TextFile(reportfileName, sb.ToString());
-        //    }
-
-
-        //    //draw images of sonograms
-        //    string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + "_" + startMinute.ToString() + "min.png";
-        //    if(saveSonogram)
-        //    {
-        //        DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, kiwiParams.eventThreshold);
-        //    }
-
-        //}
-
-
-        //public static Type[] COL_TYPES = { typeof(int), typeof(string), typeof(string), typeof(int), typeof(string), typeof(double), typeof(int), typeof(int), typeof(int), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(double), typeof(string), typeof(string), typeof(string) };
-        //public static string[] HEADERS = { "count",     "start-min",    "segmentDur",   "Density",    "Label",       "EvStartMin", "EvStartSecs", "MinHz",     "MaxHz",     "EventDur",      "DurScore",    "HitScore",     "SnrScore",      "sdScore",     "GapScore",     "BWScore",      "WtScore",       "your tag",     "status" };
-        //                                    count	       Start	       segDuration	   Density	   __Label__	    EvStartMin	  EvStartSecs	 MinHz	      MaxHz	       eventDuration    DurScore       HitScore        SnrScore	        sdScore        Gapscore        BWScore         WtScore          your tag	    status	
 
         public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
         {
@@ -811,26 +728,26 @@ namespace AnalysisPrograms
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
                 int eventStartAbsoluteSec   = (int)(segmentStartSec + kiwiEvent.StartTime);
-                string duration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
+                int eventStartMin = eventStartAbsoluteSec / 60;
+                int eventStartSec = eventStartAbsoluteSec % 60;
+                string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
 
                 DataRow row = dataTable.NewRow();
                 row[HEADERS[0]] = count;                   //count
-                row[HEADERS[1]] = segmentStartMinute;      //start-min
-                row[HEADERS[2]] = duration;                //segmentDur
-                row[HEADERS[3]] = predictedEvents.Count;   //Density
-                row[HEADERS[4]] = kiwiEvent.Name;          //Label
-                row[HEADERS[5]] = kiwiEvent.StartTime;     //EvStartOffset
-                row[HEADERS[6]] = eventStartAbsoluteSec;   //EvStartSecs - from start of source ifle
-                row[HEADERS[7]] = kiwiEvent.MinFreq;       //MinHz
-                row[HEADERS[8]] = kiwiEvent.MaxFreq;       //MaxHz
-                row[HEADERS[9]] = kiwiEvent.Duration;      //EventDur
-                row[HEADERS[10]] = kiwiEvent.kiwi_durationScore;   //DurScore
-                row[HEADERS[11]] = kiwiEvent.kiwi_hitScore;        //HitScore
-                row[HEADERS[12]] = kiwiEvent.kiwi_snrScore;        //SnrScore
-                row[HEADERS[13]] = kiwiEvent.kiwi_sdPeakScore;     //sdScore
-                row[HEADERS[14]] = kiwiEvent.kiwi_gapScore;        //GapScore
-                row[HEADERS[15]] = kiwiEvent.kiwi_bandWidthScore;  //BWScore
-                row[HEADERS[16]] = kiwiEvent.ScoreNormalised;      //Weighted combination Score
+                row[HEADERS[1]] = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
+                row[HEADERS[2]] = eventStartMin;           //EvStartMin
+                row[HEADERS[3]] = eventStartSec;           //EvStartSec
+                row[HEADERS[4]] = segmentDuration;         //segmentDur
+                row[HEADERS[5]] = predictedEvents.Count;   //Density
+                row[HEADERS[6]] = kiwiEvent.Name;          //Label
+                row[HEADERS[7]] = kiwiEvent.Duration;      //EventDur
+                row[HEADERS[8]] = kiwiEvent.kiwi_durationScore;   //DurScore
+                row[HEADERS[9]] = kiwiEvent.kiwi_hitScore;        //HitScore
+                row[HEADERS[10]] = kiwiEvent.kiwi_snrScore;        //SnrScore
+                row[HEADERS[11]] = kiwiEvent.kiwi_sdPeakScore;     //sdScore
+                row[HEADERS[12]] = kiwiEvent.kiwi_gapScore;        //GapScore
+                row[HEADERS[13]] = kiwiEvent.kiwi_bandWidthScore;  //BWScore
+                row[HEADERS[14]] = kiwiEvent.ScoreNormalised;      //Weighted combination Score
                 dataTable.Rows.Add(row);
                 //Console.WriteLine(CsvTools.WriteDataTableRow(row, ","));
             }
@@ -839,42 +756,42 @@ namespace AnalysisPrograms
         }
 
 
-        public static void WriteHeaderToFile(string reportfileName, string parmasFile_Separator)
-        {
-            string reportSeparator = "\t";
-            if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
-            string line = String.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}", reportSeparator, HEADERS); 
-            //reportSeparator, HEADERS[0],HEADERS[1],HEADERS[2],HEADERS[3],HEADERS[4],HEADERS[5],HEADERS[6],HEADERS[7],HEADERS[8],HEADERS[9],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[17],);
-            FileTools.WriteTextFile(reportfileName, line);
-        }
+        //public static void WriteHeaderToFile(string reportfileName, string parmasFile_Separator)
+        //{
+        //    string reportSeparator = "\t";
+        //    if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
+        //    string line = String.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}", reportSeparator, HEADERS); 
+        //    //reportSeparator, HEADERS[0],HEADERS[1],HEADERS[2],HEADERS[3],HEADERS[4],HEADERS[5],HEADERS[6],HEADERS[7],HEADERS[8],HEADERS[9],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[17],);
+        //    FileTools.WriteTextFile(reportfileName, line);
+        //}
 
 
-        public static StringBuilder WriteEvents(double segmentStartMinute, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
-        {
+        //public static StringBuilder WriteEvents(double segmentStartMinute, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
+        //{
 
-            string reportSeparator = ","; // for CSV files
+        //    string reportSeparator = ","; // for CSV files
 
-            string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-            StringBuilder sb = new StringBuilder();
-            if (eventList.Count == 0)
-            {
-                //string line = String.Format("{1}{0}{2,8:f3}{0}0{0}N/A{0}N/A{0}N/A{0}N/A{0}N/A{0}0{0}0",
-                //                     separator, segmentStart, duration);
-                //sb.AppendLine(line);
-            }
-            else
-            {
-                foreach (AcousticEvent ae in eventList)
-                {
-                    int startSec = (int)((segmentStartMinute * 60) + ae.StartTime);
-                    string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13:f2}{0}{14:f2}{0}{15:f2}",
-                                         reportSeparator, segmentStartMinute, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq,
-                                         ae.kiwi_durationScore, ae.kiwi_hitScore, ae.kiwi_snrScore, ae.kiwi_sdPeakScore, ae.kiwi_gapScore, ae.kiwi_bandWidthScore, ae.ScoreNormalised);
-                    sb.AppendLine(line);
-                }
-            }
-            return sb;
-        }
+        //    string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
+        //    StringBuilder sb = new StringBuilder();
+        //    if (eventList.Count == 0)
+        //    {
+        //        //string line = String.Format("{1}{0}{2,8:f3}{0}0{0}N/A{0}N/A{0}N/A{0}N/A{0}N/A{0}0{0}0",
+        //        //                     separator, segmentStart, duration);
+        //        //sb.AppendLine(line);
+        //    }
+        //    else
+        //    {
+        //        foreach (AcousticEvent ae in eventList)
+        //        {
+        //            int startSec = (int)((segmentStartMinute * 60) + ae.StartTime);
+        //            string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13:f2}{0}{14:f2}{0}{15:f2}",
+        //                                 reportSeparator, segmentStartMinute, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq,
+        //                                 ae.kiwi_durationScore, ae.kiwi_hitScore, ae.kiwi_snrScore, ae.kiwi_sdPeakScore, ae.kiwi_gapScore, ae.kiwi_bandWidthScore, ae.ScoreNormalised);
+        //            sb.AppendLine(line);
+        //        }
+        //    }
+        //    return sb;
+        //}
 
 
         //##################################################################################################################################################
@@ -889,7 +806,6 @@ namespace AnalysisPrograms
 
             bool[] columns2Display = {false, false, true, true, true };
             DataTableTools.RemoveTableColumns(dt, columns2Display);
-            //DataTableTools.RemoveTableColumns(dt, DISPLAY_COLUMN);
 
             //return last column as the one for color display
             string[] headers = DataTableTools.GetColumnNames(dt);

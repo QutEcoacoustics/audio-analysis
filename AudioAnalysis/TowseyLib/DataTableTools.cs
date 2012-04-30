@@ -321,7 +321,7 @@ namespace TowseyLib
             string[] names = GetColumnNames(dt);
             for (int i = 0; i < colCount; i++)
             {
-                if (! retainColumn[i])
+                if ((i >= retainColumn.Length) || (!retainColumn[i]))
                 {
                     dt.Columns.Remove(names[i]);
                 }
