@@ -366,6 +366,57 @@ namespace TowseyLib
         }
 
 
+        //###############################################################################################################
+        // METHODS TO GET THE TYPE OF AN ARRAY OF STRING - used by CSVTools when reading in CSV file to a DataTable.
+        public static Type[] GetArrayTypes(List<string[]> listOfArrays)
+        {
+            Type[] types = new Type[listOfArrays.Count];
+
+            for(int i=0; i < listOfArrays.Count; i++)
+            {
+                types[i] = TypeOfArray(listOfArrays[i]);
+            }
+            return types;
+        }
+        public static Type TypeOfArray(string[] array)
+        {
+            if (IsArrayOfBoolean(array)) return typeof(bool);
+            if (IsArrayOfInt(array))     return typeof(int);
+            if (IsArrayOfDouble(array))  return typeof(double);
+            return typeof(string);
+        }
+
+        public static bool IsArrayOfInt(string[] array)
+        {
+            int result = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (!Int32.TryParse(array[i], out result)) return false;
+            }
+            return true;
+        }
+        public static bool IsArrayOfDouble(string[] array)
+        {
+            double result = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (! Double.TryParse(array[i], out result)) return false;
+            }
+            return true;
+        }
+        public static bool IsArrayOfBoolean(string[] array)
+        {
+            bool result = true;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (! Boolean.TryParse(array[i], out result)) return false;
+            }
+            return true;
+        }
+
+        //###############################################################################################################
+
+        
         /// <summary>
         /// sorts an array of doubles.
         /// returns both the sorted array (Item2) and the array indices in rank order (Item1)

@@ -82,7 +82,14 @@ namespace AnalysisPrograms
             HEADERS[14] = "KiwiScore";      COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
-        
+
+
+        public static bool[] LSKiwiColumns2Display()
+        {
+            bool[] LSKiwiColumns2Display = { false, false, true, true, true };
+            return LSKiwiColumns2Display;
+
+        }
 
 
 
@@ -107,45 +114,6 @@ namespace AnalysisPrograms
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
         public static string key_DRAW_SONOGRAMS  = "DRAW_SONOGRAMS";
         public static string key_REPORT_FORMAT   = "REPORT_FORMAT";
-
-
-        /// <summary>
-        /// a set of parameters derived from ini file
-        /// </summary>
-        //public struct KiwiParams
-        //{
-        //    public int frameLength, minHzMale, maxHzMale, minHzFemale, maxHzFemale;
-        //    public double segmentDuration, segmentOverlap; 
-        //    public double frameOverlap, dctDuration, dctThreshold, minPeriodicity, maxPeriodicity, minDuration, maxDuration, eventThreshold;
-        //    public int DRAW_SONOGRAMS;
-        //    public string reportFormat;
-
-        //    public KiwiParams(double _segmentDuration, double _segmentOverlap, 
-        //                      int _minHzMale, int _maxHzMale, int _minHzFemale, int _maxHzFemale, int _frameLength, int _frameOverlap, double _dctDuration, double _dctThreshold,
-        //                      double _minPeriodicity, double _maxPeriodicity, double _minDuration, double _maxDuration, double _eventThreshold, 
-        //                      int _DRAW_SONOGRAMS, string _fileFormat)
-        //    {
-        //        segmentDuration = _segmentDuration;
-        //        segmentOverlap  = _segmentOverlap;
-        //        minHzMale = _minHzMale;
-        //        maxHzMale = _maxHzMale;
-        //        minHzFemale = _minHzFemale;
-        //        maxHzFemale = _maxHzFemale;
-        //        frameLength = _frameLength;
-        //        frameOverlap = _frameOverlap;
-        //        dctDuration = _dctDuration;
-        //        dctThreshold = _dctThreshold;
-        //        minPeriodicity = _minPeriodicity;
-        //        maxPeriodicity = _maxPeriodicity;
-        //        minDuration    = _minDuration;
-        //        maxDuration    = _maxDuration;
-        //        eventThreshold = _eventThreshold;
-        //        DRAW_SONOGRAMS = _DRAW_SONOGRAMS; //av length of clusters > 1 frame.
-        //        reportFormat   = _fileFormat;
-        //    }
-        //}
-
-
 
 
 
@@ -749,69 +717,26 @@ namespace AnalysisPrograms
                 row[HEADERS[13]] = kiwiEvent.kiwi_bandWidthScore;  //BWScore
                 row[HEADERS[14]] = kiwiEvent.ScoreNormalised;      //Weighted combination Score
                 dataTable.Rows.Add(row);
-                //Console.WriteLine(CsvTools.WriteDataTableRow(row, ","));
             }
 
             return dataTable;
         }
 
 
-        //public static void WriteHeaderToFile(string reportfileName, string parmasFile_Separator)
-        //{
-        //    string reportSeparator = "\t";
-        //    if (parmasFile_Separator.Equals("CSV")) reportSeparator = ",";
-        //    string line = String.Format("{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}", reportSeparator, HEADERS); 
-        //    //reportSeparator, HEADERS[0],HEADERS[1],HEADERS[2],HEADERS[3],HEADERS[4],HEADERS[5],HEADERS[6],HEADERS[7],HEADERS[8],HEADERS[9],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[0],HEADERS[17],);
-        //    FileTools.WriteTextFile(reportfileName, line);
-        //}
-
-
-        //public static StringBuilder WriteEvents(double segmentStartMinute, double segmentDuration, int eventCount, List<AcousticEvent> eventList)
-        //{
-
-        //    string reportSeparator = ","; // for CSV files
-
-        //    string duration = DataTools.Time_ConvertSecs2Mins(segmentDuration);
-        //    StringBuilder sb = new StringBuilder();
-        //    if (eventList.Count == 0)
-        //    {
-        //        //string line = String.Format("{1}{0}{2,8:f3}{0}0{0}N/A{0}N/A{0}N/A{0}N/A{0}N/A{0}0{0}0",
-        //        //                     separator, segmentStart, duration);
-        //        //sb.AppendLine(line);
-        //    }
-        //    else
-        //    {
-        //        foreach (AcousticEvent ae in eventList)
-        //        {
-        //            int startSec = (int)((segmentStartMinute * 60) + ae.StartTime);
-        //            string line = String.Format("{1}{0}{2,8:f3}{0}{3}{0}{4:f2}{0}{5}{0}{6:f1}{0}{7}{0}{8}{0}{9:f2}{0}{10:f2}{0}{11:f2}{0}{12:f2}{0}{13:f2}{0}{14:f2}{0}{15:f2}",
-        //                                 reportSeparator, segmentStartMinute, duration, ae.Name, ae.StartTime, startSec, ae.Duration, ae.MinFreq, ae.MaxFreq,
-        //                                 ae.kiwi_durationScore, ae.kiwi_hitScore, ae.kiwi_snrScore, ae.kiwi_sdPeakScore, ae.kiwi_gapScore, ae.kiwi_bandWidthScore, ae.ScoreNormalised);
-        //            sb.AppendLine(line);
-        //        }
-        //    }
-        //    return sb;
-        //}
-
 
         //##################################################################################################################################################
 
-        public static Tuple<DataTable, double[]> ProcessCsvFile(FileInfo fiCsvFile)
-        {
-            KiwiRecogniser.InitOutputTableColumns(); //initialise just in case have not been before now.
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true, COL_TYPES);//LOAD CSV FILE
-            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+        //public static Tuple<DataTable, double[]> ProcessCsvFile(FileInfo fiCsvFile)
+        //{
+        //    //KiwiRecogniser.InitOutputTableColumns(); //initialise just in case have not been before now.
+        //    DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);//LOAD CSV FILE
+        //    if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
-            //dt = ConvertListOfKiwiEvents2TemporalList(dt);
-
-            bool[] columns2Display = {false, false, true, true, true };
-            DataTableTools.RemoveTableColumns(dt, columns2Display);
-
-            //return last column as the one for color display
-            string[] headers = DataTableTools.GetColumnNames(dt);
-            double[] array = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray(); 
-            return System.Tuple.Create(dt, array);
-        }
+        //    //return last column as the one for color display
+        //    string[] headers = DataTableTools.GetColumnNames(dt);
+        //    double[] array = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray(); 
+        //    return System.Tuple.Create(dt, array);
+        //}
 
 
         /// <summary>

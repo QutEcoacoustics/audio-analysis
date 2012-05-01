@@ -13,10 +13,10 @@
 
     public class AcousticIndices
     {
-        public const string ANALYSIS_NAME = "AcousticIndices"; 
+        public const string ANALYSIS_NAME = "Indices"; 
         public const double DEFAULT_activityThreshold_dB = 3.0; //used to select frames that have 3dB > background
         public const int    DEFAULT_WINDOW_SIZE = 256;
-        private const int    COL_NUMBER = 19;
+        private const int    COL_NUMBER = 18;
         private static Type[] COL_TYPES = new Type[COL_NUMBER];
         private static string[] HEADERS = new string[COL_NUMBER];
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
@@ -43,8 +43,13 @@
             HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; COMBO_WEIGHTS[15] = 0.1;
             HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     COMBO_WEIGHTS[16] = 0.4;
             HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     COMBO_WEIGHTS[17] = 0.1;
-            HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
+            //HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
+        }
+
+        public static bool[] GetDisplayColumns()
+        {
+            return DISPLAY_COLUMN;
         }
         
         public static string FORMAT_STR_HEADERS = "{1}{0}{2}{0}{3}{0}{4}{0}{5}{0}{6}{0}{7}{0}{8}{0}{9}{0}{10}{0}{11}{0}{12}{0}{13}{0}{14}{0}{15}{0}{16}{0}{17}{0}{18}";
@@ -60,7 +65,7 @@
         public static string key_FRAME_OVERLAP    = "FRAME_OVERLAP";
         public static string key_LOW_FREQ_BOUND   = "LOW_FREQ_BOUND";
         public static string key_MID_FREQ_BOUND   = "MID_FREQ_BOUND";
-        //public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
+        public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
         //public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
         public static string key_STORE_INTERMEDATE_RESULTS = "STORE_INTERMEDATE_RESULTS";
 
@@ -960,6 +965,7 @@
 
          public static double[] GetArrayOfWeightedAcousticIndices(DataTable dt, double[] weightArray)
          {
+             if (weightArray.Length > dt.Columns.Count) return null; //weights do not match data table
              List<double[]> columns = new List<double[]>();
              List<double> weights = new List<double>();
              for (int i = 0; i < weightArray.Length; i++)
@@ -1001,23 +1007,28 @@
         }
 
 
-        public static Tuple<DataTable, double[]> ProcessCsvFile(FileInfo fiCsvFile)
+        public static Tuple<DataTable, double[], bool[]> ProcessCsvFile(FileInfo fiCsvFile)
         {
             bool addColumnOfweightedIndices = true;
-            double[] weightedIndices = null;
             AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
-            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true, AcousticIndices.COL_TYPES);//LOAD CSV FILE
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
             if ((dt == null) || (dt.Rows.Count == 0)) return null;
 
             dt = DataTableTools.SortTable(dt, "count ASC");
-            if (addColumnOfweightedIndices) weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
-            DataTableTools.RemoveTableColumns(dt, AcousticIndices.DISPLAY_COLUMN);
+
+            List<bool> columns2Display = AcousticIndices.GetDisplayColumns().ToList();
+
+
+            double[] weightedIndices = null;
             if (addColumnOfweightedIndices)
             {
-                string colName = AcousticIndices.HEADERS[AcousticIndices.HEADERS.Length - 1];
+                weightedIndices = AcousticIndices.GetArrayOfWeightedAcousticIndices(dt, AcousticIndices.COMBO_WEIGHTS);
+                string colName = "WeightedIndex";
+                //string colName = AcousticIndices.HEADERS[AcousticIndices.HEADERS.Length - 1];
                 DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
+                columns2Display.Add(true);
             }
-            return System.Tuple.Create(dt, weightedIndices);
+            return System.Tuple.Create(dt, weightedIndices, columns2Display.ToArray());
         }
 
 

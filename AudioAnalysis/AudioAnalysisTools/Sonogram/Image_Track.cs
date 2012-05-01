@@ -628,16 +628,15 @@
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
             Color[] grayScale = ImageTools.GrayScale();
-            int imageWidth = array.Length;
-            Bitmap bmp = new Bitmap(imageWidth, trackHeight);
+            //int imageWidth = array.Length;
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
-            g.Clear(grayScale[245]);
-
+            g.Clear(grayScale[240]);
             double range = maxVal - minVal;
-            for (int i = 0; i < imageWidth; i++) //for pixels in the line
+            for (int i = 0; i < array.Length; i++) //for pixels in the line
             {
                 int x = (int)order[i]; //
                 // normalise and bound the value - use min bound, max and 255 image intensity range
@@ -646,7 +645,11 @@
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, Color.Black);
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
-            //g.DrawString(title, new Font("Tahoma", 9), Brushes.Black, new PointF(imageWidth + 5, 0));
+
+            int endWidth = trackWidth - array.Length;
+            var font = new Font("Arial", 9.0f, FontStyle.Regular);
+            g.FillRectangle(Brushes.Black, array.Length + 1, 0, endWidth, trackHeight);
+            g.DrawString(title, font, Brushes.White, new PointF(array.Length + 5, 2));
             return bmp;
         }
 
@@ -658,16 +661,15 @@
         /// <param name="scoreMax"></param>
         /// <param name="scoreThreshold"></param>
         /// <returns></returns>
-        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackHeight, double minVal, double maxVal, double threshold, string title)
+        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double minVal, double maxVal, double threshold, string title)
         {
             Color[] colorScale = { Color.LightGray, Color.Gray, Color.Orange, Color.Red, Color.Purple };
-            int imageWidth = array.Length;
-            Bitmap bmp = new Bitmap(imageWidth, trackHeight);
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
             Graphics g = Graphics.FromImage(bmp);
-            g.Clear(Color.FromArgb(245, 245, 245));
+            g.Clear(Color.FromArgb(240, 240, 240));
 
             double range = maxVal - minVal;
-            for (int i = 0; i < imageWidth; i++) //for pixels in the line
+            for (int i = 0; i < array.Length; i++) //for pixels in the line
             {
                 int x = (int)order[i];
                 // normalise and bound the value - use min bound, max and 255 image intensity range
@@ -677,6 +679,10 @@
                 for (int y = 0; y < barHeight; y++) bmp.SetPixel(x, trackHeight - y - 1, colorScale[colourIndex]);
                 bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
             }//end over all pixels
+            int endWidth = trackWidth - array.Length;
+            var font = new Font("Arial", 9.0f, FontStyle.Regular);
+            g.FillRectangle(Brushes.Black, array.Length + 1, 0, endWidth, trackHeight);
+            g.DrawString(title, font, Brushes.White, new PointF(array.Length + 5, 2));
             return bmp;
         }
 
@@ -691,21 +697,21 @@
         }
 
 
-        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackHeight, double threshold, string title)
+        public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
         {
             double minVal;
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
-            Bitmap bitmap = DrawBarScoreTrack(order, array, trackHeight, minVal, maxVal, threshold, title);
+            Bitmap bitmap = DrawBarScoreTrack(order, array, trackWidth, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
-        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackHeight, double threshold, string title)
+        public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
         {
             double minVal;
             double maxVal;
             DataTools.MinMax(array, out minVal, out maxVal);
-            Bitmap bitmap = DrawColourScoreTrack(order, array, trackHeight, minVal, maxVal, threshold, title);
+            Bitmap bitmap = DrawColourScoreTrack(order, array, trackWidth, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
         }
 
@@ -730,14 +736,14 @@
 
             for (int x = 0; x < duration; x++) //for pixels in the line
             {
-                bmp.SetPixel(x, 0, Color.White); //draw upper boundary
+                bmp.SetPixel(x, 0, Color.Gray); //draw upper boundary
                 if (x % scale != 0) continue;
                 for (int y = 0; y < trackHeight; y++) bmp.SetPixel(x, y, Color.White);
                 g.DrawString(hour.ToString(), new Font("Tahoma", 8), Brushes.White, new PointF(x + 2, 0)); //draw time
                 hour++;
             }//end over all pixels
 
-            g.DrawString(title, new Font("Tahoma", 8), Brushes.White, new PointF(duration + 5, 0));
+            g.DrawString(title, new Font("Tahoma", 9), Brushes.White, new PointF(duration + 5, 3));
             return bmp;
         }
 
