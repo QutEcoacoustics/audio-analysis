@@ -233,6 +233,9 @@ namespace TowseyLib
 
         public static void AddColumn2Table(DataTable dt, string columnName, double[] array)
         {
+            if (array == null) return;
+            if (array.Length == 0) return;
+
             int index = 0;
             dt.Columns.Add(columnName, typeof(double));
             foreach (DataRow row in dt.Rows)

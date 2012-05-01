@@ -57,6 +57,8 @@
         private double[] weightedIndices;
         private Bitmap selectionTrackImage;
 
+        private string CurrentSourceFileAnalysisType { get { return this.comboBoxSourceFileAnalysisType.SelectedItem.ToString(); } }
+        private string CurrentCSVFileAnalysisType { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
 
         /// <summary>
         /// 
@@ -177,13 +179,18 @@
                 }
             }
 
-            WriteBrowserParameters2Console(this.browserSettings);
-            WriteAnalysisParameters2Console(this.analysisParams, this.browserSettings.AnalysisName);
-            CheckForConsistencyOfAnalysisTypes(this.browserSettings, this.analysisParams);
+            this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
+            this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
+
+            this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
+
+            
+           
 
         } //MainForm()
 
-        private void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
+        private void WriteBrowserParameters2Console(AudioBrowserSettings parameters, string analysisName)
         {
             string title = "# AUDIO BROWSER FOR THE ANALYSIS AND INTERROGATION OF LARGE AUDIO FILES";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -191,7 +198,7 @@
             Console.WriteLine(date);
             Console.WriteLine("#");
             Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisName);
+            Console.WriteLine("\tAnalysis Name: " + analysisName);
             Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
             Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
             Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
@@ -209,15 +216,15 @@
             Console.WriteLine("####################################################################################");
         }
 
-        private static bool CheckForConsistencyOfAnalysisTypes(AudioBrowserSettings settings, Dictionary<string, string> dict)
+        private static bool CheckForConsistencyOfAnalysisTypes(string currentAnalysisName, Dictionary<string, string> dict)
         {
             string analysisName = dict[AcousticIndices.key_ANALYSIS_NAME];
-            if (!settings.AnalysisName.Equals(analysisName))
+            if (!currentAnalysisName.Equals(analysisName))
             {
-                Console.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", settings.AnalysisName, analysisName);
+                Console.WriteLine("WARNING: Analysis type selected in browser ({0}) not same as that in config file ({1})", currentAnalysisName, analysisName);
                 return false;
             }
-            Console.WriteLine("Analysis type: " + settings.AnalysisName);
+            Console.WriteLine("Analysis type: " + currentAnalysisName);
             return true;
         }
 
@@ -225,6 +232,10 @@
 
         private void btnExtractIndiciesAllSelected_Click(object sender, EventArgs e)
         {
+            WriteBrowserParameters2Console(this.browserSettings, this.CurrentSourceFileAnalysisType);
+            WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
+            CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
+
             int count = 0;
 
             //this.textBoxConsole.Clear();
@@ -263,18 +274,18 @@
                     
                     string reportFileExt = ".csv";
                     string opDir = this.tfOutputDirectory.Text;
-                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + browserSettings.AnalysisName;
+                    string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
                     string reportfilePath = null;
 
                     //unfortunately different things happen depending on the analysis!
-                    if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //AcousticIndices
+                    if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //AcousticIndices
                     {
                         //the output from ACOUSTIC analysis is rows of one minute indices                        
                         reportfilePath = Path.Combine(opDir, fName + reportFileExt);
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
                     }
                     else
-                    if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser - save two files
+                    if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser - save two files
                     {
                         string sortString = "EvStartAbs ASC";
                         outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
@@ -345,21 +356,21 @@
 
             //var outputData = new List<string>(); //List to store indices
             //SET UP THE OUTPUT REPORT DATATABLE
-            DataTable outputDataTable = null; 
-            if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
+            DataTable outputDataTable = null;
+            if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
             {
                 var parameters = AcousticIndices.InitOutputTableColumns();
                 outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
             }
             else
-                if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser
+                if (this.CurrentSourceFileAnalysisType == KiwiRecogniser.ANALYSIS_NAME) //KiwiRecogniser
                 {
                     var parameters = KiwiRecogniser.InitOutputTableColumns();
                     outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                 }
                 else
                 {
-                   Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", browserSettings.AnalysisName);
+                    Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", this.CurrentSourceFileAnalysisType);
                    return null;
                 }
 
@@ -425,12 +436,12 @@
                     //#############################################################################################################################################
                     //##### DO THE ANALYSIS ############ 
                     DataTable dt = null;
-                    if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
+                    if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
                     {
                         dt = AcousticIndices.Analysis(s, fiSegmentAudioFile, dict);
                     }
                     else
-                    if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
+                        if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
                     {
                         dt = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                         //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dt.Rows.Count);
@@ -452,7 +463,7 @@
             return outputDataTable;
         }
 
-
+        
 
 
         private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
@@ -551,32 +562,43 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            DataTable dt          = null;
-            double[] colouredArray = null; //array to be displayed in colour
+            DataTable dt           = null;
+            bool[] columns2Display = null; 
             //########################
 
-            if (browserSettings.AnalysisName.Equals(AcousticIndices.ANALYSIS_NAME))
+            if (this.CurrentCSVFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME))
             {
                 var output = AcousticIndices.ProcessCsvFile(new FileInfo(csvPath));
                 dt = output.Item1;
-                colouredArray = output.Item2;
+                this.weightedIndices = output.Item2;
+                //columns2Display = AcousticIndices.GetDisplayColumns();
+                columns2Display = output.Item3;
             }
             else
-            if (browserSettings.AnalysisName.Equals(KiwiRecogniser.ANALYSIS_NAME))
+            if (this.CurrentCSVFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME))
             {
-                var output = KiwiRecogniser.ProcessCsvFile(new FileInfo(csvPath));
-                dt = output.Item1;
-                colouredArray = output.Item2;
+                dt = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
+
+                //return last column as the one for color display
+                string[] headers = DataTableTools.GetColumnNames(dt);
+                this.weightedIndices = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray();
+                columns2Display = KiwiRecogniser.LSKiwiColumns2Display();
+            }
+            else
+            if (this.CurrentCSVFileAnalysisType.Equals("None"))
+            {
+                dt = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
+                this.weightedIndices = null;
             }
             else
             {
-                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-                Console.WriteLine("\t Browser analysis name not recognized: " + browserSettings.AnalysisName);
-                return 3;
+            Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
+            Console.WriteLine("\t Browser analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
+            return 3;
             }
 
-            this.weightedIndices = colouredArray;
-            Bitmap tracksImage = ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay);
+
+            Bitmap tracksImage = ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay, columns2Display);
             this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
 
             //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
@@ -595,38 +617,46 @@
         }
 
 
-
-
         /// <summary>
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="order"></param>
         /// <param name="trackHeight"></param>
         /// <param name="normalisedTrackDisplay"></param>
+        /// <param name="tracks2Display"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay, bool[] tracks2Display)
         {
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
 
+            //set up the array of tracks to display
+            var dodisplay = new bool[values.Count];
+            for (int i = 0; i < values.Count - 1; i++) dodisplay[i] = true;
+            if (! (tracks2Display == null))
+            {   
+                for (int i = 0; i < tracks2Display.Length; i++) dodisplay[i] = tracks2Display[i];
+            }
+
             // accumulate the indivudal tracks
+            int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
+            int endPanelwidth = 90;
+            int imageWidth = duration + endPanelwidth;
+
             var bitmaps = new List<Bitmap>();
             double threshold = 0.0;
             for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
             {
-                if (values[i].Length == 0) continue;
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], trackHeight, threshold, headers[i]));
+                if ((! dodisplay[i]) || (values[i].Length == 0)) continue;
+                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], imageWidth, trackHeight, threshold, headers[i]));
             }
             int x = values.Count - 1;
-            if (values[x].Length > 0) 
-                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], trackHeight, threshold, headers[x])); //assumed to be weighted index
+            if ((dodisplay[x]) || (values[x].Length > 0))
+                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
-            int trackCount = values.Count + 2; //+2 for top and bottom time tracks
+            int trackCount = DataTools.CountTrues(dodisplay) + 2; //+2 for top and bottom time tracks
             int imageHt = trackHeight * trackCount;
-            int duration = values[0].Length; //time in minutes
-            int endPanelwidth = 100;
-            int imageWidth = duration + endPanelwidth;
             int offset = 0;
             int scale = 60; //put a tik every 60 pixels = 1 hour
             Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
@@ -636,12 +666,11 @@
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
             gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            var font = new Font("Arial", 10.0f, FontStyle.Regular);
+            //var font = new Font("Arial", 10.0f, FontStyle.Regular);
             offset += trackHeight;
             for (int i = 0; i < bitmaps.Count; i++) 
             {
                 gr.DrawImage(bitmaps[i], 0, offset);
-                gr.DrawString(headers[i], font, Brushes.White, new PointF(duration + 5, offset));
                 offset += trackHeight;
             }
             gr.DrawImage(timeBmp, 0, offset); //draw in bottom time scale
@@ -655,12 +684,12 @@
         /// <param name="trackHeight"></param>
         /// <param name="normalisedTrackDisplay"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool normalisedTrackDisplay)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool normalisedTrackDisplay, bool[] tracks2Display)
         {
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, order, trackHeight, normalisedTrackDisplay);
+            return ConstructVisualIndexImage(dt, order, trackHeight, normalisedTrackDisplay, tracks2Display);
         }
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
@@ -686,7 +715,7 @@
             pen.DashPattern = dashValues;
             g.DrawLine(pen, pt1, pt2);
 
-            if (weightedIndices.Length < 2) return;
+            if ((weightedIndices == null) || (weightedIndices.Length < 2)) return;
             if (myX >= this.sourceRecording_MinutesDuration - 1)
                 this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
             else
@@ -1421,11 +1450,36 @@
         /// </summary>
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
-            if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists)) return;
-            //IAudioUtility audioUtility = new MasterAudioUtility(settings.ResampleRate); //creates AudioUtility and
-            AudioRecording recordingSegment = new AudioRecording(browserSettings.fiSegmentRecording.FullName);
+            FileInfo f = browserSettings.fiSegmentRecording;
+            if ((f == null) || (!f.Exists)) return;
+
+            var dict = this.analysisParams;
+            if (this.checkBoxSonogramAnnotate.Checked)
+            {
+                dict[AcousticIndices.key_DRAW_SONOGRAMS] = "2";
+            }
+
+            AudioRecording recordingSegment = new AudioRecording(f.FullName);
+
+            if (this.checkBoxSonnogramNoiseReduce.Checked)
+            {
+
+                DataTable dt = null;
+                if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
+                {
+                    dt = AcousticIndices.Analysis(0, f, dict);
+                }
+                else
+                if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
+                {
+                    dt = KiwiRecogniser.Analysis(0, f, dict, browserSettings.diOutputDir);
+                }
+            } //if (this.checkBoxSonnogramNoiseReduce.Checked)
+
+
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
+            dict[AcousticIndices.key_DRAW_SONOGRAMS] = 0.ToString(); //reset the
         }
 
         private void backgroundWorkerUpdateSourceFileList_DoWork(object sender, DoWorkEventArgs e)

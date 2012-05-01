@@ -45,7 +45,9 @@ namespace TowseyLib
                  for (int i = 0; i < headers.Length; i++)
                  {
                      if(types == null) dt.Columns.Add(headers[i], typeof(string));
-                     else              dt.Columns.Add(headers[i], types[i]);
+                     else 
+                         if (types.Length <= i) dt.Columns.Add(headers[i], typeof(double));
+                     else                       dt.Columns.Add(headers[i], types[i]);
                  }
                  csvRows[0] = null; //remove header row
              }
@@ -56,33 +58,85 @@ namespace TowseyLib
                  if (csvRow == null) continue; //skip header row
                  fields = csvRow.Split(',');
                  DataRow row = dt.NewRow();
-                 //row.ItemArray = fields;
                  row.ItemArray = MakeItemArray(fields, types);
                  dt.Rows.Add(row);
              }
              return dt;
          }
 
+        /// <summary>
+        /// reads a CSV file into a Datatable and deduces the data type in each column
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <param name="isFirstRowHeader"></param>
+        /// <returns></returns>
          public static DataTable ReadCSVToTable(string filePath, bool isFirstRowHeader)
          {
-             Type[] types = GetColumnTypes(filePath);
-             return ReadCSVToTable(filePath, isFirstRowHeader, types);
-         }
-
-         public static Type[] GetColumnTypes(string filePath)
-         {
              string[] csvRows = System.IO.File.ReadAllLines(filePath);
-             int count = 10;
-             if(csvRows.Length < count) count = csvRows.Length -1;
 
-             //get number of items in row
-             string[] fields = csvRows[0].Split(',');
+             //convert rows 1-11 toList of strings so can deduce their types.
+             var listOfStringArrays = ConvertCSVRowsToListOfStringArrays(csvRows, 1, 30);
+             Type[] types = DataTools.GetArrayTypes(listOfStringArrays);
 
-             Type[] types = new Type[fields.Length];
+             //initialise the DataTable
+             var dt = new DataTable();
+             if (isFirstRowHeader)
+             {
+                 string[] headers = csvRows[0].Split(',');
+                 for (int i = 0; i < headers.Length; i++)
+                 {
+                     dt.Columns.Add(headers[i], types[i]);
+                 }
+                 csvRows[0] = null; //remove header row
+             }
+             else
+             {
+                 for (int i = 0; i < types.Length; i++)
+                 {
+                     dt.Columns.Add("Field"+i, types[i]);
+                 }
+             }
 
-             //foreach(
-             return types;
+             //fill the DataTable
+             string[] fields = null;
+             foreach (string csvRow in csvRows)
+             {
+                 if (csvRow == null) continue; //skip header row
+                 fields = csvRow.Split(',');
+                 DataRow row = dt.NewRow();
+                 //row.ItemArray = fields; //use this line only if fields are strings
+                 row.ItemArray = MakeItemArray(fields, types);
+                 dt.Rows.Add(row);
+             }
+             return dt;
          }
+        /// <summary>
+        /// this method is called by the previous method when reading in a CSV file.
+        /// It is used only to get csv data into a format that the data type for each field can be determined.
+        /// </summary>
+        /// <param name="csvRows"></param>
+        /// <param name="rowStart"></param>
+        /// <param name="rowEnd"></param>
+        /// <returns></returns>
+        public static List<string[]> ConvertCSVRowsToListOfStringArrays(string[] csvRows, int rowStart, int rowEnd)
+        {
+             if (rowEnd > csvRows.Length) rowEnd = csvRows.Length;
+             List<string[]> listOfStringArrays = new List<string[]>();
+             int fieldCount  = csvRows[0].Split(',').Length;
+             int arrayLength = rowEnd - rowStart + 1;
+             //init arrays
+             for (int c = 0; c < fieldCount; c++)
+             {
+                 listOfStringArrays.Add(new string[arrayLength]);
+             }
+             // fill the empty arrays
+             for (int r = rowStart; r <= rowEnd; r++)
+             {
+                 string[] fields = csvRows[r].Split(',');
+                 for (int f = 0; f < fieldCount; f++) listOfStringArrays[f][r - rowStart] = fields[f];
+             }
+            return listOfStringArrays;
+        }
 
         public static Object[] MakeItemArray(string[] fields, Type[] types)
         {
