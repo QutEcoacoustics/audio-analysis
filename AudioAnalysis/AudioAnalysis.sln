@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acoustics.Tools", "..\Acous
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Acoustics.Shared", "..\Acoustics\Acoustics.Shared\Acoustics.Shared.csproj", "{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalysisBase", "AnalysisBase\AnalysisBase.csproj", "{80BC795A-A987-45AB-B29B-76CF190384BA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Core|Any CPU = Core|Any CPU
@@ -73,6 +75,12 @@ Global
 		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF04F5A8-D4BD-4CD1-BFC2-F6AD2D9C7927}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Core|Any CPU.ActiveCfg = Release|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Core|Any CPU.Build.0 = Release|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80BC795A-A987-45AB-B29B-76CF190384BA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
