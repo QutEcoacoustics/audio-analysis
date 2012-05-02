@@ -159,9 +159,9 @@ namespace Acoustics.Shared
                 throw new ArgumentException("The rangeOverMin must be less than rangeOverMax.", "rangeOverMin");
             }
 
-            if (rangeAmount >= rangeOverMax - rangeOverMin)
+            if (rangeAmount > rangeOverMax - rangeOverMin)
             {
-                throw new ArgumentException("The rangeAmount must be less than the difference between rangeOverMin and rangeOverMax.", "rangeAmount");
+                throw new ArgumentException("The rangeAmount must be less than or equal to the difference between rangeOverMin and rangeOverMax.", "rangeAmount");
             }
 
             var random = new Random();
