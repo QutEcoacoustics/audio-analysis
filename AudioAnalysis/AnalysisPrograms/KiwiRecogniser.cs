@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using System.IO;
+using System.Drawing;
+using System.Drawing.Imaging;
 using TowseyLib;
 using AudioAnalysisTools;
 using System.Threading;
-//using System.Threading;
+
 
 
 //Here is link to wiki page containing info about how to write Analysis techniques
@@ -290,7 +292,8 @@ namespace AnalysisPrograms
             if (saveSonogram)
             {
                 string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) +"_"+ (int)segmentStartMinute+ "min.png");
-                DrawSonogram(sonogram, imagePath, hits, scores, null, predictedEvents, eventThreshold);
+                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+                image.Save(imagePath, ImageFormat.Png); 
             }
 
             //write events to a data table to return.
@@ -299,6 +302,62 @@ namespace AnalysisPrograms
             string sortString = "EvStartAbs ASC";
             return DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
         } //Analysis()
+
+
+
+
+
+        /// <summary>
+        /// A WRAPPER AROUND THE Execute_KiwiDetect() method
+        /// Returns a DataTable
+        /// The Execute_KiwiDetect() method returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
+        /// </summary>
+        /// <param name="iter"></param>
+        /// <param name="config"></param>
+        /// <param name="segmentAudioFile"></param>
+        public static Image GetImageFromAudioSegment(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
+        {
+            int minHzMale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_MALE, config);
+            int maxHzMale = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_MALE, config);
+            int minHzFemale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_FEMALE, config);
+            int frameLength = Configuration.GetInt(KiwiRecogniser.key_FRAME_LENGTH, config);
+            double frameOverlap = Configuration.GetDouble(KiwiRecogniser.key_FRAME_OVERLAP, config);
+            double dctDuration = Configuration.GetDouble(KiwiRecogniser.key_DCT_DURATION, config);
+            double dctThreshold = Configuration.GetDouble(KiwiRecogniser.key_DCT_THRESHOLD, config);
+            double minPeriod = Configuration.GetDouble(KiwiRecogniser.key_MIN_PERIODICITY, config);
+            double maxPeriod = Configuration.GetDouble(KiwiRecogniser.key_MAX_PERIODICITY, config);
+            double eventThreshold = Configuration.GetDouble(KiwiRecogniser.key_EVENT_THRESHOLD, config);
+            double minDuration = Configuration.GetDouble(KiwiRecogniser.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration = Configuration.GetDouble(KiwiRecogniser.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+
+            AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
+
+            var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
+                                                            minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
+            var sonogram = results.Item1;
+            var hits = results.Item2;
+            var scores = results.Item3;
+            //var oscRates = results.Item4;
+            var predictedEvents = results.Item5;
+
+            // (iii) NOISE REDUCTION
+            bool doNoiseReduction = false;
+            doNoiseReduction = Configuration.GetBoolean(AcousticIndices.key_DO_NOISE_REDUCTION, config);
+            double sonogramBackgroundThreshold = 4.0;
+            sonogramBackgroundThreshold = Configuration.GetDouble(AcousticIndices.key_BG_NOISE_REDUCTION, config);
+            if (doNoiseReduction)
+            {
+                var tuple = SNR.NoiseReduce(sonogram.Data, NoiseReductionType.STANDARD, sonogramBackgroundThreshold);
+                sonogram.Data = tuple.Item1;   // store data matrix
+            }
+
+            Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+            return image;
+        } //GetImageFromAudioSegment()
+
+
+
 
 
 
@@ -791,26 +850,19 @@ namespace AnalysisPrograms
         }
 
 
-        public static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, double[] oscillationRates,
-                                        List<AcousticEvent> predictedEvents, double eventThreshold)
+        public static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, 
+                                         List<AcousticEvent> predictedEvents, double eventThreshold)
         {
-            //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            //double maxScore = 50.0; //assumed max posisble oscillations per second
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            double maxScore = 16.0;
+            image.AddSuperimposedMatrix(hits, maxScore);
+            image.AddEvents(predictedEvents);
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            using (Image_MultiTrack image = new Image_MultiTrack(img))
-            {
-                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                image.AddTrack(Image_Track.GetScoreTrack(oscillationRates, 0.5, 1.5, 1.0));
-                double maxScore = 16.0;
-                image.AddSuperimposedMatrix(hits, maxScore);
-                image.AddEvents(predictedEvents);
-                image.Save(path);
-            }
+            return image.GetImage();
         }
 
 

@@ -70,7 +70,7 @@
         public int TrackCount { get; private set; }
         public bool TrackNormalisedDisplay { get; private set; }
         public string SourceFileExt { get; private set; }
-        public string AnalysisName { get; private set; }
+        public string AnalysisName { get; set; }
         public string[] AnalysisList { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }
