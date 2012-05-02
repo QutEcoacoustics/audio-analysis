@@ -68,6 +68,8 @@
         public static string key_DRAW_SONOGRAMS   = "DRAW_SONOGRAMS";
         //public static string key_REPORT_FORMAT    = "REPORT_FORMAT";
         public static string key_STORE_INTERMEDATE_RESULTS = "STORE_INTERMEDATE_RESULTS";
+        public static string key_DO_NOISE_REDUCTION = "DO_NOISE_REDUCTION"; // used when displaying sonograms
+        public static string key_BG_NOISE_REDUCTION = "BG_NOISE_REDUCTION"; // used when displaying sonograms - backgroud noise reduction severity in dB.
 
 
         /// Following is list of scaling originally applied to the Acoustic Indices Tracks
@@ -417,7 +419,7 @@
             }
 
             return Indices2DataTable(iter, segmentStartMinute, wavSegmentDuration_seconds, indices);
-        } //ExtractIndices()
+        } //Analysis()
 
 
         /// <summary>
@@ -811,6 +813,22 @@
         }
 
 
+
+        /// <summary>
+        /// TODO: This method should call the Analysis() method
+        /// Get all the intermediate information and return a sonogram with annotations.
+        /// </summary>
+        /// <param name="fiSegmentAudioFile"></param>
+        /// <param name="config"></param>
+        public static Image GetImageFromAudioSegment(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
+        {
+            Image image = null;
+            //Image image = MakeAndDrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+            return image;
+        } //GetImageFromAudioSegment()
+
+
+        
         public static void MakeAndDrawSonogram(AudioRecording recording, string dir, List<double[]> scores, double[,]clusterMatrix)
         {
             //i: MAKE SONOGRAM
@@ -877,6 +895,8 @@
                 image.Save(imagePath);
             } // using
         } // MakeAndDrawSonogram()
+
+
 
         /// <summary>
         /// displays a histogram of cluster counts.

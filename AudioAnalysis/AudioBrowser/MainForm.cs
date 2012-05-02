@@ -3,6 +3,7 @@
     using System.Collections.Generic;
     using System.ComponentModel;
     using System.Data;
+    using System.Drawing.Imaging;
     using System.IO;
     using System.Reflection;
     using System.Threading;
@@ -58,7 +59,12 @@
         private Bitmap selectionTrackImage;
 
         private string CurrentSourceFileAnalysisType { get { return this.comboBoxSourceFileAnalysisType.SelectedItem.ToString(); } }
-        private string CurrentCSVFileAnalysisType { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
+        private string CurrentCSVFileAnalysisType    { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
+
+        //identifers for the TAB panels/pages
+        private string tabPageConsoleLabel     = "tabPageConsole";
+        private string tabPageOutputFilesLabel = "tabPageOutputFiles";
+        private string tabPageSourceFilesLabel = "tabPageSourceFiles";
 
         /// <summary>
         /// 
@@ -83,7 +89,7 @@
             //initialize analysis parameters
             try
             {
-                analysisParams = FileTools.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
+                this.analysisParams = FileTools.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
             }
             catch (Exception ex)
             {
@@ -182,13 +188,30 @@
             this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
             this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
 
-            this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
+            this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName; //set default
             this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
 
             
            
 
         } //MainForm()
+
+        /// <summary>
+        /// THIS IS A TEMPORARY FIX TO DETERMINE LOCATION OF CONFIG FILE FROM OTHER BROWSER INFO
+        /// </summary>
+        private void ReloadDefaultAnalysisConfigFile()
+        {
+            string configDirectory = this.browserSettings.diOutputDir.FullName;
+            string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
+            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; //set default
+
+            this.browserSettings.AnalysisName = analysisName;
+            string configName = analysisName + ".cfg";
+            string configPath = Path.Combine(configDirectory, configName);
+            this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
+            this.analysisParams = FileTools.ReadPropertiesFile(configPath);
+        }
+
 
         private void WriteBrowserParameters2Console(AudioBrowserSettings parameters, string analysisName)
         {
@@ -498,6 +521,10 @@
                             Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
                     Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
+
+                    //THIS LINE WILL NOT BE LIKED BY MARK!
+                    ReloadDefaultAnalysisConfigFile(); //get analysis config settings
+
                     //Infer source file name from CSV file name
                     FileInfo inferredSourceFile = InferSourceFileFromCSVFileName(csvFileName);
                     if (inferredSourceFile == null)
@@ -510,10 +537,13 @@
                         browserSettings.fiSourceRecording = inferredSourceFile;
                         Console.WriteLine("# \t\tExpected source recording: " + inferredSourceFile.Name);
                     }
+                    this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
+                    this.labelSonogramFileName.Text = "File Name";
 
                     //##################################################################################################################
                     int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
                     //##################################################################################################################
+
                     if (status != 0)
                     {
                         this.tabControlMain.SelectTab("tabPageConsole");
@@ -524,10 +554,18 @@
                     }
                     else
                     {
+                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                        this.pictureBoxBarTrack.Location = new Point(3, this.pictureBoxVisualIndex.Height + 1);
+                        this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+                        //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
+                        this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndex.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
+                        this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
+                        this.pictureBoxSonogram.Location = new Point(3, 0);
+
                         this.labelSourceFileName.Text = Path.GetFileNameWithoutExtension(csvFileName);
                         this.labelSourceFileDurationInMinutes.Text = "File duration = " + this.sourceRecording_MinutesDuration + " minutes";
                         this.tabControlMain.SelectTab("tabPageDisplay");
-                    }
+                    } // (status == 0)
                 } // if (isChecked)
             } //for each row in dataGridCSVfiles
             //settings.fiCSVFile = new FileInfo();
@@ -600,12 +638,7 @@
 
             Bitmap tracksImage = ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay, columns2Display);
             this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
-
-            //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-            this.pictureBoxVisualIndex.Height = tracksImage.Height;
             this.pictureBoxVisualIndex.Image = tracksImage;
-            this.pictureBoxBarTrack.Location = new Point(0, tracksImage.Height + 1);
-            this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
             
             //SAVE THE IMAGE
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
@@ -799,10 +832,14 @@
             Image_MultiTrack image = MakeSonogram(recordingSegment);
             this.pictureBoxSonogram.Image = image.GetImage();
 
-
-            //this.hScrollBarSonogram.Location = new System.Drawing.Point(0, this.pictureBoxSonogram.Image.Height);
-            //this.hScrollBarSonogram.Minimum = 0;
-            //this.hScrollBarSonogram.Maximum = pictureBoxSonogram.Width - this.panelSonogram.Width + 280; //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            //attempt to deal with variable height of spectrogram
+            //TODO:  MUST BE BETTER WAY TO DO THIS!!!!!
+            if (this.pictureBoxSonogram.Image.Height > 270) this.panelDisplaySpectrogram.Height = 500;
+            //Point location = this.panelDisplaySpectrogram.Location;
+            //this.panelDisplaySpectrogram.Height = this.Height - location.Y;
+            //this.panelDisplaySpectrogram.Height = this.pictureBoxSonogram.Image.Height;
+            //this.pictureBoxSonogram.Location = new Point(3, 0);
+            //this.vScrollBarSonogram.Minimum = 0;
 
             string sonogramPath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
             Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
@@ -814,6 +851,7 @@
 
         private Image_MultiTrack MakeSonogram(AudioRecording recordingSegment)
         {
+            this.checkBoxSonogramAnnotate.Checked = false; //calling this method does not annotate the spectrogram
 
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
@@ -831,36 +869,14 @@
             }
 
             //prepare the image
-            //;
             bool doHighlightSubband = false;
             bool add1kHzLines = true;
-            //using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            //using (image = new Image_MultiTrack(img))
-            //{
-            //    if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
-            //    //add time scale
-            //    image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-
-            //    if (this.checkBoxSonogramAnnotate.Checked) 
-            //    {
-            //          Console.WriteLine("ANNOTATE SONOGRAM");
-            //    }
-            //}
             System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
             Image_MultiTrack image = new Image_MultiTrack(img);
-            //{
-               // if (pictureBoxSonogram.Image != null) pictureBoxSonogram.Image.Dispose(); //get rid of previous sonogram
-                //add time scale
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-
-                if (this.checkBoxSonogramAnnotate.Checked)
-                {
-                    Console.WriteLine("ANNOTATION OF SONOGRAMS IS NOT YET IMPLEMENTED.");  //NOT YET IMPLEMENTED!
-                }
-            //}
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond)); //add time scale
 
             return image;
-        }//MakeSonogram
+        }//MakeSonogram()
 
         private void buttonRunAudacity_Click(object sender, EventArgs e)
         {
@@ -1451,35 +1467,62 @@
         private void buttonRefreshSonogram_Click(object sender, EventArgs e)
         {
             FileInfo f = browserSettings.fiSegmentRecording;
-            if ((f == null) || (!f.Exists)) return;
-
-            var dict = this.analysisParams;
-            if (this.checkBoxSonogramAnnotate.Checked)
+            if (f == null)
             {
-                dict[AcousticIndices.key_DRAW_SONOGRAMS] = "2";
+                Console.WriteLine("CANNOT FIND AUDIO SEGMENT: segment = null");
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+            if (!f.Exists)
+            {
+                Console.WriteLine("CANNOT FIND AUDIO SEGMENT: "+ f.FullName);
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
             }
 
+            DirectoryInfo opDir = browserSettings.diOutputDir;
+            var dict = this.analysisParams;
+            dict.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
+            dict.Add(AcousticIndices.key_BG_NOISE_REDUCTION, browserSettings.SonogramBackgroundThreshold.ToString());
+
             AudioRecording recordingSegment = new AudioRecording(f.FullName);
+            Image image = null;
 
-            if (this.checkBoxSonnogramNoiseReduce.Checked)
+            if (this.checkBoxSonogramAnnotate.Checked)
             {
-
-                DataTable dt = null;
                 if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
                 {
-                    dt = AcousticIndices.Analysis(0, f, dict);
+                    image = AcousticIndices.GetImageFromAudioSegment(f, dict);
                 }
                 else
                 if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
                 {
-                    dt = KiwiRecogniser.Analysis(0, f, dict, browserSettings.diOutputDir);
+                    image = KiwiRecogniser.GetImageFromAudioSegment(f, dict);
                 }
-            } //if (this.checkBoxSonnogramNoiseReduce.Checked)
+            }
+            else
+            {
+                image = MakeSonogram(recordingSegment).GetImage();
+            }
 
 
-            Image_MultiTrack image = MakeSonogram(recordingSegment);
-            this.pictureBoxSonogram.Image = image.GetImage();
-            dict[AcousticIndices.key_DRAW_SONOGRAMS] = 0.ToString(); //reset the
+            if (image == null)
+            {
+                Console.WriteLine("FAILED TO EXTRACT IMAGE FROM AUDIO SEGMENT: " + f.FullName);
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+
+            this.pictureBoxSonogram.Image = image;
+            bool saveSonogram = true;
+            if (saveSonogram)
+            {
+                string imagePath = Path.Combine(opDir.FullName, Path.GetFileNameWithoutExtension(f.FullName) + ".png");
+                image.Save(imagePath, ImageFormat.Png);
+            }
+
+            dict.Remove(AcousticIndices.key_DO_NOISE_REDUCTION);
+            dict.Remove(AcousticIndices.key_BG_NOISE_REDUCTION);
         }
 
         private void backgroundWorkerUpdateSourceFileList_DoWork(object sender, DoWorkEventArgs e)
