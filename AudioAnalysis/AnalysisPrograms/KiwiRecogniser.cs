@@ -317,6 +317,8 @@ namespace AnalysisPrograms
         /// <param name="segmentAudioFile"></param>
         public static Image GetImageFromAudioSegment(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
         {
+            if (config == null) return null;
+
             int minHzMale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_MALE, config);
             int maxHzMale = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_MALE, config);
             int minHzFemale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_FEMALE, config);

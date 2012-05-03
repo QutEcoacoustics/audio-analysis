@@ -13,58 +13,40 @@
         public const string key_FRAME_OVERLAP    = "FRAME_OVERLAP";
         public const string key_RESAMPLE_RATE    = "RESAMPLE_RATE";
 
-
-        /*
-        private const int DefaultTrackHeight = 20; //number of tracks to appear in the visual index
-        private const int DefaultTrackCount = 15; //pixel height of track in the visual index
-        private const int DefaultSegmentDuration = 1;
-        private const int DefaultResampleRate = 17640;
-        private const int DefaultFrameLength = 512;
-        private const int DefaultLowFreqBound = 500;
-        private const double DefaultFrameOverlap = 0.0;
-        private const double DefaultSonogramBackgroundThreshold = 4.0;  //dB
-        AUDACITY_PATH=C:\Program Files (x86)\Audacity 1.3 Beta (Unicode)\audacity.exe
-        */
+        public const string DefaultConfigExt = ".cfg";
 
 
         public void LoadBrowserSettings()
         {
-            this.fiAnalysisConfig = AppConfigHelper.GetFile("DefaultConfigFile", true);
             this.DefaultSourceDir = AppConfigHelper.GetDir("DefaultSourceDir", true);
+            this.DefaultConfigDir = AppConfigHelper.GetDir("DefaultConfigDir", true);
             this.DefaultOutputDir = AppConfigHelper.GetDir("DefaultOutputDir", true);
             this.diSourceDir = this.DefaultSourceDir;
+            this.diConfigDir = this.DefaultConfigDir;
             this.diOutputDir = this.DefaultOutputDir;
+
+            this.AnalysisList = AppConfigHelper.GetStrings("AnalysisList", ',');
+            this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
+            this.fiAnalysisConfig = new FileInfo(Path.Combine(diConfigDir.FullName, AnalysisName + DefaultConfigExt));
+
+            this.DefaultSegmentDuration = AppConfigHelper.GetDouble("DefaultSegmentDuration");
+            this.DefaultResampleRate    = AppConfigHelper.GetInt("DefaultResampleRate");
+            this.SourceFileExt          = AppConfigHelper.GetString("SourceFileExt");
             this.AudacityExe = AppConfigHelper.GetFile("AudacityExe", false);
             this.SonogramBackgroundThreshold = AppConfigHelper.GetDouble("SonogramBackgroundThreshold");
             this.TrackHeight = AppConfigHelper.GetInt("TrackHeight");
             this.TrackCount = AppConfigHelper.GetInt("TrackCount");
             this.TrackNormalisedDisplay = AppConfigHelper.GetBool("TrackNormalisedDisplay");
-            this.SourceFileExt = AppConfigHelper.GetString("SourceFileExt");
-            this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
-            this.AnalysisList = AppConfigHelper.GetStrings("AnalysisList", ',');
         }
 
-        //public void LoadAnalysisSettings()
-        //{
-        //    this.AnalysisName = AppConfigHelper.GetString("DefaultAnalysisName");
-        //    this.ResampleRate = AppConfigHelper.GetInt("ResampleRate");
-        //    this.SegmentDuration = AppConfigHelper.GetInt("SegmentDuration");
-        //    this.SegmentOverlap = AppConfigHelper.GetInt("SegmentOverlap");
-        //    this.FrameLength = AppConfigHelper.GetInt("FrameLength");
-        //    this.FrameOverlap = AppConfigHelper.GetDouble("FrameOverlap");
-        //    this.LowFreqBound = AppConfigHelper.GetInt("LowFreqBound");
-        //    this.MidFreqBound = AppConfigHelper.GetInt("MidFreqBound");
-        //}
 
         public FileInfo AudacityExe { get; private set; }
         //public string AnalysisName { get; private set; }
         //public int FrameLength { get; private set; }
-        //public int ResampleRate{ get; private set; }
-        //public int LowFreqBound { get; private set; }
-        //public int MidFreqBound { get; private set; }
-        //public double SegmentDuration { get; private set; }  //measured in minutes
-        //public int SegmentOverlap { get; private set; }   //measured in seconds
+        public int DefaultResampleRate { get; private set; }
         //public double FrameOverlap { get; private set; }
+        public double DefaultSegmentDuration { get; private set; }  //measured in minutes
+        //public int SegmentOverlap { get; private set; }   //measured in seconds
         public double SonogramBackgroundThreshold { get; private set; }
         public int TrackHeight { get; private set; }
         public int TrackCount { get; private set; }
@@ -74,15 +56,15 @@
         public string[] AnalysisList { get; private set; }
 
         public DirectoryInfo DefaultSourceDir { get; private set; }
+        public DirectoryInfo DefaultConfigDir { get; private set; }
         public DirectoryInfo DefaultOutputDir { get; private set; }
-        public DirectoryInfo diOutputDir { get; set; }
         public DirectoryInfo diSourceDir { get; set; }
+        public DirectoryInfo diConfigDir { get; set; }
+        public DirectoryInfo diOutputDir { get; set; }
 
-        public FileInfo fiAnalysisConfig { get; set; }
         public FileInfo fiSourceRecording { get; set; }
-        public FileInfo fiCSVFile { get; set; }
+        public FileInfo fiAnalysisConfig  { get; set; }
+        public FileInfo fiCSVFile         { get; set; }
         public FileInfo fiSegmentRecording { get; set; }
-        //public DirectoryInfo InputDir { get; set; }
-
     }
 }
