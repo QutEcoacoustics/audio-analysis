@@ -62,9 +62,10 @@
         private string CurrentCSVFileAnalysisType    { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
 
         //identifers for the TAB panels/pages
-        private string tabPageConsoleLabel     = "tabPageConsole";
         private string tabPageOutputFilesLabel = "tabPageOutputFiles";
         private string tabPageSourceFilesLabel = "tabPageSourceFiles";
+        private string tabPageDisplayLabel     = "tabPageDisplay";
+        private string tabPageConsoleLabel     = "tabPageConsole";
 
         /// <summary>
         /// 
@@ -91,24 +92,11 @@
             {
                 this.analysisParams = FileTools.ReadPropertiesFile(browserSettings.fiAnalysisConfig.FullName);
             }
-            catch (Exception ex)
+            catch (Exception ex) //DO NOT CATCH THIS EXCEPTION - DEAL WITH LATER
             {
-                MessageBox.Show("WARNING: CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
-                MessageBox.Show(ex.ToString());
+                //MessageBox.Show("WARNING: CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
+                //MessageBox.Show(ex.ToString());
             }
-
-            /* // Just testing
-            var master = new MasterAudioUtility();
-            var file = @"I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\A French Fiddle Speaks.mp3";
-            //var result = master.Info(new FileInfo(file));
-
-
-            var spectrogramUtil = new CustomSpectrogramUtility(master);
-            var fileImg = @"I:\Projects\QUT\QutSensors\sensors-trunk\QutSensors.Test\TestData\A French Fiddle Speaks.jpg";
-
-            spectrogramUtil.Create(
-                new FileInfo(file), MediaTypes.MediaTypeMp3, new FileInfo(fileImg), MediaTypes.MediaTypeJpeg); 
-            */
 
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
@@ -177,43 +165,54 @@
 
             if (browserSettings.DefaultOutputDir != null)
             {
-                this.tfOutputDirectory.Text = browserSettings.DefaultOutputDir.FullName;
+                string opDir = Path.Combine(browserSettings.DefaultOutputDir.FullName, browserSettings.AnalysisName);
+                this.tfOutputDirectory.Text = opDir;
+                this.browserSettings.diOutputDir = new DirectoryInfo(opDir);
 
-                if (Directory.Exists(browserSettings.DefaultOutputDir.FullName))
+                if (Directory.Exists(browserSettings.diOutputDir.FullName))
                 {
                     this.UpdateOutputFileList();
                 }
             }
 
             this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
-            this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
+            this.comboBoxCSVFileAnalysisType.DataSource    = browserSettings.AnalysisList.ToList();
 
             this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName; //set default
-            this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem    = browserSettings.AnalysisName;
 
-            
-           
+            string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
+            LoadAnalysisConfigFile(analysisName);
+            WriteBrowserParameters2Console(this.browserSettings);
+            this.tabControlMain.SelectTab("tabPageConsole");
 
         } //MainForm()
 
         /// <summary>
-        /// THIS IS A TEMPORARY FIX TO DETERMINE LOCATION OF CONFIG FILE FROM OTHER BROWSER INFO
+        /// THIS METHOD ASSUMES THAT CONFIG FILE IS IN CONFIG DIR AND HAS DEFAULT NAME
         /// </summary>
-        private void ReloadDefaultAnalysisConfigFile()
+        private void LoadAnalysisConfigFile(string analysisName)
         {
-            string configDirectory = this.browserSettings.diOutputDir.FullName;
-            string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
-            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; //set default
+            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT SOURCE ANALYSIS IN SEPARATE THREAD
+            this.comboBoxCSVFileAnalysisType.SelectedItem    = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT CSV    ANALYSIS IN SEPARATE THREAD
 
+            string configDir = this.browserSettings.diConfigDir.FullName;
             this.browserSettings.AnalysisName = analysisName;
-            string configName = analysisName + ".cfg";
-            string configPath = Path.Combine(configDirectory, configName);
+            if (analysisName == "None")
+            {
+                Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
+                Console.WriteLine("\tCANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
+                //Console.WriteLine("\tat {0}\n\n", this.browserSettings.fiAnalysisConfig);
+                this.browserSettings.fiAnalysisConfig = null;
+                this.analysisParams = null;
+                return;
+            }
+            string configPath = Path.Combine(configDir, analysisName + AudioBrowserSettings.DefaultConfigExt);
             this.browserSettings.fiAnalysisConfig = new FileInfo(configPath);
             this.analysisParams = FileTools.ReadPropertiesFile(configPath);
         }
 
-
-        private void WriteBrowserParameters2Console(AudioBrowserSettings parameters, string analysisName)
+        private static void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
         {
             string title = "# AUDIO BROWSER FOR THE ANALYSIS AND INTERROGATION OF LARGE AUDIO FILES";
             string date  = "# DATE AND TIME: " + DateTime.Now;
@@ -221,11 +220,12 @@
             Console.WriteLine(date);
             Console.WriteLine("#");
             Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: " + analysisName);
-            Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
+            Console.WriteLine("\tAnalysis Name: "        + parameters.AnalysisName);
+            if(parameters.fiAnalysisConfig == null) Console.WriteLine("\tAnalysis Config File: NULL");
+            else                                    Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
             Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
             Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
-            Console.WriteLine("\tDisplay:  Track Count={0}. Track Height={1}pixels. Tracks normalised={2}.", parameters.TrackCount, parameters.TrackHeight, parameters.TrackNormalisedDisplay);
+            Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", parameters.TrackHeight, parameters.TrackNormalisedDisplay);
             Console.WriteLine("####################################################################################\n");
         }
 
@@ -251,11 +251,10 @@
             return true;
         }
 
-
-
         private void btnExtractIndiciesAllSelected_Click(object sender, EventArgs e)
         {
-            WriteBrowserParameters2Console(this.browserSettings, this.CurrentSourceFileAnalysisType);
+            string analysisName = (string)this.comboBoxSourceFileAnalysisType.SelectedItem;
+            LoadAnalysisConfigFile(analysisName);
             WriteAnalysisParameters2Console(this.analysisParams, this.CurrentSourceFileAnalysisType);
             CheckForConsistencyOfAnalysisTypes(this.CurrentSourceFileAnalysisType, this.analysisParams);
 
@@ -354,6 +353,7 @@
 
         private DataTable ProcessRecording(FileInfo fiSourceRecording, DirectoryInfo diOutputDir, Dictionary<string, string> dict)
         {
+            string analysisName = this.CurrentSourceFileAnalysisType;
             string sourceRecordingPath = fiSourceRecording.FullName;
             string outputDir = diOutputDir.FullName;
 
@@ -380,20 +380,20 @@
             //var outputData = new List<string>(); //List to store indices
             //SET UP THE OUTPUT REPORT DATATABLE
             DataTable outputDataTable = null;
-            if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
+            if (analysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //EXTRACT ACOUSTIC INDICES
             {
                 var parameters = AcousticIndices.InitOutputTableColumns();
                 outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
             }
             else
-                if (this.CurrentSourceFileAnalysisType == KiwiRecogniser.ANALYSIS_NAME) //KiwiRecogniser
+                if (analysisName == KiwiRecogniser.ANALYSIS_NAME) //KiwiRecogniser
                 {
                     var parameters = KiwiRecogniser.InitOutputTableColumns();
                     outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                 }
                 else
                 {
-                    Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", this.CurrentSourceFileAnalysisType);
+                    Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
                    return null;
                 }
 
@@ -459,12 +459,12 @@
                     //#############################################################################################################################################
                     //##### DO THE ANALYSIS ############ 
                     DataTable dt = null;
-                    if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
+                    if (analysisName.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
                     {
                         dt = AcousticIndices.Analysis(s, fiSegmentAudioFile, dict);
                     }
                     else
-                        if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
+                    if (analysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
                     {
                         dt = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                         //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dt.Rows.Count);
@@ -485,9 +485,6 @@
 
             return outputDataTable;
         }
-
-        
-
 
         private void btnLoadVisualIndexAllSelected_Click(object sender, EventArgs e)
         {
@@ -520,25 +517,15 @@
                         new FileInfo(
                             Path.Combine(this.browserSettings.diOutputDir.FullName, csvFileName));
 
-                    Console.WriteLine("# Display acoustic indices from csv file: " + csvFileName);
+                    Console.WriteLine("# Display tracks in csv file: " + csvFileName);
 
-                    //THIS LINE WILL NOT BE LIKED BY MARK!
-                    ReloadDefaultAnalysisConfigFile(); //get analysis config settings
+                    string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;//get analysis config settings
+                    LoadAnalysisConfigFile(analysisName);
 
-                    //Infer source file name from CSV file name
-                    FileInfo inferredSourceFile = InferSourceFileFromCSVFileName(csvFileName);
-                    if (inferredSourceFile == null)
-                    {
-                        browserSettings.fiSourceRecording = null;
-                        Console.WriteLine("# \tWARNING: Cannot find mp3 or wav source recording with name: " + Path.GetFileNameWithoutExtension(csvFileName));
-                    }
-                    else
-                    {
-                        browserSettings.fiSourceRecording = inferredSourceFile;
-                        Console.WriteLine("# \t\tExpected source recording: " + inferredSourceFile.Name);
-                    }
+
                     this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                     this.labelSonogramFileName.Text = "File Name";
+                    this.browserSettings.fiCSVFile  = csvFilePath; //store in settings so can be accessed later.
 
                     //##################################################################################################################
                     int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
@@ -554,9 +541,11 @@
                     }
                     else
                     {
-                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
-                        this.pictureBoxBarTrack.Location = new Point(3, this.pictureBoxVisualIndex.Height + 1);
                         this.selectionTrackImage = new Bitmap(this.pictureBoxBarTrack.Width, this.pictureBoxBarTrack.Height);
+                        this.pictureBoxBarTrack.Image = this.selectionTrackImage;
+
+                        //###################### MAKE VISUAL ADJUSTMENTS FOR HEIGHT OF THE VISUAL INDEX IMAGE  - THIS DEPENDS ON NUMBER OF TRACKS 
+                        this.pictureBoxBarTrack.Location = new Point(0, this.pictureBoxVisualIndex.Height + 1);
                         //this.pictureBoxVisualIndex.Location = new Point(0, tracksImage.Height + 1);
                         this.panelDisplayImageAndTrackBar.Height = this.pictureBoxVisualIndex.Height + this.pictureBoxBarTrack.Height + 20; //20 = ht of scroll bar
                         this.panelDisplaySpectrogram.Location = new Point(3, panelDisplayImageAndTrackBar.Height + 1);
@@ -576,15 +565,16 @@
             }
         }
 
-        private FileInfo InferSourceFileFromCSVFileName(string csvFileName)
+        private FileInfo InferSourceFileFromCSVFileName(FileInfo csvFile)
         {
-            string csvFname = Path.GetFileNameWithoutExtension(csvFileName);
+            string csvFname = Path.GetFileNameWithoutExtension(csvFile.FullName);
             string[] parts = csvFname.Split('_'); //assume that underscore plus analysis type has been added to source name
             string sourceName = parts[0];
             for (int i = 1; i < parts.Length - 1; i++) sourceName += ("_"+parts[i]);
 
-            var fiSourceMP3 = new FileInfo(Path.Combine(this.browserSettings.diSourceDir.FullName, sourceName + ".mp3"));
-            var fiSourceWAV = new FileInfo(Path.Combine(this.browserSettings.diSourceDir.FullName, sourceName + ".wav"));
+            string sourceDir = this.browserSettings.diSourceDir.FullName;
+            var fiSourceMP3 = new FileInfo(Path.Combine(sourceDir, sourceName + ".mp3"));
+            var fiSourceWAV = new FileInfo(Path.Combine(sourceDir, sourceName + ".wav"));
             if (fiSourceMP3.Exists) return fiSourceMP3;
             else
                 if (fiSourceWAV.Exists) return fiSourceWAV;
@@ -665,10 +655,11 @@
 
             //set up the array of tracks to display
             var dodisplay = new bool[values.Count];
-            for (int i = 0; i < values.Count - 1; i++) dodisplay[i] = true;
+            for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
             if (! (tracks2Display == null))
-            {   
-                for (int i = 0; i < tracks2Display.Length; i++) dodisplay[i] = tracks2Display[i];
+            {
+                for (int i = 0; i < values.Count; i++)
+                    if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
             }
 
             // accumulate the indivudal tracks
@@ -766,19 +757,21 @@
             Console.WriteLine(date);
             Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
-            if (browserSettings.fiSourceRecording == null)
+            //Infer source file name from CSV file name
+            FileInfo inferredSourceFile = InferSourceFileFromCSVFileName(browserSettings.fiCSVFile);
+            if (inferredSourceFile == null)
             {
-                Console.WriteLine("    The source audiofile cannot be found.");
+                browserSettings.fiSourceRecording = null;
+                Console.WriteLine("# \tWARNING: Cannot find mp3/wav source for csv: " + Path.GetFileNameWithoutExtension(browserSettings.fiCSVFile.FullName));
                 Console.WriteLine("    Cannot proceed with display of segment sonogram.");
                 return;
             }
-            if (! browserSettings.fiSourceRecording.Exists)
+            else
             {
-                Console.WriteLine("    The source file does not exist: <{0}>", browserSettings.fiSourceRecording.FullName);
-                Console.WriteLine("    Cannot proceed with display of segment sonogram.");
-                return;
+                browserSettings.fiSourceRecording = inferredSourceFile;
+                Console.WriteLine("# \tInferred source recording: " + inferredSourceFile.Name);
+                Console.WriteLine("# \t\tCHECK THAT THIS IS THE CORRECT SOURCE RECORDING FOR THE CSV FILE.");
             }
-
 
 
             // GET MOUSE LOCATION
@@ -790,8 +783,18 @@
                 selectionTrackImage.SetPixel(this.pictureBoxVisualIndex.Left + myX, y, Color.Red);
             this.pictureBoxBarTrack.Image = selectionTrackImage;
 
+            double segmentDuration = this.browserSettings.DefaultSegmentDuration;
+            int resampleRate       = this.browserSettings.DefaultResampleRate;
+            if(analysisParams != null) 
+            {
+                segmentDuration = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
+                resampleRate    = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
+            }
+                
+
             //EXTRACT RECORDING SEGMENT
-            double segmentDuration = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
+            bool add30secondBuffer = true;
+            int buffer = 30000;
             int startMilliseconds = (myX) * 60000;
             int endMilliseconds = (myX + 1) * 60000;
             if (segmentDuration == 3)
@@ -799,7 +802,13 @@
                 startMilliseconds = (myX - 1) * 60000;
                 endMilliseconds = (myX + 2) * 60000;
             }
+            if(add30secondBuffer)
+            {
+                startMilliseconds -= buffer;
+                endMilliseconds   += buffer;
+            }
             if (startMilliseconds < 0) startMilliseconds = 0;
+            if (endMilliseconds  <= 0) endMilliseconds   = (int)(segmentDuration*60000) - 1;
 
             string sourceFName = Path.GetFileNameWithoutExtension(browserSettings.fiSourceRecording.FullName);
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
@@ -814,9 +823,13 @@
 
             //get segment from source recording
             DateTime time1 = DateTime.Now;
-            int resampleRate = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
-            //AudioRecording recording = AudioRecording.GetSegmentFromAudioRecording(settings.fiSourceRecording.FullName, startMilliseconds, endMilliseconds, settings.ResampleRate, outputSegmentPath);
             MasterAudioUtility.Segment(resampleRate, browserSettings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
+            if (! fiOutputSegment.Exists)
+            {
+                Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
+                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);   
+                return;
+            }
             AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
 
             DateTime time2 = DateTime.Now;
@@ -844,7 +857,7 @@
             string sonogramPath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
             Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
             pictureBoxSonogram.Image.Save(sonogramPath);
-            this.tabControlMain.SelectTab("tabPageDisplay");   
+            this.tabControlMain.SelectTab(this.tabPageDisplayLabel);   
             this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
             
         }
@@ -856,8 +869,8 @@
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName   = recordingSegment.FileName;
-            sonoConfig.WindowSize    = Configuration.GetInt(AudioBrowserSettings.key_FRAME_LENGTH, analysisParams);
-            sonoConfig.WindowOverlap = Configuration.GetDouble(AudioBrowserSettings.key_FRAME_OVERLAP, analysisParams);
+            sonoConfig.WindowSize = 512;
+            sonoConfig.WindowOverlap = 0.0;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recordingSegment.GetWavReader());
 
             // (iii) NOISE REDUCTION
@@ -1480,24 +1493,26 @@
                 return;
             }
 
-            DirectoryInfo opDir = browserSettings.diOutputDir;
-            var dict = this.analysisParams;
-            dict.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
-            dict.Add(AcousticIndices.key_BG_NOISE_REDUCTION, browserSettings.SonogramBackgroundThreshold.ToString());
+            //reload indices for source analysis type
+            LoadAnalysisConfigFile(this.CurrentSourceFileAnalysisType);
+            if (this.analysisParams != null) 
+                this.analysisParams.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
+            if (this.analysisParams != null)
+                this.analysisParams.Add(AcousticIndices.key_BG_NOISE_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
 
             AudioRecording recordingSegment = new AudioRecording(f.FullName);
             Image image = null;
 
-            if (this.checkBoxSonogramAnnotate.Checked)
+            if ((this.checkBoxSonogramAnnotate.Checked) && (this.analysisParams != null))
             {
                 if (this.CurrentSourceFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME)) //ACOUSTIC INDICES
                 {
-                    image = AcousticIndices.GetImageFromAudioSegment(f, dict);
+                    image = AcousticIndices.GetImageFromAudioSegment(f, this.analysisParams);
                 }
                 else
                 if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
                 {
-                    image = KiwiRecogniser.GetImageFromAudioSegment(f, dict);
+                    image = KiwiRecogniser.GetImageFromAudioSegment(f, this.analysisParams);
                 }
             }
             else
@@ -1514,15 +1529,20 @@
             }
 
             this.pictureBoxSonogram.Image = image;
+            //this.panelDisplaySpectrogram.Height = image.Height;
+
             bool saveSonogram = true;
             if (saveSonogram)
             {
-                string imagePath = Path.Combine(opDir.FullName, Path.GetFileNameWithoutExtension(f.FullName) + ".png");
+                string opDir = browserSettings.diOutputDir.FullName;
+                string imagePath = Path.Combine(opDir, Path.GetFileNameWithoutExtension(f.FullName) + ".png");
                 image.Save(imagePath, ImageFormat.Png);
             }
 
-            dict.Remove(AcousticIndices.key_DO_NOISE_REDUCTION);
-            dict.Remove(AcousticIndices.key_BG_NOISE_REDUCTION);
+            if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_DO_NOISE_REDUCTION)))
+                this.analysisParams.Remove(AcousticIndices.key_DO_NOISE_REDUCTION);
+            if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_BG_NOISE_REDUCTION)))
+                this.analysisParams.Remove(AcousticIndices.key_BG_NOISE_REDUCTION);
         }
 
         private void backgroundWorkerUpdateSourceFileList_DoWork(object sender, DoWorkEventArgs e)

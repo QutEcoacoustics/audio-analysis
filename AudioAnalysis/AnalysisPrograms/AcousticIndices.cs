@@ -822,6 +822,7 @@
         /// <param name="config"></param>
         public static Image GetImageFromAudioSegment(FileInfo fiSegmentAudioFile, Dictionary<string, string> config)
         {
+            if (config == null) return null;
             Image image = null;
             //Image image = MakeAndDrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
             return image;
