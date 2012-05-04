@@ -1,15 +1,16 @@
-﻿namespace AnalysisPrograms
-{
-    using NeuralNets;
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.IO;
-    using System.Drawing;
-    using System.Data;
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using System.Linq;
+using System.Drawing;
 
-    using TowseyLib;
-    using AudioAnalysisTools;
+using TowseyLib;
+using NeuralNets;
+using AudioAnalysisTools;
+
+namespace AnalysisPrograms
+{
 
     public class AcousticIndices
     {
@@ -22,18 +23,37 @@
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
         private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
+        public const string header_count = "count";
+        public const string header_startMin = "start-min";
+        public const string header_SecondsDuration = "sec-dur";
+        public const string header_avAmpdB  = "avAmp-dB";
+        public const string header_snrdB    = "snr-dB";
+        public const string header_bgdB     = "bg-dB";
+        public const string header_activity = "activity";
+        public const string header_segCount = "segCount";
+        public const string header_avSegDur = "avSegDur";
+        public const string header_hfCover  = "hfCover";
+        public const string header_mfCover  = "mfCover";
+        public const string header_lfCover  = "lfCover";
+        public const string header_HAmpl    = "H[ampl]";
+        public const string header_HPeakFreq = "H[peakFreq]";
+        public const string header_HAvSpectrum = "H[avSpectrum]";
+        public const string header_HVarSpectrum = "H[varSpectrum]";
+        public const string header_NumClusters = "#clusters";
+        public const string header_avClustDur = "avClustDur";
+
 
         public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
-            HEADERS[0] = "count";        COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;     COMBO_WEIGHTS[0] = 0.0;
-            HEADERS[1] = "start-min";    COL_TYPES[1] = typeof(double);  DISPLAY_COLUMN[1] = false;     COMBO_WEIGHTS[1] = 0.0;
-            HEADERS[2] = "segmentDur";   COL_TYPES[2] = typeof(double);  DISPLAY_COLUMN[2] = false;     COMBO_WEIGHTS[2] = 0.0;
-            HEADERS[3] = "avAmp-dB";     COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = true;      COMBO_WEIGHTS[3] = 0.0;
-            HEADERS[4] = "snr-dB";       COL_TYPES[4] = typeof(double);  DISPLAY_COLUMN[4] = true;      COMBO_WEIGHTS[4] = 0.0;
-            HEADERS[5] = "bg-dB";        COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = true;      COMBO_WEIGHTS[5] = 0.0;
-            HEADERS[6] = "activity";     COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;      COMBO_WEIGHTS[6] = 0.0;
-            HEADERS[7] = "segCount";     COL_TYPES[7] = typeof(int);     DISPLAY_COLUMN[7] = true;      COMBO_WEIGHTS[7] = 0.0;
-            HEADERS[8] = "avSegDur";     COL_TYPES[8] = typeof(double);  DISPLAY_COLUMN[8] = true;      COMBO_WEIGHTS[8] = 0.0;
+            HEADERS[0] = header_count;        COL_TYPES[0] = typeof(int);    DISPLAY_COLUMN[0] = false; COMBO_WEIGHTS[0] = 0.0;
+            HEADERS[1] = header_startMin;     COL_TYPES[1] = typeof(double); DISPLAY_COLUMN[1] = false; COMBO_WEIGHTS[1] = 0.0;
+            HEADERS[2] = header_SecondsDuration; COL_TYPES[2] = typeof(double); DISPLAY_COLUMN[2] = false; COMBO_WEIGHTS[2] = 0.0;
+            HEADERS[3] = header_avAmpdB;      COL_TYPES[3] = typeof(double); DISPLAY_COLUMN[3] = true;  COMBO_WEIGHTS[3] = 0.0;
+            HEADERS[4] = header_snrdB;        COL_TYPES[4] = typeof(double); DISPLAY_COLUMN[4] = true;  COMBO_WEIGHTS[4] = 0.0;
+            HEADERS[5] = header_bgdB;         COL_TYPES[5] = typeof(double); DISPLAY_COLUMN[5] = true;  COMBO_WEIGHTS[5] = 0.0;
+            HEADERS[6] = header_activity;     COL_TYPES[6] = typeof(double); DISPLAY_COLUMN[6] = true;  COMBO_WEIGHTS[6] = 0.0;
+            HEADERS[7] = header_segCount;     COL_TYPES[7] = typeof(int);    DISPLAY_COLUMN[7] = true;  COMBO_WEIGHTS[7] = 0.0;
+            HEADERS[8] = header_avSegDur;     COL_TYPES[8] = typeof(double); DISPLAY_COLUMN[8] = true;  COMBO_WEIGHTS[8] = 0.0;
             HEADERS[9] = "hfCover";      COL_TYPES[9] = typeof(double);  DISPLAY_COLUMN[9] = true;      COMBO_WEIGHTS[9] = 0.0;
             HEADERS[10] = "mfCover";     COL_TYPES[10] = typeof(double); DISPLAY_COLUMN[10] = true;     COMBO_WEIGHTS[10] = 0.0;
             HEADERS[11] = "lfCover";     COL_TYPES[11] = typeof(double); DISPLAY_COLUMN[11] = true;     COMBO_WEIGHTS[11] = 0.0;
@@ -42,7 +62,7 @@
             HEADERS[14] = "H[avSpectrum]"; COL_TYPES[14] = typeof(double); DISPLAY_COLUMN[14] = true;   COMBO_WEIGHTS[14] = 0.4;
             HEADERS[15] = "H[varSpectrum]"; COL_TYPES[15] = typeof(double); DISPLAY_COLUMN[15] = false; COMBO_WEIGHTS[15] = 0.1;
             HEADERS[16] = "#clusters";   COL_TYPES[16] = typeof(int);    DISPLAY_COLUMN[16] = true;     COMBO_WEIGHTS[16] = 0.4;
-            HEADERS[17] = "avClustDur";  COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true;     COMBO_WEIGHTS[17] = 0.1;
+            HEADERS[17] = header_avClustDur; COL_TYPES[17] = typeof(double); DISPLAY_COLUMN[17] = true; COMBO_WEIGHTS[17] = 0.1;
             //HEADERS[18] = "Weighted index"; COL_TYPES[18] = typeof(double); DISPLAY_COLUMN[18] = false; COMBO_WEIGHTS[18] = 0.0;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
@@ -1028,7 +1048,7 @@
         }
 
 
-        public static Tuple<DataTable, double[], bool[]> ProcessCsvFile(FileInfo fiCsvFile)
+         public static Tuple<DataTable, DataTable, bool[]> ProcessCsvFile(FileInfo fiCsvFile)
         {
             bool addColumnOfweightedIndices = true;
             AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
@@ -1049,8 +1069,128 @@
                 DataTableTools.AddColumn2Table(dt, colName, weightedIndices);
                 columns2Display.Add(true);
             }
-            return System.Tuple.Create(dt, weightedIndices, columns2Display.ToArray());
-        }
+
+            DataTable processedtable = ProcessDataTableForDisplayOfColumnValues(dt);
+
+            return System.Tuple.Create(dt, processedtable, columns2Display.ToArray());
+        } // ProcessCsvFile()
+
+
+
+         /// <summary>
+         /// takes a data table of indices and converts column values to values in [0,1].
+         /// </summary>
+         /// <param name="dt"></param>
+         /// <returns></returns>
+         public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt)
+         {
+             string[] headers = DataTableTools.GetColumnNames(dt);
+             string[] newHeaders = new string[headers.Length];
+
+             List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
+             List<double[]> newColumns = new List<double[]>();
+             double[] processedColumn = null;
+
+             for (int i = 0; i < columns.Count; i++)
+             {
+                 newHeaders[i] = headers[i];
+                 double min = 0;
+                 double max = 1;
+                 if (headers[i].Equals(header_count))
+                 {
+                     processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
+                 }
+                 else if (headers[i].Equals(header_avAmpdB))
+                 {
+                     min = -50;
+                     max = -5;
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_avAmpdB + "  (-50..-5dB)";
+                 }
+                 else if (headers[i].Equals(header_snrdB))
+                 {
+                     min = 5;
+                     max = 50;
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_snrdB + "  (5..50dB)";
+                 }
+                 else if (headers[i].Equals(header_avSegDur))
+                 {
+                     min = 0.0;
+                     max = 500.0; //av segment duration in milliseconds
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_avSegDur + "  (0..500ms)";
+                 }
+                 else if (headers[i].Equals(header_bgdB))
+                 {
+                     min = -50;
+                     max = -5;
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_bgdB + "  (-50..-5dB)";
+                 }
+                 else if (headers[i].Equals(header_avClustDur))
+                 {
+                     min = 50.0; //note: minimum cluster length = two frames = 2*frameDuration
+                     max = 200.0; //av segment duration in milliseconds
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_avClustDur + "  (50..200ms)";
+                 }
+                 else if (headers[i].Equals(header_lfCover))
+                 {
+                     min = 0.1; //
+                     max = 1.0; //
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_lfCover + "  (10..100%)";
+                 }
+                 else if (headers[i].Equals(header_mfCover))
+                 {
+                     min = 0.0; //
+                     max = 0.9; //
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_mfCover + "  (0..90%)";
+                 }
+                 else if (headers[i].Equals(header_hfCover))
+                 {
+                     min = 0.0; //
+                     max = 0.9; //
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_hfCover + "  (0..90%)";
+                 }
+                 else if (headers[i].Equals(header_HAmpl))
+                 {
+                     min = 0.5; //
+                     max = 1.0; //
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_HAmpl + "  (0.5..1.0)";
+                 }
+                 else if (headers[i].Equals(header_HAvSpectrum))
+                 {
+                     min = 0.2; //
+                     max = 1.0; //
+                     processedColumn = DataTools.NormaliseInZeroOne(columns[i], min, max);
+                     newHeaders[i] = header_HAvSpectrum + "  (0.2..1.0)";
+                 }
+                 else //default is to normalise in [0,1]
+                 {
+                     processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
+                 }
+                 newColumns.Add(processedColumn);
+             }
+
+             //convert type int to type double due to normalisation
+             Type[] types = DataTableTools.GetColumnTypes(dt);
+             for (int i = 0; i < columns.Count; i++)
+             {
+                 if (types[i] == typeof(int))   types[i] = typeof(double);
+                 else
+                 if (types[i] == typeof(Int32)) types[i] = typeof(double);
+             }
+             var processedtable = DataTableTools.CreateTable(newHeaders, types, newColumns);
+
+             return processedtable;
+         }
+
+
 
 
         public static string FormatHeader(string parmasFile_Separator)

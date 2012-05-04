@@ -35,6 +35,33 @@ namespace TowseyLib
         }
 
 
+        public static DataTable CreateTable(string[] headers, Type[] types, List<double[]> data)
+        {
+            if (headers.Length != types.Length) return null;
+            DataTable table = new DataTable();
+            for (int i = 0; i < headers.Length; i++) table.Columns.Add(headers[i], types[i]);
+
+            //check all rows are of same length
+            int rowCount = data[0].Length;
+            for (int i = 1; i < data.Count; i++)
+            {
+                if (data[i].Length != rowCount) data[i] = new double[rowCount];
+            }
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                DataRow row = table.NewRow();
+                for (int c = 0; c < data.Count; c++)
+                {
+                    row[c] = data[c][r];
+                }
+                table.Rows.Add(row); 
+            }
+            return table;
+        }
+
+
+
         public static DataTable CreateTable(string[] headers, string[] types)
         {
             Type[] typeOfs = new Type[types.Length];
@@ -237,7 +264,7 @@ namespace TowseyLib
             if (array.Length == 0) return;
 
             int index = 0;
-            dt.Columns.Add(columnName, typeof(double));
+            if (!dt.Columns.Contains(columnName)) dt.Columns.Add(columnName, typeof(double));
             foreach (DataRow row in dt.Rows)
             {
                 row[columnName] = (double)array[index++];
@@ -317,6 +344,45 @@ namespace TowseyLib
             foreach (DataColumn col in dt.Columns) names.Add(col.ColumnName);
             return names.ToArray();
         }
+
+
+        public static Type[] GetColumnTypes(DataTable dt)
+        {
+            var types = new List<Type>();
+            foreach (DataColumn col in dt.Columns) types.Add(col.DataType);
+            return types.ToArray();
+        }
+
+
+
+        /// <summary>
+        /// normalises the column values in a data table to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable NormaliseColumnValues(DataTable dt)
+        {
+            List<double[]> columns = DataTableTools.ListOfColumnValues(dt);
+            List<double[]> newList = new List<double[]>(); 
+            for (int i = 0; i < columns.Count; i++)
+            {
+                double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
+                newList.Add(processedColumn);
+            }
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            Type[] types = DataTableTools.GetColumnTypes(dt);
+            for (int i = 0; i < columns.Count; i++)
+            {
+                if (types[i] == typeof(int))   types[i] = typeof(double);
+                else
+                if (types[i] == typeof(Int32)) types[i] = typeof(double);
+            }
+            var processedtable = DataTableTools.CreateTable(headers, types, newList);
+            return processedtable;
+        }
+
+
+
 
         public static void RemoveTableColumns(DataTable dt, bool[] retainColumn)
         {

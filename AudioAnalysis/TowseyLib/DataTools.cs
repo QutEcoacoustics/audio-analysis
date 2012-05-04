@@ -1972,6 +1972,34 @@ namespace TowseyLib
             return (ret);
         }
 
+
+        /// <summary>
+        /// normalises the values in a vector such that the passed min value = 0 
+        /// and the passed max value = 1.0
+        /// Values less than 0.0 and > 1.0 are truncated.
+        /// </summary>
+        /// <param name="v"></param>
+        /// <param name="normMin"></param>
+        /// <param name="normMax"></param>
+        /// <returns></returns>
+        public static double[] NormaliseInZeroOne(double[] v, double normMin, double normMax)
+        {
+            int length = v.Length;
+            double[] ret = new double[length];
+            double range = normMax - normMin;
+
+            for (int i = 0; i < length; i++)
+            {
+                double value = (v[i] - normMin) / range;
+                if (value > 1.0) value = 1.0;
+                if (value < 0.0) value = 0.0;
+                ret[i] = value;
+            }
+
+            return (ret);
+        }
+
+        
         /// <summary>
         /// normalizes the passed array between 0,1.
         /// Ensures all values are positive
