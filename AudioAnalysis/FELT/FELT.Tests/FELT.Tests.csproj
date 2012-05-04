@@ -169,11 +169,16 @@
     <Compile Include="FindEventsLikeThisTest.cs" />
     <Compile Include="GroupTrainerTest.cs" />
     <Compile Include="MathTest.cs" />
+    <Compile Include="Minimods\Minimod.PrettyDateAndTime.Generated.cs" />
+    <Compile Include="Minimods\Minimod.PrettyPrint.Generated.cs" />
+    <Compile Include="Minimods\Minimod.PrettyText.Generated.cs" />
+    <Compile Include="Minimods\Minimod.PrettyTypeSignatures.Generated.cs" />
     <Compile Include="OneForOneSelectorTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MQUTeR.FSharp.Shared.cs" />
     <Compile Include="RandomiserSelectorTest.cs" />
     <Compile Include="ResultsComputationTest.cs" />
+    <Compile Include="SunCalcTest.cs" />
     <Compile Include="TimeOfDayTest.cs" />
     <Compile Include="z1440Test.cs" />
   </ItemGroup>
