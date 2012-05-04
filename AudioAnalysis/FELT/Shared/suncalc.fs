@@ -38,27 +38,27 @@ namespace MQUTeR.FSharp.Shared
 
         type Twilights =
             {
-                astronomical : Interval<DateTime>;
-                nautical : Interval<DateTime>;
-                civil : Interval<DateTime>;
+                astronomical : Interval<DateTimeOffset>;
+                nautical : Interval<DateTimeOffset>;
+                civil : Interval<DateTimeOffset>;
             }
 
         type SunPhases =
             {
-                dawn : DateTime;
-                sunrise : Interval<DateTime>;
+                dawn : DateTimeOffset;
+                sunrise : Interval<DateTimeOffset>;
                     
-                transit : DateTime;
-                sunset : Interval<DateTime>;
+                transit : DateTimeOffset;
+                sunset : Interval<DateTimeOffset>;
                     
-                dusk : DateTime;
+                dusk : DateTimeOffset;
 
                 morningTwilight : Twilights option;
                 eveningTwilight : Twilights option;
             }
             
         let J1970 = 2440588.0
-        let G1970 = new DateTime(1970,1,1,0,0,0, DateTimeKind.Utc)
+        let G1970 = new DateTimeOffset(1970,1,1,0,0,0, TimeSpan.Zero)
         let J2000 = 2451545.0
         let deg2rad = Math.PI / 180.0
         let M0 = 357.5291 * deg2rad
@@ -84,15 +84,15 @@ namespace MQUTeR.FSharp.Shared
 
         let JulianCalender = new System.Globalization.JulianCalendar()
 
-        let dateToJulianDate (date: DateTime) =
+        let dateToJulianDate (date: DateTimeOffset) =
             let diff = date - G1970
             diff.TotalDays - 0.5 + J1970 
         
-    
-        let julianDateToDate j  =
-            let offset = TimeSpan.FromDays(j + 0.5)
+        //[<System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
+        let julianDateToDate j timeZoneOffset =
+            let offset = TimeSpan.FromDays(j - J1970 + 0.5)
 
-            G1970 + offset
+            (G1970 + offset).ToOffset(timeZoneOffset)
             //new DateTime ((j + 0.5 - J1970) * msInDay) 
         
     
@@ -175,7 +175,8 @@ namespace MQUTeR.FSharp.Shared
         
     
          
-        let getDayInfo date lat lng detailed = 
+        let getDayInfo date lat lng detailed offset = 
+            let julianDateToDate x = julianDateToDate x offset
             let lw = -lng * deg2rad
             let phi = lat * deg2rad
             let J = dateToJulianDate(date)
@@ -197,52 +198,52 @@ namespace MQUTeR.FSharp.Shared
             let Jnau = getSunsetJulianDate w2 M lsun lw n
             let Jciv2 = getSunriseJulianDate Jtransit Jnau
             
-            let info = 
-                let mt, et =
-                    if detailed then
-                        let w3 = getHourAngle h2 phi d
-                        let w4 = getHourAngle h3 phi d
-                        let Jastro = getSunsetJulianDate w3 M lsun lw n
-                        let Jdark = getSunsetJulianDate w4 M lsun lw n
-                        let Jnau2 = getSunriseJulianDate Jtransit Jastro
-                        let Jastro2 = getSunriseJulianDate Jtransit Jdark
+         
+            let mt, et =
+                if detailed then
+                    let w3 = getHourAngle h2 phi d
+                    let w4 = getHourAngle h3 phi d
+                    let Jastro = getSunsetJulianDate w3 M lsun lw n
+                    let Jdark = getSunsetJulianDate w4 M lsun lw n
+                    let Jnau2 = getSunriseJulianDate Jtransit Jastro
+                    let Jastro2 = getSunriseJulianDate Jtransit Jdark
                 
-                        let morningTwilight = 
-                            { 
-                                astronomical = Interval.create  <|| (julianDateToDate(Jastro2), julianDateToDate(Jnau2));
-                                nautical     = Interval.create  <|| (julianDateToDate(Jnau2),   julianDateToDate(Jciv2));
-                                civil        = Interval.create  <|| (julianDateToDate(Jciv2),   julianDateToDate(Jrise))
-                            }
+                    let morningTwilight = 
+                        { 
+                            astronomical = Interval.create  <|| (julianDateToDate(Jastro2), julianDateToDate(Jnau2));
+                            nautical     = Interval.create  <|| (julianDateToDate(Jnau2),   julianDateToDate(Jciv2));
+                            civil        = Interval.create  <|| (julianDateToDate(Jciv2),   julianDateToDate(Jrise))
+                        }
                     
-                        let nightTwilight =  
-                            {
-                                civil        =Interval.create  <|| (julianDateToDate(Jset),   julianDateToDate(Jnau));
-                                nautical     =Interval.create  <|| (julianDateToDate(Jnau),   julianDateToDate(Jastro));
-                                astronomical =Interval.create  <|| (julianDateToDate(Jastro), julianDateToDate(Jdark))
-                            }
-                        Some(morningTwilight), Some(nightTwilight)
-                    else
-                        None, None
+                    let nightTwilight =  
+                        {
+                            civil        =Interval.create  <|| (julianDateToDate(Jset),   julianDateToDate(Jnau));
+                            nautical     =Interval.create  <|| (julianDateToDate(Jnau),   julianDateToDate(Jastro));
+                            astronomical =Interval.create  <|| (julianDateToDate(Jastro), julianDateToDate(Jdark))
+                        }
+                    Some(morningTwilight), Some(nightTwilight)
+                else
+                    None, None
 
 
                 
-                {
-                    dawn = julianDateToDate(Jciv2);
-                    sunrise = 
-                        Interval.create <|| (julianDateToDate(Jrise), julianDateToDate(Jriseend));
-                    transit = julianDateToDate(Jtransit);
-                    sunset = 
-                        Interval.create <|| (julianDateToDate(Jsetstart), julianDateToDate(Jset));
-                    dusk = julianDateToDate(Jnau);
-                    morningTwilight = mt;
-                    eveningTwilight = et
-                }
+            {
+                dawn = julianDateToDate(Jciv2);
+                sunrise = 
+                    Interval.create <|| (julianDateToDate(Jrise), julianDateToDate(Jriseend));
+                transit = julianDateToDate(Jtransit);
+                sunset = 
+                    Interval.create <|| (julianDateToDate(Jsetstart), julianDateToDate(Jset));
+                dusk = julianDateToDate(Jnau);
+                morningTwilight = mt;
+                eveningTwilight = et
+            }
 
 
 
                 
             
-            info
+            
             
         
         let sunPosition date lat lng =
