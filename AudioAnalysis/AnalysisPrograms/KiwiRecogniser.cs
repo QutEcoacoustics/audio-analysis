@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Text;
 using System.IO;
+using System.Linq;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Threading;
+using System.Text;
+
 using TowseyLib;
 using AudioAnalysisTools;
-using System.Threading;
 
 
 
@@ -746,6 +748,48 @@ namespace AnalysisPrograms
         //##################################################################################################################################################
         //##################################################################################################################################################
 
+
+
+
+        public static Tuple<DataTable, DataTable, bool[]> ProcessCsvFile(FileInfo fiCsvFile)
+        {
+            AcousticIndices.InitOutputTableColumns(); //initialise just in case have not been before now.
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+
+            dt = DataTableTools.SortTable(dt, "count ASC");
+            List<bool> columns2Display = LSKiwiColumns2Display().ToList();
+            DataTable processedtable = ProcessDataTableForDisplayOfColumnValues(dt);
+            return System.Tuple.Create(dt, processedtable, columns2Display.ToArray());
+        } // ProcessCsvFile()
+
+
+        /// <summary>
+        /// takes a data table of indices and converts column values to values in [0,1].
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable ProcessDataTableForDisplayOfColumnValues(DataTable dt)
+        {
+            List<double[]> columns    = DataTableTools.ListOfColumnValues(dt);
+            List<double[]> newColumns = new List<double[]>();
+            for (int i = 0; i < columns.Count; i++)
+            {
+                double[] processedColumn = DataTools.normalise(columns[i]); //normalise all values in [0,1]
+                newColumns.Add(processedColumn);
+            }
+            string[] headers = DataTableTools.GetColumnNames(dt);
+            Type[] types = DataTableTools.GetColumnTypes(dt);
+            for (int i = 0; i < columns.Count; i++)
+            {
+                if (types[i] == typeof(int)) types[i] = typeof(double);
+                else
+                if (types[i] == typeof(Int32)) types[i] = typeof(double);
+            }
+            var processedtable = DataTableTools.CreateTable(headers, types, newColumns);
+
+            return processedtable;
+        }
 
 
         public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)

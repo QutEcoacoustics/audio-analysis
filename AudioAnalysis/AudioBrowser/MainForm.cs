@@ -55,7 +55,7 @@
 
         // for calculating a visual index image
         private int sourceRecording_MinutesDuration = 0; //width of the index imageTracks = minutes duration of source recording.
-        private double[] weightedIndices;
+        private double[] trackValues;
         private Bitmap selectionTrackImage;
 
         private string CurrentSourceFileAnalysisType { get { return this.comboBoxSourceFileAnalysisType.SelectedItem.ToString(); } }
@@ -590,44 +590,44 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            DataTable dt           = null;
+            DataTable dtRaw        = null;
+            DataTable dt2Display   = null;
             bool[] columns2Display = null; 
             //########################
 
             if (this.CurrentCSVFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME))
             {
                 var output = AcousticIndices.ProcessCsvFile(new FileInfo(csvPath));
-                dt = output.Item1;
-                this.weightedIndices = output.Item2;
-                //columns2Display = AcousticIndices.GetDisplayColumns();
+                dtRaw = output.Item1;
+                dt2Display = output.Item2;
                 columns2Display = output.Item3;
             }
             else
             if (this.CurrentCSVFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME))
             {
-                dt = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
-
-                //return last column as the one for color display
-                string[] headers = DataTableTools.GetColumnNames(dt);
-                this.weightedIndices = DataTableTools.Column2ListOfDouble(dt, headers[headers.Length - 1]).ToArray();
-                columns2Display = KiwiRecogniser.LSKiwiColumns2Display();
+                var output = KiwiRecogniser.ProcessCsvFile(new FileInfo(csvPath));
+                dtRaw = output.Item1;
+                dt2Display = output.Item2;
+                columns2Display = output.Item3;
             }
             else
             if (this.CurrentCSVFileAnalysisType.Equals("None"))
             {
-                dt = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
-                this.weightedIndices = null;
+                dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
+                dt2Display = DataTableTools.NormaliseColumnValues(dtRaw);
+                string[] headers = DataTableTools.GetColumnNames(dtRaw);
+                this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, headers[headers.Length - 1]).ToArray();
             }
             else
             {
-            Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-            Console.WriteLine("\t Browser analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
-            return 3;
+                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
+                Console.WriteLine("\t Browser analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
+                return 3;
             }
 
-
-            Bitmap tracksImage = ConstructVisualIndexImage(dt, browserSettings.TrackHeight, browserSettings.TrackNormalisedDisplay, columns2Display);
-            this.sourceRecording_MinutesDuration = dt.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
+            bool doNormalisation = browserSettings.TrackNormalisedDisplay;
+            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, browserSettings.TrackHeight, doNormalisation, columns2Display);
+            this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             this.pictureBoxVisualIndex.Image = tracksImage;
             
             //SAVE THE IMAGE
@@ -645,10 +645,10 @@
         /// <param name="dt"></param>
         /// <param name="order"></param>
         /// <param name="trackHeight"></param>
-        /// <param name="normalisedTrackDisplay"></param>
+        /// <param name="doNormalise"></param>
         /// <param name="tracks2Display"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool normalisedTrackDisplay, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool doNormalise, bool[] tracks2Display)
         {
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
@@ -664,19 +664,24 @@
 
             // accumulate the indivudal tracks
             int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
-            int endPanelwidth = 90;
+            int endPanelwidth = 150;
             int imageWidth = duration + endPanelwidth;
 
             var bitmaps = new List<Bitmap>();
             double threshold = 0.0;
+            double[] array;
             for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
             {
                 if ((! dodisplay[i]) || (values[i].Length == 0)) continue;
-                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, values[i], imageWidth, trackHeight, threshold, headers[i]));
+                array = values[i];
+                if (doNormalise) array = DataTools.normalise(values[i]);
+                bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
             }
             int x = values.Count - 1;
+            array = values[x];
+            if (doNormalise) array = DataTools.normalise(values[x]);
             if ((dodisplay[x]) || (values[x].Length > 0))
-                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, values[x], imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
+                bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
             int trackCount = DataTools.CountTrues(dodisplay) + 2; //+2 for top and bottom time tracks
@@ -706,14 +711,14 @@
         /// </summary>
         /// <param name="dt"></param>
         /// <param name="trackHeight"></param>
-        /// <param name="normalisedTrackDisplay"></param>
+        /// <param name="doNormaliseTrackDisplay"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool normalisedTrackDisplay, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool doNormaliseTrackDisplay, bool[] tracks2Display)
         {
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, order, trackHeight, normalisedTrackDisplay, tracks2Display);
+            return ConstructVisualIndexImage(dt, order, trackHeight, doNormaliseTrackDisplay, tracks2Display);
         }
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
@@ -739,14 +744,14 @@
             pen.DashPattern = dashValues;
             g.DrawLine(pen, pt1, pt2);
 
-            if ((weightedIndices == null) || (weightedIndices.Length < 2)) return;
-            if (myX >= this.sourceRecording_MinutesDuration - 1)
-                this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], "END");
+            if ((trackValues == null) || (trackValues.Length < 2)) return;
+            if (myX >= this.trackValues.Length - 1)
+                this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.trackValues[myX - 1], this.trackValues[myX], "END");
             else
                 if (myX <= 0)
-                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", "START", this.weightedIndices[myX], this.weightedIndices[myX + 1]);
+                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", "START", this.trackValues[myX], this.trackValues[myX + 1]);
                 else
-                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.weightedIndices[myX - 1], this.weightedIndices[myX], this.weightedIndices[myX + 1]);
+                    this.textBoxCursorValue.Text = String.Format("{0:f2} <<{1:f2}>> {2:f2}", this.trackValues[myX - 1], this.trackValues[myX], this.trackValues[myX + 1]);
         }
 
         private void pictureBoxVisualIndex_MouseClick(object sender, MouseEventArgs e)
