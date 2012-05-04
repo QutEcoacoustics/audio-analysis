@@ -4,12 +4,13 @@ namespace Microsoft.FSharp.Math
     type Interval<'a when 'a : comparison>(lower:'a, upper:'a) =
         do
             if lower > upper then
-                invalidArg "lower" "interval cannot have a lower bound that is greater than the upper boud"
+                invalidArg "lower" "interval cannot have a lower bound that is greater than the upper bound"
 
         member this.Lower = lower
         member this.Upper = upper
 
-         
+        override this.ToString() =
+            "(" + lower.ToString() + ", " + upper.ToString() + ")"
     
     module Interval =
         let inline lower (iv:Interval<_>) = iv.Lower
