@@ -32,15 +32,15 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle7 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle8 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.tabControlMain = new System.Windows.Forms.TabControl();
             this.tabPageSourceFiles = new System.Windows.Forms.TabPage();
             this.label4 = new System.Windows.Forms.Label();
             this.comboBoxSourceFileAnalysisType = new System.Windows.Forms.ComboBox();
-            this.btnExtractIndiciesAllSelected = new System.Windows.Forms.Button();
+            this.btnAnalyseSelectedAudioFiles = new System.Windows.Forms.Button();
             this.dataGridViewFileList = new System.Windows.Forms.DataGridView();
             this.selectedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.fileDateDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
@@ -52,7 +52,7 @@
             this.label5 = new System.Windows.Forms.Label();
             this.comboBoxCSVFileAnalysisType = new System.Windows.Forms.ComboBox();
             this.btnUpdateOutputFileList = new System.Windows.Forms.Button();
-            this.btnLoadVisualIndexAllSelected = new System.Windows.Forms.Button();
+            this.btnLoadSelectedCSVFile = new System.Windows.Forms.Button();
             this.label2 = new System.Windows.Forms.Label();
             this.tfOutputDirectory = new System.Windows.Forms.TextBox();
             this.dataGridCSVfiles = new System.Windows.Forms.DataGridView();
@@ -130,7 +130,7 @@
             // 
             this.tabPageSourceFiles.Controls.Add(this.label4);
             this.tabPageSourceFiles.Controls.Add(this.comboBoxSourceFileAnalysisType);
-            this.tabPageSourceFiles.Controls.Add(this.btnExtractIndiciesAllSelected);
+            this.tabPageSourceFiles.Controls.Add(this.btnAnalyseSelectedAudioFiles);
             this.tabPageSourceFiles.Controls.Add(this.dataGridViewFileList);
             this.tabPageSourceFiles.Controls.Add(this.label1);
             this.tabPageSourceFiles.Controls.Add(this.btnSelectSourceDirectory);
@@ -161,15 +161,15 @@
             this.comboBoxSourceFileAnalysisType.Size = new System.Drawing.Size(121, 21);
             this.comboBoxSourceFileAnalysisType.TabIndex = 14;
             // 
-            // btnExtractIndiciesAllSelected
+            // btnAnalyseSelectedAudioFiles
             // 
-            this.btnExtractIndiciesAllSelected.Location = new System.Drawing.Point(840, 4);
-            this.btnExtractIndiciesAllSelected.Name = "btnExtractIndiciesAllSelected";
-            this.btnExtractIndiciesAllSelected.Size = new System.Drawing.Size(160, 23);
-            this.btnExtractIndiciesAllSelected.TabIndex = 1;
-            this.btnExtractIndiciesAllSelected.Text = "Extract Indicies For Selected";
-            this.btnExtractIndiciesAllSelected.UseVisualStyleBackColor = true;
-            this.btnExtractIndiciesAllSelected.Click += new System.EventHandler(this.btnExtractIndiciesAllSelected_Click);
+            this.btnAnalyseSelectedAudioFiles.Location = new System.Drawing.Point(840, 4);
+            this.btnAnalyseSelectedAudioFiles.Name = "btnAnalyseSelectedAudioFiles";
+            this.btnAnalyseSelectedAudioFiles.Size = new System.Drawing.Size(120, 23);
+            this.btnAnalyseSelectedAudioFiles.TabIndex = 1;
+            this.btnAnalyseSelectedAudioFiles.Text = "Analyse Audio File";
+            this.btnAnalyseSelectedAudioFiles.UseVisualStyleBackColor = true;
+            this.btnAnalyseSelectedAudioFiles.Click += new System.EventHandler(this.btnAnalyseSelectedAudioFiles_Click);
             // 
             // dataGridViewFileList
             // 
@@ -181,14 +181,14 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridViewFileList.AutoGenerateColumns = false;
             this.dataGridViewFileList.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.AllCells;
-            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle7.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle7.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle7.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle7.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle7.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle7.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle7.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridViewFileList.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle7;
             this.dataGridViewFileList.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridViewFileList.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.selectedDataGridViewCheckBoxColumn,
@@ -198,14 +198,14 @@
             this.fileLengthDataGridViewTextBoxColumn,
             this.mediaTypeDataGridViewTextBoxColumn});
             this.dataGridViewFileList.DataSource = this.mediaFileItemBindingSource;
-            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle2.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle2.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle8.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle8.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle8.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle8.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle8.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle8.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle8.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridViewFileList.DefaultCellStyle = dataGridViewCellStyle8;
             this.dataGridViewFileList.Location = new System.Drawing.Point(6, 37);
             this.dataGridViewFileList.Name = "dataGridViewFileList";
             this.dataGridViewFileList.ReadOnly = true;
@@ -248,9 +248,9 @@
             this.btnSelectSourceDirectory.CausesValidation = false;
             this.btnSelectSourceDirectory.Location = new System.Drawing.Point(574, 4);
             this.btnSelectSourceDirectory.Name = "btnSelectSourceDirectory";
-            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(125, 23);
+            this.btnSelectSourceDirectory.Size = new System.Drawing.Size(120, 23);
             this.btnSelectSourceDirectory.TabIndex = 9;
-            this.btnSelectSourceDirectory.Text = "Select Source Folder...";
+            this.btnSelectSourceDirectory.Text = "Select Source Folder";
             this.btnSelectSourceDirectory.UseVisualStyleBackColor = true;
             this.btnSelectSourceDirectory.Click += new System.EventHandler(this.btnSelectSourceDirectory_Click);
             // 
@@ -259,9 +259,9 @@
             this.btnUpdateSourceFileList.CausesValidation = false;
             this.btnUpdateSourceFileList.Location = new System.Drawing.Point(705, 4);
             this.btnUpdateSourceFileList.Name = "btnUpdateSourceFileList";
-            this.btnUpdateSourceFileList.Size = new System.Drawing.Size(129, 23);
+            this.btnUpdateSourceFileList.Size = new System.Drawing.Size(120, 23);
             this.btnUpdateSourceFileList.TabIndex = 10;
-            this.btnUpdateSourceFileList.Text = "Update Source File List";
+            this.btnUpdateSourceFileList.Text = "Update File List";
             this.btnUpdateSourceFileList.UseVisualStyleBackColor = true;
             this.btnUpdateSourceFileList.Click += new System.EventHandler(this.btnUpdateSourceFiles_Click);
             // 
@@ -277,7 +277,7 @@
             this.tabPageOutputFiles.Controls.Add(this.label5);
             this.tabPageOutputFiles.Controls.Add(this.comboBoxCSVFileAnalysisType);
             this.tabPageOutputFiles.Controls.Add(this.btnUpdateOutputFileList);
-            this.tabPageOutputFiles.Controls.Add(this.btnLoadVisualIndexAllSelected);
+            this.tabPageOutputFiles.Controls.Add(this.btnLoadSelectedCSVFile);
             this.tabPageOutputFiles.Controls.Add(this.label2);
             this.tabPageOutputFiles.Controls.Add(this.tfOutputDirectory);
             this.tabPageOutputFiles.Controls.Add(this.dataGridCSVfiles);
@@ -287,7 +287,7 @@
             this.tabPageOutputFiles.Padding = new System.Windows.Forms.Padding(3);
             this.tabPageOutputFiles.Size = new System.Drawing.Size(1214, 607);
             this.tabPageOutputFiles.TabIndex = 3;
-            this.tabPageOutputFiles.Text = "CSV Files";
+            this.tabPageOutputFiles.Text = "Output CSV Files";
             this.tabPageOutputFiles.UseVisualStyleBackColor = true;
             // 
             // label5
@@ -310,23 +310,23 @@
             // btnUpdateOutputFileList
             // 
             this.btnUpdateOutputFileList.CausesValidation = false;
-            this.btnUpdateOutputFileList.Location = new System.Drawing.Point(695, 5);
+            this.btnUpdateOutputFileList.Location = new System.Drawing.Point(705, 4);
             this.btnUpdateOutputFileList.Name = "btnUpdateOutputFileList";
             this.btnUpdateOutputFileList.Size = new System.Drawing.Size(120, 23);
             this.btnUpdateOutputFileList.TabIndex = 15;
-            this.btnUpdateOutputFileList.Text = "Update CSV File List";
+            this.btnUpdateOutputFileList.Text = "Update File List";
             this.btnUpdateOutputFileList.UseVisualStyleBackColor = true;
             this.btnUpdateOutputFileList.Click += new System.EventHandler(this.btnUpdateCSVFileList_Click);
             // 
-            // btnLoadVisualIndexAllSelected
+            // btnLoadSelectedCSVFile
             // 
-            this.btnLoadVisualIndexAllSelected.Location = new System.Drawing.Point(821, 5);
-            this.btnLoadVisualIndexAllSelected.Name = "btnLoadVisualIndexAllSelected";
-            this.btnLoadVisualIndexAllSelected.Size = new System.Drawing.Size(162, 23);
-            this.btnLoadVisualIndexAllSelected.TabIndex = 2;
-            this.btnLoadVisualIndexAllSelected.Text = "Load Visual Index for Selected";
-            this.btnLoadVisualIndexAllSelected.UseVisualStyleBackColor = true;
-            this.btnLoadVisualIndexAllSelected.Click += new System.EventHandler(this.btnLoadVisualIndexAllSelected_Click);
+            this.btnLoadSelectedCSVFile.Location = new System.Drawing.Point(840, 5);
+            this.btnLoadSelectedCSVFile.Name = "btnLoadSelectedCSVFile";
+            this.btnLoadSelectedCSVFile.Size = new System.Drawing.Size(120, 23);
+            this.btnLoadSelectedCSVFile.TabIndex = 2;
+            this.btnLoadSelectedCSVFile.Text = "Load CSV File";
+            this.btnLoadSelectedCSVFile.UseVisualStyleBackColor = true;
+            this.btnLoadSelectedCSVFile.Click += new System.EventHandler(this.btnLoadVisualIndexAllSelected_Click);
             // 
             // label2
             // 
@@ -354,14 +354,14 @@
                         | System.Windows.Forms.AnchorStyles.Right)));
             this.dataGridCSVfiles.AutoGenerateColumns = false;
             this.dataGridCSVfiles.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.DisplayedCells;
-            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = System.Drawing.SystemColors.Control;
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle3.ForeColor = System.Drawing.SystemColors.WindowText;
-            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle5.BackColor = System.Drawing.SystemColors.Control;
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle5.ForeColor = System.Drawing.SystemColors.WindowText;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dataGridCSVfiles.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
             this.dataGridCSVfiles.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dataGridCSVfiles.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
             this.dataGridViewCheckBoxColumnSelected,
@@ -369,14 +369,14 @@
             this.CsvFileDate,
             this.dataGridViewTextBoxColumnFileLength});
             this.dataGridCSVfiles.DataSource = this.csvFileItemBindingSource;
-            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = System.Drawing.SystemColors.Window;
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            dataGridViewCellStyle4.ForeColor = System.Drawing.SystemColors.ControlText;
-            dataGridViewCellStyle4.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle4.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
-            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle6.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle6.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle6.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle6.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle6.WrapMode = System.Windows.Forms.DataGridViewTriState.False;
+            this.dataGridCSVfiles.DefaultCellStyle = dataGridViewCellStyle6;
             this.dataGridCSVfiles.Location = new System.Drawing.Point(6, 36);
             this.dataGridCSVfiles.MultiSelect = false;
             this.dataGridCSVfiles.Name = "dataGridCSVfiles";
@@ -409,9 +409,9 @@
             this.btnSelectOutputDirectory.CausesValidation = false;
             this.btnSelectOutputDirectory.Location = new System.Drawing.Point(574, 5);
             this.btnSelectOutputDirectory.Name = "btnSelectOutputDirectory";
-            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(115, 23);
+            this.btnSelectOutputDirectory.Size = new System.Drawing.Size(120, 23);
             this.btnSelectOutputDirectory.TabIndex = 12;
-            this.btnSelectOutputDirectory.Text = "Select CSV Folder...";
+            this.btnSelectOutputDirectory.Text = "Select Output Folder";
             this.btnSelectOutputDirectory.UseVisualStyleBackColor = true;
             this.btnSelectOutputDirectory.Click += new System.EventHandler(this.btnSelectOutputDirectory_Click);
             // 
@@ -479,7 +479,7 @@
             this.panelDisplayImageAndTrackBar.Controls.Add(this.pictureBoxBarTrack);
             this.panelDisplayImageAndTrackBar.Location = new System.Drawing.Point(3, 3);
             this.panelDisplayImageAndTrackBar.Name = "panelDisplayImageAndTrackBar";
-            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(872, 393);
+            this.panelDisplayImageAndTrackBar.Size = new System.Drawing.Size(855, 393);
             this.panelDisplayImageAndTrackBar.TabIndex = 7;
             // 
             // pictureBoxVisualIndex
@@ -512,7 +512,7 @@
             this.panelDisplaySpectrogram.Controls.Add(this.pictureBoxSonogram);
             this.panelDisplaySpectrogram.Location = new System.Drawing.Point(3, 402);
             this.panelDisplaySpectrogram.Name = "panelDisplaySpectrogram";
-            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(872, 288);
+            this.panelDisplaySpectrogram.Size = new System.Drawing.Size(855, 288);
             this.panelDisplaySpectrogram.TabIndex = 8;
             // 
             // pictureBoxSonogram
@@ -788,11 +788,11 @@
         private Label label2;
         private Label label1;
         private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateSourceFileList;
-        private Button btnExtractIndiciesAllSelected;
+        private Button btnAnalyseSelectedAudioFiles;
         private PictureBox pictureBoxVisualIndex;
         private TabPage tabPageOutputFiles;
         private Button btnUpdateOutputFileList;
-        private Button btnLoadVisualIndexAllSelected;
+        private Button btnLoadSelectedCSVFile;
         private DataGridView dataGridCSVfiles;
         private System.ComponentModel.BackgroundWorker backgroundWorkerUpdateCSVFileList;
         private BindingSource csvFileItemBindingSource;

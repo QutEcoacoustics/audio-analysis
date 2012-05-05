@@ -250,7 +250,7 @@
             return true;
         }
 
-        private void btnExtractIndiciesAllSelected_Click(object sender, EventArgs e)
+        private void btnAnalyseSelectedAudioFiles_Click(object sender, EventArgs e)
         {
             string analysisName = (string)this.comboBoxSourceFileAnalysisType.SelectedItem;
             LoadAnalysisConfigFile(analysisName);
@@ -319,7 +319,12 @@
                         DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
                         CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
                     }
-                        else return;
+                    if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //AcousticIndices
+                    {
+                        reportfilePath = Path.Combine(opDir, fName + reportFileExt);
+                        CsvTools.DataTable2CSV(outputData, reportfilePath);
+                    }
+                    else return;
 
 
                     string target = Path.Combine(opDir, fName + "_BACKUP" + reportFileExt);
@@ -1548,6 +1553,11 @@
                 {
                     image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
                 }
+                else
+                if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
+                {
+                    image = Human.GetImageFromAudioSegment(f, this.analysisParams);
+                }
             }
             else
             {
@@ -1573,6 +1583,7 @@
                 image.Save(imagePath, ImageFormat.Png);
             }
 
+            //REMOVE MEMORY OF USERS CHOICE OF NOISE REDUCTION
             if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_DO_NOISE_REDUCTION)))
                 this.analysisParams.Remove(AcousticIndices.key_DO_NOISE_REDUCTION);
             if ((this.analysisParams != null) && (this.analysisParams.ContainsKey(AcousticIndices.key_BG_NOISE_REDUCTION)))
