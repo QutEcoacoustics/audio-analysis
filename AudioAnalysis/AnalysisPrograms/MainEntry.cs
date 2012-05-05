@@ -61,7 +61,7 @@ namespace AnalysisPrograms
                         Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;
                     case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        KiwiRecogniser.Dev();
+                        LSKiwi.Dev();
                         break;
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY

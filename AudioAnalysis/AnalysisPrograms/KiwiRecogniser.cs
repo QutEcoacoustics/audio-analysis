@@ -10,6 +10,9 @@ using System.Text;
 
 using TowseyLib;
 using AudioAnalysisTools;
+using Acoustics.Shared;
+using Acoustics.Tools.Audio;
+
 
 
 
@@ -23,10 +26,7 @@ using AudioAnalysisTools;
 
 namespace AnalysisPrograms
 {
-    using Acoustics.Shared;
-    using Acoustics.Tools.Audio;
-
-    public class KiwiRecogniser
+    public class LSKiwi
     {
         //Following lines are used for the debug command line.
         // kiwi "C:\SensorNetworks\WavFiles\Kiwi\Samples\lsk-female\TOWER_20091107_07200_21.LSK.F.wav"  "C:\SensorNetworks\WavFiles\Kiwi\Samples\lskiwi_Params.txt"
@@ -162,8 +162,8 @@ namespace AnalysisPrograms
             //KiwiParams kiwiParams = ReadIniFile(iniPath);
             //WriteParameters(kiwiParams);
             Dictionary<string, string> kiwiCfg = FileTools.ReadPropertiesFile(iniPath);
-            double segmentDuration = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, kiwiCfg);
-            double segmentOverlap  = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_OVERLAP, kiwiCfg); 
+            double segmentDuration = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, kiwiCfg);
+            double segmentOverlap  = Configuration.GetDouble(LSKiwi.key_SEGMENT_OVERLAP, kiwiCfg); 
 
             // Get the file time duration
             IAudioUtility audioUtility = new MasterAudioUtility();
@@ -212,7 +212,7 @@ namespace AnalysisPrograms
                 else //do analysis
                 {
                     //#############################################################################################################################################
-                    DataTable results = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, kiwiCfg, diOutputDir);
+                    DataTable results = LSKiwi.Analysis(s, fiSegmentAudioFile, kiwiCfg, diOutputDir);
                     //#############################################################################################################################################
 
                     //transfer acoustic event info to data table
@@ -259,26 +259,26 @@ namespace AnalysisPrograms
         /// <param name="segmentAudioFile"></param>
         public static DataTable Analysis(int iter, FileInfo fiSegmentAudioFile, Dictionary<string, string> config, DirectoryInfo diOutputDir)
         {
-            int minHzMale       = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_MALE, config);
-            int maxHzMale       = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_MALE, config);
-            int minHzFemale     = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale     = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_FEMALE, config);
-            int frameLength     = Configuration.GetInt(KiwiRecogniser.key_FRAME_LENGTH, config);
-            double frameOverlap = Configuration.GetDouble(KiwiRecogniser.key_FRAME_OVERLAP, config);
-            double dctDuration  = Configuration.GetDouble(KiwiRecogniser.key_DCT_DURATION, config);
-            double dctThreshold = Configuration.GetDouble(KiwiRecogniser.key_DCT_THRESHOLD, config);
-            double minPeriod    = Configuration.GetDouble(KiwiRecogniser.key_MIN_PERIODICITY, config);
-            double maxPeriod    = Configuration.GetDouble(KiwiRecogniser.key_MAX_PERIODICITY, config);
-            double eventThreshold  = Configuration.GetDouble(KiwiRecogniser.key_EVENT_THRESHOLD, config);
-            double minDuration     = Configuration.GetDouble(KiwiRecogniser.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration     = Configuration.GetDouble(KiwiRecogniser.key_MAX_DURATION, config); //maximum event duration to qualify as species call
-            double drawSonograms   = Configuration.GetInt(KiwiRecogniser.key_DRAW_SONOGRAMS, config);
-            double segmentDuration = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, config); 
+            int minHzMale       = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
+            int maxHzMale       = Configuration.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
+            int minHzFemale     = Configuration.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale     = Configuration.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
+            int frameLength     = Configuration.GetInt(LSKiwi.key_FRAME_LENGTH, config);
+            double frameOverlap = Configuration.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
+            double dctDuration  = Configuration.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            double dctThreshold = Configuration.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            double minPeriod    = Configuration.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
+            double maxPeriod    = Configuration.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
+            double eventThreshold  = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double minDuration     = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration     = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            double drawSonograms   = Configuration.GetInt(LSKiwi.key_DRAW_SONOGRAMS, config);
+            double segmentDuration = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, config); 
             double segmentStartMinute = segmentDuration * iter;
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
-            var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
+            var results = LSKiwi.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
                                                             minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
 
 
@@ -301,6 +301,8 @@ namespace AnalysisPrograms
             //write events to a data table to return.
             TimeSpan tsSegmentDuration = recordingSegment.Duration();
             DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, tsSegmentDuration, predictedEvents);
+            //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dataTable.Rows.Count);
+
             string sortString = "EvStartAbs ASC";
             return DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
         } //Analysis()
@@ -321,23 +323,23 @@ namespace AnalysisPrograms
         {
             if (config == null) return null;
 
-            int minHzMale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_MALE, config);
-            int maxHzMale = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_MALE, config);
-            int minHzFemale = Configuration.GetInt(KiwiRecogniser.key_MIN_HZ_FEMALE, config);
-            int maxHzFemale = Configuration.GetInt(KiwiRecogniser.key_MAX_HZ_FEMALE, config);
-            int frameLength = Configuration.GetInt(KiwiRecogniser.key_FRAME_LENGTH, config);
-            double frameOverlap = Configuration.GetDouble(KiwiRecogniser.key_FRAME_OVERLAP, config);
-            double dctDuration = Configuration.GetDouble(KiwiRecogniser.key_DCT_DURATION, config);
-            double dctThreshold = Configuration.GetDouble(KiwiRecogniser.key_DCT_THRESHOLD, config);
-            double minPeriod = Configuration.GetDouble(KiwiRecogniser.key_MIN_PERIODICITY, config);
-            double maxPeriod = Configuration.GetDouble(KiwiRecogniser.key_MAX_PERIODICITY, config);
-            double eventThreshold = Configuration.GetDouble(KiwiRecogniser.key_EVENT_THRESHOLD, config);
-            double minDuration = Configuration.GetDouble(KiwiRecogniser.key_MIN_DURATION, config); //minimum event duration to qualify as species call
-            double maxDuration = Configuration.GetDouble(KiwiRecogniser.key_MAX_DURATION, config); //maximum event duration to qualify as species call
+            int minHzMale = Configuration.GetInt(LSKiwi.key_MIN_HZ_MALE, config);
+            int maxHzMale = Configuration.GetInt(LSKiwi.key_MAX_HZ_MALE, config);
+            int minHzFemale = Configuration.GetInt(LSKiwi.key_MIN_HZ_FEMALE, config);
+            int maxHzFemale = Configuration.GetInt(LSKiwi.key_MAX_HZ_FEMALE, config);
+            int frameLength = Configuration.GetInt(LSKiwi.key_FRAME_LENGTH, config);
+            double frameOverlap = Configuration.GetDouble(LSKiwi.key_FRAME_OVERLAP, config);
+            double dctDuration = Configuration.GetDouble(LSKiwi.key_DCT_DURATION, config);
+            double dctThreshold = Configuration.GetDouble(LSKiwi.key_DCT_THRESHOLD, config);
+            double minPeriod = Configuration.GetDouble(LSKiwi.key_MIN_PERIODICITY, config);
+            double maxPeriod = Configuration.GetDouble(LSKiwi.key_MAX_PERIODICITY, config);
+            double eventThreshold = Configuration.GetDouble(LSKiwi.key_EVENT_THRESHOLD, config);
+            double minDuration = Configuration.GetDouble(LSKiwi.key_MIN_DURATION, config); //minimum event duration to qualify as species call
+            double maxDuration = Configuration.GetDouble(LSKiwi.key_MAX_DURATION, config); //maximum event duration to qualify as species call
 
             AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
 
-            var results = KiwiRecogniser.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
+            var results = LSKiwi.Execute_KiwiDetect(recordingSegment, minHzMale, maxHzMale, minHzFemale, maxHzFemale, frameLength, frameOverlap, dctDuration, dctThreshold,
                                                             minPeriod, maxPeriod, eventThreshold, minDuration, maxDuration);
             var sonogram = results.Item1;
             var hits = results.Item2;

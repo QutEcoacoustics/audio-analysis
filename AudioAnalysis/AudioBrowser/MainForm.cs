@@ -201,8 +201,7 @@
             if (analysisName == "None")
             {
                 Console.WriteLine("#######  WARNING: ANALAYSIS NAME = 'None' #######");
-                Console.WriteLine("\tCANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
-                //Console.WriteLine("\tat {0}\n\n", this.browserSettings.fiAnalysisConfig);
+                Console.WriteLine("\t CANNOT LOCATE ANALYSIS PROPERTIES FILE! ");
                 this.browserSettings.fiAnalysisConfig = null;
                 this.analysisParams = null;
                 return;
@@ -307,7 +306,7 @@
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
                     }
                     else
-                    if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //KiwiRecogniser - save two files
+                    if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //KiwiRecogniser - save two files
                     {
                         string sortString = "EvStartAbs ASC";
                         outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
@@ -317,7 +316,7 @@
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
 
                         reportfilePath = Path.Combine(opDir, fName + reportFileExt);
-                        DataTable temporalDataTable = KiwiRecogniser.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
+                        DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
                         CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
                     }
                         else return;
@@ -386,16 +385,22 @@
                 outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
             }
             else
-                if (analysisName == KiwiRecogniser.ANALYSIS_NAME) //KiwiRecogniser
-                {
-                    var parameters = KiwiRecogniser.InitOutputTableColumns();
-                    outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-                }
-                else
-                {
-                    Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
-                   return null;
-                }
+            if (analysisName == LSKiwi.ANALYSIS_NAME) //KiwiRecogniser
+            {
+                var parameters = LSKiwi.InitOutputTableColumns();
+                outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+            }
+            else
+            if (analysisName == Human.ANALYSIS_NAME) //Human speech Recogniser
+            {
+                var parameters = Human.InitOutputTableColumns();
+                outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+            }
+            else
+            {
+                Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
+                return null;
+            }
 
 
             // LOOP THROUGH THE FILE
@@ -464,10 +469,14 @@
                         dt = AcousticIndices.Analysis(s, fiSegmentAudioFile, dict);
                     }
                     else
-                    if (analysisName.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
+                    if (analysisName.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
                     {
-                        dt = KiwiRecogniser.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                        //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dt.Rows.Count);
+                        dt = LSKiwi.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                    }
+                    else
+                    if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
+                    {
+                        dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                     }
                     //#############################################################################################################################################
 
@@ -603,9 +612,17 @@
                 columns2Display = output.Item3;
             }
             else
-            if (this.CurrentCSVFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME))
+            if (this.CurrentCSVFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME))
             {
-                var output = KiwiRecogniser.ProcessCsvFile(new FileInfo(csvPath));
+                var output = LSKiwi.ProcessCsvFile(new FileInfo(csvPath));
+                dtRaw = output.Item1;
+                dt2Display = output.Item2;
+                columns2Display = output.Item3;
+            }
+            else
+            if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
+            {
+                var output = Human.ProcessCsvFile(new FileInfo(csvPath));
                 dtRaw = output.Item1;
                 dt2Display = output.Item2;
                 columns2Display = output.Item3;
@@ -621,12 +638,13 @@
             else
             {
                 Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-                Console.WriteLine("\t Browser analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
+                Console.WriteLine("\t Analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
                 return 3;
             }
 
+            int timeScale = 60; //put a tik every 60 pixels = 1 hour
             bool doNormalisation = browserSettings.TrackNormalisedDisplay;
-            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, browserSettings.TrackHeight, doNormalisation, columns2Display);
+            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, timeScale, browserSettings.TrackHeight, doNormalisation, columns2Display);
             this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             this.pictureBoxVisualIndex.Image = tracksImage;
             
@@ -643,12 +661,13 @@
         /// <summary>
         /// </summary>
         /// <param name="dt"></param>
+        /// <param name="timeScale"></param>
         /// <param name="order"></param>
         /// <param name="trackHeight"></param>
         /// <param name="doNormalise"></param>
         /// <param name="tracks2Display"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, double[] order, int trackHeight, bool doNormalise, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, int timeScale, double[] order, int trackHeight, bool doNormalise, bool[] tracks2Display)
         {
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
@@ -684,11 +703,9 @@
                 bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
-            int trackCount = DataTools.CountTrues(dodisplay) + 2; //+2 for top and bottom time tracks
-            int imageHt = trackHeight * trackCount;
+            int imageHt = trackHeight * (bitmaps.Count + 2);  //+2 for top and bottom time tracks
             int offset = 0;
-            int scale = 60; //put a tik every 60 pixels = 1 hour
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, scale, imageWidth, trackHeight, "Time (hours)");
+            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, timeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
@@ -713,12 +730,12 @@
         /// <param name="trackHeight"></param>
         /// <param name="doNormaliseTrackDisplay"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, int trackHeight, bool doNormaliseTrackDisplay, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, int timeScale, int trackHeight, bool doNormaliseTrackDisplay, bool[] tracks2Display)
         {
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, order, trackHeight, doNormaliseTrackDisplay, tracks2Display);
+            return ConstructVisualIndexImage(dt, timeScale, order, trackHeight, doNormaliseTrackDisplay, tracks2Display);
         }
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
@@ -1487,19 +1504,31 @@
             FileInfo f = browserSettings.fiSegmentRecording;
             if (f == null)
             {
-                Console.WriteLine("CANNOT FIND AUDIO SEGMENT: segment = null");
+                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: segment = null");
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
             if (!f.Exists)
             {
-                Console.WriteLine("CANNOT FIND AUDIO SEGMENT: "+ f.FullName);
+                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: "+ f.FullName);
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
 
             //reload indices for source analysis type
             LoadAnalysisConfigFile(this.CurrentSourceFileAnalysisType);
+
+            if ((this.checkBoxSonogramAnnotate.Checked) && (this.CurrentSourceFileAnalysisType == "None"))
+            {
+                Console.WriteLine("#######  CANNOT ANNOTATE SONOGRAM WHEN SELECTED ANALYSIS = 'None'.");
+                //this.browserSettings.fiAnalysisConfig = null;
+                //this.analysisParams = null;
+                this.tabControlMain.SelectTab(tabPageConsoleLabel);
+                return;
+            }
+
+
+
             if (this.analysisParams != null) 
                 this.analysisParams.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
             if (this.analysisParams != null)
@@ -1515,9 +1544,9 @@
                     image = AcousticIndices.GetImageFromAudioSegment(f, this.analysisParams);
                 }
                 else
-                if (this.CurrentSourceFileAnalysisType.Equals(KiwiRecogniser.ANALYSIS_NAME)) //Little Spotted Kiwi
+                if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
                 {
-                    image = KiwiRecogniser.GetImageFromAudioSegment(f, this.analysisParams);
+                    image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
                 }
             }
             else
