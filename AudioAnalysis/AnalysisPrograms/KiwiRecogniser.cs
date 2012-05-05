@@ -71,7 +71,7 @@ namespace AnalysisPrograms
         {
             HEADERS[0] = "count";           COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
             HEADERS[1] = "EvStartAbs";      COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
-            HEADERS[2] = "EvStartMin";      COL_TYPES[2] = typeof(string);  DISPLAY_COLUMN[2] = false;
+            HEADERS[2] = "EvStartMin";      COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
             HEADERS[3] = "EvStartSec";      COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = false;
             HEADERS[4] = "SegmentDur";      COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
             HEADERS[5] = "Density";         COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;

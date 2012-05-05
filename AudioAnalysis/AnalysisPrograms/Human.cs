@@ -35,14 +35,16 @@ namespace AnalysisPrograms
         private static bool[] DISPLAY_COLUMN = new bool[COL_NUMBER];
         private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
+
+
         public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
             HEADERS[0] = "count";      COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
             HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
-            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(string);  DISPLAY_COLUMN[2] = false;
-            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(double);  DISPLAY_COLUMN[3] = false;
+            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
+            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = false;
             HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
-            HEADERS[5] = "EventDur";   COL_TYPES[5] = typeof(double);  DISPLAY_COLUMN[5] = false;
+            HEADERS[5] = "Density";    COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
             HEADERS[6] = "HumanScore"; COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
@@ -60,6 +62,7 @@ namespace AnalysisPrograms
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
+        public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
         public static string key_FRAME_LENGTH = "FRAME_LENGTH";
         public static string key_FRAME_OVERLAP = "FRAME_OVERLAP";
         public static string key_NOISE_REDUCTION_TYPE = "NOISE_REDUCTION_TYPE";
@@ -111,10 +114,9 @@ namespace AnalysisPrograms
                 int harmonicCount = Int32.Parse(dict[key_EXPECTED_HARMONIC_COUNT]); // expected number of harmonics to find in spectrum
                 double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
                 double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
-                int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);         //options to draw sonogram
+                int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
 
                 AudioRecording recordingSegment = new AudioRecording(recordingPath);
-
 
                 Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
                 Log.WriteIfVerbose("Expected harmonic count within bandwidth: {0}", harmonicCount);
@@ -143,7 +145,8 @@ namespace AnalysisPrograms
                     for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
                     //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), 0.25);
                     string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                    DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, 0.25);
+                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, 0.25);
+                    image.Save(imagePath, ImageFormat.Png);
                 }
                 else
                 if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
@@ -151,7 +154,8 @@ namespace AnalysisPrograms
                     double normMax = minAmplitude * 4; //so normalised eventThreshold = 0.25
                     for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
                     string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
-                    DrawSonogram(sonogram, imagePath, hits, scores, predictedEvents, 0.25);
+                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, 0.25);
+                    image.Save(imagePath, ImageFormat.Png);
                 }
 
             } //try
@@ -206,13 +210,14 @@ namespace AnalysisPrograms
 
             //draw images of sonograms
             bool saveSonogram = false;
-            //if ((drawSonograms == 2) || ((drawSonograms == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
-            //if (saveSonogram)
-            //{
-            //    string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) + "_" + (int)segmentStartMinute + "min.png");
-            //    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
-            //    image.Save(imagePath, ImageFormat.Png);
-            //}
+            if ((drawSonograms == 2) || ((drawSonograms == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
+            if (saveSonogram)
+            {
+                double eventThreshold = 0.5;
+                string imagePath = Path.Combine(diOutputDir.FullName, Path.GetFileNameWithoutExtension(fiSegmentAudioFile.FullName) + "_" + (int)segmentStartMinute + "min.png");
+                Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, eventThreshold);
+                image.Save(imagePath, ImageFormat.Png);
+            }
 
             //write events to a data table to return.
             TimeSpan tsSegmentDuration = recordingSegment.Duration();
@@ -244,12 +249,11 @@ namespace AnalysisPrograms
                 row[HEADERS[3]] = eventStartSec;           //EvStartSec
                 row[HEADERS[4]] = segmentDuration;         //segmentDur
                 row[HEADERS[5]] = predictedEvents.Count;   //Density
-                row[HEADERS[6]] = speechEvent.Name;        //Label
+                row[HEADERS[6]] = speechEvent.Score;       //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
         }
-
 
 
 
@@ -298,24 +302,24 @@ namespace AnalysisPrograms
 
 
 
-        static void DrawSonogram(BaseSonogram sonogram, string path, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
+        static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
-            Log.WriteLine("# Start to draw image of sonogram.");
+            //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
             double maxScore = 20.0;
+            Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
-            using (System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines))
-            using (Image_MultiTrack image = new Image_MultiTrack(img))
-            {
-                //img.Save(@"C:\SensorNetworks\WavFiles\temp1\testimage1.jpg", System.Drawing.Imaging.ImageFormat.Jpeg);
-                image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
-                image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-                image.AddSuperimposedMatrix(hits, maxScore);
-                image.AddEvents(predictedEvents);
-                image.Save(path);
-                // ImageTools.DrawMatrix(hits, @"C:\SensorNetworks\Output\HD_FemaleKoala\hitsImage.png");
-            }
+
+            //System.Drawing.Image img = sonogram.GetImage(doHighlightSubband, add1kHzLines);
+            //img.Save(@"C:\SensorNetworks\temp\testimage1.png", System.Drawing.Imaging.ImageFormat.Png);
+
+            //Image_MultiTrack image = new Image_MultiTrack(img);
+            image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
+            image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
+            if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
+            if (hits != null) image.AddSuperimposedMatrix(hits, maxScore);
+            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents);
+            return image.GetImage();
         } //DrawSonogram()
 
 
