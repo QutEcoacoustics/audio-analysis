@@ -304,7 +304,7 @@ namespace AnalysisPrograms
             if (config.ContainsKey(key_LOW_FREQ_BOUND)) lowFreqBound = Configuration.GetInt(key_LOW_FREQ_BOUND, config); 
             int midFreqBound = 3500;
             if (config.ContainsKey(key_MID_FREQ_BOUND)) midFreqBound = Configuration.GetInt(key_MID_FREQ_BOUND, config);
-            double segmentDuration                                   = Configuration.GetDouble(KiwiRecogniser.key_SEGMENT_DURATION, config);
+            double segmentDuration                                   = Configuration.GetDouble(LSKiwi.key_SEGMENT_DURATION, config);
             double segmentStartMinute = segmentDuration * iter;
             double windowOverlap                                     = Configuration.GetDouble(AcousticIndices.key_FRAME_OVERLAP, config);
 
