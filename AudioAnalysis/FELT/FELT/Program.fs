@@ -1,23 +1,15 @@
 ﻿
 namespace FELT
-    module Rubbish =
-        // Learn more about F# at http://fsharp.net
+    open Microsoft.FSharp.Collections
+    open MQUTeR.FSharp.Shared
+    
+    module Helpers =
 
-        open System.Configuration
-
-        //let settings = ConfigurationManager.AppSettings.Set("boobs", "donkey")
-//
-//        type boobs = ConfigurationManager
-//
-//        let config = boobs.OpenExeConfiguration(ConfigurationUserLevel.None)
-//
-//        config.AppSettings.Settings.Add("boobs", "donkey")
-//
-//        config.Save()
-
-        // http://stackoverflow.com/questions/3512266/show-a-seq-in-the-watch-window
-        // Force System.Core into the process
-        let x = typeof<System.Linq.Enumerable>
+        let headersMatch trainingData testData =
+            let trKeys = Map.keys (trainingData.Instances)
+            let teKeys = Map.keys (testData.Instances)
+            if trKeys <> teKeys then
+                invalidArg "trainingData" "the columns in test and training data should be the same"
 
     type WorkflowItemDescriptor =
         abstract member Description : string

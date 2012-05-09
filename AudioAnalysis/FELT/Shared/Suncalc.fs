@@ -36,6 +36,7 @@ namespace MQUTeR.FSharp.Shared
     module SunCalc = 
 
         open System
+        open System.Diagnostics
         open Microsoft.FSharp.Math
         open Microsoft.FSharp.Math.SI
         open Microsoft.FSharp.Collections
@@ -43,6 +44,48 @@ namespace MQUTeR.FSharp.Shared
         type Degree = float
         type DayPhase = string
         type DayPoint = string
+
+
+        ////        type Twilights =
+//            {
+//                astronomical : Interval<DateTimeOffset>;
+//                nautical : Interval<DateTimeOffset>;
+//                civil : Interval<DateTimeOffset>;
+//            }
+
+        type SunPhases = Map<DayPhase, Interval<DateTimeOffset>>
+//            {
+//                dawn : DateTimeOffset;
+//                sunrise : Interval<DateTimeOffset>;
+//                    
+//                transit : DateTimeOffset;
+//                sunset : Interval<DateTimeOffset>;
+//                    
+//                dusk : DateTimeOffset;
+//
+//                morningTwilight : Twilights option;
+//                eveningTwilight : Twilights option;
+//            }
+            //with
+//                member this.IsDetailed =
+//                    match this.morningTwilight.IsSome , this.eveningTwilight.IsSome with
+//                        | true, true -> true
+//                        | true , false | false, true -> raise (System.NotSupportedException("Cannot have some detailed members... need all of them"))
+//                        | _ -> false
+//                   
+//                member this.InOrder =
+//                    if this.IsDetailed then
+//                        [|  |]
+//                    else 
+//                        [| |]
+////                interface IEnumerable<string * Interval<DateTimeOffset>> with
+////                    member this.GetEnumerator() =
+//                        
+//                member this.PhaseForTime (dto:DateTimeOffset) =
+//                    dto
+
+
+
         //"Dawn" ; "Morning Twilight" ; "Sunrise" ; "Morning" ; "Daylight" ; "Evening" ; "Sunset" ; "Evening Twilight" ; "Dusk" ; "Night"
        // let simplePhases : DayPhase array = [|"dawn";  "morning"; "afternoon"; "dusk"; "night" |]
 
@@ -62,8 +105,21 @@ namespace MQUTeR.FSharp.Shared
         let EveningNauticalTwilight              ="evening nautical twilight"  
         let EveningAstronomicalTwilight          ="evening astronomical twilight"  
         let Night                                ="night"   
-            
-
+        let SolarNoon (sunPhases:SunPhases)      = 
+            let n1 = sunPhases.[Morning].Upper
+            Debug.Assert (n1.Equals(sunPhases.[Afternoon].Lower))
+            n1 
+        let Dawn (sunPhases:SunPhases)      = 
+            let d1 = sunPhases.[DawnNauticalTwilight].Upper
+            Debug.Assert (d1.Equals(sunPhases.[DawnCivilTwilight].Lower))
+            d1 
+        let Dusk (sunPhases:SunPhases)      = 
+            let d1 = sunPhases.[EveningCivilTwilight].Upper
+            Debug.Assert (d1.Equals(sunPhases.[EveningNauticalTwilight].Lower))
+            d1
+        let NightParts (sunPhases:SunPhases)      =
+            sunPhases.[DawnAstronomicalTwilight].Lower,
+            sunPhases.[EveningAstronomicalTwilight].Upper
 
 
         let detailedPhases : DayPhase array = 
@@ -104,43 +160,7 @@ namespace MQUTeR.FSharp.Shared
 //            -12.0, , ;
 //            -18.0
 
-        type Twilights =
-            {
-                astronomical : Interval<DateTimeOffset>;
-                nautical : Interval<DateTimeOffset>;
-                civil : Interval<DateTimeOffset>;
-            }
 
-        type SunPhases = Map<DayPhase, Interval<DateTimeOffset>>
-            {
-                dawn : DateTimeOffset;
-                sunrise : Interval<DateTimeOffset>;
-                    
-                transit : DateTimeOffset;
-                sunset : Interval<DateTimeOffset>;
-                    
-                dusk : DateTimeOffset;
-
-                morningTwilight : Twilights option;
-                eveningTwilight : Twilights option;
-            }
-            //with
-//                member this.IsDetailed =
-//                    match this.morningTwilight.IsSome , this.eveningTwilight.IsSome with
-//                        | true, true -> true
-//                        | true , false | false, true -> raise (System.NotSupportedException("Cannot have some detailed members... need all of them"))
-//                        | _ -> false
-//                   
-//                member this.InOrder =
-//                    if this.IsDetailed then
-//                        [|  |]
-//                    else 
-//                        [| |]
-////                interface IEnumerable<string * Interval<DateTimeOffset>> with
-////                    member this.GetEnumerator() =
-//                        
-//                member this.PhaseForTime (dto:DateTimeOffset) =
-//                    dto
             
         let J1970 = 2440588.0
         let G1970 = new DateTimeOffset(1970,1,1,0,0,0, TimeSpan.Zero)
@@ -237,7 +257,7 @@ namespace MQUTeR.FSharp.Shared
         
     
          
-        let getDayInfo date lat lng detailed offset = 
+        let getDayInfo date lat lng offset = 
             let julianDateToDate x = julianDateToDate x offset
 
             let lw = -lng * deg2rad
@@ -272,8 +292,8 @@ namespace MQUTeR.FSharp.Shared
             
             // convert to intervals
             let empty = Map.empty<DayPhase, Interval<DateTimeOffset>>
-            let _, preNoon'   = Array.foldBack (fun (phase, thisTime) (lastTime, map) -> thisTime, (Map.add phase (ic thisTime lastTime) map)) preNoon       (noon, empty) 
-            let _, postNoon' = Array.fold     (fun (lastTime, map) (phase, thisTime) -> thisTime, (Map.add phase (ic lastTime thisTime) map)) (noon, empty) postNoon
+            let _, preNoon'   = Array.foldBack (fun (phase, thisTime) (lastTime, map) -> thisTime, (Map.add phase (ic thisTime lastTime) map)) preNoon  (noon, empty) 
+            let _, postNoon'  = Array.foldBack (fun (phase, thisTime) (lastTime, map) -> thisTime, (Map.add phase (ic lastTime thisTime) map)) postNoon (noon, empty) 
 
             let result = Map.merge preNoon' postNoon'
 

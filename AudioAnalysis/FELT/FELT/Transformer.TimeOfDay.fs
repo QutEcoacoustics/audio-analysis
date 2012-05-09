@@ -1,17 +1,16 @@
 ﻿namespace FELT.Transformers
 
     open MQUTeR.FSharp.Shared
+    open Microsoft.FSharp.Math
     open Microsoft.FSharp.Numerics
     open Microsoft.FSharp.Collections
     open System
     open System.Diagnostics
     open QuickGraph
 
-
     module TimeOfDay = 
-        type DayPhase = string
 
-        let phases : DayPhase array = [| "Dawn" ; "TwilightA" ; "Sunrise" ; "Morning" ; "Daylight" ; "Evening" ; "Sunset" ; "TwilightB" ; "Dusk" ; "Night" |]
+
 
         let makeCyclicGraph (g: 'a array) =
             let todg = new QuickGraph.UndirectedGraph<'a, UndirectedEdge<'a>>()
@@ -27,8 +26,49 @@
          
             todg
 
-        let timeOfDayGraph = makeCyclicGraph phases
+        let timeOfDayGraph = makeCyclicGraph (SunCalc.detailedPhases)
             
+        type DayPhaseTransformer(latName : string, lngName : string, timeTag : string, dayPhaseColumnName : string) =
+            inherit TransformerBase()
+
+            override this.Transform (trainingData: Data) (testData: Data) =
+                // ensure all three given fields exist in the data and the data types are correct
+                if 
+                    trainingData.hasColumn latName DataType.Number &&
+                    trainingData.hasColumn lngName DataType.Number &&
+                    trainingData.hasColumn timeTag DataType.Date &&
+                    testData.hasColumn latName DataType.Number &&
+                    testData.hasColumn lngName DataType.Number &&
+                    testData.hasColumn timeTag DataType.Date then
+
+                    // transform function, takes a row (a set of columns) and collapses it down into a cell (single column row)
+                    let tf (vs: Value[]) : Value =
+                        // set automatically orders its values
+                        let lat, lng, time = vs.[0] :?> Number, vs.[1] :?> Number, vs.[2] :?> Date
+
+                        // this will be called many times with ***almost the same*** input - optimization needed?
+                        let phases = SunCalc.getDayInfo time.Value lat.Value lng.Value time.Value.Offset
+                        let phase = Map.tryPick (fun key value -> if Interval.isInRange value time.Value then Some(key) else None) phases
+                        let phase' =
+                            if phase.IsNone then
+                                SunCalc.Night
+                            else
+                                phase.Value
+
+                        upcast (new Text(phase'))
+
+
+                    let remake' = Transformer.remake tf (set [latName; lngName; timeTag]) dayPhaseColumnName
+                    let newTrainingInstances = remake' trainingData.Instances
+                    let newTestInstances = remake' testData.Instances
+
+                    let hdrsTr = trainingData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
+                    let hdrsTe =     testData.Headers.Remove(latName).Remove(lngName).Remove(timeTag).Add(dayPhaseColumnName, DataType.Text)
+
+                    ({ trainingData with Instances = newTrainingInstances; Headers = hdrsTr }, { testData with Instances = newTestInstances; Headers = hdrsTe })
+                else
+                    invalidArg "" "Missing correct columns for day phase transformation"
+
 
         type TimeOfDayTransformer(feature:string, newName:string) =
             inherit TransformerBase()
@@ -36,10 +76,11 @@
             override this.Transform (trainingData:Data) (testData:Data) =
 
 
-                
+                let tf (v:Value[]) : Value=
+                    if (v.Length <> 1) then
+                        invalidArg "v" "only supports one column input"
 
-                let tf (v:Value) : Value=
-                    match v with
+                    match Seq.first v with
                     | IsDate d -> 
                         // take only the time component, round, convert to modular number
                         let z = d.Value.TimeOfDay.TotalMinutes |> round |> int |> Z1440 
@@ -48,15 +89,14 @@
                         ErrorFail "Modulo tansformer was given date a date it could not decode! Boo!" |> failwith
                         upcast (new ModuloMinute(0Z))
 
-                let remake (instances:Map<ColumnHeader, Value array>) =
-                    let old = instances.[feature]
-                    let inst' = instances.Remove(feature)
-                    old |> Array.map tf |> (flip(Map.add feature)) inst'
+                
 
-
-                let newTrainingInstances = remake trainingData.Instances
-                let newTestInstances = remake testData.Instances
+                let remake' = Transformer.remake tf (set [feature]) newName
+                let newTrainingInstances =  remake'  trainingData.Instances
+                let newTestInstances = remake' testData.Instances
             
+                let hdrsTr = trainingData.Headers.Remove(feature).Add(newName, DataType.Text)
+                let hdrsTe =     testData.Headers.Remove(feature).Add(newName, DataType.Text)
 
                 ({ trainingData with Instances = newTrainingInstances }, { testData with Instances = newTestInstances })
         

@@ -117,7 +117,7 @@
         end
 
     type Date(d) = class
-        inherit BaseValue<DateTime>(d)
+        inherit BaseValue<DateTimeOffset>(d)
         end
 
     type FuzzyBit(b) = class
@@ -279,4 +279,13 @@
         let (|IsStrings|_|) (input: Value array) =
             testAndCastArray<string> input
 
-        
+        type Data with
+            // field helpers
+            member this.hasColumn s dt=
+                let hasName = this.Headers.TryFind s
+                if hasName.IsSome then
+                    this.Headers.[s] = dt
+                else
+                    false
+
+            

@@ -64,7 +64,7 @@ namespace MQUTeR.FSharp.Shared
             let dataType input =
                 if Double.TryParse(input,  ref 0.0 ) then
                     DataType.Number
-                elif DateTime.TryParse(input, ref (new DateTime())) then
+                elif DateTimeOffset.TryParse(input, ref (new DateTimeOffset())) then
                     DataType.Date
                 else
                     DataType.Text
@@ -106,7 +106,7 @@ namespace MQUTeR.FSharp.Shared
                             let cell = row.[columnIndex] 
                             let (v:Value) = 
                                 match datatype with
-                                    | DataType.Date -> upcast new Date(DateTime.Parse(cell))
+                                    | DataType.Date -> upcast new Date(DateTimeOffset.Parse(cell))
                                     | DataType.Number ->upcast new Number(Double.Parse(cell))
                                     | DataType.Text -> upcast new Text(cell)
                                     | _ -> failwith "Invalid data type"

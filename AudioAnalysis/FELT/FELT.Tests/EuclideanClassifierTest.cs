@@ -151,6 +151,7 @@ namespace FELT.Tests
 
 
         }
+
         private static Data ClassifierSetup(bool lazy, out Data testData, out EuclideanClassifier classifier, out Tuple<double, int>[][] expected)
         {
             #region setup

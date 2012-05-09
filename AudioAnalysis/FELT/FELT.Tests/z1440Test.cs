@@ -13,6 +13,7 @@ namespace FELT.Tests
     public class Z1440Test
     {
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void CreateZ1440()
         {
             var tests = new[] { -1528, -300, -1, 0, 1, 100, 1399, 1400, 1532 };
@@ -29,6 +30,7 @@ namespace FELT.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void BasicOpsZ1440()
         {
             // test cast
@@ -61,6 +63,7 @@ namespace FELT.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void StandardDeviationTest()
         {
             // standard deviation tests

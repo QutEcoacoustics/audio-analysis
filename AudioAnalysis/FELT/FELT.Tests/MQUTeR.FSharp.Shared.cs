@@ -112,7 +112,7 @@ namespace FELT.Tests
 
             Console.WriteLine("Time taken: " + st.ElapsedMilliseconds);
 
-            var headers = data.Headers.Select((x) => x.Key).ToArray();
+            var headers = data.Headers.Select(x => x.Key).ToArray();
             CollectionAssert.AreEqual(new[] { "Age", "Coolness", "Date of Birth" }, headers);
 
             Assert.IsTrue(data.Instances.ContainsKey("Age"));
@@ -134,7 +134,7 @@ namespace FELT.Tests
                         "01-07-89 00:00:00.00", "02-07-89 12:00:00.00", "03-07-89 10:00:00.00", "04-07-89 00:03:00.00",
                         "05-07-89 00:00:00.00", "06-07-89 00:00:00.00", "07-07-89 00:40:00.00", "08-07-1989 19:53:12.623",
                         "09-07-89 05:00:00.00", "10-07-89 00:00:13.00"
-                    }).Select(DateTime.Parse).ToArray(),
+                    }).Select(DateTimeOffset.Parse).ToArray(),
                 data.Instances["Date of Birth"].Select((x) => ((Date)x).Value).ToArray());
 
             Assert.IsFalse(data.Instances.ContainsKey("Ignore"));
