@@ -42,6 +42,8 @@ namespace System
         let inline (><) f a b = f b a
         let inline ifelse a b condition = if condition then a else b
 
+     
+
         // http://stackoverflow.com/a/3928197/224512
         let inline isNull o = System.Object.ReferenceEquals(o, null)
 

@@ -69,9 +69,15 @@
                 LanguagePrimitives.DivideByInt s (Array.length xs)
 
             let inline variance xs = let m = mean xs in mean_by (fun x -> let e = (x - m) in e * e) xs
+            let inline varianceAndMean xs = 
+                let m = mean xs
+                mean_by (fun x -> let e = (x - m) in e * e) xs, m
 
             let inline stdDeviation xs = sqrt (variance xs)
 
+            let inline stdDeviationAndMean xs =
+                let var, mean = varianceAndMean xs
+                sqrt(var), mean
 
 
             let inline skewness xs =

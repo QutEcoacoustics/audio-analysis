@@ -70,6 +70,7 @@
     <Compile Include="Cleaner.fs" />
     <Compile Include="Transformer.Base.fs" />
     <Compile Include="Transformer.TimeOfDay.fs" />
+    <Compile Include="Trainer.ZScoreNormalise.fs" />
     <Compile Include="Selector.Base.fs" />
     <Compile Include="Selector.OneForOne.fs" />
     <Compile Include="Selector.Randomiser.fs" />
@@ -83,6 +84,7 @@
     <Compile Include="Classifier.PearsonCorrelationCoefficient.fs" />
     <Compile Include="Classifier.ZScore.fs" />
     <Compile Include="Classifier.GraphDistance.fs" />
+    <Compile Include="Results.ResultsCombiner.fs" />
     <Compile Include="ResultsComputation.fs" />
     <Compile Include="Workflows.fs" />
     <Compile Include="RunAnalysis.fs" />

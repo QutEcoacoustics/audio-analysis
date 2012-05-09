@@ -92,6 +92,7 @@
         /// A test for euclideanDist.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void EuclideanDistTest3()
         {
             IEnumerable<object> vectorP = new object[] { 1.0, 2,  IntegerZ1440.Create(3) };
@@ -107,6 +108,7 @@
         /// A test for euclideanDist.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void EuclideanDistTest4()
         {
             IEnumerable<object> vectorP = new IComparable[] { 1.0, 2, IntegerZ1440.Create(16) };
@@ -123,6 +125,7 @@
         /// A test for euclideanDist.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void EuclideanDistTest5()
         {
             IEnumerable<object> vectorP = new IComparable[] { 1000, 9532.6, IntegerZ1440.Create(1430) };
@@ -138,6 +141,7 @@
         /// A test for euclideanDist.
         /// </summary>
         [TestMethod]
+        [ExpectedException(typeof(Exception))]
         public void EuclideanDistTest6()
         {
             IEnumerable<object> vectorP = new IComparable[] { IntegerZ1440.Create(1200) };

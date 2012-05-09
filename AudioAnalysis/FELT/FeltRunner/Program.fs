@@ -93,7 +93,7 @@
 
         // Transforms settings
         let transform = ConfigurationManager.GetSection("transformations") :?> TransformsConfig
-        let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Feature, tx.NewName, tx.Using) |> Seq.toList
+        let transforms = transform.Transformations |> Seq.cast |> Seq.map (fun (tx:TransformElement) -> tx.Features, tx.NewName, tx.Using) |> Seq.toList
 
 
         // set up run

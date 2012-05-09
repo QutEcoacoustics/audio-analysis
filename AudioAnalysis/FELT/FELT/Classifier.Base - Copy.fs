@@ -4,9 +4,11 @@
     type TrainingIndex = int
     type Distance = float
     type Result = (Distance * TrainingIndex)[]
+    type LazyResult = (int -> Result)
+
     type ClassifierResult =
         | Nothing
-        | Function of (int -> Result)
+        | Function of LazyResult
         | ResultSeq of seq<Result>
         | ResultArray of Result[]
 

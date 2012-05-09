@@ -16,16 +16,16 @@
 
         end
     and
-        TransformElement(feature, newName, using) = class
+        TransformElement(features, newName, using) = class
             inherit ConfigurationElement()
             do
-                base.["feature"] <- feature
+                base.["features"] <- features
                 base.["newName"] <- newName
                 base.["using"] <- using
-            [<ConfigurationProperty("feature", IsRequired = true)>]
-            member this.Feature
-                with get() = base.["feature"] :?> string
-                and set(value : string) = base.["feature"] <- value
+            [<ConfigurationProperty("features", IsRequired = true)>]
+            member this.Features
+                with get() = base.["features"] :?> string
+                and set(value : string) = base.["features"] <- value
 
 
             [<ConfigurationProperty("newName", IsRequired = true)>]
@@ -49,7 +49,7 @@
             override this.CreateNewElement() = upcast(new TransformElement())
 
             override this.GetElementKey(element:ConfigurationElement) =
-                upcast (element :?> TransformElement).Feature
+                upcast (element :?> TransformElement).Features
 
     //        override this.CollectionType
     //            with get() = ConfigurationElementCollectionType.BasicMap
