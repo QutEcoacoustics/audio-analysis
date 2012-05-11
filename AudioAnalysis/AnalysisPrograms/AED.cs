@@ -212,7 +212,7 @@ namespace AnalysisPrograms
             Console.WriteLine();
             foreach (AcousticEvent ae in events)
             {
-                Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
             }
 
             Console.WriteLine();
@@ -268,7 +268,7 @@ namespace AnalysisPrograms
             ////image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration));
             ////image.AddTrack(Image_Track.GetWavEnvelopeTrack(recording, image.Image.Width));
             ////image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image.AddEvents(events);
+            image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
             image.Save(imagePath);
         }
 

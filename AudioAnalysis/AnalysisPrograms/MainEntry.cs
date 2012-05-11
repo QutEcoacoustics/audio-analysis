@@ -65,6 +65,9 @@ namespace AnalysisPrograms
                         break;
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
+                    case "human":     // recognises uhman speech but not word recognition
+                        Human.Dev(restOfArgs);
+                        break;
                     case "felt":     // find other acoustic events like this
                         FeltTemplates_Use.Dev(restOfArgs);
                         break;

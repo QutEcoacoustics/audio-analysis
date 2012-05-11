@@ -71,7 +71,7 @@ namespace AnalysisPrograms.Processing
                 {
                     image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
                     image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-                    image.AddEvents(events);
+                    image.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
                     image.Save(imagePath);
                 }
             }
@@ -91,7 +91,7 @@ namespace AnalysisPrograms.Processing
         /// </param>
         public static void SaveAeCsv(IEnumerable<AcousticEvent> events, string workingDir, string audioFilePath)
         {
-            var aes = events.Select(e => new { e.StartTime, e.EndTime, e.MinFreq, e.MaxFreq });
+            var aes = events.Select(e => new { StartTime = e.TimeStart, EndTime = e.TimeEnd, e.MinFreq, e.MaxFreq });
 
             var sb = new StringBuilder();
             sb.AppendLine("Start time, duration, min freq, max freq");
@@ -578,8 +578,13 @@ namespace AnalysisPrograms.Processing
                 double[] scores = result3.Item1;
 
                 predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whipMinHz, whipMaxHz,
-                                                              sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                                                              sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold, minDuration, maxDuration);
+                foreach (AcousticEvent ev in predictedEvents)
+                {
+                    ev.SourceFile = audioFileName;
+                    ev.Name = callName;
+                }
+
                 sonogram.Data = result1.Item1;
                 Log.WriteLine("Extract Whipbird calls - finished");
             }

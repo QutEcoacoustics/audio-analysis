@@ -199,7 +199,7 @@ namespace AnalysisPrograms
 
                 int startMilliseconds = (int)(startMinutes * 60000);
                 int endMilliseconds = startMilliseconds + (int)(segmentDuration * 60000) + overlap_ms;
-                MasterAudioUtility.SegmentToWav(resampleRate, new FileInfo(sourceRecordingPath), new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
+                MasterAudioUtility.SegmentToWav(resampleRate, fiSourceRecording, new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
                 AudioRecording recordingSegment = new AudioRecording(tempSegmentPath);
                 FileInfo fiSegmentAudioFile = new FileInfo(recordingSegment.FilePath);
                 TimeSpan ts = recordingSegment.Duration();
@@ -802,7 +802,7 @@ namespace AnalysisPrograms
             foreach (var kiwiEvent in predictedEvents)
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
-                int eventStartAbsoluteSec   = (int)(segmentStartSec + kiwiEvent.StartTime);
+                int eventStartAbsoluteSec   = (int)(segmentStartSec + kiwiEvent.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
@@ -908,8 +908,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
             double maxScore = 16.0;
             image.AddSuperimposedMatrix(hits, maxScore);
-            image.AddEvents(predictedEvents);
-
+            image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
             return image.GetImage();
         }
 

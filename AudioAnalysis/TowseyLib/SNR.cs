@@ -100,7 +100,6 @@ namespace TowseyLib
             else
             if (nrt == NoiseReductionType.HARMONIC_DETECTION)
             {
-                Log.WriteIfVerbose("\tNoise reduction: HARMONIC_DETECTION");
                 m = SNR.NoiseReduce_HarmonicDetection(m);
             }
             var tuple = System.Tuple.Create(m, smoothedArray);
@@ -719,14 +718,18 @@ namespace TowseyLib
         /// </summary>
         /// <param name="matrix"></param>
         /// <returns></returns>
+        //public static double[,] NoiseReduce_HarmonicDetection(double[,] matrix)
+        //{
+        //    double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
+        //    double[]  modalNoise   = SNR.CalculateModalNoise(smoothMatrix);        //calculate modal noise profile
+        //    modalNoise             = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
+        //    return SubtractBgNoiseFromSpectrogram(smoothMatrix, modalNoise);       //subtract modal noise but do NOT threshold
+        //    //return RemoveModalNoise(smoothMatrix, modalNoise);                   //subtract modal noise AND threshold at ZERO
+        //}
         public static double[,] NoiseReduce_HarmonicDetection(double[,] matrix)
         {
-            //double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
-            double[,] smoothMatrix = matrix;
-            double[]  modalNoise   = SNR.CalculateModalNoise(smoothMatrix);        //calculate modal noise profile
-            modalNoise             = DataTools.filterMovingAverage(modalNoise, 7); //smooth the noise profile
-            return SubtractBgNoiseFromSpectrogram(smoothMatrix, modalNoise);                   //subtract modal noise but do NOT threshold
-            //return RemoveModalNoise(smoothMatrix, modalNoise);                     //subtract modal noise AND threshold at ZERO
+            double[,] smoothMatrix = SNR.SmoothInTemporalDirectionOnly(matrix, 3); //3=smootihng window
+            return NoiseReduce_Standard(smoothMatrix);
         }
         
         /// <summary>

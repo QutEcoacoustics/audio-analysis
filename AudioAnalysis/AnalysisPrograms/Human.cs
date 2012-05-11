@@ -10,6 +10,9 @@ using System.Drawing.Imaging;
 
 using TowseyLib;
 using AudioAnalysisTools;
+using Acoustics.Shared;
+using Acoustics.Tools.Audio;
+
 
 
 //Here is link to wiki page containing info about how to write Analysis techniques
@@ -21,6 +24,11 @@ namespace AnalysisPrograms
 {
     public class Human
     {
+        //public const string defaultRecordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
+        public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\Human\BirgitTheTerminator.wav";
+        public const string defaultConfigPath = @"C:\SensorNetworks\Output\HD_HUMAN\Human.cfg";
+        public const string defaultOutputDir = @"C:\SensorNetworks\Output\HD_HUMAN\";
+
         // for HUMAN SPPECH
         //hd C:\SensorNetworks\WavFiles\Human\BirgitTheTerminator.wav C:\SensorNetworks\Output\HD_HUMAN\HD_HUMAN_Params.txt events.txt
 
@@ -86,16 +94,25 @@ namespace AnalysisPrograms
             Log.WriteLine(date);
             Log.Verbosity = 1;
 
-            string recordingPath = args[0];
-            string iniPath   = args[1];
-            string outputDir = Path.GetDirectoryName(iniPath) + "\\";
-            string opFName   = args[2];
-            string opPath    = outputDir + opFName;
+            //string recordingPath = args[0];
+            //string iniPath   = args[1];
+            //string outputDir = Path.GetDirectoryName(iniPath) + "\\";
+            //string opFName   = args[2];
+            //string opPath    = outputDir + opFName;
+
+
+
+            string recordingPath = defaultRecordingPath;
+            string iniPath       = defaultConfigPath;
+            string outputDir     = defaultOutputDir;
+            string opFName       = ANALYSIS_NAME + ".txt";
+            string opPath        = outputDir + opFName;
+
             string audioFileName = Path.GetFileName(recordingPath);
 
                        
-            Log.WriteIfVerbose("# Output folder =" + outputDir);
-            Log.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
+            Console.WriteLine("# Output folder:  " + outputDir);
+            Console.WriteLine("# Recording file: " + Path.GetFileName(recordingPath));
             FileTools.WriteTextFile(opPath, date + "\n# Recording file: " + audioFileName);
 
             //READ PARAMETER VALUES FROM INI FILE
@@ -115,35 +132,49 @@ namespace AnalysisPrograms
                 double minDuration = Double.Parse(dict[key_MIN_DURATION]);          // lower bound for the duration of an event
                 double maxDuration = Double.Parse(dict[key_MAX_DURATION]);          // upper bound for the duration of an event
                 int DRAW_SONOGRAMS = Int32.Parse(dict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
+                Console.WriteLine("\tFreq band: {0}-{1} Hz.)", minHz, maxHz);
+                Console.WriteLine("\tNoise Reduction type: {0}", nrt.ToString());
+                Console.WriteLine("\tExpected harmonic count within bandwidth: {0}", harmonicCount);
+                Console.WriteLine("\tThreshold Min Amplitude = " + minAmplitude + " dB (peak to trough)");
+                Console.WriteLine("\tDuration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);
 
-                AudioRecording recordingSegment = new AudioRecording(recordingPath);
-
-                Log.WriteIfVerbose("Freq band: {0}-{1} Hz.)", minHz, maxHz);
-                Log.WriteIfVerbose("Expected harmonic count within bandwidth: {0}", harmonicCount);
-                Log.WriteIfVerbose("Threshold Min Amplitude = " + minAmplitude +" dB (peak to trough)");
-                Log.WriteIfVerbose("Duration Bounds min-max: {0:f2} - {1:f2} seconds", minDuration, maxDuration);   
+                string tempSegmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
+                var fiSourceRecording = new FileInfo(recordingPath);
+                var fiTempSegmentFile = new FileInfo(tempSegmentPath);
+                
+                IAudioUtility audioUtility = new MasterAudioUtility();
+                var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
+                var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType); // Get duration of the source file
+                int startMilliseconds = 0;
+                int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
+                //int resampleRate = 17640;
+                int resampleRate = 22050;
+                Console.WriteLine("\tRecording Duration: {0:f2}seconds", sourceDuration.TotalSeconds);
                     
 //#############################################################################################################################################
-                var results = Execute_HDDetect(recordingSegment, nrt, frameLength, frameOverlap, minHz, maxHz, /*minPeriod, maxPeriod,*/  harmonicCount, minAmplitude,
+                MasterAudioUtility.SegmentToWav(resampleRate, fiSourceRecording, new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
+                AudioRecording recording = new AudioRecording(tempSegmentPath);
+
+                var results = Execute_HDDetect(recording, nrt, frameLength, frameOverlap, minHz, maxHz, harmonicCount, minAmplitude,
                                                minDuration, maxDuration, analysisName);
 
-                Log.WriteLine("# Finished detecting spectral harmonic events.");
 //#############################################################################################################################################
 
                 var sonogram = results.Item1;
                 var hits = results.Item2;
                 var scores = results.Item3;
                 var predictedEvents = results.Item4;
-                Log.WriteLine("# Event Count = " + predictedEvents.Count());
+                Console.WriteLine("# Event Count = " + predictedEvents.Count());
 
                 //write event count to results file.            
                 //WriteEventsInfo2TextFile(predictedEvents, opPath);
 
                 if (DRAW_SONOGRAMS==2)
                 {
-                    double normMax = minAmplitude * 4; //so normalised eventThreshold = 0.25
+                    double eventThreshold = 0.25;
+                    double normMax = minAmplitude / eventThreshold; //threshold tied to min amplitude
                     for (int i = 0; i < scores.Length; i++) scores[i] /= normMax;
-                    //Console.WriteLine("min={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), 0.25);
+                    Console.WriteLine("\tmin={0}  max={1}  threshold={2}", scores.Min(), scores.Max(), eventThreshold);
                     string imagePath = outputDir + Path.GetFileNameWithoutExtension(recordingPath) + ".png";
                     Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, 0.25);
                     image.Save(imagePath, ImageFormat.Png);
@@ -161,11 +192,11 @@ namespace AnalysisPrograms
             } //try
             catch (KeyNotFoundException ex)
             {
-                Log.WriteLine("KEY NOT FOUND IN PARAMS FILE: "+ ex.ToString());
+                Console.WriteLine("KEY NOT FOUND IN PARAMS FILE: " + ex.ToString());
                 Console.ReadLine();
             }
 
-            Log.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
+            Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
         } //Dev()
 
@@ -198,8 +229,11 @@ namespace AnalysisPrograms
             NoiseReductionType nrt = SNR.Key2NoiseReductionType(strNRT);
 
             //#############################################################################################################################################
-            AudioRecording recordingSegment = new AudioRecording(fiSegmentAudioFile.FullName);
-            var results = Execute_HDDetect(recordingSegment, nrt, frameLength, frameOverlap, minHz, maxHz, /*minPeriod, maxPeriod,*/  harmonicCount, minAmplitude,
+            AudioRecording recording = new AudioRecording(fiSegmentAudioFile.FullName);
+            if (recording.SampleRate != 22050) recording.ConvertSampleRate22kHz();
+
+
+            var results = Execute_HDDetect(recording, nrt, frameLength, frameOverlap, minHz, maxHz, /*minPeriod, maxPeriod,*/  harmonicCount, minAmplitude,
                                            minDuration, maxDuration, analysisName);
             //#############################################################################################################################################
 
@@ -220,7 +254,7 @@ namespace AnalysisPrograms
             }
 
             //write events to a data table to return.
-            TimeSpan tsSegmentDuration = recordingSegment.Duration();
+            TimeSpan tsSegmentDuration = recording.Duration();
             DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, tsSegmentDuration, predictedEvents);
             //Log.WriteLine("# Event count for minute {0} = {1}", startMinutes, dataTable.Rows.Count);
 
@@ -237,7 +271,7 @@ namespace AnalysisPrograms
             foreach (var speechEvent in predictedEvents)
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
-                int eventStartAbsoluteSec = (int)(segmentStartSec + speechEvent.StartTime);
+                int eventStartAbsoluteSec = (int)(segmentStartSec + speechEvent.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
@@ -271,12 +305,16 @@ namespace AnalysisPrograms
             recording.Dispose();
 
             //ii: DETECT HARMONICS
-            string audioFileName = "audio file";
-            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, //minHarmonicPeriod, maxHarmonicPeriod,
-                                                   harmonicCount, amplitudeThreshold, minDuration, maxDuration, audioFileName, callName);
+            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram,minHz,maxHz,harmonicCount, amplitudeThreshold, minDuration, maxDuration);
             double[] scores = results.Item1;     //an array of periodicity scores
             Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
             List<AcousticEvent> predictedEvents = results.Item3;
+            foreach (AcousticEvent ev in predictedEvents)
+            {
+                ev.SourceFile = recording.FileName;
+                ev.Name = callName;
+            }
+
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
@@ -318,7 +356,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
             if (hits != null) image.AddSuperimposedMatrix(hits, maxScore);
-            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents);
+            if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
             return image.GetImage();
         } //DrawSonogram()
 

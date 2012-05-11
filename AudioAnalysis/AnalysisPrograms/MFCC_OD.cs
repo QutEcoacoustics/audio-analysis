@@ -391,7 +391,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(mfccScores, 0.0, 1.0, eventThreshold));
                 image.AddTrack(Image_Track.GetScoreTrack(oscScores, 0.0, 1.0, eventThreshold));
-                image.AddEvents(predictedEvents);
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
                 image.Save(path);
             }
         }

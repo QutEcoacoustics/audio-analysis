@@ -120,7 +120,7 @@ namespace AnalysisPrograms
             var events = new List<Util.Rectangle<double, double>>();
             foreach (AcousticEvent ae in aed.Item2)
             {
-                events.Add(Util.fcornersToRect(ae.StartTime, ae.EndTime, ae.MaxFreq, ae.MinFreq));
+                events.Add(Util.fcornersToRect(ae.TimeStart, ae.TimeEnd, ae.MaxFreq, ae.MinFreq));
             }
 
             Log.WriteLine("EPR start");
@@ -178,12 +178,12 @@ namespace AnalysisPrograms
                 Tuple<BaseSonogram, List<AcousticEvent>> result = Detect(wavFilePath, intensityThreshold, bandPassFilterMaximum, bandPassFilterMinimum, smallAreaThreshold, Default.eprNormalisedMinScore);
                 List<AcousticEvent> eprEvents = result.Item2;
 
-                eprEvents.Sort((ae1, ae2) => ae1.StartTime.CompareTo(ae2.StartTime));
+                eprEvents.Sort((ae1, ae2) => ae1.TimeStart.CompareTo(ae2.TimeStart));
 
                 Console.WriteLine();
                 foreach (AcousticEvent ae in eprEvents)
                 {
-                    Console.WriteLine(ae.StartTime + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
+                    Console.WriteLine(ae.TimeStart + "," + ae.Duration + "," + ae.MinFreq + "," + ae.MaxFreq);
                 }
 
                 Console.WriteLine();

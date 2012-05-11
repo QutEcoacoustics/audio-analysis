@@ -17,12 +17,14 @@ namespace AudioAnalysisTools
         public Image SonoImage { get; private set; }
         List<Image_Track> tracks = new List<Image_Track>();
         public IEnumerable<Image_Track> Tracks { get { return tracks; } }
-        public List<AcousticEvent> EventList { get; set; }
+        public List<AcousticEvent> eventList { get; set; }
         double[,] SuperimposedMatrix { get; set; }
         private double superImposedMaxScore;
         private int[] FreqHits;
         private int nyquistFreq;
+        private int freqBinCount;
         #endregion
+
 
         /// <summary>
         /// CONSTRUCTOR
@@ -39,9 +41,11 @@ namespace AudioAnalysisTools
             tracks.Add(track);
         }
 
-        public void AddEvents(List<AcousticEvent> list)
+        public void AddEvents(List<AcousticEvent> list, int nyquist, int freqBinCount)
         {
-            this.EventList = list;
+            this.eventList = list;
+            this.nyquistFreq = nyquist;
+            this.freqBinCount = freqBinCount;
         }
 
         public void AddSuperimposedMatrix(Double[,] m, double maxScore)
@@ -96,7 +100,7 @@ namespace AudioAnalysisTools
                 GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
 
                 if (this.SuperimposedMatrix != null) SuperimposeMatrix(g);
-                if (this.EventList != null) DrawEvents(g);
+                if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
             }
 
@@ -127,26 +131,30 @@ namespace AudioAnalysisTools
         {
             Pen p1 = new Pen(Color.Red);
             Pen p2 = new Pen(Color.Black);
-            foreach (AcousticEvent e in this.EventList)
+            foreach (AcousticEvent e in this.eventList)
             {
                 //double start = e.StartTime;
                 //double duration = e.Duration;
                 //int minF = e.MinFreq;
                 //int maxF = e.MaxFreq;
-                int x = e.oblong.r1;
-                int y = e.FreqBinCount - e.oblong.c2;
-                int width = e.oblong.r2 - x + 1;
-                int height = e.oblong.c2 - e.oblong.c1 + 1;
-                g.DrawRectangle(p1, x, y, width, height);
+                int fBin1 = (int)(this.freqBinCount * (e.MinFreq / (double)this.nyquistFreq));
+                int fBin2 = (int)(this.freqBinCount * (e.MaxFreq / (double)this.nyquistFreq));
+                int height = fBin2 - fBin1 + 1;
+                int t1 = e.oblong.r1; //temporal start of event
+                //int y = e.FreqBinCount - e.oblong.c2;
+                int y = this.freqBinCount - fBin2;
+                int tWidth = e.oblong.r2 - t1 + 1;
+                //int height = e.oblong.c2 - e.oblong.c1 + 1;
+                g.DrawRectangle(p1, t1, y, tWidth, height);
                 //draw the score bar to indicate relative score
                 int scoreHt = (int)Math.Round(height * e.ScoreNormalised);
                 int y1 = y + height;
                 int y2 = y1 - scoreHt;
                 //g.DrawLine(p2, x, y1, x, y2);
-                g.DrawLine(p2, x + 1, y1, x + 1, y2);
-                g.DrawLine(p2, x + 2, y1, x + 2, y2);
-                g.DrawLine(p2, x + 3, y1, x + 3, y2);
-                g.DrawString(e.Name, new Font("Tahoma", 14), Brushes.Black, new PointF(x, y - 1));
+                g.DrawLine(p2, t1 + 1, y1, t1 + 1, y2);
+                g.DrawLine(p2, t1 + 2, y1, t1 + 2, y2);
+                g.DrawLine(p2, t1 + 3, y1, t1 + 3, y2);
+                g.DrawString(e.Name, new Font("Tahoma", 10), Brushes.Black, new PointF(t1, y - 1));
             }
         }
 
@@ -207,7 +215,7 @@ namespace AudioAnalysisTools
 
         public void Dispose()
         {
-            this.EventList = null;
+            this.eventList = null;
             this.SonoImage.Dispose();
         }
 
