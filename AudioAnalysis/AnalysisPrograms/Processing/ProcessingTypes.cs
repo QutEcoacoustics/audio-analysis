@@ -19,8 +19,6 @@ namespace AnalysisPrograms.Processing
     using AudioAnalysisTools;
     using AudioAnalysisTools.HTKTools;
 
-    using QutSensors.AudioAnalysis.AED;
-
     using TowseyLib;
 
     /// <summary>
