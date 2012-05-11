@@ -143,7 +143,13 @@ namespace AnalysisPrograms
 
                 predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whip_MinHz, whip_MaxHz, 
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                                                              eventThreshold, minDuration, maxDuration);
+                foreach (AcousticEvent ev in predictedEvents)
+                {
+                    ev.SourceFile = audioFileName;
+                    ev.Name = callName;
+                }
+
                 sonogram.Data = result1.Item1;
                 Log.WriteLine("Extract Whipbird calls - finished");
             }
@@ -180,9 +186,14 @@ namespace AnalysisPrograms
                 scores = DataTools.PeriodicityDetection(scores, minPeriod_frames, maxPeriod_frames);
 
                 //extract events
-                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz,
-                                                              sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, minDuration, maxDuration, audioFileName, callName);
+                predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, whistle_MinHz, whistle_MaxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                              eventThreshold, minDuration, maxDuration);
+                foreach (AcousticEvent ev in predictedEvents)
+                {
+                    ev.SourceFile = audioFileName;
+                    ev.Name = callName;
+                }
+
                 hits = DataTools.AddMatrices(mHori, mVert);
                 sonogram.Data = result1.Item1;
                 Log.WriteLine("Extract Curlew calls - finished");
@@ -210,10 +221,14 @@ namespace AnalysisPrograms
                 scores = result3.Item1;
                 hits = DataTools.AddMatrices(mHori, mVert);
 
-                string fileName = audioFileName;
                 predictedEvents = AcousticEvent.ConvertIntensityArray2Events(scores, whistle_MinHz, whistle_MaxHz,
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                              eventThreshold, 0.5, maxDuration, fileName);
+                                                              eventThreshold, 0.5, maxDuration);
+                foreach (AcousticEvent ev in predictedEvents)
+                {
+                    ev.SourceFile = audioFileName;
+                    //ev.Name = callName;
+                }
             }
 
             //write event count to results file. 
@@ -484,7 +499,7 @@ namespace AnalysisPrograms
                 //    intensity = DataTools.normalise(intensity);
                 //    image.AddTrack(Image_Track.GetScoreTrack(intensity, 0.0, 1.0, eventThreshold));
                 //}
-                image.AddEvents(predictedEvents);
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
                 image.Save(path);
             }
         }//drawSonogram()

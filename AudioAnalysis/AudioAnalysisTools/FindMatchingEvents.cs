@@ -109,8 +109,8 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
-                int startRow = (int)Math.Floor(av.StartTime * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Floor(av.EndTime   * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Floor(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow   = (int)Math.Floor(av.TimeEnd   * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - templateWidth -1;
                 if (stopRow <= startRow) stopRow = startRow +1;  //want minimum of one row
@@ -207,8 +207,8 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
-                int startRow = (int)Math.Floor(av.StartTime * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Floor(av.EndTime * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Floor(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow   = (int)Math.Floor(av.TimeEnd * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - templateFrames - 1;
                 if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
@@ -393,8 +393,8 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
-                int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
-                int endRow = (int)Math.Round(av.EndTime * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
                 if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
@@ -442,8 +442,8 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
-                int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
-                int endRow = (int)Math.Round(av.EndTime * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount;
                 int stopRow = endRow - targetLength;
                 if (stopRow <= startRow) stopRow = startRow + 1;  //want minimum of one row
@@ -503,8 +503,8 @@ namespace AudioAnalysisTools
             foreach (AcousticEvent av in segments)
             {
                 Log.WriteLine("SEARCHING SEGMENT.");
-                int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
-                int endRow = (int)Math.Round(av.EndTime * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount - 1;
                 endRow -= targetLength;
                 if (endRow <= startRow) endRow = startRow + 1;  //want minimum of one row

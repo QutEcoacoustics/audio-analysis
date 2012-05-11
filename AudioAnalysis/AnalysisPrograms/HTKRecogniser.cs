@@ -176,8 +176,8 @@ namespace AnalysisPrograms
             foreach (AcousticEvent ae in events)
             {
                 var sb = new StringBuilder();
-                double endtime = ae.StartTime + ae.Duration;
-                sb.Append(ae.Name + "\t" + ae.StartTime.ToString("f4") + "\t" +
+                double endtime = ae.TimeStart + ae.Duration;
+                sb.Append(ae.Name + "\t" + ae.TimeStart.ToString("f4") + "\t" +
                           endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" + ae.SourceFile);
                 list.Add(sb.ToString());
             }
@@ -195,7 +195,8 @@ namespace AnalysisPrograms
             var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image_mt.AddEvents(events);
+            image_mt.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
+
 
             //D: PARSE THE RESULTS FILE TO GET SCORE ARRAY
             string syllableFile = templateDir + "\\" + HTKConfig.labelListFN;

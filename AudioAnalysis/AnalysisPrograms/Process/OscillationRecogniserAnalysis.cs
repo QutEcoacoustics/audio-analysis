@@ -93,8 +93,8 @@
                 var newRow = table.NewRow();
                 newRow["Name"] = eventResult.Name;
                 newRow["ScoreNormalised"] = eventResult.ScoreNormalised;
-                newRow["EventStartSeconds"] = eventResult.StartTime;
-                newRow["EventEndSeconds"] = eventResult.EndTime;
+                newRow["EventStartSeconds"] = eventResult.TimeStart;
+                newRow["EventEndSeconds"] = eventResult.TimeEnd;
                 newRow["EventFrequencyMaxSeconds"] = eventResult.MinFreq;
                 newRow["EventFrequencyMinSeconds"] = eventResult.MaxFreq;
 

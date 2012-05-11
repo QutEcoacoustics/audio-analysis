@@ -476,7 +476,7 @@ namespace AudioAnalysisTools
             bool doHighlightSubband = true;
             bool add1kHzLines = true;
             var image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
-            image.AddEvents(list);
+            image.AddEvents(list, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             int garbageID = this.AcousticModel.FvCount + 2 - 1;

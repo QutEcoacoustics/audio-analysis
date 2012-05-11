@@ -162,8 +162,8 @@ namespace AudioAnalysisTools
 
             foreach (AcousticEvent av in events)
             {
-                int startRow = (int)Math.Round(av.StartTime * sonogram.FramesPerSecond);
-                int endRow   = (int)Math.Round(av.EndTime * sonogram.FramesPerSecond);
+                int startRow = (int)Math.Round(av.TimeStart * sonogram.FramesPerSecond);
+                int endRow   = (int)Math.Round(av.TimeEnd * sonogram.FramesPerSecond);
                 if (endRow >= sonogram.FrameCount) endRow = sonogram.FrameCount - 1;
                 endRow   -= dctLength;
                 if (endRow <= startRow) endRow = startRow +1;  //want minimum of one row

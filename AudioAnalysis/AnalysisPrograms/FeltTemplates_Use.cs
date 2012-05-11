@@ -191,7 +191,7 @@ namespace AnalysisPrograms
             foreach (AcousticEvent ae in allEvents)
             {
                 Log.WriteLine("# Event name = {0}  ############################", ae.Name);
-                Log.WriteLine("# Event time = {0:f2} to {1:f2} (frames {2}-{3}).", ae.StartTime, ae.EndTime, ae.oblong.r1, ae.oblong.r2);
+                Log.WriteLine("# Event time = {0:f2} to {1:f2} (frames {2}-{3}).", ae.TimeStart, ae.TimeEnd, ae.oblong.r1, ae.oblong.r2);
                 Log.WriteLine("# Event score= {0:f2}.", ae.Score);
             }
 
@@ -268,7 +268,13 @@ namespace AnalysisPrograms
 
             //vi: EXTRACT EVENTS
             List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
-                                                                            minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
+                                                                            minDuration, maxDuration);
+            foreach (AcousticEvent ev in matchEvents)
+            {
+                ev.SourceFile = sonogram.Configuration.SourceFName;
+                ev.Name = sonogram.Configuration.CallName;
+            }
+
 
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
@@ -327,7 +333,13 @@ namespace AnalysisPrograms
 
             //vi: EXTRACT EVENTS
             List<AcousticEvent> matchEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth, dBThreshold,
-                                                                            minDuration, maxDuration, sonogram.Configuration.SourceFName, sonogram.Configuration.CallName);
+                                                                            minDuration, maxDuration);
+            foreach (AcousticEvent ev in matchEvents)
+            {
+                ev.SourceFile = sonogram.Configuration.SourceFName;
+                ev.Name = sonogram.Configuration.CallName;
+            }
+
             
             // Edit the events to correct the start time, duration and end of events to match the max score and length of the template.
             AdjustEventLocation(matchEvents, callName, templateDuration, sonogram.Duration.TotalSeconds);
@@ -354,14 +366,14 @@ namespace AnalysisPrograms
             {
                 Log.WriteLine("# Old  event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
                 ae.Name = callName;
-                ae.StartTime = ae.Score_TimeOfMaxInEvent;
+                ae.TimeStart = ae.Score_TimeOfMaxInEvent;
                 ae.Duration  = templateDuration;
-                ae.EndTime   = ae.StartTime + templateDuration;
-                if (ae.EndTime > sonogramDuration) ae.EndTime = sonogramDuration; // check for overflow.
+                ae.TimeEnd   = ae.TimeStart + templateDuration;
+                if (ae.TimeEnd > sonogramDuration) ae.TimeEnd = sonogramDuration; // check for overflow.
                 ae.oblong = AcousticEvent.ConvertEvent2Oblong(ae);
                 ae.Score = ae.Score_MaxInEvent;
                 ae.ScoreNormalised = ae.Score / ae.Score_MaxPossible;  // normalised to the user supplied threshold
-                Log.WriteLine("# New event time = {0:f2} to {1:f2}.", ae.StartTime, ae.EndTime);
+                Log.WriteLine("# New event time = {0:f2} to {1:f2}.", ae.TimeStart, ae.TimeEnd);
                 Log.WriteLine("# New event frame= {0} to {1}.", ae.oblong.r1, ae.oblong.r2);
             }
         }
@@ -456,7 +468,7 @@ namespace AnalysisPrograms
                     image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, 0.25));
                 } //end adding in score tracks
 
-                image.AddEvents(predictedEvents);
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
                 image.Save(path);
             } // using
         } // DrawSonogram()

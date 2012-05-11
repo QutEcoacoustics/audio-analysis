@@ -168,10 +168,17 @@ namespace AnalysisPrograms
             //iii: DETECT HARMONICS
             //bool normaliseDCT = true;
             var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, //minHarmonicPeriod, maxHarmonicPeriod,
-                                                   harmonicCount, amplitudeThreshold, minDuration, maxDuration, audioFileName, callName);
+                                                   harmonicCount, amplitudeThreshold, minDuration, maxDuration);
             double[] scores = results.Item1;     //an array of periodicity scores
             Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
             List<AcousticEvent> predictedEvents = results.Item3;
+            foreach (AcousticEvent ev in predictedEvents)
+            {
+                ev.SourceFile = audioFileName;
+                ev.Name = callName;
+            }
+
+
 
             return System.Tuple.Create(sonogram, hits, scores, predictedEvents);
 
@@ -192,7 +199,7 @@ namespace AnalysisPrograms
                 image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
                 image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
                 image.AddSuperimposedMatrix(hits, maxScore);
-                image.AddEvents(predictedEvents);
+                image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
                 image.Save(path);
                 // ImageTools.DrawMatrix(hits, @"C:\SensorNetworks\Output\HD_FemaleKoala\hitsImage.png");
             }

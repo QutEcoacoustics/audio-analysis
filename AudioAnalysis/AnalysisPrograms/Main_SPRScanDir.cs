@@ -242,7 +242,7 @@ namespace AnalysisPrograms
             var image_mt = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
             image_mt.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image_mt.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
-            image_mt.AddEvents(events);
+            image_mt.AddEvents(events, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount); 
 
             //D: PARSE THE RESULTS FILE TO GET SCORE ARRAY
             string syllableFile = templateDir + "\\" + HTKConfig.labelListFN;
