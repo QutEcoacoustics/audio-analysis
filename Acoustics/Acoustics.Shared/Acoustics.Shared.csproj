@@ -10,10 +10,11 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Acoustics.Shared</RootNamespace>
     <AssemblyName>Acoustics.Shared</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EcoSounds\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -66,7 +67,6 @@
     <Compile Include="Formatters.cs" />
     <Compile Include="GraphicsSegmented.cs" />
     <Compile Include="ImageTooLargeForGraphicsException.cs" />
-    <Compile Include="KeyValueStore.cs" />
     <Compile Include="MediaTypes.cs" />
     <Compile Include="MinimalLocationSummary.cs" />
     <Compile Include="NonClosingStreamWrapper.cs" />
@@ -81,6 +81,7 @@
     <Compile Include="Segmenter.cs" />
     <Compile Include="SegmentPolicy.cs" />
     <Compile Include="SortableBindingList.cs" />
+    <Compile Include="StringKeyValueStore.cs" />
     <Compile Include="TempFileHelper.cs" />
     <Compile Include="Validation.cs" />
     <Compile Include="ValidationExtensions.cs" />
