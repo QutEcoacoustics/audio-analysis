@@ -12,11 +12,6 @@
     /// configuration file and any file or folder in the working directory.
     /// The working directory will be deleted after the analysis is complete.
     /// </para>
-    /// <para>
-    /// If the analysis expects particular files or folders to exist apart from 
-    /// audio file and configuration file, they must be created during the preparation step.
-    /// 
-    /// </para>
     /// </remarks>
     public class AnalysisSettings
     {
@@ -54,5 +49,13 @@
         /// Gets or sets the configuration file.
         /// </summary>
         public FileInfo ConfigFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configuration string. 
+        /// This might be a good way to store the 
+        /// default parameters for an analysis, 
+        /// rather than in separate text files.
+        /// </summary>
+        public string ConfigString { get; set; }
     }
 }

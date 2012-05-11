@@ -34,22 +34,6 @@
         }
 
         /// <summary>
-        /// Prepare the analysis processing. This could involve creating files or directories in the working directory,
-        /// setting additional settings, or any other preparation.
-        /// </summary>
-        /// <param name="analysisSettings">
-        /// The analysis settings.
-        /// </param>
-        /// <returns>
-        /// The analysis settings to use to run the analysis.
-        /// </returns>
-        public AnalysisSettings PrepareAnalysis(AnalysisSettings analysisSettings)
-        {
-            // TODO: is there any setup required?
-            return analysisSettings;
-        }
-
-        /// <summary>
         /// Run analysis over the given audio file, using the 
         /// settings from configuration file. Use the working directory.
         /// </summary>
