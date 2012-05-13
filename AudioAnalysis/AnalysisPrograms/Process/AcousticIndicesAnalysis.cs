@@ -1,27 +1,65 @@
 ﻿namespace AnalysisPrograms
 {
-    using System.Data;
-    using System.IO;
+    using System;
 
     using AnalysisBase;
 
     /// <summary>
+    /// Acoustic Indices Audio Analysis.
     /// </summary>
-    public class AcousticIndicesAudioProcessor : IAnalysis
+    public class AcousticIndicesAudioAnalysis : IAnalysis
     {
         /// <summary>
-        /// Gets the initial settings for the analysis. These are the default settings.
+        /// Gets the name to display for the analysis.
         /// </summary>
-        public AnalysisSettings InitialSettings
+        public string DisplayName
         {
             get
             {
-                throw new System.NotImplementedException();
+                return "Acoustic Indices";
             }
         }
 
         /// <summary>
-        /// Run analysis usign the given analysis settings.
+        /// Gets Identifier.
+        /// </summary>
+        public string Identifier
+        {
+            get
+            {
+                return "AcousticIndices";
+            }
+        }
+
+        /// <summary>
+        /// Gets the initial (default) settings for the analysis.
+        /// </summary>
+        public PreparerSettings DefaultFileSettings
+        {
+            get
+            {
+                return new PreparerSettings
+                    {
+                        SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                        SegmentOverlapDuration = TimeSpan.Zero,
+                        SegmentTargetSampleRate = 22050
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Gets the Default Configuration.
+        /// </summary>
+        public string DefaultConfiguration
+        {
+            get
+            {
+                return string.Empty;
+            }
+        }
+
+        /// <summary>
+        /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">
         /// The analysis Settings.

@@ -31,7 +31,7 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="AbstractUtility"/> class. 
         /// </summary>
-        public AbstractUtility()
+        protected AbstractUtility()
         {
             if (this.Log == null)
             {

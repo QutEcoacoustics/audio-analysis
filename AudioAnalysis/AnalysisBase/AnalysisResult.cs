@@ -1,6 +1,5 @@
 ﻿namespace AnalysisBase
 {
-    using System.Collections.Generic;
     using System.Data;
 
     /// <summary>
@@ -9,19 +8,23 @@
     public class AnalysisResult
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AnalysisResult"/> class.
+        /// Gets or sets Analysis Identifier.
         /// </summary>
-        /// <param name="results">
-        /// The results.
-        /// </param>
-        public AnalysisResult(DataTable results)
-        {
-            this.Results = results;
-        }
+        public string AnalysisIdentifier { get; set; }
 
         /// <summary>
-        /// Gets Results.
+        /// Gets or sets results.
         /// </summary>
-        public DataTable Results { get; private set; }
+        public DataTable Results { get; set; }
+
+        /// <summary>
+        /// Gets or sets the settings Used to produce the results.
+        /// </summary>
+        public AnalysisSettings AnalysisSettingsUsed { get; set; }
+
+        /// <summary>
+        /// Gets or sets PreparerSettingsUsed.
+        /// </summary>
+        public PreparerSettings PreparerSettingsUsed { get; set; }
     }
 }

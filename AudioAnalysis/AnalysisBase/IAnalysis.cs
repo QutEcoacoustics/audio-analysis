@@ -6,12 +6,27 @@
     public interface IAnalysis
     {
         /// <summary>
-        /// Gets the initial settings for the analysis. These are the default settings.
+        /// Gets the name to display for the analysis.
         /// </summary>
-        AnalysisSettings InitialSettings { get; }
+        string DisplayName { get; }
 
         /// <summary>
-        /// Run analysis usign the given analysis settings.
+        /// Gets Identifier.
+        /// </summary>
+        string Identifier { get; }
+
+        /// <summary>
+        /// Gets the initial (default) settings for the analysis.
+        /// </summary>
+        PreparerSettings DefaultFileSettings { get; }
+
+        /// <summary>
+        /// Gets the Default Configuration.
+        /// </summary>
+        string DefaultConfiguration { get; }
+
+        /// <summary>
+        /// Run analysis using the given analysis settings.
         /// </summary>
         /// <param name="analysisSettings">
         /// The analysis Settings.

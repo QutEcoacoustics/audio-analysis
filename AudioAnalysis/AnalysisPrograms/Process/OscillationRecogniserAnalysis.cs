@@ -17,19 +17,51 @@
     public class OscillationRecogniserAnalysis : IAnalysis
     {
         /// <summary>
-        /// Gets the initial settings for the analysis.
+        /// Gets the name to display for the analysis.
         /// </summary>
-        public AnalysisSettings InitialSettings
+        public string DisplayName
         {
             get
             {
-                return new AnalysisSettings
-                    {
-                        AnalysisName = "Oscillation Recogniser",
-                        SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                        SegmentOverlapDuration = TimeSpan.Zero,
-                        SegmentTargetSampleRate = 22050
-                    };
+                return "Oscillation Recogniser";
+            }
+        }
+
+        /// <summary>
+        /// Gets Identifier.
+        /// </summary>
+        public string Identifier
+        {
+            get
+            {
+                return "od";
+            }
+        }
+
+        /// <summary>
+        /// Gets the initial (default) settings for the analysis.
+        /// </summary>
+        public PreparerSettings DefaultFileSettings
+        {
+            get
+            {
+                return new PreparerSettings
+                {
+                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                    SegmentOverlapDuration = TimeSpan.Zero,
+                    SegmentTargetSampleRate = 22050
+                };
+            }
+        }
+
+        /// <summary>
+        /// Gets the Default Configuration.
+        /// </summary>
+        public string DefaultConfiguration
+        {
+            get
+            {
+                return string.Empty;
             }
         }
 
@@ -103,11 +135,20 @@
                     newRow["Information"] =
                         eventResult.ResultPropertyList.Where(i => i != null).Select(i => i.ToString());
                 }
-
-                newRow["Information"] = "No Information";
+                else
+                {
+                    newRow["Information"] = "No Information";
+                }
             }
 
-            return new AnalysisResult(table);
+            var result = new AnalysisResult
+            {
+                AnalysisIdentifier = this.Identifier,
+                AnalysisSettingsUsed = analysisSettings,
+                Results = table
+            };
+
+            return result;
         }
     }
 }
