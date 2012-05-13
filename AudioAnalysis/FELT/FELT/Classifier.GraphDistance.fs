@@ -10,7 +10,7 @@
     open QuickGraph.Algorithms
 
 
-    type GraphDistance(selector : Map<ColumnHeader, IGraph<IEdge<'v>,'v>>) =
+    type GraphDistance(selector : (ColumnHeader * IGraph<IEdge<'v>,'v>) array) =
         inherit ClassifierBase()
         
         // a lazy classifier for returning the distance between object on a known graph
@@ -20,7 +20,7 @@
             FELT.Helpers.headersMatch trainingData testData
 
             // then use selector from constructor to return columns that are relevant
-            let featuresToUse, graphs = Map.toArray selector |> Array.unzip
+            let featuresToUse, graphs = selector |> Array.unzip
 
             // for simplicities sake, only work with one thing atm
             let singleFeature = featuresToUse.Single()
@@ -38,15 +38,31 @@
                 // note: the lambda there returns evenly weighted edges between verticies
                 let distanceDelegate = specficGraphType.ShortestPathsDijkstra((fun _ -> 1.0), testItem)
 
-                Array.map (fun trainedItem -> 
+                let distances =
+                    Array.map (fun trainedItem -> 
                             let success, path = distanceDelegate.Invoke(trainedItem)
                             Debug.Assert(success)
-                            path.Count()) trainedItems
+                            float <| path.Count()) trainedItems
+
+                // sort results
+                let sortedDistances = Array.sortWithIndex distances
+
+                sortedDistances
             
 
             
+            // pick values
+            let pick i = 
+                let trainingValues = 
+                    trainingData.Instances.[singleFeature]
+                    |> function | IsTexts ts -> ts | _ -> failwith "unexpected data type"
+                let testValue = 
+                    testData.Instances.[singleFeature].[i] 
+                    |> function | IsText t -> t | _ -> failwith "unexpected data type"
             
-
+                testValue, trainingValues
+            
             // return results
+            let f i = i |> pick ||> measureRow
 
-            ClassifierResult.Function Array.empty<Result>
+            ClassifierResult.Function f

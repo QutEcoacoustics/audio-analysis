@@ -20,4 +20,6 @@
             
             let hdrs, rows = Map.scanAll old
             
-            rows |> Seq.map transformFunction |> (fun finalCol -> Map.add newName (finalCol |> Seq.toArray) inst')
+            rows 
+            |> Seq.map transformFunction 
+            |> (fun finalCol -> Map.add newName (finalCol |> Seq.toArray) inst')
