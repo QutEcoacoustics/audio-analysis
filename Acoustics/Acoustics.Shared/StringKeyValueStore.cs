@@ -9,6 +9,7 @@
     using System.Linq;
     using System.Text;
 
+    [Serializable]
     public class StringKeyValueStore : Dictionary<string, string>
     {
         protected static string[] DateTimeFormatStrings = new[]
@@ -380,27 +381,28 @@
             return new KeyValuePair<string, string>(sbPropertyNames.ToString(), sbPropertyValues.ToString());
         }
 
-        public void LoadFromSimple(FileInfo file, string separator)
+        public void LoadFromSimple(FileInfo file, string[] separators)
         {
-            this.LoadFromSimple(File.ReadAllLines(file.FullName), separator);
+            this.LoadFromSimple(File.ReadAllLines(file.FullName), separators);
         }
 
-        public void LoadFromSimple(string lines, string separator)
+        public void LoadFromSimple(string lines, string[] separators, string[] lineSeparators)
         {
-            var splitLines = lines.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
-            this.LoadFromSimple(splitLines, separator);
+            var splitLines = lines.Split(lineSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+            this.LoadFromSimple(splitLines, separators);
         }
 
-        public void LoadFromSimple(IEnumerable<string> lines, string separator)
+        public void LoadFromSimple(IEnumerable<string> lines, string[] separators)
         {
             foreach (var line in lines)
             {
-                var items = line.Split(new[] { separator }, StringSplitOptions.RemoveEmptyEntries);
+                var items = line.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
                 if (items.Length != 2)
                 {
                     throw new ArgumentException(
-                        string.Format("Found an invalid line when splitting using separator '{0}': '{1}'", separator, line));
+                        string.Format("Found an invalid line when splitting using separator '{0}': '{1}'", string.Join(", ", separators), line));
                 }
 
                 this.Add(items[0], items[1]);

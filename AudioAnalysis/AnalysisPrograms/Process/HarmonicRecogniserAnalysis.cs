@@ -7,17 +7,10 @@
 namespace AnalysisPrograms.Process
 {
     using System;
-    using System.Collections.Generic;
     using System.Data;
-    using System.IO;
     using System.Linq;
-    using System.Text;
-
-    using Acoustics.Shared;
 
     using AnalysisBase;
-
-    using AnalysisPrograms.Processing;
 
     using TowseyLib;
 
@@ -27,19 +20,51 @@ namespace AnalysisPrograms.Process
     public class HarmonicRecogniserAnalysis : IAnalysis
     {
         /// <summary>
-        /// Gets the initial settings for the analysis.
+        /// Gets the name to display for the analysis.
         /// </summary>
-        public AnalysisSettings InitialSettings
+        public string DisplayName
         {
             get
             {
-                return new AnalysisSettings
-                {
-                    AnalysisName = "Harmonic Recogniser",
-                    SegmentMaxDuration = TimeSpan.FromMinutes(1),
-                    SegmentOverlapDuration = TimeSpan.Zero,
-                    SegmentTargetSampleRate = 22050
-                };
+                return "Harmonic Recogniser";
+            }
+        }
+
+        /// <summary>
+        /// Gets Identifier.
+        /// </summary>
+        public string Identifier
+        {
+            get
+            {
+                return "hd";
+            }
+        }
+
+        /// <summary>
+        /// Gets the initial (default) settings for the analysis.
+        /// </summary>
+        public PreparerSettings DefaultFileSettings
+        {
+            get
+            {
+                return new PreparerSettings
+                    {
+                        SegmentMaxDuration = TimeSpan.FromMinutes(1),
+                        SegmentOverlapDuration = TimeSpan.Zero,
+                        SegmentTargetSampleRate = 22050
+                    };
+            }
+        }
+
+        /// <summary>
+        /// Gets the Default Configuration.
+        /// </summary>
+        public string DefaultConfiguration
+        {
+            get
+            {
+                return string.Empty;
             }
         }
 
@@ -111,11 +136,20 @@ namespace AnalysisPrograms.Process
                     newRow["Information"] =
                         eventResult.ResultPropertyList.Where(i => i != null).Select(i => i.ToString());
                 }
-
-                newRow["Information"] = "No Information";
+                else
+                {
+                    newRow["Information"] = "No Information";
+                }
             }
 
-            return new AnalysisResult(table);
+            var result = new AnalysisResult
+                {
+                    AnalysisIdentifier = this.Identifier,
+                    AnalysisSettingsUsed = analysisSettings,
+                    Results = table
+                };
+
+            return result;
         }
     }
 }
