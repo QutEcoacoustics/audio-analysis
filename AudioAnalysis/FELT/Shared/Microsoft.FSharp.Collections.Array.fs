@@ -120,7 +120,7 @@
 //                member this.getValues
 //                    with get(indexes: list<int>) =
 //                        List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes 
-            member this.getValues
+            member this.getValuesList
                 with get(indexes: list<int>) =
                     List.fold (fun state value -> this.[value] :: state) List.empty<'T> indexes |> List.toArray
     

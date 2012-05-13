@@ -42,7 +42,7 @@
         member private this.aggregator (grps:Map<Class, index list>) (state:Map<ColumnHeader, Value array>) columnName (values: Value array) = 
 
             let avg (i: index list) =
-                (values.getValues i) |> this.AvgValue   
+                (values.getValuesList i) |> this.AvgValue   
 
             // for each group, pick out all the values (by index) and average them
             let values' = Map.foldBack (fun _ indexes list -> avg(indexes) :: list) grps list.Empty |> List.toArray
