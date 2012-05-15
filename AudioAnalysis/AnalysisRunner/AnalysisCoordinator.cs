@@ -25,6 +25,9 @@
 
         private readonly ISourcePreparer sourcePreparer;
 
+        // temp files can also be stored in sub folders named by analysis name and segment id
+        // when another analysis is run, the files are overwritten.
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AnalysisCoordinator"/> class.
         /// </summary>

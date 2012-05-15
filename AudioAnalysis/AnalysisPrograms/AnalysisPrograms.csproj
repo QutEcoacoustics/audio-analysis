@@ -139,6 +139,8 @@
     <Compile Include="Process\AcousticIndicesAnalysis.cs" />
     <Compile Include="Process\AnalysisRunner.cs" />
     <Compile Include="Process\HarmonicRecogniserAnalysis.cs" />
+    <Compile Include="Process\HumanSpeechAnalysis.cs" />
+    <Compile Include="Process\LSKiwiAnalysis.cs" />
     <Compile Include="Process\OscillationRecogniserAnalysis.cs" />
     <Compile Include="SpeciesAccumulationCurve.cs" />
     <Compile Include="AcousticIndices.cs" />
