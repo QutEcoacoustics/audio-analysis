@@ -18,7 +18,7 @@
         /// <summary>
         /// Gets or sets the maximum audio file duration the analysis can process.
         /// </summary>
-        public TimeSpan SegmentMaxDuration { get; set; }
+        public TimeSpan? SegmentMaxDuration { get; set; }
 
         /// <summary>
         /// Gets or sets the audio sample rate the analysis expects (in hertz).

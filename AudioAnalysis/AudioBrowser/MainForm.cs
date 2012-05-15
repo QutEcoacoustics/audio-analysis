@@ -26,6 +26,7 @@
     //using System.IO;
 
     using TowseyLib;
+    using AnalysisBase;
 
     // 3 hr test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TOWER_20100208_204500.wav"     "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
     //8 min test file  // sunshinecoast1 "C:\SensorNetworks\WavFiles\Kiwi\TUITCE_20091215_220004_CroppedAnd2.wav" "C:\SensorNetworks\WavFiles\SunshineCoast\acousticIndices_Params.txt"
@@ -59,13 +60,15 @@
         private Bitmap selectionTrackImage;
 
         private string CurrentSourceFileAnalysisType { get { return this.comboBoxSourceFileAnalysisType.SelectedItem.ToString(); } }
-        private string CurrentCSVFileAnalysisType    { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
+        private string CurrentCSVFileAnalysisType { get { return this.comboBoxCSVFileAnalysisType.SelectedItem.ToString(); } }
 
         //identifers for the TAB panels/pages
         private string tabPageOutputFilesLabel = "tabPageOutputFiles";
         private string tabPageSourceFilesLabel = "tabPageSourceFiles";
-        private string tabPageDisplayLabel     = "tabPageDisplay";
-        private string tabPageConsoleLabel     = "tabPageConsole";
+        private string tabPageDisplayLabel = "tabPageDisplay";
+        private string tabPageConsoleLabel = "tabPageConsole";
+
+        private AnalysisCoordinator analysisCoordinator;
 
         /// <summary>
         /// 
@@ -74,6 +77,8 @@
         {
             // must be here, must be first
             InitializeComponent();
+
+
 
             //initialize instance of AudioBrowserSettings class
             browserSettings = new AudioBrowserSettings();
@@ -98,6 +103,8 @@
                 //MessageBox.Show(ex.ToString());
             }
 
+            this.analysisCoordinator = new AnalysisCoordinator(browserSettings.DefaultOutputDir, null);
+
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
             this.dataGridViewFileList.Controls.Add(this.headerCheckBoxSourceFileList);
@@ -115,7 +122,7 @@
             Console.SetOut(this.consoleWriter);
 
             //use to display file size in file open window
-            this.audioUtilityForDurationColumn  = new MasterAudioUtility();
+            this.audioUtilityForDurationColumn = new MasterAudioUtility();
 
             // column formatting for output datagridview
             this.CsvFileDate.DefaultCellStyle.FormatProvider = new DateTimeFormatter();
@@ -132,7 +139,7 @@
 
             this.durationDataGridViewTextBoxColumn.DefaultCellStyle.FormatProvider = new TimeSpanFormatter();
             this.durationDataGridViewTextBoxColumn.DefaultCellStyle.Format = TimeSpanFormatter.FormatString;
-            
+
             // background workers setup
             this.backgroundWorkerUpdateSourceFileList.DoWork += this.BackgroundWorkerUpdateSourceFileListDoWork;
             this.backgroundWorkerUpdateSourceFileList.RunWorkerCompleted +=
@@ -155,12 +162,12 @@
             // if input and output dirs exist, populate datagrids
             if (browserSettings.DefaultSourceDir != null)
             {
-                 this.tfSourceDirectory.Text = browserSettings.DefaultSourceDir.FullName;
+                this.tfSourceDirectory.Text = browserSettings.DefaultSourceDir.FullName;
 
-                 if(Directory.Exists(browserSettings.DefaultSourceDir.FullName))
-                 {
-                     this.UpdateSourceFileList();
-                 }
+                if (Directory.Exists(browserSettings.DefaultSourceDir.FullName))
+                {
+                    this.UpdateSourceFileList();
+                }
             }
 
             if (browserSettings.DefaultOutputDir != null)
@@ -176,10 +183,10 @@
             }
 
             this.comboBoxSourceFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
-            this.comboBoxCSVFileAnalysisType.DataSource    = browserSettings.AnalysisList.ToList();
+            this.comboBoxCSVFileAnalysisType.DataSource = browserSettings.AnalysisList.ToList();
 
             this.comboBoxSourceFileAnalysisType.SelectedItem = browserSettings.AnalysisName; //set default
-            this.comboBoxCSVFileAnalysisType.SelectedItem    = browserSettings.AnalysisName;
+            this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
 
             string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
             LoadAnalysisConfigFile(analysisName);
@@ -194,7 +201,7 @@
         private void LoadAnalysisConfigFile(string analysisName)
         {
             this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT SOURCE ANALYSIS IN SEPARATE THREAD
-            this.comboBoxCSVFileAnalysisType.SelectedItem    = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT CSV    ANALYSIS IN SEPARATE THREAD
+            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT CSV    ANALYSIS IN SEPARATE THREAD
 
             string configDir = this.browserSettings.diConfigDir.FullName;
             this.browserSettings.AnalysisName = analysisName;
@@ -214,14 +221,14 @@
         private static void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
         {
             string title = "# AUDIO BROWSER FOR THE ANALYSIS AND INTERROGATION OF LARGE AUDIO FILES";
-            string date  = "# DATE AND TIME: " + DateTime.Now;
+            string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(title);
             Console.WriteLine(date);
             Console.WriteLine("#");
             Console.WriteLine("# Browser Settings:");
-            Console.WriteLine("\tAnalysis Name: "        + parameters.AnalysisName);
-            if(parameters.fiAnalysisConfig == null) Console.WriteLine("\tAnalysis Config File: NULL");
-            else                                    Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
+            Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisName);
+            if (parameters.fiAnalysisConfig == null) Console.WriteLine("\tAnalysis Config File: NULL");
+            else Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
             Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
             Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
             Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", parameters.TrackHeight, parameters.TrackNormalisedDisplay);
@@ -265,6 +272,10 @@
             //Console.WriteLine(date);
             //Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
 
+            //var files = ((IEnumerable<DataGridViewRow>)this.dataGridViewFileList.Rows).Select(i => i.DataBoundItem as MediaFileItem).Select(m => new FileSegment { OriginalFile = m.FullName });
+
+            //this.analysisCoordinator.Run(files, null, null, null);
+
             foreach (DataGridViewRow row in this.dataGridViewFileList.Rows)
             {
                 var checkBoxCol = row.Cells["selectedDataGridViewCheckBoxColumn"] as DataGridViewCheckBoxCell;
@@ -283,8 +294,8 @@
                     browserSettings.fiSourceRecording = fiSourceRecording;
                     Console.WriteLine("# Source audio - filename: " + Path.GetFileName(fiSourceRecording.Name));
                     Console.WriteLine("# Source audio - datetime: {0}    {1}", fiSourceRecording.CreationTime.ToLongDateString(), fiSourceRecording.CreationTime.ToLongTimeString());
-                    Console.WriteLine("# Start processing at: {0}",  DateTime.Now.ToLongTimeString());
-                    
+                    Console.WriteLine("# Start processing at: {0}", DateTime.Now.ToLongTimeString());
+
                     Stopwatch stopwatch = new Stopwatch(); //for checking the parallel loop.
                     stopwatch.Start();
                     //################# PROCESS THE RECORDING #####################################################################################
@@ -292,7 +303,7 @@
                     //#############################################################################################################################
                     stopwatch.Stop();
 
-                    
+
                     string reportFileExt = ".csv";
                     string opDir = this.tfOutputDirectory.Text;
                     string fName = Path.GetFileNameWithoutExtension(fiSourceRecording.Name) + "_" + this.CurrentSourceFileAnalysisType;
@@ -306,19 +317,19 @@
                         CsvTools.DataTable2CSV(outputData, reportfilePath);
                     }
                     else
-                    if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //KiwiRecogniser - save two files
-                    {
-                        string sortString = "EvStartAbs ASC";
-                        outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
+                        if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //KiwiRecogniser - save two files
+                        {
+                            string sortString = "EvStartAbs ASC";
+                            outputData = DataTableTools.SortTable(outputData, sortString);    //sort by start time
 
-                        //the output from KIWI analysis is rows of kiwi events - must save two files
-                        reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
-                        CsvTools.DataTable2CSV(outputData, reportfilePath);
+                            //the output from KIWI analysis is rows of kiwi events - must save two files
+                            reportfilePath = Path.Combine(opDir, fName + "Events" + reportFileExt);
+                            CsvTools.DataTable2CSV(outputData, reportfilePath);
 
-                        reportfilePath = Path.Combine(opDir, fName + reportFileExt);
-                        DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
-                        CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
-                    }
+                            reportfilePath = Path.Combine(opDir, fName + reportFileExt);
+                            DataTable temporalDataTable = LSKiwi.ConvertListOfKiwiEvents2TemporalList(outputData); //this compatible with temporal acoustic data
+                            CsvTools.DataTable2CSV(temporalDataTable, reportfilePath);
+                        }
                     if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //AcousticIndices
                     {
                         reportfilePath = Path.Combine(opDir, fName + reportFileExt);
@@ -338,7 +349,7 @@
 
                     //Remaining LINES ARE FOR DIAGNOSTIC PURPOSES ONLY
                     TimeSpan ts = stopwatch.Elapsed;
-                    Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)",    (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
+                    Console.WriteLine("Processing time: {0:f3} seconds ({1}min {2}s)", (stopwatch.ElapsedMilliseconds / (double)1000), ts.Minutes, ts.Seconds);
                     int outputCount = outputData.Rows.Count;
                     Console.WriteLine("Number of units of output: {0}", outputCount);
                     if (outputCount == 0) outputCount = 1;
@@ -361,9 +372,9 @@
             string sourceRecordingPath = fiSourceRecording.FullName;
             string outputDir = diOutputDir.FullName;
 
-            double segmentDuration_mins = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, dict); 
-            int segmentOverlap          = Configuration.GetInt(AudioBrowserSettings.key_SEGMENT_OVERLAP, dict); 
-            int resampleRate            = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, dict); 
+            double segmentDuration_mins = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, dict);
+            int segmentOverlap = Configuration.GetInt(AudioBrowserSettings.key_SEGMENT_OVERLAP, dict);
+            int resampleRate = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, dict);
 
             // CREATE RUN ANALYSIS CLASS HERE
 
@@ -390,29 +401,29 @@
                 outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
             }
             else
-            if (analysisName == LSKiwi.ANALYSIS_NAME) //KiwiRecogniser
-            {
-                var parameters = LSKiwi.InitOutputTableColumns();
-                outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-            }
-            else
-            if (analysisName == Human.ANALYSIS_NAME) //Human speech Recogniser
-            {
-                var parameters = Human.InitOutputTableColumns();
-                outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-            }
-            else
-            {
-                Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
-                return null;
-            }
+                if (analysisName == LSKiwi.ANALYSIS_NAME) //KiwiRecogniser
+                {
+                    var parameters = LSKiwi.InitOutputTableColumns();
+                    outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+                }
+                else
+                    if (analysisName == Human.ANALYSIS_NAME) //Human speech Recogniser
+                    {
+                        var parameters = Human.InitOutputTableColumns();
+                        outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+                    }
+                    else
+                    {
+                        Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
+                        return null;
+                    }
 
 
             // LOOP THROUGH THE FILE
             //initialise timers for diagnostics - ONLY IF IN SEQUENTIAL MODE
             //DateTime tStart = DateTime.Now;
             //DateTime tPrevious = tStart;
-            
+
             //segmentCount = 30;   //for testing and debugging
 
             //for (int s = 0; s < segmentCount; s++)
@@ -447,7 +458,7 @@
                 //AudioRecording.GetSegmentFromAudioRecording(sourceRecordingPath, startMilliseconds, endMilliseconds, parameters.resampleRate, outputSegmentPath);
 
                 //set up the temporary audio segment output file
-                string tempFname = "temp"+s+".wav";
+                string tempFname = "temp" + s + ".wav";
                 string tempSegmentPath = Path.Combine(outputDir, tempFname); //path name of the temporary segment files extracted from long recording
                 FileInfo fiOutputSegment = new FileInfo(tempSegmentPath);
                 MasterAudioUtility.Segment(resampleRate, fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
@@ -474,15 +485,15 @@
                         dt = AcousticIndices.Analysis(s, fiSegmentAudioFile, dict);
                     }
                     else
-                    if (analysisName.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
-                    {
-                        dt = LSKiwi.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                    }
-                    else
-                    if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
-                    {
-                        dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                    }
+                        if (analysisName.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
+                        {
+                            dt = LSKiwi.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                        }
+                        else
+                            if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
+                            {
+                                dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                            }
                     //#############################################################################################################################################
 
                     if (dt != null)
@@ -496,7 +507,7 @@
                 startMinutes += segmentDuration_mins;
             } //end of for loop
             ); // Parallel.For
-
+            
             return outputDataTable;
         }
 
@@ -539,7 +550,7 @@
 
                     this.pictureBoxSonogram.Image = null;  //reset in case old sonogram image is showing.
                     this.labelSonogramFileName.Text = "File Name";
-                    this.browserSettings.fiCSVFile  = csvFilePath; //store in settings so can be accessed later.
+                    this.browserSettings.fiCSVFile = csvFilePath; //store in settings so can be accessed later.
 
                     //##################################################################################################################
                     int status = this.LoadIndicesCSVFile(csvFilePath.FullName);
@@ -584,7 +595,7 @@
             string csvFname = Path.GetFileNameWithoutExtension(csvFile.FullName);
             string[] parts = csvFname.Split('_'); //assume that underscore plus analysis type has been added to source name
             string sourceName = parts[0];
-            for (int i = 1; i < parts.Length - 1; i++) sourceName += ("_"+parts[i]);
+            for (int i = 1; i < parts.Length - 1; i++) sourceName += ("_" + parts[i]);
 
             string sourceDir = this.browserSettings.diSourceDir.FullName;
             var fiSourceMP3 = new FileInfo(Path.Combine(sourceDir, sourceName + ".mp3"));
@@ -593,7 +604,7 @@
             else
                 if (fiSourceWAV.Exists) return fiSourceWAV;
                 else
-            return null;
+                    return null;
         }
 
         /// <summary>
@@ -604,9 +615,9 @@
         /// <returns></returns>
         private int LoadIndicesCSVFile(string csvPath)
         {
-            DataTable dtRaw        = null;
-            DataTable dt2Display   = null;
-            bool[] columns2Display = null; 
+            DataTable dtRaw = null;
+            DataTable dt2Display = null;
+            bool[] columns2Display = null;
             //########################
 
             if (this.CurrentCSVFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME))
@@ -617,42 +628,42 @@
                 columns2Display = output.Item3;
             }
             else
-            if (this.CurrentCSVFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME))
-            {
-                var output = LSKiwi.ProcessCsvFile(new FileInfo(csvPath));
-                dtRaw = output.Item1;
-                dt2Display = output.Item2;
-                columns2Display = output.Item3;
-            }
-            else
-            if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
-            {
-                var output = Human.ProcessCsvFile(new FileInfo(csvPath));
-                dtRaw = output.Item1;
-                dt2Display = output.Item2;
-                columns2Display = output.Item3;
-            }
-            else
-            if (this.CurrentCSVFileAnalysisType.Equals("None"))
-            {
-                dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
-                dt2Display = DataTableTools.NormaliseColumnValues(dtRaw);
-                string[] headers = DataTableTools.GetColumnNames(dtRaw);
-                this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, headers[headers.Length - 1]).ToArray();
-            }
-            else
-            {
-                Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
-                Console.WriteLine("\t Analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
-                return 3;
-            }
+                if (this.CurrentCSVFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME))
+                {
+                    var output = LSKiwi.ProcessCsvFile(new FileInfo(csvPath));
+                    dtRaw = output.Item1;
+                    dt2Display = output.Item2;
+                    columns2Display = output.Item3;
+                }
+                else
+                    if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
+                    {
+                        var output = Human.ProcessCsvFile(new FileInfo(csvPath));
+                        dtRaw = output.Item1;
+                        dt2Display = output.Item2;
+                        columns2Display = output.Item3;
+                    }
+                    else
+                        if (this.CurrentCSVFileAnalysisType.Equals("None"))
+                        {
+                            dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
+                            dt2Display = DataTableTools.NormaliseColumnValues(dtRaw);
+                            string[] headers = DataTableTools.GetColumnNames(dtRaw);
+                            this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, headers[headers.Length - 1]).ToArray();
+                        }
+                        else
+                        {
+                            Console.WriteLine("\nWARNING: Could not construct image from CSV file.");
+                            Console.WriteLine("\t Analysis name not recognized: " + this.CurrentCSVFileAnalysisType);
+                            return 3;
+                        }
 
             int timeScale = 60; //put a tik every 60 pixels = 1 hour
             bool doNormalisation = browserSettings.TrackNormalisedDisplay;
             Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, timeScale, browserSettings.TrackHeight, doNormalisation, columns2Display);
             this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             this.pictureBoxVisualIndex.Image = tracksImage;
-            
+
             //SAVE THE IMAGE
             string imagePath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(csvPath) + ".png"));
             this.pictureBoxVisualIndex.Image.Save(imagePath);
@@ -680,7 +691,7 @@
             //set up the array of tracks to display
             var dodisplay = new bool[values.Count];
             for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
-            if (! (tracks2Display == null))
+            if (!(tracks2Display == null))
             {
                 for (int i = 0; i < values.Count; i++)
                     if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
@@ -696,7 +707,7 @@
             double[] array;
             for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
             {
-                if ((! dodisplay[i]) || (values[i].Length == 0)) continue;
+                if ((!dodisplay[i]) || (values[i].Length == 0)) continue;
                 array = values[i];
                 if (doNormalise) array = DataTools.normalise(values[i]);
                 bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
@@ -719,7 +730,7 @@
             gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
             //var font = new Font("Arial", 10.0f, FontStyle.Regular);
             offset += trackHeight;
-            for (int i = 0; i < bitmaps.Count; i++) 
+            for (int i = 0; i < bitmaps.Count; i++)
             {
                 gr.DrawImage(bitmaps[i], 0, offset);
                 offset += trackHeight;
@@ -811,13 +822,13 @@
             this.pictureBoxBarTrack.Image = selectionTrackImage;
 
             double segmentDuration = this.browserSettings.DefaultSegmentDuration;
-            int resampleRate       = this.browserSettings.DefaultResampleRate;
-            if(analysisParams != null) 
+            int resampleRate = this.browserSettings.DefaultResampleRate;
+            if (analysisParams != null)
             {
                 segmentDuration = Configuration.GetDouble(AudioBrowserSettings.key_SEGMENT_DURATION, analysisParams);
-                resampleRate    = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
+                resampleRate = Configuration.GetInt(AudioBrowserSettings.key_RESAMPLE_RATE, analysisParams);
             }
-                
+
 
             //EXTRACT RECORDING SEGMENT
             bool add30secondBuffer = true;
@@ -829,13 +840,13 @@
                 startMilliseconds = (myX - 1) * 60000;
                 endMilliseconds = (myX + 2) * 60000;
             }
-            if(add30secondBuffer)
+            if (add30secondBuffer)
             {
                 startMilliseconds -= buffer;
-                endMilliseconds   += buffer;
+                endMilliseconds += buffer;
             }
             if (startMilliseconds < 0) startMilliseconds = 0;
-            if (endMilliseconds  <= 0) endMilliseconds   = (int)(segmentDuration*60000) - 1;
+            if (endMilliseconds <= 0) endMilliseconds = (int)(segmentDuration * 60000) - 1;
 
             string sourceFName = Path.GetFileNameWithoutExtension(browserSettings.fiSourceRecording.FullName);
             string segmentFName = sourceFName + "_min" + myX.ToString() + ".wav"; //want a wav file
@@ -851,10 +862,10 @@
             //get segment from source recording
             DateTime time1 = DateTime.Now;
             MasterAudioUtility.Segment(resampleRate, browserSettings.fiSourceRecording, fiOutputSegment, startMilliseconds, endMilliseconds);
-            if (! fiOutputSegment.Exists)
+            if (!fiOutputSegment.Exists)
             {
                 Console.WriteLine("WARNING: Unable to extract segment to: {0}", fiOutputSegment.FullName);
-                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);   
+                this.tabControlMain.SelectTab(this.tabPageConsoleLabel);
                 return;
             }
             AudioRecording recordingSegment = new AudioRecording(fiOutputSegment.FullName);
@@ -884,9 +895,9 @@
             string sonogramPath = Path.Combine(browserSettings.diOutputDir.FullName, (Path.GetFileNameWithoutExtension(segmentFName) + ".png"));
             Console.WriteLine("\n\tSaved sonogram to image file: " + sonogramPath);
             pictureBoxSonogram.Image.Save(sonogramPath);
-            this.tabControlMain.SelectTab(this.tabPageDisplayLabel);   
+            this.tabControlMain.SelectTab(this.tabPageDisplayLabel);
             this.labelSonogramFileName.Text = Path.GetFileName(segmentFName);
-            
+
         }
 
         private Image_MultiTrack MakeSonogram(AudioRecording recordingSegment)
@@ -895,7 +906,7 @@
 
             Console.WriteLine("\n\tPreparing sonogram of audio segment");
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName   = recordingSegment.FileName;
+            sonoConfig.SourceFName = recordingSegment.FileName;
             sonoConfig.WindowSize = 512;
             sonoConfig.WindowOverlap = 0.0;
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recordingSegment.GetWavReader());
@@ -922,7 +933,7 @@
         {
             if ((browserSettings.fiSegmentRecording == null) || (!browserSettings.fiSegmentRecording.Exists))
             {
-                Console.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording+">");
+                Console.WriteLine("Audacity cannot open audio segment file: <" + browserSettings.fiSegmentRecording + ">");
                 Console.WriteLine("It does not exist!");
                 this.tabControlMain.SelectTab("tabPageConsole");
                 RunAudacity(browserSettings.AudacityExe.FullName, " ", browserSettings.diOutputDir.FullName);
@@ -1515,7 +1526,7 @@
             }
             if (!f.Exists)
             {
-                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: "+ f.FullName);
+                Console.WriteLine("#######  CANNOT FIND AUDIO SEGMENT: " + f.FullName);
                 this.tabControlMain.SelectTab(tabPageConsoleLabel);
                 return;
             }
@@ -1534,7 +1545,7 @@
 
 
 
-            if (this.analysisParams != null) 
+            if (this.analysisParams != null)
                 this.analysisParams.Add(AcousticIndices.key_DO_NOISE_REDUCTION, this.checkBoxSonnogramNoiseReduce.Checked.ToString());
             if (this.analysisParams != null)
                 this.analysisParams.Add(AcousticIndices.key_BG_NOISE_REDUCTION, this.browserSettings.SonogramBackgroundThreshold.ToString());
@@ -1549,15 +1560,15 @@
                     image = AcousticIndices.GetImageFromAudioSegment(f, this.analysisParams);
                 }
                 else
-                if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
-                {
-                    image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
-                }
-                else
-                if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
-                {
-                    image = Human.GetImageFromAudioSegment(f, this.analysisParams);
-                }
+                    if (this.CurrentSourceFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME)) //Little Spotted Kiwi
+                    {
+                        image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
+                    }
+                    else
+                        if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
+                        {
+                            image = Human.GetImageFromAudioSegment(f, this.analysisParams);
+                        }
             }
             else
             {
@@ -1625,7 +1636,7 @@
         private void labelSourceFileName_Click(object sender, EventArgs e)
         {
 
-        } 
+        }
 
     } //class MainForm : Form
 }

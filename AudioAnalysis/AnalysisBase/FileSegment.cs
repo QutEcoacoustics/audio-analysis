@@ -19,12 +19,14 @@
         /// <summary>
         /// Gets or sets SegmentStartOffset.
         /// </summary>
-        public TimeSpan SegmentStartOffset { get; set; }
+        public TimeSpan? SegmentStartOffset { get; set; }
 
         /// <summary>
         /// Gets or sets SegmentEndOffset.
         /// </summary>
-        public TimeSpan SegmentEndOffset { get; set; }
+        public TimeSpan? SegmentEndOffset { get; set; }
+
+        // shove in an int!
 
         /// <summary>
         /// Validate the <see cref="FileSegment"/> properties.

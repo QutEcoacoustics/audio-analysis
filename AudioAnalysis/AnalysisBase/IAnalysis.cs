@@ -1,4 +1,5 @@
-﻿namespace AnalysisBase
+﻿using System.IO;
+namespace AnalysisBase
 {
     /// <summary>
     /// Interface a compatible analysis must implement.
@@ -35,5 +36,7 @@
         /// The results of the analysis.
         /// </returns>
         AnalysisResult Analyse(AnalysisSettings analysisSettings);
+
+        //FileInfo AnalysisImage(AnalysisSettings settings);
     }
 }

@@ -34,5 +34,7 @@
         /// Gets or sets ConfigString.
         /// </summary>
         public string ConfigString { get; set; }
+
+        // dircitonary<string,string>
     }
 }

@@ -3,6 +3,11 @@
     using System;
 
     using AnalysisBase;
+    using System.Configuration;
+    using AudioAnalysisTools;
+    using System.Data;
+    using System.Collections.Generic;
+    using System.IO;
 
     /// <summary>
     /// Acoustic Indices Audio Analysis.
@@ -27,7 +32,7 @@
         {
             get
             {
-                return "AcousticIndices";
+                return "Towsey.AcousticIndices";
             }
         }
 
@@ -69,7 +74,24 @@
         /// </returns>
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
         {
-            throw new System.NotImplementedException();
+            Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
+            dict.Add(AcousticIndices.key_FRAME_LENGTH, AcousticIndices.DEFAULT_WINDOW_SIZE.ToString());
+            dict.Add(AcousticIndices.key_LOW_FREQ_BOUND, "500");
+            dict.Add(AcousticIndices.key_LOW_FREQ_BOUND, "3500");
+            //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
+            int iterationNumber = 1;
+            var fiRecording = analysisSettings.AudioFile;
+            dict.Add(AcousticIndices.key_STORE_INTERMEDATE_RESULTS, "false");
+            var results = AcousticIndices.Analysis(iterationNumber, fiRecording, dict);
+
+            var analysisResults = new AnalysisResult
+            {
+                Results = results,
+                AnalysisIdentifier = this.Identifier,
+                AnalysisSettingsUsed = analysisSettings,
+            };
+
+            return analysisResults;
         }
     }
 }

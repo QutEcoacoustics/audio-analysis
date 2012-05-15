@@ -1,6 +1,8 @@
 ﻿namespace AnalysisBase
 {
     using System.Data;
+    using System.Collections.Generic;
+    using System.IO;
 
     /// <summary>
     /// Analysis Results.
@@ -26,5 +28,9 @@
         /// Gets or sets PreparerSettingsUsed.
         /// </summary>
         public PreparerSettings PreparerSettingsUsed { get; set; }
+
+        // array for display column/ item names
+
+        public Dictionary<string, FileInfo> OutputFiles { get; set; }
     }
 }
