@@ -194,17 +194,17 @@ namespace AudioAnalysisTools
                 for (int r = 0; r < rows; r++)
                 {
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
-
-                    //Color grey = ((Bitmap)this.SonoImage).GetPixel(r, c);
                     double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
+                    if (normScore > 1.0) normScore = 1.0;
+                    //Color grey = ((Bitmap)this.SonoImage).GetPixel(r, c);
                     //following code was failed attempt to do a transparent effect!
                     //Color palletteColor = pens[(int)(paletteSize * normScore)].Color;
                     //byte red   = (byte)(grey.R + (palletteColor.R / 2));
                     //byte green = (byte)(grey.G + (palletteColor.G / 2));
                     //byte blue  = (byte)(grey.B + (palletteColor.B / 2));
-                    //Color newColor = Color.FromArgb(red, green, blue);
-                    //g.DrawLine(new Pen(newColor), r, imageHt - c, r + 1, imageHt - c);
-                    g.DrawLine(pens[(int)(paletteSize * normScore)], r, imageHt - c, r + 1, imageHt - c);
+                    //Pen pen = new Pen(Color.FromArgb(red, green, blue));
+                    Pen pen = pens[(int)(paletteSize * normScore)];
+                    g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
                 }
                 c++; //only draw on every second row.
             }

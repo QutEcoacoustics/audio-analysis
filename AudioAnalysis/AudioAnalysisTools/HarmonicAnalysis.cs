@@ -23,8 +23,7 @@ namespace AudioAnalysisTools
         /// <param name="amplitudeThreshold">ignore harmonics with an amplitude less than this minimum dB</param>
         /// <param name="minDuration">look for events of this duration</param>
         /// <param name="maxDuration">look for events of this duration</param>
-        public static System.Tuple<double[], double[,], List<AcousticEvent>> Execute(SpectralSonogram sonogram, int minHz, int maxHz, int harmonicCount, 
-                                                        double amplitudeThreshold, double minDuration, double maxDuration)
+        public static System.Tuple<double[], double[,]> Execute(SpectralSonogram sonogram, int minHz, int maxHz, int harmonicCount, double amplitudeThreshold)
         {
             int minBin = (int)(minHz / sonogram.FBinWidth);
             int maxBin = (int)(maxHz / sonogram.FBinWidth);
@@ -35,13 +34,7 @@ namespace AudioAnalysisTools
             var results = CountHarmonicTracks(sonogram.Data, minBin, maxBin, hzWidth, harmonicCount, amplitudeThreshold);
             double[] scores = results.Item1;
             var hits        = results.Item2;
-            //scores = DataTools.filterMovingAverage(scores, 5); //smooth the scores
-
-            // ACOUSTIC EVENTS
-            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
-                                                                                         amplitudeThreshold, minDuration, maxDuration);
-
-            return Tuple.Create(scores, hits, predictedEvents);
+            return Tuple.Create(scores, hits);
         }//end method
 
 

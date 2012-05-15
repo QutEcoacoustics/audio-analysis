@@ -167,11 +167,13 @@ namespace AnalysisPrograms
 
             //iii: DETECT HARMONICS
             //bool normaliseDCT = true;
-            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, //minHarmonicPeriod, maxHarmonicPeriod,
-                                                   harmonicCount, amplitudeThreshold, minDuration, maxDuration);
+            var results = HarmonicAnalysis.Execute((SpectralSonogram)sonogram, minHz, maxHz, harmonicCount, amplitudeThreshold);
             double[] scores = results.Item1;     //an array of periodicity scores
             Double[,] hits = results.Item2;      //hits matrix - to superimpose on sonogram image
-            List<AcousticEvent> predictedEvents = results.Item3;
+
+            //iii: CONVERT TO ACOUSTIC EVENTS
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scores, minHz, maxHz, sonogram.FramesPerSecond, sonogram.FBinWidth,
+                                                                                         amplitudeThreshold, minDuration, maxDuration);
             foreach (AcousticEvent ev in predictedEvents)
             {
                 ev.SourceFile = audioFileName;
