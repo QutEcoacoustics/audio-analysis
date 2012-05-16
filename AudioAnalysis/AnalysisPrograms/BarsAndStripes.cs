@@ -59,46 +59,37 @@ out double[] r)
 
 *************************************************************************/
 
-        public static System.Tuple<int, double> CrossCorrelation(double[] v1, double[] v2)
+        public static double[] CrossCorrelation(double[] v1, double[] v2)
         {
             int n = v1.Length; //assume both vectors of same length
             double[] r;
             alglib.corrr1d(v1, n, v2, n, out r);
-
-            //rearrange corr output and normalise
-            int opLength = 2 * n;
-            double[] newOp = new double[opLength];
-            //for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n];   //rearrange corr output
-            //for (int i = n - 1; i < opLength-1; i++) newOp[i] = r[i - n + 1];
-            for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n] / (i + 1);  //rearrange and normalise
-            for (int i = n - 1; i < opLength - 1; i++) newOp[i] = r[i - n + 1] / (opLength - i - 1);
-
-
-            //add extra value at end so have length = power of 2 for FFT
-            //newOp[newOp.Length - 1] = newOp[newOp.Length - 2];
-            //Console.WriteLine("xCorr length = " + newOp.Length);
-            //for (int i = 0; i < newOp.Length; i++) Console.WriteLine("{0}   {1:f2}", i, newOp[i]);
-            //DataTools.writeBarGraph(newOp);
-
-            newOp = DataTools.DiffFromMean(newOp);
-            FFT.WindowFunc wf = FFT.Hamming;
-            var fft = new FFT(newOp.Length, wf);
-
-            var op = fft.Invoke(newOp);
-
             //alglib.complex[] f;
             //alglib.fftr1d(newOp, out f);
             //System.Console.WriteLine("{0}", alglib.ap.format(f, 3));
             //for (int i = 0; i < op.Length; i++) Console.WriteLine("{0}   {1:f2}", i, op[i]);
-            //DataTools.writeBarGraph(op);
 
-            op[0] = 0;
-            op[1] = 0;
-            op[2] = 0; //in real data these bins are dominant and hide other frequency content
-            op = DataTools.NormaliseArea(op);
-            int maxId = DataTools.GetMaxIndex(op);
+            //rearrange corr output and normalise
+            int xcorrLength = 2 * n;
+            double[] xCorr = new double[xcorrLength];
+            //for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n];   //rearrange corr output
+            //for (int i = n - 1; i < opLength-1; i++) newOp[i] = r[i - n + 1];
+            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  //rearrange and normalise
+            for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
 
-            return System.Tuple.Create(maxId, op[maxId]);
+
+            //add extra value at end so have length = power of 2 for FFT
+            //xCorr[xCorr.Length - 1] = xCorr[xCorr.Length - 2];
+            //Console.WriteLine("xCorr length = " + xCorr.Length);
+            //for (int i = 0; i < xCorr.Length; i++) Console.WriteLine("{0}   {1:f2}", i, xCorr[i]);
+            //DataTools.writeBarGraph(xCorr);
+
+            xCorr = DataTools.DiffFromMean(xCorr);
+            FFT.WindowFunc wf = FFT.Hamming;
+            var fft = new FFT(xCorr.Length, wf);
+
+            var spectrum = fft.Invoke(xCorr);
+            return spectrum;
         }//CrossCorrelation()
 
 
@@ -126,14 +117,18 @@ out double[] r)
             double[] signal  = DataTools.filterMovingAverage(signal16,  smoothWindow);
             double[] pattern = DataTools.filterMovingAverage(pattern16, smoothWindow);
 
-            var results = BarsAndStripes.CrossCorrelation(signal, pattern);
-            int maxId = results.Item1;
-            double intensity = results.Item2;
+            var spectrum = BarsAndStripes.CrossCorrelation(signal, pattern);
+            int zeroCount = 3;
+            for (int s = 1; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+            spectrum = DataTools.NormaliseArea(spectrum);
+            int maxId = DataTools.GetMaxIndex(spectrum);
+            double intensityValue = spectrum[maxId];
+
             if (maxId == 0) Console.WriteLine("max id = 0");
             else
             {
                 double period = 2 * n / (double)maxId;
-                Console.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensity);
+                Console.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensityValue);
             }
          }//TestCrossCorrelation()
 
@@ -155,54 +150,42 @@ out double[] r)
          }
 
         /// <summary>
-        /// This method assume the matrix is spectrogram datarotated so that the matrix rows are spectral columns of sonogram.
-        /// Note that column zero is the DC or average energy value and can be ignored.
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
         /// 
         /// </summary>
         /// <param name="m"></param>
-        /// <param name="minBin"></param>
-        /// <param name="numberOfBins"></param>
         /// <param name="amplitudeThreshold"></param>
         /// <returns></returns>
-         public static System.Tuple<double[], double[], double[,]> DetectStripesInColumnsOfMatrix(double[,] m, int minBin, int numberOfBins, double threshold)
+         public static System.Tuple<double[], double[]> DetectStripesInColumnsOfMatrix(double[,] m, double threshold, int zeroBinCount)
          {
              int rowCount = m.GetLength(0);
              int colCount = m.GetLength(1);
              var intensity   = new double[rowCount];     //an array of period intensity
              var periodicity = new double[rowCount];     //an array of the periodicity values
-             var hits = new double[rowCount, colCount];
-             int maxbin = minBin + numberOfBins;
 
-             double[,] subMatrix = MatrixTools.Submatrix(m, 0, (minBin + 1), (rowCount - 1), maxbin);
+             double[] prevRow = MatrixTools.GetRow(m, 0);
+             prevRow = DataTools.DiffFromMean(prevRow);
 
-             double[] prevRow = MatrixTools.GetRow(subMatrix, 0);
              for (int r = 1; r < rowCount; r++)
              {
-                 double[] thisRow = MatrixTools.GetRow(subMatrix, r);
-                 prevRow = DataTools.DiffFromMean(prevRow);
+                 double[] thisRow = MatrixTools.GetRow(m, r);
                  thisRow = DataTools.DiffFromMean(thisRow);
 
-                 var results = BarsAndStripes.CrossCorrelation(prevRow, thisRow);
-                 int maxId = results.Item1;
-                 double intensityValue = results.Item2;
+                 var spectrum = BarsAndStripes.CrossCorrelation(prevRow, thisRow);
+
+                 for (int s = 0; s < zeroBinCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                 spectrum  = DataTools.NormaliseArea(spectrum);
+                 int maxId = DataTools.GetMaxIndex(spectrum);
+                 double intensityValue = spectrum[maxId];
                  intensity[r] = intensityValue;
-                 //bool[] peaks = DataTools.GetPeaks(DataTools.filterMovingAverage(thisRow,3));
 
                  double period = 0.0;
-                 if (maxId != 0) period = 2 * numberOfBins / (double)maxId;
+                 if (maxId != 0) period = 2 * colCount / (double)maxId;
                  periodicity[r] = period;
 
-                 double relativePeriod = period / numberOfBins /2;
-                 if (intensityValue >= threshold)
-                     for (int c = minBin; c < maxbin; c++) 
-                     {
-                         //if (peaks[c-minBin]) 
-                             hits[r, c] = relativePeriod;
-                     }
                  prevRow = thisRow;
-             }
-
-             return Tuple.Create(intensity, periodicity, hits);
+             }// rows
+             return Tuple.Create(intensity, periodicity);
          }
 
     } //class

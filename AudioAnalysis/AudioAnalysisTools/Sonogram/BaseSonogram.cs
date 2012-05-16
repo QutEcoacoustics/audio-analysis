@@ -51,7 +51,7 @@
         public SonogramConfig Configuration { get; set; }
 
         public double MaxAmplitude { get; set; }
-        public int SampleRate { get; protected set; }
+        public int SampleRate { get; set; }
         public TimeSpan Duration { get; protected set; }
 
         //following values are dependent on sampling rate.
@@ -72,7 +72,7 @@
         public SNR SnrSubband { get; private set; }
         public double[] DecibelsInSubband { get; protected set; }  // Normalised decibels in extracted freq band
 
-        public double[] DecibelsNormalised { get; protected set; }
+        public double[] DecibelsNormalised { get; set; }
         public double Max_dBReference { get; protected set; } // Used to normalise the dB values for MFCCs
 
         public int[] SigState { get; protected set; }   // Integer coded signal state ie  0=non-vocalisation, 1=vocalisation, etc.
@@ -178,6 +178,42 @@
         } //end CONSTRUCTOR BaseSonogram(SonogramConfig config, WavReader wav)
 
 
+        //public BaseSonogram(string recordingFileName, int frameSize, double windowOverlap, int bitsPerSample,  double windowPower, int sr, 
+        //                    TimeSpan duration, double[,] amplitudeSpectrogram)
+        //{
+        //    SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+        //    sonoConfig.SourceFName = recordingFileName;
+        //    sonoConfig.WindowSize = frameSize;
+        //    sonoConfig.WindowOverlap = windowOverlap;
+        //    sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
+        //    sonoConfig.epsilon = Math.Pow(0.5, bitsPerSample - 1);
+        //    sonoConfig.WindowPower = windowPower;
+        //    sonoConfig.fftConfig.SampleRate = sr;
+        //    sonoConfig.Duration = duration;
+        //    BaseSonogram sonogram = new SpectralSonogram(sonoConfig, amplitudeSpectrogram);
+        //    sonogram.SetTimeScale(duration);
+        //}
+
+
+        /// <summary>
+        /// use this constructor when already have the amplitude spectorgram in matrix
+        /// Init normalised signal energy array but do nothing with it. This has to be done from outside
+        /// </summary>
+        /// <param name="config"></param>
+        public BaseSonogram(SonogramConfig config, double[,] amplitudeSpectrogram)
+        {
+            Configuration = config;
+            this.FrameCount = amplitudeSpectrogram.GetLength(0);
+            this.SampleRate = this.Configuration.fftConfig.SampleRate;
+
+            //init normalised signal energy array but do nothing with it. This has to be done from outside
+            this.DecibelsNormalised = new double[this.FrameCount];
+            
+            this.Data = amplitudeSpectrogram;
+            Make(this.Data);
+        }
+
+
         public abstract void Make(double[,] amplitudeM);
 
 
@@ -249,6 +285,15 @@
             SigState = EndpointDetectionConfiguration.DetermineVocalisationEndpoints(this.DecibelsInSubband, this.FrameOffset);
         }
 
+        public void SetTimeScale(TimeSpan duration)
+        {
+            this.Duration = duration; 
+        }
+
+        //public void FrequencyScale(int nyquist, double binWidth)
+        //{
+        //    this.FBinWidth = binWidth;
+        //}
 
         public void SetBinarySpectrum(byte[,] binary)
         {
@@ -752,6 +797,39 @@
             : base(config, wav)
         { }
 
+                /// <summary>
+        /// use this constructor when w
+        /// </summary>
+        /// <param name="config"></param>
+        public SpectralSonogram(SonogramConfig config, double[,] amplitudeSpectrogram)
+            : base(config, amplitudeSpectrogram)
+        {
+            Configuration = config;
+            this.FrameCount = amplitudeSpectrogram.GetLength(0);
+            this.SampleRate = config.fftConfig.SampleRate;
+            this.Data = amplitudeSpectrogram;
+            Make(this.Data);
+        }
+
+        public static SpectralSonogram GetSpectralSonogram(string recordingFileName, int frameSize, double windowOverlap, int bitsPerSample, double windowPower, int sr,
+                        TimeSpan duration, NoiseReductionType nrt, double[,] amplitudeSpectrogram)
+        {
+            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
+            sonoConfig.SourceFName = recordingFileName;
+            sonoConfig.WindowSize = frameSize;
+            sonoConfig.WindowOverlap = windowOverlap;
+            sonoConfig.NoiseReductionType = nrt;
+            sonoConfig.epsilon = Math.Pow(0.5, bitsPerSample - 1);
+            sonoConfig.WindowPower = windowPower;
+            sonoConfig.fftConfig.SampleRate = sr;
+            sonoConfig.Duration = duration;
+            var sonogram = new SpectralSonogram(sonoConfig, amplitudeSpectrogram);
+            sonogram.SetTimeScale(duration);
+            return sonogram;
+        }
+
+
+
         public SpectralSonogram(AmplitudeSonogram sg)
             : base(sg.Configuration)
         {
@@ -825,17 +903,20 @@
 
         public override void Make(double[,] amplitudeM)
         {
+            this.SampleRate = this.Configuration.fftConfig.SampleRate;
             double[,] m = amplitudeM;
 
             // (i) IF REQUIRED CONVERT TO FULL BAND WIDTH MEL SCALE
             if (Configuration.DoMelScale)// m = ApplyFilterBank(m); //following replaces next method
             {
-                m = Speech.MelFilterBank(m, Configuration.FreqBinCount, NyquistFrequency, 0, NyquistFrequency); // using the Greg integral
+                m = Speech.MelFilterBank(m, Configuration.FreqBinCount, this.NyquistFrequency, 0, this.NyquistFrequency); // using the Greg integral
             }
 
             // (ii) CONVERT AMPLITUDES TO DECIBELS
             m = Speech.DecibelSpectra(m, this.Configuration.WindowPower, this.SampleRate, this.Configuration.epsilon);
-        
+
+            int frameCount = amplitudeM.GetLength(0); //i.e. row count
+
             // (iii) NOISE REDUCTION
             var tuple = SNR.NoiseReduce(m, Configuration.NoiseReductionType, this.Configuration.NoiseReductionParameter);
             this.Data = tuple.Item1;   // store data matrix
