@@ -635,6 +635,30 @@ namespace TowseyLib
     }
 
 
+
+        /// <summary>
+        /// a difference filter over the rows from row 0.
+        /// To be used to remove background noise from sonogram
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+    public static double[,] FilterMatrixRows(double[,] m)
+    {
+        int rowCount = m.GetLength(0);
+        int colCount = m.GetLength(1);
+        double[,] returnMatrix = new double[rowCount, colCount];
+
+        for (int r = 0; r < rowCount; r++)
+        {
+            for (int c = 1; c < colCount; c++)
+            {
+                returnMatrix[r, c] = m[r, c] - m[r, c-1];
+            }
+        }
+
+        return returnMatrix;
+    }
+
 //===========================================================================================================================================================
 
 

@@ -130,12 +130,14 @@
   <ItemGroup>
     <Compile Include="AED.cs" />
     <Compile Include="BarsAndStripes.cs" />
+    <Compile Include="HD_Generalized.cs" />
     <Compile Include="HTKRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Human.cs" />
     <Compile Include="KoalaMale.cs" />
     <Compile Include="KiwiRecogniser.cs" />
+    <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="Process\AcousticIndicesAnalysis.cs" />
     <Compile Include="Process\AnalysisRunner.cs" />
     <Compile Include="Process\HarmonicRecogniserAnalysis.cs" />
