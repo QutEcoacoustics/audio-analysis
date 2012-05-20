@@ -150,7 +150,7 @@
         /// <summary>
         /// Gets or sets Orders.
         /// </summary>
-        public List<IOrderer<T>> Orders { get; set; }
+        public List<IOrderer<T>> Orders { get; private set; }
 
         /// <summary>
         /// Apply orders.
@@ -208,6 +208,29 @@
             }
 
             return source;
+        }
+
+        /// <summary>
+        /// Create an order with one order specified.
+        /// </summary>
+        /// <param name="orderExpr">
+        /// The order expr.
+        /// </param>
+        /// <param name="sortDirection">
+        /// The sort Direction.
+        /// </param>
+        /// <typeparam name="TOrderProperty">
+        /// The property being ordered by.
+        /// </typeparam>
+        /// <returns>
+        /// A new ordercooodrinator.
+        /// </returns>
+        public static OrderCoordinator<T> OneOrder<TOrderProperty>(Expression<Func<T, TOrderProperty>> orderExpr, SortDirection sortDirection)
+        {
+            var result = new OrderCoordinator<T>();
+            result.Orders.Add(new Orderer<T, TOrderProperty>(orderExpr, sortDirection));
+
+            return result;
         }
     }
 
