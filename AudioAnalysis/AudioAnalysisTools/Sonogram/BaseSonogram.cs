@@ -812,7 +812,7 @@
         }
 
         public static SpectralSonogram GetSpectralSonogram(string recordingFileName, int frameSize, double windowOverlap, int bitsPerSample, double windowPower, int sr,
-                        TimeSpan duration, NoiseReductionType nrt, double[,] amplitudeSpectrogram)
+                                                           TimeSpan duration, NoiseReductionType nrt, double[,] amplitudeSpectrogram)
         {
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recordingFileName;

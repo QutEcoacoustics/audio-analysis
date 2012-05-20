@@ -1,0 +1,394 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using TowseyLib;
+
+
+namespace AnalysisPrograms
+{
+    public class CrossCorrelation
+    {
+
+
+        /*************************************************************************
+         * Need to install alglib dll to get this funcitonality
+1-dimensional real cross-correlation.
+
+For given Pattern/Signal returns corr(Pattern,Signal) (non-circular).
+
+Correlation is calculated using reduction to  convolution.  Algorithm with
+max(N,N)*log(max(N,N)) complexity is used (see  ConvC1D()  for  more  info
+about performance).
+
+IMPORTANT:
+for  historical reasons subroutine accepts its parameters in  reversed
+order: CorrR1D(Signal, Pattern) = Pattern x Signal (using  traditional
+definition of cross-correlation, denoting cross-correlation as "x").
+
+INPUT PARAMETERS
+Signal  -   array[0..N-1] - real function to be transformed,
+        signal containing pattern
+N       -   problem size
+Pattern -   array[0..M-1] - real function to be transformed,
+        pattern to search withing signal
+M       -   problem size
+
+OUTPUT PARAMETERS
+R       -   cross-correlation, array[0..N+M-2]:
+        * positive lags are stored in R[0..N-1],
+          R[i] = sum(pattern[j]*signal[i+j]
+        * negative lags are stored in R[N..N+M-2],
+          R[N+M-1-i] = sum(pattern[j]*signal[-i+j]
+
+NOTE:
+It is assumed that pattern domain is [0..M-1].  If Pattern is non-zero
+on [-K..M-1],  you can still use this subroutine, just shift result by K.
+
+-- ALGLIB --
+Copyright 21.07.2009 by Bochkanov Sergey
+ * 
+ * 
+ * 
+public static void corrr1d(
+double[] signal,
+int n,
+double[] pattern,
+int m,
+out double[] r)
+
+*************************************************************************/
+
+        /// <summary>
+        /// returns the fft spectrum of a cross-correlation function
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <returns></returns>
+        public static double[] CrossCorr(double[] v1, double[] v2)
+        {
+            int n = v1.Length; //assume both vectors of same length
+            double[] r;
+            alglib.corrr1d(v1, n, v2, n, out r);
+            //alglib.complex[] f;
+            //alglib.fftr1d(newOp, out f);
+            //System.Console.WriteLine("{0}", alglib.ap.format(f, 3));
+            //for (int i = 0; i < op.Length; i++) Console.WriteLine("{0}   {1:f2}", i, op[i]);
+
+            //rearrange corr output and normalise
+            int xcorrLength = 2 * n;
+            double[] xCorr = new double[xcorrLength];
+            //for (int i = 0; i < n - 1; i++) newOp[i] = r[i + n];   //rearrange corr output
+            //for (int i = n - 1; i < opLength-1; i++) newOp[i] = r[i - n + 1];
+            for (int i = 0; i < n - 1; i++) xCorr[i] = r[i + n] / (i + 1);  //rearrange and normalise
+            for (int i = n - 1; i < xcorrLength - 1; i++) xCorr[i] = r[i - n + 1] / (xcorrLength - i - 1);
+
+
+            //add extra value at end so have length = power of 2 for FFT
+            //xCorr[xCorr.Length - 1] = xCorr[xCorr.Length - 2];
+            //Console.WriteLine("xCorr length = " + xCorr.Length);
+            //for (int i = 0; i < xCorr.Length; i++) Console.WriteLine("{0}   {1:f2}", i, xCorr[i]);
+            //DataTools.writeBarGraph(xCorr);
+
+            xCorr = DataTools.DiffFromMean(xCorr);
+            FFT.WindowFunc wf = FFT.Hamming;
+            var fft = new FFT(xCorr.Length, wf);
+
+            var spectrum = fft.Invoke(xCorr);
+            return spectrum;
+        }//CrossCorrelation()
+
+
+
+         public static void TestCrossCorrelation()
+         {
+            double[] signal2  = {1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
+            double[] signal4  = {1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
+            double[] signal6 = { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
+            double[] signal7 = { 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 };
+            double[] signal8 = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
+            double[] signal10 = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
+            double[] signal16 = {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            int n = signal2.Length;
+            double[] pattern2  = { 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0 };
+            double[] pattern4  = { 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 };
+            double[] pattern6  = { 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
+            double[] pattern7  = { 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1 };
+            double[] pattern8  = { 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0 };
+            double[] pattern10 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0 };
+            double[] pattern16 = { 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+            Console.WriteLine("Signal length = {0}", n);
+            int smoothWindow = 3;
+            double[] signal  = DataTools.filterMovingAverage(signal16,  smoothWindow);
+            double[] pattern = DataTools.filterMovingAverage(pattern16, smoothWindow);
+
+            var spectrum = CrossCorrelation.CrossCorr(signal, pattern);
+            int zeroCount = 3;
+            for (int s = 1; s < zeroCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+            spectrum = DataTools.NormaliseArea(spectrum);
+            int maxId = DataTools.GetMaxIndex(spectrum);
+            double intensityValue = spectrum[maxId];
+
+            if (maxId == 0) Console.WriteLine("max id = 0");
+            else
+            {
+                double period = 2 * n / (double)maxId;
+                Console.WriteLine("max id = {0};   period = {1:f2};    intensity = {2:f3}", maxId, period, intensityValue);
+            }
+         }//TestCrossCorrelation()
+
+
+         public static System.Tuple<double[,], double[,], double[,], double[]> DetectBarsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
+                                                                                                 double intensityThreshold, int zeroBinCount)
+         {
+             bool doNoiseremoval = true;
+             //intensityThreshold = 0.3;
+
+             int rowCount = m.GetLength(0);
+             int colCount = m.GetLength(1);
+             int numberOfColSteps = colCount / colStep;
+             int numberOfRowSteps = rowCount / rowStep;
+
+
+             var intensityMatrix   = new double[numberOfRowSteps, numberOfColSteps];
+             var periodicityMatrix = new double[numberOfRowSteps, numberOfColSteps];
+             var hitsMatrix        = new double[rowCount, colCount];
+             double[] array2return = null;
+
+             for (int b = 0; b < numberOfColSteps; b++)
+             {
+                 int minCol = b * colStep;
+                 int maxCol = minCol + colWidth - 1;
+
+                 double[,] subMatrix = MatrixTools.Submatrix(m, 0, minCol, (rowCount - 1), maxCol);
+                 double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
+
+                 if (doNoiseremoval)
+                 {
+                     double Q, oneSD;
+                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                 }
+                 //double noiseThreshold = 0.005;
+                 //for (int i = 1; i < amplitudeArray.Length - 1; i++)
+                 //{
+                 //    if ((amplitudeArray[i - 1] < noiseThreshold) && (amplitudeArray[i + 1] < noiseThreshold)) amplitudeArray[i] = 0.0;
+                 //}
+                 //DataTools.writeBarGraph(amplitudeArray);
+                 if (b == 2) array2return = amplitudeArray; //returned for debugging purposes only
+
+                 //ii: DETECT HARMONICS
+                 var results = CrossCorrelation.DetectPeriodicityInLongArray(amplitudeArray, rowStep, rowWidth, zeroBinCount);
+                 double[] intensity = results.Item1;     //an array of periodicity scores
+                 double[] periodicity = results.Item2;
+
+                 //transfer periodicity info to a matrices.
+                 for (int rs = 0; rs < numberOfRowSteps; rs++)
+                 {
+                     intensityMatrix[rs, b]   = intensity[rs];
+                     periodicityMatrix[rs, b] = periodicity[rs];
+
+                     //mark up the hits matrix
+                     //double relativePeriod = periodicity[rs] / rowWidth / 2;
+                     if (intensity[rs] > intensityThreshold)
+                     {
+                         int minRow = rs * rowStep;
+                         int maxRow = minRow + rowStep - 1;
+                         for (int r = minRow; r < maxRow; r++)
+                         for (int c = minCol; c < maxCol; c++)
+                         {
+                             //hitsMatrix[r, c] = relativePeriod;
+                             hitsMatrix[r, c] = periodicity[rs];
+                         }
+                     } // if()
+                 } // for loop over numberOfRowSteps
+             } // for loop over numberOfColSteps
+
+             return Tuple.Create(intensityMatrix, periodicityMatrix, hitsMatrix, array2return);
+         }
+
+
+         public static System.Tuple<List<double[]>, double[,], double[]> DetectBarsEventsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
+                                                                                                 double intensityThreshold, int zeroBinCount)
+         {
+             bool doNoiseremoval = true;
+             //intensityThreshold = 0.3;
+
+             int rowCount = m.GetLength(0);
+             int colCount = m.GetLength(1);
+             int numberOfColSteps = colCount / colStep;
+             //int numberOfRowSteps = rowCount / rowStep;
+
+             var events = new List<double[]>();
+             var hitsMatrix        = new double[rowCount, colCount];
+             double[] array2return = null;
+
+             for (int b = 0; b < numberOfColSteps; b++)
+             {
+                 int minCol = b * colStep;
+                 int maxCol = minCol + colWidth - 1;
+
+                 double[,] subMatrix = MatrixTools.Submatrix(m, 0, minCol, (rowCount - 1), maxCol);
+                 double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
+
+                 if (doNoiseremoval)
+                 {
+                     double Q, oneSD;
+                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                 }
+
+                 double[] smoothedArray = DataTools.filterMovingAverage(amplitudeArray, 5); //to close up gaps
+                 double noiseThreshold = 0.001;
+                 int minSegmentLength = 16;
+                 //DataTools.writeBarGraph(amplitudeArray);
+                 if (b == 2) array2return = amplitudeArray; //returned for debugging purposes only
+
+
+                 var segmentStartEnds = SNR.SegmentIntensityArray(smoothedArray, noiseThreshold, minSegmentLength);
+
+
+                 foreach( int[] segment in segmentStartEnds)
+                 {
+                     int xcorrLength = 16;
+                     int segmentLength = segment[1] - segment[0] + 1;
+                     if (segmentLength > 64) xcorrLength = 64;
+                     else if (segmentLength > 32) xcorrLength = 32;
+                     else if (segmentLength > 16) xcorrLength = 16;
+
+                     double[] extract = DataTools.Subarray(amplitudeArray, segment[0], xcorrLength);
+                     if(extract == null) continue;
+
+                     var results = CrossCorrelation.DetectPeriodicityInArray(extract, zeroBinCount);
+                     double intensity = results.Item1;     //an array of periodicity scores
+                     double periodicity = results.Item2;
+
+                     if (intensity > intensityThreshold)
+                     {
+                         var singleEvent = new double[6];
+                         singleEvent[0] = segment[0]; //start location
+                         singleEvent[1] = segment[1]; //end   location
+                         singleEvent[2] = minCol;     //top bin
+                         singleEvent[3] = maxCol;     //top bin
+                         singleEvent[4] = intensity;     
+                         singleEvent[5] = periodicity;  
+                         events.Add(singleEvent); 
+
+                        int minRow = segment[0];
+                        int maxRow = minRow + xcorrLength - 1;
+                        for (int r = minRow; r < maxRow; r++)
+                        for (int c = minCol; c < maxCol; c++)
+                        {
+                            //hitsMatrix[r, c] = relativePeriod;
+                            hitsMatrix[r, c] = periodicity;
+                        }
+                     } // if()
+
+                 } // for loop over numberOfColSteps
+
+             } // foreach
+             return Tuple.Create(events, hitsMatrix, array2return);
+         }
+
+
+         //public static System.Tuple<double[,]> DetectStripesUsingXcorrelation(double[,] m)
+         //{
+         //    int rowCount = m.GetLength(0);
+         //    int colCount = m.GetLength(1);
+         //    var hits = new double[rowCount, colCount];
+         //    return Tuple.Create(hits);
+         //}
+
+
+         public static Tuple<double[], double[]> DetectPeriodicityInLongArray(double[] array, int step, int segmentLength, int zeroBinCount)
+        {
+            int n = array.Length;
+            int stepCount   = n / step;
+            var intensity   = new double[stepCount];     //an array of period intensity
+            var periodicity = new double[stepCount];     //an array of the periodicity values
+            for (int i = 0; i < stepCount; i++)          //step through the array
+            {
+                int start = i * step;
+                double[] subarray = DataTools.Subarray(array, start, segmentLength);
+                var spectrum = CrossCorrelation.CrossCorr(subarray, subarray);
+
+                spectrum = DataTools.NormaliseArea(spectrum);
+                double gradient = 10 / (double)zeroBinCount;
+                for (int s = 0; s < zeroBinCount; s++) 
+                {
+                    double divisor = (double)(10 - (gradient * s));
+                    spectrum[s] /= divisor;  //in real data these bins are dominant and hide other frequency content
+                }
+                int maxId = DataTools.GetMaxIndex(spectrum);
+                double intensityValue = spectrum[maxId];
+                intensity[i] = intensityValue;
+
+                double period = 0.0;
+                if (maxId != 0) period = 2 * segmentLength / (double)maxId;
+                periodicity[i] = period;
+            }
+            return Tuple.Create(intensity, periodicity);
+        }
+
+         public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
+        {
+                var spectrum = CrossCorrelation.CrossCorr(array, array);
+
+                spectrum = DataTools.NormaliseArea(spectrum);
+
+                //decrease weight of low frequency bins
+                double gradient = 10 / (double)zeroBinCount;
+                for (int s = 0; s < zeroBinCount; s++) 
+                {
+                    double divisor = (double)(10 - (gradient * s));
+                    spectrum[s] /= divisor;  //in real data these bins are dominant and hide other frequency content
+                }
+                int maxId = DataTools.GetMaxIndex(spectrum);
+                double intensityValue = spectrum[maxId];
+
+                double period = 0.0;
+                if (maxId != 0) period = 2 * array.Length / (double)maxId;
+            return Tuple.Create(intensityValue, period);
+        }
+
+
+        /// <summary>
+        /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+        /// 
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="amplitudeThreshold"></param>
+        /// <returns></returns>
+         public static System.Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
+         {
+             int rowCount = m.GetLength(0);
+             int colCount = m.GetLength(1);
+             var intensity   = new double[rowCount];     //an array of period intensity
+             var periodicity = new double[rowCount];     //an array of the periodicity values
+
+             double[] prevRow = MatrixTools.GetRow(m, 0);
+             prevRow = DataTools.DiffFromMean(prevRow);
+
+             for (int r = 1; r < rowCount; r++)
+             {
+                 double[] thisRow = MatrixTools.GetRow(m, r);
+                 thisRow = DataTools.DiffFromMean(thisRow);
+
+                 var spectrum = CrossCorrelation.CrossCorr(prevRow, thisRow);
+
+                 for (int s = 0; s < zeroBinCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                 spectrum  = DataTools.NormaliseArea(spectrum);
+                 int maxId = DataTools.GetMaxIndex(spectrum);
+                 double intensityValue = spectrum[maxId];
+                 intensity[r] = intensityValue;
+
+                 double period = 0.0;
+                 if (maxId != 0) period = 2 * colCount / (double)maxId;
+                 periodicity[r] = period;
+
+                 prevRow = thisRow;
+             }// rows
+             return Tuple.Create(intensity, periodicity);
+         }
+
+    } //class
+} //AnalysisPrograms

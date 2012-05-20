@@ -461,6 +461,24 @@ namespace TowseyLib
       return colSums;
   }
 
+  public static double[] GetRowAverages(double[,] m)
+  {
+      int rows = m.GetLength(0);
+      int cols = m.GetLength(1);
+      double sum = 0.0;
+      double[] rowSums = new double[rows];
+      for (int r = 0; r < rows; r++)
+      {
+          sum = 0.0;
+          for (int c = 0; c < cols; c++)
+          {
+              sum += m[r, c];
+          }
+          rowSums[r] = sum / cols;
+      }
+      return rowSums;
+  }
+
 
 
 		/// <summary>

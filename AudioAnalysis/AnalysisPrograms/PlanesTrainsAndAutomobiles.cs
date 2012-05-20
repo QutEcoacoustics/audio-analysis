@@ -309,9 +309,10 @@ namespace AnalysisPrograms
             int frameSize = 1024;
             double windowOverlap = 0.0;
             double binWidth = recording.SampleRate / (double)frameSize;
+            int sr = recording.SampleRate;
             double framesPerSecond = binWidth;
 
-            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, recording.SampleRate, frameSize, windowOverlap);
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
             double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
             double[,] spectrogram = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
@@ -337,7 +338,7 @@ namespace AnalysisPrograms
 
             //ii: DETECT HARMONICS
             int zeroBinCount = 5; //to remove low freq content which dominates the spectrum
-            var results = BarsAndStripes.DetectStripesInColumnsOfMatrix(subMatrix, intensityThreshold, zeroBinCount);
+            var results = CrossCorrelation.DetectBarsInTheRowsOfaMatrix(subMatrix, intensityThreshold, zeroBinCount);
             double[] intensity = results.Item1;     //an array of periodicity scores
             double[] periodicity = results.Item2;
 
@@ -368,7 +369,6 @@ namespace AnalysisPrograms
 
             //set up the songogram to return. Use the existing amplitude sonogram
             int bitsPerSample = recording.GetWavReader().BitsPerSample;
-            int sr  = recording.SampleRate;
             TimeSpan duration = recording.Duration();
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
