@@ -397,7 +397,7 @@ namespace TowseyLib
             //DataTools.writeBarGraph(histo);
 
             // find peak of lowBins histogram
-            // FIND MAX VALUE IN BOTTOM FRACTION OF RANGE. ASSUMES NOISE IS GAUSSIAN and that their is some signal.
+            // FIND MAX VALUE IN BOTTOM FRACTION OF RANGE. ASSUMES NOISE IS GAUSSIAN and that there is some signal.
             int upperBound = (int)(binCount * SNR.FRACTIONAL_BOUND_FOR_MODE);
             for (int i = upperBound; i < binCount; i++) smoothHisto[i] = 0;//set top 50% of intensity bins = 0. 
             int peakID = DataTools.GetMaxIndex(smoothHisto);
@@ -1070,6 +1070,44 @@ namespace TowseyLib
             }
             return outM;
         }// end RemoveBackgroundNoise()
+
+
+
+        //***********************************************************
+
+        public static List<int[]> SegmentIntensityArray(double[] values, double threshold, int minLength)
+        {
+            int count = values.Length;
+            var events = new List<int[]>();
+            bool isHit = false;
+            int startID = 0;
+
+            for (int i = 0; i < count; i++)//pass over all elements in array
+            {
+                if ((isHit == false) && (values[i] > threshold))//start of an event
+                {
+                    isHit = true;
+                    startID = i;
+                }
+                else  //check for the end of an event
+                    if ((isHit == true) && (values[i] <= threshold)) //this is end of an event, so initialise it
+                    {
+                        isHit = false;
+                        int endID = i;
+                        int segmentLength = endID - startID + 1;
+                        if (segmentLength < minLength) continue; //skip events with duration shorter than threshold
+                        var ev = new int[2];
+                        ev[0] = startID;
+                        ev[0] = endID;
+                        events.Add(ev);
+                    }
+            } //end 
+            return events;
+        }//end SegmentIntensityArray()
+
+
+        //************************************************************
+
 
 
         public static double[,] SmoothInTemporalDirectionOnly(double[,] matrix, int window)

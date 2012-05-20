@@ -189,6 +189,9 @@
     <CodeAnalysisFailOnMissingRules>false</CodeAnalysisFailOnMissingRules>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="alglibnet2">
+      <HintPath>..\..\Extra Assemblies\alglibnet2.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.85.5.452, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Extra Assemblies\ICSharpCode.SharpZipLib.dll</HintPath>
@@ -208,6 +211,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConfigDict.cs" />
+    <Compile Include="CrossCorrelation.cs" />
     <Compile Include="CsvTools.cs" />
     <Compile Include="DataTableTools.cs" />
     <Compile Include="DSP_IIRFilter.cs" />

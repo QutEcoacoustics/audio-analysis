@@ -99,7 +99,7 @@ namespace AudioAnalysisTools
                 ////g.DrawImage(this.SonoImage, 0, 0); // WARNING ### THIS CALL DID NOT WORK THEREFORE
                 GraphicsSegmented.Draw(g, this.SonoImage); // USE THIS CALL INSTEAD.
 
-                if (this.SuperimposedMatrix != null) SuperimposeMatrix(g);
+                if (this.SuperimposedMatrix != null) DrawSuperimposedMatrix(g);
                 if (this.eventList != null) DrawEvents(g);
                 if (this.FreqHits != null) DrawFreqHits(g);
             }
@@ -179,10 +179,10 @@ namespace AudioAnalysisTools
         /// Only draws lines on every second row so that the underling sonogram can be discerned
         /// </summary>
         /// <param name="g"></param>
-        void SuperimposeMatrix(Graphics g)
+        void DrawSuperimposedMatrix(Graphics g)
         {
-            int paletteSize = 50;
-            var pens = ImageTools.GetColorPalette(paletteSize);
+            int paletteSize = 256;
+            var pens = ImageTools.GetRedGradientPalette(); //size = 256
 
             int rows = this.SuperimposedMatrix.GetLength(0);
             int cols = this.SuperimposedMatrix.GetLength(1);
@@ -194,16 +194,10 @@ namespace AudioAnalysisTools
                 for (int r = 0; r < rows; r++)
                 {
                     if (this.SuperimposedMatrix[r, c] == 0.0) continue;
-                    double normScore = this.SuperimposedMatrix[r, c] / this.superImposedMaxScore;
-                    if (normScore > 1.0) normScore = 1.0;
-                    //Color grey = ((Bitmap)this.SonoImage).GetPixel(r, c);
-                    //following code was failed attempt to do a transparent effect!
-                    //Color palletteColor = pens[(int)(paletteSize * normScore)].Color;
-                    //byte red   = (byte)(grey.R + (palletteColor.R / 2));
-                    //byte green = (byte)(grey.G + (palletteColor.G / 2));
-                    //byte blue  = (byte)(grey.B + (palletteColor.B / 2));
-                    //Pen pen = new Pen(Color.FromArgb(red, green, blue));
-                    Pen pen = pens[(int)(paletteSize * normScore)];
+                    double normScore = this.SuperimposedMatrix[r, c] / (double)this.superImposedMaxScore;
+                    int penID = (int)(paletteSize * normScore);
+                    if (penID >= paletteSize) penID = paletteSize - 1;
+                    Pen pen = pens[penID];
                     g.DrawLine(pen, r, imageHt - c, r + 1, imageHt - c);
                 }
                 c++; //only draw on every second row.

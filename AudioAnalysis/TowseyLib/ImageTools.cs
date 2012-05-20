@@ -1551,6 +1551,27 @@ namespace TowseyLib
             return m;
         }
 
+
+
+        /// <summary>
+        /// returns a palette of a variety of coluor.
+        /// Used for displaying clusters identified by colour.
+        /// </summary>
+        /// <param name="paletteSize"></param>
+        /// <returns></returns>
+        public static List<Pen> GetRedGradientPalette()
+        {
+            var pens = new List<Pen>();
+            for (int c = 0; c < 256; c++)
+            {
+
+                pens.Add(new Pen(Color.FromArgb(255 - c, 0, 0)));
+            }
+            return pens;
+        }
+
+
+
         /// <summary>
         /// returns a palette of a variety of coluor.
         /// Used for displaying clusters identified by colour.

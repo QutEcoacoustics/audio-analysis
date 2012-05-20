@@ -66,11 +66,14 @@ namespace AnalysisPrograms
                     case "human":     // recognises uhman speech but not word recognition
                         Human.Dev(restOfArgs);
                         break;
-
-                    // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
                     case "machines":     // recognises Planes, Trains And Automobiles 
                         PlanesTrainsAndAutomobiles.Dev(restOfArgs);
                         break;
+
+                    // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
+                    case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
+                        BarsAndStripes.Dev(restOfArgs);
+                        break;                       
                     case "felt":     // find other acoustic events like this
                         FeltTemplates_Use.Dev(restOfArgs);
                         break;

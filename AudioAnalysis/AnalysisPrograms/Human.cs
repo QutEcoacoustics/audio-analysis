@@ -376,7 +376,7 @@ namespace AnalysisPrograms
 
             //ii: DETECT HARMONICS
             int zeroBinCount = 3; //to remove low freq content which dominates the spectrum
-            var results = BarsAndStripes.DetectStripesInColumnsOfMatrix(subMatrix, intensityThreshold, zeroBinCount);
+            var results = CrossCorrelation.DetectBarsInTheRowsOfaMatrix(subMatrix, intensityThreshold, zeroBinCount);
             double[] intensity = results.Item1;     //an array of periodicity scores
             double[] periodicity = results.Item2;
 
