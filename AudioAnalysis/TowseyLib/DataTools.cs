@@ -92,7 +92,7 @@ namespace TowseyLib
             int end = start + length - 1;
             if(end >= A.Length)
             {
-                Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                //Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
             int[] sa = new int[length];
@@ -108,7 +108,7 @@ namespace TowseyLib
             int end = start + length - 1;
             if (end >= A.Length)
             {
-                Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
+                //Console.WriteLine("WARNING! DataTools.Subarray(): subarray extends to far.");
                 return null;
             }
             double[] sa = new double[length];
@@ -149,6 +149,46 @@ namespace TowseyLib
             }
             return sm;
         }
+
+
+        /// <summary>
+        /// returns a list of acoustic events defined by start, end and intensity score.
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="threshold"></param>
+        /// <returns>List of double[] containing three values</returns>
+        public static List<double[]> SegmentArrayOnThreshold(double[] values, double threshold)
+        {
+            int count = values.Length;
+            var events = new List<double[]>();
+            bool isHit = false;
+            int startFrame = 0;
+
+            for (int i = 0; i < count; i++)//pass over all frames
+            {
+                if ((isHit == false) && (values[i] > threshold))//start of an event
+                {
+                    isHit = true;
+                    startFrame = i;
+                }
+                else  //check for the end of an event
+                    if ((isHit == true) && (values[i] <= threshold))//this is end of an event, so initialise it
+                    {
+                        isHit = false;
+                        var segment = new double[3];
+                        segment[0] = startFrame;
+                        segment[1] = i;  //endFrame
+
+                        //obtain average intensity score.
+                        double av = 0.0;
+                        for (int n = startFrame; n <= i; n++) av += values[n];
+                        segment[2] = av / (double)(i - startFrame + 1); //intensity score.
+                        events.Add(segment);
+                    }
+            } //end of pass over all frames
+            return events;
+        }//end method SegmentArrayOnThreshold()
+
 
 
         public static List<Double[]> RemoveNullElementsFromList(List<Double[]> list)

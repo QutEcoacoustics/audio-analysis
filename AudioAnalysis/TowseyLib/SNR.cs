@@ -1098,7 +1098,7 @@ namespace TowseyLib
                         if (segmentLength < minLength) continue; //skip events with duration shorter than threshold
                         var ev = new int[2];
                         ev[0] = startID;
-                        ev[0] = endID;
+                        ev[1] = endID;
                         events.Add(ev);
                     }
             } //end 
