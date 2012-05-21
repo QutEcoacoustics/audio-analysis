@@ -10,6 +10,21 @@ namespace AnalysisPrograms
     public class CrossCorrelation
     {
 
+        //these keys are used to define a cross-correlation event in a sonogram.
+        public const string key_COUNT = "count";
+        public const string key_START_FRAME = "startFrame";
+        public const string key_END_FRAME = "endFrame";
+        public const string key_FRAME_COUNT = "frameCount";
+        public const string key_START_SECOND = "startSecond";
+        public const string key_END_SECOND = "endSecond";
+        public const string key_MIN_FREQBIN = "minFreqBin";
+        public const string key_MAX_FREQBIN = "maxFreqBin";
+        public const string key_MIN_FREQ = "minFreq";
+        public const string key_MAX_FREQ = "maxFreq";
+        public const string key_SCORE = "score";
+        public const string key_PERIODICITY = "periodicity";
+        //public const string key_COUNT = "count";
+
 
         /*************************************************************************
          * Need to install alglib dll to get this funcitonality
@@ -208,87 +223,6 @@ out double[] r)
          }
 
 
-         public static System.Tuple<List<double[]>, double[,], double[]> DetectBarsEventsUsingXcorrelation(double[,] m, int rowStep, int rowWidth, int colStep, int colWidth,
-                                                                                                 double intensityThreshold, int zeroBinCount)
-         {
-             bool doNoiseremoval = true;
-             //intensityThreshold = 0.3;
-
-             int rowCount = m.GetLength(0);
-             int colCount = m.GetLength(1);
-             int numberOfColSteps = colCount / colStep;
-             //int numberOfRowSteps = rowCount / rowStep;
-
-             var events = new List<double[]>();
-             var hitsMatrix        = new double[rowCount, colCount];
-             double[] array2return = null;
-
-             for (int b = 0; b < numberOfColSteps; b++)
-             {
-                 int minCol = b * colStep;
-                 int maxCol = minCol + colWidth - 1;
-
-                 double[,] subMatrix = MatrixTools.Submatrix(m, 0, minCol, (rowCount - 1), maxCol);
-                 double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
-
-                 if (doNoiseremoval)
-                 {
-                     double Q, oneSD;
-                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
-                 }
-
-                 double[] smoothedArray = DataTools.filterMovingAverage(amplitudeArray, 5); //to close up gaps
-                 double noiseThreshold = 0.001;
-                 int minSegmentLength = 16;
-                 //DataTools.writeBarGraph(amplitudeArray);
-                 if (b == 2) array2return = amplitudeArray; //returned for debugging purposes only
-
-
-                 var segmentStartEnds = SNR.SegmentIntensityArray(smoothedArray, noiseThreshold, minSegmentLength);
-
-
-                 foreach( int[] segment in segmentStartEnds)
-                 {
-                     int xcorrLength = 16;
-                     int segmentLength = segment[1] - segment[0] + 1;
-                     if (segmentLength > 64) xcorrLength = 64;
-                     else if (segmentLength > 32) xcorrLength = 32;
-                     else if (segmentLength > 16) xcorrLength = 16;
-
-                     double[] extract = DataTools.Subarray(amplitudeArray, segment[0], xcorrLength);
-                     if(extract == null) continue;
-
-                     var results = CrossCorrelation.DetectPeriodicityInArray(extract, zeroBinCount);
-                     double intensity = results.Item1;     //an array of periodicity scores
-                     double periodicity = results.Item2;
-
-                     if (intensity > intensityThreshold)
-                     {
-                         var singleEvent = new double[6];
-                         singleEvent[0] = segment[0]; //start location
-                         singleEvent[1] = segment[1]; //end   location
-                         singleEvent[2] = minCol;     //top bin
-                         singleEvent[3] = maxCol;     //top bin
-                         singleEvent[4] = intensity;     
-                         singleEvent[5] = periodicity;  
-                         events.Add(singleEvent); 
-
-                        int minRow = segment[0];
-                        int maxRow = minRow + xcorrLength - 1;
-                        for (int r = minRow; r < maxRow; r++)
-                        for (int c = minCol; c < maxCol; c++)
-                        {
-                            //hitsMatrix[r, c] = relativePeriod;
-                            hitsMatrix[r, c] = periodicity;
-                        }
-                     } // if()
-
-                 } // for loop over numberOfColSteps
-
-             } // foreach
-             return Tuple.Create(events, hitsMatrix, array2return);
-         }
-
 
          //public static System.Tuple<double[,]> DetectStripesUsingXcorrelation(double[,] m)
          //{
@@ -329,7 +263,60 @@ out double[] r)
             return Tuple.Create(intensity, periodicity);
         }
 
-         public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
+
+
+
+         /// <summary>
+         /// this method requires debuggin.
+         /// I started it but did not finish as another method seemed to work better.
+         /// </summary>
+         /// <param name="array"></param>
+         /// <param name="intensityThreshold"></param>
+         /// <returns></returns>
+         public static List<Dictionary<string, double>> DetectBarsEventsBySegmentationAndXcorrelation(double[] array, double intensityThreshold)
+         {
+             int zeroBinCount = 5; //to remove low freq content which dominates the spectrum
+
+             double[] smoothedArray = DataTools.filterMovingAverage(array, 5); //to close up gaps
+             double noiseThreshold = 0.001;
+             int minSegmentLength = 16;
+             var events = new List<Dictionary<string, double>>();
+             //DataTools.writeBarGraph(amplitudeArray);
+
+             var segmentStartEnds = SNR.SegmentIntensityArray(smoothedArray, noiseThreshold, minSegmentLength);
+
+             //loop over the segments only
+             foreach (int[] segment in segmentStartEnds)
+             {
+                 int xcorrLength = 16;
+                 int segmentLength = segment[1] - segment[0] + 1;
+                 if (segmentLength > 64) xcorrLength = 64;
+                 else if (segmentLength > 32) xcorrLength = 32;
+                 else if (segmentLength > 16) xcorrLength = 16;
+
+                 double[] extract = DataTools.Subarray(array, segment[0], xcorrLength);
+                 if (extract == null) continue;
+
+                 var results = CrossCorrelation.DetectPeriodicityInArray(extract, zeroBinCount);
+                 double intensity = results.Item1;     //an array of periodicity scores
+                 double periodicity = results.Item2;
+
+                 if (intensity > intensityThreshold)
+                 {
+                     var singleEvent = new Dictionary<string, double>();
+                     singleEvent[key_START_FRAME] = segment[0]; //start location
+                     singleEvent[key_END_FRAME] = segment[1]; //end   location
+                     singleEvent[key_FRAME_COUNT] = segment[1] - segment[0] + 1; //number of frames in the event
+                     singleEvent[key_SCORE] = intensity;
+                     singleEvent[key_PERIODICITY] = periodicity;
+                     events.Add(singleEvent);
+                 } // if()
+             }//foreach segment in the array
+             return events;
+         }
+
+
+        public static Tuple<double, double> DetectPeriodicityInArray(double[] array, int zeroBinCount)
         {
                 var spectrum = CrossCorrelation.CrossCorr(array, array);
 

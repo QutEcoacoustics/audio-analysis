@@ -26,10 +26,11 @@ namespace AnalysisPrograms
     {
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min173Airplane.wav";
-        //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min449Airplane.wav";
+        public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min449Airplane.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min700Airplane.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
-        public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min302MorningChorus.wav";
+        //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min302MorningChorus.wav";
+        //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\Honeymoon_Bay_St_Bees_KoalaDistant_20080914-213000.wav";
         
 
 
@@ -49,15 +50,29 @@ namespace AnalysisPrograms
         private static double[] COMBO_WEIGHTS = new double[COL_NUMBER];
 
 
+        //these keys are used to define an event in a sonogram.
+        public const string key_COUNT       = "count";
+        public const string key_START_FRAME = "startFrame";
+        public const string key_END_FRAME   = "endFrame";
+        public const string key_FRAME_COUNT = "frameCount";
+        public const string key_START_SECOND = "startSecond";
+        public const string key_END_SECOND  = "endSecond";
+        public const string key_MIN_FREQBIN = "minFreqBin";
+        public const string key_MAX_FREQBIN = "maxFreqBin";
+        public const string key_MIN_FREQ    = "minFreq";
+        public const string key_MAX_FREQ    = "maxFreq";
+        public const string key_SCORE       = "score";
+        public const string key_PERIODICITY = "periodicity";
+        //public const string key_COUNT = "count";
 
         public static System.Tuple<string[], Type[], bool[]> InitOutputTableColumns()
         {
-            HEADERS[0] = "count";      COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
-            HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
-            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
-            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = false;
-            HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
-            HEADERS[5] = "Density";    COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
+            HEADERS[0] = key_COUNT;      COL_TYPES[0] = typeof(int);     DISPLAY_COLUMN[0] = false;
+            HEADERS[1] = "EvStartAbs";   COL_TYPES[1] = typeof(int);     DISPLAY_COLUMN[1] = false;
+            HEADERS[2] = "EvStartMin";   COL_TYPES[2] = typeof(int);     DISPLAY_COLUMN[2] = false;
+            HEADERS[3] = "EvStartSec";   COL_TYPES[3] = typeof(int);     DISPLAY_COLUMN[3] = false;
+            HEADERS[4] = "SegmentDur";   COL_TYPES[4] = typeof(string);  DISPLAY_COLUMN[4] = false;
+            HEADERS[5] = "Density";      COL_TYPES[5] = typeof(int);     DISPLAY_COLUMN[5] = true;
             HEADERS[6] = "MachineScore"; COL_TYPES[6] = typeof(double);  DISPLAY_COLUMN[6] = true;
             return Tuple.Create(HEADERS, COL_TYPES, DISPLAY_COLUMN);
         }
@@ -170,7 +185,7 @@ namespace AnalysisPrograms
                 if ((DRAW_SONOGRAMS == 2) || ((DRAW_SONOGRAMS == 1) && (predictedEvents.Count > 0))) saveSonogram = true;
                 if (saveSonogram)
                 {
-                    amplitudeArray = DataTools.normalise(amplitudeArray);
+                    if (amplitudeArray != null) amplitudeArray = DataTools.normalise(amplitudeArray);
                     Image image = DrawSonogram(sonogram, hits, amplitudeArray, predictedEvents, 0.5);
                     image.Save(imagePath, ImageFormat.Png);
                 }
@@ -291,19 +306,42 @@ namespace AnalysisPrograms
             //int numberOfFreqBands = recording.Nyquist / bandWidth;
             int colStep = (int)Math.Round(bandWidth / binWidth);
 
-            //var output = BarsAndStripes.Execute_DetectBars(spectrogram, colStep, intensityThreshold);
-            //var intensityMatrix = output.Item1;
-            //var periodicityMatrix = output.Item2;
-            //var hitsMatrix = output.Item3;
-            //var amplitudeArray = output.Item4; //for debug purposes only
-            //List<AcousticEvent> events = new List<AcousticEvent>();
-
-
             var output = BarsAndStripes.Execute_DetectBarEvents(spectrogram, colStep, intensityThreshold);
-            var acousticEvents = output.Item1;
-            var hitsMatrix = output.Item2;
-            var amplitudeArray = output.Item3; //for debug purposes only
+            var amplitudeArray = output.Item2; //for debug purposes only
 
+            //convert List of Dictionary events to List of ACousticevents.
+            //also set up the hits matrix.
+            int rowCount = spectrogram.GetLength(0);
+            int colCount = spectrogram.GetLength(1);
+            var hitsMatrix = new double[rowCount, colCount];
+            var acousticEvents = new List<AcousticEvent>();
+            double minFrameCount = 2 * framesPerSecond;   //only want events that are at least 1 second long
+            foreach (Dictionary<string, double> item in output.Item1)
+            {
+                int minRow = (int)item[key_START_FRAME];
+                int maxRow = (int)item[key_END_FRAME];
+                int frameCount = maxRow - minRow + 1;
+                if (frameCount < minFrameCount) continue; //only want events that are over a minimum length
+
+                int minCol = (int)item[key_MIN_FREQBIN];
+                int maxCol = (int)item[key_MAX_FREQBIN];
+                double periodicity = item[key_PERIODICITY];
+
+                Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
+                var ae = new AcousticEvent(o, windowOverlap, binWidth);
+                ae.Name = String.Format("p={0:f1}",periodicity);
+                ae.Score = item[key_SCORE];
+                ae.ScoreNormalised = item[key_SCORE] / 0.5;
+                acousticEvents.Add(ae);
+
+                //display event on the hits matrix
+                for (int r = minRow; r < maxRow; r++)
+                    for (int c = minCol; c < maxCol; c++)
+                    {
+                        hitsMatrix[r, c] = periodicity;
+                    }
+
+            } //foreach
 
             //set up the songogram to return. Use the existing amplitude sonogram
             int bitsPerSample = recording.GetWavReader().BitsPerSample;
@@ -323,46 +361,68 @@ namespace AnalysisPrograms
         }//end Execute_DetectBarsAndStripes()
 
 
-
-        public static System.Tuple<Double[,], Double[,], Double[,], double[]> Execute_DetectBars(double[,] matrix, int colStep, double intensityThreshold)
+        public static System.Tuple<List<Dictionary<string, double>>, double[]> Execute_DetectBarEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
-            int zeroBinCount = 5; //to remove low freq content which dominates the spectrum
-            int rowStep  = 32;
-            int rowWidth = 32;
-            int colWidth = 64;
-            var output = CrossCorrelation.DetectBarsUsingXcorrelation(matrix, rowStep, rowWidth, colStep, colWidth, intensityThreshold, zeroBinCount);
-            var intensityMatrix = output.Item1;
-            var periodicityMatrix = output.Item2;
-            var hitsMatrix = output.Item3;
-            var amplitudeArray = output.Item4; //for debug purposes only
-            return System.Tuple.Create(intensityMatrix, periodicityMatrix, hitsMatrix, amplitudeArray);
-        }//end Execute_DetectBars()
+            bool doNoiseremoval = true;
+            intensityThreshold = 0.04;
+            int maxPeriod = 20;
 
 
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            int numberOfColSteps = colCount / colStep;
 
-        public static System.Tuple<List<AcousticEvent>, Double[,], double[]> Execute_DetectBarEvents(double[,] matrix, int colStep, double intensityThreshold)
-        {
-            int zeroBinCount = 5; //to remove low freq content which dominates the spectrum
-            int rowStep = 32;
-            int rowWidth = 32;
-            int colWidth = 64;
-            var output = CrossCorrelation.DetectBarsEventsUsingXcorrelation(matrix, rowStep, rowWidth, colStep, colWidth, intensityThreshold, zeroBinCount);
-            var eventList = output.Item1;
-            var hitsMatrix = output.Item2;
-            var amplitudeArray = output.Item3; //for debug purposes only
+            var events2return = new List<Dictionary<string, double>>();
+            double[] array2return = null;
 
-            double frameOffset = 0.0;
-            double binWidth = 17.2; //###############################################################  TODO
-            var acousticEvents = new List<AcousticEvent>();
-            foreach (double[] item in eventList)
+            for (int b = 0; b < numberOfColSteps; b++)
             {
-                Oblong o = new Oblong((int)item[0], (int)item[1], (int)item[2], (int)item[3]);
-                var ae = new AcousticEvent(o, frameOffset, binWidth);
-                acousticEvents.Add(ae);
-            }
-            return System.Tuple.Create(acousticEvents, hitsMatrix, amplitudeArray);
+                int minCol = b * colStep;
+                int maxCol = minCol + colStep - 1;
+
+                double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, minCol, (rowCount - 1), maxCol);
+                double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
+
+                if (doNoiseremoval)
+                {
+                    double Q, oneSD;
+                    amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                }
+
+                var output = GratingDetection.ScanArrayForGratingPattern(amplitudeArray, maxPeriod, intensityThreshold);
+                //var output = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
+                //PruneEvents(output);
+                foreach (Dictionary<string, double> item in output)
+                {
+                    item[key_MIN_FREQBIN] = minCol;
+                    item[key_MAX_FREQBIN] = maxCol;
+                    events2return.Add(item);
+                }
+
+                if (b == 5) array2return = amplitudeArray; //returned for debugging purposes only
+            } //for loop over bands of columns
+
+            return System.Tuple.Create(events2return, array2return);
         }//end Execute_DetectBars()
 
+
+        public static void PruneEvents(List<Dictionary<string, double>> events)
+        {
+            int count = events.Count;
+            for (int c = count-1; c >= 1; c--)
+            {
+                var ev1 = events[c];
+                for (int b = c-1; b >= 0; b--)
+                {
+                    var ev2 = events[b];
+                    if ((ev1[key_START_FRAME] <= ev2[key_END_FRAME]) || (ev1[key_END_FRAME] >= ev2[key_START_FRAME]))
+                    {//adjust ev2 and remove event 1
+
+                        events.Remove(ev1);
+                    }
+                }
+            }
+        }
 
 
         public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)

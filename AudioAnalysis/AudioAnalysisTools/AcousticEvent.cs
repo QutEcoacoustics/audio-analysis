@@ -802,20 +802,8 @@ namespace AudioAnalysisTools
         //    return ConvertIntensityArray2Events(values, minHz, maxHz, framesPerSec, freqBinWidth, threshold, minDuration, maxDuration, fileName);
         //}
         
-        /// <summary>
-        /// Converts an array of sub-band acoustic intensity values to a list of AcousticEvents.
-        /// USE THIS METHOD WHEN SEGMENTING A SIGNAL ON ACOUSTIC INTENSITY
-        /// </summary>
-        /// <param name="values">the array of acoustic intensity values</param>
-        /// <param name="minHz">lower freq bound of the acoustic event</param>
-        /// <param name="maxHz">upper freq bound of the acoustic event</param>
-        /// <param name="framesPerSec">the time scale required by AcousticEvent class</param>
-        /// <param name="freqBinWidth">the freq scale required by AcousticEvent class</param>
-        /// <param name="threshold">array value must exceed this dB threshold to count as an event</param>
-        /// <param name="minDuration">duration of event must exceed this to count as an event</param>
-        /// <param name="maxDuration">duration of event must be less than this to count as an event</param>
-        /// <param name="fileName">name of source file to be added to AcousticEvent class</param>
-        /// <returns>a list of acoustic events</returns>
+
+
         public static List<AcousticEvent> ConvertIntensityArray2Events(double[] values, int minHz, int maxHz,
                                                                double framesPerSec, double freqBinWidth, double scoreThreshold, double minDuration, double maxDuration)
         {
