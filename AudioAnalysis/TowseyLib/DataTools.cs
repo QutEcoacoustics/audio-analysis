@@ -179,10 +179,10 @@ namespace TowseyLib
                         segment[0] = startFrame;
                         segment[1] = i;  //endFrame
 
-                        //obtain average intensity score.
+                        //obtain average value.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += values[n];
-                        segment[2] = av / (double)(i - startFrame + 1); //intensity score.
+                        segment[2] = av / (double)(i - startFrame + 1); //average value.
                         events.Add(segment);
                     }
             } //end of pass over all frames
