@@ -26,10 +26,10 @@ namespace AnalysisPrograms
     {
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min173Airplane.wav";
-        public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min449Airplane.wav";
+        //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min449Airplane.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min700Airplane.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
-        //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min302MorningChorus.wav";
+        public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\DM420036_min302MorningChorus.wav";
         //public const string defaultRecordingPath = @"C:\SensorNetworks\WavFiles\BarsAndStripes\Honeymoon_Bay_St_Bees_KoalaDistant_20080914-213000.wav";
         
 
@@ -294,6 +294,9 @@ namespace AnalysisPrograms
             double[,] spectrogram = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
             double windowPower = results2.Item4;
 
+
+            spectrogram = GetTestSpectrogram(spectrogram.GetLength(0), spectrogram.GetLength(1), 0.01, 0.05);
+
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
             // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
             // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
@@ -364,8 +367,9 @@ namespace AnalysisPrograms
         public static System.Tuple<List<Dictionary<string, double>>, double[]> Execute_DetectBarEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
             bool doNoiseremoval = true;
-            intensityThreshold = 0.04;
-            int maxPeriod = 20;
+            intensityThreshold = 0.0001;
+            int minPeriod = 20; //both period values must be even numbers
+            int maxPeriod = 24;
 
 
             int rowCount = matrix.GetLength(0);
@@ -389,40 +393,45 @@ namespace AnalysisPrograms
                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
                 }
 
-                var output = GratingDetection.ScanArrayForGratingPattern(amplitudeArray, maxPeriod, intensityThreshold);
                 //var output = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
-                //PruneEvents(output);
-                foreach (Dictionary<string, double> item in output)
+
+                var scores = GratingDetection.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod);
+                var mergedOutput = GratingDetection.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
+                double[] intensity   = mergedOutput.Item1; 
+                double[] periodicity = mergedOutput.Item2;
+                var events = GratingDetection.ExtractPeriodicEvents(intensity, periodicity, intensityThreshold);
+                
+                foreach (Dictionary<string, double> item in events)
                 {
                     item[key_MIN_FREQBIN] = minCol;
                     item[key_MAX_FREQBIN] = maxCol;
                     events2return.Add(item);
                 }
 
-                if (b == 5) array2return = amplitudeArray; //returned for debugging purposes only
+                if (b == 3) array2return = amplitudeArray; //returned for debugging purposes only
             } //for loop over bands of columns
 
             return System.Tuple.Create(events2return, array2return);
         }//end Execute_DetectBars()
 
 
-        public static void PruneEvents(List<Dictionary<string, double>> events)
-        {
-            int count = events.Count;
-            for (int c = count-1; c >= 1; c--)
-            {
-                var ev1 = events[c];
-                for (int b = c-1; b >= 0; b--)
-                {
-                    var ev2 = events[b];
-                    if ((ev1[key_START_FRAME] <= ev2[key_END_FRAME]) || (ev1[key_END_FRAME] >= ev2[key_START_FRAME]))
-                    {//adjust ev2 and remove event 1
+        //public static void PruneEvents(List<Dictionary<string, double>> events)
+        //{
+        //    int count = events.Count;
+        //    for (int c = count-1; c >= 1; c--)
+        //    {
+        //        var ev1 = events[c];
+        //        for (int b = c-1; b >= 0; b--)
+        //        {
+        //            var ev2 = events[b];
+        //            if ((ev1[key_START_FRAME] <= ev2[key_END_FRAME]) || (ev1[key_END_FRAME] >= ev2[key_START_FRAME]))
+        //            {//adjust ev2 and remove event 1
 
-                        events.Remove(ev1);
-                    }
-                }
-            }
-        }
+        //                events.Remove(ev1);
+        //            }
+        //        }
+        //    }
+        //}
 
 
         public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
@@ -533,6 +542,72 @@ namespace AnalysisPrograms
         }
 
 
+        public static double[,] GetTestSpectrogram(int rowCount, int colCount, double backgroundGain, double signalGain)
+        {
+           var matrix = new double[rowCount,colCount];
+           var rn = new RandomNumber();
+
+           //construct background signal.
+           for (int r = 0; r < rowCount; r++)
+           {
+               for (int c = 0; c < colCount; c++)
+               {
+                   matrix[r, c] = rn.GetDouble() * backgroundGain;
+               }
+           }
+
+
+           //int cyclePeriod = 2; //MUST BE AN EVEN NUMBER!!
+           int numberOfCycles = 4;
+           int locationOfSignalStart = 10;
+           for (int cyclePeriod = 2; cyclePeriod < 42; cyclePeriod++)
+           {
+               double[] signal = GetPeriodicSignal(cyclePeriod, numberOfCycles);
+               //
+               locationOfSignalStart += (10 + signal.Length); ;
+               //add identical signal to all rows
+               for (int c = 0; c < colCount; c++)
+               {
+                   for (int i = 0; i < signal.Length; i++)
+                   {
+                       matrix[locationOfSignalStart + i, c] += (signal[i] * signalGain);
+                   }
+               }//over the matrix
+               cyclePeriod++;//to keep even
+           }
+
+
+            return matrix;
+       }
+
+
+        public static double[] GetPeriodicSignal(int cyclePeriod, int numberOfCycles)
+        {
+            //construct the signal
+            double[] template = { 1.0, 0.0, 1.1, 0.1, 1.2, 0.2, 1.3, 0.3 };
+            //double[] template = { 1.5, 0.1, 0.8, 0.1, 0.9, 0.0, 0.8, 0.0 };
+            //double[] template = { 1.5, 0.0, 0.8, 0.0, 0.9, 0.1, 0.8, 0.0 };
+            //double[] template = { 2.0, 0.0, 0.7, 0.0, 0.6, 0.0, 0.7, 0.0 };
+            //double[] template = { 4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+            int signalLength = numberOfCycles * cyclePeriod;
+
+            double[] signal = template;
+            if (cyclePeriod > 2)
+            {
+                int halfPeriod = cyclePeriod / 2;
+                signal = new double[signalLength];
+                for (int x = 0; x < template.Length; x++)
+                {
+                    for (int p = 0; p < halfPeriod; p++) signal[(x * halfPeriod) + p] = template[x]; //transfer signal
+                    if (cyclePeriod > 6) signal = DataTools.filterMovingAverage(signal, halfPeriod - 1);
+                    signal = DataTools.normalise(signal);
+                } //for
+
+            } // if (cyclePeriod > 2)
+            //DataTools.writeBarGraph(signal);
+            return signal;
+        }
 
 
     } //end class BarsAndStripes
