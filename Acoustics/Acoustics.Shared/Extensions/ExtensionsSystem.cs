@@ -395,8 +395,6 @@ namespace System
             return values.Keys.Select(k => k.ToLowerInvariant() + "=" + values[k]).Aggregate((a, b) => a + "&" + b);
         }
 
-       
-
 #if ! SILVERLIGHT
         /// <summary>
         /// Gets Date Format for Readings.

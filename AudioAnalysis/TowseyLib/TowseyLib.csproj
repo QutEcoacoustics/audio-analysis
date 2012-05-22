@@ -220,7 +220,6 @@
     <Compile Include="DSP_Frames.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="FFT.cs" />
-    <Compile Include="GratingDetection.cs" />
     <Compile Include="ImageTools.cs" />
     <Compile Include="LLR.cs" />
     <Compile Include="Log.cs" />
