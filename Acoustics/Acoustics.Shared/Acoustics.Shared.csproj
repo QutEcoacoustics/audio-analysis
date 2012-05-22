@@ -52,6 +52,7 @@
     <Compile Include="AppConfigHelper.cs" />
     <Compile Include="AudioCoordinates.cs" />
     <Compile Include="AudioUploadInfo.cs" />
+    <Compile Include="Base58.cs" />
     <Compile Include="CalcSunTimes.cs" />
     <Compile Include="CompareFeatures.cs" />
     <Compile Include="Coordinate.cs" />
