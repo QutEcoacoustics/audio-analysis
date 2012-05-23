@@ -394,7 +394,7 @@ namespace AnalysisPrograms
                 }
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
-
+                /*
                 var scores = GratingDetection.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod);
                 var mergedOutput = GratingDetection.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
                 double[] intensity   = mergedOutput.Item1; 
@@ -407,7 +407,7 @@ namespace AnalysisPrograms
                     item[key_MAX_FREQBIN] = maxCol;
                     events2return.Add(item);
                 }
-
+                */
                 if (b == 3) array2return = amplitudeArray; //returned for debugging purposes only
             } //for loop over bands of columns
 
