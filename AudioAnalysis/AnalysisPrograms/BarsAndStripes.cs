@@ -393,7 +393,7 @@ namespace AnalysisPrograms
                     amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
                 }
 
-                //var output = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
+                //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
 
                 var scores = GratingDetection.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod);
                 var mergedOutput = GratingDetection.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);

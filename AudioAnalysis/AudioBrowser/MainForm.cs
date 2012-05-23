@@ -68,6 +68,12 @@
         private string tabPageDisplayLabel = "tabPageDisplay";
         private string tabPageConsoleLabel = "tabPageConsole";
 
+        private string key_DISPLAY_COLUMNS = "DISPLAY_COLUMNS";
+
+        private string BROWSER_TITLE_TEXT = "AUDIO-BROWSER: An application for exploring bio-acoustic recordings.  (c) Queensland University of Technology.";
+        private string IMAGE_TITLE_TEXT   = "Image produced by AUDIO-BROWSER, Queensland University of Technology (QUT).";
+
+
         private AnalysisCoordinator analysisCoordinator;
 
         /// <summary>
@@ -172,9 +178,10 @@
 
             if (browserSettings.DefaultOutputDir != null)
             {
-                string opDir = Path.Combine(browserSettings.DefaultOutputDir.FullName, browserSettings.AnalysisName);
-                this.tfOutputDirectory.Text = opDir;
-                this.browserSettings.diOutputDir = new DirectoryInfo(opDir);
+                //string opDir = Path.Combine(browserSettings.DefaultOutputDir.FullName, browserSettings.AnalysisName);
+                //this.browserSettings.diOutputDir = new DirectoryInfo(opDir);
+                this.browserSettings.diOutputDir = browserSettings.DefaultOutputDir;
+                this.tfOutputDirectory.Text = this.browserSettings.diOutputDir.FullName;
 
                 if (Directory.Exists(browserSettings.diOutputDir.FullName))
                 {
@@ -189,9 +196,17 @@
             this.comboBoxCSVFileAnalysisType.SelectedItem = browserSettings.AnalysisName;
 
             string analysisName = (string)this.comboBoxCSVFileAnalysisType.SelectedItem;
+
+            Console.WriteLine(BROWSER_TITLE_TEXT);
+            Console.WriteLine(DateTime.Now);
+
             LoadAnalysisConfigFile(analysisName);
             WriteBrowserParameters2Console(this.browserSettings);
-            this.tabControlMain.SelectTab("tabPageConsole");
+            ConfirmAllDefualtDirectoriesAndFilesExist(this.browserSettings);
+
+
+
+            this.tabControlMain.SelectTab(tabPageConsoleLabel);
 
         } //MainForm()
 
@@ -200,8 +215,8 @@
         /// </summary>
         private void LoadAnalysisConfigFile(string analysisName)
         {
-            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT SOURCE ANALYSIS IN SEPARATE THREAD
-            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName; //##### WARNING!!!  THIS LINE WILL NOT APPLY IF PUT CSV    ANALYSIS IN SEPARATE THREAD
+            this.comboBoxSourceFileAnalysisType.SelectedItem = analysisName; 
+            this.comboBoxCSVFileAnalysisType.SelectedItem = analysisName;  
 
             string configDir = this.browserSettings.diConfigDir.FullName;
             this.browserSettings.AnalysisName = analysisName;
@@ -220,19 +235,33 @@
 
         private static void WriteBrowserParameters2Console(AudioBrowserSettings parameters)
         {
-            string title = "# AUDIO BROWSER FOR THE ANALYSIS AND INTERROGATION OF LARGE AUDIO FILES";
-            string date = "# DATE AND TIME: " + DateTime.Now;
-            Console.WriteLine(title);
-            Console.WriteLine(date);
-            Console.WriteLine("#");
+            Console.WriteLine();
             Console.WriteLine("# Browser Settings:");
             Console.WriteLine("\tAnalysis Name: " + parameters.AnalysisName);
-            if (parameters.fiAnalysisConfig == null) Console.WriteLine("\tAnalysis Config File: NULL");
+            if (parameters.fiAnalysisConfig == null) 
+                 Console.WriteLine("\tAnalysis Config File: NULL");
             else Console.WriteLine("\tAnalysis Config File: " + parameters.fiAnalysisConfig.FullName);
             Console.WriteLine("\tSource Directory:     " + parameters.diSourceDir.FullName);
             Console.WriteLine("\tOutput Directory:     " + parameters.diOutputDir.FullName);
             Console.WriteLine("\tDisplay:  Track Height={0}pixels. Tracks normalised={1}.", parameters.TrackHeight, parameters.TrackNormalisedDisplay);
             Console.WriteLine("####################################################################################\n");
+        }
+
+        private static void ConfirmAllDefualtDirectoriesAndFilesExist(AudioBrowserSettings parameters)
+        {
+
+            if (parameters.fiAnalysisConfig == null)  Console.WriteLine("\tWARNING: A valid config has not been set.");
+            else
+                if (!parameters.fiAnalysisConfig.Exists) Console.WriteLine("\tWARNING: The config does not exist: {0}", parameters.fiAnalysisConfig.FullName);
+            //check the source directory
+            if (parameters.diSourceDir == null) Console.WriteLine("\tWARNING: A valid source directory has not been set.");
+            else
+                if (!parameters.diSourceDir.Exists) Console.WriteLine("\tWARNING: The source directory does not exist: {0}", parameters.diSourceDir.FullName);
+
+            //check the output directory
+            if (parameters.diOutputDir == null) Console.WriteLine("\tWARNING: A valid output directory has not been set.");
+            else
+                if (!parameters.diOutputDir.Exists) Console.WriteLine("\tWARNING: The output directory does not exist: {0}", parameters.diOutputDir.FullName);
         }
 
         private static void WriteAnalysisParameters2Console(Dictionary<string, string> dict, string analysisName)
@@ -267,7 +296,7 @@
             int count = 0;
 
             //this.textBoxConsole.Clear();
-            this.tabControlMain.SelectTab("tabPageConsole");
+            this.tabControlMain.SelectTab(tabPageConsoleLabel);
             //string date = "# DATE AND TIME: " + DateTime.Now;
             //Console.WriteLine(date);
             //Console.WriteLine("# ACOUSTIC ENVIRONMENT BROWSER");
@@ -413,7 +442,13 @@
                         outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                     }
                     else
-                    {
+                        if (analysisName == Crow.ANALYSIS_NAME) //Crow Recogniser
+                        {
+                            var parameters = Crow.InitOutputTableColumns();
+                            outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+                        }
+                        else
+                        {
                         Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
                         return null;
                     }
@@ -494,6 +529,11 @@
                             {
                                 dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                             }
+                            else
+                                if (analysisName.Equals(Crow.ANALYSIS_NAME)) //Human speech detection
+                                {
+                                    dt = Crow.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                                }
                     //#############################################################################################################################################
 
                     if (dt != null)
@@ -520,9 +560,9 @@
 
             this.textBoxConsole.Clear();
 
+            Console.WriteLine(BROWSER_TITLE_TEXT);
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(date);
-            Console.WriteLine("# ACOUSTIC FILE BROWSER");
 
             foreach (DataGridViewRow row in this.dataGridCSVfiles.Rows)
             {
@@ -617,15 +657,17 @@
         {
             DataTable dtRaw = null;
             DataTable dt2Display = null;
-            bool[] columns2Display = null;
             //########################
+
+            string headers = this.analysisParams[key_DISPLAY_COLUMNS];
+            string[] headers2Display = null;
+            if ((headers != null) && (headers.Length > 0)) headers2Display = headers.Split(',');
 
             if (this.CurrentCSVFileAnalysisType.Equals(AcousticIndices.ANALYSIS_NAME))
             {
-                var output = AcousticIndices.ProcessCsvFile(new FileInfo(csvPath));
+                var output = AcousticIndices.ProcessCsvFile(new FileInfo(csvPath), headers2Display);
                 dtRaw = output.Item1;
                 dt2Display = output.Item2;
-                columns2Display = output.Item3;
             }
             else
                 if (this.CurrentCSVFileAnalysisType.Equals(LSKiwi.ANALYSIS_NAME))
@@ -633,7 +675,6 @@
                     var output = LSKiwi.ProcessCsvFile(new FileInfo(csvPath));
                     dtRaw = output.Item1;
                     dt2Display = output.Item2;
-                    columns2Display = output.Item3;
                 }
                 else
                     if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
@@ -641,15 +682,12 @@
                         var output = Human.ProcessCsvFile(new FileInfo(csvPath));
                         dtRaw = output.Item1;
                         dt2Display = output.Item2;
-                        columns2Display = output.Item3;
                     }
                     else
                         if (this.CurrentCSVFileAnalysisType.Equals("None"))
                         {
                             dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
                             dt2Display = DataTableTools.NormaliseColumnValues(dtRaw);
-                            string[] headers = DataTableTools.GetColumnNames(dtRaw);
-                            this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, headers[headers.Length - 1]).ToArray();
                         }
                         else
                         {
@@ -658,9 +696,35 @@
                             return 3;
                         }
 
+            string[] originalHeaders = DataTableTools.GetColumnNames(dtRaw);
+            string[] displayHeaders  = DataTableTools.GetColumnNames(dt2Display);
+            List<string> list = displayHeaders.ToList();
+
+            //make values of bottom track available
+            this.trackValues = DataTableTools.Column2ListOfDouble(dtRaw, displayHeaders[displayHeaders.Length - 1]).ToArray();
+
+
+            //set up the text items to display in the list box of displayed tracks
+            //bool[] columns2Display = new bool[originalHeaders.Length];
+            for (int i = 0; i < originalHeaders.Length; i++)
+            {
+                string text = originalHeaders[i];
+                //if (columns2Display[i]) text += "  **"; 
+                //if (list.Contains(text))
+                //{
+                //    text += "  **";
+                //    columns2Display[i] = true;
+                //}
+                this.listBoxDisplayedTracks.Items.Add((i+1) + ":   " + text);
+            }
+            string labelText = originalHeaders.Length + " headers in CSV file - " + displayHeaders.Length + " displayed.";
+            labelCSVHeaders.Text = labelText;
+
+            string fileName = Path.GetFileName(csvPath);
+            string title = String.Format(IMAGE_TITLE_TEXT + "   SOURCE:{0};  ", fileName);
             int timeScale = 60; //put a tik every 60 pixels = 1 hour
             bool doNormalisation = browserSettings.TrackNormalisedDisplay;
-            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, timeScale, browserSettings.TrackHeight, doNormalisation, columns2Display);
+            Bitmap tracksImage = ConstructVisualIndexImage(dt2Display, title, timeScale, browserSettings.TrackHeight, doNormalisation);
             this.sourceRecording_MinutesDuration = dt2Display.Rows.Count; //CAUTION: assume one value per minute - //set global variable !!!!
             this.pictureBoxVisualIndex.Image = tracksImage;
 
@@ -683,21 +747,21 @@
         /// <param name="doNormalise"></param>
         /// <param name="tracks2Display"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, int timeScale, double[] order, int trackHeight, bool doNormalise, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, double[] order, int trackHeight, bool doNormalise)
         {
             List<string> headers = (from DataColumn col in dt.Columns select col.ColumnName).ToList();
             List<double[]> values = DataTableTools.ListOfColumnValues(dt);
 
             //set up the array of tracks to display
-            var dodisplay = new bool[values.Count];
-            for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
-            if (!(tracks2Display == null))
-            {
-                for (int i = 0; i < values.Count; i++)
-                    if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
-            }
+            //var dodisplay = new bool[values.Count];
+            //for (int i = 0; i < values.Count; i++) dodisplay[i] = true;
+            //if (!(tracks2Display == null))
+            //{
+            //    for (int i = 0; i < values.Count; i++)
+            //        if (i < tracks2Display.Length) dodisplay[i] = tracks2Display[i];
+            //}
 
-            // accumulate the indivudal tracks
+            // accumulate the individual tracks
             int duration = values[0].Length;    //time in minutes - 1 value = 1 pixel
             int endPanelwidth = 150;
             int imageWidth = duration + endPanelwidth;
@@ -707,7 +771,8 @@
             double[] array;
             for (int i = 0; i < values.Count - 1; i++) //for pixels in the line
             {
-                if ((!dodisplay[i]) || (values[i].Length == 0)) continue;
+                //if ((!dodisplay[i]) || (values[i].Length == 0)) continue;
+                if (values[i].Length == 0) continue;
                 array = values[i];
                 if (doNormalise) array = DataTools.normalise(values[i]);
                 bitmaps.Add(Image_Track.DrawBarScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[i]));
@@ -715,20 +780,24 @@
             int x = values.Count - 1;
             array = values[x];
             if (doNormalise) array = DataTools.normalise(values[x]);
-            if ((dodisplay[x]) || (values[x].Length > 0))
+            //if ((dodisplay[x]) || (values[x].Length > 0))
+            if (values[x].Length > 0)
                 bitmaps.Add(Image_Track.DrawColourScoreTrack(order, array, imageWidth, trackHeight, threshold, headers[x])); //assumed to be weighted index
 
             //set up the composite image parameters
-            int imageHt = trackHeight * (bitmaps.Count + 2);  //+2 for top and bottom time tracks
-            int offset = 0;
-            Bitmap timeBmp = Image_Track.DrawTimeTrack(duration, timeScale, imageWidth, trackHeight, "Time (hours)");
+            int imageHt = trackHeight * (bitmaps.Count + 3);  //+3 for title and top and bottom time tracks
+            Bitmap titleBmp = Image_Track.DrawTitleTrack(imageWidth, trackHeight, title);
+            Bitmap timeBmp  = Image_Track.DrawTimeTrack(duration, timeScale, imageWidth, trackHeight, "Time (hours)");
 
             //draw the composite bitmap
             Bitmap compositeBmp = new Bitmap(imageWidth, imageHt); //get canvas for entire image
             Graphics gr = Graphics.FromImage(compositeBmp);
             gr.Clear(Color.Black);
+
+            int offset = 0;
+            gr.DrawImage(titleBmp, 0, offset); //draw in the top title
+            offset += trackHeight;
             gr.DrawImage(timeBmp, 0, offset); //draw in the top time scale
-            //var font = new Font("Arial", 10.0f, FontStyle.Regular);
             offset += trackHeight;
             for (int i = 0; i < bitmaps.Count; i++)
             {
@@ -746,12 +815,12 @@
         /// <param name="trackHeight"></param>
         /// <param name="doNormaliseTrackDisplay"></param>
         /// <returns></returns>
-        public static Bitmap ConstructVisualIndexImage(DataTable dt, int timeScale, int trackHeight, bool doNormaliseTrackDisplay, bool[] tracks2Display)
+        public static Bitmap ConstructVisualIndexImage(DataTable dt, string title, int timeScale, int trackHeight, bool doNormaliseTrackDisplay)
         {
             int length = dt.Rows.Count;
             double[] order = new double[length];
             for (int i = 0; i < length; i++) order[i] = i;
-            return ConstructVisualIndexImage(dt, timeScale, order, trackHeight, doNormaliseTrackDisplay, tracks2Display);
+            return ConstructVisualIndexImage(dt, title, timeScale, order, trackHeight, doNormaliseTrackDisplay);
         }
 
         private void pictureBoxVisualIndex_MouseHover(object sender, EventArgs e)
@@ -1634,6 +1703,11 @@
         }
 
         private void labelSourceFileName_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
         {
 
         }
