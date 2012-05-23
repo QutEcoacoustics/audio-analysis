@@ -697,24 +697,6 @@
         }
 
 
-        //public static Bitmap DrawBarScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
-        //{
-        //    double minVal;
-        //    double maxVal;
-        //    DataTools.MinMax(array, out minVal, out maxVal);
-        //    Bitmap bitmap = DrawBarScoreTrack(order, array, trackWidth, trackHeight, minVal, maxVal, threshold, title);
-        //    return bitmap;
-        //}
-
-        //public static Bitmap DrawColourScoreTrack(double[] order, double[] array, int trackWidth, int trackHeight, double threshold, string title)
-        //{
-        //    double minVal;
-        //    double maxVal;
-        //    DataTools.MinMax(array, out minVal, out maxVal);
-        //    Bitmap bitmap = DrawColourScoreTrack(order, array, trackWidth, trackHeight, minVal, maxVal, threshold, title);
-        //    return bitmap;
-        //}
-
         public static Bitmap DrawGrayScaleScoreTrack(double[] array, int trackHeight, double threshold, string title)
         {
             double minVal;
@@ -722,6 +704,21 @@
             DataTools.MinMax(array, out minVal, out maxVal);
             Bitmap bitmap = DrawGrayScaleScoreTrack(array, trackHeight, minVal, maxVal, threshold, title);
             return bitmap;
+        }
+
+        // mark of time scale according to scale.
+        public static Bitmap DrawTitleTrack(int trackWidth, int trackHeight, string title)
+        {
+            Bitmap bmp = new Bitmap(trackWidth, trackHeight);
+            Graphics g = Graphics.FromImage(bmp);
+            g.Clear(Color.Black);
+            Pen pen = new Pen(Color.White);
+
+            g.DrawLine(new Pen(Color.Gray), 0, 0, trackWidth, 0);//draw upper boundary
+            //g.DrawLine(pen, duration + 1, 0, trackWidth, 0);
+
+            g.DrawString(title, new Font("Tahoma", 9), Brushes.Wheat, new PointF(4, 3));
+            return bmp;
         }
 
 

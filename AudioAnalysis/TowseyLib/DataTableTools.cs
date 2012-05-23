@@ -102,6 +102,31 @@ namespace TowseyLib
         }
 
 
+        /// <summary>
+        /// create a new table using columns selected from the passed table
+        /// WARNING THIS METHOD APPEARS NOT TO WORK - ADD TO THE TODO LIST
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        public static DataTable CreateTable(DataTable dt, string[] newHeaders)
+        {
+            DataTable newTable = new DataTable();
+            foreach (string header in newHeaders)
+            {
+                if (dt.Columns.Contains(header))
+                {
+                    DataColumn col = dt.Columns[header];
+                    DataTableTools.AddColumn2Table(newTable, col);
+                }
+            }
+            return newTable;
+        }
+
+
+
+
+
+
         //#######################################################################################
         /*    Program that uses DataTable with DataGridView [C#]
 
@@ -270,6 +295,29 @@ namespace TowseyLib
                 row[columnName] = (double)array[index++];
             }
         }
+
+        /// <summary>
+        /// WARNING THIS METHOD APPEARS NOT TO WORK - ADD TO THE TODO LIST
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="col"></param>
+        public static void AddColumn2Table(DataTable dt, DataColumn col)
+        {
+            if ((col == null) || (col.Container == null) || (col.Container.Components == null)) return;
+            int rowCount = col.Container.Components.Count;
+            if (rowCount == 0) return;
+            string name = col.ColumnName;
+            Type type = col.GetType();
+            if (!dt.Columns.Contains(name)) dt.Columns.Add(name, type);
+            int index = 0;
+
+            for (int r = 0; r < rowCount; r++)
+            {
+                dt.Rows[r][name] = col.Container.Components[r];
+            } //for all rows
+        } //AddColumn2Table()
+
+
 
         public static List<int> Column2ListOfInt(DataTable dt, string colName)
         {

@@ -127,6 +127,7 @@
   <ItemGroup>
     <Compile Include="AED.cs" />
     <Compile Include="BarsAndStripes.cs" />
+    <Compile Include="Crow.cs" />
     <Compile Include="HTKRecogniser.cs">
       <SubType>Code</SubType>
     </Compile>

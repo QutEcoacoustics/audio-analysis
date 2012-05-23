@@ -39,36 +39,41 @@ namespace AnalysisPrograms
                 switch (args[0])
                 {
                     // READY TO BE USED - REQUIRE PARAMS FILE ONLY
+                    case "aed":      // acoustic event detection
+                        AED.Dev(restOfArgs);
+                        break;
+					case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
+                        Create_MFCC_OD_Template.Dev(restOfArgs);
+                        break;
+                    case "crow":     // recognises uhman speech but not word recognition
+                        Crow.Dev(restOfArgs);
+                        break;
+                    case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
+                        GroundParrotRecogniser.Dev(restOfArgs);
+                        break;
+                    case "hd":   // Harmonic Recogniser
+                        HarmonicRecogniser.Dev(restOfArgs);
+                        break;
+                    case "human":     // recognises uhman speech but not word recognition
+                        Human.Dev(restOfArgs);
+                        break;
+                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
+                        LSKiwi.Dev();
+                        break;
+                    case "machines":     // recognises Planes, Trains And Automobiles 
+                        PlanesTrainsAndAutomobiles.Dev(restOfArgs);
+                        break;
+                    case "od":   // Oscillation Recogniser
+                        OscillationRecogniser.Dev(restOfArgs);
+                        break;
                     case "segment":  // segmentation of a recording
                         Segment.Dev(restOfArgs);
                         break;
                     case "snr":      // signal to noise ratio
                         SnrAnalysis.Dev(restOfArgs);
                         break;
-                    case "aed":      // acoustic event detection
-                        AED.Dev(restOfArgs);
-                        break;
-                    case "od":   // Oscillation Recogniser
-                        OscillationRecogniser.Dev(restOfArgs);
-                        break;
-                    case "hd":   // Harmonic Recogniser
-                        HarmonicRecogniser.Dev(restOfArgs);
-                        break;
-					case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
-                        GroundParrotRecogniser.Dev(restOfArgs);
-                        break;
-					case "createtemplate_mfccod": // Create a template that extracts mfccs and uses OD. Used for Lewin's Rail recognition
-                        Create_MFCC_OD_Template.Dev(restOfArgs);
-                        break;
-                    case "kiwi":  // little spotted kiwi calls from Andrew @ Victoria university.
-                        LSKiwi.Dev();
-                        break;
-                    case "human":     // recognises uhman speech but not word recognition
-                        Human.Dev(restOfArgs);
-                        break;
-                    case "machines":     // recognises Planes, Trains And Automobiles 
-                        PlanesTrainsAndAutomobiles.Dev(restOfArgs);
-                        break;
+
+
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
                     case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
