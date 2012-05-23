@@ -8,6 +8,8 @@
     using System.Net;
     using System.Web.Script.Serialization;
 
+    using Microsoft.SqlServer.Types;
+
     /// <summary>
     /// Coordinate.
     /// </summary>
@@ -29,6 +31,11 @@
         {
             this.latitude = latitude;
             this.longitude = longitude;
+        }
+
+        public static implicit operator Coordinate (SqlGeography g)
+        {
+            return new Coordinate(g.Lat.Value, g.Long.Value);
         }
 
         /// <summary>
