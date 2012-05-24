@@ -10,8 +10,8 @@ using System.Drawing.Imaging;
 
 using TowseyLib;
 using AudioAnalysisTools;
-using Acoustics.Shared;
-using Acoustics.Tools.Audio;
+//using Acoustics.Shared;
+//using Acoustics.Tools.Audio;
 
 
 
@@ -158,7 +158,7 @@ namespace AnalysisPrograms
 
                 var fiSourceRecording = new FileInfo(recordingPath);
                 string opFileName = "temp.wav";
-                AudioRecording recording = GetAudioRecording(fiSourceRecording, BarsAndStripes.RESAMPLE_RATE, outputDir, opFileName);
+                AudioRecording recording = AudioRecording.GetAudioRecording(fiSourceRecording, BarsAndStripes.RESAMPLE_RATE, outputDir, opFileName);
                 Console.WriteLine("\tRecording Duration: {0:f2}seconds", recording.Duration().TotalSeconds);
                 
                 //#############################################################################################################################################
@@ -201,24 +201,6 @@ namespace AnalysisPrograms
             Console.ReadLine();
         } //Dev()
 
-        /// <summary>
-        /// TODO - this is long winded way to get file. Need to talk to Mark.
-        /// </summary>
-        /// <param name="diOpDir"></param>
-        /// <param name="sourceFile"></param>
-        /// <returns></returns>
-        public static AudioRecording GetAudioRecording(FileInfo sourceFile, int resampleRate, string opDir, string opFileName)
-        {
-            string opPath = Path.Combine(opDir, opFileName); //path location/name of extracted recording segment
-            IAudioUtility audioUtility = new MasterAudioUtility();
-            var mimeType = MediaTypes.GetMediaType(sourceFile.Extension);
-            var sourceDuration = audioUtility.Duration(sourceFile, mimeType); // Get duration of the source file
-            int startMilliseconds = 0;
-            int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
-            MasterAudioUtility.SegmentToWav(resampleRate, sourceFile, new FileInfo(opPath), startMilliseconds, endMilliseconds);
-            return new AudioRecording(opPath);
-        }
-
 
         /// <summary>
         /// A WRAPPER AROUND THE Execute_HDDetect() method
@@ -240,7 +222,7 @@ namespace AnalysisPrograms
             int DRAW_SONOGRAMS = Int32.Parse(config[key_DRAW_SONOGRAMS]);         // options to draw sonogram
 
             string opFileName = "temp.wav";
-            AudioRecording recording = GetAudioRecording(fiSourceRecording, BarsAndStripes.RESAMPLE_RATE, diOutputDir.FullName, opFileName);
+            AudioRecording recording = AudioRecording.GetAudioRecording(fiSourceRecording, BarsAndStripes.RESAMPLE_RATE, diOutputDir.FullName, opFileName);
             Console.WriteLine("\tRecording Duration: {0:f2}seconds", recording.Duration().TotalSeconds);
 
             //#############################################################################################################################################

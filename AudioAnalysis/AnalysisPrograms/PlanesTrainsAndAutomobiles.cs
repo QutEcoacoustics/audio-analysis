@@ -139,24 +139,14 @@ namespace AnalysisPrograms
                 Console.WriteLine("\tIntensity threshold for hit = " + intensityThreshold);
                 Console.WriteLine("\tMinimum formant duration: {0:f2} seconds", minDuration);
 
-
-                string tempSegmentPath = Path.Combine(outputDir, "temp.wav"); //path location/name of extracted recording segment
+                string opFileName = "temp.wav";
                 var fiSourceRecording = new FileInfo(recordingPath);
-                var fiTempSegmentFile = new FileInfo(tempSegmentPath);
-                
-                IAudioUtility audioUtility = new MasterAudioUtility();
-                var mimeType = MediaTypes.GetMediaType(fiSourceRecording.Extension);
-                var sourceDuration = audioUtility.Duration(fiSourceRecording, mimeType); // Get duration of the source file
-                int startMilliseconds = 0;
-                int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
-                Console.WriteLine("\tRecording Duration: {0:f2}seconds", sourceDuration.TotalSeconds);
-                    
-                MasterAudioUtility.SegmentToWav(RESAMPLE_RATE, fiSourceRecording, new FileInfo(tempSegmentPath), startMilliseconds, endMilliseconds);
-                AudioRecording recording = new AudioRecording(tempSegmentPath);
+                var diOutputDir = new DirectoryInfo(outputDir);
+                AudioRecording recording = AudioRecording.GetAudioRecording(fiSourceRecording, Crow.RESAMPLE_RATE, diOutputDir.FullName, opFileName);
+                Console.WriteLine("\tRecording Duration: {0:f2}seconds", recording.Duration().TotalSeconds);
 
                 //#############################################################################################################################################
-                double threshold = intensityThreshold;
-                var results = Execute_HDDetect(recording, threshold, minFormantgap, maxFormantgap, minDuration); //uses XCORR and FFT
+                var results = Execute_HDDetect(recording, intensityThreshold, minFormantgap, maxFormantgap, minDuration); //uses XCORR and FFT
 
                 //#############################################################################################################################################
 
@@ -177,13 +167,13 @@ namespace AnalysisPrograms
                 if (DRAW_SONOGRAMS==2)
                 {
                     Console.WriteLine("\tMin score={0:f3}  Max score={1:f3}", scores.Min(), scores.Max());
-                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, threshold);
+                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, intensityThreshold);
                     image.Save(imagePath, ImageFormat.Png);
                 }
                 else
                 if ((DRAW_SONOGRAMS==1) && (predictedEvents.Count > 0))
                 {
-                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, threshold);
+                    Image image = DrawSonogram(sonogram, hits, scores, predictedEvents, intensityThreshold);
                     image.Save(imagePath, ImageFormat.Png);
                 }
 
@@ -315,7 +305,7 @@ namespace AnalysisPrograms
             var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
             double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
             //double[] envelope = results2.Item2;
-            double[,] spectrogram = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
             double windowPower = results2.Item4;
 
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
@@ -331,10 +321,10 @@ namespace AnalysisPrograms
             int minHz = (int)Math.Round(minBin * binWidth);
             int maxHz  = (int)Math.Round(minHz + (numberOfBins * binWidth));
 
-            int rowCount = spectrogram.GetLength(0);
-            int colCount = spectrogram.GetLength(1);
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
             int maxbin = minBin + numberOfBins;
-            double[,] subMatrix = MatrixTools.Submatrix(spectrogram, 0, (minBin + 1), (rowCount - 1), maxbin);
+            double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, (minBin + 1), (rowCount - 1), maxbin);
 
             //ii: DETECT HARMONICS
             int zeroBinCount = 5; //to remove low freq content which dominates the spectrum
@@ -373,7 +363,7 @@ namespace AnalysisPrograms
             //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
             NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
 
-            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, spectrogram);
+            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, duration, nrt, matrix);
 
             sonogram.DecibelsNormalised = new double[rowCount];
             for (int i = 0; i < rowCount; i++) //foreach frame or time step

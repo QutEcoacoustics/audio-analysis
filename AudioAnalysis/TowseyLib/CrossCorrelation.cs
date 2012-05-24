@@ -345,25 +345,86 @@ out double[] r)
         /// <param name="m"></param>
         /// <param name="amplitudeThreshold"></param>
         /// <returns></returns>
-         public static System.Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
+        public static System.Tuple<double[], double[]> DetectBarsInTheRowsOfaMatrix(double[,] m, double threshold, int zeroBinCount)
+        {
+            int rowCount = m.GetLength(0);
+            int colCount = m.GetLength(1);
+            var intensity = new double[rowCount];     //an array of period intensity
+            var periodicity = new double[rowCount];     //an array of the periodicity values
+
+            double[] prevRow = MatrixTools.GetRow(m, 0);
+            prevRow = DataTools.DiffFromMean(prevRow);
+
+            for (int r = 1; r < rowCount; r++)
+            {
+                double[] thisRow = MatrixTools.GetRow(m, r);
+                thisRow = DataTools.DiffFromMean(thisRow);
+
+                var spectrum = CrossCorrelation.CrossCorr(prevRow, thisRow);
+
+                for (int s = 0; s < zeroBinCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
+                spectrum = DataTools.NormaliseArea(spectrum);
+                int maxId = DataTools.GetMaxIndex(spectrum);
+                double intensityValue = spectrum[maxId];
+                intensity[r] = intensityValue;
+
+                double period = 0.0;
+                if (maxId != 0) period = 2 * colCount / (double)maxId;
+                periodicity[r] = period;
+
+                prevRow = thisRow;
+            }// rows
+            return Tuple.Create(intensity, periodicity);
+        }  //DetectBarsInTheRowsOfaMatrix()
+
+
+
+         /// This method assume the matrix is derived from a spectrogram rotated so that the matrix rows are spectral columns of sonogram.
+         /// Was first developed for crow calls.
+         /// First looks for a decibel profile that matches the passed call duration and decibel loudness
+         /// Then samples the centre portion for the correct harmonic period.
+         /// </summary>
+         /// <param name="m"></param>
+         /// <param name="amplitudeThreshold"></param>
+         /// <returns></returns>
+         public static System.Tuple<double[], double[], double[]> DetectHarmonicsInSonogramMatrix(double[,] m, double dBThreshold, int callSpan)
          {
+             int zeroBinCount = 3; //to remove low freq content which dominates the spectrum
+             int halfspan = callSpan / 2;
+
+             double[] dBArray = MatrixTools.GetRowAverages(m);
+             dBArray = DataTools.filterMovingAverage(dBArray, 3);
+
+             bool doNoiseRemoval = true;
+             if (doNoiseRemoval)
+             {
+                 double Q, oneSD;
+                 dBArray = SNR.NoiseSubtractMode(dBArray, out Q, out oneSD);
+             }
+
+             bool[] peaks = DataTools.GetPeaks(dBArray);
+
              int rowCount = m.GetLength(0);
              int colCount = m.GetLength(1);
-             var intensity   = new double[rowCount];     //an array of period intensity
+             var intensity = new double[rowCount];     //an array of period intensity
              var periodicity = new double[rowCount];     //an array of the periodicity values
 
-             double[] prevRow = MatrixTools.GetRow(m, 0);
-             prevRow = DataTools.DiffFromMean(prevRow);
 
-             for (int r = 1; r < rowCount; r++)
+             for (int r = halfspan; r < rowCount - halfspan; r++)
              {
-                 double[] thisRow = MatrixTools.GetRow(m, r);
-                 thisRow = DataTools.DiffFromMean(thisRow);
+                 //APPLY A FILTER: must satisfy the following conditions for a call.
+                 if (!peaks[r]) continue;
+                 if (dBArray[r] < dBThreshold) continue;
+                 double lowerDiff = dBArray[r] - dBArray[r - halfspan];
+                 double upperDiff = dBArray[r] - dBArray[r + halfspan];
+                 if ((lowerDiff < dBThreshold) || (upperDiff < dBThreshold)) continue;
 
+                 double[] prevRow = DataTools.DiffFromMean(MatrixTools.GetRow(m, r - 1));
+                 double[] thisRow = DataTools.DiffFromMean(MatrixTools.GetRow(m, r));
                  var spectrum = CrossCorrelation.CrossCorr(prevRow, thisRow);
 
                  for (int s = 0; s < zeroBinCount; s++) spectrum[s] = 0.0;  //in real data these bins are dominant and hide other frequency content
-                 spectrum  = DataTools.NormaliseArea(spectrum);
+                 spectrum = DataTools.NormaliseArea(spectrum);
                  int maxId = DataTools.GetMaxIndex(spectrum);
                  double intensityValue = spectrum[maxId];
                  intensity[r] = intensityValue;
@@ -374,8 +435,12 @@ out double[] r)
 
                  prevRow = thisRow;
              }// rows
-             return Tuple.Create(intensity, periodicity);
-         }
+             return Tuple.Create(dBArray, intensity, periodicity);
+         } //DetectHarmonicsInSonogramMatrix()
+
+
+
+
 
     } //class
 } //AnalysisPrograms

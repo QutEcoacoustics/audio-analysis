@@ -3,6 +3,8 @@
     using System;
 
     using Acoustics.Tools.Wav;
+    using Acoustics.Shared;
+    using Acoustics.Tools.Audio;
 
     using System.Drawing;
     using System.Drawing.Imaging;
@@ -379,5 +381,25 @@
 
             return recording;
         }
+
+        /// <summary>
+        /// TODO - this is long winded way to get file. Need to talk to Mark.
+        /// </summary>
+        /// <param name="diOpDir"></param>
+        /// <param name="sourceFile"></param>
+        /// <returns></returns>
+        public static AudioRecording GetAudioRecording(FileInfo sourceFile, int resampleRate, string opDir, string opFileName)
+        {
+            string opPath = Path.Combine(opDir, opFileName); //path location/name of extracted recording segment
+            IAudioUtility audioUtility = new MasterAudioUtility();
+            var mimeType = MediaTypes.GetMediaType(sourceFile.Extension);
+            var sourceDuration = audioUtility.Duration(sourceFile, mimeType); // Get duration of the source file
+            int startMilliseconds = 0;
+            int endMilliseconds = (int)sourceDuration.TotalMilliseconds;
+            MasterAudioUtility.SegmentToWav(resampleRate, sourceFile, new FileInfo(opPath), startMilliseconds, endMilliseconds);
+            return new AudioRecording(opPath);
+        }
+
+
     }// end class AudioRecording
 }
