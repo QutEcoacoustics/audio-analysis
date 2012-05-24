@@ -285,7 +285,7 @@
             return ConfigurationManager.AppSettings.AllKeys.Any(k => k == key);
         }
 
-//        public static IEnumerable<string> GetStrings(string key, params char[] separators)
+        //        public static IEnumerable<string> GetStrings(string key, params char[] separators)
         public static string[] GetStrings(string key, params char[] separators)
         {
             var value = GetString(key);
@@ -368,17 +368,32 @@
             return new FileInfo(value);
         }
 
-        public static IEnumerable<FileInfo> GetFiles(string key, bool checkExists, params string[] separators)
+        /// <summary>
+        /// Get the value for a key as one or more files.
+        /// </summary>
+        /// <param name="key">
+        /// The key.
+        /// </param>
+        /// <param name="checkAnyExist">
+        /// The check any exist.
+        /// </param>
+        /// <param name="separators">
+        /// The separators.
+        /// </param>
+        /// <returns>
+        /// </returns>
+        /// <exception cref="DirectoryNotFoundException">
+        /// </exception>
+        public static IEnumerable<FileInfo> GetFiles(string key, bool checkAnyExist, params string[] separators)
         {
             var value = GetString(key);
             var values = value.Split(separators, StringSplitOptions.RemoveEmptyEntries);
 
-            var files = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new FileInfo(v));
+            var files = values.Where(v => !string.IsNullOrEmpty(v)).Select(v => new FileInfo(v)).ToList();
 
-            if (checkExists && files.Any(f => !File.Exists(f.FullName)))
+            if (checkAnyExist && files.All(f => !File.Exists(f.FullName)))
             {
-                var file = files.First(f => !File.Exists(f.FullName));
-                throw new FileNotFoundException("Could not find a file for key: " + key, file.FullName);
+                throw new FileNotFoundException("None of the given files exist: " + string.Join(", ", files.Select(f => f.FullName)));
             }
 
             return files;
@@ -407,8 +422,8 @@
         /// <param name="key">
         /// The key.
         /// </param>
-        /// <param name="checkExists">
-        /// The check exists.
+        /// <param name="checkAnyExist">
+        /// The check and exist.
         /// </param>
         /// <param name="separators">
         /// The separators.
@@ -419,7 +434,7 @@
         /// <exception cref="FileNotFoundException">
         /// Directory was not found.
         /// </exception>
-        public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory, string key, bool checkExists, params string[] separators)
+        public static IEnumerable<DirectoryInfo> GetDirs(string webConfigRealDirectory, string key, bool checkAnyExist, params string[] separators)
         {
             CheckWebSiteRootPathSet();
 
@@ -432,10 +447,9 @@
                     v => v.StartsWith("..") ? new DirectoryInfo(webConfigRealDirectory + v) : new DirectoryInfo(v)).
                     ToList();
 
-            if (checkExists && dirs.Any(d => !Directory.Exists(d.FullName)))
+            if (checkAnyExist && dirs.All(d => !Directory.Exists(d.FullName)))
             {
-                var dir = dirs.First(d => !Directory.Exists(d.FullName));
-                throw new FileNotFoundException("Could not find a directory for key: " + key, dir.FullName);
+                throw new DirectoryNotFoundException("None of the given directories exist: " + string.Join(", ", dirs.Select(a => a.FullName)));
             }
 
             return dirs;

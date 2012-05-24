@@ -9,6 +9,8 @@
     using System.Linq;
     using System.Text;
 
+    /// <summary>
+    /// </summary>
     [Serializable]
     public class StringKeyValueStore : Dictionary<string, string>
     {
@@ -108,23 +110,24 @@
 
         public string GetValueAsString(string key)
         {
+            if (!this.ContainsKey(key))
+            {
+                throw new ArgumentException("Key '" + key + "' was not found.", "key");
+            }
+
             return this[key];
         }
 
         public IEnumerable<string> GetValueAsStrings(string key, params string[] separators)
         {
-            var result = new List<string>();
-            if (!this.ContainsKey(key))
-            {
-                return result;
-            }
-
-            if (separators == null || separators.All(string.IsNullOrEmpty))
+            if (separators == null || separators.All(s => s == null))
             {
                 throw new ArgumentException("Provide a valid separator.", "separators");
             }
 
             var value = this.GetValueAsString(key);
+
+            var result = new List<string>();
 
             if (string.IsNullOrWhiteSpace(value))
             {
@@ -132,7 +135,7 @@
             }
             else
             {
-                result.AddRange(value.Split(separators, StringSplitOptions.RemoveEmptyEntries));
+                result.AddRange(value.Split(separators, StringSplitOptions.None));
             }
 
             return result;
@@ -140,11 +143,6 @@
 
         public bool GetValueAsBool(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             bool result;
             if (bool.TryParse(value, out result))
@@ -152,16 +150,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a boolean.");
+            throw this.ConvertFailed(key, value, "bool");
         }
 
         public int GetValueAsInt(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             int result;
             if (int.TryParse(value, out result))
@@ -169,16 +162,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to an int.");
+            throw this.ConvertFailed(key, value, "int");
         }
 
         public double GetValueAsDouble(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             double result;
             if (double.TryParse(value, out result))
@@ -186,16 +174,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a double.");
+            throw this.ConvertFailed(key, value, "double");
         }
 
         public long GetValueAsLong(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             long result;
             if (long.TryParse(value, out result))
@@ -203,16 +186,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a long.");
+            throw this.ConvertFailed(key, value, "long");
         }
 
         public DirectoryInfo GetValueAsDirectory(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
 
             return new DirectoryInfo(value);
@@ -226,11 +204,6 @@
 
         public FileInfo GetValueAsFile(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
 
             return new FileInfo(value);
@@ -244,11 +217,6 @@
 
         public DateTime GetValueAsDateTime(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             DateTime result;
             if (DateTime.TryParseExact(value, DateTimeFormatStrings, CultureInfo.InvariantCulture, DateTimeStyles, out result))
@@ -256,16 +224,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a DateTime.");
+            throw this.ConvertFailed(key, value, "DateTime");
         }
 
         public TimeSpan GetValueAsTimeSpan(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             TimeSpan result;
             if (TimeSpan.TryParseExact(value, TimeSpanFormatStrings, CultureInfo.InvariantCulture, TimeSpanStyles.None, out result))
@@ -273,16 +236,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a TimeSpan.");
+            throw this.ConvertFailed(key, value, "Timespan");
         }
 
         public Guid GetValueAsGuid(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             Guid result;
             if (Guid.TryParse(value, out result))
@@ -290,16 +248,11 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a Guid.");
+            throw this.ConvertFailed(key, value, "Guid");
         }
 
         public decimal GetValueAsDecimal(string key)
         {
-            if (!this.ContainsKey(key))
-            {
-                throw new ArgumentException("Key was not found: " + key, "key");
-            }
-
             var value = this.GetValueAsString(key);
             decimal result;
             if (decimal.TryParse(value, out result))
@@ -307,7 +260,7 @@
                 return result;
             }
 
-            throw new InvalidOperationException("Found key '" + key + "' but could not convert its value '" + value + "' to a decimal.");
+            throw this.ConvertFailed(key, value, "decimal");
         }
 
         public void LoadFromTwoStrings(string propertyNames, string propertyValues, string separator)
@@ -417,6 +370,7 @@
                 {
                     throw new InvalidOperationException("A key contains the separator, which will make it impossible to deserialise. Key: '" + item.Key + "' separator: '" + separator + "'.");
                 }
+
                 if (!string.IsNullOrWhiteSpace(item.Value) && item.Value.Contains(separator))
                 {
                     throw new InvalidOperationException("A value contains the separator, which will make it impossible to deserialise. Value: '" + item.Value + "' separator: '" + separator + "'.");
@@ -450,7 +404,6 @@
 
         private void Load(KeyValueConfigurationCollection items)
         {
-
             if (items == null)
             {
                 throw new ArgumentNullException("items");
@@ -460,6 +413,12 @@
             {
                 this.Add(item.Key, item.Value);
             }
+        }
+
+        private Exception ConvertFailed(string key, string value, string type)
+        {
+            return new InvalidOperationException(
+                string.Format("Found key '{0}' but could not convert its value '{1}' to a {2}.", key, value, type));
         }
     }
 }
