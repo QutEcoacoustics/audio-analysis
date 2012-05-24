@@ -46,7 +46,7 @@ namespace AnalysisPrograms
                         Create_MFCC_OD_Template.Dev(restOfArgs);
                         break;
                     case "crow":     // recognises uhman speech but not word recognition
-                        Crow.Dev(restOfArgs);
+                        Crow2.Dev(restOfArgs);
                         break;
                     case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
