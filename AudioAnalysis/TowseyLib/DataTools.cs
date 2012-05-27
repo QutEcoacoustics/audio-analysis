@@ -627,6 +627,76 @@ namespace TowseyLib
     }
 
 
+
+    //=============================================================================
+     /// Returns the location of the first and last peaks
+    static public int[] Peaks_FirstAndLast(double[] data)
+    {
+        int length = data.Length;
+        int[] peaks = new int[2];
+        double min, max;
+        DataTools.MinMax(data, out min, out max);
+        double range = max - min;
+        double lowThreshold = min + (range * 0.5); //must be 25% of max.
+        double topThreshold = min + (range * 0.5); //must be 75% of max.
+
+        for (int i = 1; i < data.Length - 1; i++)
+        {
+            double Dm = data[i] - data[i - 1];
+            double Dp = data[i + 1] - data[i];
+            bool peak = false;
+            if ((Dm > 0.0) && (Dp < 0.0)) peak = true;
+            if ((!peak) || (data[i] < lowThreshold)) continue;
+
+            if ((peak) || (data[i] > topThreshold)) //which ever comes first
+            {
+                peaks[0] = i;
+                break;
+            }
+        }
+        for (int i = data.Length - 2; i > 1; i--)
+        {
+            double Dm = data[i] - data[i - 1];
+            double Dp = data[i + 1] - data[i];
+            bool peak = false;
+            if ((Dm > 0.0) && (Dp < 0.0)) peak = true;
+            if ((!peak) || (data[i] < lowThreshold)) continue;
+
+            if ((peak) || (data[i] > topThreshold)) //which ever comes first
+            {
+                peaks[1] = i;
+                break;
+            }
+        }
+        return peaks;
+    }
+    static public bool[] GetPeaks(double[] data)
+    {
+        int length = data.Length;
+        bool[] peaks = new bool[length];
+        for (int i = 1; i < data.Length - 1; i++)
+        {
+            double Dm = data[i] - data[i - 1];
+            double Dp = data[i + 1] - data[i];
+            if ((Dm > 0.0) && (Dp < 0.0)) peaks[i] = true;
+            else peaks[i] = false;
+        }
+        return peaks;
+    }
+    static public bool[] GetTroughs(double[] data)
+    {
+        int length = data.Length;
+        bool[] troughs = new bool[length];
+        for (int i = 1; i < data.Length - 1; i++)
+        {
+            double deltaMinus = data[i] - data[i - 1];
+            double deltaPlus = data[i + 1] - data[i];
+            if ((deltaMinus < 0.0) && (deltaPlus > 0.0)) troughs[i] = true;
+            else troughs[i] = false;
+        }
+        return troughs;
+    }
+
     public static void CountPeaks(double[] array, out int count, out double sum)
     {
         count = 0;
@@ -663,6 +733,14 @@ namespace TowseyLib
             }
         }
     }
+    //=============================================================================
+
+
+
+
+
+
+
         /// <summary>
         /// returns a list of gaps between 1s in a binary array
         /// </summary>
@@ -2652,38 +2730,6 @@ namespace TowseyLib
     }
     return order;
   }
-
-//=============================================================================
-        static public bool[] GetPeaks(double[] data)
-        {
-            int length = data.Length;
-            bool[] peaks = new bool[length];
-            for (int i = 1; i < data.Length-1; i++)
-            {
-                double Dm = data[i]-data[i-1];
-                double Dp = data[i+1]-data[i];
-                if((Dm>0.0)&&(Dp<0.0)) peaks[i] = true;
-                else peaks[i] = false;
-            }
-            return peaks;
-        }
-        static public bool[] GetTroughs(double[] data)
-        {
-            int length = data.Length;
-            bool[] troughs = new bool[length];
-            for (int i = 1; i < data.Length - 1; i++)
-            {
-                double deltaMinus = data[i] - data[i - 1];
-                double deltaPlus  = data[i + 1] - data[i];
-                if ((deltaMinus < 0.0) && (deltaPlus > 0.0)) troughs[i] = true;
-                else troughs[i] = false;
-            }
-            return troughs;
-        }
-
-
-//=============================================================================
-
   /**
    *
    * @param data

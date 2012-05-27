@@ -445,5 +445,20 @@ namespace TowseyLib
             }
         }
 
-    }
+
+       public static void WriteTable(DataTable dt)
+       {
+           string[] headers = DataTableTools.GetColumnNames(dt);
+           foreach(string name in headers) Console.Write("{0}\t", name);
+           Console.WriteLine();
+            var rows = dt.Rows;
+            foreach(DataRow row in rows)
+            {
+                for (int i = 0; i < headers.Length; i++) Console.Write("{0:f2}\t", row[headers[i]]);
+                Console.WriteLine();
+            }
+       }
+
+
+    } //class
 }
