@@ -22,7 +22,7 @@ using Acoustics.Tools.Audio;
 
 namespace AnalysisPrograms
 {
-    public class Crow
+    public class AnalysisTemplate
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -52,7 +52,7 @@ namespace AnalysisPrograms
         public static string key_START_MIN = "EvStartMin";
         public static string key_START_SEC = "EvStartSec";
         public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CROW_SCORE   = "CrowScore";
+        public static string key_CALL_SCORE   = "CallScore";
 
         //INITIALISE OUTPUT TABLE COLUMNS
         private const int COL_NUMBER = 7;
@@ -60,14 +60,14 @@ namespace AnalysisPrograms
         private static string[] HEADERS = new string[COL_NUMBER];
         private static System.Tuple<string[], Type[]> InitOutputTableColumns()
         {
-            HEADERS[0] = "count";      COL_TYPES[0] = typeof(int);     
-            HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int);     
-            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int);     
-            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(int);     
-            HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string);  
-            HEADERS[5] = "Density";    COL_TYPES[5] = typeof(int);     
-            HEADERS[6] = "CrowScore";  COL_TYPES[6] = typeof(double); 
-            return Tuple.Create(HEADERS, COL_TYPES);
+            HEADERS[0] = key_COUNT;            COL_TYPES[0] = typeof(int);
+            HEADERS[1] = key_START_ABS;        COL_TYPES[1] = typeof(int);
+            HEADERS[2] = key_START_MIN;        COL_TYPES[2] = typeof(int);
+            HEADERS[3] = key_START_SEC;        COL_TYPES[3] = typeof(int);
+            HEADERS[4] = key_SEGMENT_DURATION; COL_TYPES[4] = typeof(double);
+            HEADERS[5] = key_CALL_DENSITY;     COL_TYPES[5] = typeof(int);
+            HEADERS[6] = key_CALL_SCORE;       COL_TYPES[6] = typeof(double); 
+            return Tuple.Create(HEADERS,       COL_TYPES);
         }
         public static string[] GetOutputTableHeaders()
         {
@@ -117,7 +117,7 @@ namespace AnalysisPrograms
             var diOutputDir = new DirectoryInfo(outputDir);
 
             //#############################################################################################################################################
-            DataTable dt = Crow.AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
+            DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
             //#############################################################################################################################################
             if(dt == null)
             {
@@ -138,7 +138,7 @@ namespace AnalysisPrograms
         {
             string opFileName = "temp.wav";
             //######################################################################
-            var results = Crow.Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = AnalysisTemplate.Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -185,7 +185,7 @@ namespace AnalysisPrograms
             string opFileName = newFileNameWithoutExtention + ".wav";
 
             //######################################################################
-            var results = Crow.Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -343,7 +343,7 @@ namespace AnalysisPrograms
         {
             if ((predictedEvents == null) || (predictedEvents.Count == 0)) return null;
 
-            Crow.InitOutputTableColumns();
+            InitOutputTableColumns();
             var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);
             foreach (var ev in predictedEvents)
             {
@@ -351,16 +351,15 @@ namespace AnalysisPrograms
                 int eventStartAbsoluteSec = (int)(segmentStartSec + ev.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
-                string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
 
                 DataRow row = dataTable.NewRow();
-                row[HEADERS[0]] = count;                   //count
-                row[HEADERS[1]] = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
-                row[HEADERS[2]] = eventStartMin;           //EvStartMin
-                row[HEADERS[3]] = eventStartSec;           //EvStartSec
-                row[HEADERS[4]] = segmentDuration;         //segmentDur
-                row[HEADERS[5]] = predictedEvents.Count;   //Density
-                row[HEADERS[6]] = ev.Score;       //Score
+                row[key_COUNT]        = count;                   //count
+                row[key_START_ABS]    = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
+                row[key_START_MIN]    = eventStartMin;           //EvStartMin
+                row[key_START_SEC]    = eventStartSec;           //EvStartSec
+                row[key_SEGMENT_DURATION] = tsSegmentDuration.TotalSeconds; //segment Duration in seconds
+                row[key_CALL_DENSITY] = predictedEvents.Count;   //Density
+                row[key_CALL_SCORE]   = ev.Score;                //Score
                 dataTable.Rows.Add(row);
             }
             return dataTable;
@@ -380,7 +379,7 @@ namespace AnalysisPrograms
 
             double scoreThreshold = 0.25;
             int timeScale = 60; //i.e. 60 seconds per output row.
-            string[] headers = { key_COUNT, key_START_MIN, "# Events", ("#Ev>" + scoreThreshold), key_CROW_SCORE };
+            string[] headers = { key_COUNT, key_START_MIN, "# Events", ("#Ev>" + scoreThreshold), key_CALL_SCORE };
             Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(double) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -392,7 +391,7 @@ namespace AnalysisPrograms
             foreach (DataRow ev in dt.Rows)
             {
                 int eventStart = (int)ev[key_START_ABS];
-                double eventScore = (double)ev[key_CROW_SCORE];
+                double eventScore = (double)ev[key_CALL_SCORE];
                 if (eventScore > indexScore) indexScore = eventScore;
                 minuteStart = eventStart / timeScale;
 
@@ -425,5 +424,5 @@ namespace AnalysisPrograms
 
 
 
-    } //end class Crow
+    } //end class AnalysisTemplate
 }
