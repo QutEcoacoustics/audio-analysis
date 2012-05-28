@@ -178,7 +178,7 @@ namespace AnalysisPrograms
                 var sb = new StringBuilder();
                 double endtime = ae.TimeStart + ae.Duration;
                 sb.Append(ae.Name + "\t" + ae.TimeStart.ToString("f4") + "\t" +
-                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" + ae.SourceFile);
+                          endtime.ToString("f4") + "\t" + ae.Score.ToString("f4") + "\t" + ae.SourceFileName);
                 list.Add(sb.ToString());
             }
             return list;
