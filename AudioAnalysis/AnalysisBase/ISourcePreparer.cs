@@ -12,7 +12,7 @@
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
-        /// <param name="analysisBaseDirectory">
+        /// <param name="outputDirectory">
         /// The analysis Base Directory.
         /// </param>
         /// <param name="source">
@@ -33,7 +33,7 @@
         /// <returns>
         /// The prepared file.
         /// </returns>
-        FileInfo PrepareFile(DirectoryInfo analysisBaseDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
+        FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
 
         /// <summary>
         /// Calculate the file segments for analysis.

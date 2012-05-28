@@ -32,8 +32,7 @@
             var keyValueStore = new StringKeyValueStore();
             keyValueStore.LoadFromAppConfig();
 
-            var segmenter = new Segmenter();
-            var preparer = new LocalSourcePreparer(segmenter);
+            var preparer = new LocalSourcePreparer();
             var coord = new AnalysisCoordinator(preparer);
             coord.IsParallel = true;
 
