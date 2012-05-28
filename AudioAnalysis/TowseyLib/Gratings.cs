@@ -8,6 +8,20 @@ namespace TowseyLib
     public class Gratings
     {
 
+        //these keys are used to define an event in a sonogram.
+        public const string key_START_FRAME = "startFrame";
+        public const string key_END_FRAME = "endFrame";
+        //public const string key_FRAME_COUNT = "frameCount";
+        //public const string key_START_SECOND = "startSecond";
+        //public const string key_END_SECOND = "endSecond";
+        //public const string key_MIN_FREQBIN = "minFreqBin";
+        //public const string key_MAX_FREQBIN = "maxFreqBin";
+        //public const string key_MIN_FREQ = "minFreq";
+        //public const string key_MAX_FREQ = "maxFreq";
+        public const string key_SCORE = "score";
+        public const string key_PERIODICITY = "periodicity";
+
+
         static void Main(string[] args)
         {
             string title = "Home experiments";
@@ -275,6 +289,29 @@ namespace TowseyLib
 
             return Tuple.Create(intensity, periodicity);
         } //MergePeriodicScoreArrays()
+
+
+
+        public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
+        {
+            //could do a possible adjustment of the threshold for period.
+            //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
+            var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
+
+            var list = new List<Dictionary<string, double>>();
+            foreach (double[] item in events)
+            {
+                var ev = new Dictionary<string, double>();
+                ev[key_START_FRAME] = item[0];
+                ev[key_END_FRAME] = item[1];
+                ev[key_SCORE] = item[2];
+                double cyclePeriod = 0.0;
+                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+                ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
+                list.Add(ev);
+            } //foreach
+            return list;
+        } //ExtractPeriodicEvents()
 
 
 
