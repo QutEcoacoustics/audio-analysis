@@ -47,7 +47,7 @@
                         let lat, lng, time = vs.[0] :?> Number, vs.[1] :?> Number, vs.[2] :?> Date
 
                         // this will be called many times with ***almost the same*** input - optimization needed?
-                        let phases = SunCalc.getDayInfo time.Value lat.Value lng.Value time.Value.Offset
+                        let phases = SunCalc.getDayInfo time.Value lat.Value lng.Value
                         let phase = Map.tryPick (fun key value -> if Interval.isInRange value time.Value then Some(key) else None) phases
                         let phase' =
                             if phase.IsNone then
