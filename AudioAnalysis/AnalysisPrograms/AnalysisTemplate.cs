@@ -119,15 +119,17 @@ namespace AnalysisPrograms
             //#############################################################################################################################################
             DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
             //#############################################################################################################################################
-            if(dt == null)
+            if (dt == null)
             {
-                Log.WriteLine("\n\n\n##############################\n WARNING! Null return. Possibly source file does not exist");
-            } else 
+                Log.WriteLine("\n\n\n##############################\n WARNING! No events returned.");
+            }
+            else
             {
                 //Console.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
                 Console.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
                 DataTableTools.WriteTable(dt);
             }
+
 
             Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
@@ -145,18 +147,31 @@ namespace AnalysisPrograms
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var recordingTimeSpan = results.Item5;
-            
-            string analysisName = configDict[key_ANALYSIS_NAME];
-            string fName = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.Name);
-            foreach (AcousticEvent ev in predictedEvents)
-            {
-                ev.SourceFileName     = fName;
-                ev.Name               = analysisName;
-                ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
-            }
 
             double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
             double segmentStartMinute = segmentDuration * iter;
+            DataTable dataTable = null;
+
+            if ((predictedEvents == null) || (predictedEvents.Count == 0))
+            {
+                Console.WriteLine("############ WARNING: No acoustic events were returned from the analysis.");
+            }
+            else
+            {
+                string analysisName = configDict[key_ANALYSIS_NAME];
+                string fName = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.Name);
+                foreach (AcousticEvent ev in predictedEvents)
+                {
+                    ev.SourceFileName = fName;
+                    ev.Name = analysisName;
+                    ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
+                }
+                //write events to a data table to return.
+                dataTable = WriteEvents2DataTable(iter, segmentStartMinute, recordingTimeSpan, predictedEvents);
+                string sortString = key_START_ABS + " ASC";
+                dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
+            }
+
 
             //draw images of sonograms
             int DRAW_SONOGRAMS = Int32.Parse(configDict[key_DRAW_SONOGRAMS]);         // options to draw sonogram
@@ -170,11 +185,7 @@ namespace AnalysisPrograms
                 image.Save(imagePath, ImageFormat.Png);
             }
 
-            //write events to a data table to return.
-            DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, recordingTimeSpan, predictedEvents);
-
-            string sortString = key_START_ABS + " ASC";
-            return DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
+            return dataTable;
         }
 
         public static Image AnalysisReturnsSonogram(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
