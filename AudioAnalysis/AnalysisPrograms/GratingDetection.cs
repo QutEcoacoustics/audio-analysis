@@ -15,9 +15,14 @@ using Acoustics.Tools.Audio;
 
 
 
+//Here is link to wiki page containing info about how to write Analysis techniques
+//https://wiki.qut.edu.au/display/mquter/Audio+Analysis+Processing+Architecture
+//
+
+
 namespace AnalysisPrograms
 {
-    public class Human
+    public class GratingDetection
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
         public static string key_ANALYSIS_NAME = "ANALYSIS_NAME";
@@ -40,6 +45,21 @@ namespace AnalysisPrograms
         public static string key_MIN_DURATION = "MIN_FORMANT_DURATION";
         public static string key_MAX_DURATION = "MAX_FORMANT_DURATION";
         public static string key_DRAW_SONOGRAMS = "DRAW_SONOGRAMS";
+
+        public const string key_START_FRAME = "startFrame";
+        public const string key_END_FRAME = "endFrame";
+        //public const string key_FRAME_COUNT = "frameCount";
+        //public const string key_START_SECOND = "startSecond";
+        //public const string key_END_SECOND = "endSecond";
+        public const string key_MIN_FREQBIN = "minFreqBin";
+        public const string key_MAX_FREQBIN = "maxFreqBin";
+        //public const string key_MIN_FREQ = "minFreq";
+        //public const string key_MAX_FREQ = "maxFreq";
+        public const string key_SCORE = "score";
+        public const string key_PERIODICITY = "periodicity";
+        
+
+
 
         //KEYS TO OUTPUT INDICES
         public static string key_COUNT     = "count";
@@ -76,20 +96,26 @@ namespace AnalysisPrograms
         }
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Human";
+        public const string ANALYSIS_NAME = "Grids";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
 
-
         public static void Dev(string[] args)
         {
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\BAC2_20071018-143516_speech.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Wimmer_DM420011.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            string configPath    = @"C:\SensorNetworks\Output\Human\Human.cfg";
-            string outputDir     = @"C:\SensorNetworks\Output\Human\";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min173Airplane.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min449Airplane.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min700Airplane.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min302MorningChorus.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\Honeymoon_Bay_St_Bees_KoalaDistant_20080914-213000.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\BAC2_20071005-145040.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
+            //string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
+    
+            string configPath = @"C:\SensorNetworks\Output\Grids\Grids.cfg";
+            string outputDir  = @"C:\SensorNetworks\Output\Grids\";
 
             string opFName       = ANALYSIS_NAME + ".txt";
             string opPath        = outputDir + opFName;
@@ -116,17 +142,15 @@ namespace AnalysisPrograms
             //#############################################################################################################################################
             DataTable dt = AnalysisReturnsDataTable(startMinute, fiSegmentOfSourceFile, configDict, diOutputDir);
             //#############################################################################################################################################
-            if (dt == null)
+            if(dt == null)
             {
                 Log.WriteLine("\n\n\n##############################\n WARNING! No events returned.");
-            }
-            else
+            } else 
             {
                 //Console.WriteLine("\tRecording Duration: {0:f2}seconds", recordingTimeSpan.TotalSeconds);
                 Console.WriteLine("# Event count for minute {0} = {1}", startMinute, dt.Rows.Count);
                 DataTableTools.WriteTable(dt);
             }
-
 
             Console.WriteLine("# Finished recording:- " + Path.GetFileName(recordingPath));
             Console.ReadLine();
@@ -139,11 +163,14 @@ namespace AnalysisPrograms
             //######################################################################
             var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
+
+            if (results == null) return null;
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
             var predictedEvents = results.Item4;
             var recordingTimeSpan = results.Item5;
+
 
             double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
             double segmentStartMinute = segmentDuration * iter;
@@ -185,6 +212,9 @@ namespace AnalysisPrograms
             return dataTable;
         }
 
+
+
+
         public static Image AnalysisReturnsSonogram(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
             double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
@@ -221,33 +251,40 @@ namespace AnalysisPrograms
                                         Analysis(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
             //set default values
+            int bandWidth = 1000; //detect bars in bands of this width.
             int frameSize = 1024;
             double windowOverlap = 0.0;
 
+            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]);
+            intensityThreshold = 0.01;
+
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);
-            int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
-            int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
-            double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
-            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
-            double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
+            //int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
+            //int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
+            //double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
-            if (recording == null) return null;
-
-            //i: MAKE SONOGRAM
-            SonogramConfig sonoConfig = new SonogramConfig(); //default values config
-            sonoConfig.SourceFName = recording.FileName;
-            sonoConfig.WindowSize = frameSize;
-            sonoConfig.WindowOverlap = windowOverlap;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
-            TimeSpan tsRecordingtDuration = recording.Duration();
+            if (recording == null)
+            {
+                Console.WriteLine("############ WARNING: Recording could not be obtained - likely file does not exist.");
+                return null;
+            }
             int sr = recording.SampleRate;
-            double freqBinWidth = sr / (double)sonoConfig.WindowSize;
-            double framesPerSecond = freqBinWidth;
+            double binWidth = recording.SampleRate / (double)frameSize;
+            double framesPerSecond = binWidth;
+            TimeSpan tsRecordingtDuration = recording.Duration();
 
 
+            //i: GET SONOGRAM AS MATRIX
+            var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
+            double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
+            //double[] envelope = results2.Item2;
+            double[,] spectrogram = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
+            double windowPower = results2.Item4;
 
-            //#############################################################################################################################################
+            //############################ NEXT LINE FOR DEBUGGING ONLY
+            //spectrogram = GetTestSpectrogram(spectrogram.GetLength(0), spectrogram.GetLength(1), 0.01, 0.03);
+
             //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
             // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
             // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
@@ -256,75 +293,119 @@ namespace AnalysisPrograms
             //the Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
             //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
             //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
-            int numberOfBins = 64;
-            int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            int maxbin = minBin + numberOfBins - 1;
-            int maxHz = (int)Math.Round(minHz + (numberOfBins * freqBinWidth));
 
-            BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            double[,] matrix = sonogram.Data;
+            //int numberOfFreqBands = recording.Nyquist / bandWidth;
+            int colStep = (int)Math.Round(bandWidth / binWidth);
 
-            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            //double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            ////double[] envelope = results2.Item2;
-            //double windowPower = results2.Item4;
-            recording.Dispose();
+            var output = DetectGratingEvents(spectrogram, colStep, intensityThreshold);
+            var amplitudeArray = output.Item2; //for debug purposes only
 
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, minBin, (rowCount - 1), maxbin);
-
-
-            int callSpan = (int)Math.Round(callDuration * framesPerSecond);
-
-            //#############################################################################################################################################
-            //ii: DETECT HARMONICS
-            var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold, callSpan);
-            double[] dBArray = results.Item1;
-            double[] intensity = results.Item2;     //an array of periodicity scores
-            double[] periodicity = results.Item3;
-
-            //transfer periodicity info to a hits matrix.
-            //intensity = DataTools.filterMovingAverage(intensity, 3);
-            double[] scoreArray = new double[intensity.Length];
-            var hits = new double[rowCount, colCount];
-            for (int r = 0; r < rowCount; r++)
+            //convert List of Dictionary events to List of ACousticevents.
+            //also set up the hits matrix.
+            int rowCount = spectrogram.GetLength(0);
+            int colCount = spectrogram.GetLength(1);
+            var hitsMatrix = new double[rowCount, colCount];
+            var acousticEvents = new List<AcousticEvent>();
+            //double minFrameCount = 2 * framesPerSecond;   //only want events that are at least 1 second long
+            double minFrameCount = 7;
+            foreach (Dictionary<string, double> item in output.Item1)
             {
-                if (periodicity[r] < 2) continue;
-                //ignore locations with incorrect formant gap
-                double herzPeriod = periodicity[r] * freqBinWidth;
-                if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
+                int minRow = (int)item[key_START_FRAME];
+                int maxRow = (int)item[key_END_FRAME];
+                int frameCount = maxRow - minRow + 1;
+                if (frameCount < minFrameCount) continue; //only want events that are over a minimum length
 
-                //set up the hits matrix
-                double relativePeriod = periodicity[r] / colCount / 2;
-                for (int c = minBin; c < maxbin; c++) hits[r, c] = relativePeriod;
+                int minCol = (int)item[key_MIN_FREQBIN];
+                int maxCol = (int)item[key_MAX_FREQBIN];
+                double periodicity = item[key_PERIODICITY];
 
-                //set scoreArray[r]  - ignore locations with low intensity
-                if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r];
-            }
+                double[] subarray = DataTools.Subarray(avAbsolute, minRow, maxRow - minRow + 1);
+                int[] bounds = DataTools.Peaks_FirstAndLast(subarray);
+                minRow = minRow + bounds[0];
+                maxRow = minRow + bounds[1];
 
+                Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
+                var ae = new AcousticEvent(o, windowOverlap, binWidth);
+                ae.Name = String.Format("p={0:f1}", periodicity);
+                ae.Score = item[key_SCORE];
+                ae.ScoreNormalised = item[key_SCORE] / 0.5;
+                acousticEvents.Add(ae);
 
-            //iii: CONVERT TO ACOUSTIC EVENTS
-            double maxPossibleScore = 0.5;
-            int halfCallSpan = callSpan / 2;
-            var predictedEvents = new List<AcousticEvent>();
-            for (int i = 0; i < rowCount; i++) // pass over all frames
+                //display event on the hits matrix
+                for (int r = minRow; r < maxRow; r++)
+                    for (int c = minCol; c < maxCol; c++)
+                    {
+                        hitsMatrix[r, c] = periodicity;
+                    }
+
+            } //foreach
+
+            //set up the songogram to return. Use the existing amplitude sonogram
+            int bitsPerSample = recording.GetWavReader().BitsPerSample;
+            //NoiseReductionType nrt = SNR.Key2NoiseReductionType("NONE");
+            NoiseReductionType nrt = SNR.Key2NoiseReductionType("STANDARD");
+            var sonogram = (BaseSonogram)SpectralSonogram.GetSpectralSonogram(recording.FileName, frameSize, windowOverlap, bitsPerSample, windowPower, sr, tsRecordingtDuration, nrt, spectrogram);
+            sonogram.DecibelsNormalised = new double[sonogram.FrameCount];
+            for (int i = 0; i < sonogram.FrameCount; i++) //foreach frame or time step
             {
-                //assume one score position per crow call
-                if (scoreArray[i] < 0.001) continue;
-                double startTime = (i - halfCallSpan) / framesPerSecond;
-                AcousticEvent ev = new AcousticEvent(startTime, callDuration, minHz, maxHz);
-                ev.SetTimeAndFreqScales(framesPerSecond, freqBinWidth);
-                ev.Score = scoreArray[i];
-                ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
-                //ev.Score_MaxPossible = maxPossibleScore;
-                predictedEvents.Add(ev);
+                sonogram.DecibelsNormalised[i] = 2 * Math.Log10(avAbsolute[i]);
             }
-            return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
+            sonogram.DecibelsNormalised = DataTools.normalise(sonogram.DecibelsNormalised);
+
+            return System.Tuple.Create(sonogram, hitsMatrix, amplitudeArray, acousticEvents, tsRecordingtDuration);
         } //Analysis()
 
 
+
+        public static System.Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
+        {
+            bool doNoiseremoval = true;
+            int minPeriod = 2; //both period values must be even numbers
+            int maxPeriod = 24;
+            int numberOfCyles = 4; 
+            int step = 1;
+
+            int rowCount = matrix.GetLength(0);
+            int colCount = matrix.GetLength(1);
+            int numberOfColSteps = colCount / colStep;
+
+            var events2return = new List<Dictionary<string, double>>();
+            double[] array2return = null;
+
+            for (int b = 0; b < numberOfColSteps; b++)
+            {
+                int minCol = b * colStep;
+                int maxCol = minCol + colStep - 1;
+
+                double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, minCol, (rowCount - 1), maxCol);
+                double[] amplitudeArray = MatrixTools.GetRowAverages(subMatrix);
+
+                if (doNoiseremoval)
+                {
+                    double Q, oneSD;
+                    amplitudeArray = SNR.NoiseSubtractMode(amplitudeArray, out Q, out oneSD);
+                }
+
+                //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
+                
+                var scores = Gratings.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod, numberOfCyles, step);
+                var mergedOutput = Gratings.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
+                double[] intensity   = mergedOutput.Item1; 
+                double[] periodicity = mergedOutput.Item2;
+                var events = GratingDetection.ExtractPeriodicEvents(intensity, periodicity, intensityThreshold);
+                
+                foreach (Dictionary<string, double> item in events)
+                {
+                    item[key_MIN_FREQBIN] = minCol;
+                    item[key_MAX_FREQBIN] = maxCol;
+                    events2return.Add(item);
+                }
+                
+                if (b == 3) array2return = amplitudeArray; //returned for debugging purposes only
+            } //for loop over bands of columns
+
+            return System.Tuple.Create(events2return, array2return);
+        }//end Execute_DetectBars()
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
@@ -431,6 +512,51 @@ namespace AnalysisPrograms
 
 
 
+        public static List<Dictionary<string, double>> ExtractMyPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
+        {
+            //could do a possible adjustment of the threshold for period.
+            //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
+            var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
 
-    } //end class Human
+            var list = new List<Dictionary<string, double>>();
+            foreach (double[] item in events)
+            {
+                var ev = new Dictionary<string, double>();
+                ev[key_START_FRAME] = item[0];
+                ev[key_END_FRAME] = item[1];
+                ev[key_SCORE] = item[2];
+                double cyclePeriod = 0.0;
+                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+                ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
+                list.Add(ev);
+            } //foreach
+            return list;
+        } //ExtractPeriodicEvents()
+
+
+
+        public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
+        {
+            //could do a possible adjustment of the threshold for period.
+            //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
+            var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
+
+            var list = new List<Dictionary<string, double>>();
+            foreach (double[] item in events)
+            {
+                var ev = new Dictionary<string, double>();
+                ev[key_START_FRAME] = item[0];
+                ev[key_END_FRAME] = item[1];
+                ev[key_SCORE] = item[2];
+                double cyclePeriod = 0.0;
+                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+                ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
+                list.Add(ev);
+            } //foreach
+            return list;
+        } //ExtractPeriodicEvents()
+
+
+
+    } //end class GratingDetection
 }

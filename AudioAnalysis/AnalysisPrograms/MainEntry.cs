@@ -51,6 +51,9 @@ namespace AnalysisPrograms
                     case "epr":  // event pattern recognition - used for ground-parrots (BRAD)
                         GroundParrotRecogniser.Dev(restOfArgs);
                         break;
+                    case "gratings":  // grid recognition
+                        GratingDetection.Dev(restOfArgs);
+                        break;
                     case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(restOfArgs);
                         break;
@@ -76,9 +79,9 @@ namespace AnalysisPrograms
 
 
                     // UNDER DEVELOPMENT - FOR MICHAEL'S USE ONLY
-                    case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
-                        BarsAndStripes.Dev(restOfArgs);
-                        break;                       
+                    //case "BarsAndStripes":     // recognises Planes, Trains And Automobiles 
+                    //    BarsAndStripes.Dev(restOfArgs);
+                    //    break;                       
                     case "felt":     // find other acoustic events like this
                         FeltTemplates_Use.Dev(restOfArgs);
                         break;
