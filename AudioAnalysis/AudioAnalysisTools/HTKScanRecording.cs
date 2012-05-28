@@ -181,7 +181,7 @@ namespace AudioAnalysisTools.HTKTools
                 acEvent.Name = vocalName;
                 if (!isHit) frameScore = scoreThreshold + (frameScore / 5); //reduce score below threshold
                 acEvent.SetScores(frameScore, scoreThreshold, -20);
-                acEvent.SourceFile = sourceFile;
+                acEvent.SourceFileName = sourceFile;
                 acEvent.SetTimeAndFreqScales(sampleRate, windowSize, windowSampleOffset);
                 acEvent.Tag = isHit;
                 events.Add(acEvent);
@@ -225,7 +225,7 @@ namespace AudioAnalysisTools.HTKTools
                 var ae = new AcousticEvent(start, (end - start), minFreq, maxfreq);
                 ae.Score = score;
                 ae.Name = name;
-                ae.SourceFile = file;
+                ae.SourceFileName = file;
                 events.Add(ae);
             }
             return events;
