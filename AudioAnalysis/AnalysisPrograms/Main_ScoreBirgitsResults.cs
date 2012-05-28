@@ -179,7 +179,7 @@ namespace AnalysisPrograms
                 ae.Score  = score1;
                 ae.Score2 = score2;
                 ae.Name   = tag;
-                ae.SourceFile = file;
+                ae.SourceFileName = file;
                 //ae.Intensity = intensity;
                 //ae.Quality = quality;
                 events.Add(ae);

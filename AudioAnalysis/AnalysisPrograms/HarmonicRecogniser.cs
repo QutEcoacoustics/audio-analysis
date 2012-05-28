@@ -176,7 +176,7 @@ namespace AnalysisPrograms
                                                                                          amplitudeThreshold, minDuration, maxDuration);
             foreach (AcousticEvent ev in predictedEvents)
             {
-                ev.SourceFile = audioFileName;
+                ev.SourceFileName = audioFileName;
                 ev.Name = callName;
             }
 

@@ -359,7 +359,7 @@ namespace AnalysisPrograms
                         ev.Name = "OscillationEvent"; //default name
                         //ev.SetTimeAndFreqScales(22050, 512, 128);
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.SourceFile = fileName;
+                        ev.SourceFileName = fileName;
                         //obtain average score.
                         double av = 0.0;
                         for (int n = startFrame; n <= i; n++) av += scores[n];

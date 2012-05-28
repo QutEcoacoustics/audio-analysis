@@ -238,7 +238,7 @@ namespace AnalysisPrograms
             var predictedEvents = results.Item4;
             foreach (AcousticEvent ev in predictedEvents)
             {
-                ev.SourceFile = recording.FileName;
+                ev.SourceFileName = recording.FileName;
                 ev.Name = analysisName;
             }
 

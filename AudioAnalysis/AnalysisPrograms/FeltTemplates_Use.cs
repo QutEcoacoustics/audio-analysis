@@ -271,7 +271,7 @@ namespace AnalysisPrograms
                                                                             minDuration, maxDuration);
             foreach (AcousticEvent ev in matchEvents)
             {
-                ev.SourceFile = sonogram.Configuration.SourceFName;
+                ev.SourceFileName = sonogram.Configuration.SourceFName;
                 ev.Name = sonogram.Configuration.CallName;
             }
 
@@ -336,7 +336,7 @@ namespace AnalysisPrograms
                                                                             minDuration, maxDuration);
             foreach (AcousticEvent ev in matchEvents)
             {
-                ev.SourceFile = sonogram.Configuration.SourceFName;
+                ev.SourceFileName = sonogram.Configuration.SourceFName;
                 ev.Name = sonogram.Configuration.CallName;
             }
 

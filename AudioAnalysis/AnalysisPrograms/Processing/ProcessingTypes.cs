@@ -581,7 +581,7 @@ namespace AnalysisPrograms.Processing
                                                               sonogram.FramesPerSecond, sonogram.FBinWidth, eventThreshold, minDuration, maxDuration);
                 foreach (AcousticEvent ev in predictedEvents)
                 {
-                    ev.SourceFile = audioFileName;
+                    ev.SourceFileName = audioFileName;
                     ev.Name = callName;
                 }
 
