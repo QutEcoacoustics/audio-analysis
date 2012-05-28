@@ -195,7 +195,6 @@ namespace MQUTeR.FSharp.Shared
             let diff = date - G1970
             diff.TotalDays - 0.5 + J1970 
         
-        //[<System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)>]
         let julianDateToDate j timeZoneOffset =
             let offset = TimeSpan.FromDays(j - J1970 + 0.5)
             (G1970 + offset).ToOffset(timeZoneOffset)
@@ -257,7 +256,8 @@ namespace MQUTeR.FSharp.Shared
         
     
          
-        let getDayInfo date lat lng offset = 
+        let getDayInfo (date: DateTimeOffset) lat lng = 
+            let offset = date.Offset
             let julianDateToDate x = julianDateToDate x offset
 
             let lw = -lng * deg2rad

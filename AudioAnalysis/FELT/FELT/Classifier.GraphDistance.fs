@@ -10,12 +10,12 @@
     open QuickGraph.Algorithms
 
 
-    type GraphDistance(selector : (ColumnHeader * IGraph<IEdge<'v>,'v>) array) =
+    type GraphDistance(selector : (ColumnHeader * IGraph<'v,IEdge<'v>>) array) =
         inherit ClassifierBase()
         
         // a lazy classifier for returning the distance between object on a known graph
         override this.Classify (trainingData, testData) =
-
+      
             // first check that training and test data contain same columns
             FELT.Helpers.headersMatch trainingData testData
 
