@@ -449,7 +449,7 @@ namespace AudioAnalysisTools
                         AcousticEvent ev = new AcousticEvent(startTime, duration, minHz, maxHz);
                         ev.Name = "OscillationEvent"; //default name
                         ev.SetTimeAndFreqScales(framesPerSec, freqBinWidth);
-                        ev.SourceFile = fileName;
+                        ev.SourceFileName = fileName;
                         ev.FreqBinCount = freqBinCount; //required for drawing event on the spectrogram
 
                         // obtain average score.

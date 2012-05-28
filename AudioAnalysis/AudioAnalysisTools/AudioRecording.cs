@@ -390,6 +390,7 @@
         /// <returns></returns>
         public static AudioRecording GetAudioRecording(FileInfo sourceFile, int resampleRate, string opDir, string opFileName)
         {
+            if (! sourceFile.Exists) return null;
             string opPath = Path.Combine(opDir, opFileName); //path location/name of extracted recording segment
             IAudioUtility audioUtility = new MasterAudioUtility();
             var mimeType = MediaTypes.GetMediaType(sourceFile.Extension);
