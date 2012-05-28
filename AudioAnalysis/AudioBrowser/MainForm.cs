@@ -442,12 +442,12 @@
                         outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                     }
                     else
-                        if (analysisName == Crow.ANALYSIS_NAME) //Crow Recogniser
-                        {
-                            var parameters = Crow.InitOutputTableColumns();
-                            outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
-                        }
-                        else
+                        //if (analysisName == Crow.ANALYSIS_NAME) //Crow Recogniser
+                        //{
+                        //    var parameters = Crow.InitOutputTableColumns();
+                        //    outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+                        //}
+                        //else
                         {
                         Console.WriteLine("# FATAL ERROR: Unknown analysis type {0}", analysisName);
                         return null;
@@ -529,11 +529,11 @@
                             {
                                 dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                             }
-                            else
-                                if (analysisName.Equals(Crow.ANALYSIS_NAME)) //Human speech detection
-                                {
-                                    dt = Crow.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                                }
+                            //else
+                            //    if (analysisName.Equals(Crow.ANALYSIS_NAME)) //Human speech detection
+                            //    {
+                            //        dt = Crow.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                            //    }
                     //#############################################################################################################################################
 
                     if (dt != null)
