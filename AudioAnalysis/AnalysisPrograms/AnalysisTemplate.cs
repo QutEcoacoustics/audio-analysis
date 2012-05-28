@@ -29,7 +29,7 @@ namespace AnalysisPrograms
         public static string key_CALL_DURATION = "CALL_DURATION";
         public static string key_DECIBEL_THRESHOLD = "DECIBEL_THRESHOLD";
         public static string key_EVENT_THRESHOLD = "EVENT_THRESHOLD";
-        public static string key_HARMONIC_INTENSITY_THRESHOLD = "HARMONIC_INTENSITY_THRESHOLD";
+        public static string key_INTENSITY_THRESHOLD = "INTENSITY_THRESHOLD";
         public static string key_SEGMENT_DURATION = "SEGMENT_DURATION";
         public static string key_SEGMENT_OVERLAP = "SEGMENT_OVERLAP";
         public static string key_RESAMPLE_RATE = "RESAMPLE_RATE";
@@ -173,7 +173,7 @@ namespace AnalysisPrograms
             //write events to a data table to return.
             DataTable dataTable = WriteEvents2DataTable(iter, segmentStartMinute, recordingTimeSpan, predictedEvents);
 
-            string sortString = "EvStartAbs ASC";
+            string sortString = key_START_ABS + " ASC";
             return DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
         }
 
@@ -220,7 +220,7 @@ namespace AnalysisPrograms
             int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
             int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
             double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
-            double harmonicIntensityThreshold = Double.Parse(configDict[key_HARMONIC_INTENSITY_THRESHOLD]); //in 0-1
+            double harmonicIntensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
             double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, Crow.RESAMPLE_RATE, diOutputDir.FullName, opFileName);
