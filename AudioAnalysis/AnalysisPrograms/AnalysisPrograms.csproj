@@ -130,6 +130,9 @@
   <ItemGroup>
     <Compile Include="AED.cs" />
     <Compile Include="AnalysisTemplate.cs" />
+    <Compile Include="BarsAndStripes.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Crow.cs" />
     <Compile Include="GratingDetection.cs" />
     <Compile Include="HTKRecogniser.cs">

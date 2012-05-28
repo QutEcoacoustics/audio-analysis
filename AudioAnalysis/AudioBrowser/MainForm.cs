@@ -440,8 +440,8 @@
                 else
                     if (analysisName == Human.ANALYSIS_NAME) //Human speech Recogniser
                     {
-                        var parameters = Human.InitOutputTableColumns();
-                        outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
+                        //var parameters = Human.InitOutputTableColumns();
+                        //outputDataTable = DataTableTools.CreateTable(parameters.Item1, parameters.Item2);
                     }
                     else
                         //if (analysisName == Crow.ANALYSIS_NAME) //Crow Recogniser
@@ -526,11 +526,11 @@
                         {
                             dt = LSKiwi.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
                         }
-                        else
-                            if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
-                            {
-                                dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
-                            }
+                        //else
+                        //    if (analysisName.Equals(Human.ANALYSIS_NAME)) //Human speech detection
+                        //    {
+                        //        dt = Human.Analysis(s, fiSegmentAudioFile, dict, diOutputDir);
+                        //    }
                             //else
                             //    if (analysisName.Equals(Crow.ANALYSIS_NAME)) //Human speech detection
                             //    {
@@ -679,13 +679,13 @@
                     dt2Display = output.Item2;
                 }
                 else
-                    if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
-                    {
-                        var output = Human.ProcessCsvFile(new FileInfo(csvPath));
-                        dtRaw = output.Item1;
-                        dt2Display = output.Item2;
-                    }
-                    else
+                    //if (this.CurrentCSVFileAnalysisType.Equals(Human.ANALYSIS_NAME))
+                    //{
+                    //    var output = Human.ProcessCsvFile(new FileInfo(csvPath));
+                    //    dtRaw = output.Item1;
+                    //    dt2Display = output.Item2;
+                    //}
+                    //else
                         if (this.CurrentCSVFileAnalysisType.Equals("None"))
                         {
                             dtRaw = CsvTools.ReadCSVToTable(csvPath, true);//LOAD CSV FILE
@@ -1635,11 +1635,11 @@
                     {
                         image = LSKiwi.GetImageFromAudioSegment(f, this.analysisParams);
                     }
-                    else
-                        if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
-                        {
-                            image = Human.GetImageFromAudioSegment(f, this.analysisParams);
-                        }
+                    //else
+                    //    if (this.CurrentSourceFileAnalysisType.Equals(Human.ANALYSIS_NAME)) //Human speech
+                    //    {
+                    //        image = Human.AnalysisReturnsSonogram(1, f, this.analysisParams,);
+                    //    }
             }
             else
             {

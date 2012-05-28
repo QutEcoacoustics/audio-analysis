@@ -107,9 +107,9 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min449Airplane.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min700Airplane.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min302MorningChorus.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min302MorningChorus.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\Honeymoon_Bay_St_Bees_KoalaDistant_20080914-213000.wav";
-            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\BAC2_20071005-145040.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\BAC2_20071005-145040.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
@@ -122,7 +122,7 @@ namespace AnalysisPrograms
             string audioFileName = Path.GetFileName(recordingPath);
             Log.Verbosity = 1;
 
-            string title = "# FOR DETECTION OF CROW CALLS - version 2";
+            string title = "# FOR DETECTION OF ACOUSTIC EVENTS HAVING A GRID OR GRATING STRUCTURE";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(title);
             Console.WriteLine(date);
@@ -240,9 +240,8 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// A WRAPPER AROUND THE Execute_HarmonicDetection() method
+        /// Does the Analysis
         /// Returns a DataTable
-        /// The Execute_HDDetect() method returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
         /// </summary>
         /// <param name="iter"></param>
         /// <param name="config"></param>
@@ -254,14 +253,8 @@ namespace AnalysisPrograms
             int bandWidth = 1000; //detect bars in bands of this width.
             int frameSize = 1024;
             double windowOverlap = 0.0;
-
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]);
-            intensityThreshold = 0.01;
-
-            int minHz = Int32.Parse(configDict[key_MIN_HZ]);
-            //int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
-            //int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
-            //double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
+            //intensityThreshold = 0.01;
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
             if (recording == null)
@@ -356,13 +349,12 @@ namespace AnalysisPrograms
         } //Analysis()
 
 
-
         public static System.Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
             bool doNoiseremoval = true;
             int minPeriod = 2; //both period values must be even numbers
-            int maxPeriod = 24;
-            int numberOfCyles = 4; 
+            int maxPeriod = 26;
+            int numberOfCycles = 4; 
             int step = 1;
 
             int rowCount = matrix.GetLength(0);
@@ -388,11 +380,11 @@ namespace AnalysisPrograms
 
                 //var events = CrossCorrelation.DetectBarsEventsBySegmentationAndXcorrelation(amplitudeArray, intensityThreshold);
                 
-                var scores = Gratings.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod, numberOfCyles, step);
-                var mergedOutput = Gratings.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
+                var scores           = Gratings.ScanArrayForGratingPattern(amplitudeArray, minPeriod, maxPeriod, numberOfCycles, step);
+                var mergedOutput     = Gratings.MergePeriodicScoreArrays(scores, minPeriod, maxPeriod);
                 double[] intensity   = mergedOutput.Item1; 
                 double[] periodicity = mergedOutput.Item2;
-                var events = GratingDetection.ExtractPeriodicEvents(intensity, periodicity, intensityThreshold);
+                var events = Gratings.ExtractPeriodicEvents(intensity, periodicity, intensityThreshold);
                 
                 foreach (Dictionary<string, double> item in events)
                 {
@@ -405,13 +397,14 @@ namespace AnalysisPrograms
             } //for loop over bands of columns
 
             return System.Tuple.Create(events2return, array2return);
-        }//end Execute_DetectBars()
+        }//end DetectGratingEvents()
+
 
         static Image DrawSonogram(BaseSonogram sonogram, double[,] hits, double[] scores, List<AcousticEvent> predictedEvents, double eventThreshold)
         {
             //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            double maxScore = 1.0;
+            double maxScore = 32.0; //assume max period = 64.
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
 
@@ -440,6 +433,7 @@ namespace AnalysisPrograms
                 int eventStartAbsoluteSec = (int)(segmentStartSec + ev.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
+                string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
 
                 DataRow row = dataTable.NewRow();
                 row[key_COUNT]        = count;                   //count
@@ -512,49 +506,49 @@ namespace AnalysisPrograms
 
 
 
-        public static List<Dictionary<string, double>> ExtractMyPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
-        {
-            //could do a possible adjustment of the threshold for period.
-            //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
-            var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
+        //public static List<Dictionary<string, double>> ExtractMyPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
+        //{
+        //    //could do a possible adjustment of the threshold for period.
+        //    //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
+        //    var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
 
-            var list = new List<Dictionary<string, double>>();
-            foreach (double[] item in events)
-            {
-                var ev = new Dictionary<string, double>();
-                ev[key_START_FRAME] = item[0];
-                ev[key_END_FRAME] = item[1];
-                ev[key_SCORE] = item[2];
-                double cyclePeriod = 0.0;
-                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
-                ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
-                list.Add(ev);
-            } //foreach
-            return list;
-        } //ExtractPeriodicEvents()
+        //    var list = new List<Dictionary<string, double>>();
+        //    foreach (double[] item in events)
+        //    {
+        //        var ev = new Dictionary<string, double>();
+        //        ev[key_START_FRAME] = item[0];
+        //        ev[key_END_FRAME] = item[1];
+        //        ev[key_SCORE] = item[2];
+        //        double cyclePeriod = 0.0;
+        //        for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+        //        ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
+        //        list.Add(ev);
+        //    } //foreach
+        //    return list;
+        //} //ExtractPeriodicEvents()
 
 
 
-        public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
-        {
-            //could do a possible adjustment of the threshold for period.
-            //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
-            var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
+        //public static List<Dictionary<string, double>> ExtractPeriodicEvents(double[] intensity, double[] periodicity, double intensityThreshold)
+        //{
+        //    //could do a possible adjustment of the threshold for period.
+        //    //double adjustedThreshold = intensityThreshold * factor;  //adjust threshold to period. THis is a correction for pink noise
+        //    var events = DataTools.SegmentArrayOnThreshold(intensity, intensityThreshold);
 
-            var list = new List<Dictionary<string, double>>();
-            foreach (double[] item in events)
-            {
-                var ev = new Dictionary<string, double>();
-                ev[key_START_FRAME] = item[0];
-                ev[key_END_FRAME] = item[1];
-                ev[key_SCORE] = item[2];
-                double cyclePeriod = 0.0;
-                for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
-                ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
-                list.Add(ev);
-            } //foreach
-            return list;
-        } //ExtractPeriodicEvents()
+        //    var list = new List<Dictionary<string, double>>();
+        //    foreach (double[] item in events)
+        //    {
+        //        var ev = new Dictionary<string, double>();
+        //        ev[key_START_FRAME] = item[0];
+        //        ev[key_END_FRAME] = item[1];
+        //        ev[key_SCORE] = item[2];
+        //        double cyclePeriod = 0.0;
+        //        for (int n = (int)item[0]; n <= (int)item[1]; n++) cyclePeriod += periodicity[n];
+        //        ev[key_PERIODICITY] = cyclePeriod / (item[1] - item[0] + 1);
+        //        list.Add(ev);
+        //    } //foreach
+        //    return list;
+        //} //ExtractPeriodicEvents()
 
 
 

@@ -54,6 +54,9 @@ namespace AnalysisPrograms
                     case "gratings":  // grid recognition
                         GratingDetection.Dev(restOfArgs);
                         break;
+                    //case "grids":  // grid recognition
+                    //    BarsAndStripes.Dev(restOfArgs);
+                    //    break;
                     case "hd":   // Harmonic Recogniser
                         HarmonicRecogniser.Dev(restOfArgs);
                         break;
