@@ -36,11 +36,28 @@
         /// </returns>
         public bool Validate()
         {
-            return this.OriginalFile != null
-                 && File.Exists(this.OriginalFile.FullName)
-                 && this.SegmentStartOffset >= TimeSpan.Zero
-                 && this.SegmentEndOffset > TimeSpan.Zero
-                 && this.SegmentStartOffset < this.SegmentEndOffset;
+            if (this.OriginalFile == null ||
+                 !File.Exists(this.OriginalFile.FullName))
+            {
+                return false;
+            }
+
+            if (this.SegmentStartOffset.HasValue && this.SegmentStartOffset < TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            if (this.SegmentEndOffset.HasValue && this.SegmentStartOffset > TimeSpan.Zero)
+            {
+                return false;
+            }
+
+            if (this.SegmentStartOffset.HasValue && this.SegmentStartOffset >= this.SegmentEndOffset)
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

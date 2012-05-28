@@ -1,9 +1,8 @@
 ﻿namespace AnalysisBase
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
 
     /// <summary>
     /// Interface for preparing source files.
@@ -11,17 +10,43 @@
     public interface ISourcePreparer
     {
         /// <summary>
-        /// Get the source files based on analysis <paramref name="settings"/>.
+        /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
-        /// <param name="settings">
-        ///   The <paramref name="settings"/>.
+        /// <param name="analysisBaseDirectory">
+        /// The analysis Base Directory.
         /// </param>
-        /// <param name="fileSegments">
-        /// 
+        /// <param name="source">
+        /// The source audio file.
+        /// </param>
+        /// <param name="outputMediaType">
+        /// The output Media Type.
+        /// </param>
+        /// <param name="startOffset">
+        /// The start Offset from start of entire original file.
+        /// </param>
+        /// <param name="endOffset">
+        /// The end Offset from start of entire original file.
+        /// </param>
+        /// <param name="targetSampleRateHz">
+        /// The target Sample Rate Hz.
         /// </param>
         /// <returns>
-        /// Enumerable of source files.
+        /// The prepared file.
         /// </returns>
-        IEnumerable<FileInfo> PrepareFiles(PreparerSettings settings, IEnumerable<FileSegment> fileSegments);
+        FileInfo PrepareFile(DirectoryInfo analysisBaseDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz);
+
+        /// <summary>
+        /// Calculate the file segments for analysis.
+        /// </summary>
+        /// <param name="fileSegments">
+        /// The file segments.
+        /// </param>
+        /// <param name="settings">
+        /// The settings.
+        /// </param>
+        /// <returns>
+        /// Enumerable of file segments.
+        /// </returns>
+        IEnumerable<FileSegment> CalculateSegments(IEnumerable<FileSegment> fileSegments, AnalysisSettings settings);
     }
 }

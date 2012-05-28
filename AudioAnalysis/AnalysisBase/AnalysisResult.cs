@@ -10,6 +10,95 @@
     public class AnalysisResult
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="AnalysisResult"/> class.
+        /// </summary>
+        public AnalysisResult()
+        {
+            this.DisplayItems = new Dictionary<int, string>();
+        }
+
+        #region string identifiers
+
+        /// <summary>
+        /// Gets AnalysisIdentifierString.
+        /// </summary>
+        public static string AnalysisIdentifierString
+        {
+            get
+            {
+                return "AnalysisResult.analysisId";
+            }
+        }
+
+        /// <summary>
+        /// Gets ScoreString.
+        /// </summary>
+        public static string ScoreString
+        {
+            get
+            {
+                return "AnalysisResult.score";
+            }
+        }
+
+        /// <summary>
+        /// Gets AdditionalInfoString.
+        /// </summary>
+        public static string AdditionalInfoString
+        {
+            get
+            {
+                return "AnalysisResult.additionalInfo";
+            }
+        }
+
+        /// <summary>
+        /// Gets MinOffsetMsString.
+        /// </summary>
+        public static string MinOffsetMsString
+        {
+            get
+            {
+                return "AnalysisResult.minOffsetMs";
+            }
+        }
+
+        /// <summary>
+        /// Gets MaxOffsetMsString.
+        /// </summary>
+        public static string MaxOffsetMsString
+        {
+            get
+            {
+                return "AnalysisResult.maxOffsetMs";
+            }
+        }
+
+        /// <summary>
+        /// Gets MinFrequencyHzString.
+        /// </summary>
+        public static string MinFrequencyHzString
+        {
+            get
+            {
+                return "AnalysisResult.minFrequencyHz";
+            }
+        }
+
+        /// <summary>
+        /// Gets MaxFrequencyHzString.
+        /// </summary>
+        public static string MaxFrequencyHzString
+        {
+            get
+            {
+                return "AnalysisResult.maxFrequencyHz";
+            }
+        }
+
+        #endregion
+
+        /// <summary>
         /// Gets or sets Analysis Identifier.
         /// </summary>
         public string AnalysisIdentifier { get; set; }
@@ -17,20 +106,21 @@
         /// <summary>
         /// Gets or sets results.
         /// </summary>
-        public DataTable Results { get; set; }
+        public DataTable Data { get; set; }
 
         /// <summary>
-        /// Gets or sets the settings Used to produce the results.
+        /// Gets or sets the settings used to produce the results.
         /// </summary>
-        public AnalysisSettings AnalysisSettingsUsed { get; set; }
+        public AnalysisSettings SettingsUsed { get; set; }
 
         /// <summary>
-        /// Gets or sets PreparerSettingsUsed.
+        /// Gets DisplayItems which contains indexes to display and optional item names.
         /// </summary>
-        public PreparerSettings PreparerSettingsUsed { get; set; }
+        public Dictionary<int, string> DisplayItems { get; private set; }
 
-        // array for display column/ item names
-
+        /// <summary>
+        /// Gets or sets OutputFiles.
+        /// </summary>
         public Dictionary<string, FileInfo> OutputFiles { get; set; }
     }
 }

@@ -75,6 +75,7 @@
     <Reference Include="System.ComponentModel.Composition.Registration.CodePlex">
       <HintPath>..\..\Extra Assemblies\MEF\System.ComponentModel.Composition.Registration.CodePlex.dll</HintPath>
     </Reference>
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Reflection.Context.CodePlex">
       <HintPath>..\..\Extra Assemblies\MEF\System.Reflection.Context.CodePlex.dll</HintPath>
@@ -86,7 +87,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AnalysisCoordinator.cs" />
     <Compile Include="LocalSourcePreparer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

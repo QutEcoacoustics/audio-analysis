@@ -102,12 +102,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AnalysisCoordinator.cs" />
     <Compile Include="AnalysisResult.cs" />
     <Compile Include="AnalysisSettings.cs" />
     <Compile Include="FileSegment.cs" />
     <Compile Include="IAnalysis.cs" />
     <Compile Include="ISourcePreparer.cs" />
-    <Compile Include="PreparerSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

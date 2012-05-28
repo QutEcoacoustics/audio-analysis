@@ -2,6 +2,8 @@
 {
     using System;
 
+    using Acoustics.Shared;
+
     using AnalysisBase;
     using System.Configuration;
     using AudioAnalysisTools;
@@ -39,15 +41,18 @@
         /// <summary>
         /// Gets the initial (default) settings for the analysis.
         /// </summary>
-        public PreparerSettings DefaultFileSettings
+        public AnalysisSettings DefaultSettings
         {
             get
             {
-                return new PreparerSettings
+                return new AnalysisSettings
                     {
+                        SegmentMinDuration = TimeSpan.FromSeconds(30),
                         SegmentMaxDuration = TimeSpan.FromMinutes(1),
                         SegmentOverlapDuration = TimeSpan.Zero,
-                        SegmentTargetSampleRate = 22050
+                        SegmentTargetSampleRate = 22050,
+                        SegmentMediaType = MediaTypes.MediaTypeWav,
+                        ConfigStringInput = string.Empty
                     };
             }
         }
@@ -76,7 +81,7 @@
         {
             Dictionary<string, string> dict = new Dictionary<string, string>();  //set up the default parameters
             dict.Add(AcousticIndices.key_FRAME_LENGTH, AcousticIndices.DEFAULT_WINDOW_SIZE.ToString());
-            dict.Add(AcousticIndices.key_LOW_FREQ_BOUND, "500");
+            //dict.Add(AcousticIndices.key_LOW_FREQ_BOUND, "500");
             dict.Add(AcousticIndices.key_LOW_FREQ_BOUND, "3500");
             //dict.Add(key_RESAMPLE_RATE, resampleRate.ToString());
             int iterationNumber = 1;
@@ -86,9 +91,9 @@
 
             var analysisResults = new AnalysisResult
             {
-                Results = results,
+                Data = results,
                 AnalysisIdentifier = this.Identifier,
-                AnalysisSettingsUsed = analysisSettings,
+                SettingsUsed = analysisSettings,
             };
 
             return analysisResults;

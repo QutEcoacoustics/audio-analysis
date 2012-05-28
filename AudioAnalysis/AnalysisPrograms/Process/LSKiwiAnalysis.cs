@@ -9,6 +9,8 @@ using System.Data;
 
 namespace AnalysisPrograms.Process
 {
+    using Acoustics.Shared;
+
     public class LSKiwiAnalysis : IAnalysis
     {
         public string DisplayName
@@ -21,22 +23,20 @@ namespace AnalysisPrograms.Process
             get { return "Towsey.LSKiwi1"; }
         }
 
-        public PreparerSettings DefaultFileSettings
+        public AnalysisSettings DefaultSettings
         {
             get
             {
-                return new PreparerSettings
+                return new AnalysisSettings
                 {
+                    SegmentMinDuration = TimeSpan.FromSeconds(30),
                     SegmentMaxDuration = TimeSpan.FromMinutes(5),
                     SegmentOverlapDuration = TimeSpan.FromSeconds(10),
-                    SegmentTargetSampleRate = 17640
+                    SegmentTargetSampleRate = 17640,
+                    SegmentMediaType = MediaTypes.MediaTypeWav,
+                    ConfigStringInput = string.Empty
                 };
             }
-        }
-
-        public string DefaultConfiguration
-        {
-            get { return string.Empty; }
         }
 
         public AnalysisResult Analyse(AnalysisSettings analysisSettings)
@@ -67,42 +67,13 @@ namespace AnalysisPrograms.Process
 
             var eventResults = results.Item5;
 
-            var table = new DataTable(this.Identifier);
-
-            table.Columns.Add("Name", typeof(string));
-            table.Columns.Add("ScoreNormalised", typeof(double));
-            table.Columns.Add("EventStartSeconds", typeof(double));
-            table.Columns.Add("EventEndSeconds", typeof(double));
-            table.Columns.Add("EventFrequencyMaxSeconds", typeof(double));
-            table.Columns.Add("EventFrequencyMinSeconds", typeof(double));
-            table.Columns.Add("Information", typeof(string));
-
-            foreach (var eventResult in eventResults)
-            {
-                var newRow = table.NewRow();
-                newRow["Name"] = eventResult.Name;
-                newRow["ScoreNormalised"] = eventResult.ScoreNormalised;
-                newRow["EventStartSeconds"] = eventResult.TimeStart;
-                newRow["EventEndSeconds"] = eventResult.TimeEnd;
-                newRow["EventFrequencyMaxSeconds"] = eventResult.MinFreq;
-                newRow["EventFrequencyMinSeconds"] = eventResult.MaxFreq;
-
-                if (eventResult.ResultPropertyList != null && eventResult.ResultPropertyList.Any())
-                {
-                    newRow["Information"] =
-                        eventResult.ResultPropertyList.Where(i => i != null).Select(i => i.ToString());
-                }
-                else
-                {
-                    newRow["Information"] = "No Information";
-                }
-            }
+            
 
             var result = new AnalysisResult
             {
                 AnalysisIdentifier = this.Identifier,
-                AnalysisSettingsUsed = analysisSettings,
-                Results = table
+                SettingsUsed = analysisSettings,
+                Data = AnalysisHelpers.BuildDefaultDataTable(eventResults)
             };
 
             return result;
