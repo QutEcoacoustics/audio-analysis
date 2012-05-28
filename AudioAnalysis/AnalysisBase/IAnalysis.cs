@@ -19,12 +19,7 @@ namespace AnalysisBase
         /// <summary>
         /// Gets the initial (default) settings for the analysis.
         /// </summary>
-        PreparerSettings DefaultFileSettings { get; }
-
-        /// <summary>
-        /// Gets the Default Configuration.
-        /// </summary>
-        string DefaultConfiguration { get; }
+        AnalysisSettings DefaultSettings { get; }
 
         /// <summary>
         /// Run analysis using the given analysis settings.

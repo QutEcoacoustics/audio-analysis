@@ -140,7 +140,9 @@
     <Compile Include="KiwiRecogniser.cs" />
     <Compile Include="PlanesTrainsAndAutomobiles.cs" />
     <Compile Include="Process\AcousticIndicesAnalysis.cs" />
-    <Compile Include="Process\AnalysisRunner.cs" />
+    <Compile Include="Process\AnalysisHelpers.cs" />
+    <Compile Include="Process\CaneToadOdAnalysis.cs" />
+    <Compile Include="Process\CrowHdAnalysis.cs" />
     <Compile Include="Process\HarmonicRecogniserAnalysis.cs" />
     <Compile Include="Process\HumanSpeechAnalysis.cs" />
     <Compile Include="Process\LSKiwiAnalysis.cs" />

@@ -14,6 +14,8 @@
 
     using AnalysisPrograms;
 
+    using AnalysisRunner;
+
     using AudioAnalysisTools;
 
 
@@ -109,7 +111,7 @@
                 //MessageBox.Show(ex.ToString());
             }
 
-            this.analysisCoordinator = new AnalysisCoordinator(browserSettings.DefaultOutputDir, null);
+            this.analysisCoordinator = new AnalysisCoordinator(new LocalSourcePreparer(new Segmenter()));
 
             //Add the CheckBox into the source file list datagridview);
             this.headerCheckBoxSourceFileList = new CheckBox { Size = new Size(15, 15), ThreeState = true };
