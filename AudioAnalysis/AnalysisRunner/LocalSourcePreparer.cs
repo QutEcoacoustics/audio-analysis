@@ -16,23 +16,10 @@ namespace AnalysisRunner
     /// </summary>
     public class LocalSourcePreparer : ISourcePreparer
     {
-        private readonly ISegmenter segmenter;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LocalSourcePreparer"/> class.
-        /// </summary>
-        /// <param name="segmenter">
-        /// The segmenter.
-        /// </param>
-        public LocalSourcePreparer(ISegmenter segmenter)
-        {
-            this.segmenter = segmenter;
-        }
-
         /// <summary>
         /// Prepare an audio file. This will be a single segment of a larger audio file, modified based on the analysisSettings.
         /// </summary>
-        /// <param name="analysisBaseDirectory">
+        /// <param name="outputDirectory">
         /// The analysis Base Directory.
         /// </param>
         /// <param name="source">
@@ -53,15 +40,13 @@ namespace AnalysisRunner
         /// <returns>
         /// The prepared file.
         /// </returns>
-        public FileInfo PrepareFile(DirectoryInfo analysisBaseDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
+        public FileInfo PrepareFile(DirectoryInfo outputDirectory, FileInfo source, string outputMediaType, TimeSpan startOffset, TimeSpan endOffset, int targetSampleRateHz)
         {
             var audioUtility = this.GetNewAudioUtility(targetSampleRateHz);
 
             var sourceMimeType = MediaTypes.GetMediaType(source.Extension);
 
-            var extLength = source.Name.Contains(".") ? source.Extension.Length + 1 : source.Extension.Length;
-
-            var outputFileName = source.Name.Substring(0, source.Name.Length - extLength);
+            var outputFileName = Path.GetFileNameWithoutExtension(source.Name);
 
             outputFileName = string.Format(
                 "{0}_{1}_{2}.{3}",
@@ -70,13 +55,12 @@ namespace AnalysisRunner
                 endOffset.TotalMilliseconds,
                 MediaTypes.GetExtension(outputMediaType));
 
-            var outputDir = Path.Combine(analysisBaseDirectory.FullName, "audio");
-            if (!Directory.Exists(outputDir))
+            if (!Directory.Exists(outputDirectory.FullName))
             {
-                Directory.CreateDirectory(outputDir);
+                Directory.CreateDirectory(outputDirectory.FullName);
             }
 
-            var output = new FileInfo(Path.Combine(outputDir, outputFileName));
+            var output = new FileInfo(Path.Combine(outputDirectory.FullName, outputFileName));
             var outputMimeType = MediaTypes.GetMediaType(output.Extension);
 
             audioUtility.Segment(
