@@ -51,8 +51,9 @@ namespace AnalysisPrograms
         public static string key_START_ABS = "EvStartAbs";
         public static string key_START_MIN = "EvStartMin";
         public static string key_START_SEC = "EvStartSec";
-        public static string key_CALL_DENSITY = "CallDensity";
-        public static string key_CROW_SCORE   = "CrowScore";
+        public static string key_SEG_DUR   = "SegmentDur";
+        public static string key_CALL_DENSITY = "CrowDensity";
+        public static string key_CALL_SCORE   = "CrowScore";
 
         //INITIALISE OUTPUT TABLE COLUMNS
         private const int COL_NUMBER = 7;
@@ -60,13 +61,13 @@ namespace AnalysisPrograms
         private static string[] HEADERS = new string[COL_NUMBER];
         private static System.Tuple<string[], Type[]> InitOutputTableColumns()
         {
-            HEADERS[0] = "count";      COL_TYPES[0] = typeof(int);     
-            HEADERS[1] = "EvStartAbs"; COL_TYPES[1] = typeof(int);     
-            HEADERS[2] = "EvStartMin"; COL_TYPES[2] = typeof(int);     
-            HEADERS[3] = "EvStartSec"; COL_TYPES[3] = typeof(int);     
-            HEADERS[4] = "SegmentDur"; COL_TYPES[4] = typeof(string);  
-            HEADERS[5] = "Density";    COL_TYPES[5] = typeof(int);     
-            HEADERS[6] = "CrowScore";  COL_TYPES[6] = typeof(double); 
+            HEADERS[0] = key_COUNT; COL_TYPES[0] = typeof(int);
+            HEADERS[1] = key_START_ABS;  COL_TYPES[1] = typeof(int);
+            HEADERS[2] = key_START_MIN;  COL_TYPES[2] = typeof(int);
+            HEADERS[3] = key_START_SEC;  COL_TYPES[3] = typeof(int);
+            HEADERS[4] = key_SEG_DUR;    COL_TYPES[4] = typeof(double);
+            HEADERS[5] = key_CALL_DENSITY; COL_TYPES[5] = typeof(int);
+            HEADERS[6] = key_CALL_SCORE; COL_TYPES[6] = typeof(double); 
             return Tuple.Create(HEADERS, COL_TYPES);
         }
         public static string[] GetOutputTableHeaders()
@@ -351,14 +352,13 @@ namespace AnalysisPrograms
                 int eventStartAbsoluteSec = (int)(segmentStartSec + ev.TimeStart);
                 int eventStartMin = eventStartAbsoluteSec / 60;
                 int eventStartSec = eventStartAbsoluteSec % 60;
-                string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
 
                 DataRow row = dataTable.NewRow();
                 row[HEADERS[0]] = count;                   //count
                 row[HEADERS[1]] = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
                 row[HEADERS[2]] = eventStartMin;           //EvStartMin
                 row[HEADERS[3]] = eventStartSec;           //EvStartSec
-                row[HEADERS[4]] = segmentDuration;         //segmentDur
+                row[HEADERS[4]] = tsSegmentDuration.TotalSeconds; //segment Duration in seconds
                 row[HEADERS[5]] = predictedEvents.Count;   //Density
                 row[HEADERS[6]] = ev.Score;       //Score
                 dataTable.Rows.Add(row);
@@ -380,7 +380,7 @@ namespace AnalysisPrograms
 
             double scoreThreshold = 0.25;
             int timeScale = 60; //i.e. 60 seconds per output row.
-            string[] headers = { key_COUNT, key_START_MIN, "# Events", ("#Ev>" + scoreThreshold), key_CROW_SCORE };
+            string[] headers = { key_COUNT, key_START_MIN, "# Events", ("#Ev>" + scoreThreshold), key_CALL_SCORE };
             Type[] types = { typeof(int), typeof(int), typeof(int), typeof(int), typeof(double) };
             var newtable = DataTableTools.CreateTable(headers, types);
 
@@ -392,7 +392,7 @@ namespace AnalysisPrograms
             foreach (DataRow ev in dt.Rows)
             {
                 int eventStart = (int)ev[key_START_ABS];
-                double eventScore = (double)ev[key_CROW_SCORE];
+                double eventScore = (double)ev[key_CALL_SCORE];
                 if (eventScore > indexScore) indexScore = eventScore;
                 minuteStart = eventStart / timeScale;
 
