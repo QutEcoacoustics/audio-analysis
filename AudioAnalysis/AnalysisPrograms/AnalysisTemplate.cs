@@ -138,7 +138,7 @@ namespace AnalysisPrograms
         {
             string opFileName = "temp.wav";
             //######################################################################
-            var results = AnalysisTemplate.Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -220,10 +220,10 @@ namespace AnalysisPrograms
             int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
             int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
             double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
-            double harmonicIntensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
+            double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
             double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
 
-            AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, Crow.RESAMPLE_RATE, diOutputDir.FullName, opFileName);
+            AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
             if (recording == null) return null;
 
             //i: MAKE SONOGRAM
@@ -293,7 +293,7 @@ namespace AnalysisPrograms
                 for (int c = minBin; c < maxbin; c++) hits[r, c] = relativePeriod;
 
                 //set scoreArray[r]  - ignore locations with low intensity
-                if (intensity[r] > harmonicIntensityThreshold) scoreArray[r] = intensity[r];
+                if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r];
             }
 
 
