@@ -69,30 +69,34 @@ namespace AnalysisPrograms
         public static string key_CALL_DENSITY = "CallDensity";
         public static string key_CALL_SCORE   = "CallScore";
 
-        //INITIALISE OUTPUT TABLE COLUMNS
-        private const int COL_NUMBER = 7;
-        private static Type[] COL_TYPES = new Type[COL_NUMBER];
-        private static string[] HEADERS = new string[COL_NUMBER];
-        private static System.Tuple<string[], Type[]> InitOutputTableColumns()
+        //INITIALISE OUTPUT TABLE OF EVENTS
+        private const  int    EVENT_COL_NUMBER = 6;
+        private static Type[] EVENT_COL_TYPES = new Type[EVENT_COL_NUMBER];
+        private static string[] EVENT_HEADERS = new string[EVENT_COL_NUMBER];
+        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForEvents()
         {
-            HEADERS[0] = key_COUNT;            COL_TYPES[0] = typeof(int);
-            HEADERS[1] = key_START_ABS;        COL_TYPES[1] = typeof(int);
-            HEADERS[2] = key_START_MIN;        COL_TYPES[2] = typeof(int);
-            HEADERS[3] = key_START_SEC;        COL_TYPES[3] = typeof(int);
-            HEADERS[4] = key_SEGMENT_DURATION; COL_TYPES[4] = typeof(double);
-            HEADERS[5] = key_CALL_DENSITY;     COL_TYPES[5] = typeof(int);
-            HEADERS[6] = key_CALL_SCORE;       COL_TYPES[6] = typeof(double); 
-            return Tuple.Create(HEADERS,       COL_TYPES);
+            EVENT_HEADERS[0] = key_START_ABS;        EVENT_COL_TYPES[0] = typeof(int);
+            EVENT_HEADERS[1] = key_START_MIN;        EVENT_COL_TYPES[1] = typeof(int);
+            EVENT_HEADERS[2] = key_START_SEC;        EVENT_COL_TYPES[2] = typeof(int);
+            EVENT_HEADERS[3] = key_SEGMENT_DURATION; EVENT_COL_TYPES[3] = typeof(double);
+            EVENT_HEADERS[4] = key_CALL_DENSITY;     EVENT_COL_TYPES[4] = typeof(int);
+            EVENT_HEADERS[5] = key_CALL_SCORE;       EVENT_COL_TYPES[5] = typeof(double); 
+            return Tuple.Create(EVENT_HEADERS,       EVENT_COL_TYPES);
         }
-        public static string[] GetOutputTableHeaders()
+        //INITIALISE OUTPUT TABLE OF INDICES
+        private const int INDICES_COL_NUMBER = 7;
+        private static Type[] INDICES_COL_TYPES = new Type[INDICES_COL_NUMBER];
+        private static string[] INDICES_HEADERS = new string[INDICES_COL_NUMBER];
+        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForIndices()
         {
-            var  op = InitOutputTableColumns();
-            return op.Item1;
-        }
-        public static Type[] GetOutputTableTypes()
-        {
-            var op = InitOutputTableColumns();
-            return op.Item2;
+            INDICES_HEADERS[0] = key_COUNT;      INDICES_COL_TYPES[0] = typeof(int);
+            INDICES_HEADERS[1] = key_START_ABS;  INDICES_COL_TYPES[1] = typeof(int);
+            INDICES_HEADERS[2] = key_START_MIN;  INDICES_COL_TYPES[2] = typeof(int);
+            INDICES_HEADERS[3] = key_START_SEC;  INDICES_COL_TYPES[3] = typeof(int);
+            INDICES_HEADERS[4] = key_SEGMENT_DURATION; INDICES_COL_TYPES[4] = typeof(double);
+            INDICES_HEADERS[5] = key_CALL_DENSITY; INDICES_COL_TYPES[5] = typeof(int);
+            INDICES_HEADERS[6] = key_CALL_SCORE; INDICES_COL_TYPES[6] = typeof(double);
+            return Tuple.Create(INDICES_HEADERS, INDICES_COL_TYPES);
         }
 
         //OTHER CONSTANTS
@@ -109,10 +113,10 @@ namespace AnalysisPrograms
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\KAPITI2_20100219_202900_min48AirplaneAndBirds.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\DM420036_min302MorningChorus.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\Honeymoon_Bay_St_Bees_KoalaDistant_20080914-213000.wav";
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\BAC2_20071005-145040.wav";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Grids\BAC2_20071005-145040.wav";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
+            string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
     
             string configPath = @"C:\SensorNetworks\Output\Grids\Grids.cfg";
             string outputDir  = @"C:\SensorNetworks\Output\Grids\";
@@ -161,7 +165,7 @@ namespace AnalysisPrograms
         {
             string opFileName = "temp.wav";
             //######################################################################
-            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
 
             if (results == null) return null;
@@ -187,11 +191,11 @@ namespace AnalysisPrograms
                 foreach (AcousticEvent ev in predictedEvents)
                 {
                     ev.SourceFileName = fName;
-                    ev.Name = analysisName;
+                    //ev.Name = analysisName; //name is the periodicity
                     ev.SourceFileDuration = recordingTimeSpan.TotalSeconds;
                 }
                 //write events to a data table to return.
-                dataTable = WriteEvents2DataTable(iter, segmentStartMinute, recordingTimeSpan, predictedEvents);
+                dataTable = WriteEvents2DataTable(segmentStartMinute, recordingTimeSpan, predictedEvents);
                 string sortString = key_START_ABS + " ASC";
                 dataTable = DataTableTools.SortTable(dataTable, sortString); //sort by start time before returning
             }
@@ -223,7 +227,7 @@ namespace AnalysisPrograms
             string opFileName = newFileNameWithoutExtention + ".wav";
 
             //######################################################################
-            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -243,14 +247,13 @@ namespace AnalysisPrograms
         /// Does the Analysis
         /// Returns a DataTable
         /// </summary>
-        /// <param name="iter"></param>
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> 
-                                        Analysis(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
+                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
             //set default values
-            int bandWidth = 1000; //detect bars in bands of this width.
+            int bandWidth = 500; //detect bars in bands of this width.
             int frameSize = 1024;
             double windowOverlap = 0.0;
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]);
@@ -264,8 +267,11 @@ namespace AnalysisPrograms
             }
             int sr = recording.SampleRate;
             double binWidth = recording.SampleRate / (double)frameSize;
-            double framesPerSecond = binWidth;
+            double frameDuration = frameSize / (double)sr; 
+            double frameOffset   = frameDuration * (1 - windowOverlap); //seconds between start of each frame
+            double framesPerSecond = 1 / frameOffset;
             TimeSpan tsRecordingtDuration = recording.Duration();
+            int colStep = (int)Math.Round(bandWidth / binWidth);
 
 
             //i: GET SONOGRAM AS MATRIX
@@ -278,18 +284,6 @@ namespace AnalysisPrograms
             //############################ NEXT LINE FOR DEBUGGING ONLY
             //spectrogram = GetTestSpectrogram(spectrogram.GetLength(0), spectrogram.GetLength(1), 0.01, 0.03);
 
-            //window    sr          frameDuration   frames/sec  hz/bin  64frameDuration hz/64bins       hz/128bins
-            // 1024     22050       46.4ms          21.5        21.5    2944ms          1376hz          2752hz
-            // 1024     17640       58.0ms          17.2        17.2    3715ms          1100hz          2200hz
-            // 2048     17640       116.1ms          8.6         8.6    7430ms           551hz          1100hz
-
-            //the Xcorrelation-FFT technique requires number of bins to scan to be power of 2.
-            //assuming sr=17640 and window=1024, then  64 bins span 1100 Hz above the min Hz level. i.e. 500 to 1600
-            //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
-
-            //int numberOfFreqBands = recording.Nyquist / bandWidth;
-            int colStep = (int)Math.Round(bandWidth / binWidth);
-
             var output = DetectGratingEvents(spectrogram, colStep, intensityThreshold);
             var amplitudeArray = output.Item2; //for debug purposes only
 
@@ -299,8 +293,8 @@ namespace AnalysisPrograms
             int colCount = spectrogram.GetLength(1);
             var hitsMatrix = new double[rowCount, colCount];
             var acousticEvents = new List<AcousticEvent>();
-            //double minFrameCount = 2 * framesPerSecond;   //only want events that are at least 1 second long
-            double minFrameCount = 7;
+
+            double minFrameCount = 8; //this assumes that the minimum grid is 2 * 4 = 8 long
             foreach (Dictionary<string, double> item in output.Item1)
             {
                 int minRow = (int)item[key_START_FRAME];
@@ -316,10 +310,11 @@ namespace AnalysisPrograms
                 int[] bounds = DataTools.Peaks_FirstAndLast(subarray);
                 minRow = minRow + bounds[0];
                 maxRow = minRow + bounds[1];
+                if (maxRow >= rowCount) maxRow = rowCount-1;
 
                 Oblong o = new Oblong(minRow, minCol, maxRow, maxCol);
-                var ae = new AcousticEvent(o, windowOverlap, binWidth);
-                ae.Name = String.Format("p={0:f1}", periodicity);
+                var ae = new AcousticEvent(o, frameOffset, binWidth);
+                ae.Name = String.Format("p={0:f0}", periodicity);
                 ae.Score = item[key_SCORE];
                 ae.ScoreNormalised = item[key_SCORE] / 0.5;
                 acousticEvents.Add(ae);
@@ -352,8 +347,8 @@ namespace AnalysisPrograms
         public static System.Tuple<List<Dictionary<string, double>>, double[]> DetectGratingEvents(double[,] matrix, int colStep, double intensityThreshold)
         {
             bool doNoiseremoval = true;
-            int minPeriod = 2; //both period values must be even numbers
-            int maxPeriod = 26;
+            int minPeriod = 2;    //both period values must be even numbers
+            int maxPeriod = 20;   //Note: 17.2 frames per second i.e. period=20 is just over 1s.
             int numberOfCycles = 4; 
             int step = 1;
 
@@ -366,7 +361,7 @@ namespace AnalysisPrograms
 
             for (int b = 0; b < numberOfColSteps; b++)
             {
-                int minCol = b * colStep;
+                int minCol = (b * colStep);
                 int maxCol = minCol + colStep - 1;
 
                 double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, minCol, (rowCount - 1), maxCol);
@@ -421,12 +416,13 @@ namespace AnalysisPrograms
         } //DrawSonogram()
 
 
-        public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
+        public static DataTable WriteEvents2DataTable(double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
         {
             if ((predictedEvents == null) || (predictedEvents.Count == 0)) return null;
 
-            InitOutputTableColumns();
-            var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);
+            GetTableHeadersAndTypesForEvents();
+            var dataTable = DataTableTools.CreateTable(EVENT_HEADERS, EVENT_COL_TYPES);
+            //int count = 0;
             foreach (var ev in predictedEvents)
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
@@ -436,7 +432,6 @@ namespace AnalysisPrograms
                 string segmentDuration = DataTools.Time_ConvertSecs2Mins(tsSegmentDuration.TotalSeconds);
 
                 DataRow row = dataTable.NewRow();
-                row[key_COUNT]        = count;                   //count
                 row[key_START_ABS]    = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
                 row[key_START_MIN]    = eventStartMin;           //EvStartMin
                 row[key_START_SEC]    = eventStartSec;           //EvStartSec
@@ -444,6 +439,7 @@ namespace AnalysisPrograms
                 row[key_CALL_DENSITY] = predictedEvents.Count;   //Density
                 row[key_CALL_SCORE]   = ev.Score;                //Score
                 dataTable.Rows.Add(row);
+               // count++;
             }
             return dataTable;
         }
