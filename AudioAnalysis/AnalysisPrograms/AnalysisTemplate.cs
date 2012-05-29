@@ -54,31 +54,36 @@ namespace AnalysisPrograms
         public static string key_CALL_DENSITY = "CallDensity";
         public static string key_CALL_SCORE   = "CallScore";
 
-        //INITIALISE OUTPUT TABLE COLUMNS
-        private const int COL_NUMBER = 7;
-        private static Type[] COL_TYPES = new Type[COL_NUMBER];
-        private static string[] HEADERS = new string[COL_NUMBER];
-        private static System.Tuple<string[], Type[]> InitOutputTableColumns()
+        //INITIALISE OUTPUT TABLE OF EVENTS
+        private const int EVENT_COL_NUMBER = 6;
+        private static Type[] EVENT_COL_TYPES = new Type[EVENT_COL_NUMBER];
+        private static string[] EVENT_HEADERS = new string[EVENT_COL_NUMBER];
+        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForEvents()
         {
-            HEADERS[0] = key_COUNT;            COL_TYPES[0] = typeof(int);
-            HEADERS[1] = key_START_ABS;        COL_TYPES[1] = typeof(int);
-            HEADERS[2] = key_START_MIN;        COL_TYPES[2] = typeof(int);
-            HEADERS[3] = key_START_SEC;        COL_TYPES[3] = typeof(int);
-            HEADERS[4] = key_SEGMENT_DURATION; COL_TYPES[4] = typeof(double);
-            HEADERS[5] = key_CALL_DENSITY;     COL_TYPES[5] = typeof(int);
-            HEADERS[6] = key_CALL_SCORE;       COL_TYPES[6] = typeof(double); 
-            return Tuple.Create(HEADERS,       COL_TYPES);
+            EVENT_HEADERS[0] = key_START_ABS; EVENT_COL_TYPES[0] = typeof(int);
+            EVENT_HEADERS[1] = key_START_MIN; EVENT_COL_TYPES[1] = typeof(int);
+            EVENT_HEADERS[2] = key_START_SEC; EVENT_COL_TYPES[2] = typeof(int);
+            EVENT_HEADERS[3] = key_SEGMENT_DURATION; EVENT_COL_TYPES[3] = typeof(double);
+            EVENT_HEADERS[4] = key_CALL_DENSITY; EVENT_COL_TYPES[4] = typeof(int);
+            EVENT_HEADERS[5] = key_CALL_SCORE; EVENT_COL_TYPES[5] = typeof(double);
+            return Tuple.Create(EVENT_HEADERS, EVENT_COL_TYPES);
         }
-        public static string[] GetOutputTableHeaders()
+        //INITIALISE OUTPUT TABLE OF INDICES
+        private const int INDICES_COL_NUMBER = 7;
+        private static Type[] INDICES_COL_TYPES = new Type[INDICES_COL_NUMBER];
+        private static string[] INDICES_HEADERS = new string[INDICES_COL_NUMBER];
+        private static System.Tuple<string[], Type[]> GetTableHeadersAndTypesForIndices()
         {
-            var  op = InitOutputTableColumns();
-            return op.Item1;
+            INDICES_HEADERS[0] = key_COUNT; INDICES_COL_TYPES[0] = typeof(int);
+            INDICES_HEADERS[1] = key_START_ABS; INDICES_COL_TYPES[1] = typeof(int);
+            INDICES_HEADERS[2] = key_START_MIN; INDICES_COL_TYPES[2] = typeof(int);
+            INDICES_HEADERS[3] = key_START_SEC; INDICES_COL_TYPES[3] = typeof(int);
+            INDICES_HEADERS[4] = key_SEGMENT_DURATION; INDICES_COL_TYPES[4] = typeof(double);
+            INDICES_HEADERS[5] = key_CALL_DENSITY; INDICES_COL_TYPES[5] = typeof(int);
+            INDICES_HEADERS[6] = key_CALL_SCORE; INDICES_COL_TYPES[6] = typeof(double);
+            return Tuple.Create(INDICES_HEADERS, INDICES_COL_TYPES);
         }
-        public static Type[] GetOutputTableTypes()
-        {
-            var op = InitOutputTableColumns();
-            return op.Item2;
-        }
+
 
         //OTHER CONSTANTS
         public const string ANALYSIS_NAME = "Crow";
@@ -140,7 +145,7 @@ namespace AnalysisPrograms
         {
             string opFileName = "temp.wav";
             //######################################################################
-            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -196,7 +201,7 @@ namespace AnalysisPrograms
             string opFileName = newFileNameWithoutExtention + ".wav";
 
             //######################################################################
-            var results = Analysis(iter, fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
+            var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
             var sonogram = results.Item1;
             var hits = results.Item2;
@@ -221,7 +226,7 @@ namespace AnalysisPrograms
         /// <param name="config"></param>
         /// <param name="segmentAudioFile"></param>
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> 
-                                        Analysis(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
+                                        Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
             //set default values
             int frameSize = 1024;
@@ -354,8 +359,8 @@ namespace AnalysisPrograms
         {
             if ((predictedEvents == null) || (predictedEvents.Count == 0)) return null;
 
-            InitOutputTableColumns();
-            var dataTable = DataTableTools.CreateTable(HEADERS, COL_TYPES);
+            var op = GetTableHeadersAndTypesForEvents();
+            var dataTable = DataTableTools.CreateTable(op.Item1, op.Item2);
             foreach (var ev in predictedEvents)
             {
                 int segmentStartSec = (int)(segmentStartMinute * 60);
