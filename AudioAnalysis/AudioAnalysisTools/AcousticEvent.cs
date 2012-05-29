@@ -96,12 +96,12 @@ namespace AudioAnalysisTools
             oblong = null;// have no info to convert time/Hz values to coordinates
         }
 
-
         /// <summary>
         /// This constructor currently works ONLY for linear Herz scale events
         /// </summary>
         /// <param name="o"></param>
-        /// <param name="binWidth"></param>
+        /// <param name="frameOffset">seconds between frame starts i.e. inverse of frames per second. Sets the time scale for an event</param>
+        /// <param name="binWidth">sets the frequency scale for an event</param>
         public AcousticEvent(Oblong o, double frameOffset, double binWidth)
         {
             this.oblong = o;
