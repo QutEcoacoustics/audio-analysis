@@ -86,7 +86,7 @@ namespace AnalysisPrograms
 
 
         //OTHER CONSTANTS
-        public const string ANALYSIS_NAME = "Crow";
+        public const string ANALYSIS_NAME = "Sound";
         public const int RESAMPLE_RATE = 17640;
         //public const int RESAMPLE_RATE = 22050;
 
@@ -96,15 +96,15 @@ namespace AnalysisPrograms
             string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
             //string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
-            string configPath = @"C:\SensorNetworks\Output\Crow\Crow.cfg";
-            string outputDir  = @"C:\SensorNetworks\Output\Crow\";
+            string configPath = @"C:\SensorNetworks\Output\Sound\Sound.cfg";
+            string outputDir  = @"C:\SensorNetworks\Output\Sound\";
 
             string opFName       = ANALYSIS_NAME + ".txt";
             string opPath        = outputDir + opFName;
             string audioFileName = Path.GetFileName(recordingPath);
             Log.Verbosity = 1;
 
-            string title = "# FOR DETECTION OF CROW CALLS - version 2";
+            string title = "# THE DETECTION OF ENVIRONMENTAL SOUNDS";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(title);
             Console.WriteLine(date);
@@ -147,6 +147,11 @@ namespace AnalysisPrograms
             //######################################################################
             var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
+            if (results == null)
+            {
+                Console.WriteLine("Null return from analysis.");
+                return null;
+            }
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -240,7 +245,11 @@ namespace AnalysisPrograms
             double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
-            if (recording == null) return null;
+            if (recording == null)
+            {
+                Console.WriteLine("AudioRecording return null.");
+                return null;
+            }
 
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config

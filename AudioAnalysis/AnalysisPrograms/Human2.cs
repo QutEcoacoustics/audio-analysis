@@ -93,9 +93,10 @@ namespace AnalysisPrograms
 
         public static void Dev(string[] args)
         {
-            string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
+            //string recordingPath = @"C:\SensorNetworks\WavFiles\Crows_Cassandra\Crows111216-001Mono5-7min.mp3";
             //string recordingPath = @"C:\SensorNetworks\WavFiles\Human\DM420036_min465Speech.wav";
-            //string recordingPath = @"C:\SensorNetworks\Software\AudioAnalysis\AudioBrowser\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
+            //string recordingPath = @"C:\SensorNetworks\Software\WavFiles\Human\bin\Debug\Audio-samples\Wimmer_DM420011.wav";
+            string recordingPath = @"C:\SensorNetworks\WavFiles\Human\Planitz.wav";
             string configPath = @"C:\SensorNetworks\Output\Human\Human.cfg";
             string outputDir = @"C:\SensorNetworks\Output\Human\";
 
@@ -104,7 +105,7 @@ namespace AnalysisPrograms
             string audioFileName = Path.GetFileName(recordingPath);
             Log.Verbosity = 1;
 
-            string title = "# FOR DETECTION OF CROW CALLS - version 2";
+            string title = "# FOR DETECTION OF HUMAN SPEECH - version 2";
             string date = "# DATE AND TIME: " + DateTime.Now;
             Console.WriteLine(title);
             Console.WriteLine(date);
@@ -147,6 +148,11 @@ namespace AnalysisPrograms
             //######################################################################
             var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
+            if (results == null)
+            {
+                Console.WriteLine("Null return from analysis.");
+                return null;
+            }
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -199,10 +205,21 @@ namespace AnalysisPrograms
             double segmentStartMinute = segmentDuration * iter;
             string newFileNameWithoutExtention = Path.GetFileNameWithoutExtension(fiSegmentOfSourceFile.FullName) + "_" + (int)segmentStartMinute + "min";
             string opFileName = newFileNameWithoutExtention + ".wav";
+            if (! fiSegmentOfSourceFile.Exists)
+            {
+                Console.WriteLine("The source file does not exist:" + fiSegmentOfSourceFile.FullName);
+                return null;
+            }
 
             //######################################################################
             var results = Analysis(fiSegmentOfSourceFile, configDict, diOutputDir, opFileName);
             //######################################################################
+            if (results == null)
+            {
+                Console.WriteLine("Null return from analysis.");
+                return null;
+            }
+
             var sonogram = results.Item1;
             var hits = results.Item2;
             var scores = results.Item3;
@@ -235,19 +252,25 @@ namespace AnalysisPrograms
             int minHz = Int32.Parse(configDict[key_MIN_HZ]);
             int minFormantgap = Int32.Parse(configDict[key_MIN_FORMANT_GAP]);
             int maxFormantgap = Int32.Parse(configDict[key_MAX_FORMANT_GAP]);
-            double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
+            //double decibelThreshold = Double.Parse(configDict[key_DECIBEL_THRESHOLD]); ;   //dB
             double intensityThreshold = Double.Parse(configDict[key_INTENSITY_THRESHOLD]); //in 0-1
-            double callDuration = Double.Parse(configDict[key_CALL_DURATION]);  // seconds
+            double minDuration = Double.Parse(configDict[key_MIN_DURATION]);  // seconds
+            double maxDuration = Double.Parse(configDict[key_MAX_DURATION]);  // seconds
 
             AudioRecording recording = AudioRecording.GetAudioRecording(fiSegmentOfSourceFile, RESAMPLE_RATE, diOutputDir.FullName, opFileName);
-            if (recording == null) return null;
-
+            if (recording == null)
+            {
+                Console.WriteLine("AudioRecording return null. Analysis not possible.");
+                return null;
+            }
+            
             //i: MAKE SONOGRAM
             SonogramConfig sonoConfig = new SonogramConfig(); //default values config
             sonoConfig.SourceFName = recording.FileName;
             sonoConfig.WindowSize = frameSize;
             sonoConfig.WindowOverlap = windowOverlap;
-            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
+            //sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("NONE");
+            sonoConfig.NoiseReductionType = SNR.Key2NoiseReductionType("STANDARD");
             TimeSpan tsRecordingtDuration = recording.Duration();
             int sr = recording.SampleRate;
             double freqBinWidth = sr / (double)sonoConfig.WindowSize;
@@ -266,40 +289,31 @@ namespace AnalysisPrograms
             //assuming sr=17640 and window=1024, then 128 bins span 2200 Hz above the min Hz level. i.e. 500 to 2700
             int numberOfBins = 64;
             int minBin = (int)Math.Round(minHz / freqBinWidth) + 1;
-            int maxHz = (int)Math.Round(minHz + (numberOfBins * freqBinWidth));
             int maxbin = minBin + numberOfBins - 1;
+            int maxHz = (int)Math.Round(minHz + (numberOfBins * freqBinWidth));
 
             BaseSonogram sonogram = new SpectralSonogram(sonoConfig, recording.GetWavReader());
-            double[,] matrix = sonogram.Data;
-
-            //var results2 = DSP_Frames.ExtractEnvelopeAndFFTs(recording.GetWavReader().Samples, sr, frameSize, windowOverlap);
-            //double[,] matrix = results2.Item3;  //amplitude spectrogram. Note that column zero is the DC or average energy value and can be ignored.
-            //double[] avAbsolute = results2.Item1; //average absolute value over the minute recording
-            ////double[] envelope = results2.Item2;
-            //double windowPower = results2.Item4;
+            int rowCount = sonogram.Data.GetLength(0);
+            int colCount = sonogram.Data.GetLength(1);
             recording.Dispose();
+            double[,] subMatrix = MatrixTools.Submatrix(sonogram.Data, 0, minBin, (rowCount - 1), maxbin);
 
-            int rowCount = matrix.GetLength(0);
-            int colCount = matrix.GetLength(1);
-            double[,] subMatrix = MatrixTools.Submatrix(matrix, 0, minBin, (rowCount - 1), maxbin);
-
-
-            int callSpan = (int)Math.Round(callDuration * framesPerSecond);
-
-            //#############################################################################################################################################
             //ii: DETECT HARMONICS
-            var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold, callSpan);
-            double[] dBArray = results.Item1;
-            double[] intensity = results.Item2;     //an array of periodicity scores
-            double[] periodicity = results.Item3;
+            int zeroBinCount = 4; //to remove low freq content which dominates the spectrum
+            var results = CrossCorrelation.DetectBarsInTheRowsOfaMatrix(subMatrix, intensityThreshold, zeroBinCount);
+            double[] intensity = results.Item1;
+            double[] periodicity = results.Item2; //an array of periodicity scores
 
             //transfer periodicity info to a hits matrix.
             //intensity = DataTools.filterMovingAverage(intensity, 3);
             double[] scoreArray = new double[intensity.Length];
             var hits = new double[rowCount, colCount];
+            double threshold = intensityThreshold * 0.75; //reduced threhsold for display of hits
             for (int r = 0; r < rowCount; r++)
             {
-                if (periodicity[r] < 2) continue;
+                if (intensity[r] < threshold) continue;
+
+                //if (periodicity[r] <= zeroBinCount) continue;
                 //ignore locations with incorrect formant gap
                 double herzPeriod = periodicity[r] * freqBinWidth;
                 if ((herzPeriod < minFormantgap) || (herzPeriod > maxFormantgap)) continue;
@@ -312,23 +326,9 @@ namespace AnalysisPrograms
                 if (intensity[r] > intensityThreshold) scoreArray[r] = intensity[r];
             }
 
-
             //iii: CONVERT TO ACOUSTIC EVENTS
-            double maxPossibleScore = 0.5;
-            int halfCallSpan = callSpan / 2;
-            var predictedEvents = new List<AcousticEvent>();
-            for (int i = 0; i < rowCount; i++) // pass over all frames
-            {
-                //assume one score position per crow call
-                if (scoreArray[i] < 0.001) continue;
-                double startTime = (i - halfCallSpan) / framesPerSecond;
-                AcousticEvent ev = new AcousticEvent(startTime, callDuration, minHz, maxHz);
-                ev.SetTimeAndFreqScales(framesPerSecond, freqBinWidth);
-                ev.Score = scoreArray[i];
-                ev.ScoreNormalised = ev.Score / maxPossibleScore; // normalised to the user supplied threshold
-                //ev.Score_MaxPossible = maxPossibleScore;
-                predictedEvents.Add(ev);
-            }
+            List<AcousticEvent> predictedEvents = AcousticEvent.ConvertScoreArray2Events(scoreArray, minHz, maxHz, sonogram.FramesPerSecond, freqBinWidth,
+                                                                                         intensityThreshold, minDuration, maxDuration);
             return System.Tuple.Create(sonogram, hits, intensity, predictedEvents, tsRecordingtDuration);
         } //Analysis()
 
@@ -369,7 +369,6 @@ namespace AnalysisPrograms
                 int eventStartSec = eventStartAbsoluteSec % 60;
 
                 DataRow row = dataTable.NewRow();
-                row[key_COUNT]        = count;                   //count
                 row[key_START_ABS]    = eventStartAbsoluteSec;   //EvStartAbsolute - from start of source ifle
                 row[key_START_MIN]    = eventStartMin;           //EvStartMin
                 row[key_START_SEC]    = eventStartSec;           //EvStartSec

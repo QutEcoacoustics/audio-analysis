@@ -245,44 +245,51 @@ namespace TowseyLib
         /// <param name="maxPeriod"></param>
         /// <param name="intensityThreshold"></param>
         /// <returns></returns>
-        public static List<double[]> ScanArrayForGratingPattern(double[] array, int minPeriod, int maxPeriod, int numberOfCycles, int step)
+        public static double[][] ScanArrayForGratingPattern(double[] array, int minPeriod, int maxPeriod, int numberOfCycles, int step)
         {
             int minHalfPeriod = minPeriod / 2;
             int maxHalfPeriod = maxPeriod / 2;
-            var list = new List<double[]>();
+            var periodScores = new double[maxPeriod+1][];
 
-            //for (int halfPeriod = minHalfPeriod; halfPeriod <= maxHalfPeriod; halfPeriod++)
-            //{
-            //    int cyclePeriod = halfPeriod * 2;
-            //    double[] scores = ScanArrayForGratingPattern(array, step, numberOfCycles, cyclePeriod);
-            //    list.Add(scores);
-            //} // for
+            for (int p = 0; p < minPeriod; p++) periodScores[p] = null;
             for (int p = minPeriod; p <= maxPeriod; p++)
             {
+                if(p%2 ==1) //ignore odd periods
+                {
+                    periodScores[p] = null;
+                    continue;
+                }
                 double[] scores = ScanArrayForGratingPattern(array, step, numberOfCycles, p);
-                list.Add(scores);
+                periodScores[p] = scores;
             } // for
-            return list;
+            return periodScores;
         } //ScanArrayForGratingPattern()
 
 
-        public static Tuple<double[], double[]> MergePeriodicScoreArrays(List<double[]> scores, int minPeriod, int maxPeriod)
+        public static Tuple<double[], double[]> MergePeriodicScoreArrays(double[][] periodScores, int minPeriod, int maxPeriod)
         {
+            //find the length of the score arrays. Some will be null.
             //assume all score arrays are of the same length;
-            int length = scores[0].Length;
+            int length = 0;
+            for (int p = 0; p < maxPeriod; p++)
+            {
+                if (periodScores[p] == null) continue;
+                length = periodScores[p].Length;
+                break;
+            }
             var intensity   = new double[length];
             var periodicity = new double[length];
 
             //assume that the score arrays are arranged in order in the list and range from the passed min and max periods.
-            for (int p = 0; p< scores.Count; p++)
+            for (int p = 0; p < maxPeriod; p++)
             {
-                int cyclePeriod = (p + 1) * 2;  //p = the halfPeriod
+                if (periodScores[p] == null) continue;
                 for (int i = 0; i < length; i++)
                 {
-                    if (scores[p][i] > intensity[i])
+                    if (periodScores[p][i] > intensity[i])
                     {
-                        intensity[i]   = scores[p][i];
-                        periodicity[i] = cyclePeriod;
+                        intensity[i] = periodScores[p][i];
+                        periodicity[i] = p;
                     }
                 }
             }

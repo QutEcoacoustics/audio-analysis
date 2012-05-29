@@ -637,8 +637,8 @@ namespace TowseyLib
         double min, max;
         DataTools.MinMax(data, out min, out max);
         double range = max - min;
-        double lowThreshold = min + (range * 0.5); //must be 25% of max.
-        double topThreshold = min + (range * 0.5); //must be 75% of max.
+        double lowThreshold = min + (range * 0.10); //must be 10% of max.
+        double topThreshold = min + (range * 0.90); //must be 90% of max.
 
         for (int i = 1; i < data.Length - 1; i++)
         {

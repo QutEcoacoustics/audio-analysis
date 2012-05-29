@@ -449,12 +449,12 @@ namespace TowseyLib
        public static void WriteTable(DataTable dt)
        {
            string[] headers = DataTableTools.GetColumnNames(dt);
-           foreach(string name in headers) Console.Write("{0}\t", name);
+           foreach(string name in headers) Console.Write(" {0,-10}", name);
            Console.WriteLine();
             var rows = dt.Rows;
             foreach(DataRow row in rows)
             {
-                for (int i = 0; i < headers.Length; i++) Console.Write("{0:f2}\t", row[headers[i]]);
+                for (int i = 0; i < headers.Length; i++) Console.Write(" {0:f2}{1,-7}", row[headers[i]], " ");
                 Console.WriteLine();
             }
        }
