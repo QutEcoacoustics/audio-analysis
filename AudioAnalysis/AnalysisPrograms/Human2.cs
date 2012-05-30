@@ -338,7 +338,6 @@ namespace AnalysisPrograms
         {
             //Log.WriteLine("# Start to draw image of sonogram.");
             bool doHighlightSubband = false; bool add1kHzLines = true;
-            double maxScore = 1.0;
             Image_MultiTrack image = new Image_MultiTrack(sonogram.GetImage(doHighlightSubband, add1kHzLines));
 
 
@@ -349,7 +348,7 @@ namespace AnalysisPrograms
             image.AddTrack(Image_Track.GetTimeTrack(sonogram.Duration, sonogram.FramesPerSecond));
             image.AddTrack(Image_Track.GetSegmentationTrack(sonogram));
             if (scores != null) image.AddTrack(Image_Track.GetScoreTrack(scores, 0.0, 1.0, eventThreshold));
-            if (hits != null) image.AddSuperimposedMatrix(hits, maxScore);
+            if (hits != null) image.AddSuperimposedTransparency(hits);
             if (predictedEvents.Count > 0) image.AddEvents(predictedEvents, sonogram.NyquistFrequency, sonogram.Configuration.FreqBinCount);
             return image.GetImage();
         } //DrawSonogram()

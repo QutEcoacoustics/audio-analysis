@@ -22,6 +22,9 @@ using Acoustics.Tools.Audio;
 
 namespace AnalysisPrograms
 {
+
+    ///
+    ///This class is to be used as a template for future analysers
     public class AnalysisTemplate
     {
         //KEYS TO PARAMETERS IN CONFIG FILE
@@ -115,7 +118,7 @@ namespace AnalysisPrograms
             //READ PARAMETER VALUES FROM INI FILE
             var configuration = new Configuration(configPath);
             Dictionary<string, string> configDict = configuration.GetTable();
-            Dictionary<string, string>.KeyCollection keys = configDict.Keys;
+            //Dictionary<string, string>.KeyCollection keys = configDict.Keys;
 
             int startMinute = 5; //dummy value
             var fiSegmentOfSourceFile = new FileInfo(recordingPath);
@@ -141,6 +144,34 @@ namespace AnalysisPrograms
         } //Dev()
 
 
+        /// <summary>
+        /// A WRAPPER AROUND THE Analysis() METHOD
+        /// To be called as an executable with command line arguments.
+        /// </summary>
+        /// <param name="sourcePath"></param>
+        /// <param name="configPath"></param>
+        /// <param name="outputPath"></param>
+        public static void Execute(string sourcePath, string configPath, string outputPath)
+        {
+            FileInfo fiSourceFile = new FileInfo(sourcePath); 
+            //READ PARAMETER VALUES FROM INI FILE
+            var configuration = new Configuration(configPath);
+            Dictionary<string, string> configDict = configuration.GetTable();
+            DirectoryInfo diOutputDir = new DirectoryInfo(outputDir);
+            string tempFileName = "temp.wav";
+            DataTable dt = Analysis(fiSourceFile, configDict, diOutputDir, tempFileName);
+            DataTableTools.DataTable2CSV(dt, outputPath);
+        }
+
+
+        /// <summary>
+        /// A WRAPPER AROUND THE Analysis() METHOD
+        /// To be called by the AudioBrowser.
+        /// </summary>
+        /// <param name="iter"></param>
+        /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="configDict"></param>
+        /// <param name="diOutputDir"></param>
         public static DataTable AnalysisReturnsDataTable(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
             string opFileName = "temp.wav";
@@ -198,6 +229,13 @@ namespace AnalysisPrograms
             return dataTable;
         }
 
+        /// <summary>
+        /// A WRAPPER AROUND THE Analysis() METHOD
+        /// To be called by the AudioBrowser.
+        /// </summary>
+        /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="configDict"></param>
+        /// <param name="diOutputDir"></param>
         public static Image AnalysisReturnsSonogram(int iter, FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir)
         {
             double segmentDuration = Double.Parse(configDict[key_SEGMENT_DURATION]);
@@ -223,13 +261,13 @@ namespace AnalysisPrograms
         }
 
         /// <summary>
-        /// A WRAPPER AROUND THE Execute_HarmonicDetection() method
-        /// Returns a DataTable
-        /// The Execute_HDDetect() method returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
+        /// Returns a System.Tuple<BaseSonogram, Double[,], double[], double[], List<AcousticEvent>>
+        /// that are the results of the analysis
         /// </summary>
-        /// <param name="iter"></param>
-        /// <param name="config"></param>
-        /// <param name="segmentAudioFile"></param>
+        /// <param name="fiSegmentOfSourceFile"></param>
+        /// <param name="configDict"></param>
+        /// <param name="diOutputDir"></param>
+        /// <param name="opFileName"></param>
         public static System.Tuple<BaseSonogram, Double[,], double[], List<AcousticEvent>, TimeSpan> 
                                         Analysis(FileInfo fiSegmentOfSourceFile, Dictionary<string, string> configDict, DirectoryInfo diOutputDir, string opFileName)
         {
@@ -297,7 +335,7 @@ namespace AnalysisPrograms
 
             //#############################################################################################################################################
             //ii: DETECT HARMONICS
-            var results = CrossCorrelation.DetectHarmonicsInSonogramMatrix(subMatrix, decibelThreshold, callSpan);
+            var results = DoSomeAnalysis(subMatrix, decibelThreshold, callSpan);
             double[] dBArray = results.Item1;
             double[] intensity = results.Item2;     //an array of periodicity scores
             double[] periodicity = results.Item3;
@@ -364,6 +402,14 @@ namespace AnalysisPrograms
         } //DrawSonogram()
 
 
+        /// <summary>
+        /// Converts a list of predicted events to a data table prior to return of the Analysis results.
+        /// To be called by the AudioBrowser.
+        /// </summary>
+        /// <param name="count"></param>
+        /// <param name="segmentStartMinute"></param>
+        /// <param name="tsSegmentDuration"></param>
+        /// <param name="predictedEvents"></param>
         public static DataTable WriteEvents2DataTable(int count, double segmentStartMinute, TimeSpan tsSegmentDuration, List<AcousticEvent> predictedEvents)
         {
             if ((predictedEvents == null) || (predictedEvents.Count == 0)) return null;
@@ -445,6 +491,23 @@ namespace AnalysisPrograms
             //CsvTools.DataTable2CSV(newtable, outputTablePath);
             return newtable;
         }
+
+        /// <summary>
+        /// Reads a CSV file of acoustic indices for ultimate display in the AudioBrowser.
+        /// The columns may need to be processed in an analysis specific way..
+        /// </summary>
+        /// <param name="fiCsvFile"></param>
+        /// <param name="headers2Display"></param>
+        public static Tuple<DataTable, DataTable> ProcessCsvFile(FileInfo fiCsvFile, string[] headers2Display)
+        {
+            DataTable dt = CsvTools.ReadCSVToTable(fiCsvFile.FullName, true);
+            if ((dt == null) || (dt.Rows.Count == 0)) return null;
+
+            dt = DataTableTools.SortTable(dt, key_COUNT + " ASC");
+            //OTHER PROCESSING e.g. normalising column values
+            //DataTable table2Display = ProcessDataTableForDisplayOfColumnValues(dt, headers2Display.ToList());
+            return System.Tuple.Create(dt, table2Display);
+        } // ProcessCsvFile()
 
 
 
