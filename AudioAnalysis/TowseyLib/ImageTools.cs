@@ -1565,7 +1565,7 @@ namespace TowseyLib
             for (int c = 0; c < 256; c++)
             {
 
-                pens.Add(new Pen(Color.FromArgb(255 - c, 0, 0)));
+                pens.Add(new Pen(Color.FromArgb(255, c, c)));
             }
             return pens;
         }
